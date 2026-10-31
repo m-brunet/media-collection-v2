@@ -11,5 +11,6 @@ The application uses electron-base-app as its foundation. Its source, tests, bui
 - [Decisions and open questions](docs/decisions-and-open-questions.md): rationale, recommendations, and questions to resolve before implementation.
 - [Design references](design/README.md): selected visual references and their limitations.
 - [Foundation import](docs/foundation-import.md): baseline provenance and verification.
+- [Configuration](docs/configuration.md): everyday settings and optional startup overrides.
 
 These documents describe v2 even where original design filenames contain `v3` or the mockups use the name Leaf. Latest explicit product decisions take precedence over mockups. Proposals and open questions are not accepted requirements.

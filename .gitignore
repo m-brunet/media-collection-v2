@@ -169,3 +169,6 @@ session.key
 
 # Additional IDE workspace settings
 .vscode/
+
+# Local startup overrides; keep config.sample.json versioned.
+/config.json
