@@ -1,6 +1,6 @@
 # Lending and returns
 
-Status: business-feature draft. Confirmed behavior comes from the product discussion. Recommendations and open decisions below are not approved requirements. No lending implementation exists yet.
+Status: Task 4 product decisions complete. Confirmed rules and acceptance examples below are the current lending reference. Technical recommendations and screen refinements are distinguished from product requirements. No lending implementation exists yet.
 
 ## Purpose and terminology
 
@@ -24,7 +24,7 @@ Receiver names are an explicit exception to the earlier statement that no names 
 
 A receiver has its own table, and the loan associations reference book ID and receiver ID with a per-association status.
 
-Use the same name-similarity mechanism as authors and collections. If no match is found, the entered name creates a receiver on confirmation. If similar names are found, ask the user to choose an existing receiver or continue with a distinct new name. Strictly identical receiver names cannot create separate records; reuse the existing receiver instead. Case, whitespace, and accent normalization still need definition. Similarity is advisory and must not silently select another person.
+Use the same name-similarity mechanism as authors and collections. If no match is found, the entered name creates a receiver on confirmation. If similar names are found, ask the user to choose an existing receiver or continue with a distinct new name. Equivalent names reuse the receiver: compare without case, accents, or outer whitespace while preserving its display label, as confirmed in Task 2. Similarity is advisory and must not silently select another person.
 
 ## Confirmed flow: record returns
 
@@ -34,13 +34,15 @@ Use the same name-similarity mechanism as authors and collections. If no match i
 4. Confirm the selected books to change their loan statuses to returned.
 5. Leave unselected books on loan.
 
-Offer additional books based on their being currently lent to the same receiver, regardless of the lending occasion. Additional returns are optional. No business rule requires returning all books together. Whether the user can deselect the starting book still needs definition.
+Offer additional books based on their being currently lent to the same receiver, regardless of the lending occasion. Additional returns are optional. The starting book is preselected but not required: it may be removed/unselected in both lending and return forms, provided at least one book remains selected. No business rule requires returning all books together or returning the book that opened the form.
 
 ## Confirmed flow: see loans
 
 Provide a dedicated page showing lent books and their receiver. The user must be able to answer 'Which books are lent, and who has them?' without opening each book.
 
-Grouping by receiver, search, sorting, a returned-history view, entry points to return actions, and dates have not been specified. Receiver management is excluded from initial scope: create/reuse through lending only, with no dedicated rename/delete/merge interface. Keep receiver identity independent so management can be added later if needed. Suggested designs are in the [design brief](lending-design-brief.md).
+Initially show active loans only, including each book's lending date. Search supports receiver name and book title only, not author or ISBN. Completed loans are retained, but a returned-history interface is future scope. Grouping and return entry points follow the selected design with detailed screen refinement assigned to Task 6. Receiver management is excluded from initial scope: create/reuse through lending only, with no dedicated rename/delete/merge interface. Keep receiver identity independent so management can be added later if needed. See the [design brief](lending-design-brief.md).
+
+Show 'Lent to [receiver]' on book details and a compact Lent indicator in book listings. This displays loan state, not a new ownership or reading status.
 
 ## Relationship to existing concepts
 
@@ -54,26 +56,26 @@ Confirmed eligibility and permissions:
 - A lent book retains its normal bookcase/shelf assignment.
 - Deleting a book or marking it Not Owned is blocked while it has an active loan; resolve the loan first.
 
-Recommended rules awaiting confirmation:
-
 - Lending does not change ownership; a lent volume remains owned for collection completeness and mobile shopping.
 - Lending and returns do not change any user's reading status or the book's tags/collection membership.
 
 ## Dates, statuses, and history
 
-Use Lent and Returned statuses. No business return date or due date is required, and the return form does not ask for dates. This is informal lending between friends, not a formal borrowing service. Technical audit timestamps still record lending and return actions. Whether to show a lending date from those events remains open. Overdue tracking, reminders, notes, and lost-book statuses are not approved scope.
+Use Lent and Returned statuses. Display the lending date on the active-loans page. No business return date or due date is required, and the return form does not ask for dates. This is informal lending between friends, not a formal borrowing service. Technical audit timestamps still record lending and return actions; the method of deriving/persisting the displayed lending date is a technical choice. Overdue tracking, reminders, loan notes, and lost-book statuses are not approved scope.
 
-Retain each completed loan as history and create a new loan occurrence when the same book is lent again, including to the same receiver. Do not overwrite earlier loans. A book/receiver pair alone cannot uniquely identify repeat loan occurrences. Whether to expose returned history in the initial interface remains open.
+Retain each completed loan as history and create a new loan occurrence when the same book is lent again, including to the same receiver. Do not overwrite earlier loans. A book/receiver pair alone cannot uniquely identify repeat loan occurrences. The initial lending interface shows active loans only; a returned-history interface is future scope.
+
+Deleting a book after its loan is returned preserves the completed loan's historical identification, including the former title and ISBN when present. No invented ISBN is required for no-ISBN books. This does not permit deletion during an active loan, and does not prescribe a database storage technique. Full application reset remains the explicit exception that removes loan history.
 
 ## Audit and Activity
 
 Existing audit requirements apply to lending and returns: record actor, timestamp, category, Successful/Failed outcome, and before/after values as applicable, excluding credentials. Receiver identity and book associations must be traceable in the technical record.
 
-Proposed Activity entries: 'alice lent 3 books to Sam' and 'alice recorded the return of 2 books from Sam'. Activity selects successful events from allowed categories and resolves the current acting username. The receiver is distinct from that actor. Whether receiver names appear in Activity, and whether batch actions appear as one event or individual book events, remain open.
+Each successful lending/return operation produces one Activity entry, grouping its per-book audit records. Receiver names may appear. Use 'You' collectively for the household, regardless of which account acted or is viewing Activity: 'You lent 3 books to Sam'. Do not switch the main sentence to another username for another account's action. The actual acting user remains recorded in audits and identified in timestamp details under the established Activity rules. The receiver is distinct from that actor.
 
 Chosen technical audit granularity: one record per affected book/loan, linked by a common operation ID for a multi-book lending or return action. No parent audit event is required by this choice. Do not equate technical audit row count with Activity entry count; Activity may group related records. The actor, category, timestamp, and outcome remain available on each record.
 
-If the atomic operation fails, no loan status changes persist; retain Failed audit records for the selected book/loan attempts with the same operation ID. Failure means the requested batch was not committed, not necessarily that every selected book independently violated a rule. Do not claim a persisted after-state or mark any item Successful after rollback. Failure audit records must survive the business transaction rollback. Exact failure payloads and handling failures before a book/loan can be identified remain planning details. The user's Activity wording still needs clarification before settling one entry per batch versus one per book and receiver-name display.
+If the atomic operation fails, no loan status changes persist; retain Failed audit records for the selected book/loan attempts with the same operation ID. Failure means the requested batch was not committed, not necessarily that every selected book independently violated a rule. Do not claim a persisted after-state or mark any item Successful after rollback. Failure audit records must survive the business transaction rollback. Exact failure payloads and handling failures before a book/loan can be identified remain technical planning details. Failed operations do not appear in Activity.
 
 ## Batch consistency
 
@@ -108,20 +110,19 @@ Confirmed scenarios:
 11. A later loan of a returned book preserves the earlier completed occurrence.
 12. A currently lent book cannot be deleted or marked Not Owned.
 13. Lending and returning a book preserve its assigned bookcase/shelf.
+14. The starting book can be deselected while other selected books remain; an empty selection cannot be confirmed.
+15. Lending changes only loan state: ownership, collection completeness, tags, membership, and personal reading status are unchanged.
+16. One successful multi-book operation yields one Activity entry with receiver name, while technical audits retain per-book records. The lending page shows active loans, not completed history.
+17. Active loans show lending dates and can be searched by receiver name or book title. Author/ISBN search is not part of this page.
+18. A returned book is deleted: its past loan remains identifiable by its former title/ISBN, while no dedicated history UI is required initially.
+19. Book details show Lent to the receiver, and listings show Lent; returning the book removes the active-loan indication without altering ownership.
+20. All viewers see household-wide You wording for a successful operation; actual actor attribution remains in audit/timestamp details.
 
-## Decisions needed before implementation planning
+## Assigned follow-ups
 
-1. Roles are confirmed: Owners/Admin write, Guests view. Confirm whether lending leaves ownership, collection completeness, reading status, tags, and membership unchanged.
-2. Owned-only lending and one active loan per book are confirmed. Define how eligibility conflicts are explained to the user.
-3. Similarity-assisted receiver reuse/creation and no identical names are confirmed. Define name normalization. Receiver management is excluded initially; later additions must remain possible.
-4. No due date or business return date is required. Should a lending date be displayed from the audit history, or should dates be absent from the initial loans interface?
-5. Starting-book preselection and offering all active loans to the same receiver are confirmed. May the starting book be deselected or removed from the corresponding return/lending form?
-6. Loan occurrences are retained. Should the initial UI show returned history or active loans only? Must it expose original lending batches?
-7. Atomic confirmation and per-book/loan audit records linked by operation ID are accepted. Define failure payloads and persistence, including failures before identifiable book selections exist.
-8. Deletion/Not Owned changes are blocked during active loans. After return, what happens to historical references when a book is deleted? No receiver-deletion UI is initially provided.
-9. Shelf assignment is retained. Is 'lent' a filter/badge in My books and bookcase views?
-10. Clarify 'one entry' in Activity: per user operation or per book? Confirm receiver-name display independently of audit granularity.
-11. Is lending desktop/browser-only initially? Mobile's previously agreed purposes do not automatically include lending.
+Task 4 product decisions are complete. Task 6 owns detailed feedback, empty/error layouts, active-page composition, and lending-date formatting without adding overdue/history/receiver-management scope. Technical agents choose failure payloads, storage/history-preservation techniques, and concurrency mechanisms without weakening atomicity or changing business rules. Initial mobile scope remains shopping and scanning, not new lending pages.
+
+Only active loans appear initially; completed history is retained and remains identifiable by former book title/ISBN after later deletion. This retention must not be mistaken for a required returned-history screen.
 
 Full application reset deletes receivers and loan records along with the other library data.
 
@@ -129,4 +130,4 @@ Full application reset deletes receivers and loan records along with the other l
 
 The receiver table and loan-association concept are explicit user direction; table/column names and detailed schema are not prescribed. Plan within the existing pure hexagonal architecture and HTTP business boundary. Do not add business IPC.
 
-Resolve the questions above before fixing migrations or API contracts. The future plan should cover lending, returns, active-loan queries, receiver selection, permission enforcement, validation/concurrency, audit integration, and history/deletion policy. Keep receiver identities separate from authenticated actors. Consider repeat occurrences before choosing association-table keys. No implementation tasks or migrations are authorized by this feature draft alone.
+Use the confirmed rules and acceptance examples above when planning migrations and API contracts. The future plan should cover lending, returns, active-loan queries, receiver selection, permission enforcement, validation/concurrency, audit integration, and history/deletion policy. Keep receiver identities separate from authenticated actors. Consider repeat occurrences before choosing association-table keys. No implementation tasks or migrations are authorized by this feature draft alone.

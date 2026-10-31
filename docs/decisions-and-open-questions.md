@@ -9,7 +9,7 @@ Baseline: 2026-10-31. Confirmed requirements live in [features](features.md) and
 - Read/Not read only: no in-progress status or reading-goal requirement inferred from the drawings.
 - Explicit Finished collections: a series may resume; a final-volume flag does not determine mobile visibility.
 - Audit history from initial release: capture early changes rather than attempting to reconstruct lost history later.
-- One shared library, individual accounts: reading status is personal; other library data is shared.
+- One shared library, individual accounts: reading status and optional notes are personal for Owners/Admin; shared book metadata is common. Guests have no reading-status or notes features, superseding the earlier reading exception. Guest accounts and lending receivers have no application link.
 - First administrator protection: user creation and permission assignment are reserved to it.
 - Exactly one Admin, the first user; all management of other accounts is reserved to it. Owners and Guests manage only themselves.
 - User deletion deactivates the account and retains its user-table record indefinitely for audit references. Full application reset still removes other users and audit history.
@@ -53,19 +53,15 @@ Sources: [International ISBN Agency: What is an ISBN?](https://www.isbn-internat
 
 Accepted policy: one catalogue record per edition, enforcing ISBN uniqueness when supplied. Books without ISBNs are allowed as an exception. This is a product restriction, not proof that no duplicate physical copies exist.
 
-Recommendation: accept valid ISBN-10 and ISBN-13, normalize equivalent identifiers for duplicate checks, and use a stable internal record ID so correcting an ISBN does not change identity. Format/normalization rules and duplicate-edition detection without ISBN still need confirmation. Multiple physical copies are not separately represented under the accepted one-record policy.
+Accepted ISBN behavior: accept valid ISBN-10 and ISBN-13 input, automatically convert ISBN-10 to equivalent ISBN-13, and display/use ISBN-13 consistently. Equivalent identifiers cannot create duplicate editions. On book details, a small superscript information icon beside the ISBN label explains an actual ISBN-10 conversion. The technical recommendation to keep stable internal record identity is separate from this product decision. No-ISBN title/author duplicate warnings are overridable. Multiple physical copies are not separately represented under the accepted one-record policy.
 
 ## Questions to resolve
 
-### Book entry and metadata
+### Book entry and metadata - Task 2 complete
 
-1. How should duplicate editions be detected for books without an ISBN? One record per edition and no-ISBN exceptions are confirmed.
-2. Confirm ISBN formats, validation, and normalization. What happens when scanning an ISBN already in the library, especially a Not Owned record?
-3. Defaults are confirmed as Owned and Not read; define their application to new-user/existing-book combinations (see question 19).
-4. Select metadata and cover providers after discussing coverage, reliability, costs, and edition matching. Define result review and missing/failed lookup behavior.
-5. Is a cover optional? Is a personal note included, and is it shared or per-user? Which optional fields are initially hidden?
-6. Define similarity-warning behavior without preventing legitimate distinct authors with similar names. Are authors managed as reusable entities, and how are names corrected across books?
-7. Define price currency/precision and publication-date precision if needed for the initial form.
+The confirmed rules and acceptance examples are consolidated in [Book entry](book-entry.md). They cover the form blocks, ISBN-10/13 equivalence and conversion indicator, explicit no-ISBN exception, optional cover, author matching/lifecycle, private notes and Guest restrictions, month/year dates, euro price/null/free distinction, page counts, explicit lookup and existing-record redirect, manual draft preservation, result selection, and visible failure/manual fallback.
+
+Mobile scanning is not available on desktop. Its agreed handoff is scan to ISBN then explicit Find book; detailed pages and interaction refinements belong to Task 6. Account-role transitions belong to Task 5. Provider choice, matching mechanics, and enforcement are technical-agent work, not unanswered product decisions.
 
 ### Collections and shopping ? Task 1 complete
 
@@ -75,12 +71,11 @@ Confirmed: volume-0 option, inferred range through highest saved coverage, shrin
 
 Shared name comparison and no-ISBN duplicate rules belong to Task 2. Detailed screen copy/layout refinements belong to Task 6. No automatic publication-monitoring feature was requested. A separate desktop ownership-progression page and bulk generation of planned books are future scope, not blockers to this task.
 
-### Locations, tags, and listings
+### Locations, tags, and listings - Task 3 complete
 
-14. Must location assignment target a shelf, or may it target a bookcase? Does deleting a bookcase delete its child shelf definitions and unassign all affected books?
-15. Independent Include/Exclude per tag and AND across included tags are confirmed. Can tag rules be combined with other advanced criteria? Final filter interaction design remains open.
-16. Confirm tag naming/normalization and destructive-action confirmations. The Nethys screenshot specifies behavior, not a UI design.
-17. Confirm the advanced filter fields. Confirm sort defaults/directions, missing publication-date ordering, and how title/date sorting maps to collection-level lists.
+Confirmed rules and fourteen acceptance examples are in [Locations, tags, search, and ordering](locations-tags-search.md). Locations are precreated shelves within bookcases, with scoped name uniqueness, rename/move conflict checks, empty-location retention, and confirmed deletion/unassignment behavior. Tags are shared reusable identities with inline/dedicated management, blocked rename collisions, persistent unused tags, and confirmed deletion safeguards.
+
+Advanced fields, AND across fields, OR within non-tag fields, tag inclusion/exclusion semantics, unassigned choices, and combining simple search with advanced filters are confirmed. Text supports partial case/accent-insensitive matches and equivalent ISBN values. Books sort by title/date added/publication date; unknown publication dates are last. Collections sort by name only and match when one member book satisfies the entire expression; completeness counts remain whole-collection totals. Task 6 owns detailed screen composition and feedback states.
 
 ### Accounts, history, and deployment
 
@@ -92,9 +87,11 @@ Shared name comparison and no-ISBN duplicate rules belong to Task 2. Detailed sc
 23. Define reset confirmation, session invalidation, backup treatment, and whether network settings must be configured again after application preferences are erased.
 24. Confirm initial UI language(s); English/French category labels were discussed, but a translation scope was not approved.
 
-## Lending follow-up
+## Lending - Task 4 complete
 
-Lending is a new v2 requirement, not a feature inferred from the old mockups. See [lending](lending.md) for confirmed flows, explicit receiver/loan storage direction, recommendations, and the questions to resolve. Receiver names are an exception to the earlier no-names assumption. Do not assume due dates, a contact directory, mobile lending, or loan history behavior until agreed.
+[Lending](lending.md) contains confirmed business rules and twenty acceptance scenarios; [the design brief](lending-design-brief.md) is reconciled with them. Lending changes only loan state, leaving ownership and collection completeness intact. Starting selections may be removed, keeping at least one book. Initial UI shows active loans with lending date, Lent indicators, and receiver-name/book-title search only. Returned history is retained, preserving former title/ISBN after later book deletion, but a dedicated history UI is future scope.
+
+Activity groups each successful operation into one entry using You collectively for the household and displaying the receiver. Actual actor attribution remains in audit records and timestamp details. Technical records remain per book/loan, linked by operation ID. Task 6 owns screen refinements; implementation mechanics belong to technical agents.
 
 ## Design reconciliation
 

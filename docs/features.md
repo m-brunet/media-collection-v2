@@ -9,24 +9,35 @@ Owners and the protected first administrator can add, edit, and delete books. Gu
 | Field | Requirement |
 | --- | --- |
 | Name/title | Mandatory |
-| Authors | Mandatory; one or more, with existing-name suggestions and similarity warnings to reduce mistyping |
-| ISBN | Required when available; allow books without an ISBN. One catalogue record per edition, with ISBN uniqueness enforced when present. Format/normalization and duplicate detection without ISBN remain to be defined |
+| Authors | Mandatory; one or more shared author identities, created/reused by name and linked to books; shared corrections apply everywhere. Exact comparison ignores case, accents, and outer whitespace; similar names prompt a choice |
+| ISBN | Required unless the user explicitly selects 'This book has no ISBN'. Accept valid ISBN-10 or ISBN-13 input, convert ISBN-10 to equivalent ISBN-13, and display/use ISBN-13 consistently. Equivalent numbers cannot create duplicate editions. No-ISBN title/author duplicate warnings can be overridden |
 | Category | Books, Manga, or Comics; Books is the default |
 | Publisher | Optional |
-| Publication date | Optional |
+| Publication date | Optional: absent, year only, or month/year; month without year is invalid. No day field |
 | Summary | Optional |
-| Page count | Optional |
-| Price | Optional |
-| Cover | Manual selection and automatic lookup supported; requiredness and fallback behavior unresolved |
+| Page count | Optional/null if unknown; positive whole number when supplied |
+| Price | Optional/null if unknown; euros only, zero allowed, no negatives, at most two decimal places. Input accepts comma/dot; display uses exactly two decimals for supplied values |
+| Cover | Optional, with a neutral fallback when absent; manual selection and automatic lookup supported |
 | Ownership | Mandatory shared status: Owned or Not Owned; default Owned |
-| Reading status | Mandatory per-user status: Read or Not read; default Not read |
+| Reading status | Mandatory personal status for Owners/Admin: Read or Not read; default Not read. Not shown or editable for Guests |
 | Collection membership | Optional; when enabled, collection name and volume number are mandatory |
 | Physical location | Optional; at most one location |
 | Tags | Multiple reusable tags supported |
+| Personal note | Optional free text for Owners/Admin, at most one per book per user; not shared book information. No notes feature for Guests |
 
-Manga includes manga, manhwa, manhua, and related forms. Comics includes Franco-Belgian bandes dessinees, American comics, and graphic novels. Personal ratings are excluded. Free-text notes and hiding less-used optional fields behind an additional-fields control remain proposals.
+Manga includes manga, manhwa, manhua, and related forms. Comics includes Franco-Belgian bandes dessinees, American comics, and graphic novels. Personal ratings are excluded.
 
-ISBN lookup is a high-priority initial feature. Lookup must not remove the manual-entry option. Providers, cover lookup, result review, incomplete results, and edition matching need discussion. Scanning is an input to book entry, not a separate library.
+The book form has three sections:
+
+1. A visible main block containing mandatory fields/statuses, category, the collection-membership choice, and the optional cover preview/upload control. The cover is always visible inside this first section despite being optional. Collection name and single-volume/consecutive-range coverage become mandatory when membership is enabled. ISBN is required unless the explicit no-ISBN exception is selected.
+2. A visible bookcase/shelf assignment and tags block; visibility does not make these optional associations mandatory.
+3. An 'Additional information' block, collapsed by default, containing publisher, publication date, summary, page count, and price. Inside it, a new personal free-text note is hidden behind an 'Add a note' button; one note per book per eligible user. If a personal note already exists, opening Additional information shows it directly instead of the Add button.
+
+For a no-ISBN book, possible duplicate detection based on title/authors shows an overridable warning. Personal notes are visible only to their author; other Owners and Admin cannot access their content. The author may delete a note without affecting the book, returning to Add a personal note. Guests have neither notes nor reading-status controls or displays.
+
+On book details, display a small superscript information icon next to the ISBN label when the saved ISBN was converted from ISBN-10. Explain that the displayed ISBN-13 is the equivalent of the supplied ISBN-10 so the change is not mistaken for a bug. Exact explanatory interaction and treatment of later ISBN edits remain screen/book-edit follow-ups; the indicator must reflect an actual conversion, not merely a convertible ISBN-13.
+
+ISBN lookup is an initial feature implemented after lending in the agreed delivery sequence. It starts with an explicit button, checks the existing library first, and redirects to book details if the ISBN is already registered. Otherwise it fills an editable form requiring explicit save confirmation. Fill empty fields; ask before replacing conflicting manual values. Retain incomplete results but require mandatory fields before save. Users choose between multiple usable results/covers. Lookup errors/no results preserve the ISBN and manual completion; show clear feedback distinguishing a known failure from no result. Camera scanning is mobile-only and fills ISBN before the user presses Find book; desktop has no scanning feature. Mobile page details remain Task 6. See [book entry](book-entry.md) for current Task 2 decisions; technical agents investigate providers separately.
 
 ## Collections
 
@@ -44,7 +55,7 @@ See [edition impact analysis](collection-editions-impact.md) for counting implic
 
 ## Lending and returns
 
-See [lending business rules](lending.md) and the [Pen design brief](lending-design-brief.md). Owners/Admin lend Owned books and record returns; Guests view loans. A book has at most one active loan. Start from a book page, require a receiver name, and optionally add books. Reuse the author/collection similarity mechanism for receiver names, offering existing-name selection or distinct new-name creation; identical receiver names are not allowed. The return form preselects the starting book and offers other active loans to its receiver. No due date or business return date is required. Loan-history and some lifecycle rules remain under discussion.
+Task 4 is complete: see [lending business rules](lending.md) and the [design brief](lending-design-brief.md). Owners/Admin manage loans; Guests view them. One active loan per Owned book, reusable name-only receivers, removable starting selection, partial returns, and atomic multi-book operations are confirmed. Lending changes only loan state; keep ownership, shelf, reading, tags, and collection coverage. Block deletion/Not Owned changes during active loans. Show receiver/lending indicators, active loans with lending date, and search by receiver name or book title only. Retain completed history and former title/ISBN after later book deletion; dedicated history UI is future scope. Per-book audit records group into one Activity entry per operation, using household-wide You wording and receiver name.
 
 ## Physical locations
 
@@ -52,7 +63,13 @@ See [lending business rules](lending.md) and the [Pen design brief](lending-desi
 - Locations describe actual storage, independently of tags, collections, and reading status.
 - A book may be unassigned and cannot occupy multiple locations.
 - Deleting a location preserves its books and unassigns their location.
-- Assignment directly to a bookcase versus requiring a shelf, and handling child shelves during bookcase deletion, remain open.
+- Deleting a bookcase removes its shelf definitions and unassigns all affected books, preserving the books themselves.
+- Create a bookcase first, then create shelves inside it, using free labels for both. Locations are created on the Bookshelves page before assignment; no inline location creation from a book form initially.
+- Assign a book to an existing shelf, never directly to a bookcase. Assignment remains optional, but any assigned book has the full bookcase/shelf context. Display its location as 'Bookcase name - Bookshelf name'.
+- Bookcase names are unique across the installation; shelf names are unique within their parent bookcase, using the established name comparison while retaining labels. Renames update all affected displayed locations; name conflicts block renames.
+- Shelves may move between bookcases, retaining assigned books. A matching shelf name in the destination blocks the move.
+- Empty bookcases/shelves remain available. Before deleting a shelf/bookcase, confirm the affected book count and explain that books become unassigned, not deleted.
+- A clickable visual representation of bookcases is future scope. See [locations, tags, search, and ordering](locations-tags-search.md) for Task 3 decisions.
 
 The design's Fiction, Nature, To read, and Currently reading cards are not approved physical-location definitions.
 
@@ -60,19 +77,29 @@ The design's Fiction, Nature, To read, and Currently reading cards are not appro
 
 Tags are reusable and a book can have several. Owners manage tags and their book assignments. Guests can view and use tag filters, but cannot create, edit, delete, or assign tags.
 
+Owners/Admin can create a tag directly while editing a book and manage tags from a dedicated interface, reusing equivalent existing names.
+
+Tags are independent identities linked by ID. Renaming updates labels everywhere. Unused tags remain until explicitly deleted. Global deletion requires confirmation with the affected-book count and removes only the tag/assignments, preserving books.
+
+Tag comparison ignores capitalization, accents, and leading/trailing whitespace using the shared name-comparison behavior; equivalent names reuse the tag. The visible label preserves spelling and accents. Comparison normalization must not strip accents from the displayed tag itself.
+
 Each tag has an independent filter choice: not selected, Include, or Exclude. Included and excluded tags are evaluated together in a single search, not as separate search modes. Every included tag must be present (AND); any excluded tag rejects a matching book. Example: include Fantasy and Adventure, exclude Medieval returns only books with both Fantasy and Adventure and without Medieval. A book lacking either included tag is rejected. This behavior is inspired by the supplied Archive of Nethys reference, not its visual design. There is no ANY/OR mode in the confirmed requirements. Final interaction design remains to be discussed.
 
-Removing a tag association or deleting a tag preserves books. Naming normalization, duplicate prevention, and tag-deletion confirmation need definition.
+Removing a tag association or deleting a tag preserves books. Rename to an equivalent existing tag is blocked; merging is future scope. See [Task 3](locations-tags-search.md).
 
 ## Lists, search, and sorting
 
 Book and collection listing views are simple listings with simple search, advanced multiple-criteria filtering, and ordering options. The cover-based design is visual direction; final layout choices are not settled here.
 
-- Simple search covers title, authors, ISBN, and collection name.
+- Simple search covers title, authors, ISBN, and collection name, with case/accent-insensitive partial matches and equivalent ISBN-10/13 recognition.
 - Confirmed sort fields: title, date added, and publication date only.
 - Author sorting is not included in initial scope.
-- Collection details present volumes in their order; volume rules remain to be finalized.
-- Exact advanced criteria, combinations, sort direction/defaults, and how fields apply to collection-level results are unresolved.
+- Collection details present volumes in coverage order under the confirmed collection rules. Collection listings sort by name only, A-Z or Z-A, default A-Z.
+- Advanced book filters: category, authors, collection, bookcase/shelf, tags, ownership, and personal reading status; no reading-status filter for Guests.
+- Books default to title A-Z; ascending/descending directions are available for title, date added, and publication date. Missing publication dates appear last in both directions.
+- Different filter fields combine with AND; multiple selections inside a non-tag field combine with OR. Tags still require every included tag and reject any excluded tag.
+- Include explicit No physical location and No collection choices. Simple text search applies together with advanced filters.
+- A collection matches book-level search/filters only if at least one member book satisfies the entire expression. Its ownership/completeness counts always cover the whole collection. [Task 3](locations-tags-search.md) is complete, with acceptance examples.
 
 ## Overview
 
@@ -94,6 +121,7 @@ Activity tells every user what happened recently in the application. It uses sel
 - Category is the proposed basis for selecting which events appear; exact category mapping remains to be defined and can evolve.
 - Only Successful events from the selected categories appear; Failed events remain technical audit records.
 - Show the action, who performed it, and when. Do not display before/after values in the initial version.
+- Main Activity wording uses 'You' collectively for the household, even when another account performed the action. This is not viewer-relative wording; preserve actual actor attribution in audit records and timestamp details.
 - Display time relatively, such as '4 days ago' or 'a year ago', with less visual emphasis than the action text.
 - Hovering the relative time shows the exact date, time, and acting user's name. The application uses account usernames, not real-name profile fields.
 - Authentication events are excluded.
@@ -107,7 +135,8 @@ The installation has exactly one Admin: the protected first user. All other acco
 | Capability | Guest | Owner | First administrator |
 | --- | --- | --- | --- |
 | Read shared library | Yes | Yes | Yes |
-| Change own reading status | Yes | Yes | Yes |
+| View/change own reading status | No | Yes | Yes |
+| Use own personal book note | No | Yes | Yes |
 | Manage own username/password | Yes | Yes | Yes |
 | Edit shared books, locations, collections, tags | No | Yes | Yes |
 | View loans and receivers | Yes | Yes | Yes |
@@ -125,7 +154,7 @@ Deleting a user deactivates the account rather than removing its user-table reco
 
 On installation or first start, create the first administrator and require defining a password before normal use. Its username is editable. No other account can modify or delete it. Access restrictions must be enforced beyond merely hiding UI controls.
 
-Reading status is personal: one user's change must not alter another user's status. Its editability is the Guest exception to read-only library access. Ownership and other shared book fields are not personal.
+Reading status and notes are personal features for Owners/Admin: one user's changes must not alter another user's data. Guests are read-only for books, with no reading-status display or note feature; this supersedes the earlier Guest reading-status exception. Guests may manage their own account. Ownership and other shared book fields are not personal. A Guest may be a friend in real life, but Guest accounts and lending receivers must have no application link or automatic matching.
 
 ## Local administrator recovery
 

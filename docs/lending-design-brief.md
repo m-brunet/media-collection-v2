@@ -1,6 +1,6 @@
 # Lending: interface design brief
 
-Status: draft for Pen. Read [lending business rules](lending.md) first. Items marked proposed must be resolved or explicitly presented as alternatives; they are not approved behavior.
+Status: design reference reconciled after Task 4 product closure. Read [lending business rules](lending.md) first. Items marked proposed remain visual options, not additional business requirements. The existing export may need screen refinements to show decisions recorded after it was produced.
 
 The selected design has now been exported in [the final handoff](../design/handoff-lending-final/HANDOFF.md). This brief records the requested coverage; it must not be read as a claim that all requested states were exported. See the handoff and [design guide](../design/README.md) for gaps and unresolved decisions.
 
@@ -12,13 +12,13 @@ Required experiences: lend one or several books to one receiver, record one or s
 
 Owners and Admin can lend and record returns. Guests can view loans and receivers but have no lending/return controls. Only Owned books without an active loan are eligible. Do not add business return-date fields.
 
-Keep the existing bookcase/shelf assignment when lending. Prevent deletion or changing ownership to Not Owned while a book is lent, explaining that its loan must first be resolved. Multi-book lending/returns are all-or-nothing. Completed loans are retained, but a user-facing history view is not yet approved. No receiver-management page is needed initially; create/reuse receivers through lending.
+Keep the existing bookcase/shelf assignment when lending. Lending changes only loan state, not ownership, reading, tags, membership, or collection completeness. Prevent deletion or changing ownership to Not Owned while lent, explaining that its loan must first be resolved. Multi-book lending/returns are all-or-nothing. Completed loans are retained, but their history view is future scope; show active loans initially. No receiver-management page is needed initially; create/reuse through lending.
 
 ## 1. Book details entry points
 
 Required: a lending button on the book page opens the lending page with that book selected.
 
-Proposed: when currently lent, show a visible 'Lent to [receiver]' indicator and a 'Record return' action instead of allowing another active loan. Keep ownership and reading status visually distinct from lending availability. Include the current receiver in the book panel, not just in the global loans page.
+Required: when currently lent, show 'Lent to [receiver]' and the Record return action instead of allowing another active loan. Book listings show a compact Lent indicator. Keep ownership and reading status distinct from lending availability. Returning a book removes its active-loan indication.
 
 ## 2. Lend books page
 
@@ -33,7 +33,7 @@ Required:
 Proposed:
 
 - Book picker searched by title, author, or ISBN; selected rows show cover, title, author, and edition/ISBN when available.
-- Visible selection count and remove controls; allow removing extra books. Whether the starting book may be removed remains a design/business question.
+- Visible selection count and remove controls; the starting book may also be removed. Require at least one selected book to confirm.
 - Unavailable books have an explanation: Not Owned or already lent.
 - Primary action states the count, for example 'Lend 3 books'.
 
@@ -47,7 +47,7 @@ Required:
 - Offer other books still lent to that receiver with per-book selection, including books lent on separate occasions.
 - Confirm only the books actually handed back. Partial returns must be understandable.
 
-Proposed: offer select-all/clear controls, show selected count, and use 'Record return of 2 books' as confirmation. Whether the starting book can be deselected is still open. No return date is entered.
+Proposed: offer select-all/clear controls, show selected count, and use 'Record return of 2 books' as confirmation. The starting book may be deselected; at least one book must remain selected to confirm. No return date is entered.
 
 Show one book, several books, a partial selection, none selected, submitting, success, error, and a book already returned by another user. Do not mark all books returned because one was selected.
 
@@ -55,7 +55,7 @@ Show one book, several books, a partial selection, none selected, submitting, su
 
 Required: list currently lent books and their receiver.
 
-Proposed layout: group active loans by receiver, show a book count, expand individual books, link to book details, and offer return actions for one book or the receiver's group. An alternative flat list with receiver labels is acceptable if clearer. Search by receiver/title and lending dates depend on pending scope decisions. Returned-history access is also pending.
+Proposed layout: group active loans by receiver, show a book count, expand individual books, link to details, and offer return actions. Display lending dates. Search covers receiver name and book title only, not author or ISBN. Returned-history access is future scope, not part of the initial page.
 
 Show empty state ('No books currently lent'), loading, error/retry, one receiver, several receivers, long names/titles, and missing cover fallbacks. Guests see the same useful information without write controls.
 

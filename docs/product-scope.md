@@ -10,7 +10,7 @@ Managing books the user actually owns is the primary workflow. Pre-registering N
 
 The audience includes people without technical or security knowledge. Forms should remain approachable, including when optional metadata is available.
 
-One installation holds one shared library. Multiple accounts access it; there are no separate per-user libraries. Reading status is personal to each user. User accounts do not request email addresses, real names, or civility; accounts use usernames and passwords.
+One installation holds one shared library. Multiple accounts access it; there are no separate per-user libraries. Reading status and optional book notes are personal features for Owners/Admin. Guests have neither notes nor a reading-status display; they may view library data and manage their own account. User accounts do not request email addresses, real names, or civility; accounts use usernames and passwords. Guest accounts have no application link to lending receivers.
 
 Lending introduces an explicit exception for receiver names: a receiver is stored by name only, separately from user accounts. No additional contact or identity fields are requested. See [lending](lending.md).
 
@@ -28,8 +28,10 @@ Lending introduces an explicit exception for receiver names: a receiver is store
 
 - Book creation, editing, and deletion, with manual entry always available.
 - ISBN metadata lookup as a priority feature; manual and automatic cover selection.
+- Camera barcode scanning is mobile-only, not an Electron/desktop-browser feature; its detailed page specification remains to be designed.
 - Books, Manga, and Comics categories; Books is the default.
-- Shared ownership status and per-user two-state reading status.
+- Shared ownership status and personal two-state reading status for Owners/Admin, not Guests.
+- Optional personal free-text note for Owners/Admin, one per book per user, behind an Add control inside collapsed additional information. An existing note appears directly when that section is opened. Account-to-account privacy and editing entry points are still being clarified.
 - One record per edition, unique ISBN when supplied, and support for books without ISBNs. Status defaults are Owned and Not read.
 - Physical bookcases and shelves, with optional book location assignment.
 - Integer-numbered collections, inferred missing volumes without manual enumeration, ownership visibility, and explicit Finished status.
@@ -50,7 +52,9 @@ Some initial-scope features have unresolved rules; see [open questions](decision
 - Reading-in-progress status: excluded; only Read and Not read are confirmed.
 - Dedicated collection creation that generates several Not Owned book records: future idea for discussion.
 - A separate desktop page mirroring mobile collection ownership progression: future feature for discussion, distinct from initial desktop collection details.
-- Notes and progressive disclosure of optional fields: under consideration, not a settled form specification.
+- Clickable visual representations of physical bookcases: future feature; initial bookcase/shelf hierarchy and shelf assignment do not require them.
+- Configurable currency: possible future feature; initial book prices use euros only.
+- A dedicated returned-loan history interface: future scope; completed records are retained, while the initial lending interface shows active loans.
 - Movies, DVDs, and other non-book media: excluded for the foreseeable future.
 - Separate Lists feature: not requested; do not add alongside tags by inference.
 - Reusing v1 code, v1's entire feature set, or demo content as application data: not authorized.
