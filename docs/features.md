@@ -30,21 +30,17 @@ ISBN lookup is a high-priority initial feature. Lookup must not remove the manua
 
 ## Collections
 
-- A book can belong to at most one collection in the current product rules.
-- The technical design should allow future multiple-collection membership without committing to a schema here; a membership table was given as an example.
-- Membership requires a collection name and integer volume number. Fractional numbers are excluded. Volume 0 is supported; an explicit collection-level 'includes volume 0' option is proposed and still needs confirmation.
-- Missing-volume detection must infer gaps without requiring users to enter every expected or Not Owned book. Adding only Owned volume 20 must be enough to discover the earlier missing volumes.
-- A collection has an explicit Finished state, set by the user. It is not inferred from a final-volume marker.
-- The user can mark a collection Finished only when no volumes are missing.
-- Finished collections remain visible during normal desktop use but are hidden from the mobile shopping view.
-- If a Finished collection develops a missing volume, it automatically becomes unfinished and returns to the mobile shopping view.
-- A fixed final-volume marker is not the selected mechanism: ongoing series can resume publication.
+Task 1 is complete. [Collections and shopping](collections.md) is the authoritative consolidated product reference, including acceptance examples.
 
-The proposed calculation is the integer range from 1 (or 0 when explicitly enabled) through the highest registered volume. A number with no record or only a Not Owned record would be missing. This formula, including the upper bound and ownership handling, still needs confirmation. Inferred missing entries must not require automatic creation of incomplete book records. Do not treat a book's Not read status as missing ownership. How a newly published volume becomes known remains unresolved.
+- Save a book with a collection name to join/create it. Rename updates all member books; a name collision is blocked. Merging is future scope.
+- Books cover one integer volume or a consecutive omnibus range. Volume 0 requires the collection option. Count distinct covered volumes, not edition records.
+- Missing means expected coverage not Owned, whether saved Not Owned or inferred. The range ends at the highest currently saved coverage; deleting it can shrink the range.
+- Finished is explicit, allowed only without missing volumes, and hides the collection on mobile. Gaps automatically reopen it; users may also reopen manually.
+- Overlap is permitted only between Owned books. Rare planned-book conflicts require explicit resolution, never silent deletion/replacement.
+- Empty collections disappear; deleting a collection preserves its books and clears membership/coverage.
+- Mobile uses compact missing-volume entries and emphasizes last owned. Ordinary saved Not Owned entries require confirmation for quick add; inferred volumes and omnibus books cannot use it. Guests remain read-only.
 
-A future collection-creation workflow may help someone plan a collection they do not yet own, such as Tintin. Generating several Not Owned book records is not approved initial scope.
-
-Removing collection membership must preserve the book. Collection deletion behavior still needs confirmation.
+See [edition impact analysis](collection-editions-impact.md) for counting implications. Shared name matching belongs to Task 2; exact screen refinements belong to Task 6. No database or implementation design is prescribed.
 
 ## Lending and returns
 
@@ -152,9 +148,8 @@ Confirmation UX, session invalidation, treatment of external backups, and operat
 
 ## Mobile
 
-The same installation serves a deliberately limited mobile experience:
+The same installation serves a deliberately limited mobile interface for collection shopping and adding books by barcode scanning. It is not automatically the full desktop application at a narrower width.
 
-1. Shopping: unfinished collections, missing books, and last owned volume.
-2. Add books by scanning their barcodes, using ISBN lookup and the book-entry workflow.
+Confirmed shopping rules are consolidated in [Collections and shopping](collections.md): show unfinished collections, compact missing-volume entries, and emphasized highest Owned coverage; require confirmation to mark an eligible ordinary saved record Owned; no quick add for inferred volumes or omnibus books. Guests cannot change shared book data or ownership.
 
-Guest shared-data restrictions still apply; scanning cannot grant write permission. Which mobile controls Guests see, whether shopping supports marking purchases Owned, and barcode/lookup failure flows remain open. Mobile is not automatically the full desktop application at a narrower width.
+Book-entry/lookup behavior belongs to Task 2. Remaining mobile interaction, empty/error states, and screen refinements belong to Task 6. A separate desktop page mirroring mobile ownership progression remains future scope.

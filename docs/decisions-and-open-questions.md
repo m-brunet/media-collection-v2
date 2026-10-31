@@ -15,12 +15,14 @@ Baseline: 2026-10-31. Confirmed requirements live in [features](features.md) and
 - User deletion deactivates the account and retains its user-table record indefinitely for audit references. Full application reset still removes other users and audit history.
 - One catalogue record per edition; enforce uniqueness of supplied ISBNs and allow exceptions for books without ISBNs.
 - Ownership defaults to Owned; per-user reading status defaults to Not read.
-- Integer volumes only; infer missing volumes without manual enumeration. A collection-level volume-0 option is proposed.
+- Integer volumes only; infer missing volumes without manual enumeration. A collection-level 'Includes volume 0' checkbox is off by default. Deleting the highest volume recomputes the inferred range from remaining books rather than retaining the old upper bound.
 - Every tag can independently be included or excluded in the same search. All included tags must be present (AND), and no excluded tag may be present.
 - Audit user-initiated use-case changes in a technical table with category, actor, timestamp, and before/after values, excluding passwords. Activity is a separate business feature for all users, showing selected actions, actor, and relative time, without before/after values initially. Authentication events stay out of Activity.
 - Local credential recovery without a key: accessibility for nontechnical users, accepting the host OS account as the trust boundary.
 - Internet access expected: do not assume home-network-only deployment.
 - Design covers are mockup references only and must never become production application assets.
+- Delivery sequencing is agreed at product level: access/accountability, core library, organisation, lending/returns, assisted entry, mobile, then Overview/Activity presentation. Audit capture starts with the first implemented changes; assisted entry is required but deliberately follows lending.
+- Resolve outstanding product topics one at a time through discussion, document confirmed rules and acceptance examples, then close each topic before proceeding. Explicit deferrals are distinguished from unresolved initial-scope behavior. Technical implementation choices are delegated separately.
 
 ## Audit history: confirmed scope and implementation recommendations
 
@@ -65,15 +67,13 @@ Recommendation: accept valid ISBN-10 and ISBN-13, normalize equivalent identifie
 6. Define similarity-warning behavior without preventing legitimate distinct authors with similar names. Are authors managed as reusable entities, and how are names corrected across books?
 7. Define price currency/precision and publication-date precision if needed for the initial form.
 
-### Collections and shopping
+### Collections and shopping ? Task 1 complete
 
-8. Confirm inferred missing volumes: from 1 through the highest registered volume, including both absent records and Not Owned records? Users must not have to enumerate expected books.
-9. Confirm a collection-level 'includes volume 0' option (default off?), making the inferred range start at 0. Is owning every inferred volume sufficient to permit Finished?
-10. How does a newly published volume become known? Finished cannot automatically reopen for an unknown publication.
-    If the highest registered volume is deleted, should the collection retain its previously known upper bound? Otherwise recalculating solely from remaining records could hide that newly missing volume and fail to reopen a Finished collection.
-11. Are integer volume numbers unique within a collection, even for different editions? Fractional numbers are excluded. How are unnumbered specials handled, if supported?
-12. Should 'last owned' mean the highest Owned volume number? Can shopping users mark a book Owned, and which permissions apply?
-13. Can users create empty collections initially? What happens when deleting a collection? Bulk generation of Not Owned records remains deferred.
+The final rules and acceptance examples are in [Collections and shopping](collections.md). They supersede the earlier collection discussion questions and proposals. The [edition impact analysis](collection-editions-impact.md) summarizes counting and duplicate-prevention implications.
+
+Confirmed: volume-0 option, inferred range through highest saved coverage, shrinkage on deletion, distinct-volume counts, consecutive omnibus ranges, Finished lifecycle, collection creation/rename/deletion, overlap restrictions and explicit conflict resolution, and compact mobile shopping/quick-add behavior. Rename to an existing collection name is blocked; merging is future scope.
+
+Shared name comparison and no-ISBN duplicate rules belong to Task 2. Detailed screen copy/layout refinements belong to Task 6. No automatic publication-monitoring feature was requested. A separate desktop ownership-progression page and bulk generation of planned books are future scope, not blockers to this task.
 
 ### Locations, tags, and listings
 

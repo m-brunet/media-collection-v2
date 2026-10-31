@@ -8,6 +8,8 @@ The application uses electron-base-app as its foundation. Its source, tests, bui
 
 - [Product scope](docs/product-scope.md): audience, platforms, initial scope, and exclusions.
 - [Features](docs/features.md): confirmed behavior and explicitly unresolved details.
+- [Collections and shopping](docs/collections.md): completed Task 1 rules and acceptance examples.
+- [Edition impact analysis](docs/collection-editions-impact.md): book counts versus volume coverage.
 - [Decisions and open questions](docs/decisions-and-open-questions.md): rationale, recommendations, and questions to resolve before implementation.
 - [Design references](design/README.md): selected visual references and their limitations.
 - [Foundation import](docs/foundation-import.md): baseline provenance and verification.
