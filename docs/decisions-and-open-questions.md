@@ -92,6 +92,10 @@ Recommendation: accept valid ISBN-10 and ISBN-13, normalize equivalent identifie
 23. Define reset confirmation, session invalidation, backup treatment, and whether network settings must be configured again after application preferences are erased.
 24. Confirm initial UI language(s); English/French category labels were discussed, but a translation scope was not approved.
 
+## Lending follow-up
+
+Lending is a new v2 requirement, not a feature inferred from the old mockups. See [lending](lending.md) for confirmed flows, explicit receiver/loan storage direction, recommendations, and the questions to resolve. Receiver names are an exception to the earlier no-names assumption. Do not assume due dates, a contact directory, mobile lending, or loan history behavior until agreed.
+
 ## Design reconciliation
 
 The handoff originated in a directory named Media collection v3, but these documents define v2. Mockup names, counts, example books, and branding are not authoritative product data.
