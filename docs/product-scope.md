@@ -6,6 +6,8 @@ Status: initial product baseline, 2026-10-31. This is a requirements document, n
 
 Media Collection v2 helps people manage books in their home, locate them on physical shelves, organize related books into collections, and identify collection books to buy while shopping.
 
+Managing books the user actually owns is the primary workflow. Pre-registering Not Owned books is supported but expected to be extremely rare, not a wishlist/catalogue-planning focus. Ownership-conflict handling should protect data with clear confirmations without dominating the interface or expanding initial scope.
+
 The audience includes people without technical or security knowledge. Forms should remain approachable, including when optional metadata is available.
 
 One installation holds one shared library. Multiple accounts access it; there are no separate per-user libraries. Reading status is personal to each user. User accounts do not request email addresses, real names, or civility; accounts use usernames and passwords.
@@ -47,6 +49,7 @@ Some initial-scope features have unresolved rules; see [open questions](decision
 - Personal ratings: excluded.
 - Reading-in-progress status: excluded; only Read and Not read are confirmed.
 - Dedicated collection creation that generates several Not Owned book records: future idea for discussion.
+- A separate desktop page mirroring mobile collection ownership progression: future feature for discussion, distinct from initial desktop collection details.
 - Notes and progressive disclosure of optional fields: under consideration, not a settled form specification.
 - Movies, DVDs, and other non-book media: excluded for the foreseeable future.
 - Separate Lists feature: not requested; do not add alongside tags by inference.
