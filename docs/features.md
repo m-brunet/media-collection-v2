@@ -142,19 +142,26 @@ The installation has exactly one Admin: the protected first user. All other acco
 | View loans and receivers | Yes | Yes | Yes |
 | Lend books and record returns | No | Yes | Yes |
 | Create users | No | No | Yes |
-| Assign/change Guest or Owner permissions | No | No | Yes |
+| Choose Guest/Owner role when creating an account | No | No | Yes |
+| Change an account's role after creation | No | No | No |
 | Manage other accounts (including deletion/password reset) | No | No | Yes |
 | View Activity | Yes | Yes | Yes |
 | Change protected first-administrator account | No | No | Self only |
 | Reset all application data | No | No | Yes |
 
-User administration is Admin-only, superseding the earlier broad statement that Owners have all administration features. The exact user-management workflows still need design; Owners cannot administer others or elevate their own permissions.
+User administration is Admin-only, superseding the earlier broad statement that Owners have all administration features. There is no registration/sign-up feature: Admin creates later users and chooses Guest or Owner at creation. Owners cannot administer others or elevate their own permissions. See [accounts](accounts.md) for Task 5 decisions and remaining password workflows.
 
-Deleting a user deactivates the account rather than removing its user-table record. The account can no longer be used, while the record is retained indefinitely to preserve audit actor references and Activity attribution. This retention does not override the full application reset, which removes all other users and audit history. Reactivation, username reuse, and handling existing sessions at deactivation still need definition.
+Roles are fixed at creation; no upgrade/demotion is available, including to Admin. Only Admin deactivates/reactivates other accounts; users cannot deactivate themselves. The protected Admin cannot deactivate, delete, or demote itself, but can still edit its own username/password. This supersedes earlier Admin role-change permission.
 
-On installation or first start, create the first administrator and require defining a password before normal use. Its username is editable. No other account can modify or delete it. Access restrictions must be enforced beyond merely hiding UI controls.
+Admin sets a temporary password when creating a later account or resetting another user's password. That user must choose a replacement at first/next login before normal use; no email workflow is introduced.
+
+Deleting a user deactivates the account rather than removing its user-table record. Immediately end existing sessions and prevent login, while retaining the record indefinitely for audit/Activity attribution. Keep its current username reserved. Admin may reactivate with the same fixed role and retained personal data. An active rename releases the former name for reuse without transferring data or attribution. The authenticated Admin-settings data reset keeps Admin's current username/password; there is no pre-login factory reset. [Task 5](accounts.md) is complete with acceptance examples.
+
+On first launch, immediately present the administrator-password setup form and require completion before normal use. Its username is editable. No other account can modify or delete it. This installation setup is not public registration. Access restrictions must be enforced beyond merely hiding UI controls.
 
 Reading status and notes are personal features for Owners/Admin: one user's changes must not alter another user's data. Guests are read-only for books, with no reading-status display or note feature; this supersedes the earlier Guest reading-status exception. Guests may manage their own account. Ownership and other shared book fields are not personal. A Guest may be a friend in real life, but Guest accounts and lending receivers must have no application link or automatic matching.
+
+New Owners start with all existing books Not read. Each new book starts Not read independently for every Owner/Admin.
 
 ## Local administrator recovery
 

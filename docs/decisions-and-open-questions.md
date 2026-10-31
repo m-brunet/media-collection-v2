@@ -10,7 +10,7 @@ Baseline: 2026-10-31. Confirmed requirements live in [features](features.md) and
 - Explicit Finished collections: a series may resume; a final-volume flag does not determine mobile visibility.
 - Audit history from initial release: capture early changes rather than attempting to reconstruct lost history later.
 - One shared library, individual accounts: reading status and optional notes are personal for Owners/Admin; shared book metadata is common. Guests have no reading-status or notes features, superseding the earlier reading exception. Guest accounts and lending receivers have no application link.
-- First administrator protection: user creation and permission assignment are reserved to it.
+- First administrator protection: user creation and initial Guest/Owner role selection are reserved to it; roles cannot change afterward.
 - Exactly one Admin, the first user; all management of other accounts is reserved to it. Owners and Guests manage only themselves.
 - User deletion deactivates the account and retains its user-table record indefinitely for audit references. Full application reset still removes other users and audit history.
 - One catalogue record per edition; enforce uniqueness of supplied ISBNs and allow exceptions for books without ISBNs.
@@ -23,6 +23,7 @@ Baseline: 2026-10-31. Confirmed requirements live in [features](features.md) and
 - Design covers are mockup references only and must never become production application assets.
 - Delivery sequencing is agreed at product level: access/accountability, core library, organisation, lending/returns, assisted entry, mobile, then Overview/Activity presentation. Audit capture starts with the first implemented changes; assisted entry is required but deliberately follows lending.
 - Resolve outstanding product topics one at a time through discussion, document confirmed rules and acceptance examples, then close each topic before proceeding. Explicit deferrals are distinguished from unresolved initial-scope behavior. Technical implementation choices are delegated separately.
+- Commit each completed clarification task's documentation before starting the next task's questions. Working plans remain local in ignored `.plans/`; product decisions remain versioned. Pushing is a separate action.
 
 ## Audit history: confirmed scope and implementation recommendations
 
@@ -79,8 +80,8 @@ Advanced fields, AND across fields, OR within non-tag fields, tag inclusion/excl
 
 ### Accounts, history, and deployment
 
-18. Admin is confirmed as the sole protected first user, exclusively managing other accounts. Define user deletion and password-reset workflows and whether self-deletion is permitted; do not infer that Admin may delete the protected account.
-19. Deleted users retain a deactivated user-table record indefinitely for audit references. Define retention of their personal reading status, reactivation, username reuse, and existing-session handling. What defaults apply to new users on existing books and existing users on new books?
+18. Task 5 is complete: [Accounts](accounts.md) consolidates first-run setup, fixed roles and Admin-only user creation, temporary-password replacement, account protection/deactivation/reactivation, name reservation/reuse, and personal defaults with twelve acceptance examples. There is no pre-login factory reset. Local recovery preserves data; authenticated Admin-settings data reset keeps Admin credentials.
+19. Exact account-screen interaction belongs to Task 6; data-reset confirmation/backup expectations belong to Task 7. Authentication/session/storage enforcement belongs to technical agents, not open product questions here.
 20. Technical audit logs and Activity are distinct. Define categories and their Activity mapping, additional credential redaction, audit-event retention, timezone, authentication-event/read-only action coverage, and whether any raw technical-log viewer is needed (and for whom). Successful/Failed outcomes, current username display via the user table, and indefinite retention of deactivated user records are confirmed. Define unauthenticated actors, failure payloads, and keyboard/touch equivalents for timestamp hover. Activity is visible to everyone, includes only successful eligible events, and initially excludes before/after values.
 21. Which Overview statistics remain useful after removing reading progress/goals? Are there dedicated Activity filters?
 22. Define first-run setup access so an internet visitor cannot claim an unconfigured installation. Define HTTPS/TLS, session handling, port setup, and offline requirements before external exposure.
