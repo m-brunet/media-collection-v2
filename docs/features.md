@@ -46,6 +46,10 @@ A future collection-creation workflow may help someone plan a collection they do
 
 Removing collection membership must preserve the book. Collection deletion behavior still needs confirmation.
 
+## Lending and returns
+
+See [lending business rules](lending.md) and the [Pen design brief](lending-design-brief.md). Owners/Admin lend Owned books and record returns; Guests view loans. A book has at most one active loan. Start from a book page, require a receiver name, and optionally add books. Reuse the author/collection similarity mechanism for receiver names, offering existing-name selection or distinct new-name creation; identical receiver names are not allowed. The return form preselects the starting book and offers other active loans to its receiver. No due date or business return date is required. Loan-history and some lifecycle rules remain under discussion.
+
 ## Physical locations
 
 - The hierarchy is Bookcase -> Shelf. There is no Room level.
@@ -110,6 +114,8 @@ The installation has exactly one Admin: the protected first user. All other acco
 | Change own reading status | Yes | Yes | Yes |
 | Manage own username/password | Yes | Yes | Yes |
 | Edit shared books, locations, collections, tags | No | Yes | Yes |
+| View loans and receivers | Yes | Yes | Yes |
+| Lend books and record returns | No | Yes | Yes |
 | Create users | No | No | Yes |
 | Assign/change Guest or Owner permissions | No | No | Yes |
 | Manage other accounts (including deletion/password reset) | No | No | Yes |
@@ -140,7 +146,7 @@ Accepted tradeoff: anyone able to use the application under the host OS account 
 
 ## Data reset
 
-Only the first administrator can reset the installation to its initial-data state. Keep its current username and password; delete books, covers, collections, locations, tags, activity/audit history, other users, and application preferences. The deleted history must not be represented as surviving this reset.
+Only the first administrator can reset the installation to its initial-data state. Keep its current username and password; delete books, covers, collections, locations, tags, receivers, loans, activity/audit history, other users, and application preferences. The deleted history must not be represented as surviving this reset.
 
 Confirmation UX, session invalidation, treatment of external backups, and operational network settings need definition before implementation.
 

@@ -8,7 +8,9 @@ Media Collection v2 helps people manage books in their home, locate them on phys
 
 The audience includes people without technical or security knowledge. Forms should remain approachable, including when optional metadata is available.
 
-One installation holds one shared library. Multiple accounts access it; there are no separate per-user libraries. Reading status is personal to each user. The application does not request email addresses, real names, or civility; accounts use usernames and passwords.
+One installation holds one shared library. Multiple accounts access it; there are no separate per-user libraries. Reading status is personal to each user. User accounts do not request email addresses, real names, or civility; accounts use usernames and passwords.
+
+Lending introduces an explicit exception for receiver names: a receiver is stored by name only, separately from user accounts. No additional contact or identity fields are requested. See [lending](lending.md).
 
 ## Foundation and access
 
@@ -35,6 +37,7 @@ One installation holds one shared library. Multiple accounts access it; there ar
 - Technical audit logs for user-initiated use-case changes from the first release, with category, actor, timestamp, and before/after values excluding passwords. A distinct Activity feature presents selected events to all users, with actor and relative time but no before/after values initially; authentication events stay out of Activity.
 - Audit outcome is Successful or Failed, independently of category. Activity shows only successful eligible events and resolves the actor's current username from the user table.
 - Account management, permissions, local first-administrator recovery, and first-administrator data reset.
+- Lending one or several books to a named receiver, recording partial or multi-book returns, and a page listing lent books and receivers. Detailed open rules are tracked in [lending](lending.md).
 
 Some initial-scope features have unresolved rules; see [open questions](decisions-and-open-questions.md). Scope inclusion does not settle those details.
 
