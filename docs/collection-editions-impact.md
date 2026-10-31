@@ -30,7 +30,7 @@ Desktop collection details group editions under expandable volume entries. One o
 
 Removing one Owned edition does not create a missing volume while another Owned book still covers it. Removing highest coverage recalculates the range; removing the final member removes the collection. Finished reopens when missing coverage remains, but complete ownership never automatically marks Finished.
 
-Lending acts on a specific book, with one active loan per book. The explicit confirmation that lending leaves ownership/collection completeness unchanged is assigned to the lending follow-up, not inferred here. No per-user reading-state propagation between editions is implied.
+Lending acts on a specific book, with one active loan per book. Lending is confirmed to leave ownership and collection completeness unchanged. No per-user reading-state propagation between editions is implied.
 
 ## Assigned follow-ups
 
