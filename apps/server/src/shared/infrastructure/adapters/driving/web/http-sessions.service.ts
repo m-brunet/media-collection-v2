@@ -1,0 +1,103 @@
+import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
+import type { NextFunction, Request, Response } from 'express';
+
+export class HttpSessions {
+    constructor(private readonly secret: Uint8Array) {}
+
+    token(request: Request): string | undefined {
+        return this.cookie(request, this.names(request).auth);
+    }
+
+    set(request: Request, response: Response, token: string): void {
+        response.cookie(this.names(request).auth, token, {
+            ...this.options(request),
+            maxAge: 3_600_000,
+        });
+    }
+
+    clear(request: Request, response: Response): void {
+        const names = this.names(request);
+
+        response.clearCookie(names.auth, this.options(request));
+        response.clearCookie(names.csrf, this.options(request));
+    }
+
+    csrf(request: Request, response: Response): string {
+        const name = this.names(request).csrf;
+        const existing = this.cookie(request, name);
+
+        if (existing && this.valid(existing)) {
+            return existing;
+        }
+
+        const nonce = randomBytes(32).toString('base64url');
+        const token = nonce + '.' + this.sign(nonce);
+
+        response.cookie(name, token, this.options(request));
+
+        return token;
+    }
+
+    protect = (request: Request, response: Response, next: NextFunction): void => {
+        if (
+            !request.path.startsWith('/api') ||
+            ['GET', 'HEAD', 'OPTIONS'].includes(request.method)
+        ) {
+            next();
+
+            return;
+        }
+
+        const expectedOrigin = request.protocol + '://' + request.get('host');
+        const supplied = request.get('x-csrf-token');
+        const cookie = this.cookie(request, this.names(request).csrf);
+
+        if (
+            request.get('origin') !== expectedOrigin ||
+            !request.is('application/json') ||
+            !supplied ||
+            supplied !== cookie ||
+            !this.valid(supplied)
+        ) {
+            response.status(403).json({
+                code: 'forbidden',
+                message: 'The request security check failed. Reload the page and try again.',
+            });
+
+            return;
+        }
+
+        next();
+    };
+
+    private names(request: Request): { auth: string; csrf: string } {
+        return request.secure
+            ? { auth: '__Secure-app_auth', csrf: '__Secure-app_csrf' }
+            : { auth: 'app_auth', csrf: 'app_csrf' };
+    }
+
+    private options(request: Request) {
+        return { httpOnly: true, secure: request.secure, sameSite: 'lax' as const, path: '/api' };
+    }
+
+    private cookie(request: Request, name: string): string | undefined {
+        return (request.cookies as Record<string, string | undefined> | undefined)?.[name];
+    }
+
+    private sign(nonce: string): string {
+        return createHmac('sha256', this.secret).update(nonce).digest('base64url');
+    }
+
+    private valid(value: string): boolean {
+        const [nonce, signature, extra] = value.split('.');
+
+        if (!nonce || !signature || extra || nonce.length !== 43) {
+            return false;
+        }
+
+        const expected = Buffer.from(this.sign(nonce));
+        const actual = Buffer.from(signature);
+
+        return actual.length === expected.length && timingSafeEqual(actual, expected);
+    }
+}

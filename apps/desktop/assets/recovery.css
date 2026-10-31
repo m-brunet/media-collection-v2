@@ -1,0 +1,36 @@
+body {
+    font: 15px system-ui,
+    sans-serif;
+    margin: 28px;
+    color: #18202b;
+    background: #f7f8fa;
+}
+
+h1 {
+    font-size: 22px;
+}
+
+label {
+    display: block;
+    margin-top: 14px;
+}
+
+input {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 9px;
+    margin-top: 5px;
+    border: 1px solid #a5acb5;
+    border-radius: 5px;
+}
+
+button {
+    margin-top: 18px;
+    padding: 10px 16px;
+    background: #245dc1;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
