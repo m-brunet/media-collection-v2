@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta
+            content="default-src 'self'; script-src 'self'; style-src 'self'"
+            http-equiv="Content-Security-Policy"
+    />
+    <meta content="width=device-width, initial-scale=1" name="viewport"/>
+    <title>Administrator recovery</title>
+    <link href="recovery.css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Reset administrator password</h1>
+<p>This local tool uses existing application data. It starts no web server.</p>
+<form id="recovery">
+    <label
+    >New temporary password<input
+            autocomplete="new-password"
+            id="password"
+            maxlength="128"
+            minlength="8"
+            required
+            type="password"
+    /></label>
+    <label
+    >Repeat password<input
+            autocomplete="new-password"
+            id="confirmation"
+            required
+            type="password"
+    /></label>
+    <button type="submit">Reset password</button>
+</form>
+<p id="result" role="status"></p>
+<script src="recovery.js"></script>
+</body>
+</html>

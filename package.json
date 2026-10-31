@@ -1,0 +1,102 @@
+{
+  "name": "electron-base-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "An Electron foundation with a hexagonal NestJS backend and React",
+  "license": "MIT",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "type": "module",
+  "main": "dist/apps/desktop/src/main.js",
+  "scripts": {
+    "postinstall": "install-electron",
+    "dev": "node tools/dev.mjs",
+    "start": "electron .",
+    "build:runtime": "tsc -p tsconfig.runtime.json",
+    "build:web": "vite build",
+    "build": "npm run build:runtime && npm run build:web",
+    "lint": "oxlint --deny-warnings",
+    "lint:fix": "oxlint --fix && oxfmt .",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "test:architecture": "vitest run tools/architecture",
+    "test": "npm run build && vitest run",
+    "test:unit": "vitest run apps/server/src apps/desktop/src apps/web/src --exclude **/*.e2e-spec.ts --exclude **/infrastructure/**",
+    "test:api": "npm run build && vitest run apps/server/src tests/api --exclude **/*.spec.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.runtime.json && tsc --noEmit -p apps/web/tsconfig.json && tsc --noEmit -p tsconfig.tools.json && tsc --noEmit -p tsconfig.tests.json && tsc --noEmit -p apps/server/tsconfig.json",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm test",
+    "reset-admin": "electron . --reset-admin",
+    "package": "npm run build && electron-builder",
+    "package:dir": "npm run build && electron-builder --dir",
+    "test:packaged": "node tools/packaged-smoke.mjs"
+  },
+  "dependencies": {
+    "@nestjs/common": "^12.1.2",
+    "@nestjs/core": "^12.1.2",
+    "@nestjs/platform-express": "^12.1.2",
+    "better-sqlite3": "^13.0.3",
+    "cookie-parser": "^1.4.7",
+    "express": "^5.2.1",
+    "helmet": "^8.3.0",
+    "jose": "^6.2.12",
+    "kysely": "^0.29.6",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "reflect-metadata": "^0.2.2",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "^12.1.2",
+    "@stylistic/eslint-plugin": "5.7.1",
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3",
+    "oxc-resolver": "11.24.2",
+    "oxfmt": "0.71.0",
+    "oxlint": "1.86.0",
+    "selfsigned": "^5.5.0",
+    "typescript": "7.0.2",
+    "vite": "^8.3.2",
+    "vitest": "5.0.3"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "build": {
+    "appId": "com.electronbase.app",
+    "productName": "Electron Base",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "apps/desktop/assets/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "**/*.node"
+    ],
+    "npmRebuild": false,
+    "win": {
+      "target": "nsis",
+      "signAndEditExecutable": false
+    },
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.productivity"
+    },
+    "linux": {
+      "target": "AppImage",
+      "category": "Utility",
+      "executableName": "electron-base"
+    }
+  }
+}
