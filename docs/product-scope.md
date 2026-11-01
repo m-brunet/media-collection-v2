@@ -1,6 +1,6 @@
 # Product scope
 
-Status: product baseline reconciled after Tasks 1-7. This is a requirements document, not a claim of implemented behavior. Version-update behavior is the next separate discussion.
+Status: product baseline reconciled after Tasks 1-7 and the application-update discussion. This is a requirements document, not a claim of implemented behavior. [Application updates](updates.md) defines GitHub Releases distribution, Windows integrated installation, and manual macOS/Linux installation with backup assistance.
 
 ## Purpose
 
