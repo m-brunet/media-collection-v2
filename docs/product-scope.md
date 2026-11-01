@@ -1,6 +1,6 @@
 # Product scope
 
-Status: initial product baseline, 2026-10-31. This is a requirements document, not a claim of implemented behavior.
+Status: product baseline reconciled after Tasks 1-7. This is a requirements document, not a claim of implemented behavior. Version-update behavior is the next separate discussion.
 
 ## Purpose
 
@@ -17,21 +17,21 @@ Lending introduces an explicit exception for receiver names: a receiver is store
 ## Foundation and access
 
 - Foundation: electron-base-app, currently located at `E:/repos/electron-base-app/electron-based-app`.
-- Electron desktop application and desktop browser offer the same normal functionality.
-- Administrator credential recovery is exclusive to the Electron application on the library host.
-- A simplified mobile web interface is served by the same installation. Its purposes are shopping assistance for unfinished collections and adding books by camera barcode scanning.
+- Electron desktop and desktop browser offer the same normal business functionality. Local maintenance actions are the explicit exception.
+- Administrator credential recovery and manual backup/restore are exclusive to local Electron maintenance on the library host, not browser/mobile features.
+- An Owner/Admin-only mobile web interface is served by the same installation for unfinished-collection shopping and scan-gated book creation; Guests have no mobile access.
 - Internet access to the installation is expected, with user-configured port forwarding anticipated.
 - The listening port must be available and greater than 1024; ports 80 and 443 are not permitted. No default port is selected yet.
-- Offline requirements, transport security, deployment details, and network setup experience still need definition.
+- Core desktop management works offline; external lookup requires internet. Mobile shopping works while it can reach the host, with no separate offline mobile sync implied. Transport/security/deployment mechanisms remain technical-agent work.
 
 ## Initial feature scope
 
-- Book creation, editing, and deletion, with manual entry always available.
+- Book creation, editing, and deletion, with desktop manual entry always available; mobile creation requires successful scanning/lookup and has no manual failure fallback.
 - ISBN metadata lookup as a priority feature; manual and automatic cover selection.
-- Camera barcode scanning is mobile-only, not an Electron/desktop-browser feature; its detailed page specification remains to be designed.
+- Camera barcode scanning is mobile-only; its agreed home/scan/lookup/form/failure paths are in [mobile experience](overview-activity-mobile.md). Visual layouts still need design.
 - Books, Manga, and Comics categories; Books is the default.
 - Shared ownership status and personal two-state reading status for Owners/Admin, not Guests.
-- Optional personal free-text note for Owners/Admin, one per book per user, behind an Add control inside collapsed additional information. An existing note appears directly when that section is opened. Account-to-account privacy and editing entry points are still being clarified.
+- Optional author-only personal free-text note for Owners/Admin, one per book per user, behind an Add control inside collapsed additional information. Existing notes appear when opened; authors can delete them without affecting the book. Other Owners/Admin cannot read their content.
 - One record per edition, unique ISBN when supplied, and support for books without ISBNs. Status defaults are Owned and Not read.
 - Physical bookcases and shelves, with optional book location assignment.
 - Integer-numbered collections, inferred missing volumes without manual enumeration, ownership visibility, and explicit Finished status.
@@ -41,9 +41,11 @@ Lending introduces an explicit exception for receiver names: a receiver is store
 - Technical audit logs for user-initiated use-case changes from the first release, with category, actor, timestamp, and before/after values excluding passwords. A distinct Activity feature presents selected events to all users, with actor and relative time but no before/after values initially; authentication events stay out of Activity.
 - Audit outcome is Successful or Failed, independently of category. Activity shows only successful eligible events and resolves the actor's current username from the user table.
 - Account management, permissions, local first-administrator recovery, and first-administrator data reset.
-- Lending one or several books to a named receiver, recording partial or multi-book returns, and a page listing lent books and receivers. Detailed open rules are tracked in [lending](lending.md).
+- Lending one or several books to a named receiver, partial/multi-book returns, and an active-loan page with dates and receiver/title search; confirmed rules are in [lending](lending.md).
+- English and French interface support, with an independent preference for each user.
+- Local Electron-maintenance-only manual full-data backup/restore, including users, personal data, history, covers, and saved settings. Same-version restore supports another computer, replaces without merging, preserves backed-up credentials, and ends sessions. Local Admin recovery remains the failsafe; invalid/incompatible/failed restore preserves current data.
 
-Some initial-scope features have unresolved rules; see [open questions](decisions-and-open-questions.md). Scope inclusion does not settle those details.
+Tasks 1-7 have confirmed business rules and acceptance examples in their owning documents. [Decisions and handoff](decisions-and-open-questions.md) separates that baseline from technical/design follow-ups and explicit deferrals. Application implementation has not begun beyond the unchanged foundation import.
 
 ## Deferred or excluded
 
@@ -54,6 +56,9 @@ Some initial-scope features have unresolved rules; see [open questions](decision
 - A separate desktop page mirroring mobile collection ownership progression: future feature for discussion, distinct from initial desktop collection details.
 - Clickable visual representations of physical bookcases: future feature; initial bookcase/shelf hierarchy and shelf assignment do not require them.
 - Configurable currency: possible future feature; initial book prices use euros only.
+- Importing v1 MongoDB dumps: future one-off migration/script for the sole v1 user, not an initial reusable import interface.
+- Automatic/scheduled backups: future scope; initial backup/restore is manual.
+- Cross-version backup restoration: future scope; initial restoration requires the same MC version.
 - A dedicated returned-loan history interface: future scope; completed records are retained, while the initial lending interface shows active loans.
 - Movies, DVDs, and other non-book media: excluded for the foreseeable future.
 - Separate Lists feature: not requested; do not add alongside tags by inference.

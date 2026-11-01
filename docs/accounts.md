@@ -16,6 +16,8 @@ Only Admin creates later accounts through the interface and chooses Guest or Own
 
 Accounts have usernames/passwords, not email, real-name, or civility fields. Users may manage their own username/password. Guests cannot change shared books and have no personal notes or reading-status display. They may be household friends in real life, but accounts and lending receivers have no application link.
 
+Each user may independently choose English or French without changing other users' language preference.
+
 Task 6 clarification: Guests cannot access the mobile interface, including shopping. Their approved desktop read access and self-account management remain unchanged. Mobile is for Owners/Admin only.
 
 ## Deactivation and reactivation
@@ -43,6 +45,8 @@ Product consequence: people may remember an old name differently from the curren
 Pre-login recovery is available only locally through Electron on the host, with no HTTP recovery endpoint. It shows the protected Admin username and allows setting a new password without the old credentials or a recovery key, trusting access to the host OS account. Preserve library data and end the Admin's existing sessions. This is separate from Admin managing another user's password.
 
 Recovery restores credentials; it does not erase data or delete/recreate the Admin. The user's earlier factory-reset reference was clarified in favor of this recovery feature, not an additional destructive action.
+
+Task 7 adds manual backup and restore beside recovery in local pre-login Electron maintenance, not under authenticated application roles or browser routes. These actions share recovery's host OS-account trust boundary. Restore reinstates backed-up user identities/passwords and signs everyone out; if credentials are forgotten, use Admin recovery. This is distinct from the authenticated Admin-settings data reset, which still keeps the current Admin credentials. See [release expectations](release-expectations.md).
 
 ## Acceptance examples
 
