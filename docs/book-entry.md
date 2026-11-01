@@ -36,15 +36,17 @@ One record per edition is the accepted restriction. Different editions may have 
 4. Otherwise retrieve available book metadata and populate an editable form.
 5. The user reviews/corrects the result and explicitly confirms saving. Retrieval alone never creates a book.
 
-Camera barcode scanning is mobile-only; do not add a scanner to Electron or the desktop-browser interface. On mobile, scanning fills the ISBN field and the user presses Find book to start lookup. No automatic lookup or book creation occurs merely from scanning. The detailed mobile page specification is not yet complete and belongs to Task 6. Provider selection is separate from this user-visible behavior.
+Camera barcode scanning is mobile-only; do not add a scanner to Electron or the desktop-browser interface. On mobile, a successful scan is required to access the add form; scanning fills ISBN and the user presses Find book to start lookup. No manual ISBN-entry bypass is offered: camera/scan failure explains the problem and offers Retry or Back to home. No automatic lookup or creation occurs merely from scanning. Mobile is Owner/Admin-only, with no Guest access. Task 6 specifies mobile-specific failure and existing-record presentation, superseding any broader manual-fallback assumption on mobile. Desktop manual entry is unchanged. Provider selection remains a technical choice.
 
 ## Failure and incomplete results
 
-If no book is found, an external service is unavailable, or the app encounters an error, preserve the entered ISBN and permit manual completion. Show clear feedback explaining the known problem. Do not silently fail or describe an application/service error as a successful search with no result. The interface need not expose internal implementation details or raw errors.
+On desktop, if no book is found, an external service is unavailable, or the app encounters an error, preserve the entered ISBN and permit manual completion. Show clear feedback explaining the known problem. Do not silently fail or describe an application/service error as a successful search with no result. The interface need not expose internal implementation details or raw errors.
+
+The manual-completion fallback above is desktop behavior. Task 6 explicitly restricts mobile: successful scan is required; failed lookup gets at most one retry, then error/Back to home and no manual fallback. A mobile existing Owned ISBN shows Already owned with scan-again/home options; an existing Not Owned ISBN requires confirmation before any external fetch and reuses the existing record. These mobile-specific decisions supersede the generic details redirect where applicable; see [mobile experience](overview-activity-mobile.md).
 
 Populate empty fields from lookup while preserving manually entered values. If a result conflicts with a manually entered value, ask before replacing it. A lookup must not silently overwrite the draft.
 
-Retain useful partial results and let the user complete missing information. Saving still requires all mandatory fields; an incomplete lookup does not waive those rules. Full publication dates are reduced to month/year as above. When several usable metadata results or covers are available, the user chooses the result/cover; do not arbitrarily select one. Existing manual values remain protected by the replacement-confirmation rule. Manual entry always remains available.
+Retain useful partial results and let the user complete missing information. Saving still requires all mandatory fields; an incomplete lookup does not waive those rules. Full publication dates are reduced to month/year as above. When several usable metadata results or covers are available, the user chooses the result/cover; do not arbitrarily select one. Existing manual values remain protected by the replacement-confirmation rule. Manual entry always remains available on desktop; mobile failure behavior follows Task 6.
 
 ## Form structure
 
@@ -74,7 +76,7 @@ Guests have no personal notes feature and no reading-status display or controls.
 10. Leave price empty: unknown, not free. Enter zero: free, displayed with two decimals. Negative or over-precision prices are invalid. Unknown pages remain empty; supplied pages must be positive integers.
 11. Press Find book for an existing ISBN: open its details; do not create a duplicate or automatically change ownership. A new result needs editable review and explicit saving.
 12. Lookup returns incomplete information or conflicts with a manual draft: keep useful data, ask before replacing conflicts, and require missing mandatory information before saving. Multiple usable results/covers require user choice.
-13. Lookup fails or finds nothing: preserve ISBN and manual completion, visibly explaining the known problem rather than silently failing.
+13. Desktop lookup fails or finds nothing: preserve ISBN and manual completion, visibly explaining the known problem rather than silently failing. Mobile instead follows the scan gate and limited-retry/error-home rule confirmed in Task 6.
 14. Desktop has no camera scanner. Mobile scanning fills ISBN; only pressing Find book starts lookup. No scanning or retrieval alone creates a book.
 
 ## Assigned follow-ups

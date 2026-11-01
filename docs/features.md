@@ -4,7 +4,7 @@ Status: initial v2 baseline, 2026-10-31. Unresolved details are intentionally id
 
 ## Books
 
-Owners and the protected first administrator can add, edit, and delete books. Guests cannot change shared book data. Manual creation of a single book is always available, including when lookup fails.
+Owners and the protected first administrator can add, edit, and delete books. Guests cannot change shared book data. Desktop manual creation of a single book is always available, including when lookup fails. Mobile is scan-gated with its own failure rules below.
 
 | Field | Requirement |
 | --- | --- |
@@ -103,7 +103,7 @@ Book and collection listing views are simple listings with simple search, advanc
 
 ## Overview
 
-Overview follows the design direction of library counts, recent additions, and location shortcuts. Mockup values are illustrative, not requirements or seed data. Two-state reading status supersedes the currently-reading/progress widgets.
+Overview shows Owned-book, collection, bookcase/shelf, and currently-lent-book counters, plus recently-added Owned books ordered by record-added date and linking to details. Book counts count saved editions, not collection volumes. Owners/Admin have their own Owned-book Read/Not read summary; Guests have none. Reading goals/in-progress widgets are excluded. Count values derive from actual data. Remaining interaction details are tracked in [Task 6](overview-activity-mobile.md).
 
 ## Audit logs (technical)
 
@@ -125,8 +125,11 @@ Activity tells every user what happened recently in the application. It uses sel
 - Display time relatively, such as '4 days ago' or 'a year ago', with less visual emphasis than the action text.
 - Hovering the relative time shows the exact date, time, and acting user's name. The application uses account usernames, not real-name profile fields.
 - Authentication events are excluded.
+- Include successful shared changes to books, authors, collections, locations, tags, and lending. Exclude account/security events and private note/reading-status changes from Activity, without waiving technical auditing.
+- No category or date-range filters initially. Categories select eligible events internally, not through an initial filtering interface.
+- Show newest entries first and allow loading older entries.
 
-All account roles can view Activity. Initial hiding of before/after values is a presentation rule, not a reason to omit them from the technical record. Keyboard/touch equivalents for hover and timestamp timezone remain open. Username changes use the current user-table value; deleted users retain a deactivated record indefinitely so actor references remain available. Reading goals are deferred.
+All account roles can view desktop Activity. Initial hiding of before/after values is a presentation rule, not a reason to omit them from the technical record. Exact timestamp details use hover; added click/tap/focus-reveal interactions were declined initially. Timestamp timezone remains to be specified as a display convention. Username changes use the current user-table value; deactivated users remain available for attribution. Reading goals are deferred.
 
 ## Accounts and permissions
 
@@ -184,7 +187,11 @@ Confirmation UX, session invalidation, treatment of external backups, and operat
 
 ## Mobile
 
-The same installation serves a deliberately limited mobile interface for collection shopping and adding books by barcode scanning. It is not automatically the full desktop application at a narrower width.
+The same installation serves a deliberately limited mobile interface for collection shopping and adding books by barcode scanning. Its home page has Collections and Scan buttons. Mobile book entry uses the same three form sections and field rules as desktop, adapted to the phone. Successful creation offers Scan another book or Back to home. It is not automatically the full desktop application at a narrower width.
+
+Mobile is Owner/Admin-only; Guests have no access. Add-form access requires a successful scan, with no manual ISBN-entry fallback. Camera/scan failure offers an explanation, Retry, or Back to home. Desktop manual entry is unchanged. Unsaved changes require discard confirmation; failed saves preserve the form with error feedback/retry and do not show success navigation.
+
+Mobile metadata lookup failure permits at most one retry, then error and Back to home with no manual completion. Existing Owned ISBN shows Already owned with scan-again/home choices; existing Not Owned ISBN requires confirmation before external fetching and updates the existing record rather than creating a duplicate. The local ISBN check always comes first. The single retry uses an explicit Retry button, never an automatic retry. [Task 6](overview-activity-mobile.md) is complete with acceptance examples and final flow rules.
 
 Confirmed shopping rules are consolidated in [Collections and shopping](collections.md): show unfinished collections, compact missing-volume entries, and emphasized highest Owned coverage; require confirmation to mark an eligible ordinary saved record Owned; no quick add for inferred volumes or omnibus books. Guests cannot change shared book data or ownership.
 
