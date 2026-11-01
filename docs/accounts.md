@@ -16,6 +16,8 @@ Only Admin creates later accounts through the interface and chooses Guest or Own
 
 Accounts have usernames/passwords, not email, real-name, or civility fields. Users may manage their own username/password. Guests cannot change shared books and have no personal notes or reading-status display. They may be household friends in real life, but accounts and lending receivers have no application link.
 
+Task 6 clarification: Guests cannot access the mobile interface, including shopping. Their approved desktop read access and self-account management remain unchanged. Mobile is for Owners/Admin only.
+
 ## Deactivation and reactivation
 
 Only Admin may deactivate an account; Owners/Guests cannot deactivate themselves. Deletion deactivates rather than removes the user record. End its existing sessions immediately and prevent further login. Retain the record indefinitely for audit attribution. Its username remains reserved, so a different account cannot take it while the account is deactivated. The protected Admin cannot be deactivated.

@@ -75,9 +75,9 @@ For an Owned omnibus overlapping several planned records, offer Cancel or delete
 - Missing volumes are compact 'Volume #' entries ('Tome #' in French), including saved Not Owned coverage and inferred volumes.
 - Emphasize last owned: the highest number covered by any Owned book, including an omnibus range end. Manga/Comics show its volume number; Books also show its title. Do not expand Owned editions in this compact view.
 - No gaps: show 'No known missing volumes' and last owned. No Owned books: show missing entries and 'No books owned yet', without last owned.
-- An eligible saved ordinary Not Owned entry lets Owners/Admin request marking the existing book Owned. Require a confirmation modal; cancel changes nothing. An inferred volume is non-clickable and requires book creation through the separate manual/add/scan flow.
+- An eligible saved ordinary Not Owned entry lets Owners/Admin request marking the existing book Owned. Require a confirmation modal; cancel changes nothing. An inferred volume is non-clickable and requires book creation through desktop manual entry or the mobile scan/lookup flow. Mobile has no manual-entry fallback, as clarified in Task 6.
 - Omnibus books do not benefit from quick add initially. If ambiguous Not Owned coverage is encountered, quick add is unavailable; do not add an edition picker.
-- Guests can view shopping but cannot change ownership or add books.
+- Mobile shopping is Owner/Admin-only. Task 6 supersedes the earlier Guest mobile read-only access; Guests retain desktop read access but cannot access the mobile interface.
 - An Owned edition covers its volumes once; extra Owned editions do not produce extra shopping progress.
 
 A separate desktop page mirroring mobile ownership progression is future scope, distinct from initial desktop collection details. Mobile interaction refinements and lookup/scan failure states belong to Tasks 2 and 6, without reopening these ownership rules.
