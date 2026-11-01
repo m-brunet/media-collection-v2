@@ -51,7 +51,7 @@ Some original exports still contain superseded ratings, progress/goals, virtual 
 
 Reading goals/in-progress Reading status, personal ratings, separate Lists, multiple collection membership, identical-edition copy management, nonconsecutive omnibus coverage, numbered treatment of specials, collection/tag/author merging, bulk planned-book generation, receiver management, returned-history UI, clickable visual bookcases, a separate desktop shopping-progression page, currency selection, scheduled backups, cross-version restoration, and a reusable v1 import interface are outside initial scope. V1 migration is likely a future one-off script using the retained MongoDB dumps.
 
-The MC update system is the next separate discussion after this task is committed; update-time backup is a proposed direction, not an approved updater design.
+The separate [MC update topic](updates.md) is complete with acceptance examples: stable GitHub Releases, pre-login local controls, Windows-only integrated installation, manual macOS/Linux installation with backup assistance, startup/manual checks, postponement, retained update backups, failure retries, and manual recovery. Only the Restart and install confirmation is required before Windows restart, without additional unsaved-work or remote advance warnings. Technical mechanisms remain delegated.
 
 ## Workflow and delivery sequence
 

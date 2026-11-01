@@ -13,6 +13,7 @@ The application uses electron-base-app as its foundation. Its source, tests, bui
 - [Accounts](docs/accounts.md): completed Task 5 setup, fixed-role account lifecycle, and personal-data rules.
 - [Overview, Activity, and mobile](docs/overview-activity-mobile.md): completed Task 6 rules, screen reconciliation, and acceptance examples.
 - [Release expectations](docs/release-expectations.md): completed Task 7 languages, offline use, backup/restore, reset rules, and acceptance examples.
+- [Application updates](docs/updates.md): approved GitHub Releases distribution, Windows integrated updates, manual macOS/Linux updates with backup assistance, and acceptance examples.
 - [Collections and shopping](docs/collections.md): completed Task 1 rules and acceptance examples.
 - [Edition impact analysis](docs/collection-editions-impact.md): book counts versus volume coverage.
 - [Decisions and open questions](docs/decisions-and-open-questions.md): rationale, recommendations, and questions to resolve before implementation.

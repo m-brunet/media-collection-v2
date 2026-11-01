@@ -1,6 +1,6 @@
 # Release expectations
 
-Status: Task 7 product decisions complete. Product expectations and acceptance examples only; technical agents decide implementation and deployment mechanisms. The update-system discussion follows this task's commit.
+Status: Task 7 product decisions complete. Product expectations and acceptance examples only; technical agents decide implementation and deployment mechanisms. The subsequent update decisions are recorded in [application updates](updates.md).
 
 ## Languages
 
@@ -28,7 +28,7 @@ Local maintenance placement and preserved passwords are confirmed. Password hash
 
 Initially allow restoration only into the same MC application version that created the backup, including on another computer. Identify the originating version and clearly reject a different version without changing current data. Broader cross-version restoration is future scope. Same-version portability must not depend on the original computer being available.
 
-Generating a backup as part of an MC update remains a proposed direction for the separate update-system discussion. It is not approved here as an automatic-update or scheduled-backup workflow. Routine scheduled backup remains future scope.
+Update-time full backup is approved under [application updates](updates.md): automatic before integrated Windows installation, and through Create backup and open download page for manual macOS/Linux installation. Routine scheduled backup remains future scope.
 
 Backups must respect established privacy requirements; exact protection/storage techniques are technical decisions after product scope is defined. A backup feature is not an implicit v1 import feature or an account-recovery replacement.
 
@@ -46,7 +46,7 @@ Separately saved backup files remain untouched by Admin data reset. After a succ
 
 ## Follow-up after Task 7
 
-Discuss how users update to a new MC version after completing this task. An update system is requested as the next separate product discussion; release channels, notifications, automatic/manual installation, data preservation, and technical implementation are not decided here.
+The completed [application-update document](updates.md) records confirmed platform behavior and acceptance examples. Technical implementation remains delegated.
 
 ## Acceptance examples
 
@@ -63,4 +63,4 @@ Discuss how users update to a new MC version after completing this task. An upda
 
 Technical agents design storage, backup format/validation and protection, credential/session handling, transport, and recovery/maintenance mechanisms to satisfy these outcomes. Saved application settings are backup data; machine-specific deployment/runtime details must not silently undermine portability or the optional override-file boundary.
 
-Future scope includes broader backup-version compatibility, scheduled backups, and likely one-off v1 migration. MC version updates are the next separate product discussion, after committing this task. Missing visual assets and implementation work do not mean the approved business rules are undecided.
+Future scope includes broader backup-version compatibility, scheduled backups, and likely one-off v1 migration. MC version updates follow the separate [approved update rules](updates.md). Missing visual assets and implementation work do not mean the approved business rules are undecided.
