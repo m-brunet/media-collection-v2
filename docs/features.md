@@ -111,14 +111,14 @@ Audit logs are required from the first release. Each user-initiated use-case act
 
 Each record stores its category, a separate Successful/Failed outcome, who performed the action, when it happened, and before/after values as applicable. Failed use-case actions are retained for technical investigation. The actor references the user table; Activity resolves the current username, including for older events after a rename. Password values are explicitly excluded from before/after data. Other credential redaction safeguards are listed in [decisions and open questions](decisions-and-open-questions.md).
 
-Technical authentication events may also be retained, but they must not appear in Activity. Read-only actions, indirect system changes, category definitions, retention, and raw audit-log access still need definition. Failed events must not imply that an attempted change was persisted; exact failure fields and persistence guarantees remain to be agreed. Providing an audit table does not imply a technical-log viewer for every user, undo, or restore.
+Technical authentication events may be retained but never appear in Activity. Technical agents define event representation, failure persistence, credential redaction, and storage/privacy enforcement under the confirmed audit rules; these are not new user-facing product workflows. Failed events must not imply that attempted changes persisted. A raw audit viewer, history purging, undo, or restore-from-audit feature is not approved merely because audit data exists.
 
 ## Activity (business feature)
 
 Activity tells every user what happened recently in the application. It uses selected audit events and selected fields, rather than exposing the full technical audit logs.
 
 - Example entries: a book was updated, a tag was created, a shelf was deleted.
-- Category is the proposed basis for selecting which events appear; exact category mapping remains to be defined and can evolve.
+- Event categories select which confirmed shared business events appear; technical category identifiers can evolve without exposing excluded event types or adding an initial category filter.
 - Only Successful events from the selected categories appear; Failed events remain technical audit records.
 - Show the action, who performed it, and when. Do not display before/after values in the initial version.
 - Main Activity wording uses 'You' collectively for the household, even when another account performed the action. This is not viewer-relative wording; preserve actual actor attribution in audit records and timestamp details.
@@ -177,13 +177,15 @@ Accepted approach: trust access to the host computer's operating-system account;
 - Use a narrowly scoped local Electron communication path with validated callers, not browser identification or a spoofable request header.
 - Desktop browsers and mobile clients cannot invoke the recovery feature.
 
+Manual backup/restore are also exclusive to the same local Electron-maintenance area, not authenticated application-role endpoints or browser/mobile features. Restore keeps backed-up identities/passwords; Admin recovery remains the failsafe. See [release expectations](release-expectations.md) for full-data scope and replacement/failure rules.
+
 Accepted tradeoff: anyone able to use the application under the host OS account can recover administrator access. This does not protect against someone controlling the host machine or modifying its database. A hypothetical Electron client connected to another host must not gain recovery privileges for that host.
 
 ## Data reset
 
 Only the first administrator can reset the installation to its initial-data state. Keep its current username and password; delete books, covers, collections, locations, tags, receivers, loans, activity/audit history, other users, and application preferences. The deleted history must not be represented as surviving this reset.
 
-Confirmation UX, session invalidation, treatment of external backups, and operational network settings need definition before implementation.
+Require the current Admin password and explicit confirmation explaining erased data and retained Admin credentials. Preserve separately saved backups; after reset, clear saved preferences to defaults, end all sessions, and return to login with Admin credentials still valid. Do not delete external startup overrides by inference. See [release expectations](release-expectations.md); implementation mechanisms remain with technical agents.
 
 ## Mobile
 

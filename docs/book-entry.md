@@ -20,7 +20,7 @@ Author creation/removal follows collection lifecycle: deleting, moving, or remov
 
 ## Publication date and price
 
-Publication date is optional and accepts only these states: absent, year only, or month plus year. Month without year is invalid and must be rejected by backend validation as well as explained in the form. There is no day field; do not invent a day for partial dates. A full lookup date is reduced to its month and year, omitting the day. Exact year bounds remain to be clarified if product-specific restrictions are needed.
+Publication date is optional and accepts only these states: absent, year only, or month plus year. Month without year is invalid and must be rejected by backend validation as well as explained in the form. There is no day field; do not invent a day for partial dates. A full lookup date is reduced to its month and year, omitting the day. No arbitrary product-specific year range has been selected; technical validation must preserve the agreed precision.
 
 Price is optional and uses euros only. Empty/null means unknown or not supplied; zero means obtained free, such as an edition distributed at an event. Never convert one into the other. Accept nonnegative values with at most two decimal places, using either comma or dot as the input decimal separator. Display every supplied price with exactly two decimal places, including zero; null must not display as a free book. There is no currency selector or configurable installation currency initially. Changing currency is a possible future feature.
 

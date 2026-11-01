@@ -10,8 +10,9 @@ The application uses electron-base-app as its foundation. Its source, tests, bui
 - [Features](docs/features.md): confirmed behavior and explicitly unresolved details.
 - [Book entry](docs/book-entry.md): Task 2 form, ISBN, lookup, and personal-note decisions.
 - [Locations, tags, and search](docs/locations-tags-search.md): completed Task 3 rules and acceptance examples.
-- [Accounts](docs/accounts.md): Task 5 first-run setup, account lifecycle, and remaining decisions.
+- [Accounts](docs/accounts.md): completed Task 5 setup, fixed-role account lifecycle, and personal-data rules.
 - [Overview, Activity, and mobile](docs/overview-activity-mobile.md): completed Task 6 rules, screen reconciliation, and acceptance examples.
+- [Release expectations](docs/release-expectations.md): completed Task 7 languages, offline use, backup/restore, reset rules, and acceptance examples.
 - [Collections and shopping](docs/collections.md): completed Task 1 rules and acceptance examples.
 - [Edition impact analysis](docs/collection-editions-impact.md): book counts versus volume coverage.
 - [Decisions and open questions](docs/decisions-and-open-questions.md): rationale, recommendations, and questions to resolve before implementation.
