@@ -61,7 +61,7 @@ Confirmed eligibility and permissions:
 
 ## Dates, statuses, and history
 
-Use Lent and Returned statuses. Display the lending date on the active-loans page. No business return date or due date is required, and the return form does not ask for dates. This is informal lending between friends, not a formal borrowing service. Technical audit timestamps still record lending and return actions; the method of deriving/persisting the displayed lending date is a technical choice. Overdue tracking, reminders, loan notes, and lost-book statuses are not approved scope.
+Use Lent and Returned statuses. Display the lending date on the active-loans page, in the viewer's own time zone like every displayed date (see [Activity rules](overview-activity-mobile.md)). No business return date or due date is required, and the return form does not ask for dates. This is informal lending between friends, not a formal borrowing service. Technical audit timestamps still record lending and return actions; the method of deriving/persisting the displayed lending date is a technical choice. Overdue tracking, reminders, loan notes, and lost-book statuses are not approved scope.
 
 Retain each completed loan as history and create a new loan occurrence when the same book is lent again, including to the same receiver. Do not overwrite earlier loans. A book/receiver pair alone cannot uniquely identify repeat loan occurrences. The initial lending interface shows active loans only; a returned-history interface is future scope.
 
