@@ -22,7 +22,8 @@ Preserve the previously confirmed presentation:
 
 - Activity is visible to all account roles.
 - Main wording uses You for the household, regardless of the acting account or viewer.
-- Show relative time with less emphasis than the action; timestamp details reveal exact date/time and the actor's current username.
+- Show relative time with less emphasis than the action; timestamp details reveal exact date/time with its time-zone label and the actor's current username.
+- Store timestamps in UTC and display dates/times in each viewer's own time zone, formatted for the viewer's chosen language. The same rule applies to every displayed date, including lending dates.
 - Do not show before/after values initially.
 - Group a lending/return operation into one Activity entry, while retaining its per-book technical audit records. Receiver names may appear.
 - Never expose personal-note contents through this shared view.

@@ -129,7 +129,7 @@ Activity tells every user what happened recently in the application. It uses sel
 - No category or date-range filters initially. Categories select eligible events internally, not through an initial filtering interface.
 - Show newest entries first and allow loading older entries.
 
-All account roles can view desktop Activity. Initial hiding of before/after values is a presentation rule, not a reason to omit them from the technical record. Exact timestamp details appear on hover and on keyboard focus, as required by the accessibility baseline in [design guidelines](design-guidelines.md); click/tap reveal is not required. Timestamp timezone remains to be specified as a display convention. Username changes use the current user-table value; deactivated users remain available for attribution. Reading goals are deferred.
+All account roles can view desktop Activity. Initial hiding of before/after values is a presentation rule, not a reason to omit them from the technical record. Exact timestamp details appear on hover and on keyboard focus, as required by the accessibility baseline in [design guidelines](design-guidelines.md); click/tap reveal is not required. Timestamps are stored in UTC and displayed in each viewer's own time zone (the browser's), formatted for the viewer's chosen language; exact timestamp details include the time-zone label, for example '1 November 2026 · 13:42 (CET) · Performed by Alex'. Username changes use the current user-table value; deactivated users remain available for attribution. Reading goals are deferred.
 
 ## Accounts and permissions
 
