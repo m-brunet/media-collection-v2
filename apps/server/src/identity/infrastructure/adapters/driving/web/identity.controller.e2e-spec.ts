@@ -59,6 +59,7 @@ describe('POST /api/auth/login', () => {
             username: member.username,
             role: 'user',
             mustChangePassword: false,
+            language: null,
         });
         expect(response.body).not.toHaveProperty('passwordHash');
         expect(response.headers['set-cookie']!.join(';')).toContain('HttpOnly');
@@ -373,6 +374,62 @@ describe('PATCH /api/account/username', () => {
         );
     });
 });
+describe('PATCH /api/account/language', () => {
+    it('saves the signed-in account language', async () => {
+        const client = await app.authenticatedClient(member);
+
+        const response = await client.call('/account/language', 'PATCH', { language: 'fr' });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toMatchObject({ username: member.username, language: 'fr' });
+        expect((await app.dependencies.users.findById(member.id))!.actor.language).toBe('fr');
+    });
+    it('keeps the language of other accounts unchanged', async () => {
+        const client = await app.authenticatedClient(member);
+
+        await client.call('/account/language', 'PATCH', { language: 'fr' });
+
+        expect((await app.dependencies.users.findById(admin.id))!.actor.language).toBeNull();
+    });
+    it('allows choosing a language during mandatory password setup', async () => {
+        const client = await app.authenticatedClient(restricted);
+
+        const response = await client.call('/account/language', 'PATCH', { language: 'en' });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toMatchObject({ language: 'en', mustChangePassword: true });
+    });
+    it('rejects an unsupported language', async () => {
+        const client = await app.authenticatedClient(member);
+
+        const response = await client.call('/account/language', 'PATCH', { language: 'de' });
+
+        expect(response.status).toBe(400);
+        expect((await app.dependencies.users.findById(member.id))!.actor.language).toBeNull();
+    });
+    it('rejects unauthenticated access', async () => {
+        const client = app.client();
+
+        await client.prepare();
+
+        const response = await client.call('/account/language', 'PATCH', { language: 'fr' });
+
+        expect(response.status).toBe(401);
+    });
+    it('rejects missing CSRF protection', async () => {
+        const client = await app.authenticatedClient(member);
+
+        const response = await client.call(
+            '/account/language',
+            'PATCH',
+            { language: 'fr' },
+            { csrf: false },
+        );
+
+        expect(response.status).toBe(403);
+    });
+});
+
 describe('PATCH /api/account/password', () => {
     it('completes setup, stores a hash, and replaces the cookie', async () => {
         const client = await app.authenticatedClient(restricted);

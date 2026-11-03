@@ -36,7 +36,7 @@ describe('GET /api/server-settings', () => {
             hasCertificate: false,
         });
         expect(response.body.running.httpsPort).toBeNull();
-        expect(response.body.configured.http).toEqual({ port: 3000 });
+        expect(response.body.configured.http).toEqual({ port: 34345 });
         expect(response.body.running.httpPortOverride).toBeNull();
         expect(response.body.restartRequired).toBe(false);
         expect(response.text).not.toContain('PRIVATE KEY');
@@ -255,7 +255,7 @@ describe('PUT /api/server-settings/http', () => {
 
     it('does not request a restart when the saved HTTP port is unchanged', async () => {
         const client = await app.authenticatedClient(admin);
-        const input = { port: 3000 };
+        const input = { port: 34345 };
 
         const response = await client.call<ServerStatus>('/server-settings/http', 'PUT', input);
 
@@ -269,7 +269,7 @@ describe('PUT /api/server-settings/http', () => {
         await app.dependencies.http.save(new HttpSettings(36000));
 
         const response = await client.call<ServerStatus>('/server-settings/http', 'PUT', {
-            port: 3000,
+            port: 34345,
         });
 
         expect(response.status).toBe(200);
@@ -284,7 +284,7 @@ describe('PUT /api/server-settings/http', () => {
         );
 
         const response = await client.call<ServerStatus>('/server-settings/http', 'PUT', {
-            port: 3000,
+            port: 34345,
         });
 
         expect(response.status).toBe(200);
@@ -299,7 +299,7 @@ describe('PUT /api/server-settings/http', () => {
         const response = await client.call('/server-settings/http', 'PUT', input);
 
         expect(response.status).toBe(400);
-        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 3000 });
+        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 34345 });
     });
 
     it('rejects a port above the maximum without changing storage', async () => {
@@ -309,7 +309,7 @@ describe('PUT /api/server-settings/http', () => {
         const response = await client.call('/server-settings/http', 'PUT', input);
 
         expect(response.status).toBe(400);
-        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 3000 });
+        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 34345 });
     });
 
     it('rejects port zero', async () => {
@@ -319,7 +319,7 @@ describe('PUT /api/server-settings/http', () => {
         const response = await client.call('/server-settings/http', 'PUT', input);
 
         expect(response.status).toBe(400);
-        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 3000 });
+        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 34345 });
     });
 
     it('rejects a negative port', async () => {
@@ -329,7 +329,7 @@ describe('PUT /api/server-settings/http', () => {
         const response = await client.call('/server-settings/http', 'PUT', input);
 
         expect(response.status).toBe(400);
-        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 3000 });
+        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 34345 });
     });
 
     it('rejects a fractional port', async () => {
@@ -339,7 +339,7 @@ describe('PUT /api/server-settings/http', () => {
         const response = await client.call('/server-settings/http', 'PUT', input);
 
         expect(response.status).toBe(400);
-        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 3000 });
+        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 34345 });
     });
 
     it('rejects a numeric string instead of a number', async () => {
@@ -349,7 +349,7 @@ describe('PUT /api/server-settings/http', () => {
         const response = await client.call('/server-settings/http', 'PUT', input);
 
         expect(response.status).toBe(400);
-        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 3000 });
+        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 34345 });
     });
 
     it('rejects a missing port', async () => {
@@ -359,7 +359,7 @@ describe('PUT /api/server-settings/http', () => {
         const response = await client.call('/server-settings/http', 'PUT', input);
 
         expect(response.status).toBe(400);
-        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 3000 });
+        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 34345 });
     });
 
     it('rejects fields outside the HTTP port contract', async () => {
@@ -369,7 +369,7 @@ describe('PUT /api/server-settings/http', () => {
         const response = await client.call('/server-settings/http', 'PUT', input);
 
         expect(response.status).toBe(400);
-        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 3000 });
+        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 34345 });
     });
 
     it('rejects unauthenticated changes', async () => {
@@ -380,7 +380,7 @@ describe('PUT /api/server-settings/http', () => {
         const response = await client.call('/server-settings/http', 'PUT', { port: 36000 });
 
         expect(response.status).toBe(401);
-        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 3000 });
+        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 34345 });
     });
 
     it('rejects non-administrators', async () => {
@@ -389,7 +389,7 @@ describe('PUT /api/server-settings/http', () => {
         const response = await client.call('/server-settings/http', 'PUT', { port: 36000 });
 
         expect(response.status).toBe(403);
-        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 3000 });
+        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 34345 });
     });
 
     it('rejects changes before password setup', async () => {
@@ -398,7 +398,7 @@ describe('PUT /api/server-settings/http', () => {
         const response = await client.call('/server-settings/http', 'PUT', { port: 36000 });
 
         expect(response.status).toBe(403);
-        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 3000 });
+        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 34345 });
     });
 
     it('rejects missing CSRF protection', async () => {
@@ -412,7 +412,7 @@ describe('PUT /api/server-settings/http', () => {
         );
 
         expect(response.status).toBe(403);
-        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 3000 });
+        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 34345 });
     });
 
     it('rejects an untrusted request origin', async () => {
@@ -426,7 +426,7 @@ describe('PUT /api/server-settings/http', () => {
         );
 
         expect(response.status).toBe(403);
-        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 3000 });
+        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 34345 });
     });
 
     it('rejects a port used by configured enabled HTTPS', async () => {
@@ -444,7 +444,7 @@ describe('PUT /api/server-settings/http', () => {
 
         expect(response.status).toBe(400);
         expect(response.text).toContain('different ports');
-        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 3000 });
+        expect((await app.dependencies.http.read()).snapshot()).toEqual({ port: 34345 });
     });
 });
 
@@ -496,7 +496,7 @@ describe('HTTPS listening port constraints', () => {
         });
         const input = {
             enabled: true,
-            port: 3000,
+            port: 34345,
             chain: certificate.cert,
             key: certificate.private,
         };

@@ -7,7 +7,7 @@ import { BackendProcess } from './backend-process.adapter.js';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 
-app.setName('Electron Base');
+app.setName('Media Collection');
 let backend: BackendProcess | undefined;
 let quitting = false;
 let shutdownComplete = false;
@@ -130,10 +130,10 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
                 'http://' + host + ':' + ready.httpPort;
 
             window = new BrowserWindow({
-                width: 1100,
-                height: 800,
-                minWidth: 700,
-                minHeight: 550,
+                width: 1440,
+                height: 900,
+                minWidth: 1280,
+                minHeight: 720,
                 show: false,
                 webPreferences: { contextIsolation: true, sandbox: true, nodeIntegration: false },
             });

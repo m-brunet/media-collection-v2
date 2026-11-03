@@ -1,7 +1,13 @@
 import { expect, it } from 'vitest';
 import { ActorAuthorization } from './actor.helper.js';
 
-const actor = { id: 'one', username: 'one', role: 'user' as const, mustChangePassword: false };
+const actor = {
+    id: 'one',
+    username: 'one',
+    role: 'user' as const,
+    mustChangePassword: false,
+    language: null,
+};
 
 it('permits completed setup', () => {
     const input = { ...actor };

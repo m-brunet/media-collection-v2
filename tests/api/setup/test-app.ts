@@ -10,12 +10,10 @@ import { JwtSessionTokens } from '../../../apps/server/src/identity/infrastructu
 import { AuthenticateSession } from '../../../apps/server/src/identity/application/use-cases/authenticate-session.usecase.js';
 import { RenewSession } from '../../../apps/server/src/identity/application/use-cases/renew-session.usecase.js';
 import { AccountLoader } from '../../../apps/server/src/identity/application/services/account-loader.service.js';
-import { KyselyNoteRepository } from '../../../apps/server/src/notes/infrastructure/adapters/driven/persistence/kysely-note.repository.js';
 import { FileTlsStore } from '../../../apps/server/src/server-settings/infrastructure/adapters/driven/persistence/file-tls-store.adapter.js';
 import { KyselyHttpSettingsRepository } from '../../../apps/server/src/server-settings/infrastructure/adapters/driven/persistence/kysely-http-settings.repository.js';
 import { PemCertificateValidator } from '../../../apps/server/src/server-settings/infrastructure/adapters/driven/security/pem-certificate-validator.adapter.js';
 import { IdentityModule } from '../../../apps/server/src/identity/infrastructure/config/identity.module.js';
-import { NotesModule } from '../../../apps/server/src/notes/infrastructure/config/notes.module.js';
 import { SettingsModule } from '../../../apps/server/src/server-settings/infrastructure/config/settings.module.js';
 import { HttpSessions } from '../../../apps/server/src/shared/infrastructure/adapters/driving/web/http-sessions.service.js';
 import { HealthController } from '../../../apps/server/src/infrastructure/adapters/driving/web/health.controller.js';
@@ -56,11 +54,10 @@ export class TestApp {
             const { database, directory } = await this.storage.setup();
             const users = new KyselyUserRepository(database.connection);
             const passwords = new ScryptPasswordHasher();
-            const notes = new KyselyNoteRepository(database.connection);
             const tls = new FileTlsStore(database.connection, directory, new PrivateStorage());
             const http = new KyselyHttpSettingsRepository(database.connection);
 
-            this.context = { users, passwords, notes, tls, http };
+            this.context = { users, passwords, tls, http };
             const clock = { now: () => new Date(this.now) };
             const secret = randomBytes(32);
             const tokens = new JwtSessionTokens(secret, clock);
@@ -88,7 +85,6 @@ export class TestApp {
             const module = await Test.createTestingModule({
                 imports: [
                     IdentityModule.register(users, passwords, tokens, ids, clock, sessions),
-                    NotesModule.register(notes, ids, clock),
                     SettingsModule.register(tls, new PemCertificateValidator(), status, http),
                 ],
                 controllers: [HealthController],

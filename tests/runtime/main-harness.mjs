@@ -2,6 +2,8 @@ import { app } from 'electron';
 import { fileURLToPath } from 'node:url';
 import { readFileSync, unwatchFile, watchFile } from 'node:fs';
 
+// Desktop UI assertions use English text, whatever the language of the test computer.
+app.commandLine.appendSwitch('lang', 'en-GB');
 // Match the app directory used by `electron .`; the test entry itself lives below tests/.
 app.getAppPath = () => fileURLToPath(new URL('../../', import.meta.url));
 let requestId = 0;
@@ -22,6 +24,8 @@ app.on('browser-window-created', (_event, created) => {
                 sandbox: preferences.sandbox,
                 contextIsolation: preferences.contextIsolation,
                 recovery: url.protocol === 'file:',
+                minimumSize: created.getMinimumSize(),
+                applicationName: app.getName(),
             },
         });
     });

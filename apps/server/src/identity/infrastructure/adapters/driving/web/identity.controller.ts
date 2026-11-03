@@ -1,6 +1,7 @@
 import { Body, Controller, Get, HttpCode, Inject, Patch, Post, Req, Res } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { z } from 'zod';
+import type { ChangeLanguageUseCase } from '../../../../application/ports/driving/change-language-use-case.interface.js';
 import type { ChangePasswordUseCase } from '../../../../application/ports/driving/change-password-use-case.interface.js';
 import type { ChangeUsernameUseCase } from '../../../../application/ports/driving/change-username-use-case.interface.js';
 import type { CreateUserUseCase } from '../../../../application/ports/driving/create-user-use-case.interface.js';
@@ -26,6 +27,9 @@ const passwordSchema = z.strictObject({
     currentPassword: z.string().min(1).max(128),
     password: z.string().min(8).max(128),
 });
+const languageSchema = z.strictObject({
+    language: z.enum(['en', 'fr']),
+});
 const createUserSchema = z.strictObject({
     username: z.string().min(3).max(40),
     password: z.string().min(8).max(128),
@@ -38,6 +42,7 @@ export class IdentityController {
         @Inject('IDENTITY_LOGIN') private readonly login: LoginUseCase,
         @Inject('IDENTITY_CHANGE_USERNAME') private readonly changeUsername: ChangeUsernameUseCase,
         @Inject('IDENTITY_CHANGE_PASSWORD') private readonly changePassword: ChangePasswordUseCase,
+        @Inject('IDENTITY_CHANGE_LANGUAGE') private readonly changeLanguage: ChangeLanguageUseCase,
         @Inject('IDENTITY_CREATE_USER') private readonly createUser: CreateUserUseCase,
         @Inject('IDENTITY_LIST_USERS') private readonly listUsers: ListUsersUseCase,
         private readonly sessions: HttpSessions,
@@ -111,6 +116,15 @@ export class IdentityController {
         return this.dto(actor);
     }
 
+    @Patch('account/language')
+    @Access('credentials')
+    async chooseLanguage(
+        @Body({ schema: languageSchema }) input: z.infer<typeof languageSchema>,
+        @Req() request: AuthenticatedRequest,
+    ) {
+        return this.dto(await this.changeLanguage.execute(request.actor, input.language));
+    }
+
     @Get('users')
     @Access('admin')
     async users(@Req() request: AuthenticatedRequest) {
@@ -127,8 +141,8 @@ export class IdentityController {
     }
 
     private dto(actor: Actor): Account {
-        const { id, username, role, mustChangePassword } = actor;
+        const { id, username, role, mustChangePassword, language } = actor;
 
-        return { id, username, role, mustChangePassword };
+        return { id, username, role, mustChangePassword, language };
     }
 }

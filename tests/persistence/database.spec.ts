@@ -3,12 +3,11 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { sql } from 'kysely';
+import BetterSqlite3 from 'better-sqlite3';
 import { Database } from '../../apps/server/src/shared/infrastructure/adapters/driven/persistence/database.adapter.js';
 import { KyselyUserRepository } from '../../apps/server/src/identity/infrastructure/adapters/driven/persistence/kysely-user.repository.js';
-import { KyselyNoteRepository } from '../../apps/server/src/notes/infrastructure/adapters/driven/persistence/kysely-note.repository.js';
 import { SeedAdministrator } from '../../apps/server/src/identity/application/use-cases/seed-administrator.usecase.js';
 import { User } from '../../apps/server/src/identity/domain/entities/user.entity.js';
-import { Note } from '../../apps/server/src/notes/domain/entities/note.entity.js';
 import { KyselyHttpSettingsRepository } from '../../apps/server/src/server-settings/infrastructure/adapters/driven/persistence/kysely-http-settings.repository.js';
 import { HttpSettings } from '../../apps/server/src/server-settings/domain/value-objects/http-settings.value-object.js';
 
@@ -42,7 +41,6 @@ async function open(directory?: string) {
         database,
         path,
         users: new KyselyUserRepository(database.connection),
-        notes: new KyselyNoteRepository(database.connection),
     };
 }
 
@@ -61,7 +59,7 @@ it('defaults HTTP settings for an existing database without an HTTP record', asy
 
     const settings = await repository.read();
 
-    expect(settings.snapshot()).toEqual({ port: 3000 });
+    expect(settings.snapshot()).toEqual({ port: 34345 });
     expect(
         await current.database.connection.selectFrom('server_settings').selectAll().execute(),
     ).toEqual([]);
@@ -118,18 +116,35 @@ const user = (id: string, username = id) =>
         role: 'user',
         passwordHash: 'hash',
         mustChangePassword: false,
+        language: null,
         tokenVersion: 0,
         createdAt: timestamp,
     });
-const note = (id: string, ownerId: string) =>
-    new Note({
-        id,
-        ownerId,
-        title: 'Title',
-        body: 'Persisted',
-        createdAt: timestamp,
-        updatedAt: timestamp,
-    });
+
+// Builds a database exactly as the imported foundation left it (migration 001 only, with a Note).
+function foundationDatabase(directory: string): void {
+    const sqlite = new BetterSqlite3(join(directory, 'application.sqlite'));
+
+    sqlite.exec(`
+        create table users (id text primary key, username text not null unique, role text not null,
+            password_hash text not null, must_change_password integer not null,
+            token_version integer not null, created_at text not null);
+        create table notes (id text primary key, owner_id text not null references users(id)
+            on delete cascade, title text not null, body text not null, created_at text not null,
+            updated_at text not null);
+        create index notes_owner on notes (owner_id, updated_at);
+        create table server_settings (name text primary key, value text not null);
+        create table kysely_migration (name varchar(255) not null primary key,
+            timestamp varchar(255) not null);
+        create table kysely_migration_lock (id varchar(255) not null primary key,
+            is_locked integer default 0 not null);
+        insert into kysely_migration values ('001-foundation', '${timestamp}');
+        insert into kysely_migration_lock values ('migration_lock', 0);
+        insert into users values ('alice', 'alice', 'user', 'hash', 0, 0, '${timestamp}');
+        insert into notes values ('n', 'alice', 'Title', 'Body', '${timestamp}', '${timestamp}');
+    `);
+    sqlite.close();
+}
 
 describe('SQLite adapters', () => {
     it('opens a migrated database with WAL, foreign keys, and busy timeout', async () => {
@@ -162,16 +177,48 @@ describe('SQLite adapters', () => {
         ).toBe(5000);
     });
 
-    it('migrates idempotently and preserves accounts and Notes on reopen', async () => {
+    it('migrates idempotently and preserves accounts on reopen', async () => {
         const current = await open();
 
         await current.users.create(user('alice'));
-        await current.notes.create(note('saved', 'alice'));
 
         const reopened = await reopen(current);
 
         expect(await reopened.users.list()).toHaveLength(1);
-        expect((await reopened.notes.find('alice', 'saved'))!.snapshot.body).toBe('Persisted');
+    });
+
+    it('removes the foundation Notes demo while keeping existing accounts', async () => {
+        const directory = await mkdtemp(join(tmpdir(), 'sqlite-foundation-'));
+
+        paths.push(directory);
+        foundationDatabase(directory);
+
+        const result = await open(directory);
+
+        const tables = await sql<{
+            name: string;
+        }>`select name from sqlite_master where type = 'table' and name = 'notes'`.execute(
+            result.database.connection,
+        );
+
+        expect(tables.rows).toEqual([]);
+        expect((await result.users.findById('alice'))!.actor).toMatchObject({
+            username: 'alice',
+            language: null,
+        });
+    });
+
+    it('persists the chosen interface language of an account', async () => {
+        const current = await open();
+        const account = user('alice');
+
+        await current.users.create(account);
+        account.chooseLanguage('fr');
+        await current.users.save(account, 0);
+
+        const reopened = await reopen(current);
+
+        expect((await reopened.users.findById('alice'))!.actor.language).toBe('fr');
     });
 
     it('preserves changed credentials when seeding an existing database', async () => {
@@ -223,119 +270,5 @@ describe('SQLite adapters', () => {
             username: 'alice',
             passwordHash: 'new',
         });
-    });
-
-    it('rejects Notes without an existing owner', async () => {
-        const { notes } = await open();
-        const orphan = note('orphan', 'absent');
-
-        const result = notes.create(orphan);
-
-        await expect(result).rejects.toThrow(/FOREIGN KEY/);
-        expect(await notes.list('absent')).toEqual([]);
-    });
-
-    it('scopes note reads to Alice', async () => {
-        const owner = 'alice';
-        const { users, notes } = await open();
-
-        await users.create(user('alice'));
-        await notes.create(note('private', 'alice'));
-
-        const result = await notes.find(owner, 'private');
-
-        expect(result?.snapshot.ownerId ?? null).toBe('alice');
-    });
-    it('scopes note reads to bobby', async () => {
-        const owner = 'bobby';
-        const { users, notes } = await open();
-
-        await users.create(user('alice'));
-        await notes.create(note('private', 'alice'));
-
-        const result = await notes.find(owner, 'private');
-
-        expect(result?.snapshot.ownerId ?? null).toBe(null);
-    });
-
-    it('scopes note lists to Alice', async () => {
-        const owner = 'alice';
-        const { users, notes } = await open();
-
-        await users.create(user('alice'));
-        await notes.create(note('private', 'alice'));
-
-        const result = await notes.list(owner);
-
-        expect(result.map((value) => value.snapshot.id)).toEqual(['private']);
-    });
-    it('scopes note lists to bobby', async () => {
-        const owner = 'bobby';
-        const { users, notes } = await open();
-
-        await users.create(user('alice'));
-        await notes.create(note('private', 'alice'));
-
-        const result = await notes.list(owner);
-
-        expect(result.map((value) => value.snapshot.id)).toEqual([]);
-    });
-
-    it('scopes note updates to Alice', async () => {
-        const owner = 'alice';
-        const { users, notes } = await open();
-
-        await users.create(user('alice'));
-        await users.create(user('bobby'));
-        await notes.create(note('private', 'alice'));
-        const input = note('private', owner);
-
-        input.edit('Changed', 'Good', timestamp);
-
-        const result = await notes.save(input);
-
-        expect(result).toBe(true);
-        expect((await notes.find('alice', 'private'))!.snapshot.title).toBe('Changed');
-    });
-    it('scopes note updates to bobby', async () => {
-        const owner = 'bobby';
-        const { users, notes } = await open();
-
-        await users.create(user('alice'));
-        await users.create(user('bobby'));
-        await notes.create(note('private', 'alice'));
-        const input = note('private', owner);
-
-        input.edit('Changed', 'Good', timestamp);
-
-        const result = await notes.save(input);
-
-        expect(result).toBe(false);
-        expect((await notes.find('alice', 'private'))!.snapshot.title).toBe('Title');
-    });
-
-    it('scopes note deletes to Alice', async () => {
-        const owner = 'alice';
-        const { users, notes } = await open();
-
-        await users.create(user('alice'));
-        await notes.create(note('private', 'alice'));
-
-        const result = await notes.delete(owner, 'private');
-
-        expect(result).toBe(true);
-        expect(await notes.find('alice', 'private')).toEqual(null);
-    });
-    it('scopes note deletes to bobby', async () => {
-        const owner = 'bobby';
-        const { users, notes } = await open();
-
-        await users.create(user('alice'));
-        await notes.create(note('private', 'alice'));
-
-        const result = await notes.delete(owner, 'private');
-
-        expect(result).toBe(false);
-        expect(await notes.find('alice', 'private')).toEqual(expect.any(Note));
     });
 });

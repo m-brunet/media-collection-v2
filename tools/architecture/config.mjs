@@ -6,7 +6,7 @@ export const architectureRules = {
         {
             patterns: [
                 {
-                    regex: '^(#|@electron-base/)',
+                    regex: '^(#|@media-collection/)',
                     message: 'Use a relative path for first-party source imports.',
                 },
             ],
@@ -66,7 +66,7 @@ export const architectureOverrides = [
                         'react-dom',
                         'react-dom/**',
                         '#*',
-                        '@electron-base/**',
+                        '@media-collection/**',
                     ],
                 },
             ],
@@ -85,7 +85,7 @@ export const architectureOverrides = [
                         'kysely',
                         'better-sqlite3',
                         '#*',
-                        '@electron-base/**',
+                        '@media-collection/**',
                     ],
                 },
             ],

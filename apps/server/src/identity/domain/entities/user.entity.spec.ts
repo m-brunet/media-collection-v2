@@ -7,6 +7,7 @@ const state = {
     role: 'admin' as const,
     passwordHash: 'hash',
     mustChangePassword: true,
+    language: null as 'en' | 'fr' | null,
     tokenVersion: 0,
     createdAt: '2026-01-01T00:00:00Z',
 };
@@ -117,4 +118,26 @@ it('rejects an empty replacement hash', () => {
 
     expect(operation).toThrow();
     expect(user.snapshot.tokenVersion).toBe(0);
+});
+it('starts without a chosen interface language', () => {
+    const input = { ...state };
+
+    const user = new User(input);
+
+    expect(user.actor.language).toBeNull();
+});
+it('records a chosen interface language', () => {
+    const user = new User(state);
+
+    user.chooseLanguage('fr');
+
+    expect(user.actor.language).toBe('fr');
+    expect(user.snapshot.tokenVersion).toBe(0);
+});
+it('rejects an unsupported stored interface language', () => {
+    const input = { ...state, language: 'de' as 'en' };
+
+    const operation = () => new User(input);
+
+    expect(operation).toThrow('English or French');
 });

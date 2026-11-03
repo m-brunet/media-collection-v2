@@ -36,7 +36,7 @@ then ask; do not invent a product requirement.
    infrastructure. Browser code imports only browser code and transport contracts. Electron owns the backend lifecycle;
    business operations use HTTP, with IPC limited to lifecycle/offline recovery.
 6. Check ownership, authorization, invariant enforcement and port behavior against actual implementations and test
-   doubles. An administrator cannot read another owner's private Notes. Password/token rules and recovery constraints
+   doubles. An administrator cannot read another account's private data (for example personal book notes). Password/token rules and recovery constraints
    must not depend on UI enforcement.
 7. Require pure domain entities distinct from persistence records/models. ORM decorators and row shapes stay in
    driven persistence. Repositories own read/write mapping, optionally through a local mapper; rehydration preserves

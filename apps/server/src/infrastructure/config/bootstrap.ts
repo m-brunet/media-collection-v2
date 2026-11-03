@@ -20,7 +20,6 @@ import { SessionSigningKey } from '../../identity/infrastructure/adapters/driven
 import { AuthenticateSession } from '../../identity/application/use-cases/authenticate-session.usecase.js';
 import { RenewSession } from '../../identity/application/use-cases/renew-session.usecase.js';
 import { SeedAdministrator } from '../../identity/application/use-cases/seed-administrator.usecase.js';
-import { KyselyNoteRepository } from '../../notes/infrastructure/adapters/driven/persistence/kysely-note.repository.js';
 import { FileTlsStore } from '../../server-settings/infrastructure/adapters/driven/persistence/file-tls-store.adapter.js';
 import { KyselyHttpSettingsRepository } from '../../server-settings/infrastructure/adapters/driven/persistence/kysely-http-settings.repository.js';
 import { HttpSettings } from '../../server-settings/domain/value-objects/http-settings.value-object.js';
@@ -28,7 +27,6 @@ import type { TlsSettingsState } from '../../server-settings/domain/value-object
 import { TlsSettings } from '../../server-settings/domain/value-objects/tls-settings.value-object.js';
 import { PemCertificateValidator } from '../../server-settings/infrastructure/adapters/driven/security/pem-certificate-validator.adapter.js';
 import { IdentityModule } from '../../identity/infrastructure/config/identity.module.js';
-import { NotesModule } from '../../notes/infrastructure/config/notes.module.js';
 import { SettingsModule } from '../../server-settings/infrastructure/config/settings.module.js';
 import { HttpSessions } from '../../shared/infrastructure/adapters/driving/web/http-sessions.service.js';
 import { HealthController } from '../adapters/driving/web/health.controller.js';
@@ -176,11 +174,6 @@ export class BackendRuntime {
                     module: HttpApplicationModule,
                     imports: [
                         IdentityModule.register(users, passwords, tokens, ids, clock, sessions),
-                        NotesModule.register(
-                            new KyselyNoteRepository(database.connection),
-                            ids,
-                            clock,
-                        ),
                         SettingsModule.register(
                             tls,
                             new PemCertificateValidator(),

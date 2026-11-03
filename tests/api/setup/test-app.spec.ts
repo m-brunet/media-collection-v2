@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import { TestApp } from './test-app.js';
 import { UserFixture } from '../fixtures/user.fixture.js';
-import { NoteFixture } from '../fixtures/note.fixture.js';
 
 let app: TestApp;
 let other: TestApp | undefined;
@@ -19,11 +18,10 @@ afterEach(async () => {
     }
 });
 
-it('loads related fixtures in order with real hashing and ownership', async () => {
+it('loads fixtures with real password hashing', async () => {
     const user = new UserFixture({ username: 'owner' });
-    const note = new NoteFixture(user.id);
 
-    await app.loadFixtures([user, note]);
+    await app.loadFixtures([user]);
 
     const persisted = (await app.dependencies.users.findById(user.id))!;
 
@@ -31,18 +29,6 @@ it('loads related fixtures in order with real hashing and ownership', async () =
     expect(
         await app.dependencies.passwords.matches(user.password, persisted.snapshot.passwordHash),
     ).toBe(true);
-    expect((await app.dependencies.notes.find(user.id, note.getId()))!.snapshot.ownerId).toBe(
-        user.id,
-    );
-});
-
-it('rejects a Note fixture without its owner instead of weakening foreign keys', async () => {
-    const fixture = new NoteFixture('absent');
-
-    const result = app.loadFixtures([fixture]);
-
-    await expect(result).rejects.toThrow(/FOREIGN KEY/);
-    expect(await app.dependencies.notes.list('absent')).toEqual([]);
 });
 
 it('isolates data between simultaneously initialized test applications', async () => {

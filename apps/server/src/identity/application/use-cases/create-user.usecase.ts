@@ -27,6 +27,7 @@ export class CreateUser implements CreateUserUseCase {
             passwordHash: await this.passwords.hash(input.password),
             role: input.role,
             mustChangePassword: true,
+            language: null,
             tokenVersion: 0,
             createdAt: this.clock.now().toISOString(),
         });

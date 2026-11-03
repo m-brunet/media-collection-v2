@@ -1,0 +1,34 @@
+/* Leaf phone layout (reference width 390 px). */
+.leaf {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    max-width: 560px;
+    margin: 0 auto;
+    padding: var(--space-6) var(--space-5);
+    gap: var(--space-8);
+    background: var(--color-sidebar);
+}
+
+.leaf__main {
+    flex: 1;
+}
+
+.leaf__section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.leaf__title {
+    font-size: var(--text-2xl);
+}
+
+.leaf .button {
+    min-height: 48px;
+}
+
+.leaf .field__control {
+    min-height: 48px;
+    font-size: 16px;
+}

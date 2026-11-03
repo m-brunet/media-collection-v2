@@ -25,6 +25,7 @@ export class SeedAdministrator implements SeedAdministratorUseCase {
                 role: 'admin',
                 passwordHash: await this.passwords.hash('p@ssw0rd'),
                 mustChangePassword: true,
+                language: null,
                 tokenVersion: 0,
                 createdAt: this.clock.now().toISOString(),
             }),

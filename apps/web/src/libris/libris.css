@@ -1,0 +1,163 @@
+/* Libris desktop layout. The minimum supported size is 1280 x 720. */
+body {
+    min-width: 1280px;
+}
+
+.shell {
+    display: grid;
+    grid-template-columns: var(--sidebar-width) 1fr;
+    min-height: 100vh;
+    background: var(--color-surface);
+}
+
+.sidebar {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    height: 100vh;
+    padding: var(--space-6) var(--space-4);
+    background: var(--color-sidebar);
+    overflow-y: auto;
+}
+
+.sidebar__nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    flex: 1;
+}
+
+.sidebar__section {
+    margin: var(--space-3) var(--space-3) 0;
+}
+
+.sidebar__footer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding-top: var(--space-4);
+    border-top: var(--border);
+}
+
+.sidebar__footer .button {
+    justify-content: flex-start;
+    padding: 0 var(--space-3);
+}
+
+.sidebar__identity {
+    padding: 0 var(--space-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-accent);
+}
+
+.nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 40px;
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+    text-decoration: none;
+}
+
+.nav-link:hover {
+    background: var(--color-surface);
+    color: var(--color-text);
+}
+
+.nav-link.active {
+    background: var(--color-selected);
+    color: var(--color-accent);
+    font-weight: 500;
+}
+
+.shell__main {
+    min-width: 0;
+    padding: var(--space-10) var(--space-10) var(--space-12);
+}
+
+.skip-link {
+    position: absolute;
+    left: var(--space-4);
+    top: -100px;
+    z-index: 10;
+    padding: var(--space-2) var(--space-4);
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+}
+
+.skip-link:focus {
+    top: var(--space-4);
+}
+
+.stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+.plain-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* Access pages (sign-in, setup): introduction on the left, form on the right. */
+.access {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(420px, 560px);
+    min-height: 100vh;
+    background: var(--color-surface);
+}
+
+.access__intro {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: var(--space-12);
+    background: var(--color-sidebar);
+}
+
+.access__pitch {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    max-width: 44ch;
+}
+
+.access__tagline {
+    font-family: var(--font-heading);
+    font-size: 44px;
+    line-height: 1.1;
+}
+
+.access__main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-6);
+    padding: var(--space-12);
+}
+
+.access__card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.access__title {
+    font-size: var(--text-3xl);
+}

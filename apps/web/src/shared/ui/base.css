@@ -1,0 +1,88 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    min-height: 100%;
+}
+
+body {
+    background: var(--color-canvas);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: var(--leading);
+    -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+p {
+    margin: 0;
+}
+
+a {
+    color: var(--color-accent);
+}
+
+a:hover {
+    color: var(--color-accent-strong);
+}
+
+:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+    border-radius: var(--radius-sm);
+}
+
+[tabindex='-1']:focus {
+    box-shadow: none;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+.eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+}
+
+.muted {
+    color: var(--color-text-secondary);
+}
+
+.spin {
+    animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .spin {
+        animation-duration: 2.5s;
+    }
+}

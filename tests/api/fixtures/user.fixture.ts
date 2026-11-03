@@ -35,6 +35,7 @@ export class UserFixture implements ApiFixture {
                 role: this.role,
                 passwordHash: await context.passwords.hash(this.password),
                 mustChangePassword: this.mustChangePassword,
+                language: null,
                 tokenVersion: 0,
                 createdAt: '2026-01-01T00:00:00.000Z',
             }),

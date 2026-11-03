@@ -374,7 +374,7 @@ export default {
                             ) {
                                 context.report({ node: declaration, messageId: 'serviceSuffix' });
                             } else if (
-                                ['User', 'Note'].includes(name) &&
+                                ['User'].includes(name) &&
                                 from.layer === 'domain' &&
                                 !from.path.endsWith('.entity.ts')
                             ) {

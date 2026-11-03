@@ -3,14 +3,7 @@ export interface Account {
     username: string;
     role: 'admin' | 'user';
     mustChangePassword: boolean;
-}
-
-export interface NoteDto {
-    id: string;
-    title: string;
-    body: string;
-    createdAt: string;
-    updatedAt: string;
+    language: 'en' | 'fr' | null;
 }
 
 export interface TlsConfiguration {

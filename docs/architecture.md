@@ -22,7 +22,6 @@ implement focused feature-owned driving interfaces.
 ```text
 apps/server/src/
   identity/                         # Business features remain visible
-  notes/
   server-settings/
   <feature>/
     domain/
@@ -142,8 +141,8 @@ business invariants. This separates business entities from storage models withou
 
 SQLite enables WAL, foreign keys and a busy timeout. Kysely runs versioned migrations before HTTP starts. An initial
 administrator is created only when the users table is empty. Adapters contain row types; the core contains no Kysely,
-SQLite, NestJS, Electron, React, Node or Zod imports. All Note SQL reads and writes include owner predicates. A foreign
-ID returns 404, including for administrators.
+SQLite, NestJS, Electron, React, Node or Zod imports. Owner-scoped private data (such as personal book notes) must include owner predicates in
+every SQL read and write; a foreign ID returns 404, including for administrators.
 
 JWTs live in HttpOnly SameSite cookies, with different names for HTTP and HTTPS. Only HTTPS cookies use Secure. The key
 is persisted in the data directory. Signing keys and TLS material have owner-only POSIX permissions or protected Windows
@@ -196,16 +195,12 @@ unpacked from ASAR; better-sqlite3 13 uses Node-API. TypeScript compilation uses
 API. Installed packages run without system Node. Verify native loading and relative imports by running the package
 outside the checkout, as the smoke script does.
 
-## Replacing Notes
+## Removed Notes demo
 
-Notes demonstrates browser → controller → focused use case/entity → repository port → Kysely → SQLite. To remove it,
-delete `apps/server/src/notes`, remove its module registration from root bootstrap, delete the web Notes
-feature/navigation, remove `NoteDto` if unused, and update Notes tests. Keep unrelated identity/settings tests.
-
-For already-created databases, retain migration history and add a new migration to drop the Notes table/index if
-removing stored data is intended. Editing an applied initial migration will not alter existing databases. A genuinely
-new project with no existing databases may instead redefine its initial schema. Account ownership, timestamps and
-persistence tests provide a pattern to copy for the replacement feature.
+The foundation's Notes example feature was removed for Media Collection. Migration history was retained: migration
+`002-media-collection-foundation` drops the Notes table/index (and adds the personal interface language) rather than
+editing the applied initial migration, so existing databases upgrade cleanly. The identity and server-settings features
+remain the reference pattern for browser → controller → focused use case/entity → repository port → Kysely → SQLite.
 
 ## Review and tests
 
@@ -217,7 +212,7 @@ dependency violations as mandatory findings. Label only improvements beyond comp
 Each controller's HTTP tests live beside it as `<name>.controller.e2e-spec.ts`. They use the shared
 `tests/api/setup/TestApp` implementation (in `test-app.ts`), Nest TestingModule, production HTTP
 middleware/guards/validation, and isolated real SQLite. Entity fixtures in `tests/api/fixtures` prepare persisted users
-and owned Notes through typed ports, loaded in dependency order. Independent clients prepare real cookie sessions and
+through typed ports, loaded in dependency order. Independent clients prepare real cookie sessions and
 CSRF. Fixture setup/teardown belongs in hooks; cases arrange their scenario, perform one endpoint request, and assert
 its outcome with visible blank-line separation and no block-label comments or routine try/catch.
 

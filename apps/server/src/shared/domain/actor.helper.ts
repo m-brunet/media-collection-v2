@@ -1,10 +1,14 @@
 import { Failure } from './exceptions/failure.js';
 
+export type InterfaceLanguage = 'en' | 'fr';
+
 export interface Actor {
     id: string;
     username: string;
     role: 'admin' | 'user';
     mustChangePassword: boolean;
+    // Personal interface language; null until the account chooses one (the device language applies).
+    language: InterfaceLanguage | null;
     sessionVersion?: number;
 }
 
