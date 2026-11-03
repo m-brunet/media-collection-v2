@@ -13,7 +13,7 @@ export function Login({ onLogin }: { onLogin(account: Account): void }) {
             onLogin(
                 await api.request<Account>('/auth/login', {
                     method: 'POST',
-                    body: { username: form.get('username'), password: form.get('password') }
+                    body: { username: form.get('username'), password: form.get('password') },
                 }),
             ),
         );
@@ -23,10 +23,10 @@ export function Login({ onLogin }: { onLogin(account: Account): void }) {
         <section className="card narrow">
             <h1>Sign in</h1>
             <p>Access your private notes and account.</p>
-            <form onSubmit={ submit }>
+            <form onSubmit={submit}>
                 <label>
                     Username
-                    <input name="username" autoComplete="username" required maxLength={ 40 }/>
+                    <input name="username" autoComplete="username" required maxLength={40} />
                 </label>
                 <label>
                     Password
@@ -35,12 +35,12 @@ export function Login({ onLogin }: { onLogin(account: Account): void }) {
                         type="password"
                         autoComplete="current-password"
                         required
-                        maxLength={ 128 }
+                        maxLength={128}
                     />
                 </label>
-                <button disabled={ action.busy }>Sign in</button>
+                <button disabled={action.busy}>Sign in</button>
             </form>
-            <p role="status">{ action.message }</p>
+            <p role="status">{action.message}</p>
             <p className="muted">
                 First startup: admin / p@ssw0rd. You will be asked to replace the password.
             </p>
@@ -50,7 +50,7 @@ export function Login({ onLogin }: { onLogin(account: Account): void }) {
 
 export function Credentials({
     account,
-    onChange
+    onChange,
 }: {
     account: Account;
     onChange(account: Account): void;
@@ -73,7 +73,7 @@ export function Credentials({
                     method: 'PATCH',
                     body: {
                         currentPassword: form.get('currentPassword'),
-                        password: form.get('password')
+                        password: form.get('password'),
                     },
                 }),
             );
@@ -91,7 +91,7 @@ export function Credentials({
                     method: 'PATCH',
                     body: {
                         username: form.get('username'),
-                        currentPassword: form.get('currentPassword')
+                        currentPassword: form.get('currentPassword'),
                     },
                 }),
             );
@@ -102,13 +102,13 @@ export function Credentials({
     return (
         <section className="card">
             <h1>
-                { account.mustChangePassword ? 'Replace your temporary password' : 'Your account' }
+                {account.mustChangePassword ? 'Replace your temporary password' : 'Your account'}
             </h1>
-            { account.mustChangePassword && (
+            {account.mustChangePassword && (
                 <p>Choose a new password to finish setup. Changing your username is optional.</p>
-            ) }
+            )}
             <div className="columns">
-                <form onSubmit={ password }>
+                <form onSubmit={password}>
                     <h2>Change password</h2>
                     <label>
                         Current password
@@ -117,7 +117,7 @@ export function Credentials({
                             type="password"
                             autoComplete="current-password"
                             required
-                            maxLength={ 128 }
+                            maxLength={128}
                         />
                     </label>
                     <label>
@@ -126,8 +126,8 @@ export function Credentials({
                             name="password"
                             type="password"
                             autoComplete="new-password"
-                            minLength={ 8 }
-                            maxLength={ 128 }
+                            minLength={8}
+                            maxLength={128}
                             required
                         />
                     </label>
@@ -140,19 +140,19 @@ export function Credentials({
                             required
                         />
                     </label>
-                    <button disabled={ action.busy }>Save password</button>
+                    <button disabled={action.busy}>Save password</button>
                 </form>
-                <form onSubmit={ username }>
+                <form onSubmit={username}>
                     <h2>Change username</h2>
                     <label>
                         New username
                         <input
                             name="username"
-                            defaultValue={ account.username }
+                            defaultValue={account.username}
                             autoComplete="username"
                             required
-                            minLength={ 3 }
-                            maxLength={ 40 }
+                            minLength={3}
+                            maxLength={40}
                             pattern="[a-zA-Z0-9][a-zA-Z0-9._-]{2,39}"
                         />
                     </label>
@@ -163,13 +163,13 @@ export function Credentials({
                             type="password"
                             autoComplete="current-password"
                             required
-                            maxLength={ 128 }
+                            maxLength={128}
                         />
                     </label>
-                    <button disabled={ action.busy }>Save username</button>
+                    <button disabled={action.busy}>Save username</button>
                 </form>
             </div>
-            <p role="status">{ action.message }</p>
+            <p role="status">{action.message}</p>
         </section>
     );
 }

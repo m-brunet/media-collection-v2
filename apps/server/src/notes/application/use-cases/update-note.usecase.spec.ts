@@ -14,7 +14,7 @@ it('performs its owned operation', async () => {
         title: 'Updated',
         body: 'Changed',
         createdAt: note().snapshot.createdAt,
-        updatedAt: clock.now().toISOString()
+        updatedAt: clock.now().toISOString(),
     });
 });
 it('rejects mandatory password setup', async () => {

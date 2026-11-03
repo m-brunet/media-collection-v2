@@ -17,7 +17,7 @@ it('retains saved material when fields are omitted', async () => {
     const { store, validator, http, validations } = setup({
         enabled: true,
         port: 3443,
-        hasCertificate: true
+        hasCertificate: true,
     });
     const subject = new SaveTlsSettings(store, validator, http);
     const input = { enabled: false, port: 4000 };
@@ -90,7 +90,7 @@ it('rejects incomplete password setup', async () => {
 it('rejects an enabled HTTPS port matching saved HTTP', async () => {
     const { store, validator, http } = setup(
         { enabled: false, port: 3443, hasCertificate: true },
-        { port: 36000 }
+        { port: 36000 },
     );
     const subject = new SaveTlsSettings(store, validator, http);
     const input = { enabled: true, port: 36000 };

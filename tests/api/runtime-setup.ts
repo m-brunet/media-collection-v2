@@ -31,7 +31,7 @@ export class RuntimeFixture {
             runtime,
             directory: data,
             ready,
-            client: new Client('http://127.0.0.1:' + ready.httpPort)
+            client: new Client('http://127.0.0.1:' + ready.httpPort),
         };
     }
 
@@ -45,7 +45,7 @@ export class RuntimeFixture {
 
     async restart(
         current: { runtime: ElectronRuntime; directory: string },
-        options: RuntimeOptions = {}
+        options: RuntimeOptions = {},
     ) {
         await current.runtime.close();
 
@@ -57,7 +57,7 @@ export class RuntimeFixture {
             type: 'recover',
             dataDirectory: current.directory,
             login: 'admin',
-            password
+            password,
         });
         const restarted = await this.restart(current);
 
@@ -66,7 +66,7 @@ export class RuntimeFixture {
 
     async teardown(): Promise<void> {
         const results = await Promise.allSettled(
-            this.runtimes.splice(0).map((runtime) => runtime.close())
+            this.runtimes.splice(0).map((runtime) => runtime.close()),
         );
 
         for (const directory of this.directories) {
@@ -75,13 +75,13 @@ export class RuntimeFixture {
 
         this.directories.clear();
         const errors = results.filter(
-            (result): result is PromiseRejectedResult => result.status === 'rejected'
+            (result): result is PromiseRejectedResult => result.status === 'rejected',
         );
 
         if (errors.length) {
             throw new AggregateError(
                 errors.map((result) => result.reason),
-                'Runtime cleanup failed'
+                'Runtime cleanup failed',
             );
         }
     }
@@ -110,7 +110,7 @@ export async function administrator(client: Client): Promise<void> {
 
     const change = await client.call('/account/password', 'PATCH', {
         currentPassword: 'p@ssw0rd',
-        password: 'administrator-new-password'
+        password: 'administrator-new-password',
     });
 
     if (change.status !== 200) {
@@ -119,8 +119,8 @@ export async function administrator(client: Client): Promise<void> {
 }
 
 export async function tlsConfiguration(client: Client): Promise<number> {
-    const certificate = await generate([ { name: 'commonName', value: 'localhost' } ], {
-        keySize: 2048
+    const certificate = await generate([{ name: 'commonName', value: 'localhost' }], {
+        keySize: 2048,
     });
     const occupied = createServer();
 
@@ -132,7 +132,7 @@ export async function tlsConfiguration(client: Client): Promise<number> {
         enabled: true,
         port,
         chain: certificate.cert,
-        key: certificate.private
+        key: certificate.private,
     });
 
     if (result.status !== 200) {

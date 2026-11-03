@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
 export function useAction() {
-    const [ busy, setBusy ] = useState(false);
-    const [ message, setMessage ] = useState('');
+    const [busy, setBusy] = useState(false);
+    const [message, setMessage] = useState('');
     const run = async (action: () => Promise<void>, success = '') => {
         setBusy(true);
         setMessage('');

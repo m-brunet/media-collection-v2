@@ -12,7 +12,7 @@ export class DesktopConfigurationParser {
     static parse(
         args: string[],
         environment: Record<string, string | undefined>,
-        defaultDataDirectory: string
+        defaultDataDirectory: string,
     ): DesktopConfiguration {
         const recovery = args.includes('--reset-admin');
         const recoveryLogin = this.value(args, '--login') ?? null;
@@ -36,12 +36,12 @@ export class DesktopConfigurationParser {
                 cliPort !== undefined
                     ? 'command-line'
                     : rawPort !== undefined
-                        ? 'environment'
-                        : undefined,
+                      ? 'environment'
+                      : undefined,
             dataDirectory: resolve(
-                this.value(args, '--data-dir') ?? environment.APP_DATA_DIR ?? defaultDataDirectory
+                this.value(args, '--data-dir') ?? environment.APP_DATA_DIR ?? defaultDataDirectory,
             ),
-            recoveryLogin: recovery ? recoveryLogin : null
+            recoveryLogin: recovery ? recoveryLogin : null,
         };
     }
 

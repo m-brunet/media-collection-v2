@@ -1,16 +1,8 @@
 {
-  "extends": "../../tsconfig.runtime.json",
-  "compilerOptions": {
-    "noEmit": true
-  },
-  "include": [
-    "src/**/*.ts",
-    "../../tests/api/**/*.ts"
-  ],
-  "exclude": [
-    "../../node_modules",
-    "../../dist",
-    "../../release",
-    "../../.cache"
-  ]
+    "extends": "../../tsconfig.runtime.json",
+    "compilerOptions": {
+        "noEmit": true
+    },
+    "include": ["src/**/*.ts", "../../tests/api/**/*.ts"],
+    "exclude": ["../../node_modules", "../../dist", "../../release", "../../.cache"]
 }

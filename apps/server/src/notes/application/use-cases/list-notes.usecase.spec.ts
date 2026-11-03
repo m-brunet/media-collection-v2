@@ -10,7 +10,7 @@ it('performs its owned operation', async () => {
 
     const result = await subject.execute(actor);
 
-    expect(result.map((n) => n.snapshot.id)).toEqual([ 'note' ]);
+    expect(result.map((n) => n.snapshot.id)).toEqual(['note']);
 });
 it('rejects mandatory password setup', async () => {
     const notes = new MemoryNotes();

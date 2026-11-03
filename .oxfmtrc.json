@@ -1,14 +1,14 @@
 {
-  "semi": true,
-  "singleQuote": true,
-  "tabWidth": 4,
-  "ignorePatterns": [
-    ".plans/**",
-    ".agents/**",
-    "**/*.md",
-    "package-lock.json",
-    "dist/**",
-    "release/**",
-    ".cache/**"
-  ]
+    "semi": true,
+    "singleQuote": true,
+    "tabWidth": 4,
+    "ignorePatterns": [
+        ".plans/**",
+        ".agents/**",
+        "**/*.md",
+        "package-lock.json",
+        "dist/**",
+        "release/**",
+        ".cache/**"
+    ]
 }

@@ -7,10 +7,10 @@ import { Notes } from './features/notes/Notes';
 import { ServerSettings } from './features/server-settings/ServerSettings';
 
 export function App() {
-    const [ account, setAccount ] = useState<Account | null>(null);
-    const [ loading, setLoading ] = useState(true);
-    const [ page, setPage ] = useState('notes');
-    const [ message, setMessage ] = useState('');
+    const [account, setAccount] = useState<Account | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState('notes');
+    const [message, setMessage] = useState('');
 
     useEffect(() => {
         const expired = () => {
@@ -19,7 +19,8 @@ export function App() {
         };
 
         window.addEventListener('session-expired', expired);
-        void api.request<Account>('/auth/me', { passive: true })
+        void api
+            .request<Account>('/auth/me', { passive: true })
             .then(setAccount)
             .catch((error) => {
                 if (!(error instanceof ApiError && error.status === 401)) {
@@ -49,44 +50,44 @@ export function App() {
         <>
             <header>
                 <strong>Electron Base</strong>
-                { account && (
+                {account && (
                     <span>
-                        { account.username }
+                        {account.username}
                         <button
                             className="secondary"
-                            onClick={ () => {
+                            onClick={() => {
                                 void logout();
-                            } }
+                            }}
                         >
                             Sign out
                         </button>
                     </span>
-                ) }
+                )}
             </header>
             <main>
-                { message && (
+                {message && (
                     <p role="status" className="notice">
-                        { message }
+                        {message}
                     </p>
-                ) }
-                { loading ? (
+                )}
+                {loading ? (
                     <p>Connecting…</p>
                 ) : !account ? (
-                    <Login onLogin={ signIn }/>
+                    <Login onLogin={signIn} />
                 ) : account.mustChangePassword ? (
-                    <Credentials account={ account } onChange={ setAccount }/>
+                    <Credentials account={account} onChange={setAccount} />
                 ) : (
                     <>
                         <nav aria-label="Main navigation">
-                            { [
+                            {[
                                 'notes',
                                 'account',
-                                ...(account.role === 'admin' ? [ 'users', 'server' ] : [])
+                                ...(account.role === 'admin' ? ['users', 'server'] : []),
                             ].map((item) => (
                                 <button
-                                    className={ page === item ? 'selected' : 'secondary' }
-                                    key={ item }
-                                    onClick={ () => setPage(item) }
+                                    className={page === item ? 'selected' : 'secondary'}
+                                    key={item}
+                                    onClick={() => setPage(item)}
                                 >
                                     {
                                         (
@@ -94,21 +95,21 @@ export function App() {
                                                 notes: 'Notes',
                                                 account: 'Account',
                                                 users: 'Accounts',
-                                                server: 'Server settings'
+                                                server: 'Server settings',
                                             } as Record<string, string>
                                         )[item]
                                     }
                                 </button>
-                            )) }
+                            ))}
                         </nav>
-                        { page === 'notes' && <Notes/> }
-                        { page === 'account' && (
-                            <Credentials account={ account } onChange={ setAccount }/>
-                        ) }
-                        { page === 'users' && <Users/> }
-                        { page === 'server' && <ServerSettings/> }
+                        {page === 'notes' && <Notes />}
+                        {page === 'account' && (
+                            <Credentials account={account} onChange={setAccount} />
+                        )}
+                        {page === 'users' && <Users />}
+                        {page === 'server' && <ServerSettings />}
                     </>
-                ) }
+                )}
             </main>
         </>
     );

@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
     root: 'apps/web',
-    plugins: [ react() ],
+    plugins: [react()],
     build: { outDir: '../../dist/apps/web', emptyOutDir: true },
     server: {
         host: '127.0.0.1',
@@ -13,7 +13,7 @@ export default defineConfig({
             '/api': {
                 // tools/dev.mjs follows Electron's actual backend readiness port.
                 target: 'http://127.0.0.1:3000',
-                changeOrigin: false
+                changeOrigin: false,
             },
         },
     },

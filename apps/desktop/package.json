@@ -1,6 +1,6 @@
 {
-  "name": "@electron-base/desktop",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module"
+    "name": "@electron-base/desktop",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module"
 }

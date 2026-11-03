@@ -5,7 +5,7 @@ let dispatch: ReturnType<typeof vi.fn>;
 const fetchResponse = (status: number, body: unknown) => ({
     ok: status >= 200 && status < 300,
     status,
-    json: async () => body
+    json: async () => body,
 });
 
 beforeEach(async () => {
@@ -32,8 +32,8 @@ it('sends passive GET requests with same-origin credentials', async () => {
         expect.objectContaining({
             method: 'GET',
             credentials: 'same-origin',
-            headers: { 'X-App-Activity': 'passive' }
-        })
+            headers: { 'X-App-Activity': 'passive' },
+        }),
     );
 });
 
@@ -54,8 +54,8 @@ it('prepares CSRF and JSON for a mutation', async () => {
         expect.objectContaining({
             method: 'POST',
             body: JSON.stringify(input),
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': 'csrf-token' }
-        })
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': 'csrf-token' },
+        }),
     );
 });
 
@@ -90,7 +90,7 @@ it('does not signal session expiry for a failed login', async () => {
         vi
             .fn()
             .mockResolvedValueOnce(fetchResponse(200, { token: 'csrf-token' }))
-            .mockResolvedValueOnce(fetchResponse(401, { message: 'Wrong credentials' }))
+            .mockResolvedValueOnce(fetchResponse(401, { message: 'Wrong credentials' })),
     );
     const options = { method: 'POST', body: { username: 'owner', password: 'wrong' } };
 
@@ -117,7 +117,7 @@ it('reprepares CSRF after a rejected mutation', async () => {
             if (!(error instanceof Error && 'status' in error && error.status === 403)) {
                 throw error;
             }
-        }
+        },
     );
     const options = { method: 'POST', body: { title: 'Title', body: '' } };
 
@@ -127,7 +127,7 @@ it('reprepares CSRF after a rejected mutation', async () => {
     expect(fetch).toHaveBeenLastCalledWith(
         '/api/notes',
         expect.objectContaining({
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': 'new' }
-        })
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': 'new' },
+        }),
     );
 });

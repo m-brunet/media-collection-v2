@@ -14,7 +14,7 @@ describe('RecoverAdministrator', () => {
         expect((await users.findById('owner'))!.snapshot).toMatchObject({
             passwordHash: 'hash:recovered-password',
             tokenVersion: 2,
-            mustChangePassword: true
+            mustChangePassword: true,
         });
     });
     it('rejects a missing account', async () => {

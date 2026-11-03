@@ -29,7 +29,7 @@ async function waitFor(runtime: ElectronRuntime, expression: string) {
 
     throw new Error(
         'Desktop UI did not reach expected state: ' +
-        String(await evaluate(runtime, 'document.body.innerText')),
+            String(await evaluate(runtime, 'document.body.innerText')),
     );
 }
 
@@ -39,15 +39,15 @@ async function readyDesktop() {
     await waitFor(current.runtime, "document.querySelector('h1')?.textContent === 'Sign in'");
     await evaluate(
         current.runtime,
-        "document.querySelector('[name=username]').value='admin';document.querySelector('[name=password]').value='p@ssw0rd';document.querySelector('form').requestSubmit();true"
+        "document.querySelector('[name=username]').value='admin';document.querySelector('[name=password]').value='p@ssw0rd';document.querySelector('form').requestSubmit();true",
     );
     await waitFor(
         current.runtime,
-        "document.querySelector('h1')?.textContent === 'Replace your temporary password'"
+        "document.querySelector('h1')?.textContent === 'Replace your temporary password'",
     );
     await evaluate(
         current.runtime,
-        "document.querySelector('[name=currentPassword]').value='p@ssw0rd';document.querySelector('[name=password]').value='desktop-new-password';document.querySelector('[name=confirmation]').value='desktop-new-password';document.querySelector('form').requestSubmit();true"
+        "document.querySelector('[name=currentPassword]').value='p@ssw0rd';document.querySelector('[name=password]').value='desktop-new-password';document.querySelector('[name=confirmation]').value='desktop-new-password';document.querySelector('form').requestSubmit();true",
     );
     await waitFor(current.runtime, "document.querySelector('h1')?.textContent === 'Your notes'");
 
@@ -62,12 +62,12 @@ async function recoveryDesktop() {
 
     await evaluate(
         recovery.runtime,
-        "document.getElementById('password').value='dialog-recovery-password';document.getElementById('confirmation').value='dialog-recovery-password';true"
+        "document.getElementById('password').value='dialog-recovery-password';document.getElementById('confirmation').value='dialog-recovery-password';true",
     );
 
     return {
         previous: current,
-        current: recovery
+        current: recovery,
     };
 }
 
@@ -75,7 +75,7 @@ async function submitRecovery(runtime: ElectronRuntime) {
     await evaluate(runtime, "document.getElementById('recovery').requestSubmit();true");
     await waitFor(
         runtime,
-        "document.getElementById('result').textContent.includes('Password reset.')"
+        "document.getElementById('result').textContent.includes('Password reset.')",
     );
 }
 
@@ -89,17 +89,17 @@ describe('desktop lifecycle and renderer', () => {
 
         await evaluate(
             current.runtime,
-            "Array.from(document.querySelectorAll('button')).find(button => button.textContent === 'Server settings').click();true"
+            "Array.from(document.querySelectorAll('button')).find(button => button.textContent === 'Server settings').click();true",
         );
         await waitFor(current.runtime, "Boolean(document.querySelector('[name=httpPort]'))");
         await evaluate(
             current.runtime,
-            "document.querySelector('[name=httpPort]').value='" + port + "';true"
+            "document.querySelector('[name=httpPort]').value='" + port + "';true",
         );
 
         await evaluate(
             current.runtime,
-            'document.querySelector(\'form[aria-label="HTTP settings"]\').requestSubmit();true'
+            'document.querySelector(\'form[aria-label="HTTP settings"]\').requestSubmit();true',
         );
         await waitFor(current.runtime, "document.body.innerText.includes('HTTP port saved.')");
         const screen = await evaluate(current.runtime, 'document.body.innerText');
@@ -136,14 +136,14 @@ describe('desktop lifecycle and renderer', () => {
         const current = await fixture.start(undefined, options);
         const bridge = await evaluate(
             current.runtime,
-            "typeof window.require + ':' + typeof window.administratorRecovery"
+            "typeof window.require + ':' + typeof window.administratorRecovery",
         );
 
         expect(current.ready.value).toMatchObject({
             nodeIntegration: false,
             sandbox: true,
             contextIsolation: true,
-            recovery: false
+            recovery: false,
         });
         expect(bridge).toBe('undefined:undefined');
     });
@@ -154,21 +154,21 @@ describe('desktop lifecycle and renderer', () => {
         await waitFor(current.runtime, "document.querySelector('h1')?.textContent === 'Sign in'");
         await evaluate(
             current.runtime,
-            "document.querySelector('[name=username]').value='admin';document.querySelector('[name=password]').value='p@ssw0rd';document.querySelector('form').requestSubmit();true"
+            "document.querySelector('[name=username]').value='admin';document.querySelector('[name=password]').value='p@ssw0rd';document.querySelector('form').requestSubmit();true",
         );
         await waitFor(
             current.runtime,
-            "document.querySelector('h1')?.textContent === 'Replace your temporary password'"
+            "document.querySelector('h1')?.textContent === 'Replace your temporary password'",
         );
         await evaluate(
             current.runtime,
-            "document.querySelector('[name=currentPassword]').value='p@ssw0rd';document.querySelector('[name=password]').value='desktop-new-password';document.querySelector('[name=confirmation]').value='desktop-new-password';true"
+            "document.querySelector('[name=currentPassword]').value='p@ssw0rd';document.querySelector('[name=password]').value='desktop-new-password';document.querySelector('[name=confirmation]').value='desktop-new-password';true",
         );
 
         await evaluate(current.runtime, "document.querySelector('form').requestSubmit();true");
         await waitFor(
             current.runtime,
-            "document.querySelector('h1')?.textContent === 'Your notes'"
+            "document.querySelector('h1')?.textContent === 'Your notes'",
         );
         const title = await evaluate(current.runtime, "document.querySelector('h1').textContent");
 
@@ -180,7 +180,7 @@ describe('desktop lifecycle and renderer', () => {
 
         await evaluate(
             current.runtime,
-            "document.querySelector('[name=title]').value='Desktop note';document.querySelector('[name=body]').value='From the actual React screen';true"
+            "document.querySelector('[name=title]').value='Desktop note';document.querySelector('[name=body]').value='From the actual React screen';true",
         );
         const client = new Client('http://127.0.0.1:' + current.ready.httpPort);
 
@@ -223,14 +223,14 @@ describe('desktop lifecycle and renderer', () => {
         const recovery = await fixture.start(previous.directory, { main: true, recovery: true });
         const bridge = await evaluate(
             recovery.runtime,
-            'typeof window.administratorRecovery.reset'
+            'typeof window.administratorRecovery.reset',
         );
 
         expect(recovery.ready.value).toMatchObject({
             nodeIntegration: false,
             sandbox: true,
             contextIsolation: true,
-            recovery: true
+            recovery: true,
         });
         expect(bridge).toBe('function');
         await expect(client.call('/health')).rejects.toThrow();
@@ -242,7 +242,7 @@ describe('desktop lifecycle and renderer', () => {
         await submitRecovery(current.runtime);
         const message = await evaluate(
             current.runtime,
-            "document.getElementById('result').textContent"
+            "document.getElementById('result').textContent",
         );
 
         expect(message).toContain('Password reset.');

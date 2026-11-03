@@ -10,7 +10,7 @@ describe('CreateUser', () => {
         const input = {
             username: ' Member ',
             password: 'temporary-password',
-            role: 'user' as const
+            role: 'user' as const,
         };
 
         const result = await subject.execute(actor, input);
@@ -19,10 +19,10 @@ describe('CreateUser', () => {
             id: 'member',
             username: 'member',
             role: 'user',
-            mustChangePassword: true
+            mustChangePassword: true,
         });
         expect((await users.findById('member'))!.snapshot.passwordHash).toBe(
-            'hash:temporary-password'
+            'hash:temporary-password',
         );
     });
     it('rejects a short password', async () => {
@@ -67,7 +67,7 @@ describe('CreateUser', () => {
         const result = subject.execute(actor, {
             username: 'member',
             password: 'temporary-password',
-            role: 'user'
+            role: 'user',
         });
 
         await expect(result).rejects.toMatchObject({ code: 'forbidden' });
@@ -81,7 +81,7 @@ describe('CreateUser', () => {
         const result = subject.execute(actor, {
             username: 'member',
             password: 'temporary-password',
-            role: 'user'
+            role: 'user',
         });
 
         await expect(result).rejects.toMatchObject({ code: 'forbidden' });

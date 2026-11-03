@@ -13,7 +13,7 @@ describe('ChangeUsername', () => {
         const subject = new ChangeUsername(
             users,
             new AccountLoader(users),
-            new CurrentPasswordConfirmation(passwords)
+            new CurrentPasswordConfirmation(passwords),
         );
 
         const result = await subject.execute(account.actor, ' Renamed ', 'old-password');
@@ -33,7 +33,7 @@ describe('ChangeUsername', () => {
         const subject = new ChangeUsername(
             users,
             new AccountLoader(users),
-            new CurrentPasswordConfirmation(passwords)
+            new CurrentPasswordConfirmation(passwords),
         );
 
         const result = subject.execute(account.actor, username, password);
@@ -53,7 +53,7 @@ describe('ChangeUsername', () => {
         const subject = new ChangeUsername(
             users,
             new AccountLoader(users),
-            new CurrentPasswordConfirmation(passwords)
+            new CurrentPasswordConfirmation(passwords),
         );
 
         const result = subject.execute(account.actor, username, password);
@@ -73,7 +73,7 @@ describe('ChangeUsername', () => {
         const subject = new ChangeUsername(
             users,
             new AccountLoader(users),
-            new CurrentPasswordConfirmation(passwords)
+            new CurrentPasswordConfirmation(passwords),
         );
 
         const result = subject.execute(account.actor, username, password);

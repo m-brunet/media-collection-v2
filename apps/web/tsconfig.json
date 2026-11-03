@@ -1,24 +1,15 @@
 {
-  "compilerOptions": {
-    "target": "ES2024",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "jsx": "react-jsx",
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "noEmit": true,
-    "skipLibCheck": true,
-    "lib": [
-      "ES2024",
-      "DOM",
-      "DOM.Iterable"
-    ],
-    "types": [
-      "vite/client"
-    ]
-  },
-  "include": [
-    "src",
-    "../../packages/contracts/src"
-  ]
+    "compilerOptions": {
+        "target": "ES2024",
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "jsx": "react-jsx",
+        "strict": true,
+        "noUncheckedIndexedAccess": true,
+        "noEmit": true,
+        "skipLibCheck": true,
+        "lib": ["ES2024", "DOM", "DOM.Iterable"],
+        "types": ["vite/client"]
+    },
+    "include": ["src", "../../packages/contracts/src"]
 }

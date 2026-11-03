@@ -35,7 +35,7 @@ void app
                     JSON.stringify({
                         type: 'failed',
                         message: 'Utility process exited: ' + code,
-                        requestId
+                        requestId,
                     }) + '\n',
                 );
             }
@@ -72,7 +72,7 @@ void app
                     ? {}
                     : { httpPort: Number(process.env.APP_TEST_PORT) }),
                 webDirectory: fileURLToPath(new URL('../../dist/apps/web/', import.meta.url)),
-                development: false
+                development: false,
             });
         }
     })

@@ -14,7 +14,7 @@ it('performs its owned operation', async () => {
         id: 'created',
         ownerId: actor.id,
         title: 'New',
-        createdAt: clock.now().toISOString()
+        createdAt: clock.now().toISOString(),
     });
 });
 it('rejects mandatory password setup', async () => {

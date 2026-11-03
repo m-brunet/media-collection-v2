@@ -9,11 +9,11 @@ import { closeDesktop } from './processes.mjs';
 
 const executable = resolve(
     process.env.APP_PACKAGED_EXECUTABLE ??
-    (process.platform === 'win32'
-        ? 'release/win-unpacked/Electron Base.exe'
-        : process.platform === 'darwin'
-            ? 'release/mac/Electron Base.app/Contents/MacOS/Electron Base'
-            : 'release/linux-unpacked/electron-base'),
+        (process.platform === 'win32'
+            ? 'release/win-unpacked/Electron Base.exe'
+            : process.platform === 'darwin'
+              ? 'release/mac/Electron Base.app/Contents/MacOS/Electron Base'
+              : 'release/linux-unpacked/electron-base'),
 );
 
 await access(executable);
@@ -41,8 +41,8 @@ const launch = async (withPortOverride = true) => {
         {
             cwd: directory,
             env: environment,
-            stdio: ['ignore', 'pipe', 'pipe']
-        }
+            stdio: ['ignore', 'pipe', 'pipe'],
+        },
     );
     child.on('error', (error) => {
         failureOutput += error.message;
@@ -81,7 +81,7 @@ async function request(path, method = 'GET', body) {
                 ? { 'Content-Type': 'application/json', Origin: base, 'X-CSRF-Token': csrf }
                 : {}),
         },
-        body: method === 'GET' ? undefined : JSON.stringify(body ?? {})
+        body: method === 'GET' ? undefined : JSON.stringify(body ?? {}),
     });
 
     for (const cookie of response.headers.getSetCookie()) {
@@ -93,7 +93,7 @@ async function request(path, method = 'GET', body) {
 
     assert.ok(
         response.ok,
-        method + ' ' + path + ' failed: ' + response.status + ' ' + (await response.clone().text())
+        method + ' ' + path + ' failed: ' + response.status + ' ' + (await response.clone().text()),
     );
 
     return response.status === 204 ? undefined : response.json();
@@ -109,11 +109,11 @@ try {
     await request('/auth/login', 'POST', { username: 'admin', password: 'p@ssw0rd' });
     await request('/account/password', 'PATCH', {
         currentPassword: 'p@ssw0rd',
-        password: 'packaged-smoke-password'
+        password: 'packaged-smoke-password',
     });
     const note = await request('/notes', 'POST', {
         title: 'Packaged persistence',
-        body: 'Native SQLite works outside the checkout.'
+        body: 'Native SQLite works outside the checkout.',
     });
     const nextReservation = createServer();
 
@@ -141,11 +141,11 @@ try {
     await assert.rejects(fetch(previousBase + '/api/health'));
     assert.equal(
         (await request('/notes/' + note.id)).body,
-        'Native SQLite works outside the checkout.'
+        'Native SQLite works outside the checkout.',
     );
     await request('/notes/' + note.id, 'DELETE');
     console.log(
-        'Packaged Electron smoke passed: saved web listening port, HTTP, web assets, native SQLite, graceful close, restart and persistence.'
+        'Packaged Electron smoke passed: saved web listening port, HTTP, web assets, native SQLite, graceful close, restart and persistence.',
     );
 } finally {
     if (child) {

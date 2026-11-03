@@ -6,7 +6,7 @@ export function run(executable, args, options = {}) {
 
         child.once('error', reject);
         child.once('exit', (code) =>
-            code === 0 ? resolve() : reject(new Error(executable + ' exited with code ' + code))
+            code === 0 ? resolve() : reject(new Error(executable + ' exited with code ' + code)),
         );
     });
 }
@@ -30,10 +30,10 @@ export async function closeDesktop(child) {
                     '-NonInteractive',
                     '-Command',
                     '(Get-Process -Id ' +
-                    child.pid +
-                    ' -ErrorAction SilentlyContinue).CloseMainWindow() | Out-Null'
+                        child.pid +
+                        ' -ErrorAction SilentlyContinue).CloseMainWindow() | Out-Null',
                 ],
-                { stdio: 'ignore' }
+                { stdio: 'ignore' },
             );
         } else {
             child.kill('SIGTERM');

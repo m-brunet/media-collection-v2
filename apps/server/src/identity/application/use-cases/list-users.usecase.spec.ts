@@ -12,7 +12,7 @@ describe('ListUsers', () => {
 
         const result = await subject.execute(account.actor);
 
-        expect(result).toEqual([ account.actor ]);
+        expect(result).toEqual([account.actor]);
         expect(result[0]).not.toHaveProperty('passwordHash');
     });
     it('rejects a non-administrator', async () => {
