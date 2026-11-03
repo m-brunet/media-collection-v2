@@ -17,10 +17,10 @@ The application uses electron-base-app as its foundation. Its source, tests, bui
 - [Collections and shopping](docs/collections.md): completed Task 1 rules and acceptance examples.
 - [Edition impact analysis](docs/collection-editions-impact.md): book counts versus volume coverage.
 - [Decisions and open questions](docs/decisions-and-open-questions.md): rationale, recommendations, and questions to resolve before implementation.
-- [Design references](design/README.md): selected visual references and their limitations.
+- [Design guidelines](docs/design-guidelines.md): design reference location and authority, product names (Libris, Leaf), icon sets, accessibility, and window size.
 - [Foundation import](docs/foundation-import.md): baseline provenance and verification.
 - [Configuration](docs/configuration.md): everyday settings and optional startup overrides.
 - [Lending](docs/lending.md): business flows, open decisions, and implementation-planning handoff.
-- [Lending design brief](docs/lending-design-brief.md): screens and states to design in Pen.
+- [Lending design brief](docs/lending-design-brief.md): required lending screens and states.
 
-These documents describe v2 even where original design filenames contain `v3` or the mockups use the name Leaf. Latest explicit product decisions take precedence over mockups. Proposals and open questions are not accepted requirements.
+The product is Media Collection: its desktop web interface is Libris and its mobile web interface is Leaf. These documents describe v2 even where design filenames contain `v3`. Latest explicit product decisions take precedence over the design artifact. Proposals and open questions are not accepted requirements.

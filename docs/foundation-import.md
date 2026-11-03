@@ -8,7 +8,7 @@ The source had two stale index entries for absent `http-settings.helper.ts` / `h
 
 Excluded Git history/configuration, dependencies, build/package outputs, caches, local data, IDE state, local plans, and ignored machine-specific files. This repository retains its own remote and local Git author settings. `.gitignore` combines the foundation rules with this project's local-reference exclusions and `.vscode/`; `.idea/` and `.plans/` are ignored too. The local `.plans/` directory exists but is intentionally absent from commits.
 
-The foundation README remains at `README.md`. The Media Collection overview is preserved at [README-media-collection.md](../README-media-collection.md), with product requirements in this folder. Existing design references and product documentation are preserved.
+The foundation README remains at `README.md`. The Media Collection overview is preserved at [README-media-collection.md](../README-media-collection.md), with product requirements in this folder. Product documentation was preserved. The design references present at import were later retired in favour of the external design artifact; see [design guidelines](design-guidelines.md).
 
 This import is not an implementation of the v2 product requirements. The foundation's existing Notes example, account behavior, and network defaults describe the copied baseline; planned v2 rules in the product documents take precedence for future implementation. In particular, do not assume role permissions or the agreed collection/audit features already exist.
 

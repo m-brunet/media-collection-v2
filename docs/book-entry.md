@@ -42,7 +42,7 @@ Camera barcode scanning is mobile-only; do not add a scanner to Electron or the 
 
 On desktop, if no book is found, an external service is unavailable, or the app encounters an error, preserve the entered ISBN and permit manual completion. Show clear feedback explaining the known problem. Do not silently fail or describe an application/service error as a successful search with no result. The interface need not expose internal implementation details or raw errors.
 
-The manual-completion fallback above is desktop behavior. Task 6 explicitly restricts mobile: successful scan is required; failed lookup gets at most one retry, then error/Back to home and no manual fallback. A mobile existing Owned ISBN shows Already owned with scan-again/home options; an existing Not Owned ISBN requires confirmation before any external fetch and reuses the existing record. These mobile-specific decisions supersede the generic details redirect where applicable; see [mobile experience](overview-activity-mobile.md).
+The manual-completion fallback above is desktop behavior. Task 6 explicitly restricts mobile: successful scan is required; failed lookup gets at most one retry, then error/Back to home and no manual fallback. A mobile existing Owned ISBN shows Already owned with scan-again/home options; an existing Not Owned ISBN requires confirmation and reuses the existing record without any external lookup. These mobile-specific decisions supersede the generic details redirect where applicable; see [mobile experience](overview-activity-mobile.md).
 
 Populate empty fields from lookup while preserving manually entered values. If a result conflicts with a manually entered value, ask before replacing it. A lookup must not silently overwrite the draft.
 
