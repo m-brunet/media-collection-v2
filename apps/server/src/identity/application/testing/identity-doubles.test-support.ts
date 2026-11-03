@@ -79,6 +79,7 @@ export function user(input: Partial<UserState> = {}): User {
         role: 'admin',
         passwordHash: 'hash:old-password',
         mustChangePassword: false,
+        language: null,
         tokenVersion: 0,
         createdAt: clock.now().toISOString(),
         ...input,

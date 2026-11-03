@@ -39,7 +39,7 @@ export class HttpApplication {
                     !request.path.startsWith('/api') &&
                     !request.path.includes('.')
                 ) {
-                    response.sendFile(join(directory, 'index.html'));
+                    response.sendFile(join(directory, HttpApplication.page(request.path)));
                 } else {
                     next();
                 }
@@ -47,5 +47,10 @@ export class HttpApplication {
         }
 
         return application;
+    }
+
+    // Libris (desktop) owns every page path except `/leaf`, which belongs to Leaf (mobile).
+    private static page(path: string): string {
+        return path === '/leaf' || path.startsWith('/leaf/') ? 'leaf/index.html' : 'index.html';
     }
 }

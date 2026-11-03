@@ -488,7 +488,7 @@ describe('architecture enforcement through the real Oxlint CLI', () => {
         expect(adapter.stdout + adapter.stderr).toContain('architecture(file-conventions)');
     });
     it('enforces entity, controller, repository, helper, and utility suffixes', () => {
-        const entity = lint('apps/server/src/notes/domain/note.ts', 'export class Note {}');
+        const entity = lint('apps/server/src/identity/domain/user.ts', 'export class User {}');
         const controller = lint(
             'apps/server/src/infrastructure/adapters/driving/web/health.ts',
             'export class HealthController {}',

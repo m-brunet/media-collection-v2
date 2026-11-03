@@ -43,13 +43,13 @@ async function readyDesktop() {
     );
     await waitFor(
         current.runtime,
-        "document.querySelector('h1')?.textContent === 'Replace your temporary password'",
+        "document.querySelector('h1')?.textContent === 'Choose your own password'",
     );
     await evaluate(
         current.runtime,
         "document.querySelector('[name=currentPassword]').value='p@ssw0rd';document.querySelector('[name=password]').value='desktop-new-password';document.querySelector('[name=confirmation]').value='desktop-new-password';document.querySelector('form').requestSubmit();true",
     );
-    await waitFor(current.runtime, "document.querySelector('h1')?.textContent === 'Your notes'");
+    await waitFor(current.runtime, "document.querySelector('h1')?.textContent === 'My account'");
 
     return current;
 }
@@ -89,7 +89,7 @@ describe('desktop lifecycle and renderer', () => {
 
         await evaluate(
             current.runtime,
-            "Array.from(document.querySelectorAll('button')).find(button => button.textContent === 'Server settings').click();true",
+            "Array.from(document.querySelectorAll('a')).find(link => link.textContent === 'Server settings').click();true",
         );
         await waitFor(current.runtime, "Boolean(document.querySelector('[name=httpPort]'))");
         await evaluate(
@@ -99,7 +99,7 @@ describe('desktop lifecycle and renderer', () => {
 
         await evaluate(
             current.runtime,
-            'document.querySelector(\'form[aria-label="HTTP settings"]\').requestSubmit();true',
+            'document.querySelector(\'form[aria-label="HTTP / web interface"]\').requestSubmit();true',
         );
         await waitFor(current.runtime, "document.body.innerText.includes('HTTP port saved.')");
         const screen = await evaluate(current.runtime, 'document.body.innerText');
@@ -110,7 +110,7 @@ describe('desktop lifecycle and renderer', () => {
         expect(response.body.configured.tls.hasCertificate).toBe(false);
         expect(response.body.restartRequired).toBe(true);
         expect(screen).toContain('restart');
-        expect(screen).toContain('Remove that override');
+        expect(screen).toContain('port override is active');
     });
 
     it('opens the persisted external HTTP port after reopening the desktop without overrides', async () => {
@@ -127,7 +127,7 @@ describe('desktop lifecycle and renderer', () => {
 
         expect(restarted.ready.httpPort).toBe(port);
         expect(address).toBe('http://127.0.0.1:' + port);
-        expect(await (await fetch(address + '/notes')).text()).toContain('<div id="root">');
+        expect(await (await fetch(address + '/account')).text()).toContain('<div id="root">');
     });
 
     it('starts a sandboxed renderer without a business or recovery bridge', async () => {
@@ -158,7 +158,7 @@ describe('desktop lifecycle and renderer', () => {
         );
         await waitFor(
             current.runtime,
-            "document.querySelector('h1')?.textContent === 'Replace your temporary password'",
+            "document.querySelector('h1')?.textContent === 'Choose your own password'",
         );
         await evaluate(
             current.runtime,
@@ -168,30 +168,42 @@ describe('desktop lifecycle and renderer', () => {
         await evaluate(current.runtime, "document.querySelector('form').requestSubmit();true");
         await waitFor(
             current.runtime,
-            "document.querySelector('h1')?.textContent === 'Your notes'",
+            "document.querySelector('h1')?.textContent === 'My account'",
         );
         const title = await evaluate(current.runtime, "document.querySelector('h1').textContent");
 
-        expect(title).toBe('Your notes');
+        expect(title).toBe('My account');
     });
 
-    it('saves a Note from the actual React screen', async () => {
+    it('saves the interface language from the actual React screen', async () => {
         const current = await readyDesktop();
-
-        await evaluate(
-            current.runtime,
-            "document.querySelector('[name=title]').value='Desktop note';document.querySelector('[name=body]').value='From the actual React screen';true",
-        );
         const client = new Client('http://127.0.0.1:' + current.ready.httpPort);
 
         await client.login('admin', 'desktop-new-password');
 
-        await evaluate(current.runtime, "document.querySelector('form').requestSubmit();true");
-        await waitFor(current.runtime, "document.body.innerText.includes('Note saved.')");
-        const response = await client.call<{ title: string }[]>('/notes');
+        await evaluate(
+            current.runtime,
+            "Array.from(document.querySelectorAll('button')).find(button => button.textContent === 'Français').click();true",
+        );
+        await waitFor(
+            current.runtime,
+            "document.querySelector('h1')?.textContent === 'Mon compte'",
+        );
+        const response = await client.call<{ language: string }>('/auth/me');
 
         expect(response.status).toBe(200);
-        expect(response.body[0]!.title).toBe('Desktop note');
+        expect(response.body.language).toBe('fr');
+    });
+
+    it('opens a Media Collection window that cannot shrink below 1280 x 720', async () => {
+        const options = { main: true };
+
+        const current = await fixture.start(undefined, options);
+
+        expect(current.ready.value).toMatchObject({
+            minimumSize: [1280, 720],
+            applicationName: 'Media Collection',
+        });
     });
 
     it('rejects a recovery instance while the normal desktop is running', async () => {

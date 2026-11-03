@@ -8,6 +8,7 @@ import type { UserRepository } from '../../application/ports/driven/user-reposit
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 import type { IdGenerator } from '../../../shared/application/ports/driven/id-generator.interface.js';
 import { RenewSession } from '../../application/use-cases/renew-session.usecase.js';
+import { ChangeLanguage } from '../../application/use-cases/change-language.usecase.js';
 import { ChangePassword } from '../../application/use-cases/change-password.usecase.js';
 import { ChangeUsername } from '../../application/use-cases/change-username.usecase.js';
 import { CreateUser } from '../../application/use-cases/create-user.usecase.js';
@@ -26,6 +27,7 @@ export const IDENTITY_HTTP_SESSIONS = 'IDENTITY_HTTP_SESSIONS';
 export const IDENTITY_LOGIN = 'IDENTITY_LOGIN';
 export const IDENTITY_CHANGE_USERNAME = 'IDENTITY_CHANGE_USERNAME';
 export const IDENTITY_CHANGE_PASSWORD = 'IDENTITY_CHANGE_PASSWORD';
+export const IDENTITY_CHANGE_LANGUAGE = 'IDENTITY_CHANGE_LANGUAGE';
 export const IDENTITY_LIST_USERS = 'IDENTITY_LIST_USERS';
 export const IDENTITY_CREATE_USER = 'IDENTITY_CREATE_USER';
 export const IDENTITY_SESSION_RENEWAL = 'IDENTITY_SESSION_RENEWAL';
@@ -97,6 +99,12 @@ export class IdentityModule {
                         passwords: PasswordHasher,
                         confirmation: CurrentPasswordConfirmation,
                     ) => new ChangePassword(users, accounts, passwords, confirmation),
+                },
+                {
+                    provide: IDENTITY_CHANGE_LANGUAGE,
+                    inject: [IDENTITY_USER_REPOSITORY, AccountLoader],
+                    useFactory: (users: UserRepository, accounts: AccountLoader) =>
+                        new ChangeLanguage(users, accounts),
                 },
                 {
                     provide: IDENTITY_LIST_USERS,

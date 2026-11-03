@@ -9,11 +9,12 @@ export const actor = {
     username: 'admin',
     role: 'admin' as const,
     mustChangePassword: false,
+    language: null,
 };
 
 export function setup(
     initial: TlsSettingsState = { enabled: false, port: 3443, hasCertificate: false },
-    initialHttp: HttpSettingsState = { port: 3000 },
+    initialHttp: HttpSettingsState = { port: 34345 },
 ) {
     let settings = { ...initial };
     let validations = 0;

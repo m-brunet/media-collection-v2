@@ -22,7 +22,7 @@ it('rejects a privileged HTTP port without changing storage', async () => {
     const result = subject.execute(actor, input);
 
     await expect(result).rejects.toMatchObject({ code: 'invalid_input' });
-    expect((await http.read()).snapshot()).toEqual({ port: 3000 });
+    expect((await http.read()).snapshot()).toEqual({ port: 34345 });
 });
 
 it('rejects an HTTP port above the maximum without changing storage', async () => {
@@ -33,7 +33,7 @@ it('rejects an HTTP port above the maximum without changing storage', async () =
     const result = subject.execute(actor, input);
 
     await expect(result).rejects.toMatchObject({ code: 'invalid_input' });
-    expect((await http.read()).snapshot()).toEqual({ port: 3000 });
+    expect((await http.read()).snapshot()).toEqual({ port: 34345 });
 });
 
 it('rejects HTTP port collisions with enabled HTTPS', async () => {
@@ -44,7 +44,7 @@ it('rejects HTTP port collisions with enabled HTTPS', async () => {
     const result = subject.execute(actor, input);
 
     await expect(result).rejects.toThrow('different ports');
-    expect((await http.read()).snapshot()).toEqual({ port: 3000 });
+    expect((await http.read()).snapshot()).toEqual({ port: 34345 });
 });
 
 it('allows the saved HTTPS port when HTTPS is disabled', async () => {
@@ -67,7 +67,7 @@ it('rejects a non-administrator saving HTTP settings', async () => {
     const result = subject.execute(forbidden, input);
 
     await expect(result).rejects.toMatchObject({ code: 'forbidden' });
-    expect((await http.read()).snapshot()).toEqual({ port: 3000 });
+    expect((await http.read()).snapshot()).toEqual({ port: 34345 });
 });
 
 it('rejects HTTP settings changes before password setup', async () => {
@@ -79,5 +79,5 @@ it('rejects HTTP settings changes before password setup', async () => {
     const result = subject.execute(forbidden, input);
 
     await expect(result).rejects.toMatchObject({ code: 'forbidden' });
-    expect((await http.read()).snapshot()).toEqual({ port: 3000 });
+    expect((await http.read()).snapshot()).toEqual({ port: 34345 });
 });

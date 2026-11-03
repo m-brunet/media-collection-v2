@@ -1,0 +1,68 @@
+/* Design values shared by Libris and Leaf, derived from the Libris design artifact.
+   Change the look here rather than in individual components. */
+:root {
+    color-scheme: dark;
+
+    /* Surfaces */
+    --color-canvas: #1d1f20;
+    --color-surface: #252729;
+    --color-sidebar: #1b1d1f;
+    --color-panel: #1d2022;
+    --color-control: #303336;
+    --color-control-hover: #3a3e41;
+    --color-selected: #2b3d31;
+    --color-border: #3c4042;
+    --color-border-strong: #545c56;
+
+    /* Text (all meet WCAG AA on the surfaces above) */
+    --color-text: #f2f5f2;
+    --color-text-secondary: #a9b5ac;
+    --color-text-muted: #91a399;
+
+    /* Accent and status */
+    --color-accent: #86d39a;
+    --color-accent-strong: #b7e7c2;
+    --color-on-accent: #17251b;
+    --color-danger: #e5a19a;
+    --color-danger-surface: #402c2b;
+    --color-warning: #d5b66f;
+    --color-warning-surface: #3a3227;
+    --color-success-surface: #22362a;
+    --color-focus: #b7e7c2;
+
+    /* Typography */
+    --font-body: 'Inter', system-ui, sans-serif;
+    --font-heading: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --text-xs: 11px;
+    --text-sm: 12px;
+    --text-md: 13px;
+    --text-base: 14px;
+    --text-lg: 17px;
+    --text-xl: 20px;
+    --text-2xl: 27px;
+    --text-3xl: 32px;
+    --leading: 1.5;
+
+    /* Spacing scale */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+
+    /* Shape */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --border: 1px solid var(--color-border);
+    --focus-ring: 0 0 0 2px var(--color-canvas), 0 0 0 4px var(--color-focus);
+
+    /* Layout */
+    --sidebar-width: 232px;
+    --control-height: 40px;
+}

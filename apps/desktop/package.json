@@ -1,5 +1,5 @@
 {
-    "name": "@electron-base/desktop",
+    "name": "@media-collection/desktop",
     "version": "0.1.0",
     "private": true,
     "type": "module"

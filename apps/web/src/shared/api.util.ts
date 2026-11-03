@@ -2,6 +2,8 @@ export class ApiError extends Error {
     constructor(
         message: string,
         public readonly status: number,
+        // Stable server failure code (for example `conflict`), when the server supplied one.
+        public readonly code: string | null = null,
     ) {
         super(message);
     }
@@ -39,6 +41,7 @@ export class ApiClient {
                 .json()
                 .catch(() => ({ message: 'The request failed.' }))) as {
                 message: string;
+                code?: string;
             };
 
             if (response.status === 401 && path !== '/auth/login') {
@@ -49,7 +52,7 @@ export class ApiClient {
                 this.csrfToken = undefined;
             }
 
-            throw new ApiError(result.message, response.status);
+            throw new ApiError(result.message, response.status, result.code ?? null);
         }
 
         if (path === '/auth/logout') {

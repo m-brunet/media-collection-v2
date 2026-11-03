@@ -1,7 +1,12 @@
-# Electron Base
+# Media Collection
 
-A small Electron application with React, an internal NestJS backend, and SQLite through Kysely. HTTP is available
-immediately on all network interfaces, including for first-time setup. HTTPS is optional and keeps HTTP available.
+Media Collection manages a shared household book library. Its desktop web interface is **Libris** (Electron window and
+desktop browsers, at `/`) and its mobile web interface is **Leaf** (phones, at `/leaf/`); both are served by the same
+installation on one port. Product documentation starts at [README-media-collection.md](README-media-collection.md).
+
+It is built on an Electron application with React, an internal NestJS backend, and SQLite through Kysely. HTTP is
+available immediately on all network interfaces, including for first-time setup. HTTPS is optional and keeps HTTP
+available.
 
 The development toolchain is Node 24 LTS, TypeScript 7, Vite, Vitest, Oxlint and Oxfmt. Installed applications use
 Electron's bundled runtime.
@@ -18,8 +23,8 @@ npm run dev
 On Windows PowerShell, use `npm.cmd` if execution policy prevents `npm.ps1` from running. `npm ci` downloads Electron
 through the root postinstall script. SQLite 13 uses Node-API; no Electron rebuild is required.
 
-Development opens Electron with Vite at `http://127.0.0.1:5173`. Startup also builds the web assets so remote browsers
-can use `http://<computer-address>:<HTTP-port>` immediately (default `3000`). Vite proxies `/api` to the actual backend
+Development opens Electron with Vite at `http://127.0.0.1:5173` (Leaf at `http://127.0.0.1:5173/leaf/`). Startup also builds the web assets so remote browsers
+can use `http://<computer-address>:<HTTP-port>` immediately (default `34345`). Vite proxies `/api` to the actual backend
 port reported by Electron, including after restarts. React changes use HMR in Electron; remote browsers use the startup
 build until it is rebuilt. Successful backend/desktop compilation restarts Electron. Development data lives in
 `.dev-data/`, separately from installed application data.
@@ -31,13 +36,14 @@ npm run build
 npm start
 ```
 
-Sign in with **admin / p@ssw0rd**. Replace the temporary password before using Notes or administration. Changing the
-username is optional. Administrators create accounts; every new account must replace its temporary password. There is no
+Sign in with **admin / p@ssw0rd**. Replace the temporary password before using the application. Changing the
+username is optional. The interface follows the device language (French or English) until each user chooses their own
+language. Administrators create accounts; every new account must replace its temporary password. There is no
 public registration or browser-based administrator recovery.
 
 ## HTTP, internet access and HTTPS
 
-HTTP listens on **0.0.0.0:3000** by default. Local, LAN and remote browsers use the same application and API. Server
+HTTP listens on **0.0.0.0:34345** by default. Local, LAN and remote browsers use the same application and API. Server
 settings show local/LAN addresses and the active and saved HTTP ports. An administrator can change the **HTTP / web
 interface** port in Server settings. Both HTTP and HTTPS ports must be integers from **1024 through 65535**, inclusive.
 Saving keeps the current listener active; close and reopen the desktop application to apply the new port. For example,
@@ -57,13 +63,13 @@ port (default **3443**), and enable HTTPS. Restart Electron to apply the saved s
 database. If optional HTTPS cannot start, HTTP continues and the administrator sees the error. Private keys are never
 returned by the API.
 
-For HTTP, precedence is CLI option, environment variable, saved setting, then default `3000`. Overrides do not replace
+For HTTP, precedence is CLI option, environment variable, saved setting, then default `34345`. Overrides do not replace
 the saved value. Server settings show an active override; remove it and restart to apply a different saved port.
 
 | CLI option               | Environment variable | Default                                                             |
 | ------------------------ | -------------------- | ------------------------------------------------------------------- |
 | `--host <address>`       | `APP_HOST`           | `0.0.0.0`                                                           |
-| `--http-port <port>`     | `APP_HTTP_PORT`      | Saved HTTP port, otherwise `3000`                                   |
+| `--http-port <port>`     | `APP_HTTP_PORT`      | Saved HTTP port, otherwise `34345`                                  |
 | `--data-dir <directory>` | `APP_DATA_DIR`       | Development `.dev-data`; installed Electron per-user data directory |
 
 CLI and environment port values must also be in `1024`–`65535`; port `0` is reserved for internal test fixtures.
@@ -92,7 +98,7 @@ npm run build
 npm run reset-admin -- --login admin
 ```
 
-For Windows, for example: `"Electron Base.exe" --reset-admin --login admin`. If you changed the login or data directory,
+For Windows, for example: `"Media Collection.exe" --reset-admin --login admin`. If you changed the login or data directory,
 supply those values. The local dialog asks for a new temporary password. Recovery requires an existing database and
 administrator account, starts no HTTP/HTTPS listeners, invalidates previous sessions, and requires replacement of the
 temporary password at the next login. The normal and recovery processes cannot open the same application profile
@@ -107,9 +113,11 @@ npm run test:packaged
 npm run package
 ```
 
-`check` runs no-emit TypeScript checks, lint, format checks, builds, architecture fixtures, focused unit tests, real
-SQLite tests, controller HTTP tests through Nest TestingModule, and Electron lifecycle/desktop tests. Electron tests
-require a graphical session. Controller API tests use isolated application fixtures and an injected clock; no test
+`check` builds, then runs no-emit TypeScript checks, lint, format checks, architecture fixtures, focused unit tests,
+React component tests (jsdom), real SQLite tests, controller HTTP tests through Nest TestingModule, browser end-to-end
+tests of Libris and Leaf in real Chromium (Playwright), and Electron lifecycle/desktop tests. Electron tests require a
+graphical session. Install the test browser once with `npx playwright install chromium`; set `MC_SCREENSHOT_DIR` to a
+folder to keep screenshots of the browser tests for visual review. Controller API tests use isolated application fixtures and an injected clock; no test
 endpoints or clock controls exist in the production app.
 
 Controller tests are colocated as `<name>.controller.e2e-spec.ts`; unit tests use matching sibling `.spec.ts` files.
@@ -120,7 +128,8 @@ desktop configuration, and browser helpers. The server's discoverable editor con
 
 Useful focused commands: `test:architecture`, `test:unit`, `test:api`, `lint`, `lint:fix`, `format` and `format:check`.
 `package:dir` creates an unpacked app under `release/`; `test:packaged` starts it outside the checkout, verifies
-HTTP/web assets/native SQLite, closes the window, restarts, and checks persisted Notes. Set `APP_PACKAGED_EXECUTABLE` to
+HTTP/web assets (Libris and Leaf)/native SQLite, closes the window, restarts, and checks a persisted account
+preference. Set `APP_PACKAGED_EXECUTABLE` to
 test a different executable. `package` produces unsigned NSIS, DMG or AppImage output on its respective platform. No
 separate Node/npm installation is needed by the installed app. Verification and packaging run locally; the project
 includes no continuous-integration pipeline.

@@ -1,5 +1,5 @@
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
-import type { Actor } from '../../../shared/domain/actor.helper.js';
+import type { Actor, InterfaceLanguage } from '../../../shared/domain/actor.helper.js';
 
 export interface UserState extends Actor {
     passwordHash: string;
@@ -14,6 +14,7 @@ export class User {
         this.state = { ...state, username: User.username(state.username) };
         Failure.ensure(state.role === 'admin' || state.role === 'user', 'Invalid account role.');
         Failure.ensure(state.passwordHash.length > 0, 'A password hash is required.');
+        User.validateLanguage(state.language);
     }
 
     get snapshot(): UserState {
@@ -21,9 +22,9 @@ export class User {
     }
 
     get actor(): Actor {
-        const { id, username, role, mustChangePassword } = this.state;
+        const { id, username, role, mustChangePassword, language } = this.state;
 
-        return { id, username, role, mustChangePassword };
+        return { id, username, role, mustChangePassword, language };
     }
 
     static username(value: string): string {
@@ -42,6 +43,18 @@ export class User {
             value.length >= 8 && value.length <= 128,
             'Use a password between 8 and 128 characters.',
         );
+    }
+
+    private static validateLanguage(value: InterfaceLanguage | null): void {
+        Failure.ensure(
+            value === null || value === 'en' || value === 'fr',
+            'Choose English or French as the interface language.',
+        );
+    }
+
+    chooseLanguage(language: InterfaceLanguage): void {
+        User.validateLanguage(language);
+        this.state.language = language;
     }
 
     rename(username: string): void {

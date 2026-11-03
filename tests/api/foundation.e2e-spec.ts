@@ -5,7 +5,7 @@ import type { Server } from 'node:net';
 import { createServer } from 'node:net';
 import { networkInterfaces } from 'node:os';
 import BetterSqlite3 from 'better-sqlite3';
-import type { NoteDto, ServerStatus } from '../../packages/contracts/src/http.js';
+import type { Account, ServerStatus } from '../../packages/contracts/src/http.js';
 import { Client } from './client.js';
 import { administrator, availablePort, RuntimeFixture, tlsConfiguration } from './runtime-setup.js';
 
@@ -55,7 +55,7 @@ describe('Electron-managed runtime integration', () => {
         await current.client.call('/server-settings/http', 'PUT', { port });
 
         const restarted = await fixture.restart(current, { port: null });
-        const page = await fetch(restarted.client.base + '/notes');
+        const page = await fetch(restarted.client.base + '/account');
         const health = await restarted.client.call('/health');
 
         expect(restarted.ready.httpPort).toBe(port);
@@ -207,32 +207,20 @@ describe('Electron-managed runtime integration', () => {
         expect((await restarted.client.call('/health')).status).toBe(200);
     });
 
-    it('preserves updated private Notes and sessions across restart', async () => {
+    it('preserves saved account preferences and sessions across restart', async () => {
         const current = await fixture.start();
 
         await administrator(current.client);
-        const created = await current.client.call<NoteDto>('/notes', 'POST', {
-            title: 'Private note',
-            body: 'Persisted',
-        });
-
-        await current.client.call('/notes/' + created.body.id, 'PATCH', {
-            title: 'Updated',
-            body: 'Changed',
-        });
+        await current.client.call('/account/language', 'PATCH', { language: 'fr' });
         const token = current.client.cookies.get('app_auth')!;
 
         const restarted = await fixture.restart(current);
 
         restarted.client.cookies.set('app_auth', token);
-        const response = await restarted.client.call<NoteDto>('/notes/' + created.body.id);
+        const response = await restarted.client.call<Account>('/auth/me');
 
         expect(response.status).toBe(200);
-        expect(response.body).toMatchObject({
-            id: created.body.id,
-            title: 'Updated',
-            body: 'Changed',
-        });
+        expect(response.body).toMatchObject({ username: 'admin', language: 'fr' });
     });
 
     it('starts HTTP and HTTPS together from saved configuration', async () => {
@@ -279,17 +267,13 @@ describe('Electron-managed runtime integration', () => {
         const secure = new Client('https://127.0.0.1:' + port);
 
         await secure.login('admin', 'administrator-new-password');
-        const note = await secure.call<NoteDto>('/notes', 'POST', {
-            title: 'Shared database',
-            body: 'Both listeners',
-        });
-
+        await secure.call('/account/language', 'PATCH', { language: 'fr' });
         await restarted.client.login('admin', 'administrator-new-password');
 
-        const response = await restarted.client.call<NoteDto>('/notes/' + note.body.id);
+        const response = await restarted.client.call<Account>('/auth/me');
 
         expect(response.status).toBe(200);
-        expect(response.body.title).toBe('Shared database');
+        expect(response.body.language).toBe('fr');
     });
 
     it('preserves HTTP availability when saved TLS material is broken', async () => {

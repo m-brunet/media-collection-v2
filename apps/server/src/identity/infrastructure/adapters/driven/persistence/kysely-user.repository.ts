@@ -70,6 +70,7 @@ export class KyselyUserRepository implements UserRepository {
             mustChangePassword: Boolean(row.must_change_password),
             tokenVersion: row.token_version,
             createdAt: row.created_at,
+            language: row.language === 'en' || row.language === 'fr' ? row.language : null,
         });
     }
 
@@ -84,6 +85,7 @@ export class KyselyUserRepository implements UserRepository {
             must_change_password: Number(s.mustChangePassword),
             token_version: s.tokenVersion,
             created_at: s.createdAt,
+            language: s.language,
         };
     }
 

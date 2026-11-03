@@ -15,8 +15,8 @@ export class JwtSessionTokens implements SessionTokens {
         return new SignJWT({ version: claims.version, restricted: claims.restricted })
             .setProtectedHeader({ alg: 'HS256' })
             .setSubject(claims.userId)
-            .setIssuer('electron-base')
-            .setAudience('electron-base-web')
+            .setIssuer('media-collection')
+            .setAudience('media-collection-web')
             .setIssuedAt(now)
             .setExpirationTime(now + 3600)
             .sign(this.key);
@@ -26,8 +26,8 @@ export class JwtSessionTokens implements SessionTokens {
         try {
             const { payload } = await jwtVerify(token, this.key, {
                 algorithms: ['HS256'],
-                issuer: 'electron-base',
-                audience: 'electron-base-web',
+                issuer: 'media-collection',
+                audience: 'media-collection-web',
                 currentDate: this.clock.now(),
             });
 

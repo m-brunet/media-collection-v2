@@ -4,7 +4,7 @@ Status: accepted technical direction. This document does not describe a complete
 
 ## Repository files
 
-- Root `config.sample.json` is a versioned draft showing candidate `host` and `httpPort` overrides, using the foundation's current defaults (HTTP port 3000). It contains no secrets. The agreed product default HTTP port is 34345; the foundation default must change to it when this is implemented.
+- Root `config.sample.json` is a versioned draft showing candidate `host` and `httpPort` overrides, using the application defaults (HTTP port 34345). It contains no secrets.
 - Root `config.json` is ignored by Git. An empty local file is provided as a starting point, without overrides.
 - Neither file is currently loaded by the application. Creating or editing them does not change runtime behavior yet. The sample is a proposed shape, not an implemented configuration contract.
 - The repository location is for development preparation; the installed application's discovery location is still undecided.

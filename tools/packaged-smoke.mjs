@@ -10,10 +10,10 @@ import { closeDesktop } from './processes.mjs';
 const executable = resolve(
     process.env.APP_PACKAGED_EXECUTABLE ??
         (process.platform === 'win32'
-            ? 'release/win-unpacked/Electron Base.exe'
+            ? 'release/win-unpacked/Media Collection.exe'
             : process.platform === 'darwin'
-              ? 'release/mac/Electron Base.app/Contents/MacOS/Electron Base'
-              : 'release/linux-unpacked/electron-base'),
+              ? 'release/mac/Media Collection.app/Contents/MacOS/Media Collection'
+              : 'release/linux-unpacked/media-collection'),
 );
 
 await access(executable);
@@ -111,10 +111,7 @@ try {
         currentPassword: 'p@ssw0rd',
         password: 'packaged-smoke-password',
     });
-    const note = await request('/notes', 'POST', {
-        title: 'Packaged persistence',
-        body: 'Native SQLite works outside the checkout.',
-    });
+    await request('/account/language', 'PATCH', { language: 'fr' });
     const nextReservation = createServer();
 
     await new Promise((resolve) => nextReservation.listen(0, '127.0.0.1', resolve));
@@ -137,13 +134,10 @@ try {
     assert.equal(applied.running.httpPort, nextPort);
     assert.equal(applied.running.httpPortOverride, null);
     assert.equal(applied.restartRequired, false);
-    assert.match(await (await fetch(base + '/notes')).text(), /<div id="root">/);
+    assert.match(await (await fetch(base + '/account')).text(), /<div id="root">/);
+    assert.match(await (await fetch(base + '/leaf/')).text(), /<div id="root">/);
     await assert.rejects(fetch(previousBase + '/api/health'));
-    assert.equal(
-        (await request('/notes/' + note.id)).body,
-        'Native SQLite works outside the checkout.',
-    );
-    await request('/notes/' + note.id, 'DELETE');
+    assert.equal((await request('/auth/me')).language, 'fr');
     console.log(
         'Packaged Electron smoke passed: saved web listening port, HTTP, web assets, native SQLite, graceful close, restart and persistence.',
     );

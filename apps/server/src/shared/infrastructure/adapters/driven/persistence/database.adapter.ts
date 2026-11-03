@@ -12,15 +12,7 @@ interface UsersTable {
     must_change_password: number;
     token_version: number;
     created_at: string;
-}
-
-interface NotesTable {
-    id: string;
-    owner_id: string;
-    title: string;
-    body: string;
-    created_at: string;
-    updated_at: string;
+    language: string | null;
 }
 
 interface SettingsTable {
@@ -30,7 +22,6 @@ interface SettingsTable {
 
 export interface DatabaseSchema {
     users: UsersTable;
-    notes: NotesTable;
     server_settings: SettingsTable;
 }
 
@@ -114,6 +105,18 @@ export class Database {
                                 .createTable('server_settings')
                                 .addColumn('name', 'text', (c) => c.primaryKey())
                                 .addColumn('value', 'text', (c) => c.notNull())
+                                .execute();
+                        },
+                    },
+                    // Media Collection: removes the foundation Notes demo and adds the personal
+                    // interface language (null until the user chooses one).
+                    '002-media-collection-foundation': {
+                        up: async (db: Kysely<unknown>) => {
+                            await db.schema.dropIndex('notes_owner').ifExists().execute();
+                            await db.schema.dropTable('notes').ifExists().execute();
+                            await db.schema
+                                .alterTable('users')
+                                .addColumn('language', 'text')
                                 .execute();
                         },
                     },

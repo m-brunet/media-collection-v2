@@ -14,7 +14,7 @@ export class KyselyHttpSettingsRepository implements HttpSettingsStore {
             .executeTakeFirst();
 
         if (!row) {
-            return new HttpSettings(3000);
+            return new HttpSettings(34345);
         }
 
         const value: unknown = JSON.parse(row.value);
