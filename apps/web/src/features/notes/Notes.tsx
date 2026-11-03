@@ -5,16 +5,17 @@ import { api } from '../../shared/api.util';
 import { useAction } from '../../shared/use-action';
 
 export function Notes() {
-    const [ notes, setNotes ] = useState<NoteDto[]>([]);
-    const [ selected, setSelected ] = useState<NoteDto | null>(null);
+    const [notes, setNotes] = useState<NoteDto[]>([]);
+    const [selected, setSelected] = useState<NoteDto | null>(null);
     const action = useAction();
     const { setMessage } = action;
 
     useEffect(() => {
-        void api.request<NoteDto[]>('/notes')
+        void api
+            .request<NoteDto[]>('/notes')
             .then(setNotes)
             .catch((error) => setMessage(String(error.message)));
-    }, [ setMessage ]);
+    }, [setMessage]);
     const open = (id: string) => {
         void action.run(async () => setSelected(await api.request<NoteDto>('/notes/' + id)));
     };
@@ -25,10 +26,10 @@ export function Notes() {
         void action.run(async () => {
             const note = await api.request<NoteDto>(selected ? '/notes/' + selected.id : '/notes', {
                 method: selected ? 'PATCH' : 'POST',
-                body: { title: form.get('title'), body: form.get('body') }
+                body: { title: form.get('title'), body: form.get('body') },
             });
 
-            setNotes((previous) => [ note, ...previous.filter((item) => item.id !== note.id) ]);
+            setNotes((previous) => [note, ...previous.filter((item) => item.id !== note.id)]);
             setSelected(note);
         }, 'Note saved.');
     };
@@ -49,68 +50,68 @@ export function Notes() {
                 <button
                     type="button"
                     className="secondary"
-                    onClick={ () => {
+                    onClick={() => {
                         setSelected(null);
                         action.setMessage('');
-                    } }
+                    }}
                 >
                     New note
                 </button>
             </div>
             <div className="notes-layout">
                 <aside aria-label="Your saved notes">
-                    { notes.length === 0 && <p className="muted">No notes yet.</p> }
-                    { notes.map((note) => (
+                    {notes.length === 0 && <p className="muted">No notes yet.</p>}
+                    {notes.map((note) => (
                         <button
-                            className={ 'note-link' + (selected?.id === note.id ? ' selected' : '') }
+                            className={'note-link' + (selected?.id === note.id ? ' selected' : '')}
                             type="button"
-                            key={ note.id }
-                            onClick={ () => open(note.id) }
+                            key={note.id}
+                            onClick={() => open(note.id)}
                         >
-                            { note.title }
+                            {note.title}
                         </button>
-                    )) }
+                    ))}
                 </aside>
-                <form onSubmit={ save } key={ selected?.id ?? 'new' }>
+                <form onSubmit={save} key={selected?.id ?? 'new'}>
                     <label>
                         Title
                         <input
                             name="title"
-                            defaultValue={ selected?.title ?? '' }
+                            defaultValue={selected?.title ?? ''}
                             required
-                            maxLength={ 120 }
+                            maxLength={120}
                         />
                     </label>
                     <label>
                         Plain text
                         <textarea
                             name="body"
-                            defaultValue={ selected?.body ?? '' }
-                            maxLength={ 100000 }
-                            rows={ 12 }
+                            defaultValue={selected?.body ?? ''}
+                            maxLength={100000}
+                            rows={12}
                         />
                     </label>
                     <div className="actions">
-                        <button disabled={ action.busy }>Save note</button>
-                        { selected && (
+                        <button disabled={action.busy}>Save note</button>
+                        {selected && (
                             <button
                                 className="danger"
                                 type="button"
-                                disabled={ action.busy }
-                                onClick={ remove }
+                                disabled={action.busy}
+                                onClick={remove}
                             >
                                 Delete
                             </button>
-                        ) }
+                        )}
                     </div>
-                    { selected && (
+                    {selected && (
                         <p className="muted">
-                            Updated { new Date(selected.updatedAt).toLocaleString() }
+                            Updated {new Date(selected.updatedAt).toLocaleString()}
                         </p>
-                    ) }
+                    )}
                 </form>
             </div>
-            <p role="status">{ action.message }</p>
+            <p role="status">{action.message}</p>
         </section>
     );
 }

@@ -1,7 +1,7 @@
 export class ApiError extends Error {
     constructor(
         message: string,
-        public readonly status: number
+        public readonly status: number,
     ) {
         super(message);
     }
@@ -13,7 +13,7 @@ export class ApiClient {
 
     async request<T>(
         path: string,
-        options: { method?: string; body?: unknown; passive?: boolean } = {}
+        options: { method?: string; body?: unknown; passive?: boolean } = {},
     ): Promise<T> {
         const method = options.method ?? 'GET';
         const headers: Record<string, string> = {};
@@ -31,7 +31,7 @@ export class ApiClient {
             method,
             headers,
             credentials: 'same-origin',
-            body: method !== 'GET' ? JSON.stringify(options.body ?? {}) : undefined
+            body: method !== 'GET' ? JSON.stringify(options.body ?? {}) : undefined,
         });
 
         if (!response.ok) {
@@ -69,7 +69,7 @@ export class ApiClient {
                 if (!response.ok) {
                     throw new ApiError(
                         'Could not prepare a secure request. Reload the page.',
-                        response.status
+                        response.status,
                     );
                 }
 

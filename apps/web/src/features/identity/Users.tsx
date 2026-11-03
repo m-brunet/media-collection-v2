@@ -5,15 +5,16 @@ import { api } from '../../shared/api.util';
 import { useAction } from '../../shared/use-action';
 
 export function Users() {
-    const [ users, setUsers ] = useState<Account[]>([]);
+    const [users, setUsers] = useState<Account[]>([]);
     const action = useAction();
     const { setMessage } = action;
 
     useEffect(() => {
-        void api.request<Account[]>('/users')
+        void api
+            .request<Account[]>('/users')
             .then(setUsers)
             .catch((error) => setMessage(String(error.message)));
-    }, [ setMessage ]);
+    }, [setMessage]);
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const element = event.currentTarget;
@@ -25,11 +26,11 @@ export function Users() {
                 body: {
                     username: form.get('username'),
                     password: form.get('password'),
-                    role: form.get('role')
+                    role: form.get('role'),
                 },
             });
 
-            setUsers((previous) => [ ...previous, user ]);
+            setUsers((previous) => [...previous, user]);
             element.reset();
         }, 'Account created. Share the temporary password with its owner.');
     };
@@ -39,35 +40,35 @@ export function Users() {
             <h1>Accounts</h1>
             <table>
                 <thead>
-                <tr>
-                    <th>Username</th>
-                    <th>Role</th>
-                    <th>Setup</th>
-                </tr>
+                    <tr>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Setup</th>
+                    </tr>
                 </thead>
                 <tbody>
-                { users.map((user) => (
-                    <tr key={ user.id }>
-                        <td>{ user.username }</td>
-                        <td>{ user.role }</td>
-                        <td>
-                            { user.mustChangePassword
-                                ? 'Password replacement required'
-                                : 'Complete' }
-                        </td>
-                    </tr>
-                )) }
+                    {users.map((user) => (
+                        <tr key={user.id}>
+                            <td>{user.username}</td>
+                            <td>{user.role}</td>
+                            <td>
+                                {user.mustChangePassword
+                                    ? 'Password replacement required'
+                                    : 'Complete'}
+                            </td>
+                        </tr>
+                    ))}
                 </tbody>
             </table>
-            <form onSubmit={ submit } className="narrow">
+            <form onSubmit={submit} className="narrow">
                 <h2>Create account</h2>
                 <label>
                     Username
                     <input
                         name="username"
                         required
-                        minLength={ 3 }
-                        maxLength={ 40 }
+                        minLength={3}
+                        maxLength={40}
                         autoComplete="off"
                     />
                 </label>
@@ -77,8 +78,8 @@ export function Users() {
                         name="password"
                         type="password"
                         required
-                        minLength={ 8 }
-                        maxLength={ 128 }
+                        minLength={8}
+                        maxLength={128}
                         autoComplete="new-password"
                     />
                 </label>
@@ -89,9 +90,9 @@ export function Users() {
                         <option value="admin">Administrator</option>
                     </select>
                 </label>
-                <button disabled={ action.busy }>Create account</button>
+                <button disabled={action.busy}>Create account</button>
             </form>
-            <p role="status">{ action.message }</p>
+            <p role="status">{action.message}</p>
         </section>
     );
 }

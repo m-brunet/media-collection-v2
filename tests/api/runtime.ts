@@ -43,7 +43,7 @@ export class ElectronRuntime {
 
     constructor(
         readonly dataDirectory: string,
-        options: RuntimeOptions = {}
+        options: RuntimeOptions = {},
     ) {
         const environment: Record<string, string | undefined> = {
             ...process.env,
@@ -51,7 +51,7 @@ export class ElectronRuntime {
             APP_TEST_COMMAND_FILE: join(dataDirectory, 'test-command.json'),
             APP_TEST_PORT: options.port === null ? undefined : String(options.port ?? 0),
             APP_TEST_RECOVERY: options.recovery ? '1' : '0',
-            APP_TEST_FAKE_CLOCK: options.fakeClock ? '1' : '0'
+            APP_TEST_FAKE_CLOCK: options.fakeClock ? '1' : '0',
         };
 
         delete environment.ELECTRON_RUN_AS_NODE;
@@ -68,18 +68,18 @@ export class ElectronRuntime {
             electron,
             options.main
                 ? [
-                    fileURLToPath(new URL('../runtime/main-harness.mjs', import.meta.url)),
-                    '--data-dir',
-                    dataDirectory,
-                    ...(options.port === null || options.port === undefined
-                        ? []
-                        : [ '--http-port', String(options.port) ]),
-                    '--host',
-                    '0.0.0.0',
-                    ...(options.recovery ? [ '--reset-admin', '--login', 'admin' ] : [])
-                ]
-                : [ fileURLToPath(new URL('../runtime/harness.mjs', import.meta.url)) ],
-            { env: environment, stdio: 'pipe' }
+                      fileURLToPath(new URL('../runtime/main-harness.mjs', import.meta.url)),
+                      '--data-dir',
+                      dataDirectory,
+                      ...(options.port === null || options.port === undefined
+                          ? []
+                          : ['--http-port', String(options.port)]),
+                      '--host',
+                      '0.0.0.0',
+                      ...(options.recovery ? ['--reset-admin', '--login', 'admin'] : []),
+                  ]
+                : [fileURLToPath(new URL('../runtime/harness.mjs', import.meta.url))],
+            { env: environment, stdio: 'pipe' },
         );
         this.ready = this.wait(0);
         this.exited = new Promise((resolve) => this.child.once('exit', resolve));
@@ -120,7 +120,7 @@ export class ElectronRuntime {
 
         writeFileSync(
             join(this.dataDirectory, 'test-command.json'),
-            JSON.stringify({ ...message, requestId })
+            JSON.stringify({ ...message, requestId }),
         );
 
         return response;

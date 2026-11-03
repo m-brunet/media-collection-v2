@@ -35,7 +35,7 @@ describe('Electron-managed runtime integration', () => {
         const port = await availablePort();
 
         const response = await current.client.call<ServerStatus>('/server-settings/http', 'PUT', {
-            port
+            port,
         });
 
         expect(response.status).toBe(200);
@@ -98,7 +98,7 @@ describe('Electron-managed runtime integration', () => {
         const failed = fixture.launch(current.directory, { port: null });
 
         await expect(failed.ready).rejects.toThrow(
-            'HTTP could not listen on port ' + port + ' (EADDRINUSE)'
+            'HTTP could not listen on port ' + port + ' (EADDRINUSE)',
         );
     });
 
@@ -136,7 +136,7 @@ describe('Electron-managed runtime integration', () => {
         const restarted = await fixture.restart(current, {
             main: true,
             port: cliPort,
-            environmentPort
+            environmentPort,
         });
 
         await restarted.client.login('admin', 'administrator-new-password');
@@ -147,7 +147,7 @@ describe('Electron-managed runtime integration', () => {
         expect(response.body.configured.http.port).toBe(savedPort);
         expect(response.body.running.httpPortOverride).toEqual({
             port: cliPort,
-            source: 'command-line'
+            source: 'command-line',
         });
         expect(response.body.restartRequired).toBe(false);
     });
@@ -163,7 +163,7 @@ describe('Electron-managed runtime integration', () => {
         const restarted = await fixture.restart(current, {
             main: true,
             port: null,
-            environmentPort
+            environmentPort,
         });
 
         await restarted.client.login('admin', 'administrator-new-password');
@@ -174,7 +174,7 @@ describe('Electron-managed runtime integration', () => {
         expect(response.body.configured.http.port).toBe(savedPort);
         expect(response.body.running.httpPortOverride).toEqual({
             port: environmentPort,
-            source: 'environment'
+            source: 'environment',
         });
     });
 
@@ -213,12 +213,12 @@ describe('Electron-managed runtime integration', () => {
         await administrator(current.client);
         const created = await current.client.call<NoteDto>('/notes', 'POST', {
             title: 'Private note',
-            body: 'Persisted'
+            body: 'Persisted',
         });
 
         await current.client.call('/notes/' + created.body.id, 'PATCH', {
             title: 'Updated',
-            body: 'Changed'
+            body: 'Changed',
         });
         const token = current.client.cookies.get('app_auth')!;
 
@@ -231,7 +231,7 @@ describe('Electron-managed runtime integration', () => {
         expect(response.body).toMatchObject({
             id: created.body.id,
             title: 'Updated',
-            body: 'Changed'
+            body: 'Changed',
         });
     });
 
@@ -281,7 +281,7 @@ describe('Electron-managed runtime integration', () => {
         await secure.login('admin', 'administrator-new-password');
         const note = await secure.call<NoteDto>('/notes', 'POST', {
             title: 'Shared database',
-            body: 'Both listeners'
+            body: 'Both listeners',
         });
 
         await restarted.client.login('admin', 'administrator-new-password');
@@ -310,7 +310,7 @@ describe('Electron-managed runtime integration', () => {
 
         await writeFile(
             join(current.directory, 'tls', saved.certificateDirectory, 'key.pem'),
-            'invalid private key'
+            'invalid private key',
         );
 
         const restarted = await fixture.start(current.directory);
@@ -341,7 +341,7 @@ describe('Electron-managed runtime integration', () => {
             type: 'recover',
             dataDirectory: recovery.directory,
             login: 'admin',
-            password: 'recovery-password'
+            password: 'recovery-password',
         };
 
         const result = recovery.runtime.send(command);
@@ -382,7 +382,7 @@ describe('Electron-managed runtime integration', () => {
             type: 'recover',
             dataDirectory: current.directory,
             login: 'admin',
-            password: 'recovery-password'
+            password: 'recovery-password',
         });
         await recovery.runtime.close();
         const restarted = await fixture.start(current.directory);
@@ -409,7 +409,7 @@ describe('Electron-managed runtime integration', () => {
             type: 'recover',
             dataDirectory: current.directory,
             login: 'admin',
-            password: 'recovery-password'
+            password: 'recovery-password',
         });
         await recovery.runtime.close();
         const restarted = await fixture.start(current.directory);

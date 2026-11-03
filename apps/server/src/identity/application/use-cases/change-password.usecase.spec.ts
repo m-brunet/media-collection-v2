@@ -14,7 +14,7 @@ describe('ChangePassword', () => {
             users,
             new AccountLoader(users),
             passwords,
-            new CurrentPasswordConfirmation(passwords)
+            new CurrentPasswordConfirmation(passwords),
         );
 
         const result = await subject.execute(account.actor, 'old-password', 'new-password');
@@ -22,7 +22,7 @@ describe('ChangePassword', () => {
         expect(result.mustChangePassword).toBe(false);
         expect((await users.findById('owner'))!.snapshot).toMatchObject({
             passwordHash: 'hash:new-password',
-            tokenVersion: 1
+            tokenVersion: 1,
         });
     });
     it('rejects an incorrect current password', async () => {
@@ -36,7 +36,7 @@ describe('ChangePassword', () => {
             users,
             new AccountLoader(users),
             passwords,
-            new CurrentPasswordConfirmation(passwords)
+            new CurrentPasswordConfirmation(passwords),
         );
 
         const result = subject.execute(account.actor, current, next);
@@ -55,7 +55,7 @@ describe('ChangePassword', () => {
             users,
             new AccountLoader(users),
             passwords,
-            new CurrentPasswordConfirmation(passwords)
+            new CurrentPasswordConfirmation(passwords),
         );
 
         const result = subject.execute(account.actor, current, next);
@@ -74,7 +74,7 @@ describe('ChangePassword', () => {
             users,
             new AccountLoader(users),
             passwords,
-            new CurrentPasswordConfirmation(passwords)
+            new CurrentPasswordConfirmation(passwords),
         );
 
         const result = subject.execute(account.actor, current, next);

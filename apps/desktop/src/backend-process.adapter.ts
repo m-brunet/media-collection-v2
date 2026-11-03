@@ -11,7 +11,7 @@ export class BackendProcess {
     constructor(workerPath: string) {
         this.process = utilityProcess.fork(workerPath, [], {
             serviceName: 'Application backend',
-            stdio: 'pipe'
+            stdio: 'pipe',
         });
         this.process.stdout?.on('data', (chunk) => process.stdout.write(chunk));
         this.process.stderr?.on('data', (chunk) => process.stderr.write(chunk));
@@ -72,8 +72,8 @@ export class BackendProcess {
             await Promise.race([
                 this.request({ type: 'stop' }),
                 new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('Shutdown timed out.')), 7000).unref()
-                )
+                    setTimeout(() => reject(new Error('Shutdown timed out.')), 7000).unref(),
+                ),
             ]);
         } finally {
             if (!this.exited) {

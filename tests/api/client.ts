@@ -22,7 +22,7 @@ export class Client {
         path: string,
         method = 'GET',
         body?: object,
-        options: { passive?: boolean; csrf?: boolean; origin?: string } = {}
+        options: { passive?: boolean; csrf?: boolean; origin?: string } = {},
     ): Promise<ApiResult<T>> {
         const url = new URL('/api' + path, this.base);
         const mutation = method !== 'GET';
@@ -35,21 +35,21 @@ export class Client {
                     method,
                     rejectUnauthorized: false,
                     headers: {
-                        Cookie: [ ...this.cookies ]
-                            .map(([ key, value ]) => key + '=' + value)
+                        Cookie: [...this.cookies]
+                            .map(([key, value]) => key + '=' + value)
                             .join('; '),
                         ...(options.passive ? { 'X-App-Activity': 'passive' } : {}),
                         ...(mutation
                             ? {
-                                'Content-Type': 'application/json',
-                                'Content-Length': Buffer.byteLength(data!),
-                                Origin: options.origin ?? this.base,
-                                ...(options.csrf === false
-                                    ? {}
-                                    : { 'X-CSRF-Token': this.csrfToken })
-                            }
-                            : {})
-                    }
+                                  'Content-Type': 'application/json',
+                                  'Content-Length': Buffer.byteLength(data!),
+                                  Origin: options.origin ?? this.base,
+                                  ...(options.csrf === false
+                                      ? {}
+                                      : { 'X-CSRF-Token': this.csrfToken }),
+                              }
+                            : {}),
+                    },
                 },
                 (response) => {
                     for (const cookie of response.headers['set-cookie'] ?? []) {
@@ -69,15 +69,15 @@ export class Client {
                             status: response.statusCode ?? 0,
                             body: (text ? JSON.parse(text) : undefined) as T,
                             text,
-                            headers: response.headers
+                            headers: response.headers,
                         });
                     });
-                }
+                },
             );
 
             request.on('error', reject);
             request.setTimeout(10000, () =>
-                request.destroy(new Error('HTTP test request timed out.'))
+                request.destroy(new Error('HTTP test request timed out.')),
             );
             request.end(data);
         });

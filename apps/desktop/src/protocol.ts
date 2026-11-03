@@ -1,13 +1,13 @@
 export type WorkerRequest =
     | {
-    type: 'start';
-    dataDirectory: string;
-    host: string;
-    httpPort?: number;
-    httpPortSource?: 'command-line' | 'environment';
-    webDirectory: string;
-    development: boolean;
-}
+          type: 'start';
+          dataDirectory: string;
+          host: string;
+          httpPort?: number;
+          httpPortSource?: 'command-line' | 'environment';
+          webDirectory: string;
+          development: boolean;
+      }
     | { type: 'recover'; dataDirectory: string; login: string; password: string }
     | { type: 'stop' };
 export type WorkerResponse =

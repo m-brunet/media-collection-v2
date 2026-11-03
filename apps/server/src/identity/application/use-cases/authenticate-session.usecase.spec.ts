@@ -17,7 +17,7 @@ describe('AuthenticateSession', () => {
         expect(result).toMatchObject({
             id: 'owner',
             sessionVersion: 0,
-            mustChangePassword: restricted
+            mustChangePassword: restricted,
         });
     });
     it('preserves a restricted token', async () => {
@@ -33,7 +33,7 @@ describe('AuthenticateSession', () => {
         expect(result).toMatchObject({
             id: 'owner',
             sessionVersion: 0,
-            mustChangePassword: restricted
+            mustChangePassword: restricted,
         });
     });
     it('preserves mandatory setup even for an unrestricted token', async () => {

@@ -20,10 +20,10 @@ const vite = await createServer({
             '/api': {
                 configure(proxy) {
                     apiProxy = proxy;
-                }
-            }
-        }
-    }
+                },
+            },
+        },
+    },
 });
 
 await vite.listen();
@@ -66,9 +66,9 @@ const compilerWatch = spawn(
         '--watch',
         '--preserveWatchOutput',
         '--pretty',
-        'false'
+        'false',
     ],
-    { stdio: ['ignore', 'pipe', 'inherit'] }
+    { stdio: ['ignore', 'pipe', 'inherit'] },
 );
 let firstCompilation = true;
 let compilerOutput = '';

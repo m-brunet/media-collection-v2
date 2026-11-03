@@ -21,8 +21,8 @@ app.on('browser-window-created', (_event, created) => {
                 nodeIntegration: preferences.nodeIntegration,
                 sandbox: preferences.sandbox,
                 contextIsolation: preferences.contextIsolation,
-                recovery: url.protocol === 'file:'
-            }
+                recovery: url.protocol === 'file:',
+            },
         });
     });
 });
@@ -45,7 +45,7 @@ watchFile(process.env.APP_TEST_COMMAND_FILE, { interval: 20 }, async () => {
         if (request.type === 'evaluate') {
             send({
                 type: 'evaluated',
-                value: await window.webContents.executeJavaScript(request.expression)
+                value: await window.webContents.executeJavaScript(request.expression),
             });
         } else if (request.type === 'stop') {
             if (window) {

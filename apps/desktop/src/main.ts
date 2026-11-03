@@ -18,7 +18,11 @@ const startupOptions = (() => {
         const defaultData = app.isPackaged
             ? app.getPath('userData')
             : join(app.getAppPath(), '.dev-data');
-        const options = DesktopConfigurationParser.parse(process.argv.slice(1), process.env, defaultData);
+        const options = DesktopConfigurationParser.parse(
+            process.argv.slice(1),
+            process.env,
+            defaultData,
+        );
 
         if (options.recoveryLogin && !existsSync(options.dataDirectory)) {
             throw new Error('Recovery requires an existing data directory.');
@@ -33,7 +37,7 @@ const startupOptions = (() => {
     } catch (error) {
         dialog.showErrorBox(
             'Invalid application configuration',
-            error instanceof Error ? error.message : 'Configuration failed.'
+            error instanceof Error ? error.message : 'Configuration failed.',
         );
 
         return undefined;
@@ -90,7 +94,7 @@ if (!startupOptions) {
         } catch (error) {
             dialog.showErrorBox(
                 'Application could not start',
-                error instanceof Error ? error.message : 'Unknown startup error.'
+                error instanceof Error ? error.message : 'Unknown startup error.',
             );
             app.quit();
         }
@@ -106,7 +110,7 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
                 type: 'start',
                 ...options,
                 webDirectory: join(directory, '../../web'),
-                development: !app.isPackaged
+                development: !app.isPackaged,
             });
 
             if (ready.type !== 'ready') {
@@ -116,11 +120,11 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
             // Development tooling updates its API proxy before the renderer starts requesting data.
             console.log('Application backend ready on HTTP port ' + ready.httpPort);
 
-            const host = [ '0.0.0.0', '::' ].includes(options.host)
+            const host = ['0.0.0.0', '::'].includes(options.host)
                 ? '127.0.0.1'
                 : options.host.includes(':')
-                    ? '[' + options.host + ']'
-                    : options.host;
+                  ? '[' + options.host + ']'
+                  : options.host;
             const url =
                 (!app.isPackaged ? process.env.APP_DEV_UI : undefined) ??
                 'http://' + host + ':' + ready.httpPort;
@@ -131,7 +135,7 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
                 minWidth: 700,
                 minHeight: 550,
                 show: false,
-                webPreferences: { contextIsolation: true, sandbox: true, nodeIntegration: false }
+                webPreferences: { contextIsolation: true, sandbox: true, nodeIntegration: false },
             });
             window.webContents.setWindowOpenHandler(({ url: target }) => {
                 if (/^https?:\/\//.test(target)) {
@@ -159,9 +163,9 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
                         type: 'error',
                         title: 'Server stopped',
                         message: 'The application server stopped. Retry to start it again.',
-                        buttons: [ 'Retry', 'Quit' ],
+                        buttons: ['Retry', 'Quit'],
                         defaultId: 0,
-                        cancelId: 1
+                        cancelId: 1,
                     });
 
                     if (result.response === 0) {
@@ -183,9 +187,9 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
                 title: 'Server could not start',
                 message: error instanceof Error ? error.message : 'The server failed to start.',
                 detail: 'Check the configured port and data directory, then retry.',
-                buttons: [ 'Retry', 'Quit' ],
+                buttons: ['Retry', 'Quit'],
                 defaultId: 0,
-                cancelId: 1
+                cancelId: 1,
             });
 
             if (result.response === 1) {
@@ -207,7 +211,7 @@ async function recovery(dataDirectory: string, login: string): Promise<void> {
             preload: join(directory, 'recovery-preload.cjs'),
             contextIsolation: true,
             sandbox: true,
-            nodeIntegration: false
+            nodeIntegration: false,
         },
     });
     window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
@@ -237,7 +241,7 @@ async function recovery(dataDirectory: string, login: string): Promise<void> {
         } catch (error) {
             return {
                 success: false,
-                message: error instanceof Error ? error.message : 'Recovery failed.'
+                message: error instanceof Error ? error.message : 'Recovery failed.',
             };
         } finally {
             resetting = false;

@@ -14,7 +14,7 @@ describe('SeedAdministrator', () => {
             role: 'admin',
             passwordHash: 'hash:p@ssw0rd',
             mustChangePassword: true,
-            createdAt: clock.now().toISOString()
+            createdAt: clock.now().toISOString(),
         });
     });
     it('preserves an existing account without seeding again', async () => {

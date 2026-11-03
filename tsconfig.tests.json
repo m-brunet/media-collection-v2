@@ -1,14 +1,14 @@
 {
-  "extends": "./tsconfig.runtime.json",
-  "compilerOptions": {
-    "noEmit": true
-  },
-  "include": [
-    "apps/server/src/**/*.spec.ts",
-    "apps/desktop/src/**/*.spec.ts",
-    "tests/**/*.ts",
-    "apps/server/src/**/*.e2e-spec.ts",
-    "apps/web/src/**/*.spec.ts"
-  ],
-  "exclude": []
+    "extends": "./tsconfig.runtime.json",
+    "compilerOptions": {
+        "noEmit": true
+    },
+    "include": [
+        "apps/server/src/**/*.spec.ts",
+        "apps/desktop/src/**/*.spec.ts",
+        "tests/**/*.ts",
+        "apps/server/src/**/*.e2e-spec.ts",
+        "apps/web/src/**/*.spec.ts"
+    ],
+    "exclude": []
 }
