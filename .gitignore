@@ -163,8 +163,8 @@ session.key
 # Per-repository identity, included by .git/config.
 /.gitconfig
 
-# Local working references, exports, and scratch notes; never authoritative.
-/design/local-reference/
+# Local design reference (copy of the external "designs ui" folder) and scratch notes; never committed.
+/design/
 /docs/local-notes/
 
 # Additional IDE workspace settings

@@ -1,12 +1,12 @@
 # Lending: interface design brief
 
-Status: design reference reconciled after Task 4 product closure. Read [lending business rules](lending.md) first. Items marked proposed remain visual options, not additional business requirements. The existing export may need screen refinements to show decisions recorded after it was produced.
+Status: design brief reconciled after Task 4 product closure. Read [lending business rules](lending.md) first. Items marked proposed remain visual options, not additional business requirements.
 
-The selected design has now been exported in [the final handoff](../design/handoff-lending-final/HANDOFF.md). This brief records the requested coverage; it must not be read as a claim that all requested states were exported. See the handoff and [design guide](../design/README.md) for gaps and unresolved decisions.
+The lending screens are drawn in the Libris design artifact described in [design guidelines](design-guidelines.md). This brief records the required coverage; states not drawn there are built in the same style.
 
 ## Context and visual direction
 
-Extend the existing Media Collection v2 dark desktop interface, using [current design references](../design/README.md). Preserve restrained surfaces, portrait book covers, readable text, and existing typography/accent direction. Do not reuse reference covers as shipped application assets. Receiver names are labels entered by the library user, not accounts.
+Extend the Libris dark desktop interface, following [design guidelines](design-guidelines.md). Preserve restrained surfaces, portrait book covers, readable text, and existing typography/accent direction. Do not reuse reference covers as shipped application assets. Receiver names are labels entered by the library user, not accounts.
 
 Required experiences: lend one or several books to one receiver, record one or several returns, and browse lent books with their receiver. Do not design due dates, overdue warnings, reminders, contact details, or extra statuses without approval.
 
@@ -62,7 +62,3 @@ Show empty state ('No books currently lent'), loading, error/retry, one receiver
 ## Interaction requirements
 
 Use explicit labels, keyboard navigation, visible focus, non-color status indicators, and accessible feedback. A receiver can be a nickname; avoid requesting identity details. Do not equate receiver name with the logged-in user's username. Desktop browser and Electron normal business screens should behave alike. No mobile lending flow is approved yet.
-
-## Copyable Pen task (after decisions are resolved)
-
-Extend the Media Collection v2 designs with lending and returns. Read `docs/lending.md`, this brief, and `design/README.md`. Design the book-details lending entry point, a one-or-many-book lending page with a required receiver name, a return-selection page for books lent to that receiver, and a loans page identifying books and receivers. Reuse the established dark visual direction. Cover empty, validation, submitting, failure, conflict, and success states. Keep lending independent from ownership and reading status. Do not invent due dates, notifications, or receiver contact fields. Identify unresolved product decisions before treating a proposed interaction as final.

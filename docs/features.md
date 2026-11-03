@@ -89,7 +89,7 @@ Removing a tag association or deleting a tag preserves books. Rename to an equiv
 
 ## Lists, search, and sorting
 
-Book and collection listing views are simple listings with simple search, advanced multiple-criteria filtering, and ordering options. The cover-based design is visual direction; final layout choices are not settled here.
+Book and collection listing views are simple listings with simple search, advanced multiple-criteria filtering, and ordering options. The cover-based design is a style guide; see [design guidelines](design-guidelines.md).
 
 - Simple search covers title, authors, ISBN, and collection name, with case/accent-insensitive partial matches and equivalent ISBN-10/13 recognition.
 - Confirmed sort fields: title, date added, and publication date only.
@@ -129,7 +129,7 @@ Activity tells every user what happened recently in the application. It uses sel
 - No category or date-range filters initially. Categories select eligible events internally, not through an initial filtering interface.
 - Show newest entries first and allow loading older entries.
 
-All account roles can view desktop Activity. Initial hiding of before/after values is a presentation rule, not a reason to omit them from the technical record. Exact timestamp details use hover; added click/tap/focus-reveal interactions were declined initially. Timestamp timezone remains to be specified as a display convention. Username changes use the current user-table value; deactivated users remain available for attribution. Reading goals are deferred.
+All account roles can view desktop Activity. Initial hiding of before/after values is a presentation rule, not a reason to omit them from the technical record. Exact timestamp details appear on hover and on keyboard focus, as required by the accessibility baseline in [design guidelines](design-guidelines.md); click/tap reveal is not required. Timestamp timezone remains to be specified as a display convention. Username changes use the current user-table value; deactivated users remain available for attribution. Reading goals are deferred.
 
 ## Accounts and permissions
 
@@ -189,11 +189,11 @@ Require the current Admin password and explicit confirmation explaining erased d
 
 ## Mobile
 
-The same installation serves a deliberately limited mobile interface for collection shopping and adding books by barcode scanning. Its home page has Collections and Scan buttons. Mobile book entry uses the same three form sections and field rules as desktop, adapted to the phone. Successful creation offers Scan another book or Back to home. It is not automatically the full desktop application at a narrower width.
+The same installation serves a deliberately limited mobile interface, Leaf, at `/leaf/`, for collection shopping and adding books by barcode scanning. Its home page has Collections and Scan buttons. Mobile book entry uses the same three form sections and field rules as desktop, adapted to the phone. Successful creation offers Scan another book or Back to home. It is not automatically the full desktop application at a narrower width.
 
 Mobile is Owner/Admin-only; Guests have no access. Add-form access requires a successful scan, with no manual ISBN-entry fallback. Camera/scan failure offers an explanation, Retry, or Back to home. Desktop manual entry is unchanged. Unsaved changes require discard confirmation; failed saves preserve the form with error feedback/retry and do not show success navigation.
 
-Mobile metadata lookup failure permits at most one retry, then error and Back to home with no manual completion. Existing Owned ISBN shows Already owned with scan-again/home choices; existing Not Owned ISBN requires confirmation before external fetching and updates the existing record rather than creating a duplicate. The local ISBN check always comes first. The single retry uses an explicit Retry button, never an automatic retry. [Task 6](overview-activity-mobile.md) is complete with acceptance examples and final flow rules.
+Mobile metadata lookup failure permits at most one retry, then error and Back to home with no manual completion. Existing Owned ISBN shows Already owned with scan-again/home choices; existing Not Owned ISBN requires confirmation, then opens the existing record for review/update without any external metadata lookup, rather than creating a duplicate. The local ISBN check always comes first. The single retry uses an explicit Retry button, never an automatic retry. [Task 6](overview-activity-mobile.md) is complete with acceptance examples and final flow rules.
 
 Confirmed shopping rules are consolidated in [Collections and shopping](collections.md): show unfinished collections, compact missing-volume entries, and emphasized highest Owned coverage; require confirmation to mark an eligible ordinary saved record Owned; no quick add for inferred volumes or omnibus books. Guests cannot change shared book data or ownership.
 

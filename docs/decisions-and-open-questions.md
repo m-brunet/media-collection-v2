@@ -4,7 +4,7 @@ Status: Tasks 1-7 are complete, with confirmed business rules and acceptance exa
 
 ## Authority and documentation map
 
-Latest explicit user decisions take precedence, followed by the owning product documents below. Mockups supply visual direction only. The imported architecture documentation describes the foundation, not the v2 feature set; follow AGENTS.md and the required review skill for implementation.
+Latest explicit user decisions take precedence, followed by the owning product documents below. The design artifact is a style guide only; see [design guidelines](design-guidelines.md). The imported architecture documentation describes the foundation, not the v2 feature set; follow AGENTS.md and the required review skill for implementation.
 
 | Product area | Current reference |
 | --- | --- |
@@ -18,7 +18,7 @@ Latest explicit user decisions take precedence, followed by the owning product d
 | Overview, Activity, mobile, Task 6 | [Overview, Activity, mobile](overview-activity-mobile.md) |
 | Languages, offline use, backup/reset, Task 7 | [Release expectations](release-expectations.md) |
 | Optional startup configuration direction | [Configuration](configuration.md) |
-| Design inventory and discrepancies | [Design guide](../design/README.md) |
+| Design reference, names, icons, accessibility | [Design guidelines](design-guidelines.md) |
 
 ## Key boundaries
 
@@ -45,7 +45,7 @@ Technical audits capture the agreed successful/failed use-case outcomes and befo
 
 ## Design follow-up
 
-Some original exports still contain superseded ratings, progress/goals, virtual shelves, and demo counts. The three-block entry form, physical locations/tags, current lending indicators/date/search, and mobile flows must follow current product docs. Missing mobile/account/loading/empty/error assets are design work, not unanswered authorization or ownership rules. Detailed component arrangement and feedback copy can evolve while preserving confirmed behavior.
+The Libris design artifact (see [design guidelines](design-guidelines.md)) is the only design reference; earlier exports and handoffs are retired. Where a drawn screen differs from these documents, the documents win. Undrawn pages and states are built in the established style; they are not unanswered authorization or ownership rules. Detailed component arrangement and feedback copy can evolve while preserving confirmed behavior.
 
 ## Explicit deferrals
 

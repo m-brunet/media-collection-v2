@@ -5,7 +5,7 @@
   "ignorePatterns": [
     ".plans/**",
     ".agents/**",
-    "AGENT.md",
+    "**/*.md",
     "package-lock.json",
     "dist/**",
     "release/**",
