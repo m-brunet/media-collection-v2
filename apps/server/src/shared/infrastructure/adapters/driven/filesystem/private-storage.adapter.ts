@@ -1,5 +1,12 @@
 import { chmodSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import { win32 } from 'node:path';
+
+// Resolve Windows tools from System32 so same-named tools earlier on PATH (for example Git Bash's
+// GNU whoami) are never used, whichever shell started the application.
+function systemTool(name: string): string {
+    return win32.join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', name);
+}
 
 // Protect application-owned files/directories: owner, SYSTEM and administrators on Windows.
 export class PrivateStorage {
@@ -16,9 +23,9 @@ export class PrivateStorage {
         const permission = directory ? ':(OI)(CI)F' : ':F';
         const options = { windowsHide: true, stdio: 'ignore' as const };
 
-        execFileSync('icacls.exe', [path, '/reset'], options);
+        execFileSync(systemTool('icacls.exe'), [path, '/reset'], options);
         execFileSync(
-            'icacls.exe',
+            systemTool('icacls.exe'),
             [
                 path,
                 '/inheritance:r',
@@ -33,7 +40,7 @@ export class PrivateStorage {
 
     private accountSid(): string {
         if (!this.currentSid) {
-            const output = execFileSync('whoami.exe', ['/user', '/fo', 'csv', '/nh'], {
+            const output = execFileSync(systemTool('whoami.exe'), ['/user', '/fo', 'csv', '/nh'], {
                 encoding: 'utf8',
                 windowsHide: true,
             });
