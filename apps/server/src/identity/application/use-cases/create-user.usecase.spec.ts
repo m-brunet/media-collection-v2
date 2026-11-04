@@ -31,7 +31,7 @@ describe('CreateUser', () => {
 
         expect(result).toEqual({
             id: 'member',
-            username: 'member',
+            username: 'Member',
             role: 'owner',
             mustChangePassword: true,
             active: true,

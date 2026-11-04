@@ -339,8 +339,8 @@ describe('PATCH /api/account/username', () => {
         });
 
         expect(response.status).toBe(200);
-        expect(response.body.username).toBe('renamed');
-        expect((await app.dependencies.users.findById(admin.id))!.actor.username).toBe('renamed');
+        expect(response.body.username).toBe('Renamed');
+        expect((await app.dependencies.users.findById(admin.id))!.actor.username).toBe('Renamed');
     });
     it('rejects unauthenticated access', async () => {
         const client = app.client();

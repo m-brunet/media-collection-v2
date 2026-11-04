@@ -26,7 +26,7 @@ export class Login implements LoginUseCase {
                 subjectId: null,
             },
             async (context) => {
-                const user = await this.users.findByUsername(username.trim().toLowerCase());
+                const user = await this.users.findByUsername(username.trim());
 
                 if (user) {
                     context.actorId = user.actor.id;

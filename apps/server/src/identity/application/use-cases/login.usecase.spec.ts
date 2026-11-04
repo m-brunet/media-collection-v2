@@ -7,7 +7,7 @@ import { MemoryUsers, passwords, tokens, user } from '../testing/identity-double
 import { Login } from './login.usecase.js';
 
 describe('Login', () => {
-    it('normalizes the username and issues restricted session claims', async () => {
+    it('trims spaces around the username and issues restricted session claims', async () => {
         const users = new MemoryUsers();
 
         await users.create(user({ mustChangePassword: true }));
@@ -18,10 +18,43 @@ describe('Login', () => {
             auditedOperation(new MemoryAuditTrail()),
         );
 
-        const result = await subject.execute(' OWNER ', 'old-password');
+        const result = await subject.execute(' owner ', 'old-password');
 
         expect(result.actor.mustChangePassword).toBe(true);
         expect(JSON.parse(result.token)).toEqual({ userId: 'owner', version: 0, restricted: true });
+    });
+    it('requires the exact letter case of the username', async () => {
+        const users = new MemoryUsers();
+
+        await users.create(user());
+        const subject = new Login(
+            users,
+            passwords,
+            tokens,
+            auditedOperation(new MemoryAuditTrail()),
+        );
+
+        const result = subject.execute('OWNER', 'old-password');
+
+        await expect(result).rejects.toMatchObject({
+            code: 'unauthorized',
+            reason: 'credentials-incorrect',
+        });
+    });
+    it('requires the exact letter case of the password', async () => {
+        const users = new MemoryUsers();
+
+        await users.create(user());
+        const subject = new Login(
+            users,
+            passwords,
+            tokens,
+            auditedOperation(new MemoryAuditTrail()),
+        );
+
+        const result = subject.execute('owner', 'OLD-PASSWORD');
+
+        await expect(result).rejects.toMatchObject({ code: 'unauthorized' });
     });
     it('rejects a missing user', async () => {
         const username = 'missing';

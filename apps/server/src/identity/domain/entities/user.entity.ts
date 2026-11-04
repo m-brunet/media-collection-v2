@@ -56,10 +56,11 @@ export class User {
     }
 
     static username(value: string): string {
-        const normalized = value.trim().toLowerCase();
+        // The spelling is kept as typed and must match exactly at sign-in. Only outer spaces go.
+        const normalized = value.trim();
 
         Failure.ensure(
-            /^[a-z0-9][a-z0-9._-]{2,39}$/.test(normalized),
+            /^[A-Za-z0-9][A-Za-z0-9._-]{2,39}$/.test(normalized),
             'Use 3–40 letters, numbers, dots, underscores or hyphens for the username.',
             'username-format',
         );

@@ -32,7 +32,7 @@ describe('CompleteSetup', () => {
             password: 'chosen-password',
         });
 
-        expect(result.actor).toMatchObject({ id: 'first', username: 'alex', role: 'admin' });
+        expect(result.actor).toMatchObject({ id: 'first', username: 'Alex', role: 'admin' });
         expect((await users.findById('first'))!.snapshot).toMatchObject({
             passwordHash: 'hash:chosen-password',
             mustChangePassword: false,

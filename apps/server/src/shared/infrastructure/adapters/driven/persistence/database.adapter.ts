@@ -183,6 +183,14 @@ export class Database {
                                 .execute();
                         },
                     },
+                    // Usernames keep their letter case for sign-in but must not differ from
+                    // another account's only by case (usernames are ASCII, so NOCASE is complete).
+                    '004-case-insensitive-usernames': {
+                        up: async (db: Kysely<unknown>) => {
+                            await sql`create unique index users_username_case_insensitive
+                                on users (username collate nocase)`.execute(db);
+                        },
+                    },
                 }),
             },
         });

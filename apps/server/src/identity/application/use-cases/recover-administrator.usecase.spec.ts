@@ -9,7 +9,7 @@ describe('RecoverAdministrator', () => {
         await users.create(user({ tokenVersion: 1 }));
         const subject = new RecoverAdministrator(users, passwords);
 
-        await subject.execute(' OWNER ', 'recovered-password');
+        await subject.execute(' owner ', 'recovered-password');
 
         expect((await users.findById('owner'))!.snapshot).toMatchObject({
             passwordHash: 'hash:recovered-password',

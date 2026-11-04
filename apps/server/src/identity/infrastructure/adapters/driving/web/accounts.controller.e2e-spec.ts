@@ -78,7 +78,7 @@ describe('POST /api/users', () => {
 
         expect(response.status).toBe(201);
         expect(response.body).toMatchObject({
-            username: 'sam',
+            username: 'Sam',
             role: 'owner',
             mustChangePassword: true,
             active: true,
@@ -126,6 +126,15 @@ describe('POST /api/users', () => {
         const response = await client.call('/users', 'POST', input);
 
         expect(response.status).toBe(400);
+    });
+    it('refuses a username differing from an existing one only by letter case', async () => {
+        const client = await app.authenticatedClient(admin);
+        const input = { username: 'Camille', password: 'temporary-password', role: 'guest' };
+
+        const response = await client.call('/users', 'POST', input);
+
+        expect(response.status).toBe(409);
+        expect(response.body.reason).toBe('username-taken');
     });
     it('refuses the reserved username of a deactivated account', async () => {
         const client = await app.authenticatedClient(admin);
