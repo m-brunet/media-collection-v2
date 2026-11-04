@@ -37,10 +37,61 @@ interface SettingsTable {
     value: string;
 }
 
+interface AuthorsTable {
+    id: string;
+    name: string;
+    name_key: string;
+    created_at: string;
+}
+
+interface BooksTable {
+    id: string;
+    title: string;
+    title_key: string;
+    isbn13: string | null;
+    isbn_converted: number;
+    no_isbn: number;
+    category: string;
+    ownership: string;
+    publisher: string | null;
+    publication_year: number | null;
+    publication_month: number | null;
+    summary: string | null;
+    page_count: number | null;
+    price_cents: number | null;
+    cover_file: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+interface BookAuthorsTable {
+    book_id: string;
+    author_id: string;
+    position: number;
+}
+
+interface ReadingStatusesTable {
+    user_id: string;
+    book_id: string;
+    read: number;
+}
+
+interface PersonalNotesTable {
+    user_id: string;
+    book_id: string;
+    text: string;
+    updated_at: string;
+}
+
 export interface DatabaseSchema {
     users: UsersTable;
     server_settings: SettingsTable;
     audit_logs: AuditLogsTable;
+    authors: AuthorsTable;
+    books: BooksTable;
+    book_authors: BookAuthorsTable;
+    reading_statuses: ReadingStatusesTable;
+    personal_notes: PersonalNotesTable;
 }
 
 export class Database {
@@ -189,6 +240,92 @@ export class Database {
                         up: async (db: Kysely<unknown>) => {
                             await sql`create unique index users_username_case_insensitive
                                 on users (username collate nocase)`.execute(db);
+                        },
+                    },
+                    // Books with shared authors, and each account's own reading status and note.
+                    // `*_key` columns hold the case- and accent-insensitive comparison form.
+                    '005-books': {
+                        up: async (db: Kysely<unknown>) => {
+                            await db.schema
+                                .createTable('authors')
+                                .addColumn('id', 'text', (c) => c.primaryKey())
+                                .addColumn('name', 'text', (c) => c.notNull())
+                                .addColumn('name_key', 'text', (c) => c.notNull().unique())
+                                .addColumn('created_at', 'text', (c) => c.notNull())
+                                .execute();
+                            await db.schema
+                                .createTable('books')
+                                .addColumn('id', 'text', (c) => c.primaryKey())
+                                .addColumn('title', 'text', (c) => c.notNull())
+                                .addColumn('title_key', 'text', (c) => c.notNull())
+                                .addColumn('isbn13', 'text', (c) => c.unique())
+                                .addColumn('isbn_converted', 'integer', (c) => c.notNull())
+                                .addColumn('no_isbn', 'integer', (c) => c.notNull())
+                                .addColumn('category', 'text', (c) => c.notNull())
+                                .addColumn('ownership', 'text', (c) => c.notNull())
+                                .addColumn('publisher', 'text')
+                                .addColumn('publication_year', 'integer')
+                                .addColumn('publication_month', 'integer')
+                                .addColumn('summary', 'text')
+                                .addColumn('page_count', 'integer')
+                                .addColumn('price_cents', 'integer')
+                                .addColumn('cover_file', 'text')
+                                .addColumn('created_at', 'text', (c) => c.notNull())
+                                .addColumn('updated_at', 'text', (c) => c.notNull())
+                                .execute();
+                            await db.schema
+                                .createIndex('books_title_key')
+                                .on('books')
+                                .column('title_key')
+                                .execute();
+                            await db.schema
+                                .createTable('book_authors')
+                                .addColumn('book_id', 'text', (c) =>
+                                    c.notNull().references('books.id').onDelete('cascade'),
+                                )
+                                .addColumn('author_id', 'text', (c) =>
+                                    c.notNull().references('authors.id'),
+                                )
+                                .addColumn('position', 'integer', (c) => c.notNull())
+                                .addPrimaryKeyConstraint('book_authors_pk', [
+                                    'book_id',
+                                    'author_id',
+                                ])
+                                .execute();
+                            await db.schema
+                                .createIndex('book_authors_author')
+                                .on('book_authors')
+                                .column('author_id')
+                                .execute();
+                            await db.schema
+                                .createTable('reading_statuses')
+                                .addColumn('user_id', 'text', (c) =>
+                                    c.notNull().references('users.id'),
+                                )
+                                .addColumn('book_id', 'text', (c) =>
+                                    c.notNull().references('books.id').onDelete('cascade'),
+                                )
+                                .addColumn('read', 'integer', (c) => c.notNull())
+                                .addPrimaryKeyConstraint('reading_statuses_pk', [
+                                    'user_id',
+                                    'book_id',
+                                ])
+                                .execute();
+                            await db.schema
+                                .createTable('personal_notes')
+                                .addColumn('user_id', 'text', (c) =>
+                                    c.notNull().references('users.id'),
+                                )
+                                .addColumn('book_id', 'text', (c) =>
+                                    c.notNull().references('books.id').onDelete('cascade'),
+                                )
+                                .addColumn('text', 'text', (c) => c.notNull())
+                                .addColumn('updated_at', 'text', (c) => c.notNull())
+                                .addPrimaryKeyConstraint('personal_notes_pk', [
+                                    'user_id',
+                                    'book_id',
+                                ])
+                                .execute();
                         },
                     },
                 }),

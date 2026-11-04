@@ -45,3 +45,10 @@ it('has no reason unless one is given', () => {
 
     expect(result.reason).toBeNull();
 });
+it('carries details needed to resolve the failure', () => {
+    const details = { candidates: [{ id: 'a', name: 'Sam Taylor' }] };
+
+    const result = new Failure('conflict', 'Similar', 'author-similar', details);
+
+    expect(result.details).toEqual(details);
+});

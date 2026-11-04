@@ -28,6 +28,13 @@ import { AuditLogProbe } from './audit-log-probe.js';
 import { AppearanceModule } from '../../../apps/server/src/appearance/infrastructure/config/appearance.module.js';
 import { KyselyAppearanceRepository } from '../../../apps/server/src/appearance/infrastructure/adapters/driven/persistence/kysely-appearance.repository.js';
 import { SetupAccess } from '../../../apps/server/src/identity/infrastructure/adapters/driving/web/setup-access.service.js';
+import { BooksModule } from '../../../apps/server/src/books/infrastructure/config/books.module.js';
+import { KyselyBookRepository } from '../../../apps/server/src/books/infrastructure/adapters/driven/persistence/kysely-book.repository.js';
+import { KyselyAuthorRepository } from '../../../apps/server/src/books/infrastructure/adapters/driven/persistence/kysely-author.repository.js';
+import { KyselyBookCatalog } from '../../../apps/server/src/books/infrastructure/adapters/driven/persistence/kysely-book-catalog.adapter.js';
+import { KyselyReadingStatusRepository } from '../../../apps/server/src/books/infrastructure/adapters/driven/persistence/kysely-reading-status.repository.js';
+import { KyselyPersonalNoteRepository } from '../../../apps/server/src/books/infrastructure/adapters/driven/persistence/kysely-personal-note.repository.js';
+import { FileCoverStorage } from '../../../apps/server/src/books/infrastructure/adapters/driven/filesystem/file-cover-storage.adapter.js';
 import { DatabaseManager } from './database-manager.js';
 import type { ApiFixture } from './fixture.js';
 import type { TestAppContext } from './test-app-context.js';
@@ -63,6 +70,14 @@ export class TestApp {
             const tls = new FileTlsStore(database.connections, directory, new PrivateStorage());
             const http = new KyselyHttpSettingsRepository(database.connections);
             const appearance = new KyselyAppearanceRepository(database.connections);
+            const books = {
+                books: new KyselyBookRepository(database.connections),
+                authors: new KyselyAuthorRepository(database.connections),
+                catalog: new KyselyBookCatalog(database.connections),
+                readings: new KyselyReadingStatusRepository(database.connections),
+                notes: new KyselyPersonalNoteRepository(database.connections),
+                covers: new FileCoverStorage(directory),
+            };
 
             this.context = {
                 users,
@@ -70,6 +85,7 @@ export class TestApp {
                 tls,
                 http,
                 appearance,
+                books,
                 audit: new AuditLogProbe(database),
             };
             const clock = { now: () => new Date(this.now) };
@@ -78,7 +94,7 @@ export class TestApp {
             const accounts = new AccountLoader(users);
             const authentication = new AuthenticateSession(accounts, tokens);
             const renewal = new RenewSession(accounts, tokens);
-            const sessions = new HttpSessions(secret);
+            const sessions = new HttpSessions(secret, HttpApplication.uploadPaths);
             const ids = new UuidGenerator();
             const operations = new AuditedOperation(
                 database.connections,
@@ -122,6 +138,7 @@ export class TestApp {
                         operations,
                     ),
                     AppearanceModule.register(appearance, operations),
+                    BooksModule.register({ ...books, ids, clock, operations }),
                 ],
                 controllers: [HealthController],
             }).compile();

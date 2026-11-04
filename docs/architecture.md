@@ -153,7 +153,10 @@ Repository writes compare the previously read version, and renewal checks the au
 concurrent stale credential requests.
 
 Mutating API requests require JSON, a matching Origin and a signed double-submit CSRF token obtained from
-`/api/auth/csrf`. Cookies and private values are never placed in localStorage. The API is same-origin, without
+`/api/auth/csrf`. The only exception to JSON is a cover upload (`PUT /api/books/:id/cover`), whose body is the image
+itself (`image/*` or `application/octet-stream`, at most 10 MB); browsers cannot send these types from a cross-site
+form, and the Origin and CSRF checks still apply. Cover images are stored under `covers/` in the data directory with
+server-chosen random names and are checked by content (JPEG, PNG or WebP), never by the declared type. Cookies and private values are never placed in localStorage. The API is same-origin, without
 permissive CORS. Proxy trust is disabled; a future TLS-terminating proxy needs an explicit trust/protocol design before
 changing this setting.
 

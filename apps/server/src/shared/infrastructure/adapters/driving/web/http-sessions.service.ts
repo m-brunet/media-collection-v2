@@ -2,7 +2,11 @@ import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import type { NextFunction, Request, Response } from 'express';
 
 export class HttpSessions {
-    constructor(private readonly secret: Uint8Array) {}
+    constructor(
+        private readonly secret: Uint8Array,
+        // Request paths whose body is an uploaded file rather than JSON (chosen by composition).
+        private readonly uploadPaths: readonly RegExp[] = [],
+    ) {}
 
     token(request: Request): string | undefined {
         return this.cookie(request, this.names(request).auth);
@@ -54,7 +58,7 @@ export class HttpSessions {
 
         if (
             request.get('origin') !== expectedOrigin ||
-            !request.is('application/json') ||
+            !this.acceptedBody(request) ||
             !supplied ||
             supplied !== cookie ||
             !this.valid(supplied)
@@ -69,6 +73,16 @@ export class HttpSessions {
 
         next();
     };
+
+    // JSON everywhere; upload paths also accept a raw file. Browsers cannot send these types from a
+    // cross-site form, so the check still blocks form-based forgery.
+    private acceptedBody(request: Request): boolean {
+        return (
+            Boolean(request.is('application/json')) ||
+            (this.uploadPaths.some((path) => path.test(request.path)) &&
+                Boolean(request.is(['image/*', 'application/octet-stream'])))
+        );
+    }
 
     private names(request: Request): { auth: string; csrf: string } {
         return request.secure

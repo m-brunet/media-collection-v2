@@ -1,10 +1,11 @@
-﻿import { request as httpRequest } from 'node:http';
+import { request as httpRequest } from 'node:http';
 import { request as httpsRequest } from 'node:https';
 
 export interface ApiResult<T> {
     status: number;
     body: T;
     text: string;
+    bytes: Buffer;
     headers: import('node:http').IncomingHttpHeaders;
 }
 
@@ -31,11 +32,17 @@ export class Client {
             csrf?: boolean;
             origin?: string;
             headers?: Record<string, string>;
+            // Sends these bytes as the body instead of JSON (cover images).
+            raw?: { bytes: Buffer; contentType: string };
         } = {},
     ): Promise<ApiResult<T>> {
         const url = new URL('/api' + path, this.base);
         const mutation = method !== 'GET';
-        const data = mutation ? JSON.stringify(body ?? {}) : undefined;
+        const data = options.raw
+            ? options.raw.bytes
+            : mutation
+              ? JSON.stringify(body ?? {})
+              : undefined;
 
         return new Promise((resolve, reject) => {
             const request = (url.protocol === 'https:' ? httpsRequest : httpRequest)(
@@ -51,7 +58,7 @@ export class Client {
                         ...options.headers,
                         ...(mutation
                             ? {
-                                  'Content-Type': 'application/json',
+                                  'Content-Type': options.raw?.contentType ?? 'application/json',
                                   'Content-Length': Buffer.byteLength(data!),
                                   Origin: options.origin ?? this.base,
                                   ...(options.csrf === false
@@ -73,12 +80,17 @@ export class Client {
 
                     response.on('data', (buffer) => buffers.push(buffer));
                     response.on('end', () => {
-                        const text = Buffer.concat(buffers).toString();
+                        const bytes = Buffer.concat(buffers);
+                        const text = bytes.toString();
+                        const json = String(response.headers['content-type'] ?? '').includes(
+                            'json',
+                        );
 
                         resolve({
                             status: response.statusCode ?? 0,
-                            body: (text ? JSON.parse(text) : undefined) as T,
+                            body: (text && json ? JSON.parse(text) : undefined) as T,
                             text,
+                            bytes,
                             headers: response.headers,
                         });
                     });
