@@ -34,6 +34,13 @@ import { HealthController } from '../adapters/driving/web/health.controller.js';
 import { AppearanceModule } from '../../appearance/infrastructure/config/appearance.module.js';
 import { KyselyAppearanceRepository } from '../../appearance/infrastructure/adapters/driven/persistence/kysely-appearance.repository.js';
 import { SetupAccess } from '../../identity/infrastructure/adapters/driving/web/setup-access.service.js';
+import { BooksModule } from '../../books/infrastructure/config/books.module.js';
+import { KyselyBookRepository } from '../../books/infrastructure/adapters/driven/persistence/kysely-book.repository.js';
+import { KyselyAuthorRepository } from '../../books/infrastructure/adapters/driven/persistence/kysely-author.repository.js';
+import { KyselyBookCatalog } from '../../books/infrastructure/adapters/driven/persistence/kysely-book-catalog.adapter.js';
+import { KyselyReadingStatusRepository } from '../../books/infrastructure/adapters/driven/persistence/kysely-reading-status.repository.js';
+import { KyselyPersonalNoteRepository } from '../../books/infrastructure/adapters/driven/persistence/kysely-personal-note.repository.js';
+import { FileCoverStorage } from '../../books/infrastructure/adapters/driven/filesystem/file-cover-storage.adapter.js';
 
 export interface BackendOptions {
     dataDirectory: string;
@@ -132,12 +139,12 @@ export class BackendRuntime {
             const accounts = new AccountLoader(users);
             const authentication = new AuthenticateSession(accounts, tokens);
             const renewal = new RenewSession(accounts, tokens);
-            const sessions = new HttpSessions(secret);
-            const tls = new FileTlsStore(database.connections, options.dataDirectory, storage);
-            const httpSettings = new KyselyHttpSettingsRepository(database.connections);
+            const sessions = new HttpSessions(secret, HttpApplication.uploadPaths);
+            const tls = new FileTlsStore(database.connections, options.dataDirectory, storage, ids);
+            const httpSettings = new KyselyHttpSettingsRepository(database.connections, ids);
             const operations = new AuditedOperation(
                 database.connections,
-                new KyselyAuditTrail(database.connections),
+                new KyselyAuditTrail(database.connections, ids),
                 clock,
                 ids,
             );
@@ -201,9 +208,20 @@ export class BackendRuntime {
                             operations,
                         ),
                         AppearanceModule.register(
-                            new KyselyAppearanceRepository(database.connections),
+                            new KyselyAppearanceRepository(database.connections, ids),
                             operations,
                         ),
+                        BooksModule.register({
+                            books: new KyselyBookRepository(database.connections),
+                            authors: new KyselyAuthorRepository(database.connections),
+                            catalog: new KyselyBookCatalog(database.connections),
+                            readings: new KyselyReadingStatusRepository(database.connections),
+                            notes: new KyselyPersonalNoteRepository(database.connections),
+                            covers: new FileCoverStorage(options.dataDirectory),
+                            ids,
+                            clock,
+                            operations,
+                        }),
                     ],
                     controllers: [HealthController],
                 },

@@ -168,6 +168,29 @@ capabilities, not alternative homes for feature behavior. Electron retains lifec
 - Pure business exceptions belong in `domain/exceptions/`. HTTP statuses and exception translation stay in driving
   adapters. Shared pure failures remain shared only when they represent an actual shared contract.
 
+
+## UUID primary keys and SQL boundaries
+
+- Every application-owned table with a single-column primary key must use a UUID `id` stored as
+  `TEXT NOT NULL PRIMARY KEY` with a CHECK constraint validating UUID format. New IDs use the infrastructure
+  `UuidGenerator` (`node:crypto.randomUUID()`), supplied through the `IdGenerator` port.
+- Composite primary keys and Kysely-owned migration tables are exempt. Audit subject identifiers may remain
+  descriptive strings or null. Settings names remain unique lookup keys alongside their UUID identities.
+- Validate UUIDs at HTTP boundaries and enforce format at persistence boundaries. A TypeScript `string` or SQLite
+  `TEXT` declaration alone is insufficient. Upgrades preserve valid IDs and relationships and reject invalid
+  legacy IDs explicitly instead of silently remapping them.
+- Production queries and schema access use Kysely builders. Handwritten SQL, including the `sql` tag, raw
+  builders, compiled query construction and direct driver execution, is forbidden outside migrations.
+- Historical schema/data migrations live in `apps/server/src/shared/infrastructure/adapters/driven/persistence/migrations/`.
+  Only the migration provider loads them. They are exempt from the raw-SQL rule and runtime adapter filename
+  suffixes, not dependency boundaries. Runtime adapters must not reuse migrations as query helpers.
+- Direct SQLite access is restricted to connection construction and foreign-key, WAL and timeout PRAGMAs in
+  `database.adapter.ts`. Connection settings must not move into one-time migrations.
+- Database-boundary tests may use raw SQL and isolated drivers to inspect schema or build historical/corrupted
+  fixtures. Test support must never become a production raw-SQL escape hatch.
+
+---
+
 ## 📦 Imports and Workspace Boundaries
 
 First-party source imports must use **relative paths**, including imports across sibling workspaces when the

@@ -45,7 +45,7 @@ async function readyDesktop() {
         current.runtime,
         "document.querySelector('[name=username]').value='admin';document.querySelector('[name=password]').value='desktop-new-password';document.querySelector('[name=confirmation]').value='desktop-new-password';document.querySelector('form').requestSubmit();true",
     );
-    await waitFor(current.runtime, "document.querySelector('h1')?.textContent === 'My account'");
+    await waitFor(current.runtime, "document.querySelector('h1')?.textContent === 'My books'");
 
     return current;
 }
@@ -157,13 +157,10 @@ describe('desktop lifecycle and renderer', () => {
         );
 
         await evaluate(current.runtime, "document.querySelector('form').requestSubmit();true");
-        await waitFor(
-            current.runtime,
-            "document.querySelector('h1')?.textContent === 'My account'",
-        );
+        await waitFor(current.runtime, "document.querySelector('h1')?.textContent === 'My books'");
         const title = await evaluate(current.runtime, "document.querySelector('h1').textContent");
 
-        expect(title).toBe('My account');
+        expect(title).toBe('My books');
     });
 
     it('saves the interface language from the actual React screen', async () => {
@@ -178,7 +175,7 @@ describe('desktop lifecycle and renderer', () => {
         );
         await waitFor(
             current.runtime,
-            "document.querySelector('h1')?.textContent === 'Mon compte'",
+            "document.querySelector('h1')?.textContent === 'Mes livres'",
         );
         const response = await client.call<{ language: string }>('/auth/me');
 

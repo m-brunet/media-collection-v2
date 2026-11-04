@@ -37,7 +37,8 @@ let base = 'http://127.0.0.1:' + port;
 let child;
 let failureOutput = '';
 const launch = async (withPortOverride = true, debugging = false) => {
-    const environment = { ...process.env };
+    // The packaged window stays off screen while the smoke test drives it.
+    const environment = { ...process.env, APP_HIDDEN_WINDOWS: '1' };
 
     delete environment.APP_DEV_UI;
     delete environment.ELECTRON_RUN_AS_NODE;

@@ -16,7 +16,7 @@ interface NavigationItem {
 }
 
 // Each feature task adds its own entries here; only implemented pages appear.
-const libraryItems: NavigationItem[] = [];
+const libraryItems: NavigationItem[] = [{ to: '/books', label: 'nav.books', icon: 'books' }];
 const administrationItems: NavigationItem[] = [
     { to: '/admin/accounts', label: 'nav.accounts', icon: 'accounts' },
     { to: '/admin/appearance', label: 'nav.appearance', icon: 'appearance' },

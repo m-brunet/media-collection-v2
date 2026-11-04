@@ -3,7 +3,9 @@ import type { Account } from '../../../../packages/contracts/src/http';
 
 type Handler = (body: unknown) => { status: number; body?: unknown };
 
-// Replaces `fetch` with scripted API responses, keyed by "METHOD /path" (without `/api`).
+// Replaces `fetch` with scripted API responses, keyed by "METHOD /path" (without `/api`). A route
+// with a query string is matched first; otherwise the path alone. Uploaded files are recorded as
+// the call body.
 export class FakeApi {
     readonly calls: { route: string; body: unknown }[] = [];
     private readonly handlers = new Map<string, Handler>();
@@ -13,6 +15,7 @@ export class FakeApi {
         this.on('GET /auth/me', () => ({ status: 401, body: { message: 'Sign in' } }));
         this.on('GET /setup', () => ({ status: 200, body: { required: false, allowed: true } }));
         this.on('GET /appearance', () => ({ status: 200, body: { colorScheme: 'spring-green' } }));
+        this.on('GET /books', () => ({ status: 200, body: { total: 0, items: [] } }));
         vi.stubGlobal('fetch', vi.fn(this.fetch.bind(this)));
     }
 
@@ -33,8 +36,13 @@ export class FakeApi {
 
     private async fetch(input: string, init: RequestInit = {}): Promise<Response> {
         const route = (init.method ?? 'GET') + ' ' + input.replace(/^\/api/, '');
-        const body = typeof init.body === 'string' ? JSON.parse(init.body) : undefined;
-        const handler = this.handlers.get(route);
+        const body =
+            typeof init.body === 'string'
+                ? JSON.parse(init.body)
+                : init.body instanceof Blob
+                  ? init.body
+                  : undefined;
+        const handler = this.handlers.get(route) ?? this.handlers.get(route.split('?')[0]!);
 
         this.calls.push({ route, body });
 

@@ -1,3 +1,4 @@
+import type { IdGenerator } from '../../../../../shared/application/ports/driven/id-generator.interface.js';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
@@ -19,6 +20,7 @@ export class FileTlsStore implements TlsStore {
         private readonly connections: DatabaseConnections,
         private readonly directory: string,
         private readonly storage: PrivateStorage,
+        private readonly ids: IdGenerator,
     ) {}
 
     async read(): Promise<TlsSettingsState> {
@@ -59,7 +61,7 @@ export class FileTlsStore implements TlsStore {
 
         await this.connections.current
             .insertInto('server_settings')
-            .values({ name: 'tls', value })
+            .values({ id: this.ids.next(), name: 'tls', value })
             .onConflict((c) => c.column('name').doUpdateSet({ value }))
             .execute();
     }

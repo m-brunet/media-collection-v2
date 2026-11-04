@@ -86,3 +86,8 @@ a:hover {
         animation-duration: 2.5s;
     }
 }
+
+/* The hidden attribute always wins over component display rules. */
+[hidden] {
+    display: none !important;
+}

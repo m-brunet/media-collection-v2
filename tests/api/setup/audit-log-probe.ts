@@ -1,3 +1,4 @@
+import { sql } from 'kysely';
 import type { Database } from '../../../apps/server/src/shared/infrastructure/adapters/driven/persistence/database.adapter.js';
 
 export interface AuditLogRecord {
@@ -20,7 +21,7 @@ export class AuditLogProbe {
         const rows = await this.database.connection
             .selectFrom('audit_logs')
             .selectAll()
-            .orderBy('id')
+            .orderBy(sql`rowid`)
             .execute();
 
         return rows.map((row) => ({

@@ -50,6 +50,12 @@ function classify(root, file) {
     return { area: 'other', path };
 }
 
+function isMigration(path) {
+    return /^apps\/server\/src\/shared\/infrastructure\/adapters\/driven\/persistence\/migrations\/[0-9]{3}-[a-z0-9-]+\.ts$/.test(
+        path,
+    );
+}
+
 function permitted(from, to) {
     if (from.layer === 'invalid' || to.layer === 'invalid') {
         return false;
@@ -335,7 +341,11 @@ export default {
                             context.report({ node: program, messageId: 'serviceSuffix' });
                         }
 
-                        if (from.layer === 'driven' && from.path.startsWith('apps/server/src/')) {
+                        if (
+                            from.layer === 'driven' &&
+                            from.path.startsWith('apps/server/src/') &&
+                            !isMigration(from.path)
+                        ) {
                             for (const declaration of classes) {
                                 const role = declaration.id?.name?.endsWith('Repository')
                                     ? 'repository'
@@ -394,6 +404,107 @@ export default {
                                 node: program,
                                 messageId: role === 'helper' ? 'helperSuffix' : 'utilitySuffix',
                             });
+                        }
+                    },
+                };
+            },
+        },
+        'persistence-sql': {
+            meta: {
+                type: 'problem',
+                schema: [],
+                messages: {
+                    raw: 'Use Kysely builders. Raw SQL is permitted only in database migrations.',
+                    driver: 'Direct SQLite driver access is restricted to database connection setup.',
+                    migration:
+                        'Runtime adapters must not import migrations; only DatabaseMigrations loads them.',
+                },
+            },
+            create(context) {
+                const root = context.cwd ?? context.getCwd();
+                const file = context.filename ?? context.getFilename();
+                const from = classify(root, file);
+
+                if (from.area !== 'server' || from.test || isMigration(from.path)) {
+                    return {};
+                }
+
+                const database =
+                    from.path ===
+                    'apps/server/src/shared/infrastructure/adapters/driven/persistence/database.adapter.ts';
+                const provider =
+                    from.path ===
+                    'apps/server/src/shared/infrastructure/adapters/driven/persistence/database-migrations.adapter.ts';
+
+                function imports(node) {
+                    const source = node.source?.value;
+
+                    if (!source) {
+                        return;
+                    }
+
+                    if (source === 'kysely' || source.startsWith('kysely/')) {
+                        for (const specifier of node.specifiers ?? []) {
+                            const name = specifier.imported?.name ?? specifier.local?.name;
+
+                            if (
+                                specifier.type === 'ImportNamespaceSpecifier' ||
+                                specifier.type === 'ExportNamespaceSpecifier' ||
+                                node.type === 'ExportAllDeclaration' ||
+                                ['sql', 'CompiledQuery', 'RawBuilder', 'RawNode'].includes(name)
+                            ) {
+                                context.report({ node, messageId: 'raw' });
+                                break;
+                            }
+                        }
+
+                        if (node.type === 'ExportAllDeclaration') {
+                            context.report({ node, messageId: 'raw' });
+                        }
+                    }
+
+                    if (
+                        /^(better-sqlite3|sqlite3|sqlite)(?:\/|$)|^node:sqlite$/.test(source) &&
+                        !database
+                    ) {
+                        context.report({ node, messageId: 'driver' });
+                    }
+
+                    if (source.startsWith('.')) {
+                        const target = resolver.sync(dirname(file), source).path;
+
+                        if (
+                            target &&
+                            ((isMigration(relative(root, target).replaceAll('\\', '/')) &&
+                                !provider) ||
+                                (relative(root, target).replaceAll('\\', '/') ===
+                                    'apps/server/src/shared/infrastructure/adapters/driven/persistence/database-migrations.adapter.ts' &&
+                                    !database))
+                        ) {
+                            context.report({ node, messageId: 'migration' });
+                        }
+                    }
+                }
+
+                return {
+                    ImportDeclaration: imports,
+                    ExportNamedDeclaration: imports,
+                    ExportAllDeclaration: imports,
+                    CallExpression(node) {
+                        const property = node.callee?.property;
+                        const name = property?.name ?? property?.value;
+
+                        if (
+                            ['executeQuery', 'prepare', 'exec'].includes(name) ||
+                            (name === 'pragma' &&
+                                (!database ||
+                                    ![
+                                        'foreign_keys = ON',
+                                        'journal_mode = WAL',
+                                        'busy_timeout = 5000',
+                                    ].includes(node.arguments[0]?.value)))
+                        ) {
+                            context.report({ node, messageId: 'driver' });
                         }
                     },
                 };

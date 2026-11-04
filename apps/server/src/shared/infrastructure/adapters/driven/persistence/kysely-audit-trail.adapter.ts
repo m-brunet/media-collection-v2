@@ -1,3 +1,4 @@
+import type { IdGenerator } from '../../../../application/ports/driven/id-generator.interface.js';
 import type { AuditEntry } from '../../../../application/ports/driven/audit-entry.interface.js';
 import type { AuditTrail } from '../../../../application/ports/driven/audit-trail.interface.js';
 import type { DatabaseConnections } from './database-connections.adapter.js';
@@ -7,12 +8,16 @@ import type { DatabaseConnections } from './database-connections.adapter.js';
 export class KyselyAuditTrail implements AuditTrail {
     private static readonly secret = /password|hash|token|secret|private|key|chain|credential/i;
 
-    constructor(private readonly connections: DatabaseConnections) {}
+    constructor(
+        private readonly connections: DatabaseConnections,
+        private readonly ids: IdGenerator,
+    ) {}
 
     async record(entry: AuditEntry): Promise<void> {
         await this.connections.current
             .insertInto('audit_logs')
             .values({
+                id: this.ids.next(),
                 operation_id: entry.operationId,
                 category: entry.category,
                 outcome: entry.outcome,

@@ -6,10 +6,13 @@ import { useEffect, useRef } from 'react';
 export function PageHeader({
     title,
     intro,
+    breadcrumb,
     actions,
 }: {
     title: string;
     intro?: string;
+    // Navigation trail shown under the title instead of an introduction.
+    breadcrumb?: ReactNode;
     actions?: ReactNode;
 }) {
     const heading = useRef<HTMLHeadingElement>(null);
@@ -25,6 +28,7 @@ export function PageHeader({
                     {title}
                 </h1>
                 {intro && <p className="page-header__intro">{intro}</p>}
+                {breadcrumb && <div className="page-header__intro">{breadcrumb}</div>}
             </div>
             {actions && <div className="page-header__actions">{actions}</div>}
         </header>

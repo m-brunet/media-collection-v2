@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router';
+import { useState } from 'react';
+import { createBrowserRouter, Link, Navigate, Route, RouterProvider, Routes } from 'react-router';
 import { useI18n } from '../shared/i18n/i18n-context';
 import { AppearanceProvider } from '../shared/appearance/appearance-context';
 import { SessionProvider, useSession } from '../shared/session/session-context';
@@ -12,6 +13,10 @@ import { AccountsPage } from './administration/accounts-page';
 import { AppearancePage } from './administration/appearance-page';
 import { ServerSettingsPage } from './administration/server-settings-page';
 import { AppShell } from './shell/app-shell';
+import { BookDetailsPage } from './books/book-details-page';
+import { BookFormPage } from './books/book-form-page';
+import { BookSavedPage } from './books/book-saved-page';
+import { MyBooksPage } from './books/my-books-page';
 
 function NotFoundPage() {
     const { t } = useI18n();
@@ -20,7 +25,7 @@ function NotFoundPage() {
         <EmptyState
             title={t('notFound.title')}
             body={t('notFound.body')}
-            action={<Link to="/account">{t('notFound.back')}</Link>}
+            action={<Link to="/books">{t('notFound.back')}</Link>}
         />
     );
 }
@@ -33,7 +38,7 @@ function PermissionDeniedPage() {
             icon="administration"
             title={t('denied.title')}
             body={t('denied.body')}
-            action={<Link to="/account">{t('denied.back')}</Link>}
+            action={<Link to="/books">{t('denied.back')}</Link>}
         />
     );
 }
@@ -43,6 +48,13 @@ function AdministratorOnly({ children }: { children: ReactNode }) {
     const { account } = useSession();
 
     return account?.role === 'admin' ? children : <PermissionDeniedPage />;
+}
+
+// Guests read the library but cannot change it (the server refuses it too).
+function LibraryEditorOnly({ children }: { children: ReactNode }) {
+    const { account } = useSession();
+
+    return account?.role === 'guest' ? <PermissionDeniedPage /> : children;
 }
 
 // Session gate: nothing of the library is shown before sign-in and temporary-password replacement.
@@ -69,7 +81,26 @@ function LibrisRoutes() {
     return (
         <AppShell>
             <Routes>
-                <Route path="/" element={<Navigate to="/account" replace />} />
+                <Route path="/" element={<Navigate to="/books" replace />} />
+                <Route path="/books" element={<MyBooksPage />} />
+                <Route
+                    path="/books/new"
+                    element={
+                        <LibraryEditorOnly>
+                            <BookFormPage />
+                        </LibraryEditorOnly>
+                    }
+                />
+                <Route path="/books/:id" element={<BookDetailsPage />} />
+                <Route
+                    path="/books/:id/edit"
+                    element={
+                        <LibraryEditorOnly>
+                            <BookFormPage />
+                        </LibraryEditorOnly>
+                    }
+                />
+                <Route path="/books/:id/added" element={<BookSavedPage />} />
                 <Route path="/account" element={<AccountPage />} />
                 <Route
                     path="/admin/accounts"
@@ -101,14 +132,19 @@ function LibrisRoutes() {
     );
 }
 
-export function LibrisApp() {
+function LibrisRoot() {
     return (
-        <BrowserRouter>
-            <AppearanceProvider>
-                <SessionProvider>
-                    <LibrisRoutes />
-                </SessionProvider>
-            </AppearanceProvider>
-        </BrowserRouter>
+        <AppearanceProvider>
+            <SessionProvider>
+                <LibrisRoutes />
+            </SessionProvider>
+        </AppearanceProvider>
     );
+}
+
+// A data router, so forms can ask before any navigation drops their unsaved changes.
+export function LibrisApp() {
+    const [router] = useState(() => createBrowserRouter([{ path: '*', element: <LibrisRoot /> }]));
+
+    return <RouterProvider router={router} />;
 }
