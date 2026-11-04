@@ -6,6 +6,8 @@ import { DesktopConfigurationParser } from './configuration.util.js';
 import { BackendProcess } from './backend-process.adapter.js';
 import { SetupRequestSigner } from './setup-request-signer.adapter.js';
 
+// Automated tests run the real windows without putting them on screen.
+const hiddenWindows = process.env.APP_HIDDEN_WINDOWS === '1';
 const directory = dirname(fileURLToPath(import.meta.url));
 
 app.setName('Media Collection');
@@ -53,8 +55,10 @@ if (!startupOptions) {
     app.exit(1);
 } else {
     app.on('second-instance', () => {
-        window?.show();
-        window?.focus();
+        if (!hiddenWindows) {
+            window?.show();
+            window?.focus();
+        }
     });
     app.on('window-all-closed', () => {
         if (!restarting) {
@@ -139,7 +143,13 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
                 minWidth: 1280,
                 minHeight: 720,
                 show: false,
-                webPreferences: { contextIsolation: true, sandbox: true, nodeIntegration: false },
+                webPreferences: {
+                    contextIsolation: true,
+                    sandbox: true,
+                    nodeIntegration: false,
+                    // A hidden test window must keep running at full speed.
+                    backgroundThrottling: !hiddenWindows,
+                },
             });
             setupSigner.attach(window, new URL(url).origin);
             window.webContents.setWindowOpenHandler(({ url: target }) => {
@@ -156,7 +166,11 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
             });
             window.webContents.on('will-attach-webview', (event) => event.preventDefault());
             await window.loadURL(url);
-            window.show();
+
+            if (!hiddenWindows) {
+                window.show();
+            }
+
             console.log('Application ready on HTTP port ' + ready.httpPort);
             backend.onExit(() => {
                 if (quitting) {
@@ -213,7 +227,9 @@ async function recovery(dataDirectory: string, login: string): Promise<void> {
         height: 500,
         resizable: false,
         backgroundColor: '#1d2022',
+        show: !hiddenWindows,
         webPreferences: {
+            backgroundThrottling: !hiddenWindows,
             preload: join(directory, 'recovery-preload.cjs'),
             contextIsolation: true,
             sandbox: true,
