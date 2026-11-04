@@ -7,6 +7,7 @@ export type WorkerRequest =
           httpPortSource?: 'command-line' | 'environment';
           webDirectory: string;
           development: boolean;
+          setupToken: string;
       }
     | { type: 'recover'; dataDirectory: string; login: string; password: string }
     | { type: 'stop' };

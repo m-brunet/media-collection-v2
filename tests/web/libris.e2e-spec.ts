@@ -59,7 +59,7 @@ async function replaceTemporaryPassword(page: Page, current: string, next: strin
 
 describe('Libris first launch', () => {
     it('asks for the protected administrator before anything else', async () => {
-        const page = await browser.page(base);
+        const page = await browser.page(base, { desktopWindow: true });
 
         await page.goto('/');
 
@@ -70,7 +70,10 @@ describe('Libris first launch', () => {
     });
 
     it('creates the administrator and opens the library at the minimum desktop size', async () => {
-        const page = await browser.page(base, { viewport: viewports.minimumDesktop });
+        const page = await browser.page(base, {
+            viewport: viewports.minimumDesktop,
+            desktopWindow: true,
+        });
 
         await page.goto('/');
         await page.getByLabel(/^Administrator username/).fill('alex');
@@ -87,8 +90,18 @@ describe('Libris first launch', () => {
         await capture(page, 'libris-account-admin-1280');
     });
 
+    it('keeps setup out of reach of a browser, even on the same computer', async () => {
+        const page = await browser.page(base);
+
+        await page.goto('/');
+
+        await page.getByRole('heading', { name: 'Setup is not finished yet' }).waitFor();
+        expect(await page.getByRole('button', { name: 'Create administrator' }).count()).toBe(0);
+        await capture(page, 'libris-setup-browser');
+    });
+
     it('follows a French browser language', async () => {
-        const page = await browser.page(base, { locale: 'fr-FR' });
+        const page = await browser.page(base, { locale: 'fr-FR', desktopWindow: true });
 
         await page.goto('/');
 

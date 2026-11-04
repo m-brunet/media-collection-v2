@@ -25,6 +25,7 @@ import { UserFixture } from '../fixtures/user.fixture.js';
 import { AuditedOperation } from '../../../apps/server/src/shared/application/services/audited-operation.service.js';
 import { KyselyAuditTrail } from '../../../apps/server/src/shared/infrastructure/adapters/driven/persistence/kysely-audit-trail.adapter.js';
 import { AuditLogProbe } from './audit-log-probe.js';
+import { SetupAccess } from '../../../apps/server/src/identity/infrastructure/adapters/driving/web/setup-access.service.js';
 import { DatabaseManager } from './database-manager.js';
 import type { ApiFixture } from './fixture.js';
 import type { TestAppContext } from './test-app-context.js';
@@ -101,6 +102,7 @@ export class TestApp {
                         clock,
                         sessions,
                         operations,
+                        new SetupAccess('test-setup-token'),
                     ),
                     SettingsModule.register(
                         tls,

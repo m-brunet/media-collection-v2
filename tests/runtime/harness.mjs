@@ -73,6 +73,8 @@ void app
                     : { httpPort: Number(process.env.APP_TEST_PORT) }),
                 webDirectory: fileURLToPath(new URL('../../dist/apps/web/', import.meta.url)),
                 development: false,
+                // Stands in for the per-launch secret of the Electron window (see runtime-setup.ts).
+                setupToken: 'test-setup-token',
             });
         }
     })

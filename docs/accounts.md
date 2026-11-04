@@ -6,7 +6,7 @@ Status: Task 5 product decisions complete. This document records business behavi
 
 One installation contains one shared library and exactly one protected Admin: the first user. There is no public registration/sign-up feature.
 
-The application's first launch must immediately present a form to define the administrator password before normal use. This is installation setup, not a public registration flow. The administrator chooses its username and password in this form. Setup is accepted only on the computer running Media Collection (the desktop window or a browser on that computer); other devices are asked to finish setup there, so nobody on the network or internet can claim the library first.
+The application's first launch must immediately present a form to define the administrator password before normal use. This is installation setup, not a public registration flow. The administrator chooses its username and password in this form. Setup is accepted only in the Media Collection desktop window (Electron), not from any browser, including one on the same computer; browsers are asked to finish setup in the app window, so nobody else can claim the library first. Technically, the desktop process creates a random secret at each launch and attaches it only to its own window's setup requests.
 
 The protected Admin cannot be modified or deleted by other accounts, and cannot deactivate, delete, or demote itself. Its existing self-service username/password editing remains allowed. Only Admin creates users and chooses their Guest/Owner role, manages other accounts, or resets application data. Roles are fixed at creation: no later upgrade or demotion, including by Admin. This supersedes earlier proposals allowing Admin to change roles.
 

@@ -21,8 +21,8 @@ export interface AccountSummary {
 export interface SetupStatus {
     // True until the protected administrator exists (first launch).
     required: boolean;
-    // True when this request comes from the computer running Media Collection, where setup is allowed.
-    local: boolean;
+    // True only in the Media Collection desktop window, the one place where setup is allowed.
+    allowed: boolean;
 }
 
 // Error body of every failed API request.

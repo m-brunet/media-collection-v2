@@ -141,7 +141,7 @@ export const en = {
     'reason.guestReadOnly': 'Guest accounts can view the library but cannot change it.',
     'reason.temporaryPassword': 'Replace your temporary password first.',
     'reason.setupCompleted': 'This library already has its administrator.',
-    'reason.setupLocalOnly': 'Finish setup on the computer running Media Collection.',
+    'reason.setupDesktopOnly': 'Finish setup in the Media Collection desktop window.',
     'reason.accountMissing': 'That account no longer exists.',
     'reason.alreadyActive': 'This account is already active.',
     'reason.alreadyInactive': 'This account is already deactivated.',
@@ -161,7 +161,7 @@ export const en = {
     'setup.submit': 'Create administrator',
     'setup.remoteTitle': 'Setup is not finished yet',
     'setup.remoteBody':
-        'Finish setting up the library on the computer running Media Collection, then sign in here.',
+        'Finish setting up the library in the Media Collection app on the computer where it is installed, then sign in here.',
     'accounts.title': 'User management',
     'accounts.intro': 'Roles are fixed when an account is created.',
     'accounts.protected': 'Protected administrator',

@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 import type { Browser, BrowserContext, Page } from 'playwright';
 import { chromium } from 'playwright';
+import { desktopWindow } from '../api/client.js';
 
 export const viewports = {
     minimumDesktop: { width: 1280, height: 720 },
@@ -19,7 +20,12 @@ export class BrowserFixture {
 
     async page(
         base: string,
-        options: { viewport?: { width: number; height: number }; locale?: string } = {},
+        options: {
+            viewport?: { width: number; height: number };
+            locale?: string;
+            // Behave like the Electron window (sends its setup secret) rather than a plain browser.
+            desktopWindow?: boolean;
+        } = {},
     ): Promise<Page> {
         if (!this.browser) {
             throw new Error('BrowserFixture.launch() must run first.');
@@ -30,6 +36,7 @@ export class BrowserFixture {
             viewport: options.viewport ?? viewports.minimumDesktop,
             locale: options.locale ?? 'en-GB',
             timezoneId: 'Europe/Paris',
+            extraHTTPHeaders: options.desktopWindow ? desktopWindow : undefined,
         });
 
         this.contexts.push(context);

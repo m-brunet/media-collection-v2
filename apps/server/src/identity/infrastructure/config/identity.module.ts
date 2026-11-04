@@ -25,6 +25,7 @@ import { HttpSessions } from '../../../shared/infrastructure/adapters/driving/we
 import { LoginLimiter } from '../../../shared/infrastructure/adapters/driving/web/login-limiter.service.js';
 import { AccountsController } from '../adapters/driving/web/accounts.controller.js';
 import { IdentityController } from '../adapters/driving/web/identity.controller.js';
+import { SetupAccess } from '../adapters/driving/web/setup-access.service.js';
 import { SetupController } from '../adapters/driving/web/setup.controller.js';
 
 export const IDENTITY_USER_REPOSITORY = 'IDENTITY_USER_REPOSITORY';
@@ -57,6 +58,7 @@ export class IdentityModule {
         clock: Clock,
         sessions: HttpSessions,
         operations: AuditedOperation,
+        setupAccess: SetupAccess,
     ): DynamicModule {
         return {
             module: IdentityModule,
@@ -69,6 +71,7 @@ export class IdentityModule {
                 { provide: IDENTITY_CLOCK, useValue: clock },
                 { provide: IDENTITY_HTTP_SESSIONS, useValue: sessions },
                 { provide: IDENTITY_AUDITED_OPERATION, useValue: operations },
+                { provide: SetupAccess, useValue: setupAccess },
                 {
                     provide: ManagedAccountLoader,
                     inject: [IDENTITY_USER_REPOSITORY],
