@@ -9,6 +9,8 @@ import { Translator } from './translator.util';
 
 interface I18nValue {
     language: Language;
+    // BCP 47 locale for numbers, prices and month names.
+    locale: string;
     t(key: MessageKey, values?: MessageValues): string;
     dates: DateTimeFormatter;
 }
@@ -21,6 +23,7 @@ export function I18nProvider({ language, children }: { language: Language; child
 
         return {
             language,
+            locale: translator.locale,
             t: (key, values) => translator.translate(key, values),
             dates: new DateTimeFormatter(translator.locale),
         };

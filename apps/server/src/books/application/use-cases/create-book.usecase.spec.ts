@@ -1,0 +1,162 @@
+import { describe, expect, it } from 'vitest';
+import { guest, input, library, owner, saved } from '../testing/book-doubles.test-support.js';
+import { CreateBook } from './create-book.usecase.js';
+
+function subject(current = library()) {
+    return new CreateBook(
+        current.books,
+        current.builder,
+        current.identity,
+        current.readings,
+        current.viewer,
+        current.ids,
+        current.clock,
+        current.operations,
+    );
+}
+
+describe('CreateBook', () => {
+    it('saves an edition with its author', async () => {
+        const current = library();
+
+        const result = await subject(current).execute(owner, input(), false);
+
+        expect(result).toMatchObject({
+            title: 'Piranesi',
+            isbn: '9781635575637',
+            authors: [{ name: 'Susanna Clarke' }],
+            category: 'books',
+            ownership: 'owned',
+            hasCover: false,
+        });
+        expect(current.books.books.size).toBe(1);
+    });
+    it('converts an ISBN-10 and remembers the conversion', async () => {
+        const current = library();
+
+        const result = await subject(current).execute(owner, input({ isbn: '0306406152' }), false);
+
+        expect(result).toMatchObject({ isbn: '9780306406157', isbnConvertedFromIsbn10: true });
+    });
+    it('refuses a second record of the same edition, even entered as ISBN-10', async () => {
+        const current = library();
+
+        await saved(current, { isbn: '9780306406157' });
+
+        const result = subject(current).execute(owner, input({ isbn: '0-306-40615-2' }), false);
+
+        await expect(result).rejects.toMatchObject({ code: 'conflict', reason: 'isbn-taken' });
+        expect(current.books.books.size).toBe(1);
+    });
+    it('reuses an author whose name differs only by case and accents', async () => {
+        const current = library();
+
+        await saved(current, { authors: [{ name: 'Hervé Bazin' }], isbn: '9780306406157' });
+
+        await subject(current).execute(
+            owner,
+            input({ authors: [{ name: ' herve BAZIN ' }] }),
+            false,
+        );
+
+        expect(current.authors.authors.size).toBe(1);
+    });
+    it('asks before creating an author with a similar name', async () => {
+        const current = library();
+
+        await saved(current, { authors: [{ name: 'Sam Taylor' }], isbn: '9780306406157' });
+
+        const result = subject(current).execute(
+            owner,
+            input({ authors: [{ name: 'Sam Tayler' }] }),
+            false,
+        );
+
+        await expect(result).rejects.toMatchObject({
+            reason: 'author-similar',
+            details: { name: 'Sam Tayler', candidates: [{ name: 'Sam Taylor' }] },
+        });
+        expect(current.books.books.size).toBe(1);
+    });
+    it('creates a distinct author once confirmed', async () => {
+        const current = library();
+
+        await saved(current, { authors: [{ name: 'Sam Taylor' }], isbn: '9780306406157' });
+
+        await subject(current).execute(
+            owner,
+            input({ authors: [{ name: 'Sam Tayler', distinct: true }] }),
+            false,
+        );
+
+        expect(current.authors.authors.size).toBe(2);
+    });
+    it('warns about a possible duplicate of a book without ISBN', async () => {
+        const current = library();
+        const noIsbn = { isbn: null, noIsbn: true };
+
+        await saved(current, noIsbn);
+
+        const result = subject(current).execute(owner, input(noIsbn), false);
+
+        await expect(result).rejects.toMatchObject({
+            reason: 'possible-duplicate',
+            details: { candidates: [{ title: 'Piranesi', authors: ['Susanna Clarke'] }] },
+        });
+    });
+    it('saves a distinct book without ISBN once confirmed', async () => {
+        const current = library();
+        const noIsbn = { isbn: null, noIsbn: true };
+
+        await saved(current, noIsbn);
+
+        await subject(current).execute(owner, input({ ...noIsbn, confirmDistinct: true }), false);
+
+        expect(current.books.books.size).toBe(2);
+    });
+    it('records the creator reading status only for the creator', async () => {
+        const current = library();
+
+        const result = await subject(current).execute(owner, input(), true);
+
+        expect(result.personal).toEqual({ read: true, note: null });
+        expect([...current.readings.statuses.keys()]).toEqual(['camille/' + result.id]);
+    });
+    it('records the creation for the audit and future Activity', async () => {
+        const current = library();
+
+        const result = await subject(current).execute(owner, input({ price: '16,90' }), false);
+
+        expect(current.trail.entries).toEqual([
+            expect.objectContaining({
+                category: 'book.created',
+                outcome: 'successful',
+                subjectId: result.id,
+                after: expect.objectContaining({ title: 'Piranesi', priceCents: 1690 }),
+            }),
+        ]);
+    });
+    it('refuses a Guest without saving anything', async () => {
+        const current = library();
+
+        const result = subject(current).execute(guest, input(), false);
+
+        await expect(result).rejects.toMatchObject({ reason: 'guest-read-only' });
+        expect(current.books.books.size).toBe(0);
+        expect(current.authors.authors.size).toBe(0);
+    });
+    it('rejects an invalid ISBN', async () => {
+        const current = library();
+
+        const result = subject(current).execute(owner, input({ isbn: '123' }), false);
+
+        await expect(result).rejects.toMatchObject({ reason: 'isbn-invalid' });
+    });
+    it('rejects a publication month without a year', async () => {
+        const current = library();
+
+        const result = subject(current).execute(owner, input({ publicationMonth: 3 }), false);
+
+        await expect(result).rejects.toMatchObject({ reason: 'publication-month-without-year' });
+    });
+});

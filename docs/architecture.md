@@ -153,7 +153,10 @@ Repository writes compare the previously read version, and renewal checks the au
 concurrent stale credential requests.
 
 Mutating API requests require JSON, a matching Origin and a signed double-submit CSRF token obtained from
-`/api/auth/csrf`. Cookies and private values are never placed in localStorage. The API is same-origin, without
+`/api/auth/csrf`. The only exception to JSON is a cover upload (`PUT /api/books/:id/cover`), whose body is the image
+itself (`image/*` or `application/octet-stream`, at most 10 MB); browsers cannot send these types from a cross-site
+form, and the Origin and CSRF checks still apply. Cover images are stored under `covers/` in the data directory with
+server-chosen random names and are checked by content (JPEG, PNG or WebP), never by the declared type. Cookies and private values are never placed in localStorage. The API is same-origin, without
 permissive CORS. Proxy trust is disabled; a future TLS-terminating proxy needs an explicit trust/protocol design before
 changing this setting.
 
@@ -225,3 +228,20 @@ review verifies actual behavior coverage and responsibility.
 `apps/server/tsconfig.json` gives editors a discoverable backend project inheriting legacy decorator settings from
 `tsconfig.runtime.json`. Build scripts retain the runtime config, excluding tests and `.test-support.ts` files from
 production output.
+
+## Persistence identities and SQL
+
+Application tables with a single-column primary key use UUID IDs with SQLite `TEXT NOT NULL PRIMARY KEY`
+and UUID-format CHECK constraints. Composite keys and Kysely migration tables are exempt. Settings retain unique
+names for lookup alongside UUID identities; audit row IDs and operation IDs are independent UUIDs.
+Native UUID generation stays in infrastructure behind the ID generator port. Audit subject keys remain descriptive.
+
+Historical migrations live under shared driven persistence in `migrations/`, loaded by `DatabaseMigrations`.
+Their original names and order remain stable. Migration 006 rebuilds related tables transactionally, preserving
+valid entity IDs, relationships, settings and audit payloads. Invalid legacy entity IDs stop the upgrade before schema
+changes and require explicit data repair. Audit integer keys and settings names receive UUID identities.
+
+Runtime adapters use Kysely builders, including `instr` for literal searches on normalized keys. Raw SQL is allowed
+in migrations and database-boundary tests only. Connection setup retains a narrow exception for driver construction
+and foreign-key/WAL/timeout configuration. Architecture lint enforces the boundary; persistence tests inspect all
+application primary keys and exercise their UUID constraints.

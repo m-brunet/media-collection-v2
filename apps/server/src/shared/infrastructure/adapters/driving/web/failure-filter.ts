@@ -17,9 +17,12 @@ export class FailureFilter implements ExceptionFilter {
                 forbidden: 403,
             };
 
-            response
-                .status(statuses[error.code])
-                .json({ code: error.code, reason: error.reason, message: error.message });
+            response.status(statuses[error.code]).json({
+                code: error.code,
+                reason: error.reason,
+                message: error.message,
+                ...(error.details ? { details: error.details } : {}),
+            });
         } else if (error instanceof HttpException) {
             const value = error.getResponse();
             const message =

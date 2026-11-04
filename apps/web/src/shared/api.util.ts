@@ -6,6 +6,8 @@ export class ApiError extends Error {
         public readonly code: string | null = null,
         // Precise stable cause (for example `username-taken`), translated by the interface.
         public readonly reason: string | null = null,
+        // Data the interface needs to resolve the failure (for example similar authors).
+        public readonly details: Record<string, unknown> | null = null,
     ) {
         super(message);
     }
@@ -17,7 +19,13 @@ export class ApiClient {
 
     async request<T>(
         path: string,
-        options: { method?: string; body?: unknown; passive?: boolean } = {},
+        options: {
+            method?: string;
+            body?: unknown;
+            passive?: boolean;
+            // Sent as-is instead of JSON (cover images).
+            file?: Blob;
+        } = {},
     ): Promise<T> {
         const method = options.method ?? 'GET';
         const headers: Record<string, string> = {};
@@ -27,7 +35,9 @@ export class ApiClient {
         }
 
         if (method !== 'GET') {
-            headers['Content-Type'] = 'application/json';
+            headers['Content-Type'] = options.file
+                ? options.file.type || 'application/octet-stream'
+                : 'application/json';
             headers['X-CSRF-Token'] = await this.csrf();
         }
 
@@ -35,7 +45,8 @@ export class ApiClient {
             method,
             headers,
             credentials: 'same-origin',
-            body: method !== 'GET' ? JSON.stringify(options.body ?? {}) : undefined,
+            body:
+                method === 'GET' ? undefined : (options.file ?? JSON.stringify(options.body ?? {})),
         });
 
         if (!response.ok) {
@@ -45,6 +56,7 @@ export class ApiClient {
                 message: string;
                 code?: string;
                 reason?: string | null;
+                details?: Record<string, unknown>;
             };
 
             if (response.status === 401 && path !== '/auth/login') {
@@ -60,6 +72,7 @@ export class ApiClient {
                 response.status,
                 result.code ?? null,
                 result.reason ?? null,
+                result.details ?? null,
             );
         }
 

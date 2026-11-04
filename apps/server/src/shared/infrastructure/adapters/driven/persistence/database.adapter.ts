@@ -1,6 +1,6 @@
+import { DatabaseMigrations } from './database-migrations.adapter.js';
 import BetterSqlite3 from 'better-sqlite3';
-import type { Generated } from 'kysely';
-import { Kysely, sql, SqliteDialect } from 'kysely';
+import { Kysely, SqliteDialect } from 'kysely';
 import { Migrator } from 'kysely/migration';
 import { existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -19,7 +19,7 @@ interface UsersTable {
 }
 
 interface AuditLogsTable {
-    id: Generated<number>;
+    id: string;
     operation_id: string;
     category: string;
     outcome: string;
@@ -33,14 +33,66 @@ interface AuditLogsTable {
 }
 
 interface SettingsTable {
+    id: string;
     name: string;
     value: string;
+}
+
+interface AuthorsTable {
+    id: string;
+    name: string;
+    name_key: string;
+    created_at: string;
+}
+
+interface BooksTable {
+    id: string;
+    title: string;
+    title_key: string;
+    isbn13: string | null;
+    isbn_converted: number;
+    no_isbn: number;
+    category: string;
+    ownership: string;
+    publisher: string | null;
+    publication_year: number | null;
+    publication_month: number | null;
+    summary: string | null;
+    page_count: number | null;
+    price_cents: number | null;
+    cover_file: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+interface BookAuthorsTable {
+    book_id: string;
+    author_id: string;
+    position: number;
+}
+
+interface ReadingStatusesTable {
+    user_id: string;
+    book_id: string;
+    read: number;
+}
+
+interface PersonalNotesTable {
+    user_id: string;
+    book_id: string;
+    text: string;
+    updated_at: string;
 }
 
 export interface DatabaseSchema {
     users: UsersTable;
     server_settings: SettingsTable;
     audit_logs: AuditLogsTable;
+    authors: AuthorsTable;
+    books: BooksTable;
+    book_authors: BookAuthorsTable;
+    reading_statuses: ReadingStatusesTable;
+    personal_notes: PersonalNotesTable;
 }
 
 export class Database {
@@ -92,107 +144,7 @@ export class Database {
     private async migrate(): Promise<void> {
         const migrator = new Migrator({
             db: this.connection,
-            provider: {
-                getMigrations: async () => ({
-                    '001-foundation': {
-                        up: async (db: Kysely<unknown>) => {
-                            await db.schema
-                                .createTable('users')
-                                .addColumn('id', 'text', (c) => c.primaryKey())
-                                .addColumn('username', 'text', (c) => c.notNull().unique())
-                                .addColumn('role', 'text', (c) => c.notNull())
-                                .addColumn('password_hash', 'text', (c) => c.notNull())
-                                .addColumn('must_change_password', 'integer', (c) => c.notNull())
-                                .addColumn('token_version', 'integer', (c) => c.notNull())
-                                .addColumn('created_at', 'text', (c) => c.notNull())
-                                .execute();
-                            await db.schema
-                                .createTable('notes')
-                                .addColumn('id', 'text', (c) => c.primaryKey())
-                                .addColumn('owner_id', 'text', (c) =>
-                                    c.notNull().references('users.id').onDelete('cascade'),
-                                )
-                                .addColumn('title', 'text', (c) => c.notNull())
-                                .addColumn('body', 'text', (c) => c.notNull())
-                                .addColumn('created_at', 'text', (c) => c.notNull())
-                                .addColumn('updated_at', 'text', (c) => c.notNull())
-                                .execute();
-                            await db.schema
-                                .createIndex('notes_owner')
-                                .on('notes')
-                                .columns(['owner_id', 'updated_at'])
-                                .execute();
-                            await db.schema
-                                .createTable('server_settings')
-                                .addColumn('name', 'text', (c) => c.primaryKey())
-                                .addColumn('value', 'text', (c) => c.notNull())
-                                .execute();
-                        },
-                    },
-                    // Media Collection: removes the foundation Notes demo and adds the personal
-                    // interface language (null until the user chooses one).
-                    '002-media-collection-foundation': {
-                        up: async (db: Kysely<unknown>) => {
-                            await db.schema.dropIndex('notes_owner').ifExists().execute();
-                            await db.schema.dropTable('notes').ifExists().execute();
-                            await db.schema
-                                .alterTable('users')
-                                .addColumn('language', 'text')
-                                .execute();
-                        },
-                    },
-                    // Fixed Admin/Owner/Guest roles with exactly one protected administrator (the
-                    // earliest existing one), account deactivation, and the technical audit log.
-                    '003-access-and-audit': {
-                        up: async (db: Kysely<unknown>) => {
-                            await sql`update users set role = 'owner' where role = 'user'`.execute(
-                                db,
-                            );
-                            await sql`update users set role = 'owner' where role = 'admin' and id <> (
-                                select id from users where role = 'admin' order by created_at, id limit 1
-                            )`.execute(db);
-                            await db.schema
-                                .alterTable('users')
-                                .addColumn('active', 'integer', (c) => c.notNull().defaultTo(1))
-                                .execute();
-                            await sql`create unique index users_single_administrator on users (role)
-                                where role = 'admin'`.execute(db);
-                            await db.schema
-                                .createTable('audit_logs')
-                                .addColumn('id', 'integer', (c) => c.primaryKey().autoIncrement())
-                                .addColumn('operation_id', 'text', (c) => c.notNull())
-                                .addColumn('category', 'text', (c) => c.notNull())
-                                .addColumn('outcome', 'text', (c) => c.notNull())
-                                .addColumn('actor_id', 'text', (c) => c.references('users.id'))
-                                .addColumn('occurred_at', 'text', (c) => c.notNull())
-                                .addColumn('subject_type', 'text', (c) => c.notNull())
-                                .addColumn('subject_id', 'text')
-                                .addColumn('before_values', 'text')
-                                .addColumn('after_values', 'text')
-                                .addColumn('failure', 'text')
-                                .execute();
-                            await db.schema
-                                .createIndex('audit_logs_occurred')
-                                .on('audit_logs')
-                                .columns(['occurred_at', 'id'])
-                                .execute();
-                            await db.schema
-                                .createIndex('audit_logs_operation')
-                                .on('audit_logs')
-                                .column('operation_id')
-                                .execute();
-                        },
-                    },
-                    // Usernames keep their letter case for sign-in but must not differ from
-                    // another account's only by case (usernames are ASCII, so NOCASE is complete).
-                    '004-case-insensitive-usernames': {
-                        up: async (db: Kysely<unknown>) => {
-                            await sql`create unique index users_username_case_insensitive
-                                on users (username collate nocase)`.execute(db);
-                        },
-                    },
-                }),
-            },
+            provider: new DatabaseMigrations(),
         });
         const { error } = await migrator.migrateToLatest();
 

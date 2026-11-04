@@ -1,6 +1,16 @@
 import type { LucideIcon } from 'lucide-react';
 import {
     ArrowLeft,
+    BookOpen,
+    Check,
+    ChevronDown,
+    ChevronRight,
+    ImageOff,
+    ImagePlus,
+    Pencil,
+    Plus,
+    Search,
+    Trash2,
     CircleAlert,
     CircleCheck,
     Info,
@@ -37,6 +47,16 @@ const lucide = {
     back: ArrowLeft,
     collections: Layers,
     scan: ScanBarcode,
+    books: BookOpen,
+    add: Plus,
+    edit: Pencil,
+    delete: Trash2,
+    search: Search,
+    check: Check,
+    expand: ChevronRight,
+    collapse: ChevronDown,
+    'cover-missing': ImageOff,
+    'cover-add': ImagePlus,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof lucide;
