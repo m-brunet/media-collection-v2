@@ -10,7 +10,7 @@
     --color-panel: #1d2022;
     --color-control: #303336;
     --color-control-hover: #3a3e41;
-    --color-selected: #2b3d31;
+    --color-selected: var(--scheme-accent-background);
     --color-border: #3c4042;
     --color-border-strong: #545c56;
 
@@ -20,15 +20,15 @@
     --color-text-muted: #91a399;
 
     /* Accent and status */
-    --color-accent: #86d39a;
-    --color-accent-strong: #b7e7c2;
+    --color-accent: var(--scheme-accent);
+    --color-accent-strong: var(--scheme-accent-text);
     --color-on-accent: #17251b;
     --color-danger: #e5a19a;
     --color-danger-surface: #402c2b;
     --color-warning: #d5b66f;
     --color-warning-surface: #3a3227;
-    --color-success-surface: #22362a;
-    --color-focus: #b7e7c2;
+    --color-success-surface: var(--scheme-accent-background);
+    --color-focus: var(--scheme-accent-text);
 
     /* Typography */
     --font-body: 'Inter', system-ui, sans-serif;
@@ -65,4 +65,32 @@
     /* Layout */
     --sidebar-width: 232px;
     --control-height: 40px;
+}
+
+/* Colour schemes (design/color-charts): only these three accent roles differ; neutral and status
+   colours are shared. The installation-wide choice is set on <html data-color-scheme>.
+   Spring green is the default. */
+:root,
+[data-color-scheme='spring-green'] {
+    --scheme-accent: #79d670;
+    --scheme-accent-background: #2b3e29;
+    --scheme-accent-text: #bdebb8;
+}
+
+[data-color-scheme='mint'] {
+    --scheme-accent: #86d39a;
+    --scheme-accent-background: #2b3d31;
+    --scheme-accent-text: #b7e7c2;
+}
+
+[data-color-scheme='emerald'] {
+    --scheme-accent: #65d59b;
+    --scheme-accent-background: #273e32;
+    --scheme-accent-text: #b0e9ca;
+}
+
+[data-color-scheme='forest'] {
+    --scheme-accent: #65b881;
+    --scheme-accent-background: #293a30;
+    --scheme-accent-text: #afd9bc;
 }

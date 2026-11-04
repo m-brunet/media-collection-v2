@@ -52,3 +52,10 @@ export interface ServerStatus {
     };
     restartRequired: boolean;
 }
+
+export type ColorSchemeName = 'mint' | 'emerald' | 'forest' | 'spring-green';
+
+// Installation-wide appearance, readable before sign-in.
+export interface Appearance {
+    colorScheme: ColorSchemeName;
+}

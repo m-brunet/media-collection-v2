@@ -1,4 +1,5 @@
-/* Local recovery window. Mirrors the Libris design values (apps/web/src/shared/ui/tokens.css);
+/* Local recovery window. Mirrors the Libris design values (apps/web/src/shared/ui/tokens.css) in the
+   default Spring green scheme (no server is running here to read the chosen scheme);
    this page loads from disk without the web build, so the values are repeated here. */
 @font-face {
     font-family: 'Inter';
@@ -52,7 +53,7 @@ p {
 }
 
 .brand__mark {
-    color: #86d39a;
+    color: #79d670;
 }
 
 .brand__name {
@@ -66,7 +67,7 @@ p {
     font-size: 11px;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #86d39a;
+    color: #79d670;
 }
 
 h1 {
@@ -114,9 +115,9 @@ button {
     min-height: 40px;
     margin-top: 12px;
     padding: 0 16px;
-    border: 1px solid #86d39a;
+    border: 1px solid #79d670;
     border-radius: 4px;
-    background: #86d39a;
+    background: #79d670;
     color: #17251b;
     font: inherit;
     font-weight: 600;
@@ -124,7 +125,7 @@ button {
 }
 
 button:hover:not(:disabled) {
-    background: #b7e7c2;
+    background: #bdebb8;
 }
 
 button:disabled {
@@ -137,7 +138,7 @@ button:focus-visible {
     outline: none;
     box-shadow:
         0 0 0 2px #1d2022,
-        0 0 0 4px #b7e7c2;
+        0 0 0 4px #bdebb8;
 }
 
 #result:not(:empty) {

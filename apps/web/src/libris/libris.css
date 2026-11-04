@@ -161,3 +161,95 @@ body {
 .access__title {
     font-size: var(--text-3xl);
 }
+
+/* Appearance: colour scheme choices. Each card previews its own scheme through
+   data-color-scheme, which redefines the accent variables for that card only. */
+.scheme-choices {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.scheme-choice {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border: var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    cursor: pointer;
+}
+
+.scheme-choice:has(input:checked) {
+    border-color: var(--scheme-accent);
+    box-shadow: 0 0 0 1px var(--scheme-accent);
+}
+
+.scheme-choice:has(input:focus-visible) {
+    box-shadow: var(--focus-ring);
+}
+
+.scheme-choice input {
+    position: absolute;
+    top: var(--space-4);
+    right: var(--space-4);
+    width: 18px;
+    height: 18px;
+    accent-color: var(--scheme-accent);
+}
+
+.scheme-choice__swatches {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.scheme-choice__swatch {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-md);
+    border: var(--border);
+}
+
+.scheme-choice__swatch--accent {
+    background: var(--scheme-accent);
+}
+
+.scheme-choice__swatch--background {
+    background: var(--scheme-accent-background);
+}
+
+.scheme-choice__swatch--text {
+    background: var(--scheme-accent-text);
+}
+
+.scheme-choice__name {
+    font-weight: 500;
+}
+
+.scheme-choice__preview {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.scheme-choice__button {
+    align-self: flex-start;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-sm);
+    background: var(--scheme-accent);
+    color: var(--color-on-accent);
+    font-size: var(--text-sm);
+}
+
+.scheme-choice__selected {
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-sm);
+    background: var(--scheme-accent-background);
+    color: var(--scheme-accent);
+    font-size: var(--text-sm);
+}

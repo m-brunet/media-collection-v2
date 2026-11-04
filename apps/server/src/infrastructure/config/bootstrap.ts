@@ -31,6 +31,8 @@ import { IdentityModule } from '../../identity/infrastructure/config/identity.mo
 import { SettingsModule } from '../../server-settings/infrastructure/config/settings.module.js';
 import { HttpSessions } from '../../shared/infrastructure/adapters/driving/web/http-sessions.service.js';
 import { HealthController } from '../adapters/driving/web/health.controller.js';
+import { AppearanceModule } from '../../appearance/infrastructure/config/appearance.module.js';
+import { KyselyAppearanceRepository } from '../../appearance/infrastructure/adapters/driven/persistence/kysely-appearance.repository.js';
 import { SetupAccess } from '../../identity/infrastructure/adapters/driving/web/setup-access.service.js';
 
 export interface BackendOptions {
@@ -196,6 +198,10 @@ export class BackendRuntime {
                             new PemCertificateValidator(),
                             status,
                             httpSettings,
+                            operations,
+                        ),
+                        AppearanceModule.register(
+                            new KyselyAppearanceRepository(database.connections),
                             operations,
                         ),
                     ],

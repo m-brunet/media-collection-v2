@@ -12,6 +12,7 @@ export class FakeApi {
         this.on('GET /auth/csrf', () => ({ status: 200, body: { token: 'csrf' } }));
         this.on('GET /auth/me', () => ({ status: 401, body: { message: 'Sign in' } }));
         this.on('GET /setup', () => ({ status: 200, body: { required: false, allowed: true } }));
+        this.on('GET /appearance', () => ({ status: 200, body: { colorScheme: 'spring-green' } }));
         vi.stubGlobal('fetch', vi.fn(this.fetch.bind(this)));
     }
 

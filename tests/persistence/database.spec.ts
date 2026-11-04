@@ -6,6 +6,8 @@ import { sql } from 'kysely';
 import BetterSqlite3 from 'better-sqlite3';
 import { Database } from '../../apps/server/src/shared/infrastructure/adapters/driven/persistence/database.adapter.js';
 import { KyselyUserRepository } from '../../apps/server/src/identity/infrastructure/adapters/driven/persistence/kysely-user.repository.js';
+import { KyselyAppearanceRepository } from '../../apps/server/src/appearance/infrastructure/adapters/driven/persistence/kysely-appearance.repository.js';
+import { ColorScheme } from '../../apps/server/src/appearance/domain/value-objects/color-scheme.value-object.js';
 import { KyselyAuditTrail } from '../../apps/server/src/shared/infrastructure/adapters/driven/persistence/kysely-audit-trail.adapter.js';
 import { User } from '../../apps/server/src/identity/domain/entities/user.entity.js';
 import { KyselyHttpSettingsRepository } from '../../apps/server/src/server-settings/infrastructure/adapters/driven/persistence/kysely-http-settings.repository.js';
@@ -231,6 +233,42 @@ describe('SQLite adapters', () => {
         const reopened = await reopen(current);
 
         expect((await reopened.users.findById('alice'))!.actor.language).toBe('fr');
+    });
+
+    it('reads Spring green when no colour scheme was saved', async () => {
+        const { database } = await open();
+        const repository = new KyselyAppearanceRepository(database.connections);
+
+        const result = await repository.read();
+
+        expect(result.name).toBe('spring-green');
+    });
+
+    it('persists the chosen colour scheme across reopen', async () => {
+        const current = await open();
+
+        await new KyselyAppearanceRepository(current.database.connections).save(
+            new ColorScheme('emerald'),
+        );
+
+        const reopened = await reopen(current);
+
+        expect(
+            (await new KyselyAppearanceRepository(reopened.database.connections).read()).name,
+        ).toBe('emerald');
+    });
+
+    it('rejects an unknown stored colour scheme', async () => {
+        const { database } = await open();
+
+        await database.connection
+            .insertInto('server_settings')
+            .values({ name: 'appearance', value: '{"colorScheme":"purple"}' })
+            .execute();
+
+        const result = new KyselyAppearanceRepository(database.connections).read();
+
+        await expect(result).rejects.toMatchObject({ reason: 'color-scheme-unknown' });
     });
 
     it('allows only one administrator', async () => {

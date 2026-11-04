@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router';
 import { useI18n } from '../shared/i18n/i18n-context';
+import { AppearanceProvider } from '../shared/appearance/appearance-context';
 import { SessionProvider, useSession } from '../shared/session/session-context';
 import { EmptyState, LoadingState } from '../shared/ui/states';
 import { PasswordSetupPage } from './access/password-setup-page';
@@ -8,6 +9,7 @@ import { SetupPage } from './access/setup-page';
 import { SignInPage } from './access/sign-in-page';
 import { AccountPage } from './account/account-page';
 import { AccountsPage } from './administration/accounts-page';
+import { AppearancePage } from './administration/appearance-page';
 import { ServerSettingsPage } from './administration/server-settings-page';
 import { AppShell } from './shell/app-shell';
 
@@ -78,6 +80,14 @@ function LibrisRoutes() {
                     }
                 />
                 <Route
+                    path="/admin/appearance"
+                    element={
+                        <AdministratorOnly>
+                            <AppearancePage />
+                        </AdministratorOnly>
+                    }
+                />
+                <Route
                     path="/admin/server"
                     element={
                         <AdministratorOnly>
@@ -94,9 +104,11 @@ function LibrisRoutes() {
 export function LibrisApp() {
     return (
         <BrowserRouter>
-            <SessionProvider>
-                <LibrisRoutes />
-            </SessionProvider>
+            <AppearanceProvider>
+                <SessionProvider>
+                    <LibrisRoutes />
+                </SessionProvider>
+            </AppearanceProvider>
         </BrowserRouter>
     );
 }
