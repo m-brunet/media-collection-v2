@@ -52,6 +52,7 @@ export class ElectronRuntime {
             APP_TEST_PORT: options.port === null ? undefined : String(options.port ?? 0),
             APP_TEST_RECOVERY: options.recovery ? '1' : '0',
             APP_TEST_FAKE_CLOCK: options.fakeClock ? '1' : '0',
+            APP_HIDDEN_WINDOWS: '1',
         };
 
         delete environment.ELECTRON_RUN_AS_NODE;
