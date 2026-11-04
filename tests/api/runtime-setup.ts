@@ -5,6 +5,7 @@ import { generate } from 'selfsigned';
 import { createServer } from 'node:net';
 import type { RuntimeOptions } from './runtime.js';
 import { Client, ElectronRuntime } from './runtime.js';
+import { desktopWindow } from './client.js';
 
 export class RuntimeFixture {
     private readonly directories = new Set<string>();
@@ -104,10 +105,12 @@ export async function availablePort(): Promise<number> {
 // First launch: creates the protected administrator `admin` and leaves the client signed in.
 export async function administrator(client: Client): Promise<void> {
     await client.prepare();
-    const setup = await client.call('/setup', 'POST', {
-        username: 'admin',
-        password: 'administrator-new-password',
-    });
+    const setup = await client.call(
+        '/setup',
+        'POST',
+        { username: 'admin', password: 'administrator-new-password' },
+        { headers: desktopWindow },
+    );
 
     if (setup.status !== 201) {
         throw new Error('Administrator fixture setup failed: ' + setup.text);

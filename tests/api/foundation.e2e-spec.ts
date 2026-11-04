@@ -434,7 +434,7 @@ describe('Electron-managed runtime integration', () => {
         const response = await client.call('/setup', 'POST', input);
 
         expect(response.status).toBe(403);
-        expect(response.body.reason).toBe('setup-local-only');
+        expect(response.body.reason).toBe('setup-desktop-only');
     });
 
     it('starts a new installation without any account', async () => {
@@ -442,7 +442,7 @@ describe('Electron-managed runtime integration', () => {
 
         const response = await current.client.call('/setup');
 
-        expect(response.body).toEqual({ required: true, local: true });
+        expect(response.body).toEqual({ required: true, allowed: false });
         expect((await current.client.login('admin', 'p@ssw0rd')).status).toBe(401);
     });
 });

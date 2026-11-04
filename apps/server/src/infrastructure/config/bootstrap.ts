@@ -31,6 +31,7 @@ import { IdentityModule } from '../../identity/infrastructure/config/identity.mo
 import { SettingsModule } from '../../server-settings/infrastructure/config/settings.module.js';
 import { HttpSessions } from '../../shared/infrastructure/adapters/driving/web/http-sessions.service.js';
 import { HealthController } from '../adapters/driving/web/health.controller.js';
+import { SetupAccess } from '../../identity/infrastructure/adapters/driving/web/setup-access.service.js';
 
 export interface BackendOptions {
     dataDirectory: string;
@@ -40,6 +41,8 @@ export interface BackendOptions {
     webDirectory?: string;
     development?: boolean;
     clock?: Clock;
+    // Per-launch secret that the Electron window attaches to first-launch setup requests.
+    setupToken?: string;
 }
 
 export interface BackendHandle {
@@ -186,6 +189,7 @@ export class BackendRuntime {
                             clock,
                             sessions,
                             operations,
+                            new SetupAccess(options.setupToken ?? null),
                         ),
                         SettingsModule.register(
                             tls,

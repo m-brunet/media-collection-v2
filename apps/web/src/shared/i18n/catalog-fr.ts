@@ -150,8 +150,8 @@ export const fr = {
         'Les comptes invités peuvent consulter la bibliothèque mais pas la modifier.',
     'reason.temporaryPassword': 'Remplacez d’abord votre mot de passe temporaire.',
     'reason.setupCompleted': 'Cette bibliothèque a déjà son administrateur.',
-    'reason.setupLocalOnly':
-        'Terminez la configuration sur l’ordinateur où fonctionne Media Collection.',
+    'reason.setupDesktopOnly':
+        'Terminez la configuration dans la fenêtre de l’application Media Collection.',
     'reason.accountMissing': 'Ce compte n’existe plus.',
     'reason.alreadyActive': 'Ce compte est déjà actif.',
     'reason.alreadyInactive': 'Ce compte est déjà désactivé.',
@@ -172,7 +172,7 @@ export const fr = {
     'setup.submit': 'Créer l’administrateur',
     'setup.remoteTitle': 'La configuration n’est pas terminée',
     'setup.remoteBody':
-        'Terminez la configuration sur l’ordinateur où fonctionne Media Collection, puis connectez-vous ici.',
+        'Terminez la configuration dans l’application Media Collection, sur l’ordinateur où elle est installée, puis connectez-vous ici.',
     'accounts.title': 'Gestion des utilisateurs',
     'accounts.intro': 'Les rôles sont fixés à la création du compte.',
     'accounts.protected': 'Administrateur protégé',

@@ -24,7 +24,7 @@ interface SessionValue {
     language: Language;
     // True after the server ended the session (expiry, sign-out elsewhere).
     expired: boolean;
-    // During first launch: whether this device may complete setup (the host computer only).
+    // During first launch: whether this page may complete setup (the desktop window only).
     setupAllowed: boolean;
     completeSetup(username: string, password: string): Promise<void>;
     signIn(username: string, password: string): Promise<void>;
@@ -67,9 +67,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
             .catch(async () => {
                 const setup = await api
                     .request<SetupStatus>('/setup', { passive: true })
-                    .catch(() => ({ required: false, local: false }));
+                    .catch(() => ({ required: false, allowed: false }));
 
-                setSetupAllowed(setup.local);
+                setSetupAllowed(setup.allowed);
                 setStatus(setup.required ? 'setup' : 'signed-out');
             });
 

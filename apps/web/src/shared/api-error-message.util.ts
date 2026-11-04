@@ -16,7 +16,7 @@ export class ApiErrorMessage {
         'guest-read-only': 'reason.guestReadOnly',
         'temporary-password': 'reason.temporaryPassword',
         'setup-completed': 'reason.setupCompleted',
-        'setup-local-only': 'reason.setupLocalOnly',
+        'setup-desktop-only': 'reason.setupDesktopOnly',
         'account-missing': 'reason.accountMissing',
         'already-active': 'reason.alreadyActive',
         'already-inactive': 'reason.alreadyInactive',

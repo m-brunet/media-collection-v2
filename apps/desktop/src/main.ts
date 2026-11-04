@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { existsSync, mkdirSync } from 'node:fs';
 import { DesktopConfigurationParser } from './configuration.util.js';
 import { BackendProcess } from './backend-process.adapter.js';
+import { SetupRequestSigner } from './setup-request-signer.adapter.js';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 
@@ -13,6 +14,7 @@ let quitting = false;
 let shutdownComplete = false;
 let window: BrowserWindow | undefined;
 let restarting = false;
+const setupSigner = new SetupRequestSigner();
 const startupOptions = (() => {
     try {
         const defaultData = app.isPackaged
@@ -111,6 +113,7 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
                 ...options,
                 webDirectory: join(directory, '../../web'),
                 development: !app.isPackaged,
+                setupToken: setupSigner.secret,
             });
 
             if (ready.type !== 'ready') {
@@ -138,6 +141,7 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
                 show: false,
                 webPreferences: { contextIsolation: true, sandbox: true, nodeIntegration: false },
             });
+            setupSigner.attach(window, new URL(url).origin);
             window.webContents.setWindowOpenHandler(({ url: target }) => {
                 if (/^https?:\/\//.test(target)) {
                     void shell.openExternal(target);

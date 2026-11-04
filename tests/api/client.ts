@@ -8,6 +8,10 @@ export interface ApiResult<T> {
     headers: import('node:http').IncomingHttpHeaders;
 }
 
+// Header the test backends expect on first-launch setup, standing in for the per-launch secret
+// that the Electron window attaches (test backends are started with `test-setup-token`).
+export const desktopWindow = { 'X-Media-Collection-Setup': 'test-setup-token' };
+
 export class Client {
     readonly cookies = new Map<string, string>();
     private csrfToken = '';
@@ -22,7 +26,12 @@ export class Client {
         path: string,
         method = 'GET',
         body?: object,
-        options: { passive?: boolean; csrf?: boolean; origin?: string } = {},
+        options: {
+            passive?: boolean;
+            csrf?: boolean;
+            origin?: string;
+            headers?: Record<string, string>;
+        } = {},
     ): Promise<ApiResult<T>> {
         const url = new URL('/api' + path, this.base);
         const mutation = method !== 'GET';
@@ -39,6 +48,7 @@ export class Client {
                             .map(([key, value]) => key + '=' + value)
                             .join('; '),
                         ...(options.passive ? { 'X-App-Activity': 'passive' } : {}),
+                        ...options.headers,
                         ...(mutation
                             ? {
                                   'Content-Type': 'application/json',

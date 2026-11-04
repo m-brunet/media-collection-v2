@@ -11,7 +11,7 @@ export class FakeApi {
     constructor() {
         this.on('GET /auth/csrf', () => ({ status: 200, body: { token: 'csrf' } }));
         this.on('GET /auth/me', () => ({ status: 401, body: { message: 'Sign in' } }));
-        this.on('GET /setup', () => ({ status: 200, body: { required: false, local: true } }));
+        this.on('GET /setup', () => ({ status: 200, body: { required: false, allowed: true } }));
         vi.stubGlobal('fetch', vi.fn(this.fetch.bind(this)));
     }
 
@@ -21,9 +21,9 @@ export class FakeApi {
         return this;
     }
 
-    // First launch: no account exists yet; `local` tells whether this device may complete setup.
-    firstLaunch(local = true): this {
-        return this.on('GET /setup', () => ({ status: 200, body: { required: true, local } }));
+    // First launch: no account exists yet; `allowed` tells whether this page is the desktop window.
+    firstLaunch(allowed = true): this {
+        return this.on('GET /setup', () => ({ status: 200, body: { required: true, allowed } }));
     }
 
     signedIn(account: Account): this {

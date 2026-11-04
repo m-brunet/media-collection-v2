@@ -5,23 +5,25 @@ import type { CompleteSetupUseCase } from '../../../../application/ports/driving
 import type { SetupStatusUseCase } from '../../../../application/ports/driving/setup-status-use-case.interface.js';
 import { Access } from '../../../../../shared/infrastructure/adapters/driving/web/api-guard.js';
 import { HttpSessions } from '../../../../../shared/infrastructure/adapters/driving/web/http-sessions.service.js';
-import { LocalRequest } from '../../../../../shared/infrastructure/adapters/driving/web/local-request.helper.js';
 import { Failure } from '../../../../../shared/domain/exceptions/failure.js';
 import type { Account, SetupStatus } from '../../../../../../../../packages/contracts/src/http.js';
+import { SetupAccess } from './setup-access.service.js';
 
 const setupSchema = z.strictObject({
     username: z.string().min(3).max(40),
     password: z.string().min(8).max(128),
 });
 
-// First-launch creation of the protected administrator. Accepted only from the computer running
-// Media Collection, so nobody on the network can claim the library before its owner.
+// First-launch creation of the protected administrator. Accepted only from the Media Collection
+// desktop window, so nobody else (another device, or a browser on the same computer) can claim
+// the library before its owner.
 @Controller('api/setup')
 export class SetupController {
     constructor(
         @Inject('IDENTITY_SETUP_STATUS') private readonly status: SetupStatusUseCase,
         @Inject('IDENTITY_COMPLETE_SETUP') private readonly setup: CompleteSetupUseCase,
         private readonly sessions: HttpSessions,
+        private readonly access: SetupAccess,
     ) {}
 
     @Get()
@@ -29,7 +31,7 @@ export class SetupController {
     async read(@Req() request: Request): Promise<SetupStatus> {
         const { required } = await this.status.execute();
 
-        return { required, local: LocalRequest.isLocal(request.socket.remoteAddress) };
+        return { required, allowed: this.access.allows(request) };
     }
 
     @Post()
@@ -40,11 +42,11 @@ export class SetupController {
         @Req() request: Request,
         @Res({ passthrough: true }) response: Response,
     ): Promise<Account> {
-        if (!LocalRequest.isLocal(request.socket.remoteAddress)) {
+        if (!this.access.allows(request)) {
             throw new Failure(
                 'forbidden',
-                'Finish setup on the computer running Media Collection.',
-                'setup-local-only',
+                'Finish setup in the Media Collection desktop window.',
+                'setup-desktop-only',
             );
         }
 

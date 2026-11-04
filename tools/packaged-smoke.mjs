@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { createServer } from 'node:net';
 import { setTimeout as delay } from 'node:timers/promises';
+import { chromium } from 'playwright';
 import { closeDesktop } from './processes.mjs';
 
 const executable = resolve(
@@ -24,10 +25,18 @@ await new Promise((resolve) => portReservation.listen(0, '127.0.0.1', resolve));
 const port = portReservation.address().port;
 
 await new Promise((resolve) => portReservation.close(resolve));
+const debugReservation = createServer();
+
+await new Promise((resolve) => debugReservation.listen(0, '127.0.0.1', resolve));
+// First-launch setup only works inside the app window, so the smoke test drives that window
+// through Chromium's debugging port during the first launch.
+const debugPort = debugReservation.address().port;
+
+await new Promise((resolve) => debugReservation.close(resolve));
 let base = 'http://127.0.0.1:' + port;
 let child;
 let failureOutput = '';
-const launch = async (withPortOverride = true) => {
+const launch = async (withPortOverride = true, debugging = false) => {
     const environment = { ...process.env };
 
     delete environment.APP_DEV_UI;
@@ -37,7 +46,12 @@ const launch = async (withPortOverride = true) => {
     delete environment.APP_DATA_DIR;
     child = spawn(
         executable,
-        [...(withPortOverride ? ['--http-port', String(port)] : []), '--data-dir', directory],
+        [
+            ...(withPortOverride ? ['--http-port', String(port)] : []),
+            ...(debugging ? ['--remote-debugging-port=' + debugPort] : []),
+            '--data-dir',
+            directory,
+        ],
         {
             cwd: directory,
             env: environment,
@@ -99,15 +113,46 @@ async function request(path, method = 'GET', body) {
     return response.status === 204 ? undefined : response.json();
 }
 
+// Completes first-launch setup from inside the real Electron window, as a person would.
+async function setUpInWindow() {
+    const browser = await chromium.connectOverCDP('http://127.0.0.1:' + debugPort);
+
+    try {
+        const [page] = browser.contexts()[0].pages();
+        const status = await page.evaluate(async () => {
+            const token = (await (await fetch('/api/auth/csrf')).json()).token;
+            const response = await fetch('/api/setup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
+                body: JSON.stringify({ username: 'admin', password: 'packaged-smoke-password' }),
+            });
+
+            return response.status;
+        });
+
+        assert.equal(status, 201);
+    } finally {
+        await browser.close();
+    }
+}
+
 try {
-    await launch();
+    await launch(true, true);
     const page = await fetch(base);
 
     assert.equal(page.status, 200);
     assert.match(await page.text(), /<div id="root">/);
     csrf = (await request('/auth/csrf')).token;
     assert.equal((await request('/setup')).required, true);
-    await request('/setup', 'POST', { username: 'admin', password: 'packaged-smoke-password' });
+    await assert.rejects(
+        request('/setup', 'POST', { username: 'admin', password: 'packaged-smoke-password' }),
+        /403/,
+    );
+    await setUpInWindow();
+    await request('/auth/login', 'POST', {
+        username: 'admin',
+        password: 'packaged-smoke-password',
+    });
     await request('/account/language', 'PATCH', { language: 'fr' });
     const nextReservation = createServer();
 
