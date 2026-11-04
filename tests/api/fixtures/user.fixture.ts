@@ -10,6 +10,7 @@ export class UserFixture implements ApiFixture {
     readonly password: string;
     readonly role: Actor['role'];
     readonly mustChangePassword: boolean;
+    readonly active: boolean;
 
     constructor(
         input: {
@@ -18,13 +19,15 @@ export class UserFixture implements ApiFixture {
             password?: string;
             role?: Actor['role'];
             mustChangePassword?: boolean;
+            active?: boolean;
         } = {},
     ) {
         this.id = input.id ?? randomUUID();
         this.username = input.username ?? 'u-' + this.id;
         this.password = input.password ?? 'fixture-password';
-        this.role = input.role ?? 'user';
+        this.role = input.role ?? 'owner';
         this.mustChangePassword = input.mustChangePassword ?? false;
+        this.active = input.active ?? true;
     }
 
     async save(context: Pick<TestAppContext, 'users' | 'passwords'>): Promise<void> {
@@ -38,6 +41,7 @@ export class UserFixture implements ApiFixture {
                 language: null,
                 tokenVersion: 0,
                 createdAt: '2026-01-01T00:00:00.000Z',
+                active: this.active,
             }),
         );
     }

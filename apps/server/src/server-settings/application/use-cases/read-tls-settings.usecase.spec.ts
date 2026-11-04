@@ -11,7 +11,7 @@ it('reads configured settings', async () => {
     expect(result).toEqual({ enabled: false, port: 3443, hasCertificate: false });
 });
 it('rejects a non-administrator', () => {
-    const forbidden = { ...actor, role: 'user' as const };
+    const forbidden = { ...actor, role: 'owner' as const };
     const { store } = setup();
     const subject = new ReadTlsSettings(store);
 

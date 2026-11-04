@@ -415,11 +415,34 @@ describe('Electron-managed runtime integration', () => {
         const current = await fixture.start();
         const client = new Client('http://' + lan!.address + ':' + current.ready.httpPort);
 
+        await administrator(current.client);
         await client.prepare();
-        const input = { username: 'admin', password: 'p@ssw0rd' };
+        const input = { username: 'admin', password: 'administrator-new-password' };
 
         const response = await client.call('/auth/login', 'POST', input);
 
         expect(response.status).toBe(200);
+    });
+
+    it.skipIf(!lan)('refuses first-launch setup from another device on the network', async () => {
+        const current = await fixture.start();
+        const client = new Client('http://' + lan!.address + ':' + current.ready.httpPort);
+
+        await client.prepare();
+        const input = { username: 'intruder', password: 'intruder-password' };
+
+        const response = await client.call('/setup', 'POST', input);
+
+        expect(response.status).toBe(403);
+        expect(response.body.reason).toBe('setup-local-only');
+    });
+
+    it('starts a new installation without any account', async () => {
+        const current = await fixture.start();
+
+        const response = await current.client.call('/setup');
+
+        expect(response.body).toEqual({ required: true, local: true });
+        expect((await current.client.login('admin', 'p@ssw0rd')).status).toBe(401);
     });
 });

@@ -20,3 +20,13 @@ it('rejects an absent account as unauthorized', async () => {
 
     await expect(result).rejects.toMatchObject({ code: 'unauthorized' });
 });
+it('treats a deactivated account as signed out', async () => {
+    const users = new MemoryUsers();
+
+    await users.create(user({ role: 'owner', active: false }));
+    const subject = new AccountLoader(users);
+
+    const result = subject.load('owner');
+
+    await expect(result).rejects.toMatchObject({ code: 'unauthorized', reason: 'session-ended' });
+});

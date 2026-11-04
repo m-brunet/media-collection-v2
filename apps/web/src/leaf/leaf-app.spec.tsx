@@ -43,3 +43,24 @@ it('shows the mobile home in the account language', async () => {
         }),
     ).toBeInTheDocument();
 });
+
+it('refuses the mobile interface to a Guest', async () => {
+    new FakeApi().signedIn(account({ role: 'guest' }));
+
+    render(<LeafApp />);
+
+    expect(
+        await screen.findByRole('heading', { name: 'Owner or Admin required' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Your collections, wherever you shop.')).not.toBeInTheDocument();
+});
+
+it('asks to finish first-launch setup on the host computer', async () => {
+    new FakeApi().firstLaunch(false);
+
+    render(<LeafApp />);
+
+    expect(
+        await screen.findByRole('heading', { name: 'Setup is not finished yet' }),
+    ).toBeInTheDocument();
+});

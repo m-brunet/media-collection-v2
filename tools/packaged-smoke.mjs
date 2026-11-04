@@ -106,11 +106,8 @@ try {
     assert.equal(page.status, 200);
     assert.match(await page.text(), /<div id="root">/);
     csrf = (await request('/auth/csrf')).token;
-    await request('/auth/login', 'POST', { username: 'admin', password: 'p@ssw0rd' });
-    await request('/account/password', 'PATCH', {
-        currentPassword: 'p@ssw0rd',
-        password: 'packaged-smoke-password',
-    });
+    assert.equal((await request('/setup')).required, true);
+    await request('/setup', 'POST', { username: 'admin', password: 'packaged-smoke-password' });
     await request('/account/language', 'PATCH', { language: 'fr' });
     const nextReservation = createServer();
 

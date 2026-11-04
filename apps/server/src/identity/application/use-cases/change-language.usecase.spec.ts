@@ -1,3 +1,7 @@
+import {
+    auditedOperation,
+    MemoryAuditTrail,
+} from '../../../shared/application/testing/audit-doubles.test-support.js';
 import { describe, expect, it } from 'vitest';
 import { MemoryUsers, user } from '../testing/identity-doubles.test-support.js';
 import { AccountLoader } from '../services/account-loader.service.js';
@@ -9,7 +13,11 @@ describe('ChangeLanguage', () => {
         const account = user();
 
         await users.create(account);
-        const subject = new ChangeLanguage(users, new AccountLoader(users));
+        const subject = new ChangeLanguage(
+            users,
+            new AccountLoader(users),
+            auditedOperation(new MemoryAuditTrail()),
+        );
 
         const result = await subject.execute(account.actor, 'fr');
 
@@ -22,7 +30,11 @@ describe('ChangeLanguage', () => {
 
         await users.create(account);
         await users.create(user({ id: 'other', username: 'other' }));
-        const subject = new ChangeLanguage(users, new AccountLoader(users));
+        const subject = new ChangeLanguage(
+            users,
+            new AccountLoader(users),
+            auditedOperation(new MemoryAuditTrail()),
+        );
 
         await subject.execute(account.actor, 'fr');
 
@@ -33,7 +45,11 @@ describe('ChangeLanguage', () => {
         const account = user();
 
         await users.create(account);
-        const subject = new ChangeLanguage(users, new AccountLoader(users));
+        const subject = new ChangeLanguage(
+            users,
+            new AccountLoader(users),
+            auditedOperation(new MemoryAuditTrail()),
+        );
 
         const result = await subject.execute({ ...account.actor, mustChangePassword: true }, 'en');
 
@@ -44,7 +60,11 @@ describe('ChangeLanguage', () => {
         const account = user();
 
         await users.create(account);
-        const subject = new ChangeLanguage(users, new AccountLoader(users));
+        const subject = new ChangeLanguage(
+            users,
+            new AccountLoader(users),
+            auditedOperation(new MemoryAuditTrail()),
+        );
 
         await subject.execute(account.actor, 'fr');
 
@@ -52,7 +72,11 @@ describe('ChangeLanguage', () => {
     });
     it('rejects an unknown account', async () => {
         const users = new MemoryUsers();
-        const subject = new ChangeLanguage(users, new AccountLoader(users));
+        const subject = new ChangeLanguage(
+            users,
+            new AccountLoader(users),
+            auditedOperation(new MemoryAuditTrail()),
+        );
 
         const result = subject.execute(user().actor, 'fr');
 

@@ -1,10 +1,19 @@
+import {
+    auditedOperation,
+    MemoryAuditTrail,
+} from '../../../shared/application/testing/audit-doubles.test-support.js';
 import { expect, it } from 'vitest';
 import { SaveTlsSettings } from './save-tls-settings.usecase.js';
 import { actor, setup } from '../testing/settings-doubles.test-support.js';
 
 it('validates and saves supplied material', async () => {
     const { store, validator, http, validations } = setup();
-    const subject = new SaveTlsSettings(store, validator, http);
+    const subject = new SaveTlsSettings(
+        store,
+        validator,
+        http,
+        auditedOperation(new MemoryAuditTrail()),
+    );
     const input = { enabled: true, port: 3443, chain: 'certificate', key: 'private' };
 
     const result = await subject.execute(actor, input);
@@ -19,7 +28,12 @@ it('retains saved material when fields are omitted', async () => {
         port: 3443,
         hasCertificate: true,
     });
-    const subject = new SaveTlsSettings(store, validator, http);
+    const subject = new SaveTlsSettings(
+        store,
+        validator,
+        http,
+        auditedOperation(new MemoryAuditTrail()),
+    );
     const input = { enabled: false, port: 4000 };
 
     const result = await subject.execute(actor, input);
@@ -30,7 +44,12 @@ it('retains saved material when fields are omitted', async () => {
 it('rejects enabling TLS without a certificate', async () => {
     const input = { enabled: true, port: 3443 };
     const { store, validator, http } = setup();
-    const subject = new SaveTlsSettings(store, validator, http);
+    const subject = new SaveTlsSettings(
+        store,
+        validator,
+        http,
+        auditedOperation(new MemoryAuditTrail()),
+    );
 
     const result = subject.execute(actor, input);
 
@@ -40,7 +59,12 @@ it('rejects enabling TLS without a certificate', async () => {
 it('rejects an incomplete certificate pair', async () => {
     const input = { enabled: true, port: 3443, chain: 'certificate' };
     const { store, validator, http } = setup();
-    const subject = new SaveTlsSettings(store, validator, http);
+    const subject = new SaveTlsSettings(
+        store,
+        validator,
+        http,
+        auditedOperation(new MemoryAuditTrail()),
+    );
 
     const result = subject.execute(actor, input);
 
@@ -50,7 +74,12 @@ it('rejects an incomplete certificate pair', async () => {
 it('rejects an invalid certificate pair', async () => {
     const input = { enabled: true, port: 3443, chain: 'wrong', key: 'private' };
     const { store, validator, http } = setup();
-    const subject = new SaveTlsSettings(store, validator, http);
+    const subject = new SaveTlsSettings(
+        store,
+        validator,
+        http,
+        auditedOperation(new MemoryAuditTrail()),
+    );
 
     const result = subject.execute(actor, input);
 
@@ -60,7 +89,12 @@ it('rejects an invalid certificate pair', async () => {
 it('rejects port zero', async () => {
     const input = { enabled: false, port: 0 };
     const { store, validator, http } = setup();
-    const subject = new SaveTlsSettings(store, validator, http);
+    const subject = new SaveTlsSettings(
+        store,
+        validator,
+        http,
+        auditedOperation(new MemoryAuditTrail()),
+    );
 
     const result = subject.execute(actor, input);
 
@@ -68,9 +102,14 @@ it('rejects port zero', async () => {
     expect(await store.read()).toEqual({ enabled: false, port: 3443, hasCertificate: false });
 });
 it('rejects a non-administrator', async () => {
-    const forbidden = { ...actor, role: 'user' as const };
+    const forbidden = { ...actor, role: 'owner' as const };
     const { store, validator, http } = setup();
-    const subject = new SaveTlsSettings(store, validator, http);
+    const subject = new SaveTlsSettings(
+        store,
+        validator,
+        http,
+        auditedOperation(new MemoryAuditTrail()),
+    );
     const input = { enabled: false, port: 3443 };
 
     const result = subject.execute(forbidden, input);
@@ -80,7 +119,12 @@ it('rejects a non-administrator', async () => {
 it('rejects incomplete password setup', async () => {
     const forbidden = { ...actor, mustChangePassword: true };
     const { store, validator, http } = setup();
-    const subject = new SaveTlsSettings(store, validator, http);
+    const subject = new SaveTlsSettings(
+        store,
+        validator,
+        http,
+        auditedOperation(new MemoryAuditTrail()),
+    );
     const input = { enabled: false, port: 3443 };
 
     const result = subject.execute(forbidden, input);
@@ -92,7 +136,12 @@ it('rejects an enabled HTTPS port matching saved HTTP', async () => {
         { enabled: false, port: 3443, hasCertificate: true },
         { port: 36000 },
     );
-    const subject = new SaveTlsSettings(store, validator, http);
+    const subject = new SaveTlsSettings(
+        store,
+        validator,
+        http,
+        auditedOperation(new MemoryAuditTrail()),
+    );
     const input = { enabled: true, port: 36000 };
 
     const result = subject.execute(actor, input);
@@ -102,7 +151,12 @@ it('rejects an enabled HTTPS port matching saved HTTP', async () => {
 });
 it('allows matching saved ports when HTTPS is disabled', async () => {
     const { store, validator, http } = setup(undefined, { port: 36000 });
-    const subject = new SaveTlsSettings(store, validator, http);
+    const subject = new SaveTlsSettings(
+        store,
+        validator,
+        http,
+        auditedOperation(new MemoryAuditTrail()),
+    );
     const input = { enabled: false, port: 36000 };
 
     const result = await subject.execute(actor, input);

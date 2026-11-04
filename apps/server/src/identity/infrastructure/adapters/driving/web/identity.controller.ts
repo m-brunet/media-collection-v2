@@ -4,8 +4,6 @@ import { z } from 'zod';
 import type { ChangeLanguageUseCase } from '../../../../application/ports/driving/change-language-use-case.interface.js';
 import type { ChangePasswordUseCase } from '../../../../application/ports/driving/change-password-use-case.interface.js';
 import type { ChangeUsernameUseCase } from '../../../../application/ports/driving/change-username-use-case.interface.js';
-import type { CreateUserUseCase } from '../../../../application/ports/driving/create-user-use-case.interface.js';
-import type { ListUsersUseCase } from '../../../../application/ports/driving/list-users-use-case.interface.js';
 import type { LoginUseCase } from '../../../../application/ports/driving/login-use-case.interface.js';
 import type { SessionRenewal } from '../../../../../shared/application/ports/driving/session-renewal.interface.js';
 import type { AuthenticatedRequest } from '../../../../../shared/infrastructure/adapters/driving/web/api-guard.js';
@@ -30,11 +28,6 @@ const passwordSchema = z.strictObject({
 const languageSchema = z.strictObject({
     language: z.enum(['en', 'fr']),
 });
-const createUserSchema = z.strictObject({
-    username: z.string().min(3).max(40),
-    password: z.string().min(8).max(128),
-    role: z.enum(['admin', 'user']),
-});
 
 @Controller('api')
 export class IdentityController {
@@ -43,8 +36,6 @@ export class IdentityController {
         @Inject('IDENTITY_CHANGE_USERNAME') private readonly changeUsername: ChangeUsernameUseCase,
         @Inject('IDENTITY_CHANGE_PASSWORD') private readonly changePassword: ChangePasswordUseCase,
         @Inject('IDENTITY_CHANGE_LANGUAGE') private readonly changeLanguage: ChangeLanguageUseCase,
-        @Inject('IDENTITY_CREATE_USER') private readonly createUser: CreateUserUseCase,
-        @Inject('IDENTITY_LIST_USERS') private readonly listUsers: ListUsersUseCase,
         private readonly sessions: HttpSessions,
         private readonly limiter: LoginLimiter,
         @Inject('IDENTITY_SESSION_RENEWAL') private readonly renewal: SessionRenewal,
@@ -123,21 +114,6 @@ export class IdentityController {
         @Req() request: AuthenticatedRequest,
     ) {
         return this.dto(await this.changeLanguage.execute(request.actor, input.language));
-    }
-
-    @Get('users')
-    @Access('admin')
-    async users(@Req() request: AuthenticatedRequest) {
-        return (await this.listUsers.execute(request.actor)).map((value) => this.dto(value));
-    }
-
-    @Post('users')
-    @Access('admin')
-    async create(
-        @Body({ schema: createUserSchema }) input: z.infer<typeof createUserSchema>,
-        @Req() request: AuthenticatedRequest,
-    ) {
-        return this.dto(await this.createUser.execute(request.actor, input));
     }
 
     private dto(actor: Actor): Account {

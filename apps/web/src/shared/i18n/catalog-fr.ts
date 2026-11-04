@@ -11,7 +11,6 @@ export const fr = {
     'language.saveFailed': 'Votre langue n’a pas pu être enregistrée. Réessayez.',
     'common.loading': 'Chargement…',
     'role.admin': 'Administrateur',
-    'role.user': 'Utilisateur',
     'errors.generic': 'La demande a échoué. Réessayez.',
     'errors.network': 'La bibliothèque est injoignable. Vérifiez votre connexion puis réessayez.',
     'errors.invalid': 'Vérifiez les informations saisies puis réessayez.',
@@ -34,8 +33,6 @@ export const fr = {
     'signIn.submit': 'Se connecter',
     'signIn.failed': 'Nom d’utilisateur ou mot de passe incorrect.',
     'signIn.accountsByAdmin': 'Les comptes sont créés par l’administrateur de votre bibliothèque.',
-    'signIn.firstStartup':
-        'Premier démarrage : connectez-vous avec admin / p@ssw0rd, puis choisissez votre mot de passe.',
     'password.setupTitle': 'Choisissez votre mot de passe',
     'password.setupIntro':
         'Vous utilisez un mot de passe temporaire. Remplacez-le avant de continuer. Changer de nom d’utilisateur est facultatif.',
@@ -71,8 +68,6 @@ export const fr = {
     'nav.accounts': 'Comptes',
     'nav.server': 'Paramètres du serveur',
     'nav.signedInAs': '{username} · {role}',
-    'accounts.title': 'Comptes',
-    'accounts.intro': 'Les personnes qui peuvent se connecter à cette bibliothèque.',
     'accounts.username': 'Nom d’utilisateur',
     'accounts.role': 'Rôle',
     'accounts.status': 'État',
@@ -132,4 +127,87 @@ export const fr = {
     'leaf.password.body':
         'Votre compte utilise encore un mot de passe temporaire. Connectez-vous à Libris sur un ordinateur pour choisir votre mot de passe, puis revenez.',
     'dialog.close': 'Fermer',
+    'common.cancel': 'Annuler',
+    'role.owner': 'Propriétaire',
+    'role.guest': 'Invité',
+    'role.adminDescription':
+        'Vous êtes l’administrateur protégé : vous gérez la bibliothèque et les autres comptes. Ce compte ne peut être ni désactivé ni rétrogradé.',
+    'role.ownerDescription':
+        'Vous pouvez gérer la bibliothèque partagée. Votre rôle est fixe ; seul l’administrateur gère les autres comptes.',
+    'role.guestDescription':
+        'Vous pouvez consulter la bibliothèque partagée et gérer votre propre compte. Votre rôle est fixe.',
+    'reason.usernameTaken': 'Ce nom d’utilisateur est déjà utilisé.',
+    'reason.usernameFormat':
+        'Utilisez de 3 à 40 lettres, chiffres, points, tirets bas ou traits d’union pour le nom d’utilisateur.',
+    'reason.passwordLength': 'Utilisez un mot de passe de 8 à 128 caractères.',
+    'reason.passwordIncorrect': 'Votre mot de passe actuel est incorrect.',
+    'reason.passwordUnchanged': 'Choisissez un mot de passe différent de l’actuel.',
+    'reason.credentialsIncorrect': 'Nom d’utilisateur ou mot de passe incorrect.',
+    'reason.protectedAdministrator':
+        'Le compte administrateur protégé ne peut pas être géré ainsi.',
+    'reason.adminOnly': 'Seul l’administrateur peut faire cela.',
+    'reason.guestReadOnly':
+        'Les comptes invités peuvent consulter la bibliothèque mais pas la modifier.',
+    'reason.temporaryPassword': 'Remplacez d’abord votre mot de passe temporaire.',
+    'reason.setupCompleted': 'Cette bibliothèque a déjà son administrateur.',
+    'reason.setupLocalOnly':
+        'Terminez la configuration sur l’ordinateur où fonctionne Media Collection.',
+    'reason.accountMissing': 'Ce compte n’existe plus.',
+    'reason.alreadyActive': 'Ce compte est déjà actif.',
+    'reason.alreadyInactive': 'Ce compte est déjà désactivé.',
+    'reason.accountChanged': 'Ce compte a changé entre-temps. Rechargez la page puis réessayez.',
+    'reason.roleRequired': 'Choisissez Propriétaire ou Invité.',
+    'reason.portsIdentical': 'HTTP et HTTPS doivent utiliser des ports différents.',
+    'reason.certificateIncomplete':
+        'Fournissez à la fois la chaîne de certificats et la clé privée.',
+    'setup.title': 'Configurez votre bibliothèque',
+    'setup.intro':
+        'Créez le compte administrateur protégé. Terminez la configuration avant d’utiliser cette installation.',
+    'setup.username': 'Nom d’utilisateur de l’administrateur',
+    'setup.usernamePlaceholder': 'Choisissez un nom d’utilisateur',
+    'setup.password': 'Mot de passe de l’administrateur',
+    'setup.passwordPlaceholder': 'Choisissez un mot de passe',
+    'setup.confirm': 'Confirmez le mot de passe',
+    'setup.confirmPlaceholder': 'Répétez votre mot de passe',
+    'setup.submit': 'Créer l’administrateur',
+    'setup.remoteTitle': 'La configuration n’est pas terminée',
+    'setup.remoteBody':
+        'Terminez la configuration sur l’ordinateur où fonctionne Media Collection, puis connectez-vous ici.',
+    'accounts.title': 'Gestion des utilisateurs',
+    'accounts.intro': 'Les rôles sont fixés à la création du compte.',
+    'accounts.protected': 'Administrateur protégé',
+    'accounts.protectedHint':
+        'Modifiez votre nom d’utilisateur et votre mot de passe dans Mon compte. Ce compte ne peut être ni désactivé, ni supprimé, ni rétrogradé.',
+    'accounts.others': 'Autres comptes',
+    'accounts.empty':
+        'Aucun autre compte pour l’instant. Créez-en un pour chaque personne qui utilise la bibliothèque.',
+    'accounts.deactivated': 'Désactivé',
+    'accounts.actions': 'Actions',
+    'accounts.resetPassword': 'Réinitialiser le mot de passe',
+    'accounts.deactivate': 'Désactiver',
+    'accounts.reactivate': 'Réactiver',
+    'accounts.lifecycleHint':
+        'La désactivation déconnecte le compte, conserve ses données privées et réserve son nom d’utilisateur.',
+    'accounts.createIntro':
+        'Choisissez Propriétaire ou Invité maintenant. Le rôle ne pourra plus être modifié.',
+    'accounts.rolePlaceholder': 'Choisissez Propriétaire ou Invité',
+    'accounts.resetTitle': 'Réinitialiser le mot de passe de {username}',
+    'accounts.resetIntro':
+        'Définissez un mot de passe temporaire. {username} est déconnecté dès maintenant et devra le remplacer à la prochaine connexion.',
+    'accounts.resetDone': 'Mot de passe temporaire défini pour {username}. Communiquez-le-lui.',
+    'accounts.deactivateTitle': 'Désactiver {username} ?',
+    'accounts.deactivateBody':
+        '{username} est déconnecté et ne peut plus se connecter. Ses données personnelles sont conservées et le nom d’utilisateur reste réservé. Vous pourrez réactiver le compte plus tard.',
+    'accounts.deactivatedDone': 'Compte {username} désactivé.',
+    'accounts.reactivateTitle': 'Réactiver {username} ?',
+    'accounts.reactivateBody':
+        '{username} pourra de nouveau se connecter avec le même rôle ({role}) et ses données personnelles.',
+    'accounts.reactivatedDone': 'Compte {username} réactivé.',
+    'denied.title': 'Cette page n’est pas disponible',
+    'denied.body':
+        'Votre compte ne peut pas utiliser cette page. Les paramètres de votre compte restent disponibles.',
+    'denied.back': 'Retour à mon compte',
+    'leaf.guest.title': 'Propriétaire ou administrateur requis',
+    'leaf.guest.body':
+        'Les comptes invités ne peuvent pas utiliser l’interface mobile. Vous pouvez consulter la bibliothèque sur un ordinateur, dans Libris.',
 } satisfies Catalog;

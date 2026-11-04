@@ -9,7 +9,6 @@ export const en = {
     'language.saveFailed': 'Your language could not be saved. Try again.',
     'common.loading': 'Loading…',
     'role.admin': 'Administrator',
-    'role.user': 'User',
     'errors.generic': 'The request failed. Try again.',
     'errors.network': 'The library could not be reached. Check your connection and try again.',
     'errors.invalid': 'Check the information you entered and try again.',
@@ -30,8 +29,6 @@ export const en = {
     'signIn.submit': 'Sign in',
     'signIn.failed': 'Incorrect username or password.',
     'signIn.accountsByAdmin': 'Accounts are created by your library administrator.',
-    'signIn.firstStartup':
-        'First startup: sign in with admin / p@ssw0rd, then choose your own password.',
     'password.setupTitle': 'Choose your own password',
     'password.setupIntro':
         'You are using a temporary password. Replace it before continuing. Changing your username is optional.',
@@ -66,8 +63,6 @@ export const en = {
     'nav.accounts': 'Accounts',
     'nav.server': 'Server settings',
     'nav.signedInAs': '{username} · {role}',
-    'accounts.title': 'Accounts',
-    'accounts.intro': 'People who can sign in to this library.',
     'accounts.username': 'Username',
     'accounts.role': 'Role',
     'accounts.status': 'Status',
@@ -124,6 +119,83 @@ export const en = {
     'leaf.password.body':
         'Your account still uses a temporary password. Sign in to Libris on a computer to choose your own password, then come back.',
     'dialog.close': 'Close',
+    'common.cancel': 'Cancel',
+    'role.owner': 'Owner',
+    'role.guest': 'Guest',
+    'role.adminDescription':
+        'You are the protected administrator: you manage the library and the other accounts. This account cannot be deactivated or demoted.',
+    'role.ownerDescription':
+        'You can manage the shared library. Your role is fixed; only the administrator manages other accounts.',
+    'role.guestDescription':
+        'You can view the shared library and manage your own account. Your role is fixed.',
+    'reason.usernameTaken': 'That username is already in use.',
+    'reason.usernameFormat':
+        'Use 3 to 40 letters, numbers, dots, underscores or hyphens for the username.',
+    'reason.passwordLength': 'Use a password of 8 to 128 characters.',
+    'reason.passwordIncorrect': 'Your current password is incorrect.',
+    'reason.passwordUnchanged': 'Choose a password different from the current one.',
+    'reason.credentialsIncorrect': 'Incorrect username or password.',
+    'reason.protectedAdministrator':
+        'The protected administrator account cannot be managed this way.',
+    'reason.adminOnly': 'Only the administrator can do this.',
+    'reason.guestReadOnly': 'Guest accounts can view the library but cannot change it.',
+    'reason.temporaryPassword': 'Replace your temporary password first.',
+    'reason.setupCompleted': 'This library already has its administrator.',
+    'reason.setupLocalOnly': 'Finish setup on the computer running Media Collection.',
+    'reason.accountMissing': 'That account no longer exists.',
+    'reason.alreadyActive': 'This account is already active.',
+    'reason.alreadyInactive': 'This account is already deactivated.',
+    'reason.accountChanged': 'This account changed in the meantime. Reload and try again.',
+    'reason.roleRequired': 'Choose Owner or Guest.',
+    'reason.portsIdentical': 'HTTP and HTTPS must use different ports.',
+    'reason.certificateIncomplete': 'Supply both the certificate chain and the private key.',
+    'setup.title': 'Set up your library',
+    'setup.intro':
+        'Create the protected administrator account. Complete setup before using this installation.',
+    'setup.username': 'Administrator username',
+    'setup.usernamePlaceholder': 'Choose a username',
+    'setup.password': 'Administrator password',
+    'setup.passwordPlaceholder': 'Choose a password',
+    'setup.confirm': 'Confirm password',
+    'setup.confirmPlaceholder': 'Repeat your password',
+    'setup.submit': 'Create administrator',
+    'setup.remoteTitle': 'Setup is not finished yet',
+    'setup.remoteBody':
+        'Finish setting up the library on the computer running Media Collection, then sign in here.',
+    'accounts.title': 'User management',
+    'accounts.intro': 'Roles are fixed when an account is created.',
+    'accounts.protected': 'Protected administrator',
+    'accounts.protectedHint':
+        'Edit your own username and password in My account. This account cannot be deactivated, deleted or demoted.',
+    'accounts.others': 'Other accounts',
+    'accounts.empty': 'No other accounts yet. Create one for each person who uses the library.',
+    'accounts.deactivated': 'Deactivated',
+    'accounts.actions': 'Actions',
+    'accounts.resetPassword': 'Reset password',
+    'accounts.deactivate': 'Deactivate',
+    'accounts.reactivate': 'Reactivate',
+    'accounts.lifecycleHint':
+        'Deactivation signs the account out, keeps its private data and reserves its username.',
+    'accounts.createIntro': 'Choose Owner or Guest now. Roles cannot be changed later.',
+    'accounts.rolePlaceholder': 'Choose Owner or Guest',
+    'accounts.resetTitle': 'Reset password for {username}',
+    'accounts.resetIntro':
+        'Set a temporary password. {username} is signed out now and must replace it at the next sign-in.',
+    'accounts.resetDone': 'Temporary password set for {username}. Share it with them.',
+    'accounts.deactivateTitle': 'Deactivate {username}?',
+    'accounts.deactivateBody':
+        '{username} is signed out and can no longer sign in. Their personal data is kept and the username stays reserved. You can reactivate the account later.',
+    'accounts.deactivatedDone': 'Account {username} deactivated.',
+    'accounts.reactivateTitle': 'Reactivate {username}?',
+    'accounts.reactivateBody':
+        '{username} can sign in again with the same role ({role}) and personal data.',
+    'accounts.reactivatedDone': 'Account {username} reactivated.',
+    'denied.title': 'This page is unavailable',
+    'denied.body': 'Your account cannot use this page. Your account settings remain available.',
+    'denied.back': 'Back to my account',
+    'leaf.guest.title': 'Owner or Admin required',
+    'leaf.guest.body':
+        'Guest accounts cannot use the mobile interface. You can view the library on a computer, in Libris.',
 } as const;
 
 export type MessageKey = keyof typeof en;

@@ -14,7 +14,7 @@ it('reads the saved HTTP preference for an administrator', async () => {
 it('rejects a non-administrator reading HTTP settings', async () => {
     const { http } = setup();
     const subject = new ReadHttpSettings(http);
-    const forbidden = { ...actor, role: 'user' as const };
+    const forbidden = { ...actor, role: 'owner' as const };
 
     const operation = () => subject.execute(forbidden);
 

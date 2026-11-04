@@ -1,11 +1,15 @@
-import type { Kysely } from 'kysely';
 import type { DatabaseSchema } from '../../../../../shared/infrastructure/adapters/driven/persistence/database.adapter.js';
+import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
 import { User } from '../../../../domain/entities/user.entity.js';
 import type { UserRepository } from '../../../../application/ports/driven/user-repository.interface.js';
 import { Failure } from '../../../../../shared/domain/exceptions/failure.js';
 
 export class KyselyUserRepository implements UserRepository {
-    constructor(private readonly db: Kysely<DatabaseSchema>) {}
+    constructor(private readonly connections: DatabaseConnections) {}
+
+    private get db() {
+        return this.connections.current;
+    }
 
     async findById(id: string): Promise<User | null> {
         const row = await this.db
@@ -54,6 +58,7 @@ export class KyselyUserRepository implements UserRepository {
                 throw new Failure(
                     'conflict',
                     'The account changed during this request. Reload and try again.',
+                    'account-changed',
                 );
             }
         } catch (error) {
@@ -65,12 +70,13 @@ export class KyselyUserRepository implements UserRepository {
         return new User({
             id: row.id,
             username: row.username,
-            role: row.role === 'admin' ? 'admin' : 'user',
+            role: row.role === 'admin' || row.role === 'guest' ? row.role : 'owner',
             passwordHash: row.password_hash,
             mustChangePassword: Boolean(row.must_change_password),
             tokenVersion: row.token_version,
             createdAt: row.created_at,
             language: row.language === 'en' || row.language === 'fr' ? row.language : null,
+            active: Boolean(row.active),
         });
     }
 
@@ -86,6 +92,7 @@ export class KyselyUserRepository implements UserRepository {
             token_version: s.tokenVersion,
             created_at: s.createdAt,
             language: s.language,
+            active: Number(s.active),
         };
     }
 
@@ -95,7 +102,16 @@ export class KyselyUserRepository implements UserRepository {
             'code' in error &&
             error.code === 'SQLITE_CONSTRAINT_UNIQUE'
         ) {
-            throw new Failure('conflict', 'That username is already in use.');
+            // The single-administrator index guards first-launch setup against a second administrator.
+            if (error.message.includes('users.role')) {
+                throw new Failure(
+                    'conflict',
+                    'This library already has its administrator.',
+                    'setup-completed',
+                );
+            }
+
+            throw new Failure('conflict', 'That username is already in use.', 'username-taken');
         }
 
         throw error;

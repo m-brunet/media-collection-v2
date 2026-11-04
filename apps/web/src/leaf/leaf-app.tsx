@@ -56,12 +56,32 @@ function LeafRoutes() {
         return <LoadingState label={t('session.connecting')} />;
     }
 
+    if (status === 'setup') {
+        return (
+            <section className="leaf__section">
+                <h1 className="leaf__title">{t('setup.remoteTitle')}</h1>
+                <Notice tone="warning">{t('setup.remoteBody')}</Notice>
+            </section>
+        );
+    }
+
     if (!account) {
         return (
             <section className="leaf__section">
                 <h1 className="leaf__title">{t('signIn.title')}</h1>
                 <p className="muted">{t('leaf.signIn.intro')}</p>
                 <SignInForm />
+            </section>
+        );
+    }
+
+    // Leaf is for Owners and the administrator; Guests use Libris on a computer.
+    if (account.role === 'guest') {
+        return (
+            <section className="leaf__section">
+                <h1 className="leaf__title">{t('leaf.guest.title')}</h1>
+                <Notice tone="info">{t('leaf.guest.body')}</Notice>
+                <SignOutButton />
             </section>
         );
     }

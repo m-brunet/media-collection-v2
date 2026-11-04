@@ -2,8 +2,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import type { PrivateStorage } from '../../../../../shared/infrastructure/adapters/driven/filesystem/private-storage.adapter.js';
-import type { Kysely } from 'kysely';
-import type { DatabaseSchema } from '../../../../../shared/infrastructure/adapters/driven/persistence/database.adapter.js';
+import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
 import type { TlsStore } from '../../../../application/ports/driven/tls-store.interface.js';
 import type {
     TlsSettings,
@@ -17,7 +16,7 @@ interface StoredSettings extends TlsSettingsState {
 
 export class FileTlsStore implements TlsStore {
     constructor(
-        private readonly db: Kysely<DatabaseSchema>,
+        private readonly connections: DatabaseConnections,
         private readonly directory: string,
         private readonly storage: PrivateStorage,
     ) {}
@@ -58,7 +57,7 @@ export class FileTlsStore implements TlsStore {
             revision: randomUUID(),
         });
 
-        await this.db
+        await this.connections.current
             .insertInto('server_settings')
             .values({ name: 'tls', value })
             .onConflict((c) => c.column('name').doUpdateSet({ value }))
@@ -81,7 +80,7 @@ export class FileTlsStore implements TlsStore {
     }
 
     private async stored(): Promise<StoredSettings> {
-        const row = await this.db
+        const row = await this.connections.current
             .selectFrom('server_settings')
             .selectAll()
             .where('name', '=', 'tls')

@@ -1,3 +1,4 @@
+import type { AuditedOperation } from '../../../shared/application/services/audited-operation.service.js';
 import type { DynamicModule } from '@nestjs/common';
 import { Module } from '@nestjs/common';
 import type { CertificateValidator } from '../../application/ports/driven/certificate-validator.interface.js';
@@ -18,6 +19,7 @@ export const SERVER_SETTINGS_READ_TLS_SETTINGS = 'SERVER_SETTINGS_READ_TLS_SETTI
 export const SERVER_SETTINGS_SAVE_TLS_SETTINGS = 'SERVER_SETTINGS_SAVE_TLS_SETTINGS';
 export const SERVER_SETTINGS_READ_HTTP_SETTINGS = 'SERVER_SETTINGS_READ_HTTP_SETTINGS';
 export const SERVER_SETTINGS_SAVE_HTTP_SETTINGS = 'SERVER_SETTINGS_SAVE_HTTP_SETTINGS';
+export const SERVER_SETTINGS_AUDITED_OPERATION = 'SERVER_SETTINGS_AUDITED_OPERATION';
 
 @Module({})
 export class SettingsModule {
@@ -26,6 +28,7 @@ export class SettingsModule {
         certificates: CertificateValidator,
         status: RuntimeStatus,
         http: HttpSettingsStore,
+        operations: AuditedOperation,
     ): DynamicModule {
         return {
             module: SettingsModule,
@@ -35,6 +38,7 @@ export class SettingsModule {
                 { provide: SERVER_SETTINGS_CERTIFICATE_VALIDATOR, useValue: certificates },
                 { provide: SERVER_SETTINGS_RUNTIME_STATUS, useValue: status },
                 { provide: SERVER_SETTINGS_HTTP_SETTINGS_STORE, useValue: http },
+                { provide: SERVER_SETTINGS_AUDITED_OPERATION, useValue: operations },
                 {
                     provide: SERVER_SETTINGS_READ_TLS_SETTINGS,
                     inject: [SERVER_SETTINGS_TLS_STORE],
@@ -46,12 +50,14 @@ export class SettingsModule {
                         SERVER_SETTINGS_TLS_STORE,
                         SERVER_SETTINGS_CERTIFICATE_VALIDATOR,
                         SERVER_SETTINGS_HTTP_SETTINGS_STORE,
+                        SERVER_SETTINGS_AUDITED_OPERATION,
                     ],
                     useFactory: (
                         store: TlsStore,
                         certificates: CertificateValidator,
                         http: HttpSettingsStore,
-                    ) => new SaveTlsSettings(store, certificates, http),
+                        operations: AuditedOperation,
+                    ) => new SaveTlsSettings(store, certificates, http, operations),
                 },
                 {
                     provide: SERVER_SETTINGS_READ_HTTP_SETTINGS,
@@ -60,9 +66,16 @@ export class SettingsModule {
                 },
                 {
                     provide: SERVER_SETTINGS_SAVE_HTTP_SETTINGS,
-                    inject: [SERVER_SETTINGS_HTTP_SETTINGS_STORE, SERVER_SETTINGS_TLS_STORE],
-                    useFactory: (http: HttpSettingsStore, store: TlsStore) =>
-                        new SaveHttpSettings(http, store),
+                    inject: [
+                        SERVER_SETTINGS_HTTP_SETTINGS_STORE,
+                        SERVER_SETTINGS_TLS_STORE,
+                        SERVER_SETTINGS_AUDITED_OPERATION,
+                    ],
+                    useFactory: (
+                        http: HttpSettingsStore,
+                        store: TlsStore,
+                        operations: AuditedOperation,
+                    ) => new SaveHttpSettings(http, store, operations),
                 },
             ],
         };

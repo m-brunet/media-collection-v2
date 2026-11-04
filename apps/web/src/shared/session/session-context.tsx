@@ -8,14 +8,15 @@ import {
     useRef,
     useState,
 } from 'react';
-import type { Account } from '../../../../../packages/contracts/src/http';
+import type { Account, SetupStatus } from '../../../../../packages/contracts/src/http';
 import { api } from '../api.util';
 import { I18nProvider } from '../i18n/i18n-context';
 import { LanguageResolver } from '../i18n/language-resolver.util';
 import { LanguageStorage } from '../i18n/language-storage.util';
 import type { Language } from '../i18n/translator.util';
 
-type SessionStatus = 'loading' | 'signed-out' | 'signed-in';
+// `setup`: first launch, the protected administrator does not exist yet.
+type SessionStatus = 'loading' | 'setup' | 'signed-out' | 'signed-in';
 
 interface SessionValue {
     status: SessionStatus;
@@ -23,6 +24,9 @@ interface SessionValue {
     language: Language;
     // True after the server ended the session (expiry, sign-out elsewhere).
     expired: boolean;
+    // During first launch: whether this device may complete setup (the host computer only).
+    setupAllowed: boolean;
+    completeSetup(username: string, password: string): Promise<void>;
     signIn(username: string, password: string): Promise<void>;
     signOut(): Promise<void>;
     update(account: Account): void;
@@ -35,6 +39,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     const [account, setAccount] = useState<Account | null>(null);
     const [status, setStatus] = useState<SessionStatus>('loading');
     const [expired, setExpired] = useState(false);
+    const [setupAllowed, setSetupAllowed] = useState(false);
     const [stored, setStored] = useState<Language | null>(() => LanguageStorage.read());
     // Only a session that actually existed can expire; a first visit is simply signed out.
     const signedIn = useRef(false);
@@ -59,7 +64,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
                 setAccount(current);
                 setStatus('signed-in');
             })
-            .catch(() => setStatus('signed-out'));
+            .catch(async () => {
+                const setup = await api
+                    .request<SetupStatus>('/setup', { passive: true })
+                    .catch(() => ({ required: false, local: false }));
+
+                setSetupAllowed(setup.local);
+                setStatus(setup.required ? 'setup' : 'signed-out');
+            });
 
         return () => window.removeEventListener('session-expired', end);
     }, []);
@@ -74,6 +86,16 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         setAccount(current);
         setStatus('signed-in');
         setExpired(false);
+    }, []);
+    const completeSetup = useCallback(async (username: string, password: string) => {
+        const current = await api.request<Account>('/setup', {
+            method: 'POST',
+            body: { username, password },
+        });
+
+        signedIn.current = true;
+        setAccount(current);
+        setStatus('signed-in');
     }, []);
     const signOut = useCallback(async () => {
         await api.request('/auth/logout', { method: 'POST' });
@@ -104,8 +126,30 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         navigator.languages ?? [navigator.language],
     );
     const value = useMemo<SessionValue>(
-        () => ({ status, account, language, expired, signIn, signOut, update, chooseLanguage }),
-        [status, account, language, expired, signIn, signOut, update, chooseLanguage],
+        () => ({
+            status,
+            account,
+            language,
+            expired,
+            setupAllowed,
+            completeSetup,
+            signIn,
+            signOut,
+            update,
+            chooseLanguage,
+        }),
+        [
+            status,
+            account,
+            language,
+            expired,
+            setupAllowed,
+            completeSetup,
+            signIn,
+            signOut,
+            update,
+            chooseLanguage,
+        ],
     );
 
     return (

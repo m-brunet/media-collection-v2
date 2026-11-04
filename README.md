@@ -36,10 +36,11 @@ npm run build
 npm start
 ```
 
-Sign in with **admin / p@ssw0rd**. Replace the temporary password before using the application. Changing the
-username is optional. The interface follows the device language (French or English) until each user chooses their own
-language. Administrators create accounts; every new account must replace its temporary password. There is no
-public registration or browser-based administrator recovery.
+On first launch, Libris asks you to create the protected administrator (username and password of your choice). This
+is only possible on the computer running Media Collection. The administrator then creates Owner and Guest accounts
+with temporary passwords, which each person replaces at first sign-in. There is no public registration or
+browser-based administrator recovery. The interface follows the device language (French or English) until each user
+chooses their own language.
 
 ## HTTP, internet access and HTTPS
 

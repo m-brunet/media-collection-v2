@@ -19,7 +19,8 @@ import { JwtSessionTokens } from '../../identity/infrastructure/adapters/driven/
 import { SessionSigningKey } from '../../identity/infrastructure/adapters/driven/filesystem/session-signing-key.adapter.js';
 import { AuthenticateSession } from '../../identity/application/use-cases/authenticate-session.usecase.js';
 import { RenewSession } from '../../identity/application/use-cases/renew-session.usecase.js';
-import { SeedAdministrator } from '../../identity/application/use-cases/seed-administrator.usecase.js';
+import { AuditedOperation } from '../../shared/application/services/audited-operation.service.js';
+import { KyselyAuditTrail } from '../../shared/infrastructure/adapters/driven/persistence/kysely-audit-trail.adapter.js';
 import { FileTlsStore } from '../../server-settings/infrastructure/adapters/driven/persistence/file-tls-store.adapter.js';
 import { KyselyHttpSettingsRepository } from '../../server-settings/infrastructure/adapters/driven/persistence/kysely-http-settings.repository.js';
 import { HttpSettings } from '../../server-settings/domain/value-objects/http-settings.value-object.js';
@@ -118,7 +119,7 @@ export class BackendRuntime {
         try {
             const clock = options.clock ?? new SystemClock();
             const ids = new UuidGenerator();
-            const users = new KyselyUserRepository(database.connection);
+            const users = new KyselyUserRepository(database.connections);
             const passwords = new ScryptPasswordHasher();
             const storage = new PrivateStorage();
             const secret = new SessionSigningKey(storage).load(options.dataDirectory);
@@ -127,16 +128,20 @@ export class BackendRuntime {
             const authentication = new AuthenticateSession(accounts, tokens);
             const renewal = new RenewSession(accounts, tokens);
             const sessions = new HttpSessions(secret);
-            const tls = new FileTlsStore(database.connection, options.dataDirectory, storage);
-            const httpSettings = new KyselyHttpSettingsRepository(database.connection);
+            const tls = new FileTlsStore(database.connections, options.dataDirectory, storage);
+            const httpSettings = new KyselyHttpSettingsRepository(database.connections);
+            const operations = new AuditedOperation(
+                database.connections,
+                new KyselyAuditTrail(database.connections),
+                clock,
+                ids,
+            );
             const startedHttp = await httpSettings.read();
             // Only internal fixtures request an ephemeral listener; desktop configuration rejects zero.
             const ephemeralHttp = options.httpPort === 0 && options.httpPortSource === undefined;
             const requestedHttpPort = ephemeralHttp
                 ? 0
                 : new HttpSettings(options.httpPort ?? startedHttp.port).port;
-
-            await new SeedAdministrator(users, passwords, ids, clock).execute();
             let httpPort = 0;
             let httpsPort: number | null = null;
             let httpsError: string | null = null;
@@ -173,12 +178,21 @@ export class BackendRuntime {
                 {
                     module: HttpApplicationModule,
                     imports: [
-                        IdentityModule.register(users, passwords, tokens, ids, clock, sessions),
+                        IdentityModule.register(
+                            users,
+                            passwords,
+                            tokens,
+                            ids,
+                            clock,
+                            sessions,
+                            operations,
+                        ),
                         SettingsModule.register(
                             tls,
                             new PemCertificateValidator(),
                             status,
                             httpSettings,
+                            operations,
                         ),
                     ],
                     controllers: [HealthController],

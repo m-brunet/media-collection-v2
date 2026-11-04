@@ -33,21 +33,17 @@ async function waitFor(runtime: ElectronRuntime, expression: string) {
     );
 }
 
+// First launch in the real desktop window: create the protected administrator `admin`.
 async function readyDesktop() {
     const current = await fixture.start(undefined, { main: true });
 
-    await waitFor(current.runtime, "document.querySelector('h1')?.textContent === 'Sign in'");
-    await evaluate(
-        current.runtime,
-        "document.querySelector('[name=username]').value='admin';document.querySelector('[name=password]').value='p@ssw0rd';document.querySelector('form').requestSubmit();true",
-    );
     await waitFor(
         current.runtime,
-        "document.querySelector('h1')?.textContent === 'Choose your own password'",
+        "document.querySelector('h1')?.textContent === 'Set up your library'",
     );
     await evaluate(
         current.runtime,
-        "document.querySelector('[name=currentPassword]').value='p@ssw0rd';document.querySelector('[name=password]').value='desktop-new-password';document.querySelector('[name=confirmation]').value='desktop-new-password';document.querySelector('form').requestSubmit();true",
+        "document.querySelector('[name=username]').value='admin';document.querySelector('[name=password]').value='desktop-new-password';document.querySelector('[name=confirmation]').value='desktop-new-password';document.querySelector('form').requestSubmit();true",
     );
     await waitFor(current.runtime, "document.querySelector('h1')?.textContent === 'My account'");
 
@@ -148,21 +144,16 @@ describe('desktop lifecycle and renderer', () => {
         expect(bridge).toBe('undefined:undefined');
     });
 
-    it('completes initial password setup through the React screen', async () => {
+    it('completes first-launch setup through the React screen', async () => {
         const current = await fixture.start(undefined, { main: true });
 
-        await waitFor(current.runtime, "document.querySelector('h1')?.textContent === 'Sign in'");
-        await evaluate(
-            current.runtime,
-            "document.querySelector('[name=username]').value='admin';document.querySelector('[name=password]').value='p@ssw0rd';document.querySelector('form').requestSubmit();true",
-        );
         await waitFor(
             current.runtime,
-            "document.querySelector('h1')?.textContent === 'Choose your own password'",
+            "document.querySelector('h1')?.textContent === 'Set up your library'",
         );
         await evaluate(
             current.runtime,
-            "document.querySelector('[name=currentPassword]').value='p@ssw0rd';document.querySelector('[name=password]').value='desktop-new-password';document.querySelector('[name=confirmation]').value='desktop-new-password';true",
+            "document.querySelector('[name=username]').value='admin';document.querySelector('[name=password]').value='desktop-new-password';document.querySelector('[name=confirmation]').value='desktop-new-password';true",
         );
 
         await evaluate(current.runtime, "document.querySelector('form').requestSubmit();true");

@@ -5,6 +5,7 @@ import { LanguageSwitch } from '../../shared/ui/language-switch';
 import { PageHeader, Panel } from '../../shared/ui/layout';
 import { PasswordForm } from './password-form';
 import { UsernameForm } from './username-form';
+import { RoleLabel } from '../../shared/role-label.util';
 
 export function AccountPage() {
     const { t } = useI18n();
@@ -30,9 +31,8 @@ export function AccountPage() {
                     <PasswordForm />
                 </Panel>
                 <Panel label={t('account.roleTitle')}>
-                    <p className="panel__title">
-                        {t(account.role === 'admin' ? 'role.admin' : 'role.user')}
-                    </p>
+                    <p className="panel__title">{t(RoleLabel.name(account.role))}</p>
+                    <p className="muted">{t(RoleLabel.description(account.role))}</p>
                     <div className="actions">
                         <Button icon="sign-out" onClick={() => void signOut()}>
                             {t('account.signOut')}
