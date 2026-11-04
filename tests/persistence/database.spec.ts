@@ -1,4 +1,6 @@
-﻿import { afterEach, describe, expect, it } from 'vitest';
+import { createHash, randomUUID } from 'node:crypto';
+import { UuidGenerator } from '../../apps/server/src/shared/infrastructure/adapters/driven/runtime/uuid-generator.adapter.js';
+import { afterEach, describe, expect, it } from 'vitest';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -53,11 +55,30 @@ async function reopen(current: Awaited<ReturnType<typeof open>>) {
     return open(current.path);
 }
 
+const testId = (name: string) => {
+    const hex = createHash('sha256').update(name).digest('hex');
+
+    return (
+        hex.slice(0, 8) +
+        '-' +
+        hex.slice(8, 12) +
+        '-4' +
+        hex.slice(13, 16) +
+        '-8' +
+        hex.slice(17, 20) +
+        '-' +
+        hex.slice(20, 32)
+    );
+};
+
 const timestamp = '2026-01-01T00:00:00.000Z';
 
 it('defaults HTTP settings for an existing database without an HTTP record', async () => {
     const current = await open();
-    const repository = new KyselyHttpSettingsRepository(current.database.connections);
+    const repository = new KyselyHttpSettingsRepository(
+        current.database.connections,
+        new UuidGenerator(),
+    );
 
     const settings = await repository.read();
 
@@ -70,14 +91,19 @@ it('defaults HTTP settings for an existing database without an HTTP record', asy
 it('persists the external web port across database reopen', async () => {
     const current = await open();
 
-    await new KyselyHttpSettingsRepository(current.database.connections).save(
+    await new KyselyHttpSettingsRepository(current.database.connections, new UuidGenerator()).save(
         new HttpSettings(36000),
     );
 
     const restarted = await reopen(current);
 
     expect(
-        (await new KyselyHttpSettingsRepository(restarted.database.connections).read()).snapshot(),
+        (
+            await new KyselyHttpSettingsRepository(
+                restarted.database.connections,
+                new UuidGenerator(),
+            ).read()
+        ).snapshot(),
     ).toEqual({
         port: 36000,
     });
@@ -85,11 +111,14 @@ it('persists the external web port across database reopen', async () => {
 
 it('rejects an invalid stored HTTP port before it can be used', async () => {
     const current = await open();
-    const repository = new KyselyHttpSettingsRepository(current.database.connections);
+    const repository = new KyselyHttpSettingsRepository(
+        current.database.connections,
+        new UuidGenerator(),
+    );
 
     await current.database.connection
         .insertInto('server_settings')
-        .values({ name: 'http', value: '{"port":1023}' })
+        .values({ id: randomUUID(), name: 'http', value: '{"port":1023}' })
         .execute();
 
     const result = repository.read();
@@ -99,11 +128,14 @@ it('rejects an invalid stored HTTP port before it can be used', async () => {
 
 it('rejects a stored HTTP port with an invalid shape', async () => {
     const current = await open();
-    const repository = new KyselyHttpSettingsRepository(current.database.connections);
+    const repository = new KyselyHttpSettingsRepository(
+        current.database.connections,
+        new UuidGenerator(),
+    );
 
     await current.database.connection
         .insertInto('server_settings')
-        .values({ name: 'http', value: '{"port":"36000"}' })
+        .values({ id: randomUUID(), name: 'http', value: '{"port":"36000"}' })
         .execute();
 
     const result = repository.read();
@@ -113,7 +145,7 @@ it('rejects a stored HTTP port with an invalid shape', async () => {
 
 const user = (id: string, username = id, role: 'admin' | 'owner' | 'guest' = 'owner') =>
     new User({
-        id,
+        id: testId(id),
         username,
         role,
         passwordHash: 'hash',
@@ -151,12 +183,12 @@ function foundationDatabase(
     for (const [id, role, created] of accounts) {
         sqlite
             .prepare('insert into users values (?, ?, ?, ?, 0, 0, ?)')
-            .run(id, id, role, 'hash', created);
+            .run(testId(id), id, role, 'hash', created);
     }
 
     sqlite
         .prepare('insert into notes values (?, ?, ?, ?, ?, ?)')
-        .run('n', accounts[0]![0], 'Title', 'Body', timestamp, timestamp);
+        .run('n', testId(accounts[0]![0]), 'Title', 'Body', timestamp, timestamp);
     sqlite.close();
 }
 
@@ -216,7 +248,7 @@ describe('SQLite adapters', () => {
         );
 
         expect(tables.rows).toEqual([]);
-        expect((await result.users.findById('alice'))!.actor).toMatchObject({
+        expect((await result.users.findById(testId('alice')))!.actor).toMatchObject({
             username: 'alice',
             language: null,
         });
@@ -232,12 +264,15 @@ describe('SQLite adapters', () => {
 
         const reopened = await reopen(current);
 
-        expect((await reopened.users.findById('alice'))!.actor.language).toBe('fr');
+        expect((await reopened.users.findById(testId('alice')))!.actor.language).toBe('fr');
     });
 
     it('reads Spring green when no colour scheme was saved', async () => {
         const { database } = await open();
-        const repository = new KyselyAppearanceRepository(database.connections);
+        const repository = new KyselyAppearanceRepository(
+            database.connections,
+            new UuidGenerator(),
+        );
 
         const result = await repository.read();
 
@@ -247,14 +282,20 @@ describe('SQLite adapters', () => {
     it('persists the chosen colour scheme across reopen', async () => {
         const current = await open();
 
-        await new KyselyAppearanceRepository(current.database.connections).save(
-            new ColorScheme('emerald'),
-        );
+        await new KyselyAppearanceRepository(
+            current.database.connections,
+            new UuidGenerator(),
+        ).save(new ColorScheme('emerald'));
 
         const reopened = await reopen(current);
 
         expect(
-            (await new KyselyAppearanceRepository(reopened.database.connections).read()).name,
+            (
+                await new KyselyAppearanceRepository(
+                    reopened.database.connections,
+                    new UuidGenerator(),
+                ).read()
+            ).name,
         ).toBe('emerald');
     });
 
@@ -263,10 +304,13 @@ describe('SQLite adapters', () => {
 
         await database.connection
             .insertInto('server_settings')
-            .values({ name: 'appearance', value: '{"colorScheme":"purple"}' })
+            .values({ id: randomUUID(), name: 'appearance', value: '{"colorScheme":"purple"}' })
             .execute();
 
-        const result = new KyselyAppearanceRepository(database.connections).read();
+        const result = new KyselyAppearanceRepository(
+            database.connections,
+            new UuidGenerator(),
+        ).read();
 
         await expect(result).rejects.toMatchObject({ reason: 'color-scheme-unknown' });
     });
@@ -311,7 +355,7 @@ describe('SQLite adapters', () => {
 
         await users.save(account, 0);
 
-        expect((await users.findById('alice'))!.actor.username).toBe('Alice');
+        expect((await users.findById(testId('alice')))!.actor.username).toBe('Alice');
     });
 
     it('allows only one administrator', async () => {
@@ -335,7 +379,7 @@ describe('SQLite adapters', () => {
 
         const reopened = await reopen(current);
 
-        expect((await reopened.users.findById('robin'))!.summary).toMatchObject({
+        expect((await reopened.users.findById(testId('robin')))!.summary).toMatchObject({
             active: false,
             role: 'owner',
         });
@@ -366,7 +410,7 @@ describe('SQLite adapters', () => {
 
     it('stores audit entries without credential values', async () => {
         const { database, users } = await open();
-        const audit = new KyselyAuditTrail(database.connections);
+        const audit = new KyselyAuditTrail(database.connections, new UuidGenerator());
 
         await users.create(user('alice'));
 
@@ -374,7 +418,7 @@ describe('SQLite adapters', () => {
             operationId: 'operation',
             category: 'account.created',
             outcome: 'successful',
-            actorId: 'alice',
+            actorId: testId('alice'),
             occurredAt: timestamp,
             subjectType: 'account',
             subjectId: 'alice',
@@ -398,7 +442,7 @@ describe('SQLite adapters', () => {
 
     it('keeps an audit entry written after a rolled-back transaction', async () => {
         const { database } = await open();
-        const audit = new KyselyAuditTrail(database.connections);
+        const audit = new KyselyAuditTrail(database.connections, new UuidGenerator());
         const entry = {
             operationId: 'operation',
             category: 'account.created',
@@ -460,8 +504,8 @@ describe('SQLite adapters', () => {
         const { users } = await open();
 
         await users.create(user('alice'));
-        const stale = (await users.findById('alice'))!;
-        const updated = (await users.findById('alice'))!;
+        const stale = (await users.findById(testId('alice')))!;
+        const updated = (await users.findById(testId('alice')))!;
 
         updated.replacePassword('new');
         await users.save(updated, 0);
@@ -470,7 +514,7 @@ describe('SQLite adapters', () => {
         const result = users.save(stale, 0);
 
         await expect(result).rejects.toMatchObject({ code: 'conflict' });
-        expect((await users.findById('alice'))!.snapshot).toMatchObject({
+        expect((await users.findById(testId('alice')))!.snapshot).toMatchObject({
             username: 'alice',
             passwordHash: 'new',
         });

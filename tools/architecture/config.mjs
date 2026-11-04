@@ -1,5 +1,6 @@
 export const architectureRules = {
     'architecture/boundaries': 'error',
+    'architecture/persistence-sql': 'error',
     'architecture/file-conventions': 'error',
     'no-restricted-imports': [
         'error',

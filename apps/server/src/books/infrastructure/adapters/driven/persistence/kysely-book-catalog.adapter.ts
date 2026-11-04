@@ -1,4 +1,3 @@
-import { sql } from 'kysely';
 import type { ExpressionBuilder } from 'kysely';
 import type { BookCatalog } from '../../../../application/ports/driven/book-catalog.interface.js';
 import type {
@@ -53,9 +52,9 @@ export class KyselyBookCatalog implements BookCatalog {
         } else if (query.sort === 'published') {
             // Books without a publication date come last in both directions.
             rows = rows
-                .orderBy(sql`books.publication_year is null`)
+                .orderBy((eb) => eb('books.publication_year', 'is', null))
                 .orderBy('books.publication_year', direction)
-                .orderBy(sql`coalesce(books.publication_month, 0)`, direction);
+                .orderBy((eb) => eb.fn.coalesce('books.publication_month', eb.val(0)), direction);
         }
 
         const page = await rows
@@ -95,7 +94,6 @@ export class KyselyBookCatalog implements BookCatalog {
         const key = NameKey.of(search);
         const digits = search.replace(/[\s-]/g, '');
         const equivalent = Isbn.equivalent(search);
-        const like = '%' + key.replace(/[\\%_]/g, (character) => '\\' + character) + '%';
 
         return (eb: ExpressionBuilder<DatabaseSchema, 'books'>) => {
             if (key.length === 0) {
@@ -103,14 +101,23 @@ export class KyselyBookCatalog implements BookCatalog {
             }
 
             return eb.or([
-                sql<boolean>`books.title_key like ${like} escape '\\'`,
+                eb(eb.fn<number>('instr', [eb.ref('books.title_key'), eb.val(key)]), '>', 0),
                 eb.exists(
                     eb
                         .selectFrom('book_authors')
                         .innerJoin('authors', 'authors.id', 'book_authors.author_id')
                         .select('book_authors.book_id')
                         .whereRef('book_authors.book_id', '=', 'books.id')
-                        .where(sql<boolean>`authors.name_key like ${like} escape '\\'`),
+                        .where((author) =>
+                            author(
+                                author.fn<number>('instr', [
+                                    author.ref('authors.name_key'),
+                                    author.val(key),
+                                ]),
+                                '>',
+                                0,
+                            ),
+                        ),
                 ),
                 ...(/^\d{3,13}$/.test(digits)
                     ? [eb('books.isbn13', 'like', '%' + digits + '%')]
