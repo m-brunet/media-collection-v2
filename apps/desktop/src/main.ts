@@ -132,6 +132,7 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
             window = new BrowserWindow({
                 width: 1440,
                 height: 900,
+                backgroundColor: '#252729',
                 minWidth: 1280,
                 minHeight: 720,
                 show: false,
@@ -205,8 +206,9 @@ async function recovery(dataDirectory: string, login: string): Promise<void> {
     backend = new BackendProcess(join(directory, 'worker.js'));
     window = new BrowserWindow({
         width: 520,
-        height: 430,
+        height: 500,
         resizable: false,
+        backgroundColor: '#1d2022',
         webPreferences: {
             preload: join(directory, 'recovery-preload.cjs'),
             contextIsolation: true,
