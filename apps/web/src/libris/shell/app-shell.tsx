@@ -7,6 +7,7 @@ import { Brand } from '../../shared/ui/brand';
 import type { IconName } from '../../shared/ui/icon';
 import { Icon } from '../../shared/ui/icon';
 import { LanguageSwitch } from '../../shared/ui/language-switch';
+import { RoleLabel } from '../../shared/role-label.util';
 
 interface NavigationItem {
     to: string;
@@ -77,7 +78,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                         <p className="sidebar__identity">
                             {t('nav.signedInAs', {
                                 username: account.username,
-                                role: t(account.role === 'admin' ? 'role.admin' : 'role.user'),
+                                role: t(RoleLabel.name(account.role)),
                             })}
                         </p>
                     )}

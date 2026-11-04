@@ -81,6 +81,7 @@ export function user(input: Partial<UserState> = {}): User {
         mustChangePassword: false,
         language: null,
         tokenVersion: 0,
+        active: true,
         createdAt: clock.now().toISOString(),
         ...input,
     });

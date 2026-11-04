@@ -21,7 +21,7 @@ describe('RecoverAdministrator', () => {
         const username = 'missing';
         const users = new MemoryUsers();
 
-        await users.create(user({ id: 'member', username: 'member', role: 'user' }));
+        await users.create(user({ id: 'member', username: 'member', role: 'owner' }));
         const subject = new RecoverAdministrator(users, passwords);
 
         const result = subject.execute(username, 'recovered-password');
@@ -32,7 +32,7 @@ describe('RecoverAdministrator', () => {
         const username = 'member';
         const users = new MemoryUsers();
 
-        await users.create(user({ id: 'member', username: 'member', role: 'user' }));
+        await users.create(user({ id: 'member', username: 'member', role: 'owner' }));
         const subject = new RecoverAdministrator(users, passwords);
 
         const result = subject.execute(username, 'recovered-password');

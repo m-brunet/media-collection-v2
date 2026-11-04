@@ -22,6 +22,9 @@ import { UuidGenerator } from '../../../apps/server/src/shared/infrastructure/ad
 import { PrivateStorage } from '../../../apps/server/src/shared/infrastructure/adapters/driven/filesystem/private-storage.adapter.js';
 import { Client } from '../client.js';
 import { UserFixture } from '../fixtures/user.fixture.js';
+import { AuditedOperation } from '../../../apps/server/src/shared/application/services/audited-operation.service.js';
+import { KyselyAuditTrail } from '../../../apps/server/src/shared/infrastructure/adapters/driven/persistence/kysely-audit-trail.adapter.js';
+import { AuditLogProbe } from './audit-log-probe.js';
 import { DatabaseManager } from './database-manager.js';
 import type { ApiFixture } from './fixture.js';
 import type { TestAppContext } from './test-app-context.js';
@@ -52,12 +55,12 @@ export class TestApp {
 
         try {
             const { database, directory } = await this.storage.setup();
-            const users = new KyselyUserRepository(database.connection);
+            const users = new KyselyUserRepository(database.connections);
             const passwords = new ScryptPasswordHasher();
-            const tls = new FileTlsStore(database.connection, directory, new PrivateStorage());
-            const http = new KyselyHttpSettingsRepository(database.connection);
+            const tls = new FileTlsStore(database.connections, directory, new PrivateStorage());
+            const http = new KyselyHttpSettingsRepository(database.connections);
 
-            this.context = { users, passwords, tls, http };
+            this.context = { users, passwords, tls, http, audit: new AuditLogProbe(database) };
             const clock = { now: () => new Date(this.now) };
             const secret = randomBytes(32);
             const tokens = new JwtSessionTokens(secret, clock);
@@ -66,6 +69,12 @@ export class TestApp {
             const renewal = new RenewSession(accounts, tokens);
             const sessions = new HttpSessions(secret);
             const ids = new UuidGenerator();
+            const operations = new AuditedOperation(
+                database.connections,
+                new KyselyAuditTrail(database.connections),
+                clock,
+                ids,
+            );
             const initialRevision = await tls.revision();
             const initialHttp = await http.read();
             const status = {
@@ -84,8 +93,22 @@ export class TestApp {
             };
             const module = await Test.createTestingModule({
                 imports: [
-                    IdentityModule.register(users, passwords, tokens, ids, clock, sessions),
-                    SettingsModule.register(tls, new PemCertificateValidator(), status, http),
+                    IdentityModule.register(
+                        users,
+                        passwords,
+                        tokens,
+                        ids,
+                        clock,
+                        sessions,
+                        operations,
+                    ),
+                    SettingsModule.register(
+                        tls,
+                        new PemCertificateValidator(),
+                        status,
+                        http,
+                        operations,
+                    ),
                 ],
                 controllers: [HealthController],
             }).compile();
@@ -120,6 +143,17 @@ export class TestApp {
         }
 
         return client;
+    }
+
+    // Puts an account into the temporary-password state (its fixture password stays valid), as
+    // after an administrator reset. Needed because only one administrator may exist.
+    async requirePasswordReplacement(fixture: UserFixture): Promise<void> {
+        const { users, passwords } = this.dependencies;
+        const user = (await users.findById(fixture.id))!;
+        const version = user.snapshot.tokenVersion;
+
+        user.replacePassword(await passwords.hash(fixture.password), true);
+        await users.save(user, version);
     }
 
     async loadFixtures(fixtures: readonly ApiFixture[]): Promise<void> {

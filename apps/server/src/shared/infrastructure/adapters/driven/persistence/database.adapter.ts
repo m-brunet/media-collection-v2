@@ -1,8 +1,10 @@
 import BetterSqlite3 from 'better-sqlite3';
-import { Kysely, SqliteDialect } from 'kysely';
+import type { Generated } from 'kysely';
+import { Kysely, sql, SqliteDialect } from 'kysely';
 import { Migrator } from 'kysely/migration';
 import { existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { DatabaseConnections } from './database-connections.adapter.js';
 
 interface UsersTable {
     id: string;
@@ -13,6 +15,21 @@ interface UsersTable {
     token_version: number;
     created_at: string;
     language: string | null;
+    active: number;
+}
+
+interface AuditLogsTable {
+    id: Generated<number>;
+    operation_id: string;
+    category: string;
+    outcome: string;
+    actor_id: string | null;
+    occurred_at: string;
+    subject_type: string;
+    subject_id: string | null;
+    before_values: string | null;
+    after_values: string | null;
+    failure: string | null;
 }
 
 interface SettingsTable {
@@ -23,10 +40,13 @@ interface SettingsTable {
 export interface DatabaseSchema {
     users: UsersTable;
     server_settings: SettingsTable;
+    audit_logs: AuditLogsTable;
 }
 
 export class Database {
     readonly connection: Kysely<DatabaseSchema>;
+    // Repositories use this to join the transaction of the operation in progress.
+    readonly connections: DatabaseConnections;
 
     private constructor(file: string) {
         const sqlite = new BetterSqlite3(file);
@@ -37,6 +57,7 @@ export class Database {
         this.connection = new Kysely<DatabaseSchema>({
             dialect: new SqliteDialect({ database: sqlite }),
         });
+        this.connections = new DatabaseConnections(this.connection);
     }
 
     static async open(directory: string, existingOnly = false): Promise<Database> {
@@ -117,6 +138,48 @@ export class Database {
                             await db.schema
                                 .alterTable('users')
                                 .addColumn('language', 'text')
+                                .execute();
+                        },
+                    },
+                    // Fixed Admin/Owner/Guest roles with exactly one protected administrator (the
+                    // earliest existing one), account deactivation, and the technical audit log.
+                    '003-access-and-audit': {
+                        up: async (db: Kysely<unknown>) => {
+                            await sql`update users set role = 'owner' where role = 'user'`.execute(
+                                db,
+                            );
+                            await sql`update users set role = 'owner' where role = 'admin' and id <> (
+                                select id from users where role = 'admin' order by created_at, id limit 1
+                            )`.execute(db);
+                            await db.schema
+                                .alterTable('users')
+                                .addColumn('active', 'integer', (c) => c.notNull().defaultTo(1))
+                                .execute();
+                            await sql`create unique index users_single_administrator on users (role)
+                                where role = 'admin'`.execute(db);
+                            await db.schema
+                                .createTable('audit_logs')
+                                .addColumn('id', 'integer', (c) => c.primaryKey().autoIncrement())
+                                .addColumn('operation_id', 'text', (c) => c.notNull())
+                                .addColumn('category', 'text', (c) => c.notNull())
+                                .addColumn('outcome', 'text', (c) => c.notNull())
+                                .addColumn('actor_id', 'text', (c) => c.references('users.id'))
+                                .addColumn('occurred_at', 'text', (c) => c.notNull())
+                                .addColumn('subject_type', 'text', (c) => c.notNull())
+                                .addColumn('subject_id', 'text')
+                                .addColumn('before_values', 'text')
+                                .addColumn('after_values', 'text')
+                                .addColumn('failure', 'text')
+                                .execute();
+                            await db.schema
+                                .createIndex('audit_logs_occurred')
+                                .on('audit_logs')
+                                .columns(['occurred_at', 'id'])
+                                .execute();
+                            await db.schema
+                                .createIndex('audit_logs_operation')
+                                .on('audit_logs')
+                                .column('operation_id')
                                 .execute();
                         },
                     },

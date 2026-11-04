@@ -9,16 +9,11 @@ import { TlsSettings } from '../../../../domain/value-objects/tls-settings.value
 let app: TestApp;
 const admin = new UserFixture({ username: 'administrator', role: 'admin' });
 const member = new UserFixture({ username: 'member' });
-const restricted = new UserFixture({
-    username: 'restricted',
-    role: 'admin',
-    mustChangePassword: true,
-});
 
 beforeEach(async () => {
     app = new TestApp();
     await app.setup();
-    await app.loadFixtures([admin, member, restricted]);
+    await app.loadFixtures([admin, member]);
 });
 afterEach(async () => {
     await app?.teardown();
@@ -51,7 +46,8 @@ describe('GET /api/server-settings', () => {
         expect(response.status).toBe(401);
     });
     it('rejects incomplete password setup', async () => {
-        const client = await app.authenticatedClient(restricted);
+        await app.requirePasswordReplacement(admin);
+        const client = await app.authenticatedClient(admin);
 
         const response = await client.call<ServerStatus>('/server-settings', 'GET');
 
@@ -115,7 +111,8 @@ describe('PUT /api/server-settings', () => {
         expect(response.status).toBe(401);
     });
     it('rejects incomplete password setup', async () => {
-        const client = await app.authenticatedClient(restricted);
+        await app.requirePasswordReplacement(admin);
+        const client = await app.authenticatedClient(admin);
 
         const response = await client.call<ServerStatus>('/server-settings', 'PUT', {
             enabled: false,
@@ -393,7 +390,8 @@ describe('PUT /api/server-settings/http', () => {
     });
 
     it('rejects changes before password setup', async () => {
-        const client = await app.authenticatedClient(restricted);
+        await app.requirePasswordReplacement(admin);
+        const client = await app.authenticatedClient(admin);
 
         const response = await client.call('/server-settings/http', 'PUT', { port: 36000 });
 

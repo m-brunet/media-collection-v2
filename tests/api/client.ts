@@ -83,7 +83,7 @@ export class Client {
         });
     }
 
-    async login(username = 'admin', password = 'p@ssw0rd') {
+    async login(username = 'admin', password = 'administrator-new-password') {
         await this.prepare();
 
         return this.call('/auth/login', 'POST', { username, password });

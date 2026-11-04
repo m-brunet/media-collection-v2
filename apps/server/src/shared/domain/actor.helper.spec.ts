@@ -4,7 +4,7 @@ import { ActorAuthorization } from './actor.helper.js';
 const actor = {
     id: 'one',
     username: 'one',
-    role: 'user' as const,
+    role: 'owner' as const,
     mustChangePassword: false,
     language: null,
 };
@@ -45,4 +45,43 @@ it('rejects an administrator with incomplete password setup', () => {
     const operation = () => ActorAuthorization.requireAdmin(candidate);
 
     expect(operation).toThrow(expect.objectContaining({ code: 'forbidden' }));
+});
+it('rejects an owner from administration', () => {
+    const input = { ...actor, role: 'owner' as const };
+
+    const operation = () => ActorAuthorization.requireAdmin(input);
+
+    expect(operation).toThrow(expect.objectContaining({ code: 'forbidden', reason: 'admin-only' }));
+});
+it('lets an owner change the shared library', () => {
+    const input = { ...actor, role: 'owner' as const };
+
+    const operation = () => ActorAuthorization.requireLibraryEditor(input);
+
+    expect(operation).not.toThrow();
+});
+it('lets the administrator change the shared library', () => {
+    const input = { ...actor, role: 'admin' as const };
+
+    const operation = () => ActorAuthorization.requireLibraryEditor(input);
+
+    expect(operation).not.toThrow();
+});
+it('keeps a guest read-only', () => {
+    const input = { ...actor, role: 'guest' as const };
+
+    const operation = () => ActorAuthorization.requireLibraryEditor(input);
+
+    expect(operation).toThrow(
+        expect.objectContaining({ code: 'forbidden', reason: 'guest-read-only' }),
+    );
+});
+it('requires password replacement before changing the shared library', () => {
+    const input = { ...actor, mustChangePassword: true };
+
+    const operation = () => ActorAuthorization.requireLibraryEditor(input);
+
+    expect(operation).toThrow(
+        expect.objectContaining({ code: 'forbidden', reason: 'temporary-password' }),
+    );
 });

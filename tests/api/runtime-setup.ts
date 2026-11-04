@@ -101,20 +101,16 @@ export async function availablePort(): Promise<number> {
     return port;
 }
 
+// First launch: creates the protected administrator `admin` and leaves the client signed in.
 export async function administrator(client: Client): Promise<void> {
-    const login = await client.login();
-
-    if (login.status !== 200) {
-        throw new Error('Administrator fixture login failed');
-    }
-
-    const change = await client.call('/account/password', 'PATCH', {
-        currentPassword: 'p@ssw0rd',
+    await client.prepare();
+    const setup = await client.call('/setup', 'POST', {
+        username: 'admin',
         password: 'administrator-new-password',
     });
 
-    if (change.status !== 200) {
-        throw new Error('Administrator fixture setup failed');
+    if (setup.status !== 201) {
+        throw new Error('Administrator fixture setup failed: ' + setup.text);
     }
 }
 

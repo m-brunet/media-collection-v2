@@ -11,6 +11,7 @@ export class FakeApi {
     constructor() {
         this.on('GET /auth/csrf', () => ({ status: 200, body: { token: 'csrf' } }));
         this.on('GET /auth/me', () => ({ status: 401, body: { message: 'Sign in' } }));
+        this.on('GET /setup', () => ({ status: 200, body: { required: false, local: true } }));
         vi.stubGlobal('fetch', vi.fn(this.fetch.bind(this)));
     }
 
@@ -18,6 +19,11 @@ export class FakeApi {
         this.handlers.set(route, handler);
 
         return this;
+    }
+
+    // First launch: no account exists yet; `local` tells whether this device may complete setup.
+    firstLaunch(local = true): this {
+        return this.on('GET /setup', () => ({ status: 200, body: { required: true, local } }));
     }
 
     signedIn(account: Account): this {
@@ -47,7 +53,7 @@ export function account(overrides: Partial<Account> = {}): Account {
     return {
         id: 'alex',
         username: 'alex',
-        role: 'user',
+        role: 'owner',
         mustChangePassword: false,
         language: null,
         ...overrides,

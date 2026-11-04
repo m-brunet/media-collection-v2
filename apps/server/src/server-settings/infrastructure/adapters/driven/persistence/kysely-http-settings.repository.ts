@@ -1,10 +1,13 @@
-import type { Kysely } from 'kysely';
-import type { DatabaseSchema } from '../../../../../shared/infrastructure/adapters/driven/persistence/database.adapter.js';
+import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
 import type { HttpSettingsStore } from '../../../../application/ports/driven/http-settings-store.interface.js';
 import { HttpSettings } from '../../../../domain/value-objects/http-settings.value-object.js';
 
 export class KyselyHttpSettingsRepository implements HttpSettingsStore {
-    constructor(private readonly db: Kysely<DatabaseSchema>) {}
+    constructor(private readonly connections: DatabaseConnections) {}
+
+    private get db() {
+        return this.connections.current;
+    }
 
     async read(): Promise<HttpSettings> {
         const row = await this.db

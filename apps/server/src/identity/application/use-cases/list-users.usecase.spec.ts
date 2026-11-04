@@ -12,11 +12,11 @@ describe('ListUsers', () => {
 
         const result = await subject.execute(account.actor);
 
-        expect(result).toEqual([account.actor]);
+        expect(result).toEqual([account.summary]);
         expect(result[0]).not.toHaveProperty('passwordHash');
     });
     it('rejects a non-administrator', async () => {
-        const input = { role: 'user' as const };
+        const input = { role: 'owner' as const };
         const users = new MemoryUsers();
         const subject = new ListUsers(users);
         const actor = user(input).actor;

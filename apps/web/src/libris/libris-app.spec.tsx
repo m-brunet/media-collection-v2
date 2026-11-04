@@ -103,14 +103,89 @@ it('hides administration from other accounts', async () => {
     expect(screen.queryByRole('link', { name: 'Accounts' })).not.toBeInTheDocument();
 });
 
-it('redirects a non-administrator away from administration pages', async () => {
+it('explains that an Owner cannot use an administration page', async () => {
     window.history.replaceState(null, '', '/admin/server');
-    new FakeApi().signedIn(account());
+    new FakeApi().signedIn(account({ role: 'owner' }));
 
     render(<LibrisApp />);
 
+    expect(await screen.findByText('This page is unavailable')).toBeInTheDocument();
+    expect(screen.queryByText('HTTP / web interface')).not.toBeInTheDocument();
+});
+
+it('explains that a Guest cannot use an administration page', async () => {
+    window.history.replaceState(null, '', '/admin/accounts');
+    new FakeApi().signedIn(account({ role: 'guest' }));
+
+    render(<LibrisApp />);
+
+    expect(await screen.findByText('This page is unavailable')).toBeInTheDocument();
+});
+
+it('shows the role and what it allows on My account', async () => {
+    new FakeApi().signedIn(account({ role: 'guest' }));
+
+    render(<LibrisApp />);
+
+    expect(
+        await screen.findByText(
+            'You can view the shared library and manage your own account. Your role is fixed.',
+        ),
+    ).toBeInTheDocument();
+});
+
+it('asks for the administrator account on first launch', async () => {
+    new FakeApi().firstLaunch();
+
+    render(<LibrisApp />);
+
+    expect(await screen.findByRole('heading', { name: 'Set up your library' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Sign in' })).not.toBeInTheDocument();
+});
+
+it('creates the administrator and opens the library', async () => {
+    const api = new FakeApi()
+        .firstLaunch()
+        .on('POST /setup', () => ({ status: 201, body: account({ role: 'admin' }) }))
+        .on('GET /users', () => ({ status: 200, body: [] }));
+
+    render(<LibrisApp />);
+    await userEvent.type(await screen.findByLabelText(/^Administrator username/), 'alex');
+    await userEvent.type(screen.getByLabelText(/^Administrator password/), 'chosen-password');
+    await userEvent.type(screen.getByLabelText(/^Confirm password/), 'chosen-password');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Create administrator' }));
+
     expect(await screen.findByRole('heading', { name: 'My account' })).toBeInTheDocument();
-    expect(window.location.pathname).toBe('/account');
+    expect(api.calls).toContainEqual({
+        route: 'POST /setup',
+        body: { username: 'alex', password: 'chosen-password' },
+    });
+});
+
+it('refuses different setup passwords without contacting the server', async () => {
+    const api = new FakeApi().firstLaunch();
+
+    render(<LibrisApp />);
+    await userEvent.type(await screen.findByLabelText(/^Administrator username/), 'alex');
+    await userEvent.type(screen.getByLabelText(/^Administrator password/), 'chosen-password');
+    await userEvent.type(screen.getByLabelText(/^Confirm password/), 'other-password');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Create administrator' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('The new passwords do not match.');
+    expect(api.calls.some((call) => call.route === 'POST /setup')).toBe(false);
+});
+
+it('asks another device to finish setup on the host computer', async () => {
+    new FakeApi().firstLaunch(false);
+
+    render(<LibrisApp />);
+
+    expect(
+        await screen.findByRole('heading', { name: 'Setup is not finished yet' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Create administrator' })).not.toBeInTheDocument();
 });
 
 it('saves a language change to the signed-in account', async () => {

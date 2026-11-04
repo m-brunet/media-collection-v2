@@ -5,16 +5,11 @@ import { UserFixture } from '../../../../../../../tests/api/fixtures/user.fixtur
 let app: TestApp;
 const admin = new UserFixture({ username: 'administrator', role: 'admin' });
 const member = new UserFixture({ username: 'member' });
-const restricted = new UserFixture({
-    username: 'restricted',
-    role: 'admin',
-    mustChangePassword: true,
-});
 
 beforeEach(async () => {
     app = new TestApp();
     await app.setup();
-    await app.loadFixtures([admin, member, restricted]);
+    await app.loadFixtures([admin, member]);
 });
 afterEach(async () => {
     await app?.teardown();

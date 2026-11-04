@@ -13,7 +13,7 @@ export async function recoverAdministrator(
 
     try {
         await new RecoverAdministrator(
-            new KyselyUserRepository(database.connection),
+            new KyselyUserRepository(database.connections),
             new ScryptPasswordHasher(),
         ).execute(login, password);
     } finally {

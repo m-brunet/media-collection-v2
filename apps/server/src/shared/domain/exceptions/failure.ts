@@ -4,14 +4,16 @@ export class Failure extends Error {
     constructor(
         public readonly code: FailureCode,
         message: string,
+        // Stable machine-readable cause (for example `username-taken`) that interfaces translate.
+        public readonly reason: string | null = null,
     ) {
         super(message);
         this.name = 'Failure';
     }
 
-    static ensure(condition: unknown, message: string): asserts condition {
+    static ensure(condition: unknown, message: string, reason?: string): asserts condition {
         if (!condition) {
-            throw new Failure('invalid_input', message);
+            throw new Failure('invalid_input', message, reason ?? null);
         }
     }
 }

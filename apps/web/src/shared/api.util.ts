@@ -4,6 +4,8 @@ export class ApiError extends Error {
         public readonly status: number,
         // Stable server failure code (for example `conflict`), when the server supplied one.
         public readonly code: string | null = null,
+        // Precise stable cause (for example `username-taken`), translated by the interface.
+        public readonly reason: string | null = null,
     ) {
         super(message);
     }
@@ -42,6 +44,7 @@ export class ApiClient {
                 .catch(() => ({ message: 'The request failed.' }))) as {
                 message: string;
                 code?: string;
+                reason?: string | null;
             };
 
             if (response.status === 401 && path !== '/auth/login') {
@@ -52,7 +55,12 @@ export class ApiClient {
                 this.csrfToken = undefined;
             }
 
-            throw new ApiError(result.message, response.status, result.code ?? null);
+            throw new ApiError(
+                result.message,
+                response.status,
+                result.code ?? null,
+                result.reason ?? null,
+            );
         }
 
         if (path === '/auth/logout') {

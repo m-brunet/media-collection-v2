@@ -35,7 +35,6 @@ export function SignInPage() {
             <p className="muted">{t('signIn.welcome')}</p>
             <SignInForm />
             <p className="field__hint">{t('signIn.accountsByAdmin')}</p>
-            <p className="field__hint">{t('signIn.firstStartup')}</p>
         </AccessLayout>
     );
 }

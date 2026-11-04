@@ -19,7 +19,7 @@ export class FailureFilter implements ExceptionFilter {
 
             response
                 .status(statuses[error.code])
-                .json({ code: error.code, message: error.message });
+                .json({ code: error.code, reason: error.reason, message: error.message });
         } else if (error instanceof HttpException) {
             const value = error.getResponse();
             const message =

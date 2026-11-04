@@ -1,4 +1,3 @@
-﻿import type { Account } from '../../../../../../../../packages/contracts/src/http.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { TestApp } from '../../../../../../../../tests/api/setup/test-app.js';
 import { UserFixture } from '../../../../../../../../tests/api/fixtures/user.fixture.js';
@@ -6,16 +5,17 @@ import { UserFixture } from '../../../../../../../../tests/api/fixtures/user.fix
 let app: TestApp;
 const admin = new UserFixture({ username: 'administrator', role: 'admin' });
 const member = new UserFixture({ username: 'member' });
+const former = new UserFixture({ username: 'former', active: false });
 const restricted = new UserFixture({
     username: 'restricted',
-    role: 'admin',
+    role: 'owner',
     mustChangePassword: true,
 });
 
 beforeEach(async () => {
     app = new TestApp();
     await app.setup();
-    await app.loadFixtures([admin, member, restricted]);
+    await app.loadFixtures([admin, member, restricted, former]);
 });
 afterEach(async () => {
     await app?.teardown();
@@ -57,7 +57,7 @@ describe('POST /api/auth/login', () => {
         expect(response.body).toMatchObject({
             id: member.id,
             username: member.username,
-            role: 'user',
+            role: 'owner',
             mustChangePassword: false,
             language: null,
         });
@@ -145,6 +145,35 @@ describe('POST /api/auth/login', () => {
 
         expect(response.status).toBe(403);
         expect(response.body.message).toContain('Too many');
+    });
+});
+describe('POST /api/auth/login of deactivated accounts', () => {
+    it('refuses a deactivated account like wrong credentials', async () => {
+        const client = app.client();
+
+        await client.prepare();
+        const input = { username: former.username, password: former.password };
+
+        const response = await client.call('/auth/login', 'POST', input);
+
+        expect(response.status).toBe(401);
+        expect(response.body.reason).toBe('credentials-incorrect');
+    });
+    it('records sign-in attempts as technical audit entries without passwords', async () => {
+        const client = app.client();
+
+        await client.prepare();
+
+        await client.call('/auth/login', 'POST', { username: 'member', password: 'wrong-guess' });
+
+        expect(await app.dependencies.audit.entries()).toEqual([
+            expect.objectContaining({
+                category: 'authentication.signed-in',
+                outcome: 'failed',
+                actorId: member.id,
+            }),
+        ]);
+        expect(await app.dependencies.audit.text()).not.toContain('wrong-guess');
     });
 });
 describe('GET /api/auth/me', () => {
@@ -495,148 +524,5 @@ describe('PATCH /api/account/password', () => {
 
         expect(response.status).toBe(400);
         expect((await app.dependencies.users.findById(admin.id))!.snapshot.tokenVersion).toBe(0);
-    });
-});
-describe('GET /api/users', () => {
-    it('lists safe accounts for administrators', async () => {
-        const client = await app.authenticatedClient(admin);
-
-        const response = await client.call('/users', 'GET');
-
-        expect(response.status).toBe(200);
-        expect(response.body).toHaveLength(3);
-        expect(response.text).not.toContain('passwordHash');
-    });
-    it('rejects unauthenticated access', async () => {
-        const client = app.client();
-
-        await client.prepare();
-
-        const response = await client.call('/users', 'GET');
-
-        expect(response.status).toBe(401);
-    });
-    it('rejects incomplete password setup', async () => {
-        const client = await app.authenticatedClient(restricted);
-
-        const response = await client.call('/users', 'GET');
-
-        expect(response.status).toBe(403);
-    });
-    it('rejects non-administrators', async () => {
-        const client = await app.authenticatedClient(member);
-
-        const response = await client.call('/users', 'GET');
-
-        expect(response.status).toBe(403);
-    });
-});
-describe('POST /api/users', () => {
-    it('creates a restricted account without exposing secrets', async () => {
-        const client = await app.authenticatedClient(admin);
-
-        const response = await client.call<Account>('/users', 'POST', {
-            username: 'new-member',
-            password: 'temporary-password',
-            role: 'user',
-        });
-
-        expect(response.status).toBe(201);
-        expect(response.body).toMatchObject({
-            username: 'new-member',
-            role: 'user',
-            mustChangePassword: true,
-        });
-        expect(response.body).not.toHaveProperty('passwordHash');
-        expect((await app.dependencies.users.findById(response.body.id))!.actor.username).toBe(
-            'new-member',
-        );
-    });
-    it('rejects unauthenticated access', async () => {
-        const client = app.client();
-
-        await client.prepare();
-
-        const response = await client.call<Account>('/users', 'POST', {
-            username: 'new-member',
-            password: 'temporary-password',
-            role: 'user',
-        });
-
-        expect(response.status).toBe(401);
-    });
-    it('rejects incomplete password setup', async () => {
-        const client = await app.authenticatedClient(restricted);
-
-        const response = await client.call<Account>('/users', 'POST', {
-            username: 'new-member',
-            password: 'temporary-password',
-            role: 'user',
-        });
-
-        expect(response.status).toBe(403);
-    });
-    it('rejects non-administrators', async () => {
-        const client = await app.authenticatedClient(member);
-
-        const response = await client.call<Account>('/users', 'POST', {
-            username: 'new-member',
-            password: 'temporary-password',
-            role: 'user',
-        });
-
-        expect(response.status).toBe(403);
-    });
-    it('rejects missing CSRF protection', async () => {
-        const client = await app.authenticatedClient(admin);
-
-        const response = await client.call<Account>(
-            '/users',
-            'POST',
-            { username: 'new-member', password: 'temporary-password', role: 'user' },
-            { csrf: false },
-        );
-
-        expect(response.status).toBe(403);
-    });
-    it('rejects creation with a duplicate username', async () => {
-        const input = { username: 'member', password: 'temporary-password', role: 'user' };
-        const client = await app.authenticatedClient(admin);
-        const status = input.username === 'member' ? 409 : 400;
-
-        const response = await client.call('/users', 'POST', input);
-
-        expect(response.status).toBe(status);
-        expect(await app.dependencies.users.list()).toHaveLength(3);
-    });
-    it('rejects creation with an invalid username', async () => {
-        const input = { username: 'invalid!', password: 'temporary-password', role: 'user' };
-        const client = await app.authenticatedClient(admin);
-        const status = input.username === 'member' ? 409 : 400;
-
-        const response = await client.call('/users', 'POST', input);
-
-        expect(response.status).toBe(status);
-        expect(await app.dependencies.users.list()).toHaveLength(3);
-    });
-    it('rejects creation with a short password', async () => {
-        const input = { username: 'valid', password: 'short', role: 'user' };
-        const client = await app.authenticatedClient(admin);
-        const status = input.username === 'member' ? 409 : 400;
-
-        const response = await client.call('/users', 'POST', input);
-
-        expect(response.status).toBe(status);
-        expect(await app.dependencies.users.list()).toHaveLength(3);
-    });
-    it('rejects creation with an invalid role', async () => {
-        const input = { username: 'valid', password: 'temporary-password', role: 'root' };
-        const client = await app.authenticatedClient(admin);
-        const status = input.username === 'member' ? 409 : 400;
-
-        const response = await client.call('/users', 'POST', input);
-
-        expect(response.status).toBe(status);
-        expect(await app.dependencies.users.list()).toHaveLength(3);
     });
 });

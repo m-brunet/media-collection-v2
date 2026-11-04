@@ -1,9 +1,32 @@
 import { ApiError } from './api.util';
 import type { MessageKey } from './i18n/catalog-en';
 
-// Turns a failed request into translated interface text. Screens may supply more precise
-// messages for statuses they understand (for example an incorrect sign-in).
+// Turns a failed request into translated interface text: a screen-specific message first, then
+// the server's precise reason, then a general message for the kind of failure.
 export class ApiErrorMessage {
+    private static readonly reasons: Record<string, MessageKey> = {
+        'username-taken': 'reason.usernameTaken',
+        'username-format': 'reason.usernameFormat',
+        'password-length': 'reason.passwordLength',
+        'password-incorrect': 'reason.passwordIncorrect',
+        'password-unchanged': 'reason.passwordUnchanged',
+        'credentials-incorrect': 'reason.credentialsIncorrect',
+        'protected-administrator': 'reason.protectedAdministrator',
+        'admin-only': 'reason.adminOnly',
+        'guest-read-only': 'reason.guestReadOnly',
+        'temporary-password': 'reason.temporaryPassword',
+        'setup-completed': 'reason.setupCompleted',
+        'setup-local-only': 'reason.setupLocalOnly',
+        'account-missing': 'reason.accountMissing',
+        'already-active': 'reason.alreadyActive',
+        'already-inactive': 'reason.alreadyInactive',
+        'account-changed': 'reason.accountChanged',
+        'role-required': 'reason.roleRequired',
+        'ports-identical': 'reason.portsIdentical',
+        'certificate-incomplete': 'reason.certificateIncomplete',
+        'session-ended': 'errors.unauthorized',
+    };
+
     static key(
         error: unknown,
         specific: Partial<Record<number | string, MessageKey>> = {},
@@ -12,7 +35,11 @@ export class ApiErrorMessage {
             return error instanceof TypeError ? 'errors.network' : 'errors.generic';
         }
 
-        const precise = (error.code ? specific[error.code] : undefined) ?? specific[error.status];
+        const precise =
+            (error.reason ? specific[error.reason] : undefined) ??
+            (error.code ? specific[error.code] : undefined) ??
+            specific[error.status] ??
+            (error.reason ? ApiErrorMessage.reasons[error.reason] : undefined);
 
         if (precise) {
             return precise;

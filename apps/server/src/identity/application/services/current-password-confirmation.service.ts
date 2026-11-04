@@ -7,7 +7,11 @@ export class CurrentPasswordConfirmation {
 
     async confirm(user: User, password: string): Promise<void> {
         if (!(await this.passwords.matches(password, user.snapshot.passwordHash))) {
-            throw new Failure('invalid_input', 'The current password is incorrect.');
+            throw new Failure(
+                'invalid_input',
+                'The current password is incorrect.',
+                'password-incorrect',
+            );
         }
     }
 }

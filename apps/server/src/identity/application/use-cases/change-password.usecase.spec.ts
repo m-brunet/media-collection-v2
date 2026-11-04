@@ -1,3 +1,7 @@
+import {
+    auditedOperation,
+    MemoryAuditTrail,
+} from '../../../shared/application/testing/audit-doubles.test-support.js';
 import { describe, expect, it } from 'vitest';
 import { MemoryUsers, passwords, user } from '../testing/identity-doubles.test-support.js';
 import { AccountLoader } from '../services/account-loader.service.js';
@@ -15,6 +19,7 @@ describe('ChangePassword', () => {
             new AccountLoader(users),
             passwords,
             new CurrentPasswordConfirmation(passwords),
+            auditedOperation(new MemoryAuditTrail()),
         );
 
         const result = await subject.execute(account.actor, 'old-password', 'new-password');
@@ -37,6 +42,7 @@ describe('ChangePassword', () => {
             new AccountLoader(users),
             passwords,
             new CurrentPasswordConfirmation(passwords),
+            auditedOperation(new MemoryAuditTrail()),
         );
 
         const result = subject.execute(account.actor, current, next);
@@ -56,6 +62,7 @@ describe('ChangePassword', () => {
             new AccountLoader(users),
             passwords,
             new CurrentPasswordConfirmation(passwords),
+            auditedOperation(new MemoryAuditTrail()),
         );
 
         const result = subject.execute(account.actor, current, next);
@@ -75,6 +82,7 @@ describe('ChangePassword', () => {
             new AccountLoader(users),
             passwords,
             new CurrentPasswordConfirmation(passwords),
+            auditedOperation(new MemoryAuditTrail()),
         );
 
         const result = subject.execute(account.actor, current, next);

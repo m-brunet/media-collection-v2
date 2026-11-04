@@ -24,3 +24,24 @@ it('accepts a satisfied invariant', () => {
 
     expect(operation).not.toThrow();
 });
+it('carries a stable reason for translation', () => {
+    const reason = 'username-taken';
+
+    const result = new Failure('conflict', 'Taken', reason);
+
+    expect(result.reason).toBe(reason);
+});
+it('reports a failed invariant with its reason', () => {
+    const reason = 'password-length';
+
+    const operation = () => Failure.ensure(false, 'Too short', reason);
+
+    expect(operation).toThrow(expect.objectContaining({ code: 'invalid_input', reason }));
+});
+it('has no reason unless one is given', () => {
+    const message = 'Duplicate';
+
+    const result = new Failure('conflict', message);
+
+    expect(result.reason).toBeNull();
+});

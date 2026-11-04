@@ -18,6 +18,11 @@ beforeEach(async () => {
 
     base = started.client.base;
     await administrator(started.client);
+    await started.client.call('/users', 'POST', {
+        username: 'morgan',
+        password: 'guest-temporary',
+        role: 'guest',
+    });
 });
 afterEach(async () => {
     await browser.closeContexts();
@@ -57,4 +62,17 @@ it('signs in on a phone and shows the mobile home without horizontal scrolling',
         viewports.phone.width,
     );
     await capture(page, 'leaf-home');
+});
+
+it('refuses the mobile interface to a Guest', async () => {
+    const page = await browser.page(base, { viewport: viewports.phone });
+
+    await page.goto('/leaf/');
+    await page.getByLabel(/^Username/).fill('morgan');
+    await page.getByLabel(/^Password/).fill('guest-temporary');
+
+    await page.getByRole('button', { name: 'Sign in' }).click();
+
+    await page.getByRole('heading', { name: 'Owner or Admin required' }).waitFor();
+    await capture(page, 'leaf-guest-denied');
 });

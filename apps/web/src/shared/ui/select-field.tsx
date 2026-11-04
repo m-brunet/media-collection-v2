@@ -10,12 +10,15 @@ export function SelectField({
     label,
     hint,
     options,
+    placeholder,
     required,
     ...select
 }: {
     label: string;
     hint?: string;
     options: SelectOption[];
+    // Shown first and not selectable again, so a required choice cannot be left to a default.
+    placeholder?: string;
     required?: boolean;
 } & SelectHTMLAttributes<HTMLSelectElement>) {
     const id = useId();
@@ -33,6 +36,11 @@ export function SelectField({
                 aria-describedby={hint ? id + '-hint' : undefined}
                 className="field__control field__control--select"
             >
+                {placeholder && (
+                    <option value="" disabled>
+                        {placeholder}
+                    </option>
+                )}
                 {options.map((option) => (
                     <option key={option.value} value={option.value}>
                         {option.label}
