@@ -1,3 +1,4 @@
+import type { AppearanceStore } from '../../../apps/server/src/appearance/application/ports/driven/appearance-store.interface.js';
 import type { AuditLogProbe } from './audit-log-probe.js';
 import type { PasswordHasher } from '../../../apps/server/src/identity/application/ports/driven/password-hasher.interface.js';
 import type { UserRepository } from '../../../apps/server/src/identity/application/ports/driven/user-repository.interface.js';
@@ -9,5 +10,6 @@ export interface TestAppContext {
     passwords: PasswordHasher;
     tls: TlsStore;
     http: HttpSettingsStore;
+    appearance: AppearanceStore;
     audit: AuditLogProbe;
 }

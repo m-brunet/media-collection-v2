@@ -210,4 +210,21 @@ export const fr = {
     'leaf.guest.title': 'Propriétaire ou administrateur requis',
     'leaf.guest.body':
         'Les comptes invités ne peuvent pas utiliser l’interface mobile. Vous pouvez consulter la bibliothèque sur un ordinateur, dans Libris.',
+    'nav.appearance': 'Apparence',
+    'appearance.title': 'Apparence',
+    'appearance.intro':
+        'L’apparence de Libris et Leaf pour tous les utilisateurs de cette bibliothèque.',
+    'appearance.colorScheme': 'Jeu de couleurs',
+    'appearance.scheme.springGreen': 'Vert printemps',
+    'appearance.scheme.mint': 'Menthe',
+    'appearance.scheme.emerald': 'Émeraude',
+    'appearance.scheme.forest': 'Forêt',
+    'appearance.default': 'par défaut',
+    'appearance.sample': 'Ajouter un livre',
+    'appearance.hint':
+        'S’applique à tous les comptes, dans Libris et Leaf, y compris sur la page de connexion.',
+    'appearance.save': 'Enregistrer le jeu de couleurs',
+    'appearance.saved':
+        'Jeu de couleurs enregistré. Les autres fenêtres ouvertes l’utiliseront à leur prochain chargement.',
+    'reason.colorSchemeUnknown': 'Choisissez l’un des jeux de couleurs proposés.',
 } satisfies Catalog;

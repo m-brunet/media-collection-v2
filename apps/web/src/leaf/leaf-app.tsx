@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
 import { useI18n } from '../shared/i18n/i18n-context';
+import { AppearanceProvider } from '../shared/appearance/appearance-context';
 import { SessionProvider, useSession } from '../shared/session/session-context';
 import { SignInForm } from '../shared/session/sign-in-form';
 import { Brand } from '../shared/ui/brand';
@@ -107,11 +108,13 @@ function LeafRoutes() {
 export function LeafApp() {
     return (
         <BrowserRouter basename="/leaf">
-            <SessionProvider>
-                <LeafLayout>
-                    <LeafRoutes />
-                </LeafLayout>
-            </SessionProvider>
+            <AppearanceProvider>
+                <SessionProvider>
+                    <LeafLayout>
+                        <LeafRoutes />
+                    </LeafLayout>
+                </SessionProvider>
+            </AppearanceProvider>
         </BrowserRouter>
     );
 }

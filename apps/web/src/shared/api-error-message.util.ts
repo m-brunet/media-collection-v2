@@ -24,6 +24,7 @@ export class ApiErrorMessage {
         'role-required': 'reason.roleRequired',
         'ports-identical': 'reason.portsIdentical',
         'certificate-incomplete': 'reason.certificateIncomplete',
+        'color-scheme-unknown': 'reason.colorSchemeUnknown',
         'session-ended': 'errors.unauthorized',
     };
 

@@ -14,3 +14,7 @@ HTMLDialogElement.prototype.showModal ??= function showModal(this: HTMLDialogEle
 HTMLDialogElement.prototype.close ??= function close(this: HTMLDialogElement) {
     this.removeAttribute('open');
 };
+
+afterEach(() => {
+    delete document.documentElement.dataset.colorScheme;
+});

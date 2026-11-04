@@ -33,6 +33,19 @@ Quiet dark surfaces, book covers in portrait proportions without cropping, and a
 
 The artifact's CSS is generated per screen and is not reused. Implementation defines a small set of named design values (colours, type scale, spacing, radii, borders) and reusable components (shell/sidebar, buttons, inputs, selects, dialogs, book cover with missing-cover fallback, status labels, empty/loading/error states), so that new pages inherit the style automatically.
 
+## Colour schemes
+
+The Admin chooses the installation's colour scheme in Administration → Appearance; it applies to every account, in Libris and Leaf, including the sign-in page. It is a saved application preference: included in backups, and an Admin data reset returns it to the default. The four schemes come from the design's colour charts (`design/color-charts.html`) and differ only in three accent roles; neutral and status colours are shared.
+
+| Scheme | Accent | Accent background (selected) | Accent text |
+| --- | --- | --- | --- |
+| Spring green (default) | #79D670 | #2B3E29 | #BDEBB8 |
+| Mint | #86D39A | #2B3D31 | #B7E7C2 |
+| Emerald | #65D59B | #273E32 | #B0E9CA |
+| Forest | #65B881 | #293A30 | #AFD9BC |
+
+The design screens were drawn in Mint. The local recovery window, which runs without the server, always uses Spring green.
+
 ## Window size
 
 The minimum supported desktop size is 1280 x 720. The Electron window cannot be resized below it, and the desktop-browser layout is designed to remain fully usable at that size. Screens are drawn at 1440 px wide; between 1280 and 1440 px, secondary panels such as the selected-book panel narrow or move rather than clipping content. Leaf is designed for phone widths (reference 390 px).

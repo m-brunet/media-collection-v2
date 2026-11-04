@@ -25,6 +25,8 @@ import { UserFixture } from '../fixtures/user.fixture.js';
 import { AuditedOperation } from '../../../apps/server/src/shared/application/services/audited-operation.service.js';
 import { KyselyAuditTrail } from '../../../apps/server/src/shared/infrastructure/adapters/driven/persistence/kysely-audit-trail.adapter.js';
 import { AuditLogProbe } from './audit-log-probe.js';
+import { AppearanceModule } from '../../../apps/server/src/appearance/infrastructure/config/appearance.module.js';
+import { KyselyAppearanceRepository } from '../../../apps/server/src/appearance/infrastructure/adapters/driven/persistence/kysely-appearance.repository.js';
 import { SetupAccess } from '../../../apps/server/src/identity/infrastructure/adapters/driving/web/setup-access.service.js';
 import { DatabaseManager } from './database-manager.js';
 import type { ApiFixture } from './fixture.js';
@@ -60,8 +62,16 @@ export class TestApp {
             const passwords = new ScryptPasswordHasher();
             const tls = new FileTlsStore(database.connections, directory, new PrivateStorage());
             const http = new KyselyHttpSettingsRepository(database.connections);
+            const appearance = new KyselyAppearanceRepository(database.connections);
 
-            this.context = { users, passwords, tls, http, audit: new AuditLogProbe(database) };
+            this.context = {
+                users,
+                passwords,
+                tls,
+                http,
+                appearance,
+                audit: new AuditLogProbe(database),
+            };
             const clock = { now: () => new Date(this.now) };
             const secret = randomBytes(32);
             const tokens = new JwtSessionTokens(secret, clock);
@@ -111,6 +121,7 @@ export class TestApp {
                         http,
                         operations,
                     ),
+                    AppearanceModule.register(appearance, operations),
                 ],
                 controllers: [HealthController],
             }).compile();

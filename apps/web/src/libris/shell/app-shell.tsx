@@ -19,6 +19,7 @@ interface NavigationItem {
 const libraryItems: NavigationItem[] = [];
 const administrationItems: NavigationItem[] = [
     { to: '/admin/accounts', label: 'nav.accounts', icon: 'accounts' },
+    { to: '/admin/appearance', label: 'nav.appearance', icon: 'appearance' },
     { to: '/admin/server', label: 'nav.server', icon: 'server' },
 ];
 

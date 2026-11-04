@@ -196,6 +196,20 @@ export const en = {
     'leaf.guest.title': 'Owner or Admin required',
     'leaf.guest.body':
         'Guest accounts cannot use the mobile interface. You can view the library on a computer, in Libris.',
+    'nav.appearance': 'Appearance',
+    'appearance.title': 'Appearance',
+    'appearance.intro': 'How Libris and Leaf look for everyone in this library.',
+    'appearance.colorScheme': 'Colour scheme',
+    'appearance.scheme.springGreen': 'Spring green',
+    'appearance.scheme.mint': 'Mint',
+    'appearance.scheme.emerald': 'Emerald',
+    'appearance.scheme.forest': 'Forest',
+    'appearance.default': 'default',
+    'appearance.sample': 'Add a book',
+    'appearance.hint': 'Applies to every account, in Libris and Leaf, including the sign-in page.',
+    'appearance.save': 'Save colour scheme',
+    'appearance.saved': 'Colour scheme saved. Other open windows use it the next time they load.',
+    'reason.colorSchemeUnknown': 'Choose one of the available colour schemes.',
 } as const;
 
 export type MessageKey = keyof typeof en;
