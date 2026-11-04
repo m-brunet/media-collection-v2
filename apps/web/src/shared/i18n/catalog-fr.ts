@@ -222,8 +222,7 @@ export const fr = {
     'appearance.default': 'par défaut',
     'appearance.sample': 'Ajouter un livre',
     'appearance.hint':
-        'S’applique à tous les comptes, dans Libris et Leaf, y compris sur la page de connexion.',
-    'appearance.save': 'Enregistrer le jeu de couleurs',
+        'S’applique à tous les comptes, dans Libris et Leaf, y compris sur la page de connexion. Le choix est enregistré immédiatement.',
     'appearance.saved':
         'Jeu de couleurs enregistré. Les autres fenêtres ouvertes l’utiliseront à leur prochain chargement.',
     'reason.colorSchemeUnknown': 'Choisissez l’un des jeux de couleurs proposés.',

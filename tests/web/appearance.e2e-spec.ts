@@ -51,9 +51,8 @@ it('applies the scheme chosen by the administrator to every visitor', async () =
     await admin.getByRole('button', { name: 'Sign in' }).click();
     await admin.getByRole('link', { name: 'Appearance' }).click();
     await admin.getByRole('radio', { name: /Mint/ }).check();
-    await capture(admin, 'appearance-page');
-    await admin.getByRole('button', { name: 'Save colour scheme' }).click();
     await admin.getByText('Colour scheme saved.').waitFor();
+    await capture(admin, 'appearance-page');
     const visitor = await browser.page(base);
 
     await visitor.goto('/');

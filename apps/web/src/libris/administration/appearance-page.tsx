@@ -1,11 +1,9 @@
-import type { FormEvent } from 'react';
 import { useState } from 'react';
 import type { ColorSchemeName } from '../../../../../packages/contracts/src/http';
 import { useAppearance } from '../../shared/appearance/appearance-context';
 import { ColorSchemeDocument } from '../../shared/appearance/color-scheme-document.util';
 import type { MessageKey } from '../../shared/i18n/catalog-en';
 import { useI18n } from '../../shared/i18n/i18n-context';
-import { Button } from '../../shared/ui/button';
 import { PageHeader, Panel } from '../../shared/ui/layout';
 import { Notice } from '../../shared/ui/notice';
 import { useAction } from '../../shared/use-action';
@@ -23,17 +21,27 @@ export function AppearancePage() {
     const { colorScheme, saveColorScheme } = useAppearance();
     const [selected, setSelected] = useState<ColorSchemeName>(colorScheme);
     const action = useAction();
-    const submit = (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        void action.run(() => saveColorScheme(selected), 'appearance.saved');
+    // Choosing a scheme saves it immediately; a failed save restores the previous choice.
+    const choose = (name: ColorSchemeName) => {
+        const previous = selected;
+
+        setSelected(name);
+        void action.run(async () => {
+            try {
+                await saveColorScheme(name);
+            } catch (error) {
+                setSelected(previous);
+                throw error;
+            }
+        }, 'appearance.saved');
     };
 
     return (
         <>
             <PageHeader title={t('appearance.title')} intro={t('appearance.intro')} />
             <Panel title={t('appearance.colorScheme')}>
-                <form className="form" onSubmit={submit} aria-label={t('appearance.colorScheme')}>
-                    <fieldset className="scheme-choices">
+                <div className="form">
+                    <fieldset className="scheme-choices" disabled={action.busy}>
                         <legend className="visually-hidden">{t('appearance.colorScheme')}</legend>
                         {ColorSchemeDocument.names.map((name) => (
                             <label key={name} className="scheme-choice" data-color-scheme={name}>
@@ -42,7 +50,7 @@ export function AppearancePage() {
                                     name="colorScheme"
                                     value={name}
                                     checked={selected === name}
-                                    onChange={() => setSelected(name)}
+                                    onChange={() => choose(name)}
                                 />
                                 <span className="scheme-choice__swatches" aria-hidden="true">
                                     <span className="scheme-choice__swatch scheme-choice__swatch--accent" />
@@ -73,17 +81,7 @@ export function AppearancePage() {
                     {action.feedback && (
                         <Notice tone={action.feedback.tone}>{action.feedback.text}</Notice>
                     )}
-                    <div className="actions">
-                        <Button
-                            type="submit"
-                            variant="primary"
-                            busy={action.busy}
-                            disabled={selected === colorScheme}
-                        >
-                            {t('appearance.save')}
-                        </Button>
-                    </div>
-                </form>
+                </div>
             </Panel>
         </>
     );

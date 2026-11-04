@@ -46,42 +46,42 @@ it('applies the installation scheme when the page loads', async () => {
     await waitFor(() => expect(document.documentElement.dataset.colorScheme).toBe('forest'));
 });
 
-it('saves a new scheme for everyone and applies it at once', async () => {
+it('saves a scheme for everyone as soon as it is chosen', async () => {
     const api = administrator().on('PUT /appearance', () => ({
         status: 200,
         body: { colorScheme: 'mint' },
     }));
 
     renderPage();
-    await userEvent.click(await screen.findByRole('radio', { name: /Mint/ }));
 
-    await userEvent.click(screen.getByRole('button', { name: 'Save colour scheme' }));
+    await userEvent.click(await screen.findByRole('radio', { name: /Mint/ }));
 
     expect(await screen.findByRole('status')).toHaveTextContent('Colour scheme saved.');
     expect(document.documentElement.dataset.colorScheme).toBe('mint');
     expect(api.calls).toContainEqual({ route: 'PUT /appearance', body: { colorScheme: 'mint' } });
 });
 
-it('offers nothing to save until another scheme is chosen', async () => {
+it('has no separate save button', async () => {
     administrator();
 
     renderPage();
 
-    expect(await screen.findByRole('button', { name: 'Save colour scheme' })).toBeDisabled();
+    await screen.findByRole('radio', { name: /Mint/ });
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
 });
 
-it('explains a refused change', async () => {
+it('restores the previous scheme and explains a refused change', async () => {
     administrator().on('PUT /appearance', () => ({
         status: 403,
         body: { code: 'forbidden', reason: 'admin-only', message: 'No' },
     }));
 
     renderPage();
-    await userEvent.click(await screen.findByRole('radio', { name: /Emerald/ }));
 
-    await userEvent.click(screen.getByRole('button', { name: 'Save colour scheme' }));
+    await userEvent.click(await screen.findByRole('radio', { name: /Emerald/ }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
         'Only the administrator can do this.',
     );
+    expect(screen.getByRole('radio', { name: /Spring green/ })).toBeChecked();
 });
