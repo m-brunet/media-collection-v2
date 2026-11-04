@@ -733,3 +733,106 @@ describe('target hexagonal adapter boundaries', () => {
         expect(result.stdout + result.stderr).toContain('architecture(boundaries)');
     });
 });
+
+describe('persistence SQL boundary', () => {
+    it('rejects aliased raw SQL imports in runtime adapters', () => {
+        const path =
+            'apps/server/src/notes/infrastructure/adapters/driven/persistence/raw.adapter.ts';
+        const source =
+            'import { sql as query } from "kysely"; export class Raw { value = query`select 1`; }';
+
+        const result = lint(path, source);
+
+        expect(result.status).not.toBe(0);
+        expect(result.stdout + result.stderr).toContain('architecture(persistence-sql)');
+    });
+    it('rejects namespace imports exposing raw SQL', () => {
+        const path =
+            'apps/server/src/notes/infrastructure/adapters/driven/persistence/raw.adapter.ts';
+        const source =
+            'import * as database from "kysely"; export class Raw { value = database.sql`select 1`; }';
+
+        const result = lint(path, source);
+
+        expect(result.status).not.toBe(0);
+        expect(result.stdout + result.stderr).toContain('architecture(persistence-sql)');
+    });
+    it('rejects re-exporting raw SQL helpers', () => {
+        const path =
+            'apps/server/src/notes/infrastructure/adapters/driven/persistence/raw.adapter.ts';
+        const source = 'export { sql as query } from "kysely";';
+
+        const result = lint(path, source);
+
+        expect(result.status).not.toBe(0);
+        expect(result.stdout + result.stderr).toContain('architecture(persistence-sql)');
+    });
+    it('rejects direct SQLite access outside connection setup', () => {
+        const path =
+            'apps/server/src/notes/infrastructure/adapters/driven/persistence/raw.adapter.ts';
+        const source =
+            'import SQLite from "better-sqlite3"; export class Raw { db = new SQLite(":memory:"); }';
+
+        const result = lint(path, source);
+
+        expect(result.status).not.toBe(0);
+        expect(result.stdout + result.stderr).toContain('architecture(persistence-sql)');
+    });
+    it('rejects direct execution of compiled queries', () => {
+        const path =
+            'apps/server/src/notes/infrastructure/adapters/driven/persistence/raw.adapter.ts';
+        const source =
+            'export class Raw { run(db: any, query: any) { return db.executeQuery(query); } }';
+
+        const result = lint(path, source);
+
+        expect(result.status).not.toBe(0);
+        expect(result.stdout + result.stderr).toContain('architecture(persistence-sql)');
+    });
+    it('rejects arbitrary PRAGMAs even in connection setup', () => {
+        const path =
+            'apps/server/src/shared/infrastructure/adapters/driven/persistence/database.adapter.ts';
+        const source = 'export class Database { run(db: any) { db.pragma("table_info(users)"); } }';
+
+        const result = lint(path, source);
+
+        expect(result.status).not.toBe(0);
+        expect(result.stdout + result.stderr).toContain('architecture(persistence-sql)');
+    });
+    it('allows historical migration SQL', () => {
+        const path =
+            'apps/server/src/shared/infrastructure/adapters/driven/persistence/migrations/007-example.ts';
+        const source =
+            'import { sql } from "kysely"; export class ExampleMigration { value = sql`select 1`; }';
+
+        const result = lint(path, source);
+
+        expect(result.status, result.stdout + result.stderr).toBe(0);
+    });
+    it('rejects runtime imports of historical migrations', () => {
+        const migration =
+            'apps/server/src/shared/infrastructure/adapters/driven/persistence/migrations/007-example.ts';
+
+        write(migration, 'export class ExampleMigration {}');
+        const path =
+            'apps/server/src/shared/infrastructure/adapters/driven/persistence/raw.adapter.ts';
+        const source =
+            'import { ExampleMigration } from "./migrations/007-example.js"; export class Raw extends ExampleMigration {}';
+
+        const result = lint(path, source);
+
+        expect(result.status).not.toBe(0);
+        expect(result.stdout + result.stderr).toContain('architecture(persistence-sql)');
+    });
+    it('does not exempt a migrations folder elsewhere', () => {
+        const path =
+            'apps/server/src/notes/infrastructure/adapters/driven/persistence/migrations/007-example.ts';
+        const source =
+            'import { sql } from "kysely"; export class Example { value = sql`select 1`; }';
+
+        const result = lint(path, source);
+
+        expect(result.status).not.toBe(0);
+        expect(result.stdout + result.stderr).toContain('architecture(persistence-sql)');
+    });
+});

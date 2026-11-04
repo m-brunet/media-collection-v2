@@ -65,11 +65,17 @@ export class TestApp {
 
         try {
             const { database, directory } = await this.storage.setup();
+            const ids = new UuidGenerator();
             const users = new KyselyUserRepository(database.connections);
             const passwords = new ScryptPasswordHasher();
-            const tls = new FileTlsStore(database.connections, directory, new PrivateStorage());
-            const http = new KyselyHttpSettingsRepository(database.connections);
-            const appearance = new KyselyAppearanceRepository(database.connections);
+            const tls = new FileTlsStore(
+                database.connections,
+                directory,
+                new PrivateStorage(),
+                ids,
+            );
+            const http = new KyselyHttpSettingsRepository(database.connections, ids);
+            const appearance = new KyselyAppearanceRepository(database.connections, ids);
             const books = {
                 books: new KyselyBookRepository(database.connections),
                 authors: new KyselyAuthorRepository(database.connections),
@@ -95,10 +101,9 @@ export class TestApp {
             const authentication = new AuthenticateSession(accounts, tokens);
             const renewal = new RenewSession(accounts, tokens);
             const sessions = new HttpSessions(secret, HttpApplication.uploadPaths);
-            const ids = new UuidGenerator();
             const operations = new AuditedOperation(
                 database.connections,
-                new KyselyAuditTrail(database.connections),
+                new KyselyAuditTrail(database.connections, ids),
                 clock,
                 ids,
             );

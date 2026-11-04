@@ -1,10 +1,14 @@
+import type { IdGenerator } from '../../../../../shared/application/ports/driven/id-generator.interface.js';
 import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
 import type { AppearanceStore } from '../../../../application/ports/driven/appearance-store.interface.js';
 import { ColorScheme } from '../../../../domain/value-objects/color-scheme.value-object.js';
 
 // Saved with the other application preferences in `server_settings`, under `appearance`.
 export class KyselyAppearanceRepository implements AppearanceStore {
-    constructor(private readonly connections: DatabaseConnections) {}
+    constructor(
+        private readonly connections: DatabaseConnections,
+        private readonly ids: IdGenerator,
+    ) {}
 
     async read(): Promise<ColorScheme> {
         const row = await this.connections.current
@@ -31,7 +35,7 @@ export class KyselyAppearanceRepository implements AppearanceStore {
 
         await this.connections.current
             .insertInto('server_settings')
-            .values({ name: 'appearance', value })
+            .values({ id: this.ids.next(), name: 'appearance', value })
             .onConflict((conflict) => conflict.column('name').doUpdateSet({ value }))
             .execute();
     }

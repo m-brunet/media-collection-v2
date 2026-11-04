@@ -140,11 +140,11 @@ export class BackendRuntime {
             const authentication = new AuthenticateSession(accounts, tokens);
             const renewal = new RenewSession(accounts, tokens);
             const sessions = new HttpSessions(secret, HttpApplication.uploadPaths);
-            const tls = new FileTlsStore(database.connections, options.dataDirectory, storage);
-            const httpSettings = new KyselyHttpSettingsRepository(database.connections);
+            const tls = new FileTlsStore(database.connections, options.dataDirectory, storage, ids);
+            const httpSettings = new KyselyHttpSettingsRepository(database.connections, ids);
             const operations = new AuditedOperation(
                 database.connections,
-                new KyselyAuditTrail(database.connections),
+                new KyselyAuditTrail(database.connections, ids),
                 clock,
                 ids,
             );
@@ -208,7 +208,7 @@ export class BackendRuntime {
                             operations,
                         ),
                         AppearanceModule.register(
-                            new KyselyAppearanceRepository(database.connections),
+                            new KyselyAppearanceRepository(database.connections, ids),
                             operations,
                         ),
                         BooksModule.register({

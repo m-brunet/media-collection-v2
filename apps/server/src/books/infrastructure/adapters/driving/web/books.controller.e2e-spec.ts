@@ -162,6 +162,52 @@ describe('GET /api/books', () => {
 
         expect(response.body.items.map((item) => item.title)).toEqual(['Vipère au poing']);
     });
+    it('searches an underscore literally in author names', async () => {
+        await created({ authors: [{ name: 'Author_One' }] });
+        await created({
+            title: 'Other',
+            isbn: '9780306406157',
+            authors: [{ name: 'Someone Else' }],
+        });
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call<BookListPageDto>('/books?search=_');
+
+        expect(response.body.items.map((item) => item.title)).toEqual(['Piranesi']);
+    });
+    it('searches a backslash literally in titles', async () => {
+        await created({ title: 'A\\B' });
+        await created({ title: 'Other', isbn: '9780306406157' });
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call<BookListPageDto>('/books?search=%5C');
+
+        expect(response.body.items.map((item) => item.title)).toEqual(['A\\B']);
+    });
+    it('sorts ascending publication dates with undated books last', async () => {
+        await created({ title: 'Unknown', publicationYear: null, publicationMonth: null });
+        await created({
+            title: 'Year only',
+            isbn: '9780306406157',
+            publicationYear: 2024,
+            publicationMonth: null,
+        });
+        await created({
+            title: 'September',
+            isbn: '9780140449136',
+            publicationYear: 2024,
+            publicationMonth: 9,
+        });
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call<BookListPageDto>('/books?sort=published&direction=asc');
+
+        expect(response.body.items.map((item) => item.title)).toEqual([
+            'Year only',
+            'September',
+            'Unknown',
+        ]);
+    });
     it('pages the results', async () => {
         await created({ title: 'B' });
         await created({ title: 'A', isbn: '9780306406157' });
