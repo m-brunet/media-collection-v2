@@ -206,8 +206,8 @@ export const en = {
     'appearance.scheme.forest': 'Forest',
     'appearance.default': 'default',
     'appearance.sample': 'Add a book',
-    'appearance.hint': 'Applies to every account, in Libris and Leaf, including the sign-in page.',
-    'appearance.save': 'Save colour scheme',
+    'appearance.hint':
+        'Applies to every account, in Libris and Leaf, including the sign-in page. Choosing a scheme saves it at once.',
     'appearance.saved': 'Colour scheme saved. Other open windows use it the next time they load.',
     'reason.colorSchemeUnknown': 'Choose one of the available colour schemes.',
 } as const;
