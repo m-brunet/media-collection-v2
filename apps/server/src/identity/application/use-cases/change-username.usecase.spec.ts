@@ -9,7 +9,7 @@ import { CurrentPasswordConfirmation } from '../services/current-password-confir
 import { ChangeUsername } from './change-username.usecase.js';
 
 describe('ChangeUsername', () => {
-    it('normalizes a new username while preserving mandatory setup', async () => {
+    it('trims a new username, keeps its letter case and preserves mandatory setup', async () => {
         const users = new MemoryUsers();
         const account = user({ mustChangePassword: true });
 
@@ -23,8 +23,8 @@ describe('ChangeUsername', () => {
 
         const result = await subject.execute(account.actor, ' Renamed ', 'old-password');
 
-        expect(result).toMatchObject({ username: 'renamed', mustChangePassword: true });
-        expect((await users.findById('owner'))!.actor.username).toBe('renamed');
+        expect(result).toMatchObject({ username: 'Renamed', mustChangePassword: true });
+        expect((await users.findById('owner'))!.actor.username).toBe('Renamed');
     });
     it('rejects an incorrect current password', async () => {
         const username = 'renamed';

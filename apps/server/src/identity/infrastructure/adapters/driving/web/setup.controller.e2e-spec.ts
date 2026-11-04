@@ -55,7 +55,7 @@ describe('POST /api/setup', () => {
 
         expect(response.status).toBe(201);
         expect(response.body).toMatchObject({
-            username: 'alex',
+            username: 'Alex',
             role: 'admin',
             mustChangePassword: false,
         });

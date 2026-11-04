@@ -13,12 +13,12 @@ const state = {
     active: true,
 };
 
-it('normalizes usernames at construction', () => {
+it('trims a username and keeps its letter case', () => {
     const input = { ...state };
 
     const user = new User(input);
 
-    expect(user.actor.username).toBe('owner');
+    expect(user.actor.username).toBe('Owner');
     expect(user.actor).not.toHaveProperty('passwordHash');
 });
 it('rejects punctuation in a username', () => {
@@ -45,12 +45,12 @@ it('rejects an overlong username', () => {
 
     expect(operation).toThrow();
 });
-it('renames with normalization', () => {
+it('renames keeping the letter case', () => {
     const user = new User(state);
 
     user.rename(' Renamed ');
 
-    expect(user.actor.username).toBe('renamed');
+    expect(user.actor.username).toBe('Renamed');
 });
 it('replaces the password without mandatory setup', () => {
     const temporary = false;
@@ -82,7 +82,7 @@ it('returns independent snapshot state', () => {
 
     snapshot.username = 'tampered';
 
-    expect(user.snapshot.username).toBe('owner');
+    expect(user.snapshot.username).toBe('Owner');
 });
 it('rejects a short password', () => {
     const password = 'short';
@@ -163,7 +163,7 @@ it('summarises an account without credentials', () => {
 
     expect(result).toEqual({
         id: 'owner',
-        username: 'owner',
+        username: 'Owner',
         role: 'owner',
         mustChangePassword: true,
         active: true,

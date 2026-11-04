@@ -145,6 +145,15 @@ describe('Libris accounts', () => {
         await capture(page, 'libris-user-management');
     });
 
+    it('requires the exact letter case of the username at sign-in', async () => {
+        const page = await browser.page(base);
+
+        await signIn(page, 'ADMIN', 'administrator-new-password');
+
+        await page.getByText('Incorrect username or password.').waitFor();
+        expect(await page.getByRole('heading', { name: 'Sign in' }).isVisible()).toBe(true);
+    });
+
     it('makes a new account replace its temporary password first', async () => {
         const page = await browser.page(base);
 

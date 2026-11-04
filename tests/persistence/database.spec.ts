@@ -271,6 +271,49 @@ describe('SQLite adapters', () => {
         await expect(result).rejects.toMatchObject({ reason: 'color-scheme-unknown' });
     });
 
+    it('keeps the letter case of a username', async () => {
+        const { users } = await open();
+
+        await users.create(user('alice', 'Alice'));
+
+        const result = await users.findByUsername('Alice');
+
+        expect(result?.actor.username).toBe('Alice');
+    });
+
+    it('does not find a username spelled with another letter case', async () => {
+        const { users } = await open();
+
+        await users.create(user('alice', 'Alice'));
+
+        const result = await users.findByUsername('alice');
+
+        expect(result).toBeNull();
+    });
+
+    it('rejects a username differing from another only by letter case', async () => {
+        const { users } = await open();
+
+        await users.create(user('alice', 'Alice'));
+
+        const result = users.create(user('second', 'ALICE'));
+
+        await expect(result).rejects.toMatchObject({ code: 'conflict', reason: 'username-taken' });
+        expect(await users.list()).toHaveLength(1);
+    });
+
+    it('lets an account change only the letter case of its own username', async () => {
+        const { users } = await open();
+        const account = user('alice', 'alice');
+
+        await users.create(account);
+        account.rename('Alice');
+
+        await users.save(account, 0);
+
+        expect((await users.findById('alice'))!.actor.username).toBe('Alice');
+    });
+
     it('allows only one administrator', async () => {
         const { users } = await open();
 

@@ -24,7 +24,7 @@ export class MemoryUsers implements UserRepository {
     }
 
     async create(user: User): Promise<void> {
-        if (await this.findByUsername(user.actor.username)) {
+        if (this.takenByAnother(user)) {
             throw new Failure('conflict', 'Duplicate username');
         }
 
@@ -35,14 +35,22 @@ export class MemoryUsers implements UserRepository {
         this.users.set(user.actor.id, new User(user.snapshot));
     }
 
+    // Same contract as the database: usernames differing only by letter case conflict.
+    private takenByAnother(user: User): boolean {
+        const name = user.actor.username.toLowerCase();
+
+        return [...this.users.values()].some(
+            (other) =>
+                other.actor.id !== user.actor.id && other.actor.username.toLowerCase() === name,
+        );
+    }
+
     async save(user: User, expectedVersion: number): Promise<void> {
         if (this.users.get(user.actor.id)?.snapshot.tokenVersion !== expectedVersion) {
             throw new Failure('conflict', 'Stale account');
         }
 
-        const duplicate = await this.findByUsername(user.actor.username);
-
-        if (duplicate && duplicate.actor.id !== user.actor.id) {
+        if (this.takenByAnother(user)) {
             throw new Failure('conflict', 'Duplicate username');
         }
 
