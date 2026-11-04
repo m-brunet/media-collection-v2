@@ -3,36 +3,59 @@
     <head>
         <meta charset="utf-8" />
         <meta
-            content="default-src 'self'; script-src 'self'; style-src 'self'"
+            content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'"
             http-equiv="Content-Security-Policy"
         />
         <meta content="width=device-width, initial-scale=1" name="viewport" />
-        <title>Administrator recovery</title>
+        <title>Media Collection · Administrator recovery</title>
         <link href="recovery.css" rel="stylesheet" />
     </head>
     <body>
-        <h1>Reset administrator password</h1>
-        <p>This local tool uses existing application data. It starts no web server.</p>
-        <form id="recovery">
-            <label
-                >New temporary password<input
+        <header class="brand">
+            <svg
+                aria-hidden="true"
+                class="brand__mark"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.75"
+                viewBox="0 0 24 24"
+                width="24"
+            >
+                <path d="m16 6 4 14" />
+                <path d="M12 6v14" />
+                <path d="M8 8v12" />
+                <path d="M4 4v16" />
+            </svg>
+            <div>
+                <p class="brand__name">Media Collection</p>
+                <p class="eyebrow">Local maintenance</p>
+            </div>
+        </header>
+        <main>
+            <h1>Reset administrator password</h1>
+            <p class="muted">
+                This local tool uses existing application data. It starts no web server.
+            </p>
+            <form id="recovery">
+                <label for="password">New temporary password</label>
+                <input
                     autocomplete="new-password"
                     id="password"
                     maxlength="128"
                     minlength="8"
                     required
                     type="password"
-            /></label>
-            <label
-                >Repeat password<input
-                    autocomplete="new-password"
-                    id="confirmation"
-                    required
-                    type="password"
-            /></label>
-            <button type="submit">Reset password</button>
-        </form>
-        <p id="result" role="status"></p>
+                />
+                <p class="hint">Use 8 to 128 characters.</p>
+                <label for="confirmation">Repeat password</label>
+                <input autocomplete="new-password" id="confirmation" required type="password" />
+                <button type="submit">Reset password</button>
+            </form>
+            <p id="result" role="status"></p>
+        </main>
         <script src="recovery.js"></script>
     </body>
 </html>
