@@ -12,7 +12,13 @@ describe('CollectionUpkeep', () => {
 
         const outcome = await current.upkeep.tidy('collection-1', now);
 
-        expect(outcome).toBe('removed');
+        expect(outcome).toEqual({
+            category: 'collection.removed',
+            subjectType: 'collection',
+            subjectId: 'collection-1',
+            before: { name: 'Batman', includesVolumeZero: false, finished: false },
+            after: null,
+        });
         expect(current.collections.collections.size).toBe(0);
     });
 
@@ -26,7 +32,11 @@ describe('CollectionUpkeep', () => {
 
         const outcome = await current.upkeep.tidy('collection-1', now);
 
-        expect(outcome).toBe('reopened');
+        expect(outcome).toMatchObject({
+            category: 'collection.reopened',
+            before: { finished: true },
+            after: { finished: false },
+        });
         expect(current.collections.collections.get('collection-1')?.snapshot.finished).toBe(false);
     });
 
@@ -40,7 +50,7 @@ describe('CollectionUpkeep', () => {
 
         const outcome = await current.upkeep.tidy('collection-1', now);
 
-        expect(outcome).toBe('unchanged');
+        expect(outcome).toBeNull();
         expect(current.collections.collections.get('collection-1')?.snapshot.finished).toBe(true);
     });
 });

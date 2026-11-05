@@ -63,4 +63,31 @@ describe('DeleteBook', () => {
             before: { collection: { name: 'Batman', volumeFrom: 1, volumeTo: 1 } },
         });
     });
+    it('records the collection change in the same operation', async () => {
+        const current = library();
+        const book = await saved(current, {
+            collection: { collection: { name: 'Batman' }, volumeFrom: 1, volumeTo: 1 },
+        });
+
+        current.collections.changes = [
+            {
+                category: 'collection.removed',
+                subjectType: 'collection',
+                subjectId: 'collection-Batman',
+                before: { name: 'Batman', includesVolumeZero: false, finished: false },
+                after: null,
+            },
+        ];
+
+        await subject(current).execute(owner, book.id);
+
+        expect(current.trail.entries.slice(-2)).toEqual([
+            expect.objectContaining({ operationId: 'operation-2', category: 'book.deleted' }),
+            expect.objectContaining({
+                operationId: 'operation-2',
+                category: 'collection.removed',
+                subjectId: 'collection-Batman',
+            }),
+        ]);
+    });
 });

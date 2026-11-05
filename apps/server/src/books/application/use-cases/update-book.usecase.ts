@@ -55,7 +55,7 @@ export class UpdateBook implements UpdateBookUseCase {
                 book.edit(details, this.clock.now().toISOString());
                 await this.books.save(book);
                 await this.authors.removeUnlinked(previousAuthors);
-                const collection = await this.collections.assign(
+                const membership = await this.collections.assign(
                     { id: bookId, ownership: details.ownership },
                     input.collection,
                     replacing,
@@ -70,20 +70,24 @@ export class UpdateBook implements UpdateBookUseCase {
                     result: {
                         view: await this.viewer.view(book, actor),
                         replacedCovers: replaced.flatMap(
-                            (planned) => planned.snapshot.coverFile ?? [],
+                            (planned) => planned.book.snapshot.coverFile ?? [],
                         ),
                     },
                     before,
                     after: {
-                        ...BookSnapshot.of(book, collection),
+                        ...BookSnapshot.of(book, membership.collection),
                         ...(replaced.length > 0
                             ? {
                                   replacedPlanned: replaced.map((planned) =>
-                                      BookSnapshot.of(planned),
+                                      BookSnapshot.of(planned.book),
                                   ),
                               }
                             : {}),
                     },
+                    related: [
+                        ...membership.changes,
+                        ...replaced.flatMap((planned) => planned.changes),
+                    ],
                 };
             },
         );

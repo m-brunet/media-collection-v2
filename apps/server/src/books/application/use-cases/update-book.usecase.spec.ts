@@ -147,4 +147,29 @@ describe('UpdateBook', () => {
         expect(current.books.books.has(planned.id)).toBe(false);
         expect(current.collections.replaced.at(-1)).toEqual([planned.id]);
     });
+    it('records the collection changes in the same operation', async () => {
+        const current = library();
+        const book = await saved(current);
+
+        current.collections.changes = [
+            {
+                category: 'collection.created',
+                subjectType: 'collection',
+                subjectId: 'collection-Batman',
+                before: null,
+                after: { name: 'Batman', includesVolumeZero: false, finished: false },
+            },
+        ];
+
+        await subject(current).execute(
+            owner,
+            book.id,
+            input({ collection: { collection: { name: 'Batman' }, volumeFrom: 1, volumeTo: 1 } }),
+        );
+
+        expect(current.trail.entries.slice(-2)).toEqual([
+            expect.objectContaining({ operationId: 'operation-2', category: 'book.updated' }),
+            expect.objectContaining({ operationId: 'operation-2', category: 'collection.created' }),
+        ]);
+    });
 });

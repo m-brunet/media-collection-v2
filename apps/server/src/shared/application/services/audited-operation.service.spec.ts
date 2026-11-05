@@ -47,6 +47,39 @@ it('records a Successful entry with the before and after values', async () => {
     ]);
 });
 
+it('records the related changes under the same operation and actor', async () => {
+    const trail = new MemoryAuditTrail();
+    const subject = auditedOperation(trail);
+
+    await subject.run(context(), async () => ({
+        result: undefined,
+        before: null,
+        after: { username: 'sam' },
+        related: [
+            {
+                category: 'group.created',
+                subjectType: 'group',
+                subjectId: 'readers',
+                before: null,
+                after: { name: 'Readers' },
+            },
+        ],
+    }));
+
+    expect(trail.entries[1]).toEqual({
+        operationId: 'operation-1',
+        category: 'group.created',
+        outcome: 'successful',
+        actorId: 'admin',
+        occurredAt: '2026-01-01T00:00:00.000Z',
+        subjectType: 'group',
+        subjectId: 'readers',
+        before: null,
+        after: { name: 'Readers' },
+        failure: null,
+    });
+});
+
 it('rethrows a failed change', async () => {
     const subject = auditedOperation(new MemoryAuditTrail());
     const failure = new Failure('conflict', 'Taken', 'username-taken');

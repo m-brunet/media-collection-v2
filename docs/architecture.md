@@ -111,6 +111,11 @@ empty collections — in the same transaction) and `BookCollectionReader` for th
 read a book's membership. `collections` declares `CollectionBookSearch`, implemented by the books catalog,
 so collection listings reuse the book search. The application root wires both (`CollectionsModule.membership`).
 
+An operation that changes another feature's subject as a consequence records that change too: the membership port
+returns the collection changes it caused (`collection.created`, `collection.updated` for volume 0,
+`collection.reopened`, `collection.removed`), and the book use case passes them to `AuditedOperation` as related
+changes. They are recorded with the book operation's ID and actor, so Activity can group them with the book change.
+
 Shared code is for actual shared capabilities: actor authorization, failure types, clocks, IDs, authentication and
 session-renewal contracts, database connection management and HTTP security. Feature behavior stays with its feature. Do
 not add generic service containers or wrappers without a current purpose.

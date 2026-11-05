@@ -13,7 +13,12 @@ describe('BookCollectionMembership', () => {
             [],
         );
 
-        expect(result).toEqual({ id: 'collection-1', name: 'Batman', volumeFrom: 1, volumeTo: 1 });
+        expect(result.collection).toEqual({
+            id: 'collection-1',
+            name: 'Batman',
+            volumeFrom: 1,
+            volumeTo: 1,
+        });
         expect(current.collections.collections.get('collection-1')?.snapshot).toMatchObject({
             name: 'Batman',
             includesVolumeZero: false,
@@ -33,7 +38,7 @@ describe('BookCollectionMembership', () => {
             [],
         );
 
-        expect(result).toMatchObject({ id: 'collection-1', name: 'Astérix' });
+        expect(result.collection).toMatchObject({ id: 'collection-1', name: 'Astérix' });
         expect(current.collections.collections.size).toBe(1);
     });
 
@@ -67,7 +72,7 @@ describe('BookCollectionMembership', () => {
             [],
         );
 
-        expect(result).toMatchObject({ name: 'Batmen' });
+        expect(result.collection).toMatchObject({ name: 'Batmen' });
         expect(current.collections.collections.size).toBe(2);
     });
 
@@ -215,7 +220,7 @@ describe('BookCollectionMembership', () => {
             ['three', 'one', 'two'],
         );
 
-        expect(result).toMatchObject({ volumeFrom: 1, volumeTo: 3 });
+        expect(result.collection).toMatchObject({ volumeFrom: 1, volumeTo: 3 });
         expect(current.members.memberships.get('omnibus')).toMatchObject({
             collectionId: 'collection-1',
         });
@@ -291,7 +296,7 @@ describe('BookCollectionMembership', () => {
 
         const result = await current.membership.assign({ id: 'one', ownership: 'owned' }, null, []);
 
-        expect(result).toBeNull();
+        expect(result.collection).toBeNull();
         expect(current.collections.collections.size).toBe(0);
         expect(current.members.books.has('one')).toBe(true);
     });
@@ -336,5 +341,97 @@ describe('BookCollectionMembership', () => {
         const result = await current.membership.of('standalone');
 
         expect(result).toBeNull();
+    });
+
+    it('reports the collection it created', async () => {
+        const current = shelf();
+
+        const result = await member(current, 'one', 'owned', 'Batman', 1);
+
+        expect(result.changes).toEqual([
+            {
+                category: 'collection.created',
+                subjectType: 'collection',
+                subjectId: 'collection-1',
+                before: null,
+                after: { name: 'Batman', includesVolumeZero: false, finished: false },
+            },
+        ]);
+    });
+
+    it('reports nothing when a book joins without changing the collection', async () => {
+        const current = shelf();
+
+        await member(current, 'one', 'owned', 'Batman', 1);
+
+        const result = await member(current, 'two', 'owned', 'Batman', 2);
+
+        expect(result.changes).toEqual([]);
+    });
+
+    it('reports volume 0 being included in an existing collection', async () => {
+        const current = shelf();
+
+        await member(current, 'one', 'owned', 'Batman', 1);
+
+        const result = await member(current, 'zero', 'owned', 'Batman', 0);
+
+        expect(result.changes).toEqual([
+            expect.objectContaining({
+                category: 'collection.updated',
+                before: expect.objectContaining({ includesVolumeZero: false }),
+                after: expect.objectContaining({ includesVolumeZero: true }),
+            }),
+        ]);
+    });
+
+    it('reports a Finished collection reopened by a missing volume', async () => {
+        const current = shelf();
+
+        await member(current, 'one', 'owned', 'Batman', 1);
+        await markFinished(current, 'collection-1');
+
+        const result = await member(current, 'three', 'owned', 'Batman', 3);
+
+        expect(result.changes).toEqual([
+            expect.objectContaining({ category: 'collection.reopened', subjectId: 'collection-1' }),
+        ]);
+    });
+
+    it('reports the collection a book moving away emptied', async () => {
+        const current = shelf();
+
+        await member(current, 'one', 'owned', 'Batman', 1);
+
+        const result = await member(current, 'one', 'owned', 'Superman', 1);
+
+        expect(result.changes.map((change) => change.category)).toEqual([
+            'collection.created',
+            'collection.removed',
+        ]);
+    });
+
+    it('reports the collection removed when its final book leaves', async () => {
+        const current = shelf();
+
+        await member(current, 'one', 'owned', 'Batman', 1);
+
+        const result = await current.membership.leave('one');
+
+        expect(result).toEqual([
+            expect.objectContaining({ category: 'collection.removed', subjectId: 'collection-1' }),
+        ]);
+    });
+
+    it('reports the collection removed when its final book is unlinked', async () => {
+        const current = shelf();
+
+        await member(current, 'one', 'owned', 'Batman', 1);
+
+        const result = await current.membership.assign({ id: 'one', ownership: 'owned' }, null, []);
+
+        expect(result.changes).toEqual([
+            expect.objectContaining({ category: 'collection.removed', subjectId: 'collection-1' }),
+        ]);
     });
 });
