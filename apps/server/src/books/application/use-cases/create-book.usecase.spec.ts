@@ -9,6 +9,7 @@ function subject(current = library()) {
         current.identity,
         current.collections,
         current.removal,
+        current.organiser,
         current.readings,
         current.covers,
         current.viewer,
@@ -245,5 +246,39 @@ describe('CreateBook', () => {
             expect.objectContaining({ operationId: 'operation-1', category: 'book.created' }),
             expect.objectContaining({ operationId: 'operation-1', category: 'collection.created' }),
         ]);
+    });
+    it('keeps the book on the chosen shelf with its tags', async () => {
+        const current = library();
+
+        const result = await subject(current).execute(
+            owner,
+            input({ shelfId: 'shelf-3', tags: [{ name: 'Fantasy' }] }),
+            false,
+        );
+
+        expect(result.location?.shelfName).toBe('Shelf 3');
+        expect(result.tags).toEqual([{ id: 'tag-Fantasy', name: 'Fantasy' }]);
+        expect(current.trail.entries[0]).toMatchObject({
+            category: 'book.created',
+            after: { location: { shelfId: 'shelf-3' }, tags: [{ name: 'Fantasy' }] },
+        });
+    });
+    it('records the tags it created in the same operation', async () => {
+        const current = library();
+
+        await subject(current).execute(owner, input({ tags: [{ name: 'Fantasy' }] }), false);
+
+        expect(current.trail.entries).toEqual([
+            expect.objectContaining({ operationId: 'operation-1', category: 'book.created' }),
+            expect.objectContaining({ operationId: 'operation-1', category: 'tag.created' }),
+        ]);
+    });
+    it('saves nothing when the shelf does not exist', async () => {
+        const current = library();
+
+        const result = subject(current).execute(owner, input({ shelfId: 'unknown' }), false);
+
+        await expect(result).rejects.toMatchObject({ reason: 'shelf-missing' });
+        expect(current.trail.entries).toEqual([expect.objectContaining({ outcome: 'failed' })]);
     });
 });

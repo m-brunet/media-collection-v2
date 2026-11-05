@@ -61,4 +61,18 @@ describe('BookViewer', () => {
             volumeTo: 3,
         });
     });
+    it('shows where the book is kept and its tags', async () => {
+        const current = library();
+        const book = await saved(current, { shelfId: 'shelf-3', tags: [{ name: 'Fantasy' }] });
+
+        const result = await current.viewer.view(await current.loader.load(book.id), guest);
+
+        expect(result.location).toEqual({
+            bookcaseId: 'oak',
+            bookcaseName: 'Oak',
+            shelfId: 'shelf-3',
+            shelfName: 'Shelf 3',
+        });
+        expect(result.tags).toEqual([{ id: 'tag-Fantasy', name: 'Fantasy' }]);
+    });
 });

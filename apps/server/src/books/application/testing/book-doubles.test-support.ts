@@ -15,10 +15,23 @@ import type {
 import type { CoverStorage } from '../ports/driven/cover-storage.interface.js';
 import type { PersonalNoteStore } from '../ports/driven/personal-note-store.interface.js';
 import type { ReadingStatusStore } from '../ports/driven/reading-status-store.interface.js';
+import type {
+    BookLocation,
+    BookLocationReader,
+} from '../ports/driven/book-location-reader.interface.js';
+import type { BookTag, BookTagReader } from '../ports/driven/book-tag-reader.interface.js';
+import type { ShelfAssignment } from '../ports/driven/shelf-assignment.interface.js';
+import type {
+    TagAssignment,
+    TagChoice,
+    TagOutcome,
+} from '../ports/driven/tag-assignment.interface.js';
 import { AuthorResolver } from '../services/author-resolver.service.js';
 import { BookDetailsBuilder } from '../services/book-details-builder.service.js';
 import { BookIdentityCheck } from '../services/book-identity-check.service.js';
 import { BookLoader } from '../services/book-loader.service.js';
+import { BookOrganisationReader } from '../services/book-organisation-reader.service.js';
+import { BookOrganiser } from '../services/book-organiser.service.js';
 import { BookRemoval } from '../services/book-removal.service.js';
 import { BookViewer } from '../services/book-viewer.service.js';
 import { Author } from '../../domain/entities/author.entity.js';
@@ -30,7 +43,9 @@ import {
 } from '../../../shared/application/testing/audit-doubles.test-support.js';
 import type { RelatedChange } from '../../../shared/application/ports/driven/audit-entry.interface.js';
 import type { Actor } from '../../../shared/domain/actor.helper.js';
+import { BookFilter } from '../../../shared/application/book-filter.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
+import { NameKey } from '../../../shared/domain/name-key.helper.js';
 import { CreateBook } from '../use-cases/create-book.usecase.js';
 
 export class MemoryBooks implements BookRepository {
@@ -184,7 +199,10 @@ export class MemoryCatalog implements BookCatalog {
         private readonly authors: MemoryAuthors,
     ) {}
 
+    readonly queries: BookListQuery[] = [];
+
     async search(query: BookListQuery): Promise<BookListPage> {
+        this.queries.push(query);
         const items = [...this.books.books.values()].map((book) => ({
             id: book.id,
             title: book.details.title,
@@ -204,6 +222,111 @@ export class MemoryCatalog implements BookCatalog {
         const ids = this.books.books.get(bookId)?.details.authorIds ?? [];
 
         return ids.map((id) => ({ id, name: this.authors.authors.get(id)?.snapshot.name ?? '' }));
+    }
+}
+
+// Places books on a few known shelves, without the location rules the locations feature tests.
+export class MemoryShelving implements ShelfAssignment, BookLocationReader {
+    readonly known = new Map<string, BookLocation>([
+        [
+            'shelf-3',
+            { bookcaseId: 'oak', bookcaseName: 'Oak', shelfId: 'shelf-3', shelfName: 'Shelf 3' },
+        ],
+        ['top', { bookcaseId: 'study', bookcaseName: 'Study', shelfId: 'top', shelfName: 'Top' }],
+    ]);
+    readonly placed = new Map<string, string>();
+
+    async assign(bookId: string, shelfId: string | null): Promise<BookLocation | null> {
+        if (shelfId === null) {
+            this.placed.delete(bookId);
+
+            return null;
+        }
+
+        const location = this.known.get(shelfId);
+
+        if (!location) {
+            throw new Failure('not_found', 'Unknown shelf', 'shelf-missing');
+        }
+
+        this.placed.set(bookId, shelfId);
+
+        return location;
+    }
+
+    async of(bookId: string): Promise<BookLocation | null> {
+        const shelfId = this.placed.get(bookId);
+
+        return shelfId ? this.known.get(shelfId)! : null;
+    }
+}
+
+// Keeps the tags of books with the contract of the tags feature: known tags by id, equivalent
+// names reused, new names created as `tag-<name>`, no duplicates, name order. Unknown ids are
+// refused like in production.
+export class MemoryTagging implements TagAssignment, BookTagReader {
+    readonly known = new Map<string, string>([['history', 'History']]);
+    readonly tags = new Map<string, BookTag[]>();
+
+    // Like the tags feature: equivalent names reuse a tag, new names create one and report it.
+    async assign(bookId: string, choices: readonly TagChoice[]): Promise<TagOutcome> {
+        const chosen = new Map<string, BookTag>();
+        const changes: TagOutcome['changes'] = [];
+
+        for (const choice of choices) {
+            const tag = this.resolve(choice, changes);
+
+            chosen.set(tag.id, tag);
+        }
+
+        const tags = [...chosen.values()].sort((a, b) => a.name.localeCompare(b.name));
+
+        this.tags.set(bookId, tags);
+
+        return { tags, changes };
+    }
+
+    async of(bookId: string): Promise<BookTag[]> {
+        return this.tags.get(bookId) ?? [];
+    }
+
+    private resolve(choice: TagChoice, changes: TagOutcome['changes']): BookTag {
+        if ('id' in choice) {
+            const name = this.known.get(choice.id);
+
+            if (name === undefined) {
+                throw new Failure('not_found', 'Unknown tag', 'tag-missing');
+            }
+
+            return { id: choice.id, name };
+        }
+
+        const name = choice.name.trim();
+
+        Failure.ensure(
+            name.length >= 1 && name.length <= 100,
+            'Enter a tag name of up to 100 characters.',
+            'tag-name-invalid',
+        );
+        const key = NameKey.of(name);
+        const existing = [...this.known].find(([, known]) => NameKey.of(known) === key);
+
+        if (existing) {
+            return { id: existing[0], name: existing[1] };
+        }
+
+        const tag = { id: 'tag-' + name, name };
+
+        this.known.set(tag.id, tag.name);
+        changes.push({
+            category: 'tag.created',
+            subjectType: 'tag',
+            subjectId: tag.id,
+            before: null,
+            after: { name },
+        });
+
+        return tag;
     }
 }
 
@@ -274,6 +397,10 @@ export function library() {
     const trail = new MemoryAuditTrail();
     const catalog = new MemoryCatalog(books, authors);
     const collections = new MemoryMembership();
+    const shelving = new MemoryShelving();
+    const tagging = new MemoryTagging();
+    const organisation = new BookOrganisationReader(shelving, tagging);
+    const organiser = new BookOrganiser(shelving, tagging, organisation);
     const loader = new BookLoader(books);
     let counter = 0;
     const ids = { next: () => 'id-' + ++counter };
@@ -288,6 +415,10 @@ export function library() {
         trail,
         catalog,
         collections,
+        shelving,
+        tagging,
+        organisation,
+        organiser,
         ids,
         clock,
         operations: auditedOperation(trail),
@@ -295,7 +426,7 @@ export function library() {
         identity: new BookIdentityCheck(books, authors),
         loader,
         removal: new BookRemoval(books, authors, collections, loader),
-        viewer: new BookViewer(catalog, readings, notes, collections),
+        viewer: new BookViewer(catalog, readings, notes, collections, organisation),
     };
 }
 
@@ -314,9 +445,14 @@ export function input(overrides: Partial<BookInput> = {}): BookInput {
         pageCount: null,
         price: null,
         collection: null,
+        shelfId: null,
+        tags: [],
         ...overrides,
     };
 }
+
+// A filter that keeps every book.
+export const anyBook = BookFilter.of();
 
 function actor(role: Actor['role'], id: string): Actor {
     return { id, username: id, role, mustChangePassword: false, language: null };
@@ -339,6 +475,7 @@ export async function saved(
         current.identity,
         current.collections,
         current.removal,
+        current.organiser,
         current.readings,
         current.covers,
         current.viewer,

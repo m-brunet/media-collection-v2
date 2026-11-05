@@ -13,6 +13,8 @@ import { EmptyState, LoadingState } from '../../shared/ui/states';
 import { BookCover } from './book-cover';
 import { CollectionFormat } from '../collections/collection-format.util';
 import { BookFormat } from './book-format.util';
+import { AppliedFilters, useListingFilter } from '../filters/applied-filters';
+import { BookFilter } from '../filters/book-filter.util';
 
 const pageSize = 48;
 
@@ -78,12 +80,16 @@ export function MyBooksPage() {
     const [failure, setFailure] = useState<{ query: string; text: string } | null>(null);
     const editor = account?.role !== 'guest';
     const deleted = (location.state as { deleted?: string } | null)?.deleted;
-    const query = new URLSearchParams({
-        search,
-        sort: sort.sort,
-        direction: sort.direction,
-        limit: String(pageSize),
-    }).toString();
+    const filters = useListingFilter('books');
+    const filtered = BookFilter.active(filters.filter);
+    const [libraryTotal, setLibraryTotal] = useState<number | null>(null);
+    const query =
+        new URLSearchParams({
+            search,
+            sort: sort.sort,
+            direction: sort.direction,
+            limit: String(pageSize),
+        }).toString() + (filtered ? '&' + filters.query : '');
     const fetchPage = useCallback(
         (offset: number) => api.request<BookListPageDto>('/books?' + query + '&offset=' + offset),
         [query],
@@ -115,6 +121,20 @@ export function MyBooksPage() {
 
         return () => clearTimeout(timer);
     }, [typed, search, update]);
+
+    // The whole library's size, for "6 of 842 books" while searching or filtering.
+    useEffect(() => {
+        let current = true;
+
+        api.request<BookListPageDto>('/books?limit=1').then(
+            (page) => current && setLibraryTotal(page.total),
+            () => undefined,
+        );
+
+        return () => {
+            current = false;
+        };
+    }, []);
 
     useEffect(() => {
         let current = true;
@@ -149,14 +169,21 @@ export function MyBooksPage() {
     };
     const current = listing?.query === query ? listing : null;
     const error = failure?.query === query ? failure.text : null;
-    const libraryEmpty = current && current.total === 0 && !search;
+    const narrowed = Boolean(search) || filtered;
+    const libraryEmpty = current && current.total === 0 && !narrowed;
+    const clearAll = () => {
+        setTyped('');
+        setParameters(BookFilter.write(BookFilter.empty(), new URLSearchParams()), {
+            replace: true,
+        });
+    };
 
     return (
         <>
             <PageHeader
                 title={t('books.title')}
                 intro={
-                    current && !search
+                    current && !narrowed
                         ? current.total === 1
                             ? t('books.countOne')
                             : t('books.countMany', { count: current.total })
@@ -190,6 +217,9 @@ export function MyBooksPage() {
                                 onChange={(event) => setTyped(event.target.value)}
                             />
                         </div>
+                        <Button icon="filter" onClick={filters.open}>
+                            {t('filters.open')}
+                        </Button>
                         <label htmlFor="book-sort" className="visually-hidden">
                             {t('books.sortLabel')}
                         </label>
@@ -216,6 +246,19 @@ export function MyBooksPage() {
                         </select>
                     </div>
                 )}
+                {!libraryEmpty && (filtered || (current && search)) && (
+                    <div className="applied-row">
+                        <AppliedFilters filter={filters.filter} onChange={filters.change} />
+                        {current && libraryTotal !== null && (
+                            <p className="muted applied-row__count" role="status">
+                                {t('books.matching', {
+                                    count: current.total,
+                                    total: libraryTotal,
+                                })}
+                            </p>
+                        )}
+                    </div>
+                )}
                 {error && <Notice tone="error">{error}</Notice>}
                 {!current && !error && <LoadingState label={t('books.loading')} />}
                 {libraryEmpty && (
@@ -231,7 +274,23 @@ export function MyBooksPage() {
                         }
                     />
                 )}
-                {current && current.total === 0 && search && (
+                {current && current.total === 0 && filtered && (
+                    <EmptyState
+                        icon="search"
+                        title={t('books.noMatching')}
+                        body={
+                            search
+                                ? t('books.noMatchingSearch', { search })
+                                : t('books.noMatchingFilters')
+                        }
+                        action={
+                            <Button variant="primary" onClick={clearAll}>
+                                {t('filters.clear')}
+                            </Button>
+                        }
+                    />
+                )}
+                {current && current.total === 0 && search && !filtered && (
                     <EmptyState
                         icon="search"
                         title={t('books.noResults', { search })}
@@ -250,14 +309,6 @@ export function MyBooksPage() {
                 )}
                 {current && current.items.length > 0 && (
                     <>
-                        {search && (
-                            <p className="muted" role="status">
-                                {t('books.showing', {
-                                    shown: current.items.length,
-                                    total: current.total,
-                                })}
-                            </p>
-                        )}
                         <ul className="book-grid">
                             {current.items.map((book) => (
                                 <BookCard key={book.id} book={book} />

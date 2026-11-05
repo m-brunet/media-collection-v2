@@ -182,7 +182,7 @@ describe('Reading the library', () => {
 
         await page.getByRole('searchbox', { name: 'Search books' }).fill('herve');
 
-        await page.getByText('Showing 1 of 1').waitFor();
+        await page.getByText('1 of 2 books').waitFor();
         expect(await page.getByRole('link', { name: /Vipère au poing/ }).isVisible()).toBe(true);
         expect(await page.getByRole('link', { name: /Dune/ }).count()).toBe(0);
         await page.getByRole('searchbox', { name: 'Search books' }).fill('');

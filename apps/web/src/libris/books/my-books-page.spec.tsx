@@ -14,8 +14,26 @@ afterEach(() => {
     vi.restoreAllMocks();
 });
 
-function show() {
-    return renderRoute('/books', { '/books': <MyBooksPage /> });
+function show(path = '/books') {
+    return renderRoute(path, {
+        '/books': <MyBooksPage />,
+        '/books/filters': <p>Filter page</p>,
+    });
+}
+
+// Filtered requests answer `filtered`; the unfiltered library size request answers `total`.
+function filteredApi(
+    filtered: { total: number; items: ReturnType<typeof bookItem>[] },
+    total: number,
+) {
+    return new FakeApi()
+        .signedIn(account())
+        .on('GET /tags', () => ({
+            status: 200,
+            body: [{ id: 'fantasy', name: 'Fantasy', bookCount: 6 }],
+        }))
+        .on('GET /books?limit=1', () => ({ status: 200, body: { total, items: [] } }))
+        .on('GET /books', () => ({ status: 200, body: filtered }));
 }
 
 it('shows each book with its cover fallback, authors and statuses', async () => {
@@ -155,4 +173,85 @@ it('shows the collection and volume of a book', async () => {
     expect(await screen.findByRole('link', { name: /Piranesi/ })).toHaveTextContent(
         'Batman · Volume 12',
     );
+});
+
+it('shows the applied filters as removable chips with the matching count', async () => {
+    filteredApi({ total: 6, items: [bookItem()] }, 842);
+
+    show('/books?ownership=owned&tag=fantasy');
+
+    expect(
+        await screen.findByRole('button', { name: 'Remove the filter Owned' }),
+    ).toBeInTheDocument();
+    expect(
+        await screen.findByRole('button', { name: 'Remove the filter Include: Fantasy' }),
+    ).toBeInTheDocument();
+    expect(await screen.findByText('6 of 842 books')).toBeInTheDocument();
+});
+
+it('names the chosen author and collection of a bookmarked filter', async () => {
+    filteredApi({ total: 1, items: [bookItem()] }, 842)
+        .on('GET /authors/by-id', () => ({
+            status: 200,
+            body: [{ id: 'clarke', name: 'Susanna Clarke' }],
+        }))
+        .on('GET /collections/batman', () => ({
+            status: 200,
+            body: { id: 'batman', name: 'Batman' },
+        }));
+
+    show('/books?author=clarke&collection=batman');
+
+    expect(
+        await screen.findByRole('button', { name: 'Remove the filter Susanna Clarke' }),
+    ).toBeInTheDocument();
+    expect(
+        await screen.findByRole('button', { name: 'Remove the filter Batman' }),
+    ).toBeInTheDocument();
+});
+
+it('asks the server for the filtered books', async () => {
+    const api = filteredApi({ total: 6, items: [bookItem()] }, 842);
+
+    show('/books?ownership=owned&location=none&notTag=fantasy');
+
+    await screen.findByText('6 of 842 books');
+    expect(api.calls.map((call) => call.route)).toContain(
+        'GET /books?search=&sort=title&direction=asc&limit=48&location=none&ownership=owned&notTag=fantasy&offset=0',
+    );
+});
+
+it('removes one filter from its chip', async () => {
+    filteredApi({ total: 6, items: [bookItem()] }, 842);
+    const router = show('/books?ownership=owned&tag=fantasy');
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Remove the filter Owned' }));
+
+    expect(router.state.location.search).toBe('?tag=fantasy');
+});
+
+it('opens the advanced filters with the current search', async () => {
+    filteredApi({ total: 1, items: [bookItem()] }, 1);
+    const router = show('/books?search=tolk');
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Advanced filters' }));
+
+    expect(router.state.location.pathname).toBe('/books/filters');
+    expect(router.state.location.search).toBe('?search=tolk');
+});
+
+it('offers to clear the filters when nothing matches them', async () => {
+    filteredApi({ total: 0, items: [] }, 842);
+    const router = show('/books?search=Tolkien&ownership=owned');
+
+    await screen.findByText('No matching books');
+
+    await userEvent.click(screen.getAllByRole('button', { name: 'Clear filters' }).at(-1)!);
+
+    expect(
+        screen.queryByText(
+            'No book matches “Tolkien” with the current filters. Try another term or clear your filters.',
+        ),
+    ).not.toBeInTheDocument();
+    expect(router.state.location.search).toBe('');
 });

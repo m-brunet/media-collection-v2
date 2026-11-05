@@ -20,6 +20,7 @@ import type { ListCollectionsUseCase } from '../../../../application/ports/drivi
 import type { ReopenCollectionUseCase } from '../../../../application/ports/driving/reopen-collection-use-case.interface.js';
 import type { UpdateCollectionUseCase } from '../../../../application/ports/driving/update-collection-use-case.interface.js';
 import type { AuthenticatedRequest } from '../../../../../shared/infrastructure/adapters/driving/web/api-guard.js';
+import { BookFilterQueryMapper } from '../../../../../shared/infrastructure/adapters/driving/web/book-filter-query.mapper.js';
 import type {
     CollectionDetailsDto,
     CollectionListPageDto,
@@ -48,8 +49,17 @@ export class CollectionsController {
     @Get()
     list(
         @Query({ schema: collectionListSchema }) query: z.infer<typeof collectionListSchema>,
+        @Req() request: AuthenticatedRequest,
     ): Promise<CollectionListPageDto> {
-        return this.listCollections.execute(query);
+        const { search, direction, offset, limit } = query;
+
+        return this.listCollections.execute(request.actor, {
+            search,
+            direction,
+            offset,
+            limit,
+            filter: BookFilterQueryMapper.toFilter(query),
+        });
     }
 
     // Declared before `:id` so that `names` is not read as an identifier.

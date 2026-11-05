@@ -1,4 +1,7 @@
 import type { BookCollection } from './ports/driven/book-collection-reader.interface.js';
+import type { BookFilter } from '../../shared/application/book-filter.js';
+import type { BookLocation } from './ports/driven/book-location-reader.interface.js';
+import type { BookTag } from './ports/driven/book-tag-reader.interface.js';
 import type { BookCategory, Ownership } from '../domain/entities/book.entity.js';
 
 // Read models returned by the books use cases. Personal fields are null for Guests, who have no
@@ -8,6 +11,9 @@ export interface AuthorView {
     id: string;
     name: string;
 }
+
+// Where a book is kept and how it is tagged.
+export type BookOrganisation = { location: BookLocation | null; tags: BookTag[] };
 
 export interface BookView {
     id: string;
@@ -26,6 +32,9 @@ export interface BookView {
     priceCents: number | null;
     hasCover: boolean;
     collection: BookCollection | null;
+    location: BookLocation | null;
+    // Ordered by name.
+    tags: BookTag[];
     createdAt: string;
     updatedAt: string;
     // The viewer's own reading status and note; null for Guests.
@@ -40,7 +49,8 @@ export interface BookListQuery {
     direction: 'asc' | 'desc';
     offset: number;
     limit: number;
-    // Account whose reading status is shown; null for Guests.
+    filter: BookFilter;
+    // Account whose reading status is shown and filtered on; null for Guests.
     readerId: string | null;
 }
 

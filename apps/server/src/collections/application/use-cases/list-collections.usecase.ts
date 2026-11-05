@@ -4,6 +4,8 @@ import type { CollectionBookSearch } from '../ports/driven/collection-book-searc
 import type { CollectionMemberStore } from '../ports/driven/collection-member-store.interface.js';
 import type { CollectionRepository } from '../ports/driven/collection-repository.interface.js';
 import { CollectionViewer } from '../services/collection-viewer.service.js';
+import type { Actor } from '../../../shared/domain/actor.helper.js';
+import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
 export class ListCollections implements ListCollectionsUseCase {
     constructor(
@@ -13,10 +15,13 @@ export class ListCollections implements ListCollectionsUseCase {
         private readonly viewer: CollectionViewer,
     ) {}
 
-    async execute(query: CollectionListQuery): Promise<CollectionListPage> {
-        const ids = query.search.trim()
-            ? await this.search.collectionsMatching(query.search)
-            : null;
+    async execute(actor: Actor, query: CollectionListQuery): Promise<CollectionListPage> {
+        ActorAuthorization.requireReady(actor);
+        const readerId = query.filter.readerFor(actor);
+        const ids =
+            query.search.trim() || !query.filter.isEmpty()
+                ? await this.search.collectionsMatching(query.search, query.filter, readerId)
+                : null;
         const page = await this.collections.page({
             ids,
             direction: query.direction,

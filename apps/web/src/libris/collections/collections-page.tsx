@@ -14,6 +14,8 @@ import { PageHeader } from '../../shared/ui/layout';
 import { Notice } from '../../shared/ui/notice';
 import { EmptyState, LoadingState } from '../../shared/ui/states';
 import { CollectionFormat } from './collection-format.util';
+import { AppliedFilters, useListingFilter } from '../filters/applied-filters';
+import { BookFilter } from '../filters/book-filter.util';
 
 const pageSize = 48;
 
@@ -62,7 +64,12 @@ export function CollectionsPage() {
     const [failure, setFailure] = useState<{ query: string; text: string } | null>(null);
     const editor = account?.role !== 'guest';
     const deleted = (location.state as { deleted?: string } | null)?.deleted;
-    const query = new URLSearchParams({ search, direction, limit: String(pageSize) }).toString();
+    const filters = useListingFilter('collections');
+    const filtered = BookFilter.active(filters.filter);
+    const [allTotal, setAllTotal] = useState<number | null>(null);
+    const query =
+        new URLSearchParams({ search, direction, limit: String(pageSize) }).toString() +
+        (filtered ? '&' + filters.query : '');
     const fetchPage = useCallback(
         (offset: number) =>
             api.request<CollectionListPageDto>('/collections?' + query + '&offset=' + offset),
@@ -95,6 +102,20 @@ export function CollectionsPage() {
 
         return () => clearTimeout(timer);
     }, [typed, search, update]);
+
+    // Every collection, for "3 of 12 collections" while searching or filtering.
+    useEffect(() => {
+        let current = true;
+
+        api.request<CollectionListPageDto>('/collections?limit=1').then(
+            (page) => current && setAllTotal(page.total),
+            () => undefined,
+        );
+
+        return () => {
+            current = false;
+        };
+    }, []);
 
     useEffect(() => {
         let current = true;
@@ -129,7 +150,14 @@ export function CollectionsPage() {
     };
     const current = listing?.query === query ? listing : null;
     const error = failure?.query === query ? failure.text : null;
-    const none = current && current.total === 0 && !search;
+    const narrowed = Boolean(search) || filtered;
+    const none = current && current.total === 0 && !narrowed;
+    const clearAll = () => {
+        setTyped('');
+        setParameters(BookFilter.write(BookFilter.empty(), new URLSearchParams()), {
+            replace: true,
+        });
+    };
 
     return (
         <>
@@ -154,6 +182,9 @@ export function CollectionsPage() {
                                 onChange={(event) => setTyped(event.target.value)}
                             />
                         </div>
+                        <Button icon="filter" onClick={filters.open}>
+                            {t('filters.open')}
+                        </Button>
                         <label htmlFor="collection-sort" className="visually-hidden">
                             {t('collections.sortLabel')}
                         </label>
@@ -175,6 +206,19 @@ export function CollectionsPage() {
                         </select>
                     </div>
                 )}
+                {!none && (filtered || (current && search)) && (
+                    <div className="applied-row">
+                        <AppliedFilters filter={filters.filter} onChange={filters.change} />
+                        {current && allTotal !== null && (
+                            <p className="muted applied-row__count" role="status">
+                                {t('collections.matching', {
+                                    count: current.total,
+                                    total: allTotal,
+                                })}
+                            </p>
+                        )}
+                    </div>
+                )}
                 {error && <Notice tone="error">{error}</Notice>}
                 {!current && !error && <LoadingState label={t('collections.loading')} />}
                 {none && (
@@ -190,7 +234,23 @@ export function CollectionsPage() {
                         }
                     />
                 )}
-                {current && current.total === 0 && search && (
+                {current && current.total === 0 && filtered && (
+                    <EmptyState
+                        icon="search"
+                        title={t('collections.noMatching')}
+                        body={
+                            search
+                                ? t('collections.noMatchingSearch', { search })
+                                : t('collections.noMatchingFilters')
+                        }
+                        action={
+                            <Button variant="primary" onClick={clearAll}>
+                                {t('filters.clear')}
+                            </Button>
+                        }
+                    />
+                )}
+                {current && current.total === 0 && search && !filtered && (
                     <EmptyState
                         icon="search"
                         title={t('collections.noResults', { search })}

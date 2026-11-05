@@ -102,6 +102,41 @@ interface CollectionBooksTable {
     volume_to: number;
 }
 
+interface BookcasesTable {
+    id: string;
+    name: string;
+    name_key: string;
+    created_at: string;
+    updated_at: string;
+}
+
+interface ShelvesTable {
+    id: string;
+    bookcase_id: string;
+    name: string;
+    name_key: string;
+    created_at: string;
+    updated_at: string;
+}
+
+interface BookShelvesTable {
+    book_id: string;
+    shelf_id: string;
+}
+
+interface TagsTable {
+    id: string;
+    name: string;
+    name_key: string;
+    created_at: string;
+    updated_at: string;
+}
+
+interface BookTagsTable {
+    book_id: string;
+    tag_id: string;
+}
+
 export interface DatabaseSchema {
     users: UsersTable;
     server_settings: SettingsTable;
@@ -113,6 +148,11 @@ export interface DatabaseSchema {
     personal_notes: PersonalNotesTable;
     collections: CollectionsTable;
     collection_books: CollectionBooksTable;
+    bookcases: BookcasesTable;
+    shelves: ShelvesTable;
+    book_shelves: BookShelvesTable;
+    tags: TagsTable;
+    book_tags: BookTagsTable;
 }
 
 export class Database {

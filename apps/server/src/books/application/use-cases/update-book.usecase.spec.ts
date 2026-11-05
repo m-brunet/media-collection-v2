@@ -9,6 +9,7 @@ function subject(current: ReturnType<typeof library>) {
         current.collections,
         current.collections,
         current.removal,
+        current.organiser,
         current.covers,
         current.loader,
         current.builder,
@@ -171,5 +172,17 @@ describe('UpdateBook', () => {
             expect.objectContaining({ operationId: 'operation-2', category: 'book.updated' }),
             expect.objectContaining({ operationId: 'operation-2', category: 'collection.created' }),
         ]);
+    });
+    it('records the location and tags before and after the change', async () => {
+        const current = library();
+        const book = await saved(current, { shelfId: 'top', tags: [{ name: 'Fantasy' }] });
+
+        await subject(current).execute(owner, book.id, input({ shelfId: 'shelf-3', tags: [] }));
+
+        expect(current.trail.entries.at(-1)).toMatchObject({
+            category: 'book.updated',
+            before: { location: { shelfId: 'top' }, tags: [{ name: 'Fantasy' }] },
+            after: { location: { shelfId: 'shelf-3' }, tags: [] },
+        });
     });
 });

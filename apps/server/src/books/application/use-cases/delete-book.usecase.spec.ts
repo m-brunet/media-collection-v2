@@ -3,7 +3,13 @@ import { guest, library, owner, saved } from '../testing/book-doubles.test-suppo
 import { DeleteBook } from './delete-book.usecase.js';
 
 function subject(current: ReturnType<typeof library>) {
-    return new DeleteBook(current.removal, current.collections, current.covers, current.operations);
+    return new DeleteBook(
+        current.removal,
+        current.collections,
+        current.organisation,
+        current.covers,
+        current.operations,
+    );
 }
 
 describe('DeleteBook', () => {
@@ -89,5 +95,16 @@ describe('DeleteBook', () => {
                 subjectId: 'collection-Batman',
             }),
         ]);
+    });
+    it('records where the deleted book was kept and its tags', async () => {
+        const current = library();
+        const book = await saved(current, { shelfId: 'top', tags: [{ name: 'Fantasy' }] });
+
+        await subject(current).execute(owner, book.id);
+
+        expect(current.trail.entries.at(-1)).toMatchObject({
+            category: 'book.deleted',
+            before: { location: { shelfName: 'Top' }, tags: [{ name: 'Fantasy' }] },
+        });
     });
 });

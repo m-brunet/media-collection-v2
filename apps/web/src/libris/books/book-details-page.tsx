@@ -16,6 +16,7 @@ import { BookCover } from './book-cover';
 import { BookBreadcrumb } from './book-breadcrumb';
 import { CollectionFormat } from '../collections/collection-format.util';
 import { BookFormat } from './book-format.util';
+import { OrganisationEditor } from './organisation-editor';
 
 function ReadingPanel({ book, onChange }: { book: BookDto; onChange(read: boolean): void }) {
     const { t } = useI18n();
@@ -350,6 +351,7 @@ function BookDetails({ id }: { id: string }) {
                         {extent.length > 0 && <p className="muted">{extent.join(' · ')}</p>}
                     </div>
                 </div>
+                <OrganisationEditor book={book} editor={editor} onSaved={setBook} />
                 {book.personal && (
                     <div className="book-details__personal">
                         <ReadingPanel

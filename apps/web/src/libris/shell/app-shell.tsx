@@ -19,6 +19,8 @@ interface NavigationItem {
 const libraryItems: NavigationItem[] = [
     { to: '/books', label: 'nav.books', icon: 'books' },
     { to: '/collections', label: 'nav.collections', icon: 'collections' },
+    { to: '/bookshelves', label: 'nav.bookshelves', icon: 'bookshelves' },
+    { to: '/tags', label: 'nav.tags', icon: 'tag' },
 ];
 const administrationItems: NavigationItem[] = [
     { to: '/admin/accounts', label: 'nav.accounts', icon: 'accounts' },

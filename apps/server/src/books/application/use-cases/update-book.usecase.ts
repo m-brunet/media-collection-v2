@@ -9,6 +9,7 @@ import type { CollectionMembership } from '../ports/driven/collection-membership
 import type { CoverStorage } from '../ports/driven/cover-storage.interface.js';
 import { BookDetailsBuilder } from '../services/book-details-builder.service.js';
 import { BookIdentityCheck } from '../services/book-identity-check.service.js';
+import { BookOrganiser } from '../services/book-organiser.service.js';
 import { BookLoader } from '../services/book-loader.service.js';
 import { BookRemoval } from '../services/book-removal.service.js';
 import { BookViewer } from '../services/book-viewer.service.js';
@@ -17,7 +18,7 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// Edits shared book information and collection membership. Coverage rules apply again, since
+// Edits shared book information, collection membership, location and tags. Coverage rules apply again, since
 // ownership or volumes may change. Authors no longer linked to any book disappear.
 export class UpdateBook implements UpdateBookUseCase {
     constructor(
@@ -26,6 +27,7 @@ export class UpdateBook implements UpdateBookUseCase {
         private readonly collections: CollectionMembership,
         private readonly memberships: BookCollectionReader,
         private readonly removal: BookRemoval,
+        private readonly organiser: BookOrganiser,
         private readonly covers: CoverStorage,
         private readonly loader: BookLoader,
         private readonly builder: BookDetailsBuilder,
@@ -46,7 +48,10 @@ export class UpdateBook implements UpdateBookUseCase {
             async () => {
                 ActorAuthorization.requireLibraryEditor(actor);
                 const book = await this.loader.load(bookId);
-                const before = BookSnapshot.of(book, await this.memberships.of(bookId));
+                const before = BookSnapshot.of(book, {
+                    collection: await this.memberships.of(bookId),
+                    organisation: await this.organiser.current(bookId),
+                });
                 const previousAuthors = book.details.authorIds;
                 const details = await this.builder.build(input);
                 const replacing = input.replacePlanned ?? [];
@@ -60,6 +65,10 @@ export class UpdateBook implements UpdateBookUseCase {
                     input.collection,
                     replacing,
                 );
+                const organised = await this.organiser.apply(bookId, {
+                    shelfId: input.shelfId,
+                    tags: input.tags,
+                });
                 const replaced = [];
 
                 for (const plannedId of replacing) {
@@ -75,7 +84,10 @@ export class UpdateBook implements UpdateBookUseCase {
                     },
                     before,
                     after: {
-                        ...BookSnapshot.of(book, membership.collection),
+                        ...BookSnapshot.of(book, {
+                            collection: membership.collection,
+                            organisation: organised.organisation,
+                        }),
                         ...(replaced.length > 0
                             ? {
                                   replacedPlanned: replaced.map((planned) =>
@@ -86,6 +98,7 @@ export class UpdateBook implements UpdateBookUseCase {
                     },
                     related: [
                         ...membership.changes,
+                        ...organised.changes,
                         ...replaced.flatMap((planned) => planned.changes),
                     ],
                 };

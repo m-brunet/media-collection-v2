@@ -8,19 +8,27 @@ import type { CollectionMembership } from '../../application/ports/driven/collec
 import type { CoverStorage } from '../../application/ports/driven/cover-storage.interface.js';
 import type { PersonalNoteStore } from '../../application/ports/driven/personal-note-store.interface.js';
 import type { ReadingStatusStore } from '../../application/ports/driven/reading-status-store.interface.js';
+import type { BookLocationReader } from '../../application/ports/driven/book-location-reader.interface.js';
+import type { BookTagReader } from '../../application/ports/driven/book-tag-reader.interface.js';
+import type { ShelfAssignment } from '../../application/ports/driven/shelf-assignment.interface.js';
+import type { TagAssignment } from '../../application/ports/driven/tag-assignment.interface.js';
 import { AuthorResolver } from '../../application/services/author-resolver.service.js';
 import { BookDetailsBuilder } from '../../application/services/book-details-builder.service.js';
 import { BookIdentityCheck } from '../../application/services/book-identity-check.service.js';
 import { BookLoader } from '../../application/services/book-loader.service.js';
+import { BookOrganisationReader } from '../../application/services/book-organisation-reader.service.js';
+import { BookOrganiser } from '../../application/services/book-organiser.service.js';
 import { BookRemoval } from '../../application/services/book-removal.service.js';
 import { BookViewer } from '../../application/services/book-viewer.service.js';
 import { CorrectAuthor } from '../../application/use-cases/correct-author.usecase.js';
 import { CreateBook } from '../../application/use-cases/create-book.usecase.js';
 import { DeleteBook } from '../../application/use-cases/delete-book.usecase.js';
 import { DeletePersonalNote } from '../../application/use-cases/delete-personal-note.usecase.js';
+import { NameAuthors } from '../../application/use-cases/name-authors.usecase.js';
 import { FindAuthors } from '../../application/use-cases/find-authors.usecase.js';
 import { GetBook } from '../../application/use-cases/get-book.usecase.js';
 import { ListBooks } from '../../application/use-cases/list-books.usecase.js';
+import { OrganiseBook } from '../../application/use-cases/organise-book.usecase.js';
 import { ReadCover } from '../../application/use-cases/read-cover.usecase.js';
 import { RemoveCover } from '../../application/use-cases/remove-cover.usecase.js';
 import { ReplaceCover } from '../../application/use-cases/replace-cover.usecase.js';
@@ -46,6 +54,11 @@ export interface BooksDependencies {
     // Owned by the collections feature, composed by the application root.
     collections: CollectionMembership;
     collectionReader: BookCollectionReader;
+    // Owned by the locations and tags features.
+    shelves: ShelfAssignment;
+    locationReader: BookLocationReader;
+    tags: TagAssignment;
+    tagReader: BookTagReader;
     ids: IdGenerator;
     clock: Clock;
     operations: AuditedOperation;
@@ -60,6 +73,10 @@ const token = {
     covers: 'BOOKS_COVER_STORAGE',
     collections: 'BOOKS_COLLECTION_MEMBERSHIP',
     collectionReader: 'BOOKS_COLLECTION_READER',
+    shelves: 'BOOKS_SHELF_ASSIGNMENT',
+    locationReader: 'BOOKS_LOCATION_READER',
+    tags: 'BOOKS_TAG_ASSIGNMENT',
+    tagReader: 'BOOKS_TAG_READER',
     ids: 'BOOKS_IDS',
     clock: 'BOOKS_CLOCK',
     operations: 'BOOKS_AUDITED_OPERATION',
@@ -68,6 +85,8 @@ const token = {
     loader: 'BOOKS_LOADER',
     viewer: 'BOOKS_VIEWER',
     removal: 'BOOKS_REMOVAL',
+    organiser: 'BOOKS_ORGANISER',
+    organisation: 'BOOKS_ORGANISATION_READER',
 } as const;
 
 function dependencyProviders(dependencies: BooksDependencies): Provider[] {
@@ -96,14 +115,36 @@ const serviceProviders: Provider[] = [
         useFactory: (books: BookRepository) => new BookLoader(books),
     },
     {
+        provide: token.organisation,
+        inject: [token.locationReader, token.tagReader],
+        useFactory: (locations: BookLocationReader, tags: BookTagReader) =>
+            new BookOrganisationReader(locations, tags),
+    },
+    {
+        provide: token.organiser,
+        inject: [token.shelves, token.tags, token.organisation],
+        useFactory: (
+            shelves: ShelfAssignment,
+            tags: TagAssignment,
+            organisation: BookOrganisationReader,
+        ) => new BookOrganiser(shelves, tags, organisation),
+    },
+    {
         provide: token.viewer,
-        inject: [token.catalog, token.readings, token.notes, token.collectionReader],
+        inject: [
+            token.catalog,
+            token.readings,
+            token.notes,
+            token.collectionReader,
+            token.organisation,
+        ],
         useFactory: (
             catalog: BookCatalog,
             readings: ReadingStatusStore,
             notes: PersonalNoteStore,
             collections: BookCollectionReader,
-        ) => new BookViewer(catalog, readings, notes, collections),
+            organisation: BookOrganisationReader,
+        ) => new BookViewer(catalog, readings, notes, collections, organisation),
     },
     {
         provide: token.removal,
@@ -125,6 +166,7 @@ const useCaseProviders: Provider[] = [
             token.identity,
             token.collections,
             token.removal,
+            token.organiser,
             token.readings,
             token.covers,
             token.viewer,
@@ -138,6 +180,7 @@ const useCaseProviders: Provider[] = [
             identity: BookIdentityCheck,
             collections: CollectionMembership,
             removal: BookRemoval,
+            organiser: BookOrganiser,
             readings: ReadingStatusStore,
             covers: CoverStorage,
             viewer: BookViewer,
@@ -151,6 +194,7 @@ const useCaseProviders: Provider[] = [
                 identity,
                 collections,
                 removal,
+                organiser,
                 readings,
                 covers,
                 viewer,
@@ -167,6 +211,7 @@ const useCaseProviders: Provider[] = [
             token.collections,
             token.collectionReader,
             token.removal,
+            token.organiser,
             token.covers,
             token.loader,
             token.builder,
@@ -181,6 +226,7 @@ const useCaseProviders: Provider[] = [
             collections: CollectionMembership,
             memberships: BookCollectionReader,
             removal: BookRemoval,
+            organiser: BookOrganiser,
             covers: CoverStorage,
             loader: BookLoader,
             builder: BookDetailsBuilder,
@@ -195,6 +241,7 @@ const useCaseProviders: Provider[] = [
                 collections,
                 memberships,
                 removal,
+                organiser,
                 covers,
                 loader,
                 builder,
@@ -206,13 +253,30 @@ const useCaseProviders: Provider[] = [
     },
     {
         provide: 'BOOKS_DELETE',
-        inject: [token.removal, token.collectionReader, token.covers, token.operations],
+        inject: [
+            token.removal,
+            token.collectionReader,
+            token.organisation,
+            token.covers,
+            token.operations,
+        ],
         useFactory: (
             removal: BookRemoval,
             collections: BookCollectionReader,
+            organisation: BookOrganisationReader,
             covers: CoverStorage,
             operations: AuditedOperation,
-        ) => new DeleteBook(removal, collections, covers, operations),
+        ) => new DeleteBook(removal, collections, organisation, covers, operations),
+    },
+    {
+        provide: 'BOOKS_ORGANISE',
+        inject: [token.loader, token.organiser, token.viewer, token.operations],
+        useFactory: (
+            loader: BookLoader,
+            organiser: BookOrganiser,
+            viewer: BookViewer,
+            operations: AuditedOperation,
+        ) => new OrganiseBook(loader, organiser, viewer, operations),
     },
     {
         provide: 'BOOKS_GET',
@@ -228,6 +292,11 @@ const useCaseProviders: Provider[] = [
         provide: 'BOOKS_FIND_AUTHORS',
         inject: [token.authors],
         useFactory: (authors: AuthorRepository) => new FindAuthors(authors),
+    },
+    {
+        provide: 'BOOKS_NAME_AUTHORS',
+        inject: [token.authors],
+        useFactory: (authors: AuthorRepository) => new NameAuthors(authors),
     },
     {
         provide: 'BOOKS_CORRECT_AUTHOR',

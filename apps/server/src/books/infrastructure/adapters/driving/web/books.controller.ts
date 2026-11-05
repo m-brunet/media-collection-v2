@@ -6,6 +6,7 @@ import {
     HttpCode,
     Inject,
     Param,
+    Patch,
     Post,
     Put,
     Query,
@@ -16,13 +17,21 @@ import type { CreateBookUseCase } from '../../../../application/ports/driving/cr
 import type { DeleteBookUseCase } from '../../../../application/ports/driving/delete-book-use-case.interface.js';
 import type { GetBookUseCase } from '../../../../application/ports/driving/get-book-use-case.interface.js';
 import type { ListBooksUseCase } from '../../../../application/ports/driving/list-books-use-case.interface.js';
+import type { OrganiseBookUseCase } from '../../../../application/ports/driving/organise-book-use-case.interface.js';
 import type { UpdateBookUseCase } from '../../../../application/ports/driving/update-book-use-case.interface.js';
 import type { AuthenticatedRequest } from '../../../../../shared/infrastructure/adapters/driving/web/api-guard.js';
+import { BookFilterQueryMapper } from '../../../../../shared/infrastructure/adapters/driving/web/book-filter-query.mapper.js';
 import type {
     BookDto,
     BookListPageDto,
 } from '../../../../../../../../packages/contracts/src/http.js';
-import { bookInputSchema, bookListSchema, idSchema, newBookSchema } from './book-schemas.js';
+import {
+    bookInputSchema,
+    bookListSchema,
+    idSchema,
+    newBookSchema,
+    organisationSchema,
+} from './book-schemas.js';
 
 // The shared book records every signed-in account may read and Owners may change.
 @Controller('api/books')
@@ -33,6 +42,7 @@ export class BooksController {
         @Inject('BOOKS_CREATE') private readonly createBook: CreateBookUseCase,
         @Inject('BOOKS_UPDATE') private readonly updateBook: UpdateBookUseCase,
         @Inject('BOOKS_DELETE') private readonly deleteBook: DeleteBookUseCase,
+        @Inject('BOOKS_ORGANISE') private readonly organiseBook: OrganiseBookUseCase,
     ) {}
 
     @Get()
@@ -40,7 +50,16 @@ export class BooksController {
         @Query({ schema: bookListSchema }) query: z.infer<typeof bookListSchema>,
         @Req() request: AuthenticatedRequest,
     ): Promise<BookListPageDto> {
-        return this.listBooks.execute(request.actor, query);
+        const { search, sort, direction, offset, limit } = query;
+
+        return this.listBooks.execute(request.actor, {
+            search,
+            sort,
+            direction,
+            offset,
+            limit,
+            filter: BookFilterQueryMapper.toFilter(query),
+        });
     }
 
     @Get(':id')
@@ -68,6 +87,16 @@ export class BooksController {
         @Req() request: AuthenticatedRequest,
     ): Promise<BookDto> {
         return this.updateBook.execute(request.actor, id, input);
+    }
+
+    // Location and tags edited directly on the book details, saved on each change.
+    @Patch(':id/organisation')
+    organise(
+        @Param('id', { schema: idSchema }) id: string,
+        @Body({ schema: organisationSchema }) organisation: z.infer<typeof organisationSchema>,
+        @Req() request: AuthenticatedRequest,
+    ): Promise<BookDto> {
+        return this.organiseBook.execute(request.actor, id, organisation);
     }
 
     @Delete(':id')

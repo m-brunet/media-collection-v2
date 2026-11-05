@@ -1,5 +1,6 @@
 import type {
     BookDto,
+    TagDto,
     CollectionDetailsDto,
     CollectionListPageDto,
     CollectionNameDto,
@@ -45,7 +46,9 @@ async function book(collection: MembershipDto | null, overrides: Partial<NewBook
         }),
     );
 
-    expect(response.status).toBe(201);
+    if (response.status !== 201) {
+        throw new Error('Arranging the scenario failed: ' + response.text);
+    }
 
     return response.body;
 }
@@ -197,9 +200,7 @@ describe('PATCH /api/collections/:id', () => {
 
         expect(response.status).toBe(200);
         expect(response.body.name).toBe('The Batman');
-        expect((await client.call<BookDto>('/books/' + saved.id)).body.collection?.name).toBe(
-            'The Batman',
-        );
+        expect(await app.dependencies.library.collectionOf(saved.id)).toBe('The Batman');
         expect(await app.dependencies.audit.entries()).toContainEqual(
             expect.objectContaining({ category: 'collection.updated', outcome: 'successful' }),
         );
@@ -353,11 +354,9 @@ describe('DELETE /api/collections/:id', () => {
         const response = await client.call('/collections/' + saved.collection!.id, 'DELETE');
 
         expect(response.status).toBe(204);
-        expect((await client.call<BookDto>('/books/' + saved.id)).body).toMatchObject({
-            id: saved.id,
-            collection: null,
-        });
-        expect((await client.call<CollectionListPageDto>('/collections')).body.total).toBe(0);
+        expect(await app.dependencies.library.bookIds()).toEqual([saved.id]);
+        expect(await app.dependencies.library.collectionOf(saved.id)).toBeNull();
+        expect(await app.dependencies.library.collectionNames()).toEqual([]);
     });
     it('refuses a Guest', async () => {
         const saved = await book(membership('Batman', 1));
@@ -374,5 +373,49 @@ describe('DELETE /api/collections/:id', () => {
 
         expect(response.status).toBe(404);
         expect(response.body.reason).toBe('collection-missing');
+    });
+});
+
+describe('GET /api/collections with filters', () => {
+    it('keeps a collection only when one of its books matches every criterion', async () => {
+        const client = await app.authenticatedClient(owner);
+        const fantasy = (await client.call<TagDto>('/tags', 'POST', { name: 'Fantasy' })).body;
+
+        await book(membership('Batman', 1), { authors: [{ name: 'Frank Miller' }] });
+        await book(membership('Batman', 2), { tags: [{ id: fantasy.id }] });
+        await book(membership('Dune', 1), {
+            authors: [{ name: 'Frank Miller' }],
+            tags: [{ id: fantasy.id }],
+        });
+        const miller = (await client.call<{ id: string }[]>('/authors?search=miller')).body[0]!;
+
+        const response = await client.call<CollectionListPageDto>(
+            '/collections?author=' + miller.id + '&tag=' + fantasy.id,
+        );
+
+        expect(response.body.items.map((item) => item.name)).toEqual(['Dune']);
+    });
+    it('keeps whole-collection counts for a collection found through one book', async () => {
+        for (let volume = 1; volume <= 8; volume++) {
+            await book(membership('Akira', volume));
+        }
+
+        await book(membership('Akira', 9), { ownership: 'not-owned', category: 'manga' });
+        await book(membership('Akira', 10), { ownership: 'not-owned' });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<CollectionListPageDto>('/collections?category=manga');
+
+        expect(response.body.items).toEqual([
+            expect.objectContaining({ name: 'Akira', ownedCount: 8, expectedCount: 10 }),
+        ]);
+    });
+    it('refuses a reading filter for a Guest', async () => {
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call('/collections?reading=unread');
+
+        expect(response.status).toBe(400);
+        expect(response.body.reason).toBe('reading-filter-unavailable');
     });
 });

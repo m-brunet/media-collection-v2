@@ -40,6 +40,34 @@ describe('GET /api/authors', () => {
     });
 });
 
+describe('GET /api/authors/by-id', () => {
+    it('names the chosen authors, leaving out unknown ones', async () => {
+        const book = await created('Hervé Bazin');
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call<AuthorDto[]>(
+            '/authors/by-id?id=' + book.authors[0]!.id.toUpperCase() + '&id=' + crypto.randomUUID(),
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual([{ id: book.authors[0]!.id, name: 'Hervé Bazin' }]);
+    });
+    it('refuses a request without an author', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/authors/by-id');
+
+        expect(response.status).toBe(400);
+    });
+    it('requires a signed-in account', async () => {
+        const client = app.client();
+
+        const response = await client.call('/authors/by-id?id=' + crypto.randomUUID());
+
+        expect(response.status).toBe(401);
+    });
+});
+
 describe('PUT /api/authors/:id', () => {
     it('corrects the spelling on every linked book', async () => {
         const book = await created('Susana Clarke');

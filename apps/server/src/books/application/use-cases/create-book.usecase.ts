@@ -8,6 +8,7 @@ import type { CoverStorage } from '../ports/driven/cover-storage.interface.js';
 import type { ReadingStatusStore } from '../ports/driven/reading-status-store.interface.js';
 import { BookDetailsBuilder } from '../services/book-details-builder.service.js';
 import { BookIdentityCheck } from '../services/book-identity-check.service.js';
+import { BookOrganiser } from '../services/book-organiser.service.js';
 import { BookRemoval } from '../services/book-removal.service.js';
 import { BookViewer } from '../services/book-viewer.service.js';
 import { Book } from '../../domain/entities/book.entity.js';
@@ -17,7 +18,7 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// Saves a new edition, with its collection membership. A purchased Owned book may replace the
+// Saves a new edition, with its collection membership, location and tags. A purchased Owned book may replace the
 // planned Not Owned books it overlaps, when the person explicitly chose to delete them.
 export class CreateBook implements CreateBookUseCase {
     constructor(
@@ -26,6 +27,7 @@ export class CreateBook implements CreateBookUseCase {
         private readonly identity: BookIdentityCheck,
         private readonly collections: CollectionMembership,
         private readonly removal: BookRemoval,
+        private readonly organiser: BookOrganiser,
         private readonly readings: ReadingStatusStore,
         private readonly covers: CoverStorage,
         private readonly viewer: BookViewer,
@@ -65,6 +67,10 @@ export class CreateBook implements CreateBookUseCase {
                     input.collection,
                     replacing,
                 );
+                const organised = await this.organiser.apply(id, {
+                    shelfId: input.shelfId,
+                    tags: input.tags,
+                });
                 const replaced = [];
 
                 for (const plannedId of replacing) {
@@ -84,7 +90,10 @@ export class CreateBook implements CreateBookUseCase {
                     },
                     before: null,
                     after: {
-                        ...BookSnapshot.of(book, membership.collection),
+                        ...BookSnapshot.of(book, {
+                            collection: membership.collection,
+                            organisation: organised.organisation,
+                        }),
                         ...(replaced.length > 0
                             ? {
                                   replacedPlanned: replaced.map((planned) =>
@@ -95,6 +104,7 @@ export class CreateBook implements CreateBookUseCase {
                     },
                     related: [
                         ...membership.changes,
+                        ...organised.changes,
                         ...replaced.flatMap((planned) => planned.changes),
                     ],
                 };

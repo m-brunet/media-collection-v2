@@ -35,6 +35,9 @@ import {
     VolumeZeroDialog,
 } from './book-form-dialogs';
 import { CollectionField } from './collection-field';
+import { LocationField } from './location-field';
+import { TagPicker } from './tag-picker';
+import { useBookcases } from '../locations/use-bookcases';
 import { BookFormat } from './book-format.util';
 import type { CoverChoice } from './cover-picker';
 import { CoverPicker } from './cover-picker';
@@ -49,7 +52,9 @@ type Field =
     | 'pageCount'
     | 'price'
     | 'note'
-    | 'collection';
+    | 'collection'
+    | 'location'
+    | 'tags';
 
 // Which field a server refusal is about, so the message appears beside it.
 const fieldOfReason: Record<string, Field> = {
@@ -71,6 +76,9 @@ const fieldOfReason: Record<string, Field> = {
     'collection-name-invalid': 'collection',
     'collection-missing': 'collection',
     'volume-invalid': 'collection',
+    'shelf-missing': 'location',
+    'tag-missing': 'tags',
+    'tag-name-invalid': 'tags',
 };
 const additionalFields: Field[] = [
     'publisher',
@@ -171,6 +179,7 @@ function BookForm({ book }: { book: BookDto | null }) {
             changed && !leaving.current && currentLocation.pathname !== nextLocation.pathname,
     );
     const personal = account?.role !== 'guest';
+    const { bookcases } = useBookcases();
     const set = <K extends keyof BookDraftValues>(key: K, value: BookDraftValues[K]) =>
         setValues((current) => ({ ...current, [key]: value }));
     const errorFor = (field: Field) => (failure?.field === field ? failure.text : undefined);
@@ -199,6 +208,16 @@ function BookForm({ book }: { book: BookDto | null }) {
 
         setFailure(null);
         setNotice(null);
+
+        if (BookDraft.locationProblem(draft)) {
+            setFailure({
+                text: t('location.shelfRequired'),
+                field: 'location',
+                existingBookId: null,
+            });
+
+            return;
+        }
 
         if (problem) {
             setFailure({
@@ -455,6 +474,26 @@ function BookForm({ book }: { book: BookDto | null }) {
                             }
                             choice={cover}
                             onChange={setCover}
+                        />
+                    </div>
+                </Panel>
+                <Panel label={t('form.organisation')}>
+                    <div className="form">
+                        {bookcases && (
+                            <LocationField
+                                bookcases={bookcases}
+                                bookcaseId={values.bookcaseId}
+                                shelfId={values.shelfId}
+                                error={errorFor('location')}
+                                onChange={(changes) =>
+                                    setValues((current) => ({ ...current, ...changes }))
+                                }
+                            />
+                        )}
+                        <TagPicker
+                            tags={values.tags}
+                            error={errorFor('tags')}
+                            onChange={(tags) => set('tags', tags)}
                         />
                     </div>
                 </Panel>

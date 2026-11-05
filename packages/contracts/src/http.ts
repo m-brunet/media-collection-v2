@@ -87,6 +87,22 @@ export interface MembershipDto {
     enableVolumeZero?: boolean;
 }
 
+// A tag of a book being saved: an existing tag, or a name to reuse (equivalent name) or create.
+export type TagChoiceDto = { id: string } | { name: string };
+
+// Where a book is kept: always a shelf within its bookcase.
+export interface BookLocationDto {
+    bookcaseId: string;
+    bookcaseName: string;
+    shelfId: string;
+    shelfName: string;
+}
+
+export interface BookTagDto {
+    id: string;
+    name: string;
+}
+
 export interface BookCollectionDto {
     id: string;
     name: string;
@@ -112,6 +128,16 @@ export interface BookInputDto {
     collection: MembershipDto | null;
     // Planned Not Owned books to delete because this Owned book replaces them.
     replacePlanned?: string[];
+    // An existing shelf, or null for no physical location.
+    shelfId: string | null;
+    tags: TagChoiceDto[];
+}
+
+// `PATCH /api/books/:id/organisation`: location and tags edited on the book details. An absent
+// field is left unchanged.
+export interface BookOrganisationDto {
+    shelfId?: string | null;
+    tags?: TagChoiceDto[];
 }
 
 export interface NewBookDto extends BookInputDto {
@@ -141,6 +167,9 @@ export interface BookDto {
     priceCents: number | null;
     hasCover: boolean;
     collection: BookCollectionDto | null;
+    location: BookLocationDto | null;
+    // Ordered by name.
+    tags: BookTagDto[];
     createdAt: string;
     updatedAt: string;
     // The viewer's own reading status and note; null for Guests.
@@ -162,6 +191,22 @@ export interface BookListItemDto {
 export interface BookListPageDto {
     total: number;
     items: BookListItemDto[];
+}
+
+// Advanced filters of `GET /api/books` and `GET /api/collections`, sent as repeated query
+// parameters (`?category=manga&category=comics`). Different parameters combine with AND, values
+// of one parameter with OR; every `tag` must be present and any `notTag` rejects a book.
+// `collection`: a collection id or `none`. `location`: `bookcase:<id>`, `shelf:<id>` or `none`.
+// `reading` is the viewer's own status and is refused for Guests (`reading-filter-unavailable`).
+export interface BookFilterParams {
+    category?: BookCategory[];
+    author?: string[];
+    collection?: string[];
+    location?: string[];
+    ownership?: BookOwnership[];
+    reading?: ('read' | 'unread')[];
+    tag?: string[];
+    notTag?: string[];
 }
 
 // `details` of a failure with reason `author-similar`.
@@ -257,4 +302,38 @@ export interface CollectionNameDto {
 export interface CollectionChangesDto {
     name?: string;
     includesVolumeZero?: boolean;
+}
+
+export interface ShelfDto {
+    id: string;
+    bookcaseId: string;
+    name: string;
+    bookCount: number;
+}
+
+// Shelves in name order, numbers compared by value.
+export interface BookcaseDto {
+    id: string;
+    name: string;
+    // Books on all its shelves.
+    bookCount: number;
+    shelves: ShelfDto[];
+}
+
+// Body of `POST /api/bookcases`, `PATCH /api/bookcases/:id`, `POST /api/bookcases/:id/shelves`,
+// `POST /api/tags` and `PATCH /api/tags/:id`.
+export interface NameDto {
+    name: string;
+}
+
+// Body of `PATCH /api/shelves/:id`: a rename, a move to another bookcase, or both.
+export interface ShelfChangesDto {
+    name?: string;
+    bookcaseId?: string;
+}
+
+export interface TagDto {
+    id: string;
+    name: string;
+    bookCount: number;
 }

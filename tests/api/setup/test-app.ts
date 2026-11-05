@@ -25,11 +25,19 @@ import { UserFixture } from '../fixtures/user.fixture.js';
 import { AuditedOperation } from '../../../apps/server/src/shared/application/services/audited-operation.service.js';
 import { KyselyAuditTrail } from '../../../apps/server/src/shared/infrastructure/adapters/driven/persistence/kysely-audit-trail.adapter.js';
 import { AuditLogProbe } from './audit-log-probe.js';
+import { LibraryProbe } from './library-probe.js';
 import { AppearanceModule } from '../../../apps/server/src/appearance/infrastructure/config/appearance.module.js';
 import { KyselyAppearanceRepository } from '../../../apps/server/src/appearance/infrastructure/adapters/driven/persistence/kysely-appearance.repository.js';
 import { SetupAccess } from '../../../apps/server/src/identity/infrastructure/adapters/driving/web/setup-access.service.js';
 import { BooksModule } from '../../../apps/server/src/books/infrastructure/config/books.module.js';
 import { CollectionsModule } from '../../../apps/server/src/collections/infrastructure/config/collections.module.js';
+import { LocationsModule } from '../../../apps/server/src/locations/infrastructure/config/locations.module.js';
+import { KyselyBookcaseRepository } from '../../../apps/server/src/locations/infrastructure/adapters/driven/persistence/kysely-bookcase.repository.js';
+import { KyselyShelfRepository } from '../../../apps/server/src/locations/infrastructure/adapters/driven/persistence/kysely-shelf.repository.js';
+import { KyselyBookShelfStore } from '../../../apps/server/src/locations/infrastructure/adapters/driven/persistence/kysely-book-shelf-store.adapter.js';
+import { TagsModule } from '../../../apps/server/src/tags/infrastructure/config/tags.module.js';
+import { KyselyTagRepository } from '../../../apps/server/src/tags/infrastructure/adapters/driven/persistence/kysely-tag.repository.js';
+import { KyselyBookTagStore } from '../../../apps/server/src/tags/infrastructure/adapters/driven/persistence/kysely-book-tag-store.adapter.js';
 import { KyselyCollectionRepository } from '../../../apps/server/src/collections/infrastructure/adapters/driven/persistence/kysely-collection.repository.js';
 import { KyselyCollectionMemberStore } from '../../../apps/server/src/collections/infrastructure/adapters/driven/persistence/kysely-collection-member-store.adapter.js';
 import { KyselyBookRepository } from '../../../apps/server/src/books/infrastructure/adapters/driven/persistence/kysely-book.repository.js';
@@ -98,9 +106,17 @@ export class TestApp {
                 appearance,
                 books,
                 audit: new AuditLogProbe(database),
+                library: new LibraryProbe(database),
             };
             const clock = { now: () => new Date(this.now) };
             const membership = CollectionsModule.membership(collections, members, ids, clock);
+            const bookcases = new KyselyBookcaseRepository(database.connections);
+            const shelves = new KyselyShelfRepository(database.connections);
+            const bookShelves = new KyselyBookShelfStore(database.connections);
+            const tags = new KyselyTagRepository(database.connections);
+            const bookTags = new KyselyBookTagStore(database.connections);
+            const shelving = LocationsModule.assignment(bookcases, shelves, bookShelves);
+            const tagging = TagsModule.assignment(tags, bookTags, ids, clock);
             const secret = randomBytes(32);
             const tokens = new JwtSessionTokens(secret, clock);
             const accounts = new AccountLoader(users);
@@ -153,6 +169,10 @@ export class TestApp {
                         ...books,
                         collections: membership,
                         collectionReader: membership,
+                        shelves: shelving,
+                        locationReader: shelving,
+                        tags: tagging,
+                        tagReader: tagging,
                         ids,
                         clock,
                         operations,
@@ -164,6 +184,15 @@ export class TestApp {
                         clock,
                         operations,
                     }),
+                    LocationsModule.register({
+                        bookcases,
+                        shelves,
+                        store: bookShelves,
+                        ids,
+                        clock,
+                        operations,
+                    }),
+                    TagsModule.register({ tags, store: bookTags, ids, clock, operations }),
                 ],
                 controllers: [HealthController],
             }).compile();
