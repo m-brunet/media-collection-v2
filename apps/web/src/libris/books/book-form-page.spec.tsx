@@ -367,3 +367,241 @@ it('corrects the shared spelling of a saved author after confirmation', async ()
         body: { name: 'Susanna Clarke' },
     });
 });
+
+async function joinCollection(name: string, volume: string) {
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Part of a collection' }));
+    await userEvent.type(screen.getByRole('combobox', { name: /Collection name/ }), name);
+    await userEvent.type(screen.getByRole('textbox', { name: /Volume number/ }), volume);
+}
+
+function posted(api: FakeApi) {
+    return api.calls.filter((call) => call.route === 'POST /books').map((call) => call.body);
+}
+
+it('saves a book with its collection and volume', async () => {
+    const api = new FakeApi()
+        .signedIn(account())
+        .on('POST /books', () => ({ status: 201, body: bookDto() }));
+
+    addPage();
+    await fillRequired();
+    await joinCollection('Batman', '3');
+
+    await userEvent.click(saveButton());
+
+    await vi.waitFor(() =>
+        expect(posted(api)[0]).toMatchObject({
+            collection: { collection: { name: 'Batman' }, volumeFrom: 3, volumeTo: 3 },
+        }),
+    );
+});
+
+it('saves an omnibus range', async () => {
+    const api = new FakeApi()
+        .signedIn(account())
+        .on('POST /books', () => ({ status: 201, body: bookDto() }));
+
+    addPage();
+    await fillRequired();
+    await joinCollection('Batman', '1');
+    await userEvent.selectOptions(
+        screen.getByRole('combobox', { name: /Coverage/ }),
+        'Covers several volumes',
+    );
+    await userEvent.type(screen.getByRole('textbox', { name: /Last volume/ }), '3');
+
+    await userEvent.click(saveButton());
+
+    await vi.waitFor(() =>
+        expect(posted(api)[0]).toMatchObject({ collection: { volumeFrom: 1, volumeTo: 3 } }),
+    );
+});
+
+it('asks for the volume number without contacting the server', async () => {
+    const api = new FakeApi().signedIn(account());
+
+    addPage();
+    await fillRequired();
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Part of a collection' }));
+    await userEvent.type(screen.getByRole('combobox', { name: /Collection name/ }), 'Batman');
+
+    await userEvent.click(saveButton());
+
+    expect(await screen.findAllByText('Enter the volume number.')).not.toHaveLength(0);
+    expect(posted(api)).toEqual([]);
+});
+
+it('starts a new book in the collection it was added from', async () => {
+    new FakeApi().signedIn(account());
+
+    renderRoute('/books/new?collection=Batman', { '/books/new': <BookFormPage /> });
+
+    expect(await screen.findByRole('checkbox', { name: 'Part of a collection' })).toBeChecked();
+    expect(screen.getByRole('combobox', { name: /Collection name/ })).toHaveValue('Batman');
+});
+
+it('joins the existing collection the person chooses instead of a similar name', async () => {
+    let attempt = 0;
+    const api = new FakeApi().signedIn(account()).on('POST /books', () =>
+        ++attempt === 1
+            ? {
+                  status: 409,
+                  body: {
+                      message: 'Similar',
+                      reason: 'collection-similar',
+                      details: { name: 'Batmen', candidates: [{ id: 'c1', name: 'Batman' }] },
+                  },
+              }
+            : { status: 201, body: bookDto() },
+    );
+
+    addPage();
+    await fillRequired();
+    await joinCollection('Batmen', '3');
+    await userEvent.click(saveButton());
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Join Batman' }));
+
+    await vi.waitFor(() =>
+        expect(posted(api)[1]).toMatchObject({ collection: { collection: { name: 'Batman' } } }),
+    );
+});
+
+it('includes volume 0 in the collection once the person accepts', async () => {
+    let attempt = 0;
+    const api = new FakeApi().signedIn(account()).on('POST /books', () =>
+        ++attempt === 1
+            ? {
+                  status: 409,
+                  body: {
+                      message: 'Volume 0',
+                      reason: 'volume-zero-disabled',
+                      details: { name: 'Batman' },
+                  },
+              }
+            : { status: 201, body: bookDto() },
+    );
+
+    addPage();
+    await fillRequired();
+    await joinCollection('Batman', '0');
+    await userEvent.click(saveButton());
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Include volume 0 and save' }));
+
+    await vi.waitFor(() =>
+        expect(posted(api)[1]).toMatchObject({ collection: { enableVolumeZero: true } }),
+    );
+});
+
+const plannedConflict = {
+    status: 409,
+    body: {
+        message: 'Planned',
+        reason: 'coverage-conflict',
+        details: {
+            name: 'Batman',
+            conflicts: [
+                {
+                    id: 'planned',
+                    title: 'Batman 12',
+                    isbn: null,
+                    ownership: 'not-owned',
+                    volumeFrom: 12,
+                    volumeTo: 12,
+                },
+            ],
+            replaceable: true,
+            expectedAfterReplacement: { from: 1, to: 12 },
+        },
+    },
+};
+
+it('deletes the planned record and adds the purchased edition when chosen', async () => {
+    let attempt = 0;
+    const api = new FakeApi()
+        .signedIn(account())
+        .on('POST /books', () =>
+            ++attempt === 1 ? plannedConflict : { status: 201, body: bookDto() },
+        );
+
+    addPage();
+    await fillRequired();
+    await joinCollection('Batman', '12');
+    await userEvent.click(saveButton());
+    const dialog = await screen.findByRole('dialog', { name: 'This volume is already planned' });
+    const affected = within(dialog).getByText(/Batman 12/);
+
+    await userEvent.click(
+        within(dialog).getByRole('button', {
+            name: 'Delete planned record and add purchased edition',
+        }),
+    );
+
+    expect(affected).toHaveTextContent('Batman 12 · Volume 12 · Not owned');
+    await vi.waitFor(() => expect(posted(api)[1]).toMatchObject({ replacePlanned: ['planned'] }));
+});
+
+it('updates the planned record to the purchased edition and marks it Owned', async () => {
+    const api = new FakeApi()
+        .signedIn(account())
+        .on('POST /books', () => plannedConflict)
+        .on('PUT /books/planned', () => ({ status: 200, body: bookDto({ id: 'planned' }) }))
+        .on('PUT /books/planned/reading', () => ({ status: 200, body: { read: false } }));
+    const router = addPage();
+
+    await fillRequired();
+    await joinCollection('Batman', '12');
+    await userEvent.click(saveButton());
+
+    await userEvent.click(
+        await screen.findByRole('button', { name: 'Update planned record and mark Owned' }),
+    );
+
+    await vi.waitFor(() => expect(router.state.location.pathname).toBe('/books/planned'));
+    expect(api.calls.find((call) => call.route === 'PUT /books/planned')?.body).toMatchObject({
+        title: 'Piranesi',
+        ownership: 'owned',
+        collection: { volumeFrom: 12, volumeTo: 12 },
+    });
+});
+
+it('explains a coverage overlap that cannot be replaced', async () => {
+    const api = new FakeApi().signedIn(account()).on('POST /books', () => ({
+        status: 409,
+        body: {
+            message: 'Overlap',
+            reason: 'coverage-conflict',
+            details: {
+                name: 'Batman',
+                conflicts: [
+                    {
+                        id: 'omnibus',
+                        title: 'Batman omnibus',
+                        isbn: null,
+                        ownership: 'owned',
+                        volumeFrom: 1,
+                        volumeTo: 3,
+                    },
+                ],
+                replaceable: false,
+                expectedAfterReplacement: null,
+            },
+        },
+    }));
+
+    addPage();
+    await fillRequired();
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: /Ownership/ }), 'not-owned');
+    await joinCollection('Batman', '2');
+
+    await userEvent.click(saveButton());
+
+    const dialog = await screen.findByRole('dialog', {
+        name: 'This coverage overlaps another book',
+    });
+
+    expect(within(dialog).getByText(/Batman omnibus · Volumes 1–3 · Owned/)).toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: /Delete/ })).not.toBeInTheDocument();
+    expect(posted(api)).toHaveLength(1);
+});

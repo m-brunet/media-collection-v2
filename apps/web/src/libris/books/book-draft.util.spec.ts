@@ -19,6 +19,7 @@ function book(overrides: Partial<BookDto> = {}): BookDto {
         pageCount: 272,
         priceCents: 1690,
         hasCover: false,
+        collection: null,
         createdAt: '2026-01-01T00:00:00.000Z',
         updatedAt: '2026-01-01T00:00:00.000Z',
         personal: { read: true, note: { text: 'Mine.', updatedAt: '2026-01-01T00:00:00.000Z' } },
@@ -71,7 +72,7 @@ describe('BookDraft', () => {
         expect(result.authors).toEqual([{ id: 'a1' }, { name: 'Sam Tayler', distinct: true }]);
     });
     it('confirms a distinct no-ISBN edition only when asked', () => {
-        const result = BookDraft.toInput(BookDraft.empty(), true);
+        const result = BookDraft.toInput(BookDraft.empty(), { confirmDistinct: true });
 
         expect(result.confirmDistinct).toBe(true);
     });
@@ -119,5 +120,71 @@ describe('BookDraft', () => {
         const result = BookDraft.nameKey('  Hervé BAZIN ');
 
         expect(result).toBe('herve bazin');
+    });
+    it('sends no membership outside a collection', () => {
+        const values = { ...BookDraft.empty(), collectionName: 'Batman', volumeFrom: '2' };
+
+        const result = BookDraft.toInput(values);
+
+        expect(result.collection).toBeNull();
+    });
+    it('sends a single volume as an equal range', () => {
+        const values = { ...BookDraft.inCollection(' Batman '), volumeFrom: '3', volumeTo: '9' };
+
+        const result = BookDraft.toInput(values);
+
+        expect(result.collection).toEqual({
+            collection: { name: 'Batman' },
+            volumeFrom: 3,
+            volumeTo: 3,
+        });
+    });
+    it('sends an omnibus range with the answers given in dialogs', () => {
+        const values = {
+            ...BookDraft.inCollection('Batman'),
+            omnibus: true,
+            volumeFrom: '0',
+            volumeTo: '3',
+            collectionDistinct: true,
+            enableVolumeZero: true,
+        };
+
+        const result = BookDraft.toInput(values, { replacePlanned: ['p1'] });
+
+        expect(result).toMatchObject({
+            collection: {
+                collection: { name: 'Batman', distinct: true },
+                volumeFrom: 0,
+                volumeTo: 3,
+                enableVolumeZero: true,
+            },
+            replacePlanned: ['p1'],
+        });
+    });
+    it('fills the collection part from a saved omnibus', () => {
+        const saved = book({
+            collection: { id: 'c1', name: 'Batman', volumeFrom: 1, volumeTo: 3 },
+        });
+
+        const result = BookDraft.fromBook(saved, 'en-GB');
+
+        expect(result).toMatchObject({
+            inCollection: true,
+            collectionName: 'Batman',
+            omnibus: true,
+            volumeFrom: '1',
+            volumeTo: '3',
+        });
+    });
+    it('asks for the collection name and volume before saving', () => {
+        const values = BookDraft.inCollection('');
+
+        const problems = [
+            BookDraft.collectionProblem(values),
+            BookDraft.collectionProblem({ ...values, collectionName: 'Batman' }),
+            BookDraft.collectionProblem({ ...values, collectionName: 'Batman', volumeFrom: '1' }),
+        ];
+
+        expect(problems).toEqual(['collection-name-required', 'volume-required', null]);
     });
 });

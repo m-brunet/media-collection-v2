@@ -145,3 +145,17 @@ it('explains a book that no longer exists', async () => {
 
     expect(await screen.findByText('This book no longer exists')).toBeInTheDocument();
 });
+
+it('links to the collection with the covered volumes', async () => {
+    new FakeApi().signedIn(account()).on('GET /books/b1', () => ({
+        status: 200,
+        body: bookDto({ collection: { id: 'c1', name: 'Batman', volumeFrom: 1, volumeTo: 3 } }),
+    }));
+
+    show();
+
+    expect(await screen.findByRole('link', { name: 'Batman · Volumes 1–3' })).toHaveAttribute(
+        'href',
+        '/collections/c1',
+    );
+});

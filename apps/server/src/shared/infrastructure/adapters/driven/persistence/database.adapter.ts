@@ -85,6 +85,23 @@ interface PersonalNotesTable {
     updated_at: string;
 }
 
+interface CollectionsTable {
+    id: string;
+    name: string;
+    name_key: string;
+    includes_volume_zero: number;
+    finished: number;
+    created_at: string;
+    updated_at: string;
+}
+
+interface CollectionBooksTable {
+    book_id: string;
+    collection_id: string;
+    volume_from: number;
+    volume_to: number;
+}
+
 export interface DatabaseSchema {
     users: UsersTable;
     server_settings: SettingsTable;
@@ -94,6 +111,8 @@ export interface DatabaseSchema {
     book_authors: BookAuthorsTable;
     reading_statuses: ReadingStatusesTable;
     personal_notes: PersonalNotesTable;
+    collections: CollectionsTable;
+    collection_books: CollectionBooksTable;
 }
 
 export class Database {

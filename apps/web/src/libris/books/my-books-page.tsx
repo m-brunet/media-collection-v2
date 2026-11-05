@@ -11,6 +11,7 @@ import { PageHeader } from '../../shared/ui/layout';
 import { Notice } from '../../shared/ui/notice';
 import { EmptyState, LoadingState } from '../../shared/ui/states';
 import { BookCover } from './book-cover';
+import { CollectionFormat } from '../collections/collection-format.util';
 import { BookFormat } from './book-format.util';
 
 const pageSize = 48;
@@ -29,6 +30,10 @@ function BookCard({ book }: { book: BookListItemDto }) {
         status.push(t(BookFormat.reading(book.read)));
     }
 
+    const volumes = book.collection
+        ? CollectionFormat.volumes(book.collection.volumeFrom, book.collection.volumeTo)
+        : null;
+
     return (
         <li>
             <Link to={'/books/' + book.id} className="book-card">
@@ -38,6 +43,14 @@ function BookCard({ book }: { book: BookListItemDto }) {
                 />
                 <span className="book-card__title">{book.title}</span>
                 <span className="book-card__authors">{book.authors.join(', ')}</span>
+                {book.collection && volumes && (
+                    <span className="book-card__collection">
+                        {t('books.collection', {
+                            name: book.collection.name,
+                            volumes: t(volumes.key, volumes.values),
+                        })}
+                    </span>
+                )}
                 <span className="book-card__status">{status.join(' · ')}</span>
             </Link>
         </li>

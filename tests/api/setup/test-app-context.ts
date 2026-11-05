@@ -12,6 +12,9 @@ export interface TestAppContext {
     tls: TlsStore;
     http: HttpSettingsStore;
     appearance: AppearanceStore;
-    books: Omit<BooksDependencies, 'ids' | 'clock' | 'operations'>;
+    books: Omit<
+        BooksDependencies,
+        'ids' | 'clock' | 'operations' | 'collections' | 'collectionReader'
+    >;
     audit: AuditLogProbe;
 }

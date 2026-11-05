@@ -1,3 +1,4 @@
+import type { BookCollection } from './ports/driven/book-collection-reader.interface.js';
 import type { Book } from '../domain/entities/book.entity.js';
 
 // Audit categories of the books feature. Shared changes are eligible for the Activity view
@@ -14,9 +15,10 @@ export const BookAudit = {
     noteChanged: 'book.note-changed',
 } as const;
 
-// Shared book information recorded before and after a change.
+// Shared book information recorded before and after a change, with its collection membership
+// when the change concerns it.
 export class BookSnapshot {
-    static of(book: Book): Record<string, unknown> {
+    static of(book: Book, collection?: BookCollection | null): Record<string, unknown> {
         const { details, coverFile } = book.snapshot;
 
         return {
@@ -33,6 +35,7 @@ export class BookSnapshot {
             pageCount: details.pageCount,
             priceCents: details.price?.cents ?? null,
             hasCover: coverFile !== null,
+            ...(collection === undefined ? {} : { collection }),
         };
     }
 }

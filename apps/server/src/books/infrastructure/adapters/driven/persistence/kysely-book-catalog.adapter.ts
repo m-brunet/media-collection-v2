@@ -8,13 +8,15 @@ import type {
 } from '../../../../application/book-views.js';
 import type { BookCategory, Ownership } from '../../../../domain/entities/book.entity.js';
 import { Isbn } from '../../../../domain/value-objects/isbn.value-object.js';
+import type { CollectionBookSearch } from '../../../../../collections/application/ports/driven/collection-book-search.interface.js';
 import { NameKey } from '../../../../../shared/domain/name-key.helper.js';
 import type { DatabaseSchema } from '../../../../../shared/infrastructure/adapters/driven/persistence/database.adapter.js';
 import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
 
-// Simple search: case- and accent-insensitive partial match on title and author names (stored
-// comparison keys), partial ISBN digits, and the ISBN-13 equivalent of a complete ISBN-10.
-export class KyselyBookCatalog implements BookCatalog {
+// Simple search: case- and accent-insensitive partial match on title, author and collection names
+// (stored comparison keys), partial ISBN digits, and the ISBN-13 equivalent of a complete
+// ISBN-10. Collection listings apply the same search: a collection matches through its books.
+export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
     constructor(private readonly connections: DatabaseConnections) {}
 
     private get db() {
@@ -30,6 +32,8 @@ export class KyselyBookCatalog implements BookCatalog {
             .executeTakeFirstOrThrow();
         let rows = this.db
             .selectFrom('books')
+            .leftJoin('collection_books', 'collection_books.book_id', 'books.id')
+            .leftJoin('collections', 'collections.id', 'collection_books.collection_id')
             .leftJoin('reading_statuses', (join) =>
                 join
                     .onRef('reading_statuses.book_id', '=', 'books.id')
@@ -43,6 +47,9 @@ export class KyselyBookCatalog implements BookCatalog {
                 'books.cover_file',
                 'books.updated_at',
                 'reading_statuses.read',
+                'collections.name as collection_name',
+                'collection_books.volume_from',
+                'collection_books.volume_to',
             ])
             .where(filter);
         const direction = query.direction;
@@ -74,10 +81,30 @@ export class KyselyBookCatalog implements BookCatalog {
                 category: row.category as BookCategory,
                 ownership: row.ownership as Ownership,
                 hasCover: row.cover_file !== null,
+                collection:
+                    row.collection_name === null
+                        ? null
+                        : {
+                              name: row.collection_name,
+                              volumeFrom: row.volume_from!,
+                              volumeTo: row.volume_to!,
+                          },
                 updatedAt: row.updated_at,
                 read: query.readerId === null ? null : Boolean(row.read),
             })),
         };
+    }
+
+    async collectionsMatching(search: string): Promise<string[]> {
+        const rows = await this.db
+            .selectFrom('collection_books')
+            .innerJoin('books', 'books.id', 'collection_books.book_id')
+            .select('collection_books.collection_id')
+            .distinct()
+            .where(this.filter(search))
+            .execute();
+
+        return rows.map((row) => row.collection_id);
     }
 
     async authorsOf(bookId: string): Promise<AuthorView[]> {
@@ -113,6 +140,27 @@ export class KyselyBookCatalog implements BookCatalog {
                                 author.fn<number>('instr', [
                                     author.ref('authors.name_key'),
                                     author.val(key),
+                                ]),
+                                '>',
+                                0,
+                            ),
+                        ),
+                ),
+                eb.exists(
+                    eb
+                        .selectFrom('collection_books')
+                        .innerJoin(
+                            'collections',
+                            'collections.id',
+                            'collection_books.collection_id',
+                        )
+                        .select('collection_books.book_id')
+                        .whereRef('collection_books.book_id', '=', 'books.id')
+                        .where((collection) =>
+                            collection(
+                                collection.fn<number>('instr', [
+                                    collection.ref('collections.name_key'),
+                                    collection.val(key),
                                 ]),
                                 '>',
                                 0,

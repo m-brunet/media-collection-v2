@@ -17,6 +17,7 @@ export class BookInputFixture {
             pageCount: 272,
             price: '16.90',
             read: false,
+            collection: null,
             ...overrides,
         };
     }

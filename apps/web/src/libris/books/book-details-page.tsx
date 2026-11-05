@@ -14,6 +14,7 @@ import { TextAreaField } from '../../shared/ui/text-field';
 import { useAction } from '../../shared/use-action';
 import { BookCover } from './book-cover';
 import { BookBreadcrumb } from './book-breadcrumb';
+import { CollectionFormat } from '../collections/collection-format.util';
 import { BookFormat } from './book-format.util';
 
 function ReadingPanel({ book, onChange }: { book: BookDto; onChange(read: boolean): void }) {
@@ -249,6 +250,9 @@ function BookDetails({ id }: { id: string }) {
         );
     }
 
+    const volumes = book.collection
+        ? CollectionFormat.volumes(book.collection.volumeFrom, book.collection.volumeTo)
+        : null;
     const publication = [
         book.publisher,
         book.publicationYear === null
@@ -295,6 +299,19 @@ function BookDetails({ id }: { id: string }) {
                         </p>
                         {book.summary && <p className="book-details__summary">{book.summary}</p>}
                         <dl className="book-details__facts">
+                            {book.collection && volumes && (
+                                <div>
+                                    <dt>{t('details.collection')}</dt>
+                                    <dd>
+                                        <Link to={'/collections/' + book.collection.id}>
+                                            {t('books.collection', {
+                                                name: book.collection.name,
+                                                volumes: t(volumes.key, volumes.values),
+                                            })}
+                                        </Link>
+                                    </dd>
+                                </div>
+                            )}
                             <div>
                                 <dt>{t('details.publication')}</dt>
                                 <dd>

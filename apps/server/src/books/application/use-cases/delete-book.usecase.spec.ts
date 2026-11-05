@@ -3,13 +3,7 @@ import { guest, library, owner, saved } from '../testing/book-doubles.test-suppo
 import { DeleteBook } from './delete-book.usecase.js';
 
 function subject(current: ReturnType<typeof library>) {
-    return new DeleteBook(
-        current.books,
-        current.authors,
-        current.covers,
-        current.loader,
-        current.operations,
-    );
+    return new DeleteBook(current.removal, current.collections, current.covers, current.operations);
 }
 
 describe('DeleteBook', () => {
@@ -54,5 +48,19 @@ describe('DeleteBook', () => {
 
         await expect(result).rejects.toMatchObject({ reason: 'guest-read-only' });
         expect(current.books.books.size).toBe(1);
+    });
+    it('ends the collection membership of the deleted book', async () => {
+        const current = library();
+        const book = await saved(current, {
+            collection: { collection: { name: 'Batman' }, volumeFrom: 1, volumeTo: 1 },
+        });
+
+        await subject(current).execute(owner, book.id);
+
+        expect(current.collections.memberships.has(book.id)).toBe(false);
+        expect(current.trail.entries.at(-1)).toMatchObject({
+            category: 'book.deleted',
+            before: { collection: { name: 'Batman', volumeFrom: 1, volumeTo: 1 } },
+        });
     });
 });

@@ -2,7 +2,9 @@ import type { DynamicModule, Provider } from '@nestjs/common';
 import { Module } from '@nestjs/common';
 import type { AuthorRepository } from '../../application/ports/driven/author-repository.interface.js';
 import type { BookCatalog } from '../../application/ports/driven/book-catalog.interface.js';
+import type { BookCollectionReader } from '../../application/ports/driven/book-collection-reader.interface.js';
 import type { BookRepository } from '../../application/ports/driven/book-repository.interface.js';
+import type { CollectionMembership } from '../../application/ports/driven/collection-membership.interface.js';
 import type { CoverStorage } from '../../application/ports/driven/cover-storage.interface.js';
 import type { PersonalNoteStore } from '../../application/ports/driven/personal-note-store.interface.js';
 import type { ReadingStatusStore } from '../../application/ports/driven/reading-status-store.interface.js';
@@ -10,6 +12,7 @@ import { AuthorResolver } from '../../application/services/author-resolver.servi
 import { BookDetailsBuilder } from '../../application/services/book-details-builder.service.js';
 import { BookIdentityCheck } from '../../application/services/book-identity-check.service.js';
 import { BookLoader } from '../../application/services/book-loader.service.js';
+import { BookRemoval } from '../../application/services/book-removal.service.js';
 import { BookViewer } from '../../application/services/book-viewer.service.js';
 import { CorrectAuthor } from '../../application/use-cases/correct-author.usecase.js';
 import { CreateBook } from '../../application/use-cases/create-book.usecase.js';
@@ -40,6 +43,9 @@ export interface BooksDependencies {
     readings: ReadingStatusStore;
     notes: PersonalNoteStore;
     covers: CoverStorage;
+    // Owned by the collections feature, composed by the application root.
+    collections: CollectionMembership;
+    collectionReader: BookCollectionReader;
     ids: IdGenerator;
     clock: Clock;
     operations: AuditedOperation;
@@ -52,6 +58,8 @@ const token = {
     readings: 'BOOKS_READING_STATUSES',
     notes: 'BOOKS_PERSONAL_NOTES',
     covers: 'BOOKS_COVER_STORAGE',
+    collections: 'BOOKS_COLLECTION_MEMBERSHIP',
+    collectionReader: 'BOOKS_COLLECTION_READER',
     ids: 'BOOKS_IDS',
     clock: 'BOOKS_CLOCK',
     operations: 'BOOKS_AUDITED_OPERATION',
@@ -59,6 +67,7 @@ const token = {
     identity: 'BOOKS_IDENTITY_CHECK',
     loader: 'BOOKS_LOADER',
     viewer: 'BOOKS_VIEWER',
+    removal: 'BOOKS_REMOVAL',
 } as const;
 
 function dependencyProviders(dependencies: BooksDependencies): Provider[] {
@@ -88,12 +97,23 @@ const serviceProviders: Provider[] = [
     },
     {
         provide: token.viewer,
-        inject: [token.catalog, token.readings, token.notes],
+        inject: [token.catalog, token.readings, token.notes, token.collectionReader],
         useFactory: (
             catalog: BookCatalog,
             readings: ReadingStatusStore,
             notes: PersonalNoteStore,
-        ) => new BookViewer(catalog, readings, notes),
+            collections: BookCollectionReader,
+        ) => new BookViewer(catalog, readings, notes, collections),
+    },
+    {
+        provide: token.removal,
+        inject: [token.books, token.authors, token.collections, token.loader],
+        useFactory: (
+            books: BookRepository,
+            authors: AuthorRepository,
+            collections: CollectionMembership,
+            loader: BookLoader,
+        ) => new BookRemoval(books, authors, collections, loader),
     },
 ];
 const useCaseProviders: Provider[] = [
@@ -103,7 +123,10 @@ const useCaseProviders: Provider[] = [
             token.books,
             token.builder,
             token.identity,
+            token.collections,
+            token.removal,
             token.readings,
+            token.covers,
             token.viewer,
             token.ids,
             token.clock,
@@ -113,18 +136,38 @@ const useCaseProviders: Provider[] = [
             books: BookRepository,
             builder: BookDetailsBuilder,
             identity: BookIdentityCheck,
+            collections: CollectionMembership,
+            removal: BookRemoval,
             readings: ReadingStatusStore,
+            covers: CoverStorage,
             viewer: BookViewer,
             ids: IdGenerator,
             clock: Clock,
             operations: AuditedOperation,
-        ) => new CreateBook(books, builder, identity, readings, viewer, ids, clock, operations),
+        ) =>
+            new CreateBook(
+                books,
+                builder,
+                identity,
+                collections,
+                removal,
+                readings,
+                covers,
+                viewer,
+                ids,
+                clock,
+                operations,
+            ),
     },
     {
         provide: 'BOOKS_UPDATE',
         inject: [
             token.books,
             token.authors,
+            token.collections,
+            token.collectionReader,
+            token.removal,
+            token.covers,
             token.loader,
             token.builder,
             token.identity,
@@ -135,24 +178,41 @@ const useCaseProviders: Provider[] = [
         useFactory: (
             books: BookRepository,
             authors: AuthorRepository,
+            collections: CollectionMembership,
+            memberships: BookCollectionReader,
+            removal: BookRemoval,
+            covers: CoverStorage,
             loader: BookLoader,
             builder: BookDetailsBuilder,
             identity: BookIdentityCheck,
             viewer: BookViewer,
             clock: Clock,
             operations: AuditedOperation,
-        ) => new UpdateBook(books, authors, loader, builder, identity, viewer, clock, operations),
+        ) =>
+            new UpdateBook(
+                books,
+                authors,
+                collections,
+                memberships,
+                removal,
+                covers,
+                loader,
+                builder,
+                identity,
+                viewer,
+                clock,
+                operations,
+            ),
     },
     {
         provide: 'BOOKS_DELETE',
-        inject: [token.books, token.authors, token.covers, token.loader, token.operations],
+        inject: [token.removal, token.collectionReader, token.covers, token.operations],
         useFactory: (
-            books: BookRepository,
-            authors: AuthorRepository,
+            removal: BookRemoval,
+            collections: BookCollectionReader,
             covers: CoverStorage,
-            loader: BookLoader,
             operations: AuditedOperation,
-        ) => new DeleteBook(books, authors, covers, loader, operations),
+        ) => new DeleteBook(removal, collections, covers, operations),
     },
     {
         provide: 'BOOKS_GET',

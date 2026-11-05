@@ -46,6 +46,13 @@ export class ApiErrorMessage {
         'book-missing': 'reason.bookMissing',
         'cover-missing': 'reason.coverMissing',
         'request-too-large': 'reason.requestTooLarge',
+        'collection-name-invalid': 'reason.collectionNameInvalid',
+        'collection-name-taken': 'reason.collectionNameTaken',
+        'collection-missing': 'reason.collectionMissing',
+        'volume-invalid': 'reason.volumeInvalid',
+        'volume-zero-in-use': 'reason.volumeZeroInUse',
+        'collection-incomplete': 'reason.collectionIncomplete',
+        'replacement-outdated': 'reason.replacementOutdated',
         'session-ended': 'errors.unauthorized',
     };
 

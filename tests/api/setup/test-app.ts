@@ -29,6 +29,9 @@ import { AppearanceModule } from '../../../apps/server/src/appearance/infrastruc
 import { KyselyAppearanceRepository } from '../../../apps/server/src/appearance/infrastructure/adapters/driven/persistence/kysely-appearance.repository.js';
 import { SetupAccess } from '../../../apps/server/src/identity/infrastructure/adapters/driving/web/setup-access.service.js';
 import { BooksModule } from '../../../apps/server/src/books/infrastructure/config/books.module.js';
+import { CollectionsModule } from '../../../apps/server/src/collections/infrastructure/config/collections.module.js';
+import { KyselyCollectionRepository } from '../../../apps/server/src/collections/infrastructure/adapters/driven/persistence/kysely-collection.repository.js';
+import { KyselyCollectionMemberStore } from '../../../apps/server/src/collections/infrastructure/adapters/driven/persistence/kysely-collection-member-store.adapter.js';
 import { KyselyBookRepository } from '../../../apps/server/src/books/infrastructure/adapters/driven/persistence/kysely-book.repository.js';
 import { KyselyAuthorRepository } from '../../../apps/server/src/books/infrastructure/adapters/driven/persistence/kysely-author.repository.js';
 import { KyselyBookCatalog } from '../../../apps/server/src/books/infrastructure/adapters/driven/persistence/kysely-book-catalog.adapter.js';
@@ -84,6 +87,8 @@ export class TestApp {
                 notes: new KyselyPersonalNoteRepository(database.connections),
                 covers: new FileCoverStorage(directory),
             };
+            const collections = new KyselyCollectionRepository(database.connections);
+            const members = new KyselyCollectionMemberStore(database.connections);
 
             this.context = {
                 users,
@@ -95,6 +100,7 @@ export class TestApp {
                 audit: new AuditLogProbe(database),
             };
             const clock = { now: () => new Date(this.now) };
+            const membership = CollectionsModule.membership(collections, members, ids, clock);
             const secret = randomBytes(32);
             const tokens = new JwtSessionTokens(secret, clock);
             const accounts = new AccountLoader(users);
@@ -143,7 +149,21 @@ export class TestApp {
                         operations,
                     ),
                     AppearanceModule.register(appearance, operations),
-                    BooksModule.register({ ...books, ids, clock, operations }),
+                    BooksModule.register({
+                        ...books,
+                        collections: membership,
+                        collectionReader: membership,
+                        ids,
+                        clock,
+                        operations,
+                    }),
+                    CollectionsModule.register({
+                        collections,
+                        members,
+                        search: books.catalog,
+                        clock,
+                        operations,
+                    }),
                 ],
                 controllers: [HealthController],
             }).compile();

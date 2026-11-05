@@ -1,3 +1,4 @@
+import type { MembershipRequest } from './ports/driven/collection-membership.interface.js';
 import type { BookCategory, Ownership } from '../domain/entities/book.entity.js';
 
 // One author of a book being saved: an existing author, or a name to reuse or create.
@@ -21,4 +22,8 @@ export interface BookInput {
     price: string | null;
     // Confirms a new no-ISBN book although a similar saved book was found.
     confirmDistinct?: boolean;
+    // The collection the book belongs to, with the volumes it covers; null for none.
+    collection: MembershipRequest | null;
+    // Planned Not Owned books the person chose to delete because this Owned book replaces them.
+    replacePlanned?: string[];
 }
