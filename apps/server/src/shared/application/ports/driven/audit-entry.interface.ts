@@ -16,3 +16,9 @@ export interface AuditEntry {
     // Failure code and reason of a Failed entry, for example `conflict:username-taken`.
     failure: string | null;
 }
+
+// A change an operation made to another subject as a consequence (for example a collection
+// created by saving a book). It is recorded with the operation's ID and actor.
+export type RelatedChange = Pick<AuditEntry, 'category' | 'subjectType' | 'before' | 'after'> & {
+    subjectId: string;
+};

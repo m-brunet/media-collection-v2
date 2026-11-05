@@ -1,4 +1,5 @@
 import type { BookCollection } from './book-collection-reader.interface.js';
+import type { RelatedChange } from '../../../../shared/application/ports/driven/audit-entry.interface.js';
 
 // The collection a book being saved should belong to: an existing collection, or a name to
 // join or create. `distinct` confirms that a name similar to an existing collection is really
@@ -14,6 +15,10 @@ export type MembershipRequest = {
 
 export type MemberBook = { id: string; ownership: 'owned' | 'not-owned' };
 
+// The book's resulting membership, and the collection changes it caused (created, volume 0
+// included, reopened, removed), which the book operation records in its audit.
+export type MembershipOutcome = { collection: BookCollection | null; changes: RelatedChange[] };
+
 // Collection membership of books, owned by the collections feature. Every call joins the
 // transaction of the book operation in progress.
 export interface CollectionMembership {
@@ -26,7 +31,7 @@ export interface CollectionMembership {
         book: MemberBook,
         request: MembershipRequest | null,
         replacing: readonly string[],
-    ): Promise<BookCollection | null>;
+    ): Promise<MembershipOutcome>;
     // Before the book is deleted: ends its membership and tidies its collection.
-    leave(bookId: string): Promise<void>;
+    leave(bookId: string): Promise<RelatedChange[]>;
 }

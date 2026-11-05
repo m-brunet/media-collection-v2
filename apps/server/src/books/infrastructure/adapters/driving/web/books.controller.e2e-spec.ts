@@ -507,6 +507,27 @@ describe('POST /api/books with a collection', () => {
         expect(response.body.reason).toBe('coverage-conflict');
         expect((await client.call('/books/' + one.id)).status).toBe(200);
     });
+    it('records the created collection in the operation of the book', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookDto>(
+            '/books',
+            'POST',
+            BookInputFixture.of({ collection: membership('Batman', 1) }),
+        );
+
+        const entries = await app.dependencies.audit.entries();
+        const saved = entries.find((entry) => entry.category === 'book.created');
+
+        expect(entries).toContainEqual(
+            expect.objectContaining({
+                operationId: saved?.operationId,
+                category: 'collection.created',
+                subjectId: response.body.collection?.id,
+                after: { name: 'Batman', includesVolumeZero: false, finished: false },
+            }),
+        );
+    });
 });
 
 describe('PUT /api/books/:id with a collection', () => {
@@ -545,6 +566,29 @@ describe('PUT /api/books/:id with a collection', () => {
             (await client.call<CollectionDetailsDto>('/collections/' + two.collection!.id)).body,
         ).toMatchObject({ finished: false, missingCount: 1 });
     });
+    it('records the collections a moved book created and emptied in its operation', async () => {
+        const book = await member(membership('Batman', 1));
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookDto>(
+            '/books/' + book.id,
+            'PUT',
+            edited(book, { collection: membership('Superman', 1) }),
+        );
+
+        const entries = await app.dependencies.audit.entries();
+        const updated = entries.find((entry) => entry.category === 'book.updated');
+
+        expect(
+            entries
+                .filter((entry) => entry.operationId === updated?.operationId)
+                .map((entry) => [entry.category, entry.subjectId]),
+        ).toEqual([
+            ['book.updated', book.id],
+            ['collection.created', response.body.collection?.id],
+            ['collection.removed', book.collection?.id],
+        ]);
+    });
 });
 
 describe('DELETE /api/books/:id with a collection', () => {
@@ -568,6 +612,24 @@ describe('DELETE /api/books/:id with a collection', () => {
 
         expect(response.status).toBe(204);
         expect((await client.call<CollectionListPageDto>('/collections')).body.total).toBe(0);
+    });
+    it('records the removed collection in the operation of the deletion', async () => {
+        const book = await member(membership('Batman', 1));
+        const client = await app.authenticatedClient(owner);
+
+        await client.call('/books/' + book.id, 'DELETE');
+
+        const entries = await app.dependencies.audit.entries();
+        const deleted = entries.find((entry) => entry.category === 'book.deleted');
+
+        expect(entries).toContainEqual(
+            expect.objectContaining({
+                operationId: deleted?.operationId,
+                category: 'collection.removed',
+                subjectId: book.collection!.id,
+                after: null,
+            }),
+        );
     });
 });
 

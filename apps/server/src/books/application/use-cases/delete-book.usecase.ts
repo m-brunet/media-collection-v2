@@ -28,12 +28,13 @@ export class DeleteBook implements DeleteBookUseCase {
             async () => {
                 ActorAuthorization.requireLibraryEditor(actor);
                 const collection = await this.collections.of(bookId);
-                const book = await this.removal.remove(bookId);
+                const { book, changes } = await this.removal.remove(bookId);
 
                 return {
                     result: book.snapshot.coverFile,
                     before: BookSnapshot.of(book, collection),
                     after: null,
+                    related: changes,
                 };
             },
         );

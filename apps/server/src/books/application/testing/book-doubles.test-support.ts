@@ -9,6 +9,7 @@ import type {
 } from '../ports/driven/book-collection-reader.interface.js';
 import type {
     CollectionMembership,
+    MembershipOutcome,
     MembershipRequest,
 } from '../ports/driven/collection-membership.interface.js';
 import type { CoverStorage } from '../ports/driven/cover-storage.interface.js';
@@ -27,6 +28,7 @@ import {
     auditedOperation,
     MemoryAuditTrail,
 } from '../../../shared/application/testing/audit-doubles.test-support.js';
+import type { RelatedChange } from '../../../shared/application/ports/driven/audit-entry.interface.js';
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { CreateBook } from '../use-cases/create-book.usecase.js';
@@ -210,12 +212,14 @@ export class MemoryCatalog implements BookCatalog {
 export class MemoryMembership implements CollectionMembership, BookCollectionReader {
     readonly memberships = new Map<string, BookCollection>();
     readonly replaced: string[][] = [];
+    // Collection changes the next assign or leave reports, as the collections feature would.
+    changes: RelatedChange[] = [];
 
     async assign(
         book: { id: string },
         request: MembershipRequest | null,
         replacing: readonly string[],
-    ): Promise<BookCollection | null> {
+    ): Promise<MembershipOutcome> {
         if (!request && replacing.length > 0) {
             throw new Failure('conflict', 'Nothing to replace', 'replacement-outdated');
         }
@@ -225,7 +229,7 @@ export class MemoryMembership implements CollectionMembership, BookCollectionRea
         if (!request) {
             this.memberships.delete(book.id);
 
-            return null;
+            return { collection: null, changes: this.report() };
         }
 
         const choice = request.collection;
@@ -238,11 +242,21 @@ export class MemoryMembership implements CollectionMembership, BookCollectionRea
 
         this.memberships.set(book.id, membership);
 
-        return membership;
+        return { collection: membership, changes: this.report() };
     }
 
-    async leave(bookId: string): Promise<void> {
+    async leave(bookId: string): Promise<RelatedChange[]> {
         this.memberships.delete(bookId);
+
+        return this.report();
+    }
+
+    private report(): RelatedChange[] {
+        const changes = this.changes;
+
+        this.changes = [];
+
+        return changes;
     }
 
     async of(bookId: string): Promise<BookCollection | null> {

@@ -1,3 +1,4 @@
+import { CollectionAudit, CollectionChange } from '../collection-audit.js';
 import { MemberCoverage } from '../member-coverage.helper.js';
 import type {
     CollectionMemberStore,
@@ -14,11 +15,13 @@ import type {
     CollectionChoice,
     CollectionMembership,
     MemberBook,
+    MembershipOutcome,
     MembershipRequest,
 } from '../../../books/application/ports/driven/collection-membership.interface.js';
 import { Collection } from '../../domain/entities/collection.entity.js';
 import type { CoverageMember } from '../../domain/value-objects/collection-coverage.value-object.js';
 import { VolumeRange } from '../../domain/value-objects/volume-range.value-object.js';
+import type { RelatedChange } from '../../../shared/application/ports/driven/audit-entry.interface.js';
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 import type { IdGenerator } from '../../../shared/application/ports/driven/id-generator.interface.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
@@ -41,23 +44,19 @@ export class BookCollectionMembership implements CollectionMembership, BookColle
         book: MemberBook,
         request: MembershipRequest | null,
         replacing: readonly string[],
-    ): Promise<BookCollection | null> {
+    ): Promise<MembershipOutcome> {
         const now = this.clock.now().toISOString();
         const previous = await this.members.ofBook(book.id);
 
         if (!request) {
             this.ensureNothingReplaced(replacing);
 
-            if (previous) {
-                await this.members.remove(book.id);
-                await this.upkeep.tidy(previous.collectionId, now);
-            }
-
-            return null;
+            return { collection: null, changes: previous ? await this.leave(book.id) : [] };
         }
 
         const range = VolumeRange.of(request.volumeFrom, request.volumeTo);
         const { collection, created } = await this.resolve(request.collection, now);
+        const before = created ? null : new Collection(collection.snapshot);
 
         if (range.covers(0) && !collection.snapshot.includesVolumeZero) {
             if (!request.enableVolumeZero) {
@@ -82,28 +81,39 @@ export class BookCollectionMembership implements CollectionMembership, BookColle
         );
         await (created ? this.collections.create(collection) : this.collections.save(collection));
         await this.members.place(book.id, collection.id, range.from, range.to);
+        const changes = [this.change(collection, before)];
 
         if (previous && previous.collectionId !== collection.id) {
-            await this.upkeep.tidy(previous.collectionId, now);
+            changes.push(await this.upkeep.tidy(previous.collectionId, now));
         }
 
-        await this.upkeep.tidy(collection.id, now);
+        changes.push(await this.upkeep.tidy(collection.id, now));
 
         return {
-            id: collection.id,
-            name: collection.snapshot.name,
-            volumeFrom: range.from,
-            volumeTo: range.to,
+            collection: {
+                id: collection.id,
+                name: collection.snapshot.name,
+                volumeFrom: range.from,
+                volumeTo: range.to,
+            },
+            changes: changes.filter((change) => change !== null),
         };
     }
 
-    async leave(bookId: string): Promise<void> {
+    async leave(bookId: string): Promise<RelatedChange[]> {
         const previous = await this.members.ofBook(bookId);
 
-        if (previous) {
-            await this.members.remove(bookId);
-            await this.upkeep.tidy(previous.collectionId, this.clock.now().toISOString());
+        if (!previous) {
+            return [];
         }
+
+        await this.members.remove(bookId);
+        const change = await this.upkeep.tidy(
+            previous.collectionId,
+            this.clock.now().toISOString(),
+        );
+
+        return change ? [change] : [];
     }
 
     async of(bookId: string): Promise<BookCollection | null> {
@@ -118,6 +128,17 @@ export class BookCollectionMembership implements CollectionMembership, BookColle
                   volumeTo: record.volumeTo,
               }
             : null;
+    }
+
+    // Creating a collection, or including volume 0 in an existing one, changes the collection.
+    private change(collection: Collection, before: Collection | null): RelatedChange | null {
+        if (!before) {
+            return CollectionChange.of(CollectionAudit.created, collection.id, null, collection);
+        }
+
+        return before.snapshot.includesVolumeZero === collection.snapshot.includesVolumeZero
+            ? null
+            : CollectionChange.of(CollectionAudit.updated, collection.id, before, collection);
     }
 
     // An equivalent name joins its collection; a similar one is only created once the person

@@ -1,3 +1,4 @@
+import type { RelatedChange } from '../ports/driven/audit-entry.interface.js';
 import type { AuditTrail } from '../ports/driven/audit-trail.interface.js';
 import type { Clock } from '../ports/driven/clock.interface.js';
 import type { IdGenerator } from '../ports/driven/id-generator.interface.js';
@@ -18,9 +19,10 @@ export interface AuditedChange<T> {
     result: T;
     before: Record<string, unknown> | null;
     after: Record<string, unknown> | null;
+    related?: readonly RelatedChange[];
 }
 
-// Runs a user-initiated state change atomically with its Successful audit record. If the change
+// Runs a user-initiated state change atomically with its Successful audit records. If the change
 // fails, nothing of it persists and a Failed record is written after the rollback.
 export class AuditedOperation {
     constructor(
@@ -47,6 +49,21 @@ export class AuditedOperation {
                     after: outcome.after,
                     failure: null,
                 });
+
+                for (const change of outcome.related ?? []) {
+                    await this.audit.record({
+                        ...this.base(operationId, {
+                            category: change.category,
+                            actorId: context.actorId,
+                            subjectType: change.subjectType,
+                            subjectId: change.subjectId,
+                        }),
+                        outcome: 'successful',
+                        before: change.before,
+                        after: change.after,
+                        failure: null,
+                    });
+                }
 
                 return outcome.result;
             });

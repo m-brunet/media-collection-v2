@@ -222,4 +222,28 @@ describe('CreateBook', () => {
         await expect(result).rejects.toMatchObject({ reason: 'title-invalid' });
         expect(current.books.books.has(planned.id)).toBe(true);
     });
+    it('records the collection it created in the same operation', async () => {
+        const current = library();
+
+        current.collections.changes = [
+            {
+                category: 'collection.created',
+                subjectType: 'collection',
+                subjectId: 'collection-Batman',
+                before: null,
+                after: { name: 'Batman', includesVolumeZero: false, finished: false },
+            },
+        ];
+
+        await subject(current).execute(
+            owner,
+            input({ collection: { collection: { name: 'Batman' }, volumeFrom: 1, volumeTo: 1 } }),
+            false,
+        );
+
+        expect(current.trail.entries).toEqual([
+            expect.objectContaining({ operationId: 'operation-1', category: 'book.created' }),
+            expect.objectContaining({ operationId: 'operation-1', category: 'collection.created' }),
+        ]);
+    });
 });
