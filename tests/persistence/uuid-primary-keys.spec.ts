@@ -6,6 +6,7 @@ import { randomUUID } from 'node:crypto';
 import BetterSqlite3 from 'better-sqlite3';
 import { Kysely, SqliteDialect, sql } from 'kysely';
 import { Migrator } from 'kysely/migration';
+import { UuidGenerator } from '../../apps/server/src/shared/infrastructure/adapters/driven/runtime/uuid-generator.adapter.js';
 import { DatabaseMigrations } from '../../apps/server/src/shared/infrastructure/adapters/driven/persistence/database-migrations.adapter.js';
 
 const paths: string[] = [];
@@ -34,7 +35,7 @@ async function legacy() {
     const db = new Kysely<unknown>({ dialect: new SqliteDialect({ database: sqlite }) });
 
     connections.push(db);
-    const migrator = new Migrator({ db, provider: new DatabaseMigrations() });
+    const migrator = new Migrator({ db, provider: new DatabaseMigrations(new UuidGenerator()) });
     const result = await migrator.migrateTo('005-books');
 
     if (result.error) {

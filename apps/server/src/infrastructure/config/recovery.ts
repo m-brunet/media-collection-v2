@@ -9,7 +9,7 @@ export async function recoverAdministrator(
     login: string,
     password: string,
 ): Promise<void> {
-    const database = await Database.open(dataDirectory, true);
+    const database = Database.openExisting(dataDirectory);
 
     try {
         await new RecoverAdministrator(
