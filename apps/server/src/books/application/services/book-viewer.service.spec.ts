@@ -46,4 +46,19 @@ describe('BookViewer', () => {
 
         expect(result.personal).toBeNull();
     });
+    it('shows the collection the book belongs to', async () => {
+        const current = library();
+        const book = await saved(current, {
+            collection: { collection: { name: 'Batman' }, volumeFrom: 1, volumeTo: 3 },
+        });
+
+        const result = await current.viewer.view(await current.loader.load(book.id), guest);
+
+        expect(result.collection).toEqual({
+            id: 'collection-Batman',
+            name: 'Batman',
+            volumeFrom: 1,
+            volumeTo: 3,
+        });
+    });
 });

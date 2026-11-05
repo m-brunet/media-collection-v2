@@ -6,6 +6,10 @@ function subject(current: ReturnType<typeof library>) {
     return new UpdateBook(
         current.books,
         current.authors,
+        current.collections,
+        current.collections,
+        current.removal,
+        current.covers,
         current.loader,
         current.builder,
         current.identity,
@@ -101,5 +105,46 @@ describe('UpdateBook', () => {
 
         await expect(result).rejects.toMatchObject({ reason: 'guest-read-only' });
         expect(current.books.books.get(book.id)!.details.title).toBe('Piranesi');
+    });
+    it('moves the book to another collection', async () => {
+        const current = library();
+        const book = await saved(current, {
+            collection: { collection: { name: 'Batman' }, volumeFrom: 1, volumeTo: 1 },
+        });
+
+        const result = await subject(current).execute(
+            owner,
+            book.id,
+            input({ collection: { collection: { name: 'Superman' }, volumeFrom: 2, volumeTo: 2 } }),
+        );
+
+        expect(result.collection).toMatchObject({ name: 'Superman', volumeFrom: 2 });
+        expect(current.trail.entries.at(-1)).toMatchObject({
+            category: 'book.updated',
+            before: { collection: { name: 'Batman' } },
+            after: { collection: { name: 'Superman' } },
+        });
+    });
+    it('deletes the planned books the edited Owned book replaces', async () => {
+        const current = library();
+        const book = await saved(current);
+        const planned = await saved(current, {
+            title: 'Planned',
+            isbn: null,
+            noIsbn: true,
+            ownership: 'not-owned',
+        });
+
+        await subject(current).execute(
+            owner,
+            book.id,
+            input({
+                collection: { collection: { name: 'Batman' }, volumeFrom: 1, volumeTo: 1 },
+                replacePlanned: [planned.id],
+            }),
+        );
+
+        expect(current.books.books.has(planned.id)).toBe(false);
+        expect(current.collections.replaced.at(-1)).toEqual([planned.id]);
     });
 });

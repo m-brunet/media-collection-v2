@@ -6,6 +6,16 @@ const author = z.union([
     z.strictObject({ id: z.uuid() }),
     z.strictObject({ name: z.string().max(400), distinct: z.boolean().optional() }),
 ]);
+const volume = z.number().int();
+const membership = z.strictObject({
+    collection: z.union([
+        z.strictObject({ id: z.uuid() }),
+        z.strictObject({ name: z.string().max(400), distinct: z.boolean().optional() }),
+    ]),
+    volumeFrom: volume,
+    volumeTo: volume,
+    enableVolumeZero: z.boolean().optional(),
+});
 
 export const bookInputSchema = z.strictObject({
     title: z.string().max(1000),
@@ -21,6 +31,8 @@ export const bookInputSchema = z.strictObject({
     pageCount: z.number().int().nullable(),
     price: text(40),
     confirmDistinct: z.boolean().optional(),
+    collection: membership.nullable(),
+    replacePlanned: z.array(z.uuid()).max(100).optional(),
 });
 
 export const newBookSchema = bookInputSchema.extend({ read: z.boolean() });

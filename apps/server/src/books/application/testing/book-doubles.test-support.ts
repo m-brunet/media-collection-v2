@@ -3,6 +3,14 @@ import type { BookInput } from '../book-input.js';
 import type { AuthorRepository } from '../ports/driven/author-repository.interface.js';
 import type { BookCatalog } from '../ports/driven/book-catalog.interface.js';
 import type { BookRepository } from '../ports/driven/book-repository.interface.js';
+import type {
+    BookCollection,
+    BookCollectionReader,
+} from '../ports/driven/book-collection-reader.interface.js';
+import type {
+    CollectionMembership,
+    MembershipRequest,
+} from '../ports/driven/collection-membership.interface.js';
 import type { CoverStorage } from '../ports/driven/cover-storage.interface.js';
 import type { PersonalNoteStore } from '../ports/driven/personal-note-store.interface.js';
 import type { ReadingStatusStore } from '../ports/driven/reading-status-store.interface.js';
@@ -10,6 +18,7 @@ import { AuthorResolver } from '../services/author-resolver.service.js';
 import { BookDetailsBuilder } from '../services/book-details-builder.service.js';
 import { BookIdentityCheck } from '../services/book-identity-check.service.js';
 import { BookLoader } from '../services/book-loader.service.js';
+import { BookRemoval } from '../services/book-removal.service.js';
 import { BookViewer } from '../services/book-viewer.service.js';
 import { Author } from '../../domain/entities/author.entity.js';
 import { Book } from '../../domain/entities/book.entity.js';
@@ -181,6 +190,7 @@ export class MemoryCatalog implements BookCatalog {
             category: book.details.category,
             ownership: book.details.ownership,
             hasCover: book.snapshot.coverFile !== null,
+            collection: null,
             updatedAt: book.snapshot.updatedAt,
             read: query.readerId === null ? null : false,
         }));
@@ -195,6 +205,51 @@ export class MemoryCatalog implements BookCatalog {
     }
 }
 
+// Records memberships without the coverage rules, which the collections feature tests itself.
+// Like production, planned books can only be replaced by a book joining a collection.
+export class MemoryMembership implements CollectionMembership, BookCollectionReader {
+    readonly memberships = new Map<string, BookCollection>();
+    readonly replaced: string[][] = [];
+
+    async assign(
+        book: { id: string },
+        request: MembershipRequest | null,
+        replacing: readonly string[],
+    ): Promise<BookCollection | null> {
+        if (!request && replacing.length > 0) {
+            throw new Failure('conflict', 'Nothing to replace', 'replacement-outdated');
+        }
+
+        this.replaced.push([...replacing]);
+
+        if (!request) {
+            this.memberships.delete(book.id);
+
+            return null;
+        }
+
+        const choice = request.collection;
+        const membership = {
+            id: 'id' in choice ? choice.id : 'collection-' + choice.name,
+            name: 'name' in choice ? choice.name : 'Collection',
+            volumeFrom: request.volumeFrom,
+            volumeTo: request.volumeTo,
+        };
+
+        this.memberships.set(book.id, membership);
+
+        return membership;
+    }
+
+    async leave(bookId: string): Promise<void> {
+        this.memberships.delete(bookId);
+    }
+
+    async of(bookId: string): Promise<BookCollection | null> {
+        return this.memberships.get(bookId) ?? null;
+    }
+}
+
 // A library with all doubles and services wired as in production.
 export function library() {
     const books = new MemoryBooks();
@@ -204,6 +259,8 @@ export function library() {
     const covers = new MemoryCovers();
     const trail = new MemoryAuditTrail();
     const catalog = new MemoryCatalog(books, authors);
+    const collections = new MemoryMembership();
+    const loader = new BookLoader(books);
     let counter = 0;
     const ids = { next: () => 'id-' + ++counter };
     const clock = { now: () => new Date('2026-03-01T10:00:00Z') };
@@ -216,13 +273,15 @@ export function library() {
         covers,
         trail,
         catalog,
+        collections,
         ids,
         clock,
         operations: auditedOperation(trail),
         builder: new BookDetailsBuilder(new AuthorResolver(authors, ids, clock)),
         identity: new BookIdentityCheck(books, authors),
-        loader: new BookLoader(books),
-        viewer: new BookViewer(catalog, readings, notes),
+        loader,
+        removal: new BookRemoval(books, authors, collections, loader),
+        viewer: new BookViewer(catalog, readings, notes, collections),
     };
 }
 
@@ -240,6 +299,7 @@ export function input(overrides: Partial<BookInput> = {}): BookInput {
         summary: null,
         pageCount: null,
         price: null,
+        collection: null,
         ...overrides,
     };
 }
@@ -263,7 +323,10 @@ export async function saved(
         current.books,
         current.builder,
         current.identity,
+        current.collections,
+        current.removal,
         current.readings,
+        current.covers,
         current.viewer,
         current.ids,
         current.clock,

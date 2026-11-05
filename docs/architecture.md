@@ -104,6 +104,13 @@ retain the full source basename, such as `user.entity.spec.ts`; controller tests
 Cross-feature collaboration uses explicit narrow inner contracts; a feature cannot import another feature's
 infrastructure. Root composition may wire features; shared adapters must not reach into feature implementations.
 
+Books and collections collaborate this way. `books` declares two driven ports, both implemented by the collections
+application service `BookCollectionMembership`: `CollectionMembership` for writers (book saves and deletions apply
+the collection rules — name matching, volume 0, coverage overlap, planned-book replacement, reopening and removal of
+empty collections — in the same transaction) and `BookCollectionReader` for the views and audit snapshots that only
+read a book's membership. `collections` declares `CollectionBookSearch`, implemented by the books catalog,
+so collection listings reuse the book search. The application root wires both (`CollectionsModule.membership`).
+
 Shared code is for actual shared capabilities: actor authorization, failure types, clocks, IDs, authentication and
 session-renewal contracts, database connection management and HTTP security. Feature behavior stays with its feature. Do
 not add generic service containers or wrappers without a current purpose.
@@ -240,6 +247,11 @@ Historical migrations live under shared driven persistence in `migrations/`, loa
 Their original names and order remain stable. Migration 006 rebuilds related tables transactionally, preserving
 valid entity IDs, relationships, settings and audit payloads. Invalid legacy entity IDs stop the upgrade before schema
 changes and require explicit data repair. Audit integer keys and settings names receive UUID identities.
+
+Each table is written only by the adapters of the feature that owns it. Read adapters may join another feature's
+tables for listings and views (the books catalog reads collection names and volumes; the collection member store
+reads book titles and ownership), never write them. Collection membership has its own `collection_books` table keyed
+by book and collection, with a unique book index for the current one-collection rule (migration 007).
 
 Runtime adapters use Kysely builders, including `instr` for literal searches on normalized keys. Raw SQL is allowed
 in migrations and database-boundary tests only. Connection setup retains a narrow exception for driver construction

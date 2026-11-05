@@ -140,3 +140,19 @@ it('reports a list that cannot be loaded', async () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('The request failed. Try again.');
 });
+
+it('shows the collection and volume of a book', async () => {
+    new FakeApi().signedIn(account()).on('GET /books', () => ({
+        status: 200,
+        body: {
+            total: 1,
+            items: [bookItem({ collection: { name: 'Batman', volumeFrom: 12, volumeTo: 12 } })],
+        },
+    }));
+
+    show();
+
+    expect(await screen.findByRole('link', { name: /Piranesi/ })).toHaveTextContent(
+        'Batman · Volume 12',
+    );
+});

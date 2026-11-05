@@ -7,7 +7,10 @@ function subject(current = library()) {
         current.books,
         current.builder,
         current.identity,
+        current.collections,
+        current.removal,
         current.readings,
+        current.covers,
         current.viewer,
         current.ids,
         current.clock,
@@ -158,5 +161,65 @@ describe('CreateBook', () => {
         const result = subject(current).execute(owner, input({ publicationMonth: 3 }), false);
 
         await expect(result).rejects.toMatchObject({ reason: 'publication-month-without-year' });
+    });
+    it('records the collection membership chosen in the form', async () => {
+        const current = library();
+        const membership = { collection: { name: 'Batman' }, volumeFrom: 1, volumeTo: 3 };
+
+        const result = await subject(current).execute(
+            owner,
+            input({ collection: membership }),
+            false,
+        );
+
+        expect(result.collection).toEqual({
+            id: 'collection-Batman',
+            name: 'Batman',
+            volumeFrom: 1,
+            volumeTo: 3,
+        });
+        expect(current.trail.entries[0]).toMatchObject({
+            category: 'book.created',
+            after: { collection: { name: 'Batman', volumeFrom: 1, volumeTo: 3 } },
+        });
+    });
+    it('deletes the planned books a purchased book replaces, with their covers', async () => {
+        const current = library();
+        const planned = await saved(current, { isbn: null, noIsbn: true, ownership: 'not-owned' });
+        const file = await current.covers.store(new Uint8Array([1]), 'image/png');
+        const stored = current.books.books.get(planned.id)!;
+
+        stored.replaceCover(file, '2026-03-01T10:00:00.000Z');
+
+        const result = await subject(current).execute(
+            owner,
+            input({
+                collection: { collection: { name: 'Batman' }, volumeFrom: 1, volumeTo: 1 },
+                replacePlanned: [planned.id],
+            }),
+            false,
+        );
+
+        expect(current.books.books.has(planned.id)).toBe(false);
+        expect(current.books.books.has(result.id)).toBe(true);
+        expect(current.covers.files.has(file)).toBe(false);
+        expect(current.collections.replaced.at(-1)).toEqual([planned.id]);
+        expect(current.trail.entries.at(-1)).toMatchObject({
+            category: 'book.created',
+            after: { replacedPlanned: [{ title: 'Piranesi', ownership: 'not-owned' }] },
+        });
+    });
+    it('keeps the planned books when the purchased book cannot be saved', async () => {
+        const current = library();
+        const planned = await saved(current, { isbn: null, noIsbn: true, ownership: 'not-owned' });
+
+        const result = subject(current).execute(
+            owner,
+            input({ title: '', replacePlanned: [planned.id] }),
+            false,
+        );
+
+        await expect(result).rejects.toMatchObject({ reason: 'title-invalid' });
+        expect(current.books.books.has(planned.id)).toBe(true);
     });
 });

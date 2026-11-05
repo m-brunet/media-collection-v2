@@ -1,5 +1,6 @@
 import type { BookView } from '../book-views.js';
 import type { BookCatalog } from '../ports/driven/book-catalog.interface.js';
+import type { BookCollectionReader } from '../ports/driven/book-collection-reader.interface.js';
 import type { PersonalNoteStore } from '../ports/driven/personal-note-store.interface.js';
 import type { ReadingStatusStore } from '../ports/driven/reading-status-store.interface.js';
 import type { Book } from '../../domain/entities/book.entity.js';
@@ -12,6 +13,7 @@ export class BookViewer {
         private readonly catalog: BookCatalog,
         private readonly readings: ReadingStatusStore,
         private readonly notes: PersonalNoteStore,
+        private readonly collections: BookCollectionReader,
     ) {}
 
     async view(book: Book, actor: Actor): Promise<BookView> {
@@ -33,6 +35,7 @@ export class BookViewer {
             pageCount: details.pageCount,
             priceCents: details.price?.cents ?? null,
             hasCover: coverFile !== null,
+            collection: await this.collections.of(id),
             createdAt,
             updatedAt,
             personal:

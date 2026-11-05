@@ -62,7 +62,7 @@ it('requires text UUID identities on every single-column application primary key
     const schemas = await sql<{ name: string; sql: string }>`select name, sql from sqlite_master
         where type = 'table' and name not like 'kysely_%' and name not like 'sqlite_%'`.execute(db);
 
-    expect(schemas.rows).toHaveLength(8);
+    expect(schemas.rows).toHaveLength(10);
 
     for (const table of schemas.rows) {
         const columns = await sql<{
@@ -290,7 +290,7 @@ it('rolls back schema and data if restoring a legacy relationship fails', async 
 
 it('safely retries a committed rebuild whose migration record was not saved', async () => {
     const { db, migrator } = await legacy();
-    const initial = await migrator.migrateToLatest();
+    const initial = await migrator.migrateTo('006-uuid-primary-keys');
 
     expect(initial.error).toBeUndefined();
     const id = randomUUID();
@@ -313,4 +313,66 @@ it('safely retries a committed rebuild whose migration record was not saved', as
             )
         ).rows,
     ).toEqual([{ name: '006-uuid-primary-keys' }]);
+});
+
+async function withCollection(db: Awaited<ReturnType<typeof migrated>>) {
+    const book = randomUUID();
+    const collection = randomUUID();
+
+    await sql`insert into books (id, title, title_key, isbn13, isbn_converted, no_isbn, category,
+        ownership, created_at, updated_at) values (${book}, 'Year One', 'year one', null, 0, 1,
+        'comics', 'owned', '2026-01-01', '2026-01-01')`.execute(db);
+    await sql`insert into collections values (${collection}, 'Batman', 'batman', 0, 0,
+        '2026-01-01', '2026-01-01')`.execute(db);
+
+    return { book, collection };
+}
+
+it('rejects non-UUID collection identities at the database boundary', async () => {
+    const db = await migrated();
+
+    const result =
+        sql`insert into collections values ('invalid', 'Batman', 'batman', 0, 0, '2026-01-01', '2026-01-01')`.execute(
+            db,
+        );
+
+    await expect(result).rejects.toThrow(/CHECK constraint/);
+});
+
+it('rejects a covered range going downwards', async () => {
+    const db = await migrated();
+    const { book, collection } = await withCollection(db);
+
+    const result = sql`insert into collection_books values (${book}, ${collection}, 3, 1)`.execute(
+        db,
+    );
+
+    await expect(result).rejects.toThrow(/CHECK constraint/);
+});
+
+it('keeps a book in at most one collection', async () => {
+    const db = await migrated();
+    const { book, collection } = await withCollection(db);
+    const other = randomUUID();
+
+    await sql`insert into collections values (${other}, 'Dune', 'dune', 0, 0,
+        '2026-01-01', '2026-01-01')`.execute(db);
+    await sql`insert into collection_books values (${book}, ${collection}, 1, 1)`.execute(db);
+
+    const result = sql`insert into collection_books values (${book}, ${other}, 1, 1)`.execute(db);
+
+    await expect(result).rejects.toThrow(/UNIQUE constraint/);
+});
+
+it('ends the membership of a deleted book', async () => {
+    const db = await migrated();
+    const { book, collection } = await withCollection(db);
+
+    await sql`insert into collection_books values (${book}, ${collection}, 1, 1)`.execute(db);
+
+    await sql`delete from books where id = ${book}`.execute(db);
+
+    const rows = await sql`select * from collection_books`.execute(db);
+
+    expect(rows.rows).toEqual([]);
 });

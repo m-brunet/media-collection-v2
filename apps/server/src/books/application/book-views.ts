@@ -1,3 +1,4 @@
+import type { BookCollection } from './ports/driven/book-collection-reader.interface.js';
 import type { BookCategory, Ownership } from '../domain/entities/book.entity.js';
 
 // Read models returned by the books use cases. Personal fields are null for Guests, who have no
@@ -24,6 +25,7 @@ export interface BookView {
     pageCount: number | null;
     priceCents: number | null;
     hasCover: boolean;
+    collection: BookCollection | null;
     createdAt: string;
     updatedAt: string;
     // The viewer's own reading status and note; null for Guests.
@@ -49,6 +51,7 @@ export interface BookListItem {
     category: BookCategory;
     ownership: Ownership;
     hasCover: boolean;
+    collection: { name: string; volumeFrom: number; volumeTo: number } | null;
     updatedAt: string;
     read: boolean | null;
 }

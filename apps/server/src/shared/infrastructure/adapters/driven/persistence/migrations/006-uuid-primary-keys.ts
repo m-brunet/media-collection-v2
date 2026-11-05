@@ -40,7 +40,7 @@ export class UuidPrimaryKeysMigration implements Migration {
 
         if (
             completed.rows.length === 5 &&
-            completed.rows.every((row) => row.sql.includes(this.uuidCheck()))
+            completed.rows.every((row) => row.sql.includes(UuidPrimaryKeysMigration.uuidCheck()))
         ) {
             return;
         }
@@ -102,7 +102,7 @@ export class UuidPrimaryKeysMigration implements Migration {
     }
 
     private definition(snapshot: TableSnapshot): string {
-        const id = `"id" text not null primary key check (${this.uuidCheck()})`;
+        const id = `"id" text not null primary key check (${UuidPrimaryKeysMigration.uuidCheck()})`;
 
         if (snapshot.name === 'server_settings') {
             const definition = snapshot.definition.replace(
@@ -133,7 +133,8 @@ export class UuidPrimaryKeysMigration implements Migration {
         return snapshot.definition;
     }
 
-    private uuidCheck(): string {
+    // The UUID format CHECK on an `id` column; later migrations reuse it for new tables.
+    static uuidCheck(): string {
         return `typeof(id) = 'text' and length(id) = 36
             and substr(id, 9, 1) = '-' and substr(id, 14, 1) = '-'
             and substr(id, 19, 1) = '-' and substr(id, 24, 1) = '-'

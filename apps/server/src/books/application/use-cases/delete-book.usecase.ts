@@ -1,21 +1,19 @@
 import type { DeleteBookUseCase } from '../ports/driving/delete-book-use-case.interface.js';
 import { BookAudit, BookSnapshot } from '../book-audit.js';
-import type { AuthorRepository } from '../ports/driven/author-repository.interface.js';
-import type { BookRepository } from '../ports/driven/book-repository.interface.js';
+import type { BookCollectionReader } from '../ports/driven/book-collection-reader.interface.js';
 import type { CoverStorage } from '../ports/driven/cover-storage.interface.js';
-import { BookLoader } from '../services/book-loader.service.js';
+import { BookRemoval } from '../services/book-removal.service.js';
 import type { AuditedOperation } from '../../../shared/application/services/audited-operation.service.js';
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// Deletes an edition with everyone's reading status and notes on it, its cover, and the
-// authors linked to no other book.
+// Deletes an edition with everyone's reading status and notes on it, its cover, its collection
+// membership (an emptied collection disappears) and the authors linked to no other book.
 export class DeleteBook implements DeleteBookUseCase {
     constructor(
-        private readonly books: BookRepository,
-        private readonly authors: AuthorRepository,
+        private readonly removal: BookRemoval,
+        private readonly collections: BookCollectionReader,
         private readonly covers: CoverStorage,
-        private readonly loader: BookLoader,
         private readonly operations: AuditedOperation,
     ) {}
 
@@ -29,14 +27,12 @@ export class DeleteBook implements DeleteBookUseCase {
             },
             async () => {
                 ActorAuthorization.requireLibraryEditor(actor);
-                const book = await this.loader.load(bookId);
-
-                await this.books.delete(bookId);
-                await this.authors.removeUnlinked(book.details.authorIds);
+                const collection = await this.collections.of(bookId);
+                const book = await this.removal.remove(bookId);
 
                 return {
                     result: book.snapshot.coverFile,
-                    before: BookSnapshot.of(book),
+                    before: BookSnapshot.of(book, collection),
                     after: null,
                 };
             },

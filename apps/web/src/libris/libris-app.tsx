@@ -17,6 +17,8 @@ import { BookDetailsPage } from './books/book-details-page';
 import { BookFormPage } from './books/book-form-page';
 import { BookSavedPage } from './books/book-saved-page';
 import { MyBooksPage } from './books/my-books-page';
+import { CollectionDetailsPage } from './collections/collection-details-page';
+import { CollectionsPage } from './collections/collections-page';
 
 function NotFoundPage() {
     const { t } = useI18n();
@@ -101,6 +103,8 @@ function LibrisRoutes() {
                     }
                 />
                 <Route path="/books/:id/added" element={<BookSavedPage />} />
+                <Route path="/collections" element={<CollectionsPage />} />
+                <Route path="/collections/:id" element={<CollectionDetailsPage />} />
                 <Route path="/account" element={<AccountPage />} />
                 <Route
                     path="/admin/accounts"

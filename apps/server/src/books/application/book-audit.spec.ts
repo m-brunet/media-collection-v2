@@ -53,4 +53,25 @@ describe('BookSnapshot', () => {
         expect(result.hasCover).toBe(true);
         expect(JSON.stringify(result)).not.toContain('.png');
     });
+    it('records the collection membership when the change concerns it', () => {
+        const collection = { id: 'c1', name: 'Batman', volumeFrom: 1, volumeTo: 3 };
+
+        const result = BookSnapshot.of(book(null), collection);
+
+        expect(result.collection).toEqual(collection);
+    });
+    it('records a book outside any collection', () => {
+        const collection = null;
+
+        const result = BookSnapshot.of(book(null), collection);
+
+        expect(result.collection).toBeNull();
+    });
+    it('leaves membership out when the change does not concern it', () => {
+        const subject = book(null);
+
+        const result = BookSnapshot.of(subject);
+
+        expect(result).not.toHaveProperty('collection');
+    });
 });

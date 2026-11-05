@@ -4,6 +4,7 @@ import type {
     BookDto,
     BookInputDto,
     BookOwnership,
+    MembershipDto,
 } from '../../../../../packages/contracts/src/http';
 import { BookFormat } from './book-format.util';
 
@@ -32,6 +33,27 @@ export interface BookDraftValues {
     price: string;
     // The viewer's own note; null when they have none.
     note: string | null;
+    // Collection membership: a collection name (joined or created by the server) and the covered
+    // volumes, one number or a consecutive omnibus range.
+    inCollection: boolean;
+    collectionName: string;
+    // Confirmed as a different collection from a similar existing one.
+    collectionDistinct: boolean;
+    omnibus: boolean;
+    volumeFrom: string;
+    volumeTo: string;
+    // The person accepted to include volume 0 in the collection.
+    enableVolumeZero: boolean;
+}
+
+// Why the collection part of the form cannot be sent yet.
+export type CollectionProblem = 'collection-name-required' | 'volume-required';
+
+export interface SaveOptions {
+    // A new no-ISBN book is distinct from the similar saved ones.
+    confirmDistinct?: boolean;
+    // Planned Not Owned books this Owned book replaces, deleted by the server.
+    replacePlanned?: string[];
 }
 
 export class BookDraft {
@@ -51,7 +73,19 @@ export class BookDraft {
             pageCount: '',
             price: '',
             note: null,
+            inCollection: false,
+            collectionName: '',
+            collectionDistinct: false,
+            omnibus: false,
+            volumeFrom: '',
+            volumeTo: '',
+            enableVolumeZero: false,
         };
+    }
+
+    // A new book started from a collection page belongs to that collection.
+    static inCollection(name: string): BookDraftValues {
+        return { ...BookDraft.empty(), inCollection: true, collectionName: name };
     }
 
     static fromBook(book: BookDto, locale: string): BookDraftValues {
@@ -70,11 +104,20 @@ export class BookDraft {
             pageCount: book.pageCount === null ? '' : String(book.pageCount),
             price: book.priceCents === null ? '' : BookFormat.priceInput(book.priceCents, locale),
             note: book.personal?.note?.text ?? null,
+            inCollection: book.collection !== null,
+            collectionName: book.collection?.name ?? '',
+            collectionDistinct: false,
+            omnibus: book.collection
+                ? book.collection.volumeTo > book.collection.volumeFrom
+                : false,
+            volumeFrom: book.collection ? String(book.collection.volumeFrom) : '',
+            volumeTo: book.collection ? String(book.collection.volumeTo) : '',
+            enableVolumeZero: false,
         };
     }
 
     // Shared information sent to the server; blank optional fields mean "unknown".
-    static toInput(values: BookDraftValues, confirmDistinct = false): BookInputDto {
+    static toInput(values: BookDraftValues, options: SaveOptions = {}): BookInputDto {
         return {
             title: values.title,
             isbn: values.noIsbn ? null : BookDraft.optional(values.isbn),
@@ -92,8 +135,24 @@ export class BookDraft {
             summary: BookDraft.optional(values.summary),
             pageCount: BookDraft.number(values.pageCount),
             price: BookDraft.optional(values.price),
-            ...(confirmDistinct ? { confirmDistinct: true } : {}),
+            ...(options.confirmDistinct ? { confirmDistinct: true } : {}),
+            collection: BookDraft.membership(values),
+            ...(options.replacePlanned?.length ? { replacePlanned: options.replacePlanned } : {}),
         };
+    }
+
+    static collectionProblem(values: BookDraftValues): CollectionProblem | null {
+        if (!values.inCollection) {
+            return null;
+        }
+
+        if (!values.collectionName.trim()) {
+            return 'collection-name-required';
+        }
+
+        const volumes = values.omnibus ? [values.volumeFrom, values.volumeTo] : [values.volumeFrom];
+
+        return volumes.some((volume) => volume.trim() === '') ? 'volume-required' : null;
     }
 
     // The note to save: null removes it (an emptied note counts as removed).
@@ -130,8 +189,35 @@ export class BookDraft {
         };
     }
 
+    private static membership(values: BookDraftValues): MembershipDto | null {
+        if (!values.inCollection) {
+            return null;
+        }
+
+        const volumeFrom = Number(values.volumeFrom.trim());
+
+        return {
+            collection: {
+                name: values.collectionName.trim(),
+                ...(values.collectionDistinct ? { distinct: true } : {}),
+            },
+            volumeFrom,
+            volumeTo: values.omnibus ? Number(values.volumeTo.trim()) : volumeFrom,
+            ...(values.enableVolumeZero ? { enableVolumeZero: true } : {}),
+        };
+    }
+
+    // Answers given in dialogs are not changes of their own.
     private static comparable(values: BookDraftValues) {
-        return { ...values, note: BookDraft.note(values) };
+        return {
+            ...values,
+            note: BookDraft.note(values),
+            collectionDistinct: false,
+            enableVolumeZero: false,
+            ...(values.inCollection
+                ? {}
+                : { collectionName: '', omnibus: false, volumeFrom: '', volumeTo: '' }),
+        };
     }
 
     private static optional(value: string): string | null {
