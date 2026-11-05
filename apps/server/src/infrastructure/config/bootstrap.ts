@@ -123,14 +123,14 @@ export class BackendRuntime {
 
     // Internal composition entry: production callers are Electron utility-process workers.
     async start(options: BackendOptions): Promise<BackendHandle> {
-        const database = await Database.open(options.dataDirectory);
+        const ids = new UuidGenerator();
+        const database = await Database.open(options.dataDirectory, ids);
         let http: Server | undefined;
         let https: Server | undefined;
         let nest: Awaited<ReturnType<typeof NestFactory.create>> | undefined;
 
         try {
             const clock = options.clock ?? new SystemClock();
-            const ids = new UuidGenerator();
             const users = new KyselyUserRepository(database.connections);
             const passwords = new ScryptPasswordHasher();
             const storage = new PrivateStorage();

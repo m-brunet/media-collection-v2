@@ -1,3 +1,4 @@
+import type { IdGenerator } from '../../../../application/ports/driven/id-generator.interface.js';
 import { DatabaseMigrations } from './database-migrations.adapter.js';
 import BetterSqlite3 from 'better-sqlite3';
 import { Kysely, SqliteDialect } from 'kysely';
@@ -112,23 +113,14 @@ export class Database {
         this.connections = new DatabaseConnections(this.connection);
     }
 
-    static async open(directory: string, existingOnly = false): Promise<Database> {
-        const file = join(directory, 'application.sqlite');
-
-        if (existingOnly && !existsSync(file)) {
-            throw new Error('No existing application database was found in this data directory.');
-        }
-
-        if (!existingOnly) {
-            mkdirSync(directory, { recursive: true, mode: 0o700 });
-        }
-
-        const database = new Database(file);
+    // Creates the database when needed and brings its schema up to date. Migrations that
+    // assign new identities use the application's ID generator.
+    static async open(directory: string, ids: IdGenerator): Promise<Database> {
+        mkdirSync(directory, { recursive: true, mode: 0o700 });
+        const database = new Database(join(directory, 'application.sqlite'));
 
         try {
-            if (!existingOnly) {
-                await database.migrate();
-            }
+            await database.migrate(ids);
 
             return database;
         } catch (error) {
@@ -137,14 +129,25 @@ export class Database {
         }
     }
 
+    // Existing storage only, never migrated: used by local administrator recovery.
+    static openExisting(directory: string): Database {
+        const file = join(directory, 'application.sqlite');
+
+        if (!existsSync(file)) {
+            throw new Error('No existing application database was found in this data directory.');
+        }
+
+        return new Database(file);
+    }
+
     close(): Promise<void> {
         return this.connection.destroy();
     }
 
-    private async migrate(): Promise<void> {
+    private async migrate(ids: IdGenerator): Promise<void> {
         const migrator = new Migrator({
             db: this.connection,
-            provider: new DatabaseMigrations(),
+            provider: new DatabaseMigrations(ids),
         });
         const { error } = await migrator.migrateToLatest();
 

@@ -1,4 +1,4 @@
-import { UuidGenerator } from '../runtime/uuid-generator.adapter.js';
+import type { IdGenerator } from '../../../../application/ports/driven/id-generator.interface.js';
 import type { Migration, MigrationProvider } from 'kysely/migration';
 import { FoundationMigration } from './migrations/001-foundation.js';
 import { MediaCollectionFoundationMigration } from './migrations/002-media-collection-foundation.js';
@@ -8,6 +8,8 @@ import { BooksMigration } from './migrations/005-books.js';
 import { UuidPrimaryKeysMigration } from './migrations/006-uuid-primary-keys.js';
 
 export class DatabaseMigrations implements MigrationProvider {
+    constructor(private readonly ids: IdGenerator) {}
+
     async getMigrations(): Promise<Record<string, Migration>> {
         return {
             '001-foundation': this.migration(new FoundationMigration()),
@@ -19,9 +21,7 @@ export class DatabaseMigrations implements MigrationProvider {
                 new CaseInsensitiveUsernamesMigration(),
             ),
             '005-books': this.migration(new BooksMigration()),
-            '006-uuid-primary-keys': this.migration(
-                new UuidPrimaryKeysMigration(new UuidGenerator()),
-            ),
+            '006-uuid-primary-keys': this.migration(new UuidPrimaryKeysMigration(this.ids)),
         };
     }
 

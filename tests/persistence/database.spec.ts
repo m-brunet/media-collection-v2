@@ -37,7 +37,7 @@ async function open(directory?: string) {
         paths.push(path);
     }
 
-    const database = await Database.open(path);
+    const database = await Database.open(path, new UuidGenerator());
 
     databases.push(database);
 
