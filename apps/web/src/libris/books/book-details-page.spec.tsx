@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { fireEvent, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { bookDto } from '../../testing/book-fixtures.test-support';
@@ -158,4 +158,152 @@ it('links to the collection with the covered volumes', async () => {
         'href',
         '/collections/c1',
     );
+});
+
+const bookcases = [
+    {
+        id: 'oak',
+        name: 'Oak bookcase',
+        bookCount: 3,
+        shelves: [
+            { id: 's1', bookcaseId: 'oak', name: 'Shelf 1', bookCount: 1 },
+            { id: 's3', bookcaseId: 'oak', name: 'Shelf 3', bookCount: 2 },
+        ],
+    },
+    { id: 'hall', name: 'Hall bookcase', bookCount: 0, shelves: [] },
+];
+
+function organised() {
+    return bookDto({
+        location: {
+            bookcaseId: 'oak',
+            bookcaseName: 'Oak bookcase',
+            shelfId: 's1',
+            shelfName: 'Shelf 1',
+        },
+        tags: [
+            { id: 't1', name: 'Fantasy' },
+            { id: 't2', name: 'Literary fiction' },
+        ],
+    });
+}
+
+it('saves a new shelf as soon as it is chosen', async () => {
+    const api = new FakeApi()
+        .signedIn(account())
+        .on('GET /books/b1', () => ({ status: 200, body: organised() }))
+        .on('GET /bookcases', () => ({ status: 200, body: bookcases }))
+        .on('PATCH /books/b1/organisation', () => ({
+            status: 200,
+            body: {
+                ...organised(),
+                location: {
+                    bookcaseId: 'oak',
+                    bookcaseName: 'Oak bookcase',
+                    shelfId: 's3',
+                    shelfName: 'Shelf 3',
+                },
+            },
+        }));
+
+    show();
+
+    await userEvent.selectOptions(
+        await screen.findByLabelText('Physical location'),
+        'Oak bookcase – Shelf 3',
+    );
+
+    expect(await screen.findByText('Saved')).toBeInTheDocument();
+    expect(api.calls.find((call) => call.route === 'PATCH /books/b1/organisation')?.body).toEqual({
+        shelfId: 's3',
+    });
+});
+
+it('saves the removal of a tag from this book only', async () => {
+    const api = new FakeApi()
+        .signedIn(account())
+        .on('GET /books/b1', () => ({ status: 200, body: organised() }))
+        .on('GET /bookcases', () => ({ status: 200, body: bookcases }))
+        .on('PATCH /books/b1/organisation', () => ({
+            status: 200,
+            body: { ...organised(), tags: [{ id: 't2', name: 'Literary fiction' }] },
+        }));
+
+    show();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Remove the tag Fantasy' }));
+
+    expect(await screen.findByText('Saved')).toBeInTheDocument();
+    expect(api.calls.find((call) => call.route === 'PATCH /books/b1/organisation')?.body).toEqual({
+        tags: [{ id: 't2' }],
+    });
+});
+
+it('restores the saved location and explains a refused change', async () => {
+    new FakeApi()
+        .signedIn(account())
+        .on('GET /books/b1', () => ({ status: 200, body: organised() }))
+        .on('GET /bookcases', () => ({ status: 200, body: bookcases }))
+        .on('PATCH /books/b1/organisation', () => ({
+            status: 404,
+            body: { message: 'Missing', reason: 'shelf-missing' },
+        }));
+    show();
+    const select = await screen.findByLabelText('Physical location');
+
+    await userEvent.selectOptions(select, 'Oak bookcase – Shelf 3');
+
+    expect(
+        await screen.findByText('This shelf no longer exists. Choose another one.'),
+    ).toBeInTheDocument();
+    expect(select).toHaveValue('s1');
+});
+
+it('returns to the last confirmed change when a later one is refused', async () => {
+    let saves = 0;
+
+    new FakeApi()
+        .signedIn(account())
+        .on('GET /books/b1', () => ({ status: 200, body: organised() }))
+        .on('GET /bookcases', () => ({ status: 200, body: bookcases }))
+        .on('PATCH /books/b1/organisation', () =>
+            ++saves === 1
+                ? {
+                      status: 200,
+                      body: {
+                          ...organised(),
+                          location: {
+                              bookcaseId: 'oak',
+                              bookcaseName: 'Oak bookcase',
+                              shelfId: 's3',
+                              shelfName: 'Shelf 3',
+                          },
+                      },
+                  }
+                : { status: 404, body: { message: 'Missing', reason: 'tag-missing' } },
+        );
+    show();
+    const select = await screen.findByLabelText('Physical location');
+    const remove = screen.getByRole('button', { name: 'Remove the tag Fantasy' });
+
+    fireEvent.change(select, { target: { value: 's3' } });
+    fireEvent.click(remove);
+
+    expect(
+        await screen.findByText('One of the tags no longer exists. Choose the tags again.'),
+    ).toBeInTheDocument();
+    expect(select).toHaveValue('s3');
+    expect(screen.getByRole('button', { name: 'Remove the tag Fantasy' })).toBeInTheDocument();
+});
+
+it('shows a Guest the location and tags without editing them', async () => {
+    new FakeApi()
+        .signedIn(account({ role: 'guest' }))
+        .on('GET /books/b1', () => ({ status: 200, body: { ...organised(), personal: null } }));
+
+    show();
+
+    expect(await screen.findByText('Oak bookcase – Shelf 1')).toBeInTheDocument();
+    expect(screen.getByText('Fantasy')).toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: 'Find or create tag' })).not.toBeInTheDocument();
 });

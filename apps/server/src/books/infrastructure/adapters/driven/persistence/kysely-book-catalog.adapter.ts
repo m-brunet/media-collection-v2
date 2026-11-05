@@ -9,13 +9,15 @@ import type {
 import type { BookCategory, Ownership } from '../../../../domain/entities/book.entity.js';
 import { Isbn } from '../../../../domain/value-objects/isbn.value-object.js';
 import type { CollectionBookSearch } from '../../../../../collections/application/ports/driven/collection-book-search.interface.js';
+import type { BookFilter } from '../../../../../shared/application/book-filter.js';
 import { NameKey } from '../../../../../shared/domain/name-key.helper.js';
 import type { DatabaseSchema } from '../../../../../shared/infrastructure/adapters/driven/persistence/database.adapter.js';
 import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
 
 // Simple search: case- and accent-insensitive partial match on title, author and collection names
 // (stored comparison keys), partial ISBN digits, and the ISBN-13 equivalent of a complete
-// ISBN-10. Collection listings apply the same search: a collection matches through its books.
+// ISBN-10. Advanced filters apply to the same books. Collection listings apply the same search
+// and filters: a collection matches through one of its books satisfying all of them.
 export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
     constructor(private readonly connections: DatabaseConnections) {}
 
@@ -24,7 +26,7 @@ export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
     }
 
     async search(query: BookListQuery): Promise<BookListPage> {
-        const filter = this.filter(query.search);
+        const filter = this.matching(query.search, query.filter, query.readerId);
         const counted = await this.db
             .selectFrom('books')
             .select((eb) => eb.fn.countAll<number>().as('total'))
@@ -95,13 +97,17 @@ export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
         };
     }
 
-    async collectionsMatching(search: string): Promise<string[]> {
+    async collectionsMatching(
+        search: string,
+        filter: BookFilter,
+        readerId: string | null,
+    ): Promise<string[]> {
         const rows = await this.db
             .selectFrom('collection_books')
             .innerJoin('books', 'books.id', 'collection_books.book_id')
             .select('collection_books.collection_id')
             .distinct()
-            .where(this.filter(search))
+            .where(this.matching(search, filter, readerId))
             .execute();
 
         return rows.map((row) => row.collection_id);
@@ -117,7 +123,140 @@ export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
             .execute();
     }
 
-    private filter(search: string) {
+    // One expression per book: the search text and every advanced criterion together.
+    private matching(search: string, filter: BookFilter, readerId: string | null) {
+        const text = this.text(search);
+        const criteria = this.criteria(filter, readerId);
+
+        return (eb: ExpressionBuilder<DatabaseSchema, 'books'>) =>
+            eb.and([text(eb), ...criteria(eb)]);
+    }
+
+    private criteria(filter: BookFilter, readerId: string | null) {
+        return (eb: ExpressionBuilder<DatabaseSchema, 'books'>) => [
+            ...(filter.categories.length > 0
+                ? [eb('books.category', 'in', filter.categories)]
+                : []),
+            ...(filter.ownerships.length > 0
+                ? [eb('books.ownership', 'in', filter.ownerships)]
+                : []),
+            ...(filter.authorIds.length > 0
+                ? [
+                      eb.exists(
+                          eb
+                              .selectFrom('book_authors')
+                              .select('book_authors.book_id')
+                              .whereRef('book_authors.book_id', '=', 'books.id')
+                              .where('book_authors.author_id', 'in', filter.authorIds),
+                      ),
+                  ]
+                : []),
+            ...this.collection(eb, filter.collections),
+            ...this.location(eb, filter.locations),
+            ...this.reading(eb, filter.reading, readerId),
+            ...filter.tags.include.map((tagId) =>
+                eb.exists(this.tagged(eb).where('book_tags.tag_id', '=', tagId)),
+            ),
+            ...(filter.tags.exclude.length > 0
+                ? [
+                      eb.not(
+                          eb.exists(
+                              this.tagged(eb).where('book_tags.tag_id', 'in', filter.tags.exclude),
+                          ),
+                      ),
+                  ]
+                : []),
+        ];
+    }
+
+    private collection(
+        eb: ExpressionBuilder<DatabaseSchema, 'books'>,
+        collections: BookFilter['collections'],
+    ) {
+        if (collections.ids.length === 0 && !collections.none) {
+            return [];
+        }
+
+        const member = eb
+            .selectFrom('collection_books')
+            .select('collection_books.book_id')
+            .whereRef('collection_books.book_id', '=', 'books.id');
+
+        return [
+            eb.or([
+                ...(collections.ids.length > 0
+                    ? [
+                          eb.exists(
+                              member.where('collection_books.collection_id', 'in', collections.ids),
+                          ),
+                      ]
+                    : []),
+                ...(collections.none ? [eb.not(eb.exists(member))] : []),
+            ]),
+        ];
+    }
+
+    private location(
+        eb: ExpressionBuilder<DatabaseSchema, 'books'>,
+        locations: BookFilter['locations'],
+    ) {
+        if (
+            locations.shelfIds.length === 0 &&
+            locations.bookcaseIds.length === 0 &&
+            !locations.none
+        ) {
+            return [];
+        }
+
+        const placed = eb
+            .selectFrom('book_shelves')
+            .innerJoin('shelves', 'shelves.id', 'book_shelves.shelf_id')
+            .select('book_shelves.book_id')
+            .whereRef('book_shelves.book_id', '=', 'books.id');
+
+        return [
+            eb.or([
+                ...(locations.shelfIds.length > 0
+                    ? [eb.exists(placed.where('book_shelves.shelf_id', 'in', locations.shelfIds))]
+                    : []),
+                ...(locations.bookcaseIds.length > 0
+                    ? [eb.exists(placed.where('shelves.bookcase_id', 'in', locations.bookcaseIds))]
+                    : []),
+                ...(locations.none ? [eb.not(eb.exists(placed))] : []),
+            ]),
+        ];
+    }
+
+    // Read and Not read together accept any book; without a reader there is nothing to filter on.
+    private reading(
+        eb: ExpressionBuilder<DatabaseSchema, 'books'>,
+        reading: BookFilter['reading'],
+        readerId: string | null,
+    ) {
+        if (reading.length !== 1 || readerId === null) {
+            return [];
+        }
+
+        const read = eb.exists(
+            eb
+                .selectFrom('reading_statuses')
+                .select('reading_statuses.book_id')
+                .whereRef('reading_statuses.book_id', '=', 'books.id')
+                .where('reading_statuses.user_id', '=', readerId)
+                .where('reading_statuses.read', '=', 1),
+        );
+
+        return [reading[0] === 'read' ? read : eb.not(read)];
+    }
+
+    private tagged(eb: ExpressionBuilder<DatabaseSchema, 'books'>) {
+        return eb
+            .selectFrom('book_tags')
+            .select('book_tags.book_id')
+            .whereRef('book_tags.book_id', '=', 'books.id');
+    }
+
+    private text(search: string) {
         const key = NameKey.of(search);
         const digits = search.replace(/[\s-]/g, '');
         const equivalent = Isbn.equivalent(search);

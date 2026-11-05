@@ -1,9 +1,10 @@
 import type {
     BookDto,
+    BookcaseDto,
     BookListPageDto,
-    CollectionDetailsDto,
-    CollectionListPageDto,
     MembershipDto,
+    ShelfDto,
+    TagDto,
 } from '../../../../../../../../packages/contracts/src/http.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { TestApp } from '../../../../../../../../tests/api/setup/test-app.js';
@@ -28,7 +29,9 @@ async function created(overrides: Parameters<typeof BookInputFixture.of>[0] = {}
     const client = await app.authenticatedClient(owner);
     const response = await client.call<BookDto>('/books', 'POST', BookInputFixture.of(overrides));
 
-    expect(response.status).toBe(201);
+    if (response.status !== 201) {
+        throw new Error('Arranging the scenario failed: ' + response.text);
+    }
 
     return response.body;
 }
@@ -349,6 +352,36 @@ describe('PUT /api/books/:id', () => {
 
         expect(response.status).toBe(403);
     });
+    it('moves the book to another shelf with other tags', async () => {
+        const first = await shelfIn('Oak', 'Top');
+        const second = await shelfIn('Study', 'Bottom');
+        const book = await created({ shelfId: first.shelf.id, tags: [{ name: 'Fantasy' }] });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookDto>(
+            '/books/' + book.id,
+            'PUT',
+            changed({ shelfId: second.shelf.id, tags: [{ name: 'Adventure' }] }),
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.body.location?.shelfId).toBe(second.shelf.id);
+        expect(response.body.tags.map((value) => value.name)).toEqual(['Adventure']);
+    });
+    it('clears the location and the tags', async () => {
+        const { shelf } = await shelfIn('Oak');
+        const book = await created({ shelfId: shelf.id, tags: [{ name: 'Fantasy' }] });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookDto>(
+            '/books/' + book.id,
+            'PUT',
+            changed({ shelfId: null, tags: [] }),
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.body).toMatchObject({ location: null, tags: [] });
+    });
 });
 
 describe('DELETE /api/books/:id', () => {
@@ -434,7 +467,7 @@ describe('POST /api/books with a collection', () => {
 
         expect(response.status).toBe(409);
         expect(response.body.reason).toBe('volume-zero-disabled');
-        expect((await client.call<BookListPageDto>('/books')).body.total).toBe(0);
+        expect(await app.dependencies.library.bookIds()).toEqual([]);
     });
     it('rejects a fractional volume', async () => {
         const client = await app.authenticatedClient(owner);
@@ -479,14 +512,14 @@ describe('POST /api/books with a collection', () => {
         );
 
         expect(response.status).toBe(201);
-        expect((await client.call('/books/' + one.id)).status).toBe(404);
+        expect(await app.dependencies.library.bookIds()).not.toContain(one.id);
         expect(
-            (
-                await client.call<CollectionDetailsDto>(
-                    '/collections/' + response.body.collection!.id,
-                )
-            ).body,
-        ).toMatchObject({ bookCount: 1, ownedCount: 3, missingCount: 0 });
+            await app.dependencies.library.collection(response.body.collection!.id),
+        ).toMatchObject({
+            bookCount: 1,
+            ownedCount: 3,
+            missingCount: 0,
+        });
     });
     it('keeps the planned books when the replacement no longer matches', async () => {
         const one = await member(membership('Batman', 1), 'not-owned');
@@ -505,7 +538,7 @@ describe('POST /api/books with a collection', () => {
 
         expect(response.status).toBe(409);
         expect(response.body.reason).toBe('coverage-conflict');
-        expect((await client.call('/books/' + one.id)).status).toBe(200);
+        expect(await app.dependencies.library.bookIds()).toContain(one.id);
     });
     it('records the created collection in the operation of the book', async () => {
         const client = await app.authenticatedClient(owner);
@@ -542,11 +575,7 @@ describe('PUT /api/books/:id with a collection', () => {
         );
 
         expect(response.status).toBe(200);
-        expect(
-            (await client.call<CollectionListPageDto>('/collections')).body.items.map(
-                (item) => item.name,
-            ),
-        ).toEqual(['Superman']);
+        expect(await app.dependencies.library.collectionNames()).toEqual(['Superman']);
     });
     it('reopens a Finished collection when an Owned volume becomes Not Owned', async () => {
         await member(membership('Batman', 1));
@@ -562,9 +591,10 @@ describe('PUT /api/books/:id with a collection', () => {
         );
 
         expect(response.status).toBe(200);
-        expect(
-            (await client.call<CollectionDetailsDto>('/collections/' + two.collection!.id)).body,
-        ).toMatchObject({ finished: false, missingCount: 1 });
+        expect(await app.dependencies.library.collection(two.collection!.id)).toMatchObject({
+            finished: false,
+            missingCount: 1,
+        });
     });
     it('records the collections a moved book created and emptied in its operation', async () => {
         const book = await member(membership('Batman', 1));
@@ -600,9 +630,10 @@ describe('DELETE /api/books/:id with a collection', () => {
         const response = await client.call('/books/' + twenty.id, 'DELETE');
 
         expect(response.status).toBe(204);
-        expect(
-            (await client.call<CollectionDetailsDto>('/collections/' + twenty.collection!.id)).body,
-        ).toMatchObject({ expectedTo: 19, expectedCount: 19 });
+        expect(await app.dependencies.library.collection(twenty.collection!.id)).toMatchObject({
+            expectedTo: 19,
+            expectedCount: 19,
+        });
     });
     it('removes the collection with its final book', async () => {
         const book = await member(membership('Batman', 1));
@@ -611,7 +642,7 @@ describe('DELETE /api/books/:id with a collection', () => {
         const response = await client.call('/books/' + book.id, 'DELETE');
 
         expect(response.status).toBe(204);
-        expect((await client.call<CollectionListPageDto>('/collections')).body.total).toBe(0);
+        expect(await app.dependencies.library.collectionNames()).toEqual([]);
     });
     it('records the removed collection in the operation of the deletion', async () => {
         const book = await member(membership('Batman', 1));
@@ -646,5 +677,442 @@ describe('GET /api/books with collections', () => {
                 collection: { name: 'Astérix', volumeFrom: 4, volumeTo: 4 },
             }),
         ]);
+    });
+});
+
+// Creates a bookcase with one shelf through the API, as an Owner.
+async function shelfIn(bookcaseName: string, shelfName = 'Top') {
+    const client = await app.authenticatedClient(owner);
+    const bookcase = (await client.call<BookcaseDto>('/bookcases', 'POST', { name: bookcaseName }))
+        .body;
+    const shelf = (
+        await client.call<ShelfDto>('/bookcases/' + bookcase.id + '/shelves', 'POST', {
+            name: shelfName,
+        })
+    ).body;
+
+    return { bookcase, shelf };
+}
+
+// Creates a tag through the API, as an Owner.
+async function tag(name: string) {
+    const client = await app.authenticatedClient(owner);
+
+    return (await client.call<TagDto>('/tags', 'POST', { name })).body;
+}
+
+// Books tagged Fantasy and/or Adventure and/or Medieval; the query includes the first two and
+// excludes Medieval.
+async function taggedBooks() {
+    const fantasy = await tag('Fantasy');
+    const adventure = await tag('Adventure');
+    const medieval = await tag('Medieval');
+
+    await created({
+        title: 'Both',
+        isbn: null,
+        noIsbn: true,
+        confirmDistinct: true,
+        tags: [{ id: fantasy.id }, { id: adventure.id }],
+    });
+    await created({
+        title: 'Both and medieval',
+        isbn: null,
+        noIsbn: true,
+        confirmDistinct: true,
+        tags: [{ id: fantasy.id }, { id: adventure.id }, { id: medieval.id }],
+    });
+    await created({
+        title: 'Only fantasy',
+        isbn: null,
+        noIsbn: true,
+        confirmDistinct: true,
+        tags: [{ id: fantasy.id }],
+    });
+    await created({
+        title: 'Other both',
+        isbn: null,
+        noIsbn: true,
+        confirmDistinct: true,
+        tags: [{ id: fantasy.id }, { id: adventure.id }],
+    });
+
+    return 'tag=' + fantasy.id + '&tag=' + adventure.id + '&notTag=' + medieval.id;
+}
+
+// The default book information, without the creator's reading status, for a PUT.
+function changed(overrides: Parameters<typeof BookInputFixture.of>[0]) {
+    const { read: _read, ...input } = BookInputFixture.of(overrides);
+
+    return input;
+}
+
+// The titles listed for a query, in listing order.
+async function titles(query: string, user = owner) {
+    const client = await app.authenticatedClient(user);
+    const response = await client.call<BookListPageDto>('/books?' + query);
+
+    if (response.status !== 200) {
+        throw new Error('Arranging the scenario failed: ' + response.text);
+    }
+
+    return response.body.items.map((item) => item.title);
+}
+
+describe('POST /api/books with a location and tags', () => {
+    it('keeps the book on the shelf with its tags, reusing an equivalent tag', async () => {
+        const { shelf } = await shelfIn('Oak bookcase', 'Shelf 3');
+        const fantasy = await tag('Médiéval');
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookDto>(
+            '/books',
+            'POST',
+            BookInputFixture.of({
+                shelfId: shelf.id,
+                tags: [{ name: ' medieval' }, { name: 'Adventure' }],
+            }),
+        );
+
+        expect(response.status).toBe(201);
+        expect(response.body.location).toEqual({
+            bookcaseId: shelf.bookcaseId,
+            bookcaseName: 'Oak bookcase',
+            shelfId: shelf.id,
+            shelfName: 'Shelf 3',
+        });
+        expect(response.body.tags).toEqual([
+            { id: expect.any(String), name: 'Adventure' },
+            { id: fantasy.id, name: 'Médiéval' },
+        ]);
+    });
+    it('records the tag it created in the operation of the book', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookDto>(
+            '/books',
+            'POST',
+            BookInputFixture.of({ tags: [{ name: 'Adventure' }] }),
+        );
+
+        const entries = await app.dependencies.audit.entries();
+        const saved = entries.find((entry) => entry.category === 'book.created');
+
+        expect(entries).toContainEqual(
+            expect.objectContaining({
+                operationId: saved?.operationId,
+                category: 'tag.created',
+                subjectId: response.body.tags[0]?.id,
+            }),
+        );
+    });
+    it('refuses an unknown shelf and saves nothing', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call(
+            '/books',
+            'POST',
+            BookInputFixture.of({ shelfId: crypto.randomUUID() }),
+        );
+
+        expect(response.status).toBe(404);
+        expect(response.body.reason).toBe('shelf-missing');
+        expect(await app.dependencies.library.bookIds()).toEqual([]);
+    });
+});
+
+describe('PATCH /api/books/:id/organisation', () => {
+    it('places a book on a shelf without changing its information', async () => {
+        const { shelf } = await shelfIn('Oak');
+        const book = await created();
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookDto>(
+            '/books/' + book.id + '/organisation',
+            'PATCH',
+            {
+                shelfId: shelf.id,
+            },
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.body.location?.shelfId).toBe(shelf.id);
+        expect(response.body.title).toBe(book.title);
+        expect(await app.dependencies.audit.entries()).toContainEqual(
+            expect.objectContaining({
+                category: 'book.organised',
+                subjectId: book.id,
+                before: { location: null, tags: [] },
+            }),
+        );
+    });
+    it('replaces the tags, keeping the location', async () => {
+        const { shelf } = await shelfIn('Oak');
+        const book = await created({ shelfId: shelf.id, tags: [{ name: 'Fantasy' }] });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookDto>(
+            '/books/' + book.id + '/organisation',
+            'PATCH',
+            {
+                tags: [{ name: 'Adventure' }],
+            },
+        );
+
+        expect(response.body.tags.map((value) => value.name)).toEqual(['Adventure']);
+        expect(response.body.location?.shelfId).toBe(shelf.id);
+    });
+    it('removes a tag from the book', async () => {
+        const fantasy = await tag('Fantasy');
+        const book = await created({ tags: [{ id: fantasy.id }] });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookDto>(
+            '/books/' + book.id + '/organisation',
+            'PATCH',
+            {
+                tags: [],
+            },
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.body.tags).toEqual([]);
+    });
+    it('refuses a request without any change', async () => {
+        const book = await created();
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/books/' + book.id + '/organisation', 'PATCH', {});
+
+        expect(response.status).toBe(400);
+    });
+    it('reports an unknown book', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call(
+            '/books/' + crypto.randomUUID() + '/organisation',
+            'PATCH',
+            { shelfId: null },
+        );
+
+        expect(response.status).toBe(404);
+        expect(response.body.reason).toBe('book-missing');
+    });
+    it('refuses a Guest', async () => {
+        const book = await created();
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call('/books/' + book.id + '/organisation', 'PATCH', {
+            tags: [{ name: 'Fantasy' }],
+        });
+
+        expect(response.status).toBe(403);
+        expect(response.body.reason).toBe('guest-read-only');
+    });
+    it('reports an unknown shelf without changing the book', async () => {
+        const { shelf } = await shelfIn('Oak');
+        const book = await created({ shelfId: shelf.id });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/books/' + book.id + '/organisation', 'PATCH', {
+            shelfId: crypto.randomUUID(),
+        });
+
+        expect(response.status).toBe(404);
+        expect(response.body.reason).toBe('shelf-missing');
+        expect(await app.dependencies.library.location(book.id)).toEqual({
+            bookcaseName: 'Oak',
+            shelfName: 'Top',
+        });
+    });
+    it('reports an unknown tag', async () => {
+        const book = await created();
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/books/' + book.id + '/organisation', 'PATCH', {
+            tags: [{ id: crypto.randomUUID() }],
+        });
+
+        expect(response.status).toBe(404);
+        expect(response.body.reason).toBe('tag-missing');
+    });
+    it('refuses a malformed request', async () => {
+        const book = await created();
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/books/' + book.id + '/organisation', 'PATCH', {
+            shelfId: 'top',
+            tags: 'Fantasy',
+        });
+
+        expect(response.status).toBe(400);
+    });
+    it('refuses a signed-out visitor', async () => {
+        const book = await created();
+        const client = app.client();
+
+        await client.prepare();
+
+        const response = await client.call('/books/' + book.id + '/organisation', 'PATCH', {
+            tags: [],
+        });
+
+        expect(response.status).toBe(401);
+    });
+});
+
+describe('GET /api/books with filters', () => {
+    it('accepts any selected category but requires ownership and location too', async () => {
+        const { bookcase, shelf } = await shelfIn('Bookcase A');
+        const elsewhere = await shelfIn('Bookcase B');
+
+        await member(membership('Akira', 1));
+        await created({
+            title: 'Manga A',
+            isbn: null,
+            noIsbn: true,
+            confirmDistinct: true,
+            category: 'manga',
+            shelfId: shelf.id,
+        });
+        await created({
+            title: 'Comics A',
+            isbn: null,
+            noIsbn: true,
+            confirmDistinct: true,
+            category: 'comics',
+            shelfId: shelf.id,
+        });
+        await created({
+            title: 'Comics planned',
+            isbn: null,
+            noIsbn: true,
+            confirmDistinct: true,
+            category: 'comics',
+            ownership: 'not-owned',
+            shelfId: shelf.id,
+        });
+        await created({
+            title: 'Manga B',
+            isbn: null,
+            noIsbn: true,
+            confirmDistinct: true,
+            category: 'manga',
+            shelfId: elsewhere.shelf.id,
+        });
+
+        const result = await titles(
+            'category=manga&category=comics&ownership=owned&location=bookcase:' + bookcase.id,
+        );
+
+        expect(result).toEqual(['Comics A', 'Manga A']);
+    });
+    it('requires every included tag and rejects any excluded tag', async () => {
+        const query = await taggedBooks();
+
+        const result = await titles(query);
+
+        expect(result).toEqual(['Both', 'Other both']);
+    });
+    it('narrows the tag filter with the search text', async () => {
+        const query = await taggedBooks();
+
+        const result = await titles(query + '&search=other');
+
+        expect(result).toEqual(['Other both']);
+    });
+    it('selects books without a location or a collection', async () => {
+        const { shelf } = await shelfIn('Oak');
+
+        await member(membership('Batman', 1));
+        await created({
+            title: 'Shelved',
+            isbn: null,
+            noIsbn: true,
+            confirmDistinct: true,
+            shelfId: shelf.id,
+        });
+        await created({ title: 'Loose', isbn: null, noIsbn: true });
+
+        const result = await titles('location=none&collection=none');
+
+        expect(result).toEqual(['Loose']);
+    });
+    it('accepts a chosen collection or no collection together', async () => {
+        const batman = await member(membership('Batman', 1));
+
+        await member(membership('Dune', 1));
+        await created({ title: 'Standalone', isbn: null, noIsbn: true });
+
+        const result = await titles('collection=' + batman.collection!.id + '&collection=none');
+
+        expect(result).toEqual([batman.title, 'Standalone']);
+    });
+    it('filters on the authors and on a specific shelf', async () => {
+        const { shelf } = await shelfIn('Oak', 'Shelf 3');
+        const clarke = await created({ shelfId: shelf.id });
+
+        await created({
+            title: 'Dune',
+            isbn: null,
+            noIsbn: true,
+            confirmDistinct: true,
+            authors: [{ name: 'Frank Herbert' }],
+            shelfId: shelf.id,
+        });
+
+        const result = await titles(
+            'author=' + clarke.authors[0]!.id + '&location=shelf:' + shelf.id,
+        );
+
+        expect(result).toEqual(['Piranesi']);
+    });
+    it('filters on the reader own reading status', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        await client.call(
+            '/books',
+            'POST',
+            BookInputFixture.of({
+                title: 'Read',
+                isbn: null,
+                noIsbn: true,
+                confirmDistinct: true,
+                read: true,
+            }),
+        );
+        await created({ title: 'Unread', isbn: null, noIsbn: true });
+
+        const result = await titles('reading=unread');
+
+        expect(result).toEqual(['Unread']);
+    });
+    it('filters on the reading status of the signed-in reader only', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        await client.call(
+            '/books',
+            'POST',
+            BookInputFixture.of({ title: 'Read', isbn: null, noIsbn: true, read: true }),
+        );
+
+        const result = await titles('reading=read', otherOwner);
+
+        expect(result).toEqual([]);
+    });
+    it('refuses a reading filter for a Guest', async () => {
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call('/books?reading=read');
+
+        expect(response.status).toBe(400);
+        expect(response.body.reason).toBe('reading-filter-unavailable');
+    });
+    it('refuses a malformed location', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/books?location=room:kitchen');
+
+        expect(response.status).toBe(400);
     });
 });

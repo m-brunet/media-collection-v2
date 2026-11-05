@@ -35,8 +35,8 @@ function listing(items: CollectionSummaryDto[]) {
     return () => ({ status: 200, body: { total: items.length, items } });
 }
 
-function show() {
-    return renderRoute('/collections', { '/collections': <CollectionsPage /> });
+function show(path = '/collections') {
+    return renderRoute(path, { '/collections': <CollectionsPage /> });
 }
 
 it('shows each collection with its whole-collection counts', async () => {
@@ -121,5 +121,32 @@ it('sorts collections from Z to A', async () => {
         expect(api.calls.map((call) => call.route)).toContainEqual(
             expect.stringContaining('direction=desc'),
         ),
+    );
+});
+
+it('applies the advanced book filters to the collections, with the whole-collection counts', async () => {
+    const api = new FakeApi()
+        .signedIn(account())
+        .on('GET /collections?limit=1', () => ({ status: 200, body: { total: 12, items: [] } }))
+        .on('GET /collections', listing([summary()]));
+
+    show('/collections?ownership=not-owned');
+
+    expect(await screen.findByText('1 of 12 collections')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Batman/ })).toHaveTextContent('4 / 12 volumes Owned');
+    expect(screen.getByRole('button', { name: 'Remove the filter Not owned' })).toBeInTheDocument();
+    expect(api.calls.map((call) => call.route)).toContain(
+        'GET /collections?search=&direction=asc&limit=48&ownership=not-owned&offset=0',
+    );
+});
+
+it('ignores a collection filter left in the address of the Collections list', async () => {
+    const api = new FakeApi().signedIn(account()).on('GET /collections', listing([summary()]));
+
+    show('/collections?collection=none');
+
+    await screen.findByRole('link', { name: /Batman/ });
+    expect(api.calls.map((call) => call.route)).toContain(
+        'GET /collections?search=&direction=asc&limit=48&offset=0',
     );
 });

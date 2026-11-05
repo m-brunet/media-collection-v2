@@ -19,6 +19,9 @@ import { BookSavedPage } from './books/book-saved-page';
 import { MyBooksPage } from './books/my-books-page';
 import { CollectionDetailsPage } from './collections/collection-details-page';
 import { CollectionsPage } from './collections/collections-page';
+import { FiltersPage } from './filters/filters-page';
+import { BookshelvesPage } from './locations/bookshelves-page';
+import { TagsPage } from './tags/tags-page';
 
 function NotFoundPage() {
     const { t } = useI18n();
@@ -85,6 +88,7 @@ function LibrisRoutes() {
             <Routes>
                 <Route path="/" element={<Navigate to="/books" replace />} />
                 <Route path="/books" element={<MyBooksPage />} />
+                <Route path="/books/filters" element={<FiltersPage listing="books" />} />
                 <Route
                     path="/books/new"
                     element={
@@ -104,7 +108,13 @@ function LibrisRoutes() {
                 />
                 <Route path="/books/:id/added" element={<BookSavedPage />} />
                 <Route path="/collections" element={<CollectionsPage />} />
+                <Route
+                    path="/collections/filters"
+                    element={<FiltersPage listing="collections" />}
+                />
                 <Route path="/collections/:id" element={<CollectionDetailsPage />} />
+                <Route path="/bookshelves" element={<BookshelvesPage />} />
+                <Route path="/tags" element={<TagsPage />} />
                 <Route path="/account" element={<AccountPage />} />
                 <Route
                     path="/admin/accounts"

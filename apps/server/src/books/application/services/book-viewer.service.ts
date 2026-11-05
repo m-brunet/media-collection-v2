@@ -3,6 +3,7 @@ import type { BookCatalog } from '../ports/driven/book-catalog.interface.js';
 import type { BookCollectionReader } from '../ports/driven/book-collection-reader.interface.js';
 import type { PersonalNoteStore } from '../ports/driven/personal-note-store.interface.js';
 import type { ReadingStatusStore } from '../ports/driven/reading-status-store.interface.js';
+import { BookOrganisationReader } from './book-organisation-reader.service.js';
 import type { Book } from '../../domain/entities/book.entity.js';
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 
@@ -14,10 +15,12 @@ export class BookViewer {
         private readonly readings: ReadingStatusStore,
         private readonly notes: PersonalNoteStore,
         private readonly collections: BookCollectionReader,
+        private readonly organisation: BookOrganisationReader,
     ) {}
 
     async view(book: Book, actor: Actor): Promise<BookView> {
         const { id, details, coverFile, createdAt, updatedAt } = book.snapshot;
+        const { location, tags } = await this.organisation.current(id);
 
         return {
             id,
@@ -36,6 +39,8 @@ export class BookViewer {
             priceCents: details.price?.cents ?? null,
             hasCover: coverFile !== null,
             collection: await this.collections.of(id),
+            location,
+            tags,
             createdAt,
             updatedAt,
             personal:

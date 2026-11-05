@@ -605,3 +605,110 @@ it('explains a coverage overlap that cannot be replaced', async () => {
     expect(within(dialog).queryByRole('button', { name: /Delete/ })).not.toBeInTheDocument();
     expect(posted(api)).toHaveLength(1);
 });
+
+const bookcases = [
+    {
+        id: 'oak',
+        name: 'Oak bookcase',
+        bookCount: 3,
+        shelves: [
+            { id: 's1', bookcaseId: 'oak', name: 'Shelf 1', bookCount: 1 },
+            { id: 's3', bookcaseId: 'oak', name: 'Shelf 3', bookCount: 2 },
+        ],
+    },
+    { id: 'hall', name: 'Hall bookcase', bookCount: 0, shelves: [] },
+];
+
+it('saves the chosen shelf and tags, reusing an existing tag', async () => {
+    const api = new FakeApi()
+        .signedIn(account())
+        .on('GET /bookcases', () => ({ status: 200, body: bookcases }))
+        .on('GET /tags', () => ({
+            status: 200,
+            body: [{ id: 't1', name: 'Fantasy', bookCount: 4 }],
+        }))
+        .on('POST /books', () => ({ status: 201, body: bookDto() }));
+
+    addPage();
+    await fillRequired();
+    await userEvent.selectOptions(screen.getByLabelText('Bookcase'), 'Oak bookcase');
+    await userEvent.selectOptions(screen.getByLabelText(/^Shelf/), 'Shelf 3');
+    const tags = screen.getByRole('combobox', { name: 'Find or create tag' });
+
+    await userEvent.type(tags, 'fantasy');
+    await screen.findByRole('option', { name: 'Fantasy' });
+    await userEvent.keyboard('{Enter}');
+    await userEvent.type(tags, 'Medieval');
+    await screen.findByRole('option', { name: 'Create tag “Medieval”' });
+    await userEvent.keyboard('{Enter}');
+
+    await userEvent.click(saveButton());
+
+    await vi.waitFor(() =>
+        expect(api.calls.find((call) => call.route === 'POST /books')?.body).toMatchObject({
+            shelfId: 's3',
+            tags: [{ id: 't1' }, { name: 'Medieval' }],
+        }),
+    );
+});
+
+it('asks for a shelf when only a bookcase is chosen, without contacting the server', async () => {
+    const api = new FakeApi()
+        .signedIn(account())
+        .on('GET /bookcases', () => ({ status: 200, body: bookcases }));
+
+    addPage();
+    await fillRequired();
+    await userEvent.selectOptions(screen.getByLabelText('Bookcase'), 'Oak bookcase');
+
+    await userEvent.click(saveButton());
+
+    expect(
+        await screen.findAllByText(
+            'Choose a shelf of this bookcase, or leave the bookcase unassigned.',
+        ),
+    ).not.toHaveLength(0);
+    expect(posted(api)).toEqual([]);
+});
+
+it('points to the Bookshelves page while no shelf exists', async () => {
+    new FakeApi().signedIn(account()).on('GET /bookcases', () => ({ status: 200, body: [] }));
+
+    addPage();
+
+    expect(
+        await screen.findByRole('link', { name: 'Create bookcases and shelves' }),
+    ).toHaveAttribute('href', '/bookshelves');
+});
+
+it('keeps the location and tags of an edited book', async () => {
+    const api = new FakeApi()
+        .signedIn(account())
+        .on('GET /bookcases', () => ({ status: 200, body: bookcases }))
+        .on('GET /books/b1', () => ({
+            status: 200,
+            body: bookDto({
+                location: {
+                    bookcaseId: 'oak',
+                    bookcaseName: 'Oak bookcase',
+                    shelfId: 's1',
+                    shelfName: 'Shelf 1',
+                },
+                tags: [{ id: 't1', name: 'Fantasy' }],
+            }),
+        }))
+        .on('PUT /books/b1', () => ({ status: 200, body: bookDto() }));
+
+    editPage();
+    await screen.findByRole('button', { name: 'Remove the tag Fantasy' });
+    await userEvent.type(screen.getByLabelText(/^Title/), ' (2)');
+
+    await userEvent.click(screen.getAllByRole('button', { name: 'Save changes' })[0]!);
+
+    await vi.waitFor(() =>
+        expect(api.calls.find((call) => call.route === 'PUT /books/b1')?.body).toMatchObject({
+            shelfId: 's1',
+            tags: [{ id: 't1' }],
+        }),
+    );
+});

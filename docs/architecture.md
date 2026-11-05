@@ -116,6 +116,19 @@ returns the collection changes it caused (`collection.created`, `collection.upda
 `collection.reopened`, `collection.removed`), and the book use case passes them to `AuditedOperation` as related
 changes. They are recorded with the book operation's ID and actor, so Activity can group them with the book change.
 
+Books, locations and tags collaborate the same way. `books` declares a writer and a reader port for each:
+`ShelfAssignment` / `BookLocationReader`, implemented by the locations service `BookShelfAssignment` (an unknown shelf
+is refused; locations are never created from a book), and `TagAssignment` / `BookTagReader`, implemented by the tags
+service `BookTagAssignment` (an equivalent name reuses its tag, a new name creates one and returns a `tag.created`
+related change for the book operation's audit). Book saves and `PATCH /api/books/:id/organisation` use the writers
+through `BookOrganiser`; views and audit snapshots use the readers through `BookOrganisationReader`. The root wires
+one instance to both ports of a pair (`LocationsModule.assignment`, `TagsModule.assignment`).
+
+Advanced book filters are a shared application value, `BookFilter` (`shared/application/book-filter.ts`), because two
+features apply it: the books catalog filters book listings and, through `CollectionBookSearch`, the collection
+listing, where one book must satisfy the whole expression. Its query parameters and their mapping are shared driving
+support (`book-filter-query.ts`, `book-filter-query.mapper.ts`) used by both controllers.
+
 Shared code is for actual shared capabilities: actor authorization, failure types, clocks, IDs, authentication and
 session-renewal contracts, database connection management and HTTP security. Feature behavior stays with its feature. Do
 not add generic service containers or wrappers without a current purpose.
@@ -254,9 +267,13 @@ valid entity IDs, relationships, settings and audit payloads. Invalid legacy ent
 changes and require explicit data repair. Audit integer keys and settings names receive UUID identities.
 
 Each table is written only by the adapters of the feature that owns it. Read adapters may join another feature's
-tables for listings and views (the books catalog reads collection names and volumes; the collection member store
-reads book titles and ownership), never write them. Collection membership has its own `collection_books` table keyed
-by book and collection, with a unique book index for the current one-collection rule (migration 007).
+tables for listings and views (the books catalog reads collection names and volumes and filters on `book_shelves`
+and `book_tags`; the collection member store reads book titles and ownership; location and tag overviews count
+books), never write them. Collection membership has its own `collection_books` table keyed
+by book and collection, with a unique book index for the current one-collection rule (migration 007). Migration 008
+adds `bookcases`, `shelves` (names unique per bookcase), `book_shelves` (keyed by book and shelf, with a unique book
+index: at most one shelf per book), `tags` and `book_tags`; deleting a bookcase, shelf, tag or book cascades to its
+links, never to books.
 
 Runtime adapters use Kysely builders, including `instr` for literal searches on normalized keys. Raw SQL is allowed
 in migrations and database-boundary tests only. Connection setup retains a narrow exception for driver construction

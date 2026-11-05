@@ -18,6 +18,8 @@ export class BookInputFixture {
             price: '16.90',
             read: false,
             collection: null,
+            shelfId: null,
+            tags: [],
             ...overrides,
         };
     }

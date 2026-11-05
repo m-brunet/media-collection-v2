@@ -56,14 +56,14 @@ describe('BookSnapshot', () => {
     it('records the collection membership when the change concerns it', () => {
         const collection = { id: 'c1', name: 'Batman', volumeFrom: 1, volumeTo: 3 };
 
-        const result = BookSnapshot.of(book(null), collection);
+        const result = BookSnapshot.of(book(null), { collection });
 
         expect(result.collection).toEqual(collection);
     });
     it('records a book outside any collection', () => {
         const collection = null;
 
-        const result = BookSnapshot.of(book(null), collection);
+        const result = BookSnapshot.of(book(null), { collection });
 
         expect(result.collection).toBeNull();
     });
@@ -73,5 +73,27 @@ describe('BookSnapshot', () => {
         const result = BookSnapshot.of(subject);
 
         expect(result).not.toHaveProperty('collection');
+    });
+    it('records the location and tags when the change concerns them', () => {
+        const organisation = {
+            location: {
+                bookcaseId: 'oak',
+                bookcaseName: 'Oak',
+                shelfId: 's3',
+                shelfName: 'Shelf 3',
+            },
+            tags: [{ id: 't1', name: 'Fantasy' }],
+        };
+
+        const result = BookSnapshot.of(book(null), { organisation });
+
+        expect(result).toMatchObject(organisation);
+    });
+    it('records only the location and tags of an organisation change', () => {
+        const organisation = { location: null, tags: [] };
+
+        const result = BookSnapshot.organisation(organisation);
+
+        expect(result).toEqual({ location: null, tags: [] });
     });
 });

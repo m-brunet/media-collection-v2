@@ -18,6 +18,8 @@ export function bookDto(overrides: Partial<BookDto> = {}): BookDto {
         priceCents: 1690,
         hasCover: false,
         collection: null,
+        location: null,
+        tags: [],
         createdAt: '2026-01-01T00:00:00.000Z',
         updatedAt: '2026-01-01T00:00:00.000Z',
         personal: { read: false, note: null },

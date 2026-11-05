@@ -16,6 +16,12 @@ export interface DraftAuthor {
     distinct: boolean;
 }
 
+// One tag in the form: an existing tag (`id`) or a name the server reuses or creates.
+export interface DraftTag {
+    id: string | null;
+    name: string;
+}
+
 // Everything the book form edits, as typed.
 export interface BookDraftValues {
     isbn: string;
@@ -44,10 +50,17 @@ export interface BookDraftValues {
     volumeTo: string;
     // The person accepted to include volume 0 in the collection.
     enableVolumeZero: boolean;
+    // Physical location: a shelf of the chosen bookcase; a bookcase alone is not a location.
+    bookcaseId: string | null;
+    shelfId: string | null;
+    tags: DraftTag[];
 }
 
 // Why the collection part of the form cannot be sent yet.
 export type CollectionProblem = 'collection-name-required' | 'volume-required';
+
+// Why the location part of the form cannot be sent yet.
+export type LocationProblem = 'shelf-required';
 
 export interface SaveOptions {
     // A new no-ISBN book is distinct from the similar saved ones.
@@ -80,6 +93,9 @@ export class BookDraft {
             volumeFrom: '',
             volumeTo: '',
             enableVolumeZero: false,
+            bookcaseId: null,
+            shelfId: null,
+            tags: [],
         };
     }
 
@@ -113,6 +129,9 @@ export class BookDraft {
             volumeFrom: book.collection ? String(book.collection.volumeFrom) : '',
             volumeTo: book.collection ? String(book.collection.volumeTo) : '',
             enableVolumeZero: false,
+            bookcaseId: book.location?.bookcaseId ?? null,
+            shelfId: book.location?.shelfId ?? null,
+            tags: book.tags.map((tag) => ({ id: tag.id, name: tag.name })),
         };
     }
 
@@ -138,6 +157,8 @@ export class BookDraft {
             ...(options.confirmDistinct ? { confirmDistinct: true } : {}),
             collection: BookDraft.membership(values),
             ...(options.replacePlanned?.length ? { replacePlanned: options.replacePlanned } : {}),
+            shelfId: values.bookcaseId ? values.shelfId : null,
+            tags: values.tags.map((tag) => (tag.id ? { id: tag.id } : { name: tag.name })),
         };
     }
 
@@ -153,6 +174,10 @@ export class BookDraft {
         const volumes = values.omnibus ? [values.volumeFrom, values.volumeTo] : [values.volumeFrom];
 
         return volumes.some((volume) => volume.trim() === '') ? 'volume-required' : null;
+    }
+
+    static locationProblem(values: BookDraftValues): LocationProblem | null {
+        return values.bookcaseId && !values.shelfId ? 'shelf-required' : null;
     }
 
     // The note to save: null removes it (an emptied note counts as removed).

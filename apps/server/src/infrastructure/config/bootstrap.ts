@@ -36,6 +36,13 @@ import { KyselyAppearanceRepository } from '../../appearance/infrastructure/adap
 import { SetupAccess } from '../../identity/infrastructure/adapters/driving/web/setup-access.service.js';
 import { BooksModule } from '../../books/infrastructure/config/books.module.js';
 import { CollectionsModule } from '../../collections/infrastructure/config/collections.module.js';
+import { LocationsModule } from '../../locations/infrastructure/config/locations.module.js';
+import { KyselyBookcaseRepository } from '../../locations/infrastructure/adapters/driven/persistence/kysely-bookcase.repository.js';
+import { KyselyShelfRepository } from '../../locations/infrastructure/adapters/driven/persistence/kysely-shelf.repository.js';
+import { KyselyBookShelfStore } from '../../locations/infrastructure/adapters/driven/persistence/kysely-book-shelf-store.adapter.js';
+import { TagsModule } from '../../tags/infrastructure/config/tags.module.js';
+import { KyselyTagRepository } from '../../tags/infrastructure/adapters/driven/persistence/kysely-tag.repository.js';
+import { KyselyBookTagStore } from '../../tags/infrastructure/adapters/driven/persistence/kysely-book-tag-store.adapter.js';
 import { KyselyCollectionRepository } from '../../collections/infrastructure/adapters/driven/persistence/kysely-collection.repository.js';
 import { KyselyCollectionMemberStore } from '../../collections/infrastructure/adapters/driven/persistence/kysely-collection-member-store.adapter.js';
 import { KyselyBookRepository } from '../../books/infrastructure/adapters/driven/persistence/kysely-book.repository.js';
@@ -149,6 +156,13 @@ export class BackendRuntime {
             const collections = new KyselyCollectionRepository(database.connections);
             const members = new KyselyCollectionMemberStore(database.connections);
             const membership = CollectionsModule.membership(collections, members, ids, clock);
+            const bookcases = new KyselyBookcaseRepository(database.connections);
+            const shelves = new KyselyShelfRepository(database.connections);
+            const bookShelves = new KyselyBookShelfStore(database.connections);
+            const tags = new KyselyTagRepository(database.connections);
+            const bookTags = new KyselyBookTagStore(database.connections);
+            const shelving = LocationsModule.assignment(bookcases, shelves, bookShelves);
+            const tagging = TagsModule.assignment(tags, bookTags, ids, clock);
             const operations = new AuditedOperation(
                 database.connections,
                 new KyselyAuditTrail(database.connections, ids),
@@ -227,6 +241,10 @@ export class BackendRuntime {
                             covers: new FileCoverStorage(options.dataDirectory),
                             collections: membership,
                             collectionReader: membership,
+                            shelves: shelving,
+                            locationReader: shelving,
+                            tags: tagging,
+                            tagReader: tagging,
                             ids,
                             clock,
                             operations,
@@ -238,6 +256,15 @@ export class BackendRuntime {
                             clock,
                             operations,
                         }),
+                        LocationsModule.register({
+                            bookcases,
+                            shelves,
+                            store: bookShelves,
+                            ids,
+                            clock,
+                            operations,
+                        }),
+                        TagsModule.register({ tags, store: bookTags, ids, clock, operations }),
                     ],
                     controllers: [HealthController],
                 },

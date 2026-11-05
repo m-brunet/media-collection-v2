@@ -53,6 +53,16 @@ export class ApiErrorMessage {
         'volume-zero-in-use': 'reason.volumeZeroInUse',
         'collection-incomplete': 'reason.collectionIncomplete',
         'replacement-outdated': 'reason.replacementOutdated',
+        'bookcase-name-invalid': 'reason.bookcaseNameInvalid',
+        'shelf-name-invalid': 'reason.shelfNameInvalid',
+        'tag-name-invalid': 'reason.tagNameInvalid',
+        'bookcase-name-taken': 'reason.bookcaseNameTaken',
+        'shelf-name-taken': 'reason.shelfNameTaken',
+        'tag-name-taken': 'reason.tagNameTaken',
+        'bookcase-missing': 'reason.bookcaseMissing',
+        'shelf-missing': 'reason.shelfMissing',
+        'tag-missing': 'reason.tagMissing',
+        'reading-filter-unavailable': 'reason.readingFilterUnavailable',
         'session-ended': 'errors.unauthorized',
     };
 

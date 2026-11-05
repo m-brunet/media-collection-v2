@@ -20,6 +20,8 @@ function book(overrides: Partial<BookDto> = {}): BookDto {
         priceCents: 1690,
         hasCover: false,
         collection: null,
+        location: null,
+        tags: [],
         createdAt: '2026-01-01T00:00:00.000Z',
         updatedAt: '2026-01-01T00:00:00.000Z',
         personal: { read: true, note: { text: 'Mine.', updatedAt: '2026-01-01T00:00:00.000Z' } },
@@ -186,5 +188,57 @@ describe('BookDraft', () => {
         ];
 
         expect(problems).toEqual(['collection-name-required', 'volume-required', null]);
+    });
+    it('fills the location and tags from a saved book', () => {
+        const saved = book({
+            location: {
+                bookcaseId: 'oak',
+                bookcaseName: 'Oak',
+                shelfId: 's3',
+                shelfName: 'Shelf 3',
+            },
+            tags: [{ id: 't1', name: 'Fantasy' }],
+        });
+
+        const result = BookDraft.fromBook(saved, 'en-GB');
+
+        expect(result).toMatchObject({
+            bookcaseId: 'oak',
+            shelfId: 's3',
+            tags: [{ id: 't1', name: 'Fantasy' }],
+        });
+    });
+    it('sends existing tags by identity and new ones by name', () => {
+        const values = {
+            ...BookDraft.empty(),
+            bookcaseId: 'oak',
+            shelfId: 's3',
+            tags: [
+                { id: 't1', name: 'Fantasy' },
+                { id: null, name: 'Medieval' },
+            ],
+        };
+
+        const result = BookDraft.toInput(values);
+
+        expect(result).toMatchObject({ shelfId: 's3', tags: [{ id: 't1' }, { name: 'Medieval' }] });
+    });
+    it('sends no shelf once the bookcase is unassigned', () => {
+        const values = { ...BookDraft.empty(), bookcaseId: null, shelfId: 's3' };
+
+        const result = BookDraft.toInput(values);
+
+        expect(result.shelfId).toBeNull();
+    });
+    it('asks for a shelf when only a bookcase is chosen', () => {
+        const values = { ...BookDraft.empty(), bookcaseId: 'oak' };
+
+        const problems = [
+            BookDraft.locationProblem(values),
+            BookDraft.locationProblem({ ...values, shelfId: 's3' }),
+            BookDraft.locationProblem(BookDraft.empty()),
+        ];
+
+        expect(problems).toEqual(['shelf-required', null, null]);
     });
 });

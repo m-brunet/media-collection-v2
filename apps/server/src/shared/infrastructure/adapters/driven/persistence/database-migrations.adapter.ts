@@ -7,6 +7,7 @@ import { CaseInsensitiveUsernamesMigration } from './migrations/004-case-insensi
 import { BooksMigration } from './migrations/005-books.js';
 import { UuidPrimaryKeysMigration } from './migrations/006-uuid-primary-keys.js';
 import { CollectionsMigration } from './migrations/007-collections.js';
+import { LocationsAndTagsMigration } from './migrations/008-locations-and-tags.js';
 
 export class DatabaseMigrations implements MigrationProvider {
     constructor(private readonly ids: IdGenerator) {}
@@ -24,6 +25,7 @@ export class DatabaseMigrations implements MigrationProvider {
             '005-books': this.migration(new BooksMigration()),
             '006-uuid-primary-keys': this.migration(new UuidPrimaryKeysMigration(this.ids)),
             '007-collections': this.migration(new CollectionsMigration()),
+            '008-locations-and-tags': this.migration(new LocationsAndTagsMigration()),
         };
     }
 

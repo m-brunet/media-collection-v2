@@ -1,4 +1,5 @@
 import type { VolumeState } from '../domain/value-objects/collection-coverage.value-object.js';
+import type { BookFilter } from '../../shared/application/book-filter.js';
 
 // Read models returned by the collections use cases. Counts always describe the whole
 // collection, whatever search found it.
@@ -43,6 +44,8 @@ export interface CollectionDetailsView extends CollectionSummaryView {
 
 export interface CollectionListQuery {
     search: string;
+    // Book-level criteria; counts still describe whole collections.
+    filter: BookFilter;
     direction: 'asc' | 'desc';
     offset: number;
     limit: number;

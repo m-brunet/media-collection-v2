@@ -9,6 +9,7 @@ import type { AccountSummary } from '../../../../domain/entities/user.entity.js'
 import type { AuthenticatedRequest } from '../../../../../shared/infrastructure/adapters/driving/web/api-guard.js';
 import { Access } from '../../../../../shared/infrastructure/adapters/driving/web/api-guard.js';
 import type { AccountSummary as AccountSummaryDto } from '../../../../../../../../packages/contracts/src/http.js';
+import { idSchema } from '../../../../../shared/infrastructure/adapters/driving/web/id-schema.js';
 
 const createSchema = z.strictObject({
     username: z.string().min(3).max(40),
@@ -18,7 +19,6 @@ const createSchema = z.strictObject({
 const resetSchema = z.strictObject({
     password: z.string().min(8).max(128),
 });
-const idSchema = z.uuid();
 
 // Account administration by the protected administrator. There is no role-change endpoint:
 // roles are fixed at creation.

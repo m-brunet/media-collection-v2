@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { bookFilterQuery } from '../../../../../shared/infrastructure/adapters/driving/web/book-filter-query.js';
+import { idSchema } from '../../../../../shared/infrastructure/adapters/driving/web/id-schema.js';
 
 // Request shapes only; the collections domain checks the actual rules and explains refusals.
 export const collectionListSchema = z.strictObject({
@@ -6,6 +8,7 @@ export const collectionListSchema = z.strictObject({
     direction: z.enum(['asc', 'desc']).default('asc'),
     offset: z.coerce.number().int().min(0).default(0),
     limit: z.coerce.number().int().min(1).max(100).default(48),
+    ...bookFilterQuery,
 });
 
 export const collectionNamesSchema = z.strictObject({ search: z.string().max(400).default('') });
@@ -17,4 +20,4 @@ export const collectionChangesSchema = z
     })
     .refine((changes) => changes.name !== undefined || changes.includesVolumeZero !== undefined);
 
-export const collectionIdSchema = z.uuid();
+export const collectionIdSchema = idSchema;

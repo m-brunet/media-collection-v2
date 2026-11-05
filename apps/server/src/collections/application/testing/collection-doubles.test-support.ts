@@ -1,4 +1,5 @@
 import type { CollectionBookSearch } from '../ports/driven/collection-book-search.interface.js';
+import { BookFilter } from '../../../shared/application/book-filter.js';
 import type {
     CollectionMemberStore,
     MemberRecord,
@@ -130,11 +131,21 @@ export class MemoryMembers implements CollectionMemberStore {
 // Search results are decided by each test; the real search is covered over SQLite.
 export class FixedBookSearch implements CollectionBookSearch {
     matches: string[] = [];
+    readonly calls: { search: string; filter: BookFilter; readerId: string | null }[] = [];
 
-    async collectionsMatching(): Promise<string[]> {
+    async collectionsMatching(
+        search: string,
+        filter: BookFilter,
+        readerId: string | null,
+    ): Promise<string[]> {
+        this.calls.push({ search, filter, readerId });
+
         return this.matches;
     }
 }
+
+// A filter that keeps every book.
+export const anyBook = BookFilter.of();
 
 // Collections with all doubles and services wired as in production.
 export function shelf() {
