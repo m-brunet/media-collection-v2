@@ -47,6 +47,11 @@ export class LoanBuilder extends EntityBuilder<Loan, LoanPorts> {
         return this;
     }
 
+    // Whether the book was given; `TestLibrary` creates one otherwise.
+    hasBook(): boolean {
+        return this.book !== null;
+    }
+
     // A completed loan: returned at the given time.
     asReturned(returnedAt = '2026-10-15T09:00:00.000Z'): this {
         this.returnedAt = returnedAt;
