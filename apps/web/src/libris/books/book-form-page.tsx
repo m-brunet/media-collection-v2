@@ -4,6 +4,7 @@ import { Link, useBlocker, useNavigate, useParams, useSearchParams } from 'react
 import type {
     AuthorDto,
     BookDto,
+    BookLookupDto,
     CoverageConflictDetails,
     PossibleDuplicateDetails,
     SimilarAuthorDetails,
@@ -41,6 +42,11 @@ import { useBookcases } from '../locations/use-bookcases';
 import { BookFormat } from './book-format.util';
 import type { CoverChoice } from './cover-picker';
 import { CoverPicker } from './cover-picker';
+import { LookupConflictsDialog, LookupReviewDialog, useSourceNames } from './lookup-dialogs';
+import type { LookupConflict, LookupSelection } from './lookup-fill.util';
+import { LookupFill } from './lookup-fill.util';
+
+type LookedUp = Extract<BookLookupDto, { kind: 'looked-up' }>;
 
 type Field =
     | 'isbn'
@@ -172,6 +178,20 @@ function BookForm({ book }: { book: BookDto | null }) {
     );
     const [volumeZero, setVolumeZero] = useState<VolumeZeroDetails | null>(null);
     const [coverage, setCoverage] = useState<CoverageConflictDetails | null>(null);
+    // Find book: the request under way, its outcome message, the result under review and the
+    // typed values it would replace.
+    const [lookingUp, setLookingUp] = useState(false);
+    const [lookupMessage, setLookupMessage] = useState<{
+        tone: 'info' | 'warning' | 'success';
+        text: string;
+        retry: boolean;
+    } | null>(null);
+    const [review, setReview] = useState<LookedUp | null>(null);
+    const [replacing, setReplacing] = useState<{
+        selection: LookupSelection;
+        conflicts: LookupConflict[];
+    } | null>(null);
+    const sourceNames = useSourceNames();
     // Answers already given in dialogs, kept for the following attempts.
     const answers = useRef<SaveOptions>({});
     // Set once the book is saved or the person chose to leave, so navigation is not blocked.
@@ -354,6 +374,106 @@ function BookForm({ book }: { book: BookDto | null }) {
             await api.request(path + '/cover', { method: 'DELETE' });
         }
     };
+    // Find book (book entry rules, "Assisted lookup"): the library first, then the sources. An
+    // ISBN already saved opens that book; otherwise the result is reviewed before reaching the form.
+    const findBook = async () => {
+        setLookingUp(true);
+        setLookupMessage(null);
+        setFailure(null);
+
+        try {
+            const result = await api.request<BookLookupDto>('/books/lookups', {
+                method: 'POST',
+                body: { isbn: values.isbn },
+            });
+
+            if (result.kind === 'existing') {
+                leave('/books/' + result.bookId);
+
+                return;
+            }
+
+            const unavailable = sourceNames(result.unavailable.map(({ source }) => source));
+
+            if (!result.found) {
+                setLookupMessage(
+                    result.unavailable.length > 0
+                        ? {
+                              tone: 'warning',
+                              text: t('lookup.unavailable', { sources: unavailable }),
+                              retry: true,
+                          }
+                        : { tone: 'info', text: t('lookup.noResult'), retry: false },
+                );
+
+                return;
+            }
+
+            setReview(result);
+        } catch (error) {
+            if (error instanceof ApiError && error.reason === 'isbn-invalid') {
+                setFailure({
+                    text: t(ApiErrorMessage.key(error)),
+                    field: 'isbn',
+                    existingBookId: null,
+                });
+            } else {
+                setLookupMessage({
+                    tone: 'warning',
+                    text: t('lookup.unavailableAll'),
+                    retry: true,
+                });
+            }
+        } finally {
+            setLookingUp(false);
+        }
+    };
+    // The reviewed values: empty fields are filled at once, typed ones only after confirmation.
+    const applyLookup = async (
+        result: LookedUp,
+        selection: LookupSelection,
+        token: string | null,
+    ) => {
+        const { next, conflicts } = LookupFill.apply(values, selection);
+        const unavailable = sourceNames(result.unavailable.map(({ source }) => source));
+        const additional = [
+            selection.publisher,
+            selection.publication,
+            selection.pageCount,
+            selection.summary,
+        ];
+
+        setReview(null);
+        setValues(next);
+        setExpanded((current) => current || additional.some((value) => value !== null));
+        setLookupMessage({
+            tone: result.unavailable.length > 0 ? 'warning' : 'success',
+            text:
+                result.unavailable.length > 0
+                    ? t('lookup.partial', { sources: unavailable })
+                    : t('lookup.applied'),
+            retry: false,
+        });
+
+        if (conflicts.length > 0) {
+            setReplacing({ selection, conflicts });
+        }
+
+        // A cover the person already chose stays theirs.
+        if (token && !cover.file) {
+            try {
+                const image = await api.download('/books/lookups/covers/' + token);
+
+                setCover({
+                    file: new File([image], 'cover', { type: image.type }),
+                    removed: false,
+                });
+            } catch {
+                // Justified: the book can still be saved; the person is told to choose a cover.
+                setLookupMessage({ tone: 'warning', text: t('lookup.coverFailed'), retry: false });
+            }
+        }
+    };
     const submit = (event: FormEvent) => {
         event.preventDefault();
         void save(values);
@@ -374,22 +494,37 @@ function BookForm({ book }: { book: BookDto | null }) {
             />
             <form id={sectionId} className="stack" onSubmit={submit} noValidate>
                 {notice && <Notice tone="success">{notice}</Notice>}
+                {lookupMessage && <Notice tone={lookupMessage.tone}>{lookupMessage.text}</Notice>}
                 <Panel label={t('form.main')}>
                     <div className="book-form__main">
                         <div className="form">
                             <div className="book-form__isbn">
-                                <TextField
-                                    label={t('form.isbn')}
-                                    hint={t('form.isbnHint')}
-                                    error={errorFor('isbn')}
-                                    required={!values.noIsbn}
-                                    disabled={values.noIsbn}
-                                    inputMode="numeric"
-                                    autoComplete="off"
-                                    maxLength={40}
-                                    value={values.noIsbn ? '' : values.isbn}
-                                    onChange={(event) => set('isbn', event.target.value)}
-                                />
+                                <div className="book-form__isbn-row">
+                                    <TextField
+                                        label={t('form.isbn')}
+                                        hint={book ? t('form.isbnHint') : t('lookup.findHint')}
+                                        error={errorFor('isbn')}
+                                        required={!values.noIsbn}
+                                        disabled={values.noIsbn}
+                                        inputMode="numeric"
+                                        autoComplete="off"
+                                        maxLength={40}
+                                        value={values.noIsbn ? '' : values.isbn}
+                                        onChange={(event) => set('isbn', event.target.value)}
+                                    />
+                                    {!book && (
+                                        <Button
+                                            icon="search"
+                                            busy={lookingUp}
+                                            disabled={values.noIsbn || values.isbn.trim() === ''}
+                                            onClick={() => void findBook()}
+                                        >
+                                            {lookupMessage?.retry
+                                                ? t('lookup.retry')
+                                                : t('lookup.find')}
+                                        </Button>
+                                    )}
+                                </div>
                                 {failure?.existingBookId && (
                                     <Link
                                         to={'/books/' + failure.existingBookId}
@@ -641,6 +776,28 @@ function BookForm({ book }: { book: BookDto | null }) {
                     </span>
                 </div>
             </form>
+            {review && (
+                <LookupReviewDialog
+                    key={review.isbn13}
+                    fields={review.fields}
+                    covers={review.covers}
+                    keepsGeneratedTitle={LookupFill.keepsGeneratedTitle(values, review.fields)}
+                    onUse={(selection, token) => void applyLookup(review, selection, token)}
+                    onClose={() => setReview(null)}
+                />
+            )}
+            {replacing && (
+                <LookupConflictsDialog
+                    conflicts={replacing.conflicts}
+                    onApply={(fields) => {
+                        setValues((current) =>
+                            LookupFill.replace(current, replacing.selection, fields),
+                        );
+                        setReplacing(null);
+                    }}
+                    onClose={() => setReplacing(null)}
+                />
+            )}
             <SimilarAuthorDialog
                 similar={similar}
                 onClose={() => setSimilar(null)}

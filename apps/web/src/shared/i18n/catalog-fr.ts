@@ -295,6 +295,41 @@ export const fr = {
     'form.main': '01 / Informations principales',
     'form.isbn': 'ISBN',
     'form.isbnHint': 'ISBN-10 ou ISBN-13, avec ou sans tirets.',
+    'lookup.find': 'Rechercher le livre',
+    'lookup.retry': 'Relancer la recherche',
+    'lookup.findHint': 'Remplit le formulaire depuis des catalogues. Rien n’est encore enregistré.',
+    'lookup.noResult':
+        'Aucun livre trouvé pour cet ISBN. Il est conservé : complétez le formulaire vous-même.',
+    'lookup.unavailable':
+        'La recherche est indisponible ({sources}). Votre ISBN est conservé. Réessayez ou complétez le formulaire vous-même.',
+    'lookup.unavailableAll':
+        'La recherche est indisponible. Votre ISBN est conservé. Réessayez ou complétez le formulaire vous-même.',
+    'lookup.partial':
+        'Certaines sources n’ont pas répondu ({sources}) ; les valeurs trouvées peuvent être incomplètes.',
+    'lookup.applied': 'Valeurs ajoutées au formulaire. Vérifiez-les, puis enregistrez le livre.',
+    'lookup.reviewTitle': 'Vérifier le résultat de la recherche',
+    'lookup.reviewIntro': 'Choisissez les valeurs à utiliser. Rien n’est encore enregistré.',
+    'lookup.from': 'de {sources}',
+    'lookup.keepGenerated': 'Garder le titre généré',
+    'lookup.collection': 'Collection',
+    'lookup.collectionValue': '{name}, tome {volume}',
+    'lookup.publication': 'Date de publication',
+    'lookup.cover': 'Couverture',
+    'lookup.coverOption': 'Couverture {number}, de {sources}',
+    'lookup.noCover': 'Pas de couverture',
+    'lookup.use': 'Utiliser ces valeurs',
+    'lookup.conflictsTitle': 'Remplacer vos valeurs ?',
+    'lookup.conflictsIntro':
+        'La recherche a trouvé d’autres valeurs. Les vôtres restent, sauf si vous choisissez de les remplacer.',
+    'lookup.yours': 'Les vôtres : {value}',
+    'lookup.theirs': 'Recherche : {value}',
+    'lookup.keepMine': 'Garder la mienne',
+    'lookup.useLookup': 'Utiliser la recherche',
+    'lookup.apply': 'Appliquer',
+    'lookup.coverFailed':
+        'La couverture choisie n’a pas pu être récupérée. Choisissez-en une vous-même.',
+    'source.bnf': 'BnF',
+    'source.openlibrary': 'Open Library',
     'form.noIsbn': 'Ce livre n’a pas d’ISBN',
     'form.title': 'Titre',
     'form.titleGenerated':
