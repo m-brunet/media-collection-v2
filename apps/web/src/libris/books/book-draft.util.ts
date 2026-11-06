@@ -60,6 +60,12 @@ export interface BookDraftValues {
     tags: DraftTag[];
 }
 
+// Changes one field of the draft (the callback the form's field groups share).
+export type DraftFieldSetter = <K extends keyof BookDraftValues>(
+    key: K,
+    value: BookDraftValues[K],
+) => void;
+
 // Why the collection part of the form cannot be sent yet.
 export type CollectionProblem = 'collection-name-required' | 'volume-required';
 

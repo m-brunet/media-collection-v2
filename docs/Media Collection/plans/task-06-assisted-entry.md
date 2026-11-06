@@ -250,7 +250,8 @@ address, never a person's email).
   set only by the test worker (`tests/runtime/test-worker.mjs`) from `APP_TEST_LOOKUP_ADDRESSES`. Production startup
   never sets it and reads no new setting, so the real catalogue addresses always apply there.
 - Image address helper: in the browser, an address on this computer is refused without being fetched (the home-network
-  guard); the successful download stays covered by the API and adapter tests, since the stand-in itself is local.
+  guard); the successful download is covered by the API tests (scripted web, real guard) and the adapter tests,
+  since the stand-in itself is local.
 
 ## Notes from step 7
 
@@ -258,10 +259,34 @@ address, never a person's email).
   (features and layers, pure domain/application, driving/driven ports, string tokens and factory providers, one public
   operation per use case, same-directory tests, API tests for the three lookup endpoints). One class-preference fix in
   Libris: the cover search address was an exported standalone helper used in one place; it is now inline.
+- Second review at the user's request, all fixed: `api.download` had its own copy of the error handling and missed
+  the session-expired signal and the CSRF reset (now one shared `failure` method); `POST /api/books/lookups/covers`
+  had no API success test (the pasted-address downloader now comes with the lookup sources, so API tests run the real
+  downloader and home-network guard over a scripted web); standalone helpers became private statics or
+  `SourceLink.chain`; an oversized download now simply leaves the read loop, which stops it (tested with an endless
+  image); the Add a book page was split (see Notes from the page split).
 - Optional, not changed: covers offered by a source (Open Library) are downloaded without the home-network guard used
   for pasted addresses, because the address comes from the source's answer, not from a person; adding the guard would
   also need the browser journeys' local stand-in to be allowed. The chain's 8-second timeout uses the real timer
   (`setTimeout`) rather than the `Clock`; its unit tests use fake timers.
+
+## Notes from the page split (after the second review)
+
+The Add a book / Edit book page (`book-form-page.tsx`, 905 lines) had grown to hold the fields, saving with its server
+questions and Find book. It is now a short composition (about 290 lines) of parts, each named after what it does:
+
+| File | What it holds |
+| --- | --- |
+| `book-form-page.tsx` | Loading the book to edit; the form's state (draft, cover, folded section), leaving with unsaved changes, and how the parts below fit together |
+| `book-main-fields.tsx` | "01 / Main information": ISBN with Find book, title, authors, category, ownership, reading, collection, cover |
+| `book-additional-fields.tsx` | "Additional information": publisher, date, summary, page count, price, personal note |
+| `use-book-save.ts` | Saving: checks before sending, the request, server refusals as errors or questions, then reading status, note and cover |
+| `book-save-questions.tsx` | The server's questions before saving (similar author, possible duplicate, similar collection, volume 0, planned books) and what each answer does |
+| `use-book-lookup.ts` | Find book: the request, its message, the review, filling the draft, replacing typed values, the chosen cover |
+
+The organisation panel (location, tags) stays in the page: it is two fields. The server's five questions are one
+`SaveQuestion` value instead of five separate states, since only one can be open at a time. Behaviour is unchanged:
+the existing component tests (345) and browser journeys (75) pass without modification.
 
 ## Credits for the future credits page
 
