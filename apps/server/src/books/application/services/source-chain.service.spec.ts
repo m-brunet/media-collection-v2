@@ -119,3 +119,50 @@ describe('SourceLink', () => {
         expect(source.asked).toEqual(['9782253164692']);
     });
 });
+
+describe('SourceLink.chain', () => {
+    it('links the sources in the given order of preference', async () => {
+        const chain = SourceLink.chain(
+            [new ScriptedSource('bnf', found('a')), new ScriptedSource('ol', found('b'))],
+            new ManualClock(),
+        );
+        const { events, recipient } = recorder();
+
+        await chain!.begin('9782253164692').handle(recipient);
+
+        expect(events).toEqual(['bnf:a', 'ol:b']);
+    });
+
+    it('gives each source its own budget', async () => {
+        const chain = SourceLink.chain(
+            [
+                new ScriptedSource('bnf', found('a'), { requests: 1, seconds: 60 }),
+                new ScriptedSource('ol', found('b'), { requests: 1, seconds: 60 }),
+            ],
+            new ManualClock(),
+        );
+        const { events, recipient } = recorder();
+
+        await chain!.begin('9782253164692').handle(recipient);
+
+        expect(events).toEqual(['bnf:a', 'ol:b']);
+    });
+
+    it('keeps the budgets across lookups', async () => {
+        const source = new ScriptedSource('bnf', found('a'), { requests: 1, seconds: 60 });
+        const chain = SourceLink.chain([source], new ManualClock());
+        const { events, recipient } = recorder();
+
+        await chain!.begin('9782253164692').handle(recorder().recipient);
+
+        await chain!.begin('9782723471930').handle(recipient);
+
+        expect(events).toEqual(['bnf:limited']);
+    });
+
+    it('is empty without sources', () => {
+        const chain = SourceLink.chain<string>([], new ManualClock());
+
+        expect(chain).toBeNull();
+    });
+});

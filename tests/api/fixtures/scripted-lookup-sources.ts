@@ -7,6 +7,8 @@ import type {
 import type { CoverOffer } from '../../../apps/server/src/books/domain/services/cover-combination.service.js';
 import type { LookupAnswerFields } from '../../../apps/server/src/books/domain/value-objects/lookup-answer.value-object.js';
 import { LookupAnswer } from '../../../apps/server/src/books/domain/value-objects/lookup-answer.value-object.js';
+import { HttpCoverDownloader } from '../../../apps/server/src/books/infrastructure/adapters/driven/third-party/http-cover-downloader.adapter.js';
+import { PublicAddresses } from '../../../apps/server/src/books/infrastructure/adapters/driven/third-party/public-addresses.adapter.js';
 
 // A source answering from what a test arranged per ISBN; anything else is unknown to it.
 class ScriptedSource<T> implements LookupSource<T> {
@@ -47,6 +49,22 @@ export class ScriptedLookupSources implements BookLookupSources {
     readonly openLibrary = new ScriptedSource<LookupAnswer>('openlibrary');
     readonly openLibraryCovers = new ScriptedSource<CoverOffer[]>('openlibrary');
     readonly downloader = new ScriptedDownloader();
+    // Images on the scripted web, by address (see `webImage`).
+    private readonly web = new Map<string, Uint8Array>();
+    // Pasted image addresses go through the real downloader and home-network guard, over a
+    // scripted web: every host name resolves to a public address and only arranged images answer.
+    readonly addressDownloader = new HttpCoverDownloader(
+        async (url) => {
+            const bytes = this.web.get(url);
+
+            return bytes
+                ? new Response(new Blob([new Uint8Array(bytes)]), {
+                      headers: { 'Content-Type': 'image/jpeg' },
+                  })
+                : new Response(null, { status: 404 });
+        },
+        new PublicAddresses(async () => ['93.184.215.14']),
+    );
     readonly information = [this.bnf, this.openLibrary];
     readonly covers = [this.openLibraryCovers];
 
@@ -64,5 +82,10 @@ export class ScriptedLookupSources implements BookLookupSources {
             value: [{ address, width: 400, height: 600, fingerprint: null }],
         });
         this.downloader.images.set(address, bytes);
+    }
+
+    // An image a person can paste the address of.
+    webImage(address: string, bytes: Uint8Array): void {
+        this.web.set(address, bytes);
     }
 }

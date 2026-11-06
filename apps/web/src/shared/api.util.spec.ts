@@ -131,3 +131,45 @@ it('reprepares CSRF after a rejected mutation', async () => {
         }),
     );
 });
+
+it('signals session expiry when a download is refused', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(fetchResponse(401, { message: 'Sign in' })));
+    const path = '/books/lookups/covers/token';
+
+    const result = api.download(path);
+
+    await expect(result).rejects.toMatchObject({ status: 401, message: 'Sign in' });
+    expect(dispatch).toHaveBeenCalledOnce();
+    expect(dispatch.mock.calls[0]![0].type).toBe('session-expired');
+});
+
+it('reprepares CSRF after a rejected download', async () => {
+    const fetch = vi
+        .fn()
+        .mockResolvedValueOnce(fetchResponse(200, { token: 'old' }))
+        .mockResolvedValueOnce(fetchResponse(403, { message: 'Rejected' }))
+        .mockResolvedValueOnce(fetchResponse(200, { token: 'new' }))
+        .mockResolvedValueOnce({ ...fetchResponse(200, null), blob: async () => new Blob() });
+
+    vi.stubGlobal('fetch', fetch);
+    await api.download('/books/lookups/covers', { address: 'https://a.example/1.jpg' }).then(
+        () => {
+            throw new Error('Setup download should fail');
+        },
+        (error) => {
+            if (!(error instanceof Error && 'status' in error && error.status === 403)) {
+                throw error;
+            }
+        },
+    );
+    const body = { address: 'https://a.example/2.jpg' };
+
+    await api.download('/books/lookups/covers', body);
+
+    expect(fetch).toHaveBeenLastCalledWith(
+        '/api/books/lookups/covers',
+        expect.objectContaining({
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': 'new' },
+        }),
+    );
+});

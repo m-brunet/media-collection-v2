@@ -1,6 +1,6 @@
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 import type { LookupSource, SourceReply } from '../ports/driven/lookup-source.interface.js';
-import type { SourceBudget } from './source-budget.service.js';
+import { SourceBudget } from './source-budget.service.js';
 
 // Why a source contributed nothing: its rate limit (or our budget for it), or a failure.
 export interface SourceUnavailability {
@@ -30,6 +30,16 @@ export class SourceLink<T> {
         private readonly clock: Clock,
         private readonly next: SourceLink<T> | null = null,
     ) {}
+
+    // The chain over `sources`, in the given order of preference, each with its own budget; null
+    // when there is no source. Built once, so the budgets last across lookups.
+    static chain<T>(sources: readonly LookupSource<T>[], clock: Clock): SourceLink<T> | null {
+        return sources.reduceRight<SourceLink<T> | null>(
+            (next, source) =>
+                new SourceLink(source, new SourceBudget(source.limit, clock), clock, next),
+            null,
+        );
+    }
 
     begin(isbn13: string): SourceStep<T> {
         return new SourceStep(this.source.name, this.ask(isbn13), this.next?.begin(isbn13) ?? null);

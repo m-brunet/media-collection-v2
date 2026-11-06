@@ -40,6 +40,22 @@ describe('HttpCoverDownloader', () => {
         expect(bytes).toBeNull();
     });
 
+    it('stops receiving an endless image once it is too large', async () => {
+        let cancelled = false;
+        const endless = new ReadableStream<Uint8Array>({
+            pull: (controller) => controller.enqueue(new Uint8Array(1024 * 1024)),
+            cancel: () => {
+                cancelled = true;
+            },
+        });
+        const { downloader } = serving(endless);
+
+        const bytes = await downloader.download('https://covers.example/endless.jpg');
+
+        expect(bytes).toBeNull();
+        expect(cancelled).toBe(true);
+    });
+
     it('fetches nothing but web addresses', async () => {
         const { requested, downloader } = serving(jpeg);
 
