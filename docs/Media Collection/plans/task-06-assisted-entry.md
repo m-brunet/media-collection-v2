@@ -1,6 +1,6 @@
 # Task 6 — Assisted entry (desktop)
 
-Status: approved (2026-11-06), in progress on branch `task-06-assisted-entry`, reviewed through a pull request
+Status: done (2026-11-06) on branch `task-06-assisted-entry`, ready for review in pull request #2
 (the user's request for this task; earlier tasks were committed on `master`).
 
 ## Scope
@@ -180,7 +180,7 @@ address, never a person's email).
 5. [x] Libris Find book: review, conflicts, covers, states, cover helpers (search, paste/drop, image address),
    component tests (5a lookup review and draft filling; 5b search, paste, drop; 5c image address)
 6. [x] Browser journeys with stubbed sources
-7. [ ] Architecture review, `npm run check`, docs (credits list for the future credits page)
+7. [x] Architecture review, `npm run check`, docs (credits list for the future credits page)
 
 ## Notes from step 1
 
@@ -251,6 +251,31 @@ address, never a person's email).
   never sets it and reads no new setting, so the real catalogue addresses always apply there.
 - Image address helper: in the browser, an address on this computer is refused without being fetched (the home-network
   guard); the successful download stays covered by the API and adapter tests, since the stand-in itself is local.
+
+## Notes from step 7
+
+- Architecture review of the whole branch (skill `architecture-review`): no mandatory violation in the backend
+  (features and layers, pure domain/application, driving/driven ports, string tokens and factory providers, one public
+  operation per use case, same-directory tests, API tests for the three lookup endpoints). One class-preference fix in
+  Libris: the cover search address was an exported standalone helper used in one place; it is now inline.
+- Optional, not changed: covers offered by a source (Open Library) are downloaded without the home-network guard used
+  for pasted addresses, because the address comes from the source's answer, not from a person; adding the guard would
+  also need the browser journeys' local stand-in to be allowed. The chain's 8-second timeout uses the real timer
+  (`setTimeout`) rather than the `Clock`; its unit tests use fake timers.
+
+## Credits for the future credits page
+
+What Task 6 adds to the credits/licences page (Task 10):
+
+| What | Used for | Licence and attribution |
+| --- | --- | --- |
+| BnF catalogue (Bibliothèque nationale de France, SRU service) | Book information and summaries in Find book | Licence Ouverte / Open Licence (Etalab): free reuse, credit the source, for example “Source: Bibliothèque nationale de France” |
+| Open Library (Internet Archive) | Book information and covers in Find book | Free use; data under CC0, covers for display; a link back to openlibrary.org appreciated |
+| sharp (Lovell Fuller and contributors) | Cover padding removal | Apache-2.0 |
+| libvips, bundled with sharp in `@img/sharp-*` | Image decoding and encoding | LGPL-3.0-or-later: name it, link its source and licence |
+
+The review dialog already names each value's source (BnF, Open Library). The Google Images search link only opens
+the person's browser; nothing from Google is bundled or displayed by the app.
 
 ## Fix after user testing (2026-11-06): BnF authors
 

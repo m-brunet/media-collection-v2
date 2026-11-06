@@ -17,11 +17,6 @@ export interface CoverChoice {
     removed: boolean;
 }
 
-// Where to search for a cover: the ISBN, or the title and authors without one.
-export function coverSearchAddress(terms: string): string {
-    return 'https://www.google.com/search?tbm=isch&q=' + encodeURIComponent(terms);
-}
-
 // The cover of the form, chosen from a file, pasted (Ctrl+V outside text fields), dropped, or
 // fetched from an image address; a web search helps find one (Task 6 cover helpers).
 export function CoverPicker({
@@ -190,7 +185,11 @@ export function CoverPicker({
             {searchTerms.trim() && (
                 <a
                     className="cover-picker__search"
-                    href={coverSearchAddress(searchTerms.trim())}
+                    // Google Images for the ISBN, or the title and authors without one.
+                    href={
+                        'https://www.google.com/search?tbm=isch&q=' +
+                        encodeURIComponent(searchTerms.trim())
+                    }
                     target="_blank"
                     rel="noopener noreferrer"
                 >

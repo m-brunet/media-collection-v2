@@ -138,7 +138,8 @@ Owning docs: `../operations/release-expectations.md`, `../product/accounts.md`, 
 ### Task 10 — Release readiness
 Owning docs: `../operations/updates.md`, `../design/design-guidelines.md`.
 - GitHub Releases update checks, Windows integrated download/install with automatic backup, macOS/Linux backup-and-open-download-page, backup folder, failure handling.
-- Packaging/installer naming; icon set switching (Admin setting) and credits/licences page.
+- Packaging/installer naming; icon set switching (Admin setting) and credits/licences page (include the lookup
+  sources and image libraries listed in [Task 6 · Credits](task-06-assisted-entry.md#credits-for-the-future-credits-page)).
 
 ## Dependencies
 
@@ -170,7 +171,7 @@ Implemented on 2026-11-06 as `npm run dev:reset-data` and `npm run dev:import-v1
 | 5.5 Generated titles | Done (2026-11-06) | [task-05-5-generated-titles](task-05-5-generated-titles.md) | Committed; see its notes for later tasks |
 | 5.8 Test entity builders | Done (2026-11-06) | [task-05-8-test-builders](task-05-8-test-builders.md) | Committed; see its notes for later tasks |
 | Design fix: Collections pages | Done (2026-11-06) | [design-fix-collections](design-fix-collections.md) | Inserted at the user's request; see its notes |
-| 6 Assisted entry | Approved (2026-11-06), in progress on branch `task-06-assisted-entry` (pull request) | [task-06-assisted-entry](task-06-assisted-entry.md) | Step 1: cover padding removal (own commit) |
+| 6 Assisted entry | Ready for review (2026-11-06), branch `task-06-assisted-entry`, pull request #2 | [task-06-assisted-entry](task-06-assisted-entry.md) | BnF then Open Library; cover helpers; desktop cover panel deferred; credits listed in its plan; see its notes for later tasks |
 | 7 Leaf (mobile) | Not started | — | |
 | 8 Overview and Activity | Not started | — | |
 | 9 Host maintenance | Not started | — | |
