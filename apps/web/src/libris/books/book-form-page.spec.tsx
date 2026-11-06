@@ -1,6 +1,7 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { BookLookupDto } from '../../../../../packages/contracts/src/http';
 import { bookDto } from '../../testing/book-fixtures.test-support';
 import { account, deviceLanguages, FakeApi } from '../../testing/fake-api.test-support';
 import { renderRoute } from '../../testing/render-route.test-support';
@@ -803,4 +804,257 @@ it('prefills the last generated title when the book leaves its collection', asyn
 
     expect(screen.getByLabelText(/^Title/)).toHaveValue('Gunnm Vol. 3');
     expect(screen.getByLabelText(/^Title/)).toBeRequired();
+});
+
+describe('Find book', () => {
+    const isbn = '9782253164692';
+
+    function lookedUp(
+        overrides: Partial<Extract<BookLookupDto, { kind: 'looked-up' }>> = {},
+    ): BookLookupDto {
+        return {
+            kind: 'looked-up',
+            isbn13: isbn,
+            found: true,
+            fields: {
+                title: [],
+                authors: [],
+                publisher: [],
+                publicationDate: [],
+                pageCount: [],
+                summary: [],
+                collection: [],
+            },
+            covers: [],
+            unavailable: [],
+            ...overrides,
+        };
+    }
+
+    const ewilanFields = {
+        title: [{ value: "D'un monde à l'autre", sources: ['bnf'] }],
+        authors: [{ value: ['Pierre Bottero'], sources: ['bnf'] }],
+        publisher: [
+            { value: 'Librairie générale française', sources: ['bnf'] },
+            { value: 'Le livre de poche', sources: ['openlibrary'] },
+        ],
+        publicationDate: [],
+        pageCount: [{ value: 257, sources: ['bnf'] }],
+        summary: [],
+        collection: [{ value: { name: "La quête d'Ewilan", volume: 1 }, sources: ['bnf'] }],
+    };
+    const ewilan = lookedUp({ fields: ewilanFields });
+
+    async function findBook(typed = isbn) {
+        await userEvent.type(await screen.findByLabelText(/^ISBN/), typed);
+        await userEvent.click(screen.getByRole('button', { name: 'Find book' }));
+    }
+
+    it('is available once an ISBN is typed', async () => {
+        new FakeApi().signedIn(account());
+
+        addPage();
+
+        expect(await screen.findByRole('button', { name: 'Find book' })).toBeDisabled();
+    });
+
+    it('is not offered when editing a book', async () => {
+        new FakeApi()
+            .signedIn(account())
+            .on('GET /books/b1', () => ({ status: 200, body: bookDto() }));
+
+        editPage();
+
+        await screen.findByRole('heading', { name: 'Edit book' });
+        expect(screen.queryByRole('button', { name: 'Find book' })).not.toBeInTheDocument();
+    });
+
+    it('opens the book that already has this ISBN (example 11)', async () => {
+        new FakeApi().signedIn(account()).on('POST /books/lookups', () => ({
+            status: 200,
+            body: { kind: 'existing', bookId: 'b9' },
+        }));
+        const router = addPage();
+
+        await findBook();
+
+        await vi.waitFor(() => expect(router.state.location.pathname).toBe('/books/b9'));
+    });
+
+    it('fills the form with the reviewed values, the preferred source first (examples 12 and 18)', async () => {
+        const api = new FakeApi()
+            .signedIn(account())
+            .on('POST /books/lookups', () => ({ status: 200, body: ewilan }));
+
+        addPage();
+        await findBook();
+        const review = await screen.findByRole('dialog', { name: 'Review the lookup result' });
+
+        await userEvent.click(within(review).getByRole('button', { name: 'Use these values' }));
+
+        expect(screen.getByLabelText(/^Title/)).toHaveValue("D'un monde à l'autre");
+        expect(screen.getByText('Pierre Bottero')).toBeInTheDocument();
+        expect(screen.getByLabelText('Publisher')).toHaveValue('Librairie générale française');
+        expect(screen.getByLabelText('Page count')).toHaveValue('257');
+        expect(screen.getByRole('combobox', { name: /Collection name/ })).toHaveValue(
+            "La quête d'Ewilan",
+        );
+        expect(
+            screen.getByText('Lookup values added to the form. Check them, then save the book.'),
+        ).toBeInTheDocument();
+        expect(api.calls.find((call) => call.route === 'POST /books/lookups')?.body).toEqual({
+            isbn,
+        });
+    });
+
+    it('uses an alternative value the person picks', async () => {
+        new FakeApi()
+            .signedIn(account())
+            .on('POST /books/lookups', () => ({ status: 200, body: ewilan }));
+
+        addPage();
+        await findBook();
+        const review = await screen.findByRole('dialog', { name: 'Review the lookup result' });
+
+        await userEvent.click(within(review).getByRole('radio', { name: /Le livre de poche/ }));
+        await userEvent.click(within(review).getByRole('button', { name: 'Use these values' }));
+
+        expect(screen.getByLabelText('Publisher')).toHaveValue('Le livre de poche');
+    });
+
+    it('keeps a typed title unless the person chooses the lookup one (example 12)', async () => {
+        new FakeApi()
+            .signedIn(account())
+            .on('POST /books/lookups', () => ({ status: 200, body: ewilan }));
+
+        addPage();
+        await userEvent.type(await screen.findByLabelText(/^Title/), 'Ewilan 1');
+        await findBook();
+        await userEvent.click(await screen.findByRole('button', { name: 'Use these values' }));
+        const conflicts = await screen.findByRole('dialog', {
+            name: 'Replace your entered values?',
+        });
+
+        await userEvent.click(within(conflicts).getByRole('button', { name: 'Apply' }));
+
+        expect(screen.getByLabelText(/^Title/)).toHaveValue('Ewilan 1');
+    });
+
+    it('replaces a typed title when the person chooses so', async () => {
+        new FakeApi()
+            .signedIn(account())
+            .on('POST /books/lookups', () => ({ status: 200, body: ewilan }));
+
+        addPage();
+        await userEvent.type(await screen.findByLabelText(/^Title/), 'Ewilan 1');
+        await findBook();
+        await userEvent.click(await screen.findByRole('button', { name: 'Use these values' }));
+        const conflicts = await screen.findByRole('dialog', {
+            name: 'Replace your entered values?',
+        });
+
+        await userEvent.click(within(conflicts).getByRole('radio', { name: /^Use lookup/ }));
+        await userEvent.click(within(conflicts).getByRole('button', { name: 'Apply' }));
+
+        expect(screen.getByLabelText(/^Title/)).toHaveValue("D'un monde à l'autre");
+    });
+
+    it('keeps the generated title of a manga in a collection by default', async () => {
+        new FakeApi()
+            .signedIn(account())
+            .on('POST /books/lookups', () => ({ status: 200, body: ewilan }));
+
+        addPage();
+        await userEvent.selectOptions(await screen.findByLabelText('Category'), 'manga');
+        await findBook();
+        const review = await screen.findByRole('dialog', { name: 'Review the lookup result' });
+        const keep = within(review).getByRole('radio', { name: 'Keep the generated title' });
+
+        await userEvent.click(within(review).getByRole('button', { name: 'Use these values' }));
+
+        expect(keep).toBeChecked();
+        expect(screen.getByLabelText(/^Title/)).toHaveValue('');
+    });
+
+    it('takes the chosen cover and uploads it with the book', async () => {
+        const image = new Blob([new Uint8Array([0xff, 0xd8, 0xff])], { type: 'image/jpeg' });
+        const api = new FakeApi()
+            .signedIn(account())
+            .on('POST /books/lookups', () => ({
+                status: 200,
+                body: lookedUp({
+                    fields: ewilanFields,
+                    covers: [{ token: 't1', width: null, height: null, sources: ['openlibrary'] }],
+                }),
+            }))
+            .on('GET /books/lookups/covers/t1', () => ({ status: 200, body: image }))
+            .on('POST /books', () => ({ status: 201, body: bookDto() }))
+            .on('PUT /books/b1/cover', () => ({ status: 200, body: bookDto({ hasCover: true }) }));
+
+        vi.stubGlobal(
+            'URL',
+            Object.assign(URL, { createObjectURL: () => 'blob:cover', revokeObjectURL: () => {} }),
+        );
+        addPage();
+        await findBook();
+        await userEvent.click(await screen.findByRole('button', { name: 'Use these values' }));
+        await screen.findByRole('img', { name: /Cover of/ });
+
+        await userEvent.click(saveButton());
+
+        await vi.waitFor(() =>
+            expect(
+                api.calls.find((call) => call.route === 'PUT /books/b1/cover')?.body,
+            ).toBeInstanceOf(Blob),
+        );
+    });
+
+    it('says no book was found and keeps the ISBN (example 13)', async () => {
+        new FakeApi()
+            .signedIn(account())
+            .on('POST /books/lookups', () => ({ status: 200, body: lookedUp({ found: false }) }));
+
+        addPage();
+        await findBook();
+
+        expect(
+            await screen.findByText(
+                'No book was found for this ISBN. It is kept: complete the form manually.',
+            ),
+        ).toBeInTheDocument();
+        expect(screen.getByLabelText(/^ISBN/)).toHaveValue(isbn);
+        expect(screen.getByRole('button', { name: 'Find book' })).toBeEnabled();
+    });
+
+    it('tells an unavailable source apart from no result and offers a retry (example 13)', async () => {
+        new FakeApi().signedIn(account()).on('POST /books/lookups', () => ({
+            status: 200,
+            body: lookedUp({ found: false, unavailable: [{ source: 'bnf', reason: 'failed' }] }),
+        }));
+
+        addPage();
+        await findBook();
+
+        expect(
+            await screen.findByText(
+                'Book lookup is unavailable (BnF). Your ISBN is kept. Retry or complete this form manually.',
+            ),
+        ).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Retry lookup' })).toBeEnabled();
+    });
+
+    it('explains an invalid ISBN beside the field', async () => {
+        new FakeApi().signedIn(account()).on('POST /books/lookups', () => ({
+            status: 400,
+            body: { message: 'Enter a valid ISBN-10 or ISBN-13.', reason: 'isbn-invalid' },
+        }));
+
+        addPage();
+        await findBook('9782253164691');
+
+        await vi.waitFor(() =>
+            expect(screen.getByLabelText(/^ISBN/)).toHaveAttribute('aria-invalid', 'true'),
+        );
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
 });

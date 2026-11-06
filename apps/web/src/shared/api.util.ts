@@ -83,6 +83,30 @@ export class ApiClient {
         return response.status === 204 ? (undefined as T) : ((await response.json()) as T);
     }
 
+    // A binary resource (an image), failing like `request` does.
+    async download(path: string): Promise<Blob> {
+        const response = await fetch('/api' + path, { credentials: 'same-origin' });
+
+        if (!response.ok) {
+            const result = (await response
+                .json()
+                .catch(() => ({ message: 'The request failed.' }))) as {
+                message: string;
+                code?: string;
+                reason?: string | null;
+            };
+
+            throw new ApiError(
+                result.message,
+                response.status,
+                result.code ?? null,
+                result.reason ?? null,
+            );
+        }
+
+        return response.blob();
+    }
+
     private async csrf(): Promise<string> {
         if (this.csrfToken) {
             return this.csrfToken;
