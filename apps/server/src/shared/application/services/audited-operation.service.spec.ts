@@ -154,3 +154,196 @@ it('keeps the original error when the audit store is unavailable', async () => {
 
     await expect(result).rejects.toBe(failure);
 });
+
+const batch = (subjectIds: string[] = ['dune', 'piranesi']) => ({
+    category: 'loan.lent',
+    actorId: 'owner',
+    subjectType: 'book',
+    subjectIds,
+});
+
+const lentBoth = async () => ({
+    result: 'lent',
+    entries: [
+        { subjectId: 'dune', before: { loan: null }, after: { loan: { receiver: 'Sam' } } },
+        { subjectId: 'piranesi', before: { loan: null }, after: { loan: { receiver: 'Sam' } } },
+    ],
+});
+
+it('returns the result of a successful batch', async () => {
+    const subject = auditedOperation(new MemoryAuditTrail());
+
+    const result = await subject.runBatch(batch(), lentBoth);
+
+    expect(result).toBe('lent');
+});
+
+it('records one Successful entry per subject of a batch, sharing its operation', async () => {
+    const trail = new MemoryAuditTrail();
+    const subject = auditedOperation(trail);
+
+    await subject.runBatch(batch(), lentBoth);
+
+    expect(trail.entries).toEqual([
+        {
+            operationId: 'operation-1',
+            category: 'loan.lent',
+            outcome: 'successful',
+            actorId: 'owner',
+            occurredAt: '2026-01-01T00:00:00.000Z',
+            subjectType: 'book',
+            subjectId: 'dune',
+            before: { loan: null },
+            after: { loan: { receiver: 'Sam' } },
+            failure: null,
+        },
+        {
+            operationId: 'operation-1',
+            category: 'loan.lent',
+            outcome: 'successful',
+            actorId: 'owner',
+            occurredAt: '2026-01-01T00:00:00.000Z',
+            subjectType: 'book',
+            subjectId: 'piranesi',
+            before: { loan: null },
+            after: { loan: { receiver: 'Sam' } },
+            failure: null,
+        },
+    ]);
+});
+
+it('records the related changes of a batch under the same operation and actor', async () => {
+    const trail = new MemoryAuditTrail();
+    const subject = auditedOperation(trail);
+
+    await subject.runBatch(batch(['dune']), async () => ({
+        result: undefined,
+        entries: [{ subjectId: 'dune', before: null, after: { lent: true } }],
+        related: [
+            {
+                category: 'receiver.created',
+                subjectType: 'receiver',
+                subjectId: 'sam',
+                before: null,
+                after: { name: 'Sam' },
+            },
+        ],
+    }));
+
+    expect(trail.entries[1]).toEqual({
+        operationId: 'operation-1',
+        category: 'receiver.created',
+        outcome: 'successful',
+        actorId: 'owner',
+        occurredAt: '2026-01-01T00:00:00.000Z',
+        subjectType: 'receiver',
+        subjectId: 'sam',
+        before: null,
+        after: { name: 'Sam' },
+        failure: null,
+    });
+});
+
+it('rethrows a failed batch', async () => {
+    const subject = auditedOperation(new MemoryAuditTrail());
+    const failure = new Failure('conflict', 'Lent', 'book-already-lent');
+
+    const result = subject.runBatch(batch(), async () => {
+        throw failure;
+    });
+
+    await expect(result).rejects.toBe(failure);
+});
+
+it('records a Failed entry for every requested subject of a failed batch, sharing its operation', async () => {
+    const trail = new MemoryAuditTrail();
+    const subject = auditedOperation(trail);
+
+    await subject
+        .runBatch(batch(), async () => {
+            throw new Failure('conflict', 'Lent', 'book-already-lent');
+        })
+        .catch(() => undefined);
+
+    expect(trail.entries).toEqual([
+        expect.objectContaining({
+            operationId: 'operation-1',
+            outcome: 'failed',
+            subjectId: 'dune',
+            before: null,
+            after: null,
+            failure: 'conflict:book-already-lent',
+        }),
+        expect.objectContaining({
+            operationId: 'operation-1',
+            outcome: 'failed',
+            subjectId: 'piranesi',
+            before: null,
+            after: null,
+            failure: 'conflict:book-already-lent',
+        }),
+    ]);
+});
+
+it('keeps only the Failed entries of a batch that fails after recording', async () => {
+    const trail = new MemoryAuditTrail();
+    const subject = auditedOperation(trail);
+
+    await subject
+        .runBatch(batch(['dune']), async () => {
+            await trail.record({
+                operationId: 'inner',
+                category: 'receiver.created',
+                outcome: 'successful',
+                actorId: 'owner',
+                occurredAt: '2026-01-01T00:00:00.000Z',
+                subjectType: 'receiver',
+                subjectId: 'sam',
+                before: null,
+                after: { name: 'Sam' },
+                failure: null,
+            });
+            throw new Error('Storage failed');
+        })
+        .catch(() => undefined);
+
+    expect(trail.entries.map((entry) => entry.outcome + ':' + entry.subjectId)).toEqual([
+        'failed:dune',
+    ]);
+});
+
+it('records one Failed entry without a subject when a failed batch requested none', async () => {
+    const trail = new MemoryAuditTrail();
+    const subject = auditedOperation(trail);
+
+    await subject
+        .runBatch(batch([]), async () => {
+            throw new Failure('invalid_input', 'Empty', 'selection-empty');
+        })
+        .catch(() => undefined);
+
+    expect(trail.entries).toEqual([
+        expect.objectContaining({
+            outcome: 'failed',
+            subjectId: null,
+            failure: 'invalid_input:selection-empty',
+        }),
+    ]);
+});
+
+it('keeps the original error of a batch when the audit store is unavailable', async () => {
+    const failure = new Failure('conflict', 'Lent', 'book-already-lent');
+    const subject = auditedOperation({
+        entries: [],
+        record: async () => {
+            throw new Error('Audit store unavailable');
+        },
+        run: async (work: () => Promise<unknown>) => work(),
+    } as unknown as MemoryAuditTrail);
+
+    const result = subject.runBatch(batch(), async () => {
+        throw failure;
+    });
+
+    await expect(result).rejects.toBe(failure);
+});

@@ -22,6 +22,29 @@ export interface AuditedChange<T> {
     related?: readonly RelatedChange[];
 }
 
+// What a multi-record operation is about: one record per subject (for example each book of a
+// lending), all sharing one operation ID. The subjects are those requested, so each one gets a
+// Failed record if the operation fails.
+export interface BatchAuditContext {
+    category: string;
+    actorId: string | null;
+    subjectType: string;
+    subjectIds: readonly string[];
+}
+
+// The before/after snapshots of one subject of a successful batch.
+export interface BatchEntry {
+    subjectId: string;
+    before: Record<string, unknown> | null;
+    after: Record<string, unknown> | null;
+}
+
+export interface AuditedBatchChange<T> {
+    result: T;
+    entries: readonly BatchEntry[];
+    related?: readonly RelatedChange[];
+}
+
 // Runs a user-initiated state change atomically with its Successful audit records. If the change
 // fails, nothing of it persists and a Failed record is written after the rollback.
 export class AuditedOperation {
@@ -42,54 +65,108 @@ export class AuditedOperation {
             return await this.transactions.run(async () => {
                 const outcome = await change(context);
 
-                await this.audit.record({
-                    ...this.base(operationId, context),
-                    outcome: 'successful',
-                    before: outcome.before,
-                    after: outcome.after,
-                    failure: null,
-                });
-
-                for (const change of outcome.related ?? []) {
-                    await this.audit.record({
-                        ...this.base(operationId, {
-                            category: change.category,
-                            actorId: context.actorId,
-                            subjectType: change.subjectType,
-                            subjectId: change.subjectId,
-                        }),
-                        outcome: 'successful',
-                        before: change.before,
-                        after: change.after,
-                        failure: null,
-                    });
-                }
+                await this.recordSuccess(operationId, context, outcome);
+                await this.recordRelated(operationId, context.actorId, outcome.related);
 
                 return outcome.result;
             });
         } catch (error) {
-            await this.recordFailure(operationId, context, error);
+            await this.recordFailures(operationId, [context], error);
 
             throw error;
         }
     }
 
-    private async recordFailure(
+    // Runs a change affecting several subjects atomically, with one Successful record per subject.
+    // If it fails, nothing of it persists and every requested subject gets a Failed record, even
+    // those that were not themselves the cause: the batch as a whole was not committed.
+    async runBatch<T>(
+        context: BatchAuditContext,
+        change: () => Promise<AuditedBatchChange<T>>,
+    ): Promise<T> {
+        const operationId = this.ids.next();
+        const subject = (subjectId: string | null): AuditContext => ({
+            category: context.category,
+            actorId: context.actorId,
+            subjectType: context.subjectType,
+            subjectId,
+        });
+
+        try {
+            return await this.transactions.run(async () => {
+                const outcome = await change();
+
+                for (const entry of outcome.entries) {
+                    await this.recordSuccess(operationId, subject(entry.subjectId), entry);
+                }
+
+                await this.recordRelated(operationId, context.actorId, outcome.related);
+
+                return outcome.result;
+            });
+        } catch (error) {
+            const subjects =
+                context.subjectIds.length > 0 ? context.subjectIds.map(subject) : [subject(null)];
+
+            await this.recordFailures(operationId, subjects, error);
+
+            throw error;
+        }
+    }
+
+    private async recordSuccess(
         operationId: string,
         context: AuditContext,
+        snapshots: Pick<AuditedChange<unknown>, 'before' | 'after'>,
+    ): Promise<void> {
+        await this.audit.record({
+            ...this.base(operationId, context),
+            outcome: 'successful',
+            before: snapshots.before,
+            after: snapshots.after,
+            failure: null,
+        });
+    }
+
+    private async recordRelated(
+        operationId: string,
+        actorId: string | null,
+        related: readonly RelatedChange[] | undefined,
+    ): Promise<void> {
+        for (const change of related ?? []) {
+            await this.recordSuccess(
+                operationId,
+                {
+                    category: change.category,
+                    actorId,
+                    subjectType: change.subjectType,
+                    subjectId: change.subjectId,
+                },
+                change,
+            );
+        }
+    }
+
+    private async recordFailures(
+        operationId: string,
+        contexts: readonly AuditContext[],
         error: unknown,
     ): Promise<void> {
+        const failure =
+            error instanceof Failure
+                ? error.code + (error.reason ? ':' + error.reason : '')
+                : 'error';
+
         try {
-            await this.audit.record({
-                ...this.base(operationId, context),
-                outcome: 'failed',
-                before: null,
-                after: null,
-                failure:
-                    error instanceof Failure
-                        ? error.code + (error.reason ? ':' + error.reason : '')
-                        : 'error',
-            });
+            for (const context of contexts) {
+                await this.audit.record({
+                    ...this.base(operationId, context),
+                    outcome: 'failed',
+                    before: null,
+                    after: null,
+                    failure,
+                });
+            }
         } catch {
             // Justified: an unavailable audit store must not replace the original business error.
         }
