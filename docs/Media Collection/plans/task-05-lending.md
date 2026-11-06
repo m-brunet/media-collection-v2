@@ -88,7 +88,7 @@ presentation and Overview counter (Task 8), data reset (Task 9).
 1. [x] Domain: Receiver, Loan (lend eligibility, returns of one receiver together), Selection; unit tests.
 2. [x] Persistence: migration 009 + SQLite tests (constraints, partial unique index, SET NULL on book deletion,
        upgrade of a populated database); receiver/loan repositories, active-loans query, lendable-books adapter.
-3. [ ] Shared: batch form of `AuditedOperation` (per-subject Successful/Failed records, one operation ID); tests.
+3. [x] Shared: batch form of `AuditedOperation` (per-subject Successful/Failed records, one operation ID); tests.
 4. [ ] Application: lend, return, list active loans, find receivers; receiver resolver; books ports (loan reader,
        history) and the delete / Not Owned guards; book views; unit tests covering scenarios 1-15, 18-19.
 5. [ ] HTTP: loans and receivers controllers, schemas, failure reasons; books payload changes; API e2e for every
@@ -107,6 +107,9 @@ presentation and Overview counter (Task 8), data reset (Task 9).
 - Lending ports so far: `ReceiverRepository`, `LoanRepository` (`findByIds`, `create`, `save`), `LendableBooks`,
   `ActiveLoans` (read model in `lending/application/loan-views.ts`). `LoanRepository.create` maps the partial unique
   index to `book-already-lent` naming the book.
+- `AuditedOperation.runBatch(context, change)`: `context.subjectIds` are the requested books (each gets a Failed
+  record on failure; none requested → one Failed record without subject); the change returns `entries` (one
+  Successful record per subject) and optional `related` changes.
 - Persistence tests: `tests/persistence/lending.spec.ts`. The UUID-key table count guard is now 17.
 
 ## Decisions confirmed by the user (2026-11-06)
