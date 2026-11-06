@@ -3,6 +3,7 @@ import type { BookView } from '../book-views.js';
 import { BookAudit } from '../book-audit.js';
 import type { BookRepository } from '../ports/driven/book-repository.interface.js';
 import type { CoverStorage } from '../ports/driven/cover-storage.interface.js';
+import type { CoverTrimmer } from '../ports/driven/cover-trimmer.interface.js';
 import { BookLoader } from '../services/book-loader.service.js';
 import { BookViewer } from '../services/book-viewer.service.js';
 import { CoverImage } from '../../domain/value-objects/cover-image.value-object.js';
@@ -15,6 +16,7 @@ export class ReplaceCover implements ReplaceCoverUseCase {
     constructor(
         private readonly books: BookRepository,
         private readonly covers: CoverStorage,
+        private readonly trimmer: CoverTrimmer,
         private readonly loader: BookLoader,
         private readonly viewer: BookViewer,
         private readonly clock: Clock,
@@ -35,7 +37,8 @@ export class ReplaceCover implements ReplaceCoverUseCase {
                 },
                 async () => {
                     ActorAuthorization.requireLibraryEditor(actor);
-                    const cover = CoverImage.from(image);
+                    // Shop padding is removed before storing; see the book entry rules.
+                    const cover = await this.trimmer.trim(CoverImage.from(image));
                     const book = await this.loader.load(bookId);
 
                     replaced = book.snapshot.coverFile;

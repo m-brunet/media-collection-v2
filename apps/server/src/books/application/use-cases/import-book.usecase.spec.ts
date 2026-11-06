@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { CoverImage } from '../../domain/value-objects/cover-image.value-object.js';
 import type { ImportedBook } from '../ports/driving/import-book-use-case.interface.js';
 import { administrator, guest, library, saved } from '../testing/book-doubles.test-support.js';
 import { ImportBook } from './import-book.usecase.js';
@@ -15,6 +16,7 @@ function subject(current = library()) {
         current.collections,
         current.readings,
         current.covers,
+        current.trimmer,
         current.ids,
         current.clock,
         current.operations,
@@ -135,6 +137,17 @@ describe('ImportBook', () => {
         expect(result.cover).toBe('stored');
         expect(current.books.books.get(result.bookId)!.snapshot.coverFile).toBe('cover-1');
         expect(current.covers.files.get('cover-1')?.mediaType).toBe('image/png');
+    });
+    it('stores an imported cover without its shop padding', async () => {
+        const current = library();
+        const trimmed = CoverImage.from(new Uint8Array([0xff, 0xd8, 0xff, 9]));
+
+        current.trimmer.result = trimmed;
+
+        await subject(current).execute(administrator, imported({ cover: png }));
+
+        expect(current.trimmer.received.map((cover) => cover.bytes)).toEqual([png]);
+        expect(current.covers.files.get('cover-1')?.bytes).toEqual(trimmed.bytes);
     });
     it('leaves out a cover that is not a JPEG, PNG or WebP image', async () => {
         const current = library();
