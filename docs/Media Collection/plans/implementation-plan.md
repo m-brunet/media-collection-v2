@@ -7,7 +7,8 @@ Created 2026-11-03. Working plan, kept with the documentation in the Obsidian va
 1. Read `AGENTS.md` (mandatory architecture/SOLID/validation rules and the required review skill), then this file.
 2. Check the **Status** table below and `git log --oneline -15` to find the current task and whether it is planned, in progress, or done.
 3. If the current task has a detailed plan (`plans/task-NN-*.md`), read it and continue from its own checklist. If not, write it first (see "Per-task workflow") and get user approval before implementing.
-4. Before stopping, update the Status table and the task plan's checklist so the next thread can continue. Never leave work uncommitted between tasks without noting it here.
+4. Check [known issues](known-issues.md): an open entry in the area the task touches is fixed in that task.
+5. Before stopping, update the Status table and the task plan's checklist so the next thread can continue. Never leave work uncommitted between tasks without noting it here.
 
 ## Sources of truth
 
