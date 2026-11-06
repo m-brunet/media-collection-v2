@@ -1,22 +1,24 @@
 import { expect, it } from 'vitest';
-import { guest, lending, owner, receiver } from '../testing/lending-doubles.test-support.js';
+import { ReceiverBuilder } from '../testing/receiver-builder.test-support.js';
+import { guest, lending, owner } from '../testing/lending-doubles.test-support.js';
 import { FindReceivers } from './find-receivers.usecase.js';
 
 it('finds receivers by part of their name, ignoring case and accents', async () => {
     const current = lending();
 
-    await receiver(current, 'Zoé Martin');
-    await receiver(current, 'Sam Taylor');
+    const zoe = await new ReceiverBuilder().withName('Zoé Martin').buildAndSave(current);
+
+    await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
 
     const result = await new FindReceivers(current.receivers).execute(owner, 'ZOE');
 
-    expect(result).toEqual([{ id: 'receiver-zoé-martin', name: 'Zoé Martin' }]);
+    expect(result).toEqual([{ id: zoe.id, name: 'Zoé Martin' }]);
 });
 
 it('suggests nothing for an empty search', async () => {
     const current = lending();
 
-    await receiver(current, 'Sam Taylor');
+    await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
 
     const result = await new FindReceivers(current.receivers).execute(owner, '  ');
 
@@ -27,7 +29,9 @@ it('suggests at most ten receivers, in name order', async () => {
     const current = lending();
 
     for (let index = 11; index >= 0; index--) {
-        await receiver(current, 'Sam ' + String(index).padStart(2, '0'));
+        await new ReceiverBuilder()
+            .withName('Sam ' + String(index).padStart(2, '0'))
+            .buildAndSave(current);
     }
 
     const result = await new FindReceivers(current.receivers).execute(owner, 'sam');
@@ -49,7 +53,7 @@ it('suggests at most ten receivers, in name order', async () => {
 it('lets a Guest look receivers up', async () => {
     const current = lending();
 
-    await receiver(current, 'Sam Taylor');
+    await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
 
     const result = await new FindReceivers(current.receivers).execute(guest, 'sam');
 

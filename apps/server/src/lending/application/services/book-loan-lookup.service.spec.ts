@@ -1,12 +1,17 @@
 import { expect, it } from 'vitest';
-import { lending, lent, receiver } from '../testing/lending-doubles.test-support.js';
+import { ReceiverBuilder } from '../testing/receiver-builder.test-support.js';
+import { LoanBuilder } from '../testing/loan-builder.test-support.js';
+import { lending } from '../testing/lending-doubles.test-support.js';
 import { Loan } from '../../domain/entities/loan.entity.js';
 import { BookLoanLookup } from './book-loan-lookup.service.js';
 
 it('names the receiver of a lent book and the lending date', async () => {
     const current = lending();
-    const sam = await receiver(current, 'Sam Taylor');
-    const loan = await lent(current, current.books.add('dune', 'Dune'), sam.id);
+    const sam = await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
+    const loan = await new LoanBuilder()
+        .of(current.books.lendable(current.books.add('dune', 'Dune')))
+        .to(sam.id)
+        .buildAndSave(current);
 
     const result = await new BookLoanLookup(current.loans, current.receivers).of('dune');
 
@@ -30,8 +35,11 @@ it('finds no loan for a book that is not lent', async () => {
 
 it('finds no loan for a returned book', async () => {
     const current = lending();
-    const sam = await receiver(current, 'Sam Taylor');
-    const loan = await lent(current, current.books.add('dune', 'Dune'), sam.id);
+    const sam = await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
+    const loan = await new LoanBuilder()
+        .of(current.books.lendable(current.books.add('dune', 'Dune')))
+        .to(sam.id)
+        .buildAndSave(current);
 
     Loan.returnTogether([loan], '2026-10-05T09:00:00.000Z');
     await current.loans.save(loan);
@@ -43,11 +51,17 @@ it('finds no loan for a returned book', async () => {
 
 it('maps only the lent books among several', async () => {
     const current = lending();
-    const sam = await receiver(current, 'Sam Taylor');
-    const morgan = await receiver(current, 'Morgan');
+    const sam = await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
+    const morgan = await new ReceiverBuilder().withName('Morgan').buildAndSave(current);
 
-    await lent(current, current.books.add('dune', 'Dune'), sam.id);
-    await lent(current, current.books.add('piranesi', 'Piranesi'), morgan.id);
+    await new LoanBuilder()
+        .of(current.books.lendable(current.books.add('dune', 'Dune')))
+        .to(sam.id)
+        .buildAndSave(current);
+    await new LoanBuilder()
+        .of(current.books.lendable(current.books.add('piranesi', 'Piranesi')))
+        .to(morgan.id)
+        .buildAndSave(current);
     current.books.add('overstory', 'Overstory');
 
     const result = await new BookLoanLookup(current.loans, current.receivers).ofBooks([

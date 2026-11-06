@@ -4,6 +4,7 @@ import type { LendableBooks } from '../ports/driven/lendable-books.interface.js'
 import type { LoanRepository } from '../ports/driven/loan-repository.interface.js';
 import type { ReceiverRepository } from '../ports/driven/receiver-repository.interface.js';
 import { ReceiverResolver } from '../services/receiver-resolver.service.js';
+import type { LoanBook } from './loan-builder.test-support.js';
 import { Loan, type LendableBook } from '../../domain/entities/loan.entity.js';
 import { Receiver } from '../../domain/entities/receiver.entity.js';
 import {
@@ -111,6 +112,13 @@ export class MemoryLendableBooks implements LendableBooks {
         private readonly receivers: MemoryReceivers,
     ) {}
 
+    // The book as a loan records it, for building loans of it.
+    lendable(id: string): LoanBook {
+        const book = this.books.get(id)!;
+
+        return { id: book.id, title: book.title, isbn: book.isbn };
+    }
+
     add(id: string, title: string, ownership: LendableBook['ownership'] = 'owned'): string {
         this.books.set(id, { id, title, isbn: null, ownership });
 
@@ -167,42 +175,6 @@ export function lending() {
         resolver: new ReceiverResolver(receivers, ids, clock),
         active: new ActiveLoansStub(),
     };
-}
-
-// Saves a receiver, for arranging scenarios.
-export async function receiver(
-    current: ReturnType<typeof lending>,
-    name: string,
-): Promise<Receiver> {
-    const created = new Receiver({
-        id: 'receiver-' + name.toLowerCase().replace(/\s+/g, '-'),
-        name,
-        createdAt: '2026-01-01T00:00:00.000Z',
-    });
-
-    await current.receivers.create(created);
-
-    return created;
-}
-
-// Saves an active loan, for arranging scenarios.
-export async function lent(
-    current: ReturnType<typeof lending>,
-    bookId: string,
-    receiverId: string,
-    lentAt = '2026-10-01T09:00:00.000Z',
-): Promise<Loan> {
-    const book = current.books.books.get(bookId)!;
-    const loan = Loan.lend({
-        id: 'loan-' + bookId + '-' + lentAt,
-        book: { ...book, lentTo: null },
-        receiverId,
-        now: lentAt,
-    });
-
-    await current.loans.create(loan);
-
-    return loan;
 }
 
 function actor(role: Actor['role'], id: string): Actor {

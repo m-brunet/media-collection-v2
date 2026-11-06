@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { guest, lending, lent, owner, receiver } from '../testing/lending-doubles.test-support.js';
+import { ReceiverBuilder } from '../testing/receiver-builder.test-support.js';
+import { LoanBuilder } from '../testing/loan-builder.test-support.js';
+import { guest, lending, owner } from '../testing/lending-doubles.test-support.js';
 import { Loan } from '../../domain/entities/loan.entity.js';
 import { RecordReturns } from './record-returns.usecase.js';
 
@@ -9,21 +11,25 @@ function subject(current: ReturnType<typeof lending>) {
 
 // Sam has three books from two lending occasions; Morgan has one.
 async function onLoan(current: ReturnType<typeof lending>) {
-    const sam = await receiver(current, 'Sam Taylor');
-    const morgan = await receiver(current, 'Morgan');
-    const piranesi = await lent(
-        current,
-        current.books.add('piranesi', 'Piranesi'),
-        sam.id,
-        '2026-10-25T09:00:00.000Z',
-    );
-    const dune = await lent(current, current.books.add('dune', 'Dune'), sam.id);
-    const overstory = await lent(current, current.books.add('overstory', 'Overstory'), sam.id);
-    const sweetgrass = await lent(
-        current,
-        current.books.add('sweetgrass', 'Sweetgrass'),
-        morgan.id,
-    );
+    const sam = await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
+    const morgan = await new ReceiverBuilder().withName('Morgan').buildAndSave(current);
+    const piranesi = await new LoanBuilder()
+        .of(current.books.lendable(current.books.add('piranesi', 'Piranesi')))
+        .to(sam.id)
+        .withLentAt('2026-10-25T09:00:00.000Z')
+        .buildAndSave(current);
+    const dune = await new LoanBuilder()
+        .of(current.books.lendable(current.books.add('dune', 'Dune')))
+        .to(sam.id)
+        .buildAndSave(current);
+    const overstory = await new LoanBuilder()
+        .of(current.books.lendable(current.books.add('overstory', 'Overstory')))
+        .to(sam.id)
+        .buildAndSave(current);
+    const sweetgrass = await new LoanBuilder()
+        .of(current.books.lendable(current.books.add('sweetgrass', 'Sweetgrass')))
+        .to(morgan.id)
+        .buildAndSave(current);
 
     return { sam, morgan, piranesi, dune, overstory, sweetgrass };
 }

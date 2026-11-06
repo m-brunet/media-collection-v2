@@ -1,6 +1,6 @@
 # Task 5.8 — Test entity builders
 
-Status: approved (2026-11-06); to be done after Task 5.5. Inserted at the user's request after Task 5.
+Status: in progress (2026-11-06) on `master`. Inserted at the user's request after Task 5.
 Global plan: [implementation plan](implementation-plan.md). Origin: optional review point 1 of
 [Task 5](task-05-lending.md) (duplicated API test helpers) and the user's reference to test builders.
 
@@ -57,7 +57,7 @@ browser e2e arrangement, production code changes.
 
 ## Steps
 
-1. [ ] Base class and lending builders (`ReceiverBuilder`, `LoanBuilder`) with their unit tests; convert the lending
+1. [x] Base class and lending builders (`ReceiverBuilder`, `LoanBuilder`) with their unit tests; convert the lending
        unit tests.
 2. [ ] `BookBuilder` with its unit tests; `TestLibrary` composing books and lending, with parent creation.
 3. [ ] API test context: lending repositories; convert the loans, receivers and books controller specs' lending

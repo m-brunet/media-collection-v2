@@ -1,12 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import {
-    administrator,
-    guest,
-    lending,
-    lent,
-    owner,
-    receiver,
-} from '../testing/lending-doubles.test-support.js';
+import { ReceiverBuilder } from '../testing/receiver-builder.test-support.js';
+import { LoanBuilder } from '../testing/loan-builder.test-support.js';
+import { administrator, guest, lending, owner } from '../testing/lending-doubles.test-support.js';
 import { Loan } from '../../domain/entities/loan.entity.js';
 import { LendBooks } from './lend-books.usecase.js';
 
@@ -83,7 +78,7 @@ describe('LendBooks', () => {
     it('reuses the existing receiver chosen by the person', async () => {
         const current = lending();
         const { piranesi } = shelf(current);
-        const sam = await receiver(current, 'Sam Taylor');
+        const sam = await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
 
         const result = await subject(current).execute(owner, {
             receiver: { id: sam.id },
@@ -96,7 +91,7 @@ describe('LendBooks', () => {
     it('reuses the receiver with an equivalent name', async () => {
         const current = lending();
         const { piranesi } = shelf(current);
-        const zoe = await receiver(current, 'Zoé Martin');
+        const zoe = await new ReceiverBuilder().withName('Zoé Martin').buildAndSave(current);
 
         const result = await subject(current).execute(owner, {
             receiver: { name: ' zoe MARTIN ' },
@@ -109,7 +104,7 @@ describe('LendBooks', () => {
     it('asks before creating a receiver with a similar name, lending nothing', async () => {
         const current = lending();
         const { piranesi } = shelf(current);
-        const sam = await receiver(current, 'Sam Taylor');
+        const sam = await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
 
         const result = subject(current).execute(owner, {
             receiver: { name: 'Sam Tayler' },
@@ -128,7 +123,7 @@ describe('LendBooks', () => {
         const current = lending();
         const { piranesi } = shelf(current);
 
-        await receiver(current, 'Sam Taylor');
+        await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
 
         const result = await subject(current).execute(owner, {
             receiver: { name: 'Sam Tayler', distinct: true },
@@ -141,7 +136,7 @@ describe('LendBooks', () => {
     it('still reuses an identical name even when told it is someone else', async () => {
         const current = lending();
         const { piranesi } = shelf(current);
-        const sam = await receiver(current, 'Sam Taylor');
+        const sam = await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
 
         const result = await subject(current).execute(owner, {
             receiver: { name: 'Sam Taylor', distinct: true },
@@ -212,9 +207,12 @@ describe('LendBooks', () => {
     it('refuses a book already lent, lending none and creating no receiver', async () => {
         const current = lending();
         const { piranesi, dune } = shelf(current);
-        const morgan = await receiver(current, 'Morgan');
+        const morgan = await new ReceiverBuilder().withName('Morgan').buildAndSave(current);
 
-        await lent(current, dune, morgan.id);
+        await new LoanBuilder()
+            .of(current.books.lendable(dune))
+            .to(morgan.id)
+            .buildAndSave(current);
 
         const result = subject(current).execute(owner, {
             receiver: { name: 'Sam Taylor' },
@@ -246,8 +244,11 @@ describe('LendBooks', () => {
     it('lends a returned book again as a new occurrence, keeping the first', async () => {
         const current = lending();
         const { dune } = shelf(current);
-        const sam = await receiver(current, 'Sam Taylor');
-        const first = await lent(current, dune, sam.id);
+        const sam = await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
+        const first = await new LoanBuilder()
+            .of(current.books.lendable(dune))
+            .to(sam.id)
+            .buildAndSave(current);
 
         Loan.returnTogether([first], '2026-10-10T09:00:00.000Z');
         await current.loans.save(first);
@@ -278,7 +279,7 @@ describe('LendBooks audit', () => {
     it('records one entry per lent book under one operation', async () => {
         const current = lending();
         const { piranesi, dune } = shelf(current);
-        const sam = await receiver(current, 'Sam Taylor');
+        const sam = await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
 
         await subject(current).execute(owner, {
             receiver: { id: sam.id },
