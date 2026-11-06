@@ -239,3 +239,13 @@ address, never a person's email).
   request (no IP pinning).
 - Messages: no result, unavailable (naming sources) with Retry lookup, partial results, cover failures; EN/FR.
 
+## Fix after user testing (2026-11-06): BnF authors
+
+ISBN 9782075215466 (La Passe-miroir 1) came back without author: this newer record names Christelle Dabos only in
+702 (secondary responsibility) with the role written out ("Auteur du texte", no relator code), and step 4 skipped
+702 entirely. A sample of 40 development records also showed organisations as authors (710/711) and illustrators in
+702 (code 440), both missed. Authors are now: 700/701 persons and 710/711 organisations always; 702/712 only as
+author, illustrator or scenarist (codes 070, 440, 690, or the role text). Translators (730), authors of an original
+work (100) and preface writers stay out. When there is no series field (461), a title with a volume number
+(200 $a + $h) suggests the collection ("La Passe-miroir", 1).
+

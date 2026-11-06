@@ -19,6 +19,27 @@ function catalogue(body: string, status = 200, headers: Record<string, string> =
     return { requests, source: new BnfCatalogue(http) };
 }
 
+// A minimal UNIMARC record holding the given data fields, as the catalogue sends them.
+function record(...fields: string[]): string {
+    return (
+        '<srw:searchRetrieveResponse><srw:numberOfRecords>1</srw:numberOfRecords><srw:records>' +
+        '<srw:record><srw:recordData><mxc:record format="Unimarc" type="Bibliographic">' +
+        field('200', { a: 'Un titre' }) +
+        fields.join('') +
+        '</mxc:record></srw:recordData></srw:record></srw:records></srw:searchRetrieveResponse>'
+    );
+}
+
+function field(tag: string, subfields: Record<string, string>): string {
+    return (
+        `<mxc:datafield tag="${tag}" ind1=" " ind2=" ">` +
+        Object.entries(subfields)
+            .map(([code, value]) => `<mxc:subfield code="${code}">${value}</mxc:subfield>`)
+            .join('') +
+        '</mxc:datafield>'
+    );
+}
+
 describe('BnfCatalogue', () => {
     it('reads a manga volume with its series, without its translator', async () => {
         const { source } = catalogue(recorded('bnf-rose-hip-rose-1.xml'));
@@ -75,6 +96,47 @@ describe('BnfCatalogue', () => {
                 pageCount: 257,
             },
         });
+    });
+
+    it('reads an author given only as a secondary name with a written role', async () => {
+        const { source } = catalogue(recorded('bnf-passe-miroir-1.xml'));
+
+        const reply = await source.find('9782075215466');
+
+        expect(reply).toMatchObject({
+            kind: 'found',
+            value: {
+                title: "La Passe-miroir. 1. Les Fiancés de l'hiver",
+                authors: ['Christelle Dabos'],
+                publisher: 'Gallimard jeunesse',
+                publicationDate: { year: 2024, month: null },
+                pageCount: 608,
+                series: { name: 'La Passe-miroir', volume: 1 },
+            },
+        });
+    });
+
+    it('reads an organisation as author', async () => {
+        const { source } = catalogue(record(field('710', { a: 'Clamp', 4: '070' })));
+
+        const reply = await source.find('9782845990000');
+
+        expect(reply).toMatchObject({ value: { authors: ['Clamp'] } });
+    });
+
+    it('keeps illustrators and leaves translators out', async () => {
+        const { source } = catalogue(
+            record(
+                field('700', { a: 'Ohba', b: 'Tsugumi', 4: '070' }),
+                field('702', { a: 'Obata', b: 'Takeshi', 4: '440' }),
+                field('702', { a: 'Moulin', b: 'Fédoua', 4: '730' }),
+                field('702', { a: 'Martin', b: 'Anne', c: 'Traducteur' }),
+            ),
+        );
+
+        const reply = await source.find('9782505000000');
+
+        expect(reply).toMatchObject({ value: { authors: ['Tsugumi Ohba', 'Takeshi Obata'] } });
     });
 
     it('finds nothing for an ISBN the catalogue does not know', async () => {
