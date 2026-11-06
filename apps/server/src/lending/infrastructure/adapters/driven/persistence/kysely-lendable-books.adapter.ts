@@ -2,7 +2,8 @@ import type { LendableBooks } from '../../../../application/ports/driven/lendabl
 import type { LendableBook } from '../../../../domain/entities/loan.entity.js';
 import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
 
-// Reads the books table, and active loans, for the books chosen in a lending operation.
+// Reads the books table, and active loans with their receiver, for the books chosen in a lending
+// operation.
 export class KyselyLendableBooks implements LendableBooks {
     constructor(private readonly connections: DatabaseConnections) {}
 
@@ -16,12 +17,13 @@ export class KyselyLendableBooks implements LendableBooks {
             .leftJoin('loans', (join) =>
                 join.onRef('loans.book_id', '=', 'books.id').on('loans.status', '=', 'lent'),
             )
+            .leftJoin('receivers', 'receivers.id', 'loans.receiver_id')
             .select([
                 'books.id',
                 'books.title',
                 'books.isbn13',
                 'books.ownership',
-                'loans.id as loan_id',
+                'receivers.name as receiver_name',
             ])
             .where('books.id', 'in', [...ids])
             .execute();
@@ -37,7 +39,7 @@ export class KyselyLendableBooks implements LendableBooks {
                           title: row.title,
                           isbn: row.isbn13,
                           ownership: row.ownership === 'owned' ? 'owned' : 'not-owned',
-                          lent: row.loan_id !== null,
+                          lentTo: row.receiver_name,
                       } satisfies LendableBook,
                   ]
                 : [];

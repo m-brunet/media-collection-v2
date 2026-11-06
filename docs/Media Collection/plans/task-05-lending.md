@@ -156,8 +156,13 @@ Deferred optional points:
 - API e2e helpers that arrange books and loans over HTTP (`book`/`lend`/`lentTo`) are repeated in the loans,
   receivers and books controller specs (as noted for Task 4 helpers); a `tests/api/fixtures` loan fixture would need
   lending ports in the test context.
-- `FindReceivers` filters all receivers in memory, like author search; fine for a household, revisit if large.
-- After a refused handover the lend page re-reads each offending book with its own request.
+- `FindReceivers` filters all receivers in memory, like author search; fine for a household. User decision
+  (2026-11-06): leave it until it causes a problem.
+
+Resolved after the review (user decision, 2026-11-06): a refused handover no longer makes the lend page re-read each
+offending book. `LendableBook.lentTo` carries the receiver of an active loan, the `book-already-lent` refusal adds
+`lentTo` (receiver name by book ID) to `bookIds`, and `LendingChoice.refused` marks the selected books from the
+refusal alone (`lend.alreadyLentUnknown` covers the rare race caught by the unique index, which names no receiver).
 
 ## Notes for later tasks
 

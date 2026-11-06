@@ -101,11 +101,15 @@ export class MemoryLoanStore implements LoanRepository {
     }
 }
 
-// The books lending reads; whether each is lent comes from the loan store.
+// The books lending reads; whether each is lent, and to whom, comes from the loan and receiver
+// stores.
 export class MemoryLendableBooks implements LendableBooks {
-    readonly books = new Map<string, Omit<LendableBook, 'lent'>>();
+    readonly books = new Map<string, Omit<LendableBook, 'lentTo'>>();
 
-    constructor(private readonly loans: MemoryLoanStore) {}
+    constructor(
+        private readonly loans: MemoryLoanStore,
+        private readonly receivers: MemoryReceivers,
+    ) {}
 
     add(id: string, title: string, ownership: LendableBook['ownership'] = 'owned'): string {
         this.books.set(id, { id, title, isbn: null, ownership });
@@ -114,14 +118,18 @@ export class MemoryLendableBooks implements LendableBooks {
     }
 
     async find(ids: readonly string[]): Promise<LendableBook[]> {
-        const lent = new Set(
-            (await this.loans.findActiveByBooks(ids)).map((loan) => loan.snapshot.bookId),
-        );
+        const lentTo = new Map<string | null, string>();
+
+        for (const loan of await this.loans.findActiveByBooks(ids)) {
+            const receiver = this.receivers.receivers.get(loan.snapshot.receiverId);
+
+            lentTo.set(loan.snapshot.bookId, receiver?.snapshot.name ?? '');
+        }
 
         return ids.flatMap((id) => {
             const book = this.books.get(id);
 
-            return book ? [{ ...book, lent: lent.has(id) }] : [];
+            return book ? [{ ...book, lentTo: lentTo.get(id) ?? null }] : [];
         });
     }
 }
@@ -142,7 +150,7 @@ export class ActiveLoansStub implements ActiveLoans {
 export function lending() {
     const receivers = new MemoryReceivers();
     const loans = new MemoryLoanStore();
-    const books = new MemoryLendableBooks(loans);
+    const books = new MemoryLendableBooks(loans, receivers);
     const trail = new MemoryAuditTrail();
     let counter = 0;
     const ids = { next: () => 'id-' + ++counter };
@@ -187,7 +195,7 @@ export async function lent(
     const book = current.books.books.get(bookId)!;
     const loan = Loan.lend({
         id: 'loan-' + bookId + '-' + lentAt,
-        book: { ...book, lent: false },
+        book: { ...book, lentTo: null },
         receiverId,
         now: lentAt,
     });

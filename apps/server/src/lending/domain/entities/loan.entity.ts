@@ -14,13 +14,14 @@ export interface LoanState {
     bookIsbn: string | null;
 }
 
-// What lending needs to know about a book: its identity, ownership and whether it is lent now.
+// What lending needs to know about a book: its identity, ownership and, when it is lent now, the
+// name of the receiver who has it.
 export interface LendableBook {
     id: string;
     title: string;
     isbn: string | null;
     ownership: 'owned' | 'not-owned';
-    lent: boolean;
+    lentTo: string | null;
 }
 
 // One occurrence of a book handed to a receiver. Lending the same book again is a new loan, so
@@ -44,8 +45,8 @@ export class Loan {
         return new Loan(state);
     }
 
-    // Only Owned books without an active loan can be lent. Every offending book is named, so the
-    // person can correct the whole selection at once.
+    // Only Owned books without an active loan can be lent. Every offending book is named, and a lent
+    // book with its receiver, so the person can correct the whole selection at once.
     static ensureLendable(books: readonly LendableBook[]): void {
         const notOwned = books.filter((book) => book.ownership !== 'owned');
 
@@ -55,11 +56,12 @@ export class Loan {
             });
         }
 
-        const lent = books.filter((book) => book.lent);
+        const lent = books.filter((book) => book.lentTo !== null);
 
         if (lent.length > 0) {
             throw new Failure('conflict', 'A selected book is already lent.', 'book-already-lent', {
                 bookIds: lent.map((book) => book.id),
+                lentTo: Object.fromEntries(lent.map((book) => [book.id, book.lentTo])),
             });
         }
     }

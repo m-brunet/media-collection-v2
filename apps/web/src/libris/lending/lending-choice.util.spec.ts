@@ -51,21 +51,64 @@ it('refuses a book already lent', () => {
     expect(result).toBe('lent');
 });
 
-it('reports a book the server no longer has', () => {
-    const found = book({ gone: true });
+it('follows the refusal of the server over older information', () => {
+    const found = book({ refusal: { kind: 'gone' } });
 
     const result = LendingChoice.availability(found, []);
 
     expect(result).toBe('gone');
 });
 
-it('applies fresh information to the selection, keeping its order', () => {
+it('names who has a book refused as already lent', () => {
+    const found = book({ loan, refusal: { kind: 'lent', receiverName: 'Sam Taylor' } });
+
+    const result = LendingChoice.lentTo(found);
+
+    expect(result).toBe('Sam Taylor');
+});
+
+it('names who has a book known to be lent', () => {
+    const found = book({ loan });
+
+    const result = LendingChoice.lentTo(found);
+
+    expect(result).toBe('Morgan');
+});
+
+it('marks the books refused as already lent with their receiver, keeping the order', () => {
     const selected = [book({ id: 'piranesi', title: 'Piranesi' }), book()];
 
-    const result = LendingChoice.refreshed(selected, [book({ loan })]);
+    const result = LendingChoice.refused(selected, 'book-already-lent', {
+        bookIds: ['dune'],
+        lentTo: { dune: 'Morgan' },
+    });
 
-    expect(result.map((value) => [value.id, value.loan?.receiverName ?? null])).toEqual([
+    expect(result.map((value) => [value.id, value.refusal ?? null])).toEqual([
         ['piranesi', null],
-        ['dune', 'Morgan'],
+        ['dune', { kind: 'lent', receiverName: 'Morgan' }],
     ]);
+});
+
+it('marks the books refused as Not Owned', () => {
+    const selected = [book()];
+
+    const result = LendingChoice.refused(selected, 'book-not-owned', { bookIds: ['dune'] });
+
+    expect(result[0]!.refusal).toEqual({ kind: 'not-owned' });
+});
+
+it('marks the books that no longer exist', () => {
+    const selected = [book()];
+
+    const result = LendingChoice.refused(selected, 'book-missing', { bookIds: ['dune'] });
+
+    expect(result[0]!.refusal).toEqual({ kind: 'gone' });
+});
+
+it('leaves the selection unchanged for another refusal', () => {
+    const selected = [book()];
+
+    const result = LendingChoice.refused(selected, 'receiver-name-invalid', null);
+
+    expect(result).toEqual(selected);
 });

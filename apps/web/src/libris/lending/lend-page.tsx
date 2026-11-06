@@ -181,18 +181,6 @@ export function LendPage() {
                   ? t('lend.confirmOne')
                   : t('lend.confirmMany', { count: chosen.length });
     const ready = chosen.length > 0 && typedKey !== '' && !similar;
-    const refresh = async (ids: readonly string[]) => {
-        const fresh = await Promise.all(
-            ids.map((id) =>
-                api.request<BookDto>('/books/' + id).then(
-                    (book) => fromDetails(book, locale),
-                    () => ({ ...chosen.find((book) => book.id === id)!, gone: true }),
-                ),
-            ),
-        );
-
-        setSelected((current) => LendingChoice.refreshed(current ?? [], fresh));
-    };
     const lend = async () => {
         const receiver: ReceiverChoiceDto =
             decision.kind === 'existing'
@@ -236,7 +224,10 @@ export function LendPage() {
                     .join(', ');
 
                 setFailure(t(failures[error.reason]!, { titles }));
-                await refresh(ids);
+                // The refusal tells why each book was refused, so the rows explain it at once.
+                setSelected((current) =>
+                    LendingChoice.refused(current ?? [], error.reason!, error.details),
+                );
             } else {
                 setFailure(t('lend.failedOther', { reason: t(ApiErrorMessage.key(error)) }));
             }
@@ -251,8 +242,13 @@ export function LendPage() {
 
     const statusText = (availability: LendingAvailability, book: LendingBook) => {
         switch (availability) {
-            case 'lent':
-                return t('lend.alreadyLent', { name: book.loan?.receiverName ?? '' });
+            case 'lent': {
+                const receiver = LendingChoice.lentTo(book);
+
+                return receiver
+                    ? t('lend.alreadyLent', { name: receiver })
+                    : t('lend.alreadyLentUnknown');
+            }
             case 'not-owned':
                 return t('lend.notOwned');
             case 'gone':

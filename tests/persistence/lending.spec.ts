@@ -114,7 +114,7 @@ async function library() {
     const lend = async (bookId: string, receiverId: string, lentAt = now) => {
         const loan = Loan.lend({
             id: randomUUID(),
-            book: { id: bookId, title: 'Any', isbn: null, ownership: 'owned', lent: false },
+            book: { id: bookId, title: 'Any', isbn: null, ownership: 'owned', lentTo: null },
             receiverId,
             now: lentAt,
         });
@@ -250,7 +250,7 @@ describe('lending tables', () => {
                 title: 'Piranesi',
                 isbn: '9781635575637',
                 ownership: 'owned',
-                lent: false,
+                lentTo: null,
             },
             receiverId: await receiver('Sam'),
             now,
@@ -317,7 +317,7 @@ describe('KyselyLoanRepository', () => {
         await lend(dune, sam);
         const second = Loan.lend({
             id: randomUUID(),
-            book: { id: dune, title: 'Dune', isbn: null, ownership: 'owned', lent: false },
+            book: { id: dune, title: 'Dune', isbn: null, ownership: 'owned', lentTo: null },
             receiverId: sam,
             now,
         });
@@ -368,16 +368,16 @@ describe('KyselyLendableBooks', () => {
         const result = await lendable.find([lent, owned, randomUUID(), planned, returned]);
 
         expect(result).toEqual([
-            { id: lent, title: 'Piranesi', isbn: null, ownership: 'owned', lent: true },
-            { id: owned, title: 'Dune', isbn: '9780441013593', ownership: 'owned', lent: false },
+            { id: lent, title: 'Piranesi', isbn: null, ownership: 'owned', lentTo: 'Sam' },
+            { id: owned, title: 'Dune', isbn: '9780441013593', ownership: 'owned', lentTo: null },
             {
                 id: planned,
                 title: 'Children of Dune',
                 isbn: null,
                 ownership: 'not-owned',
-                lent: false,
+                lentTo: null,
             },
-            { id: returned, title: 'Overstory', isbn: null, ownership: 'owned', lent: false },
+            { id: returned, title: 'Overstory', isbn: null, ownership: 'owned', lentTo: null },
         ]);
     });
 });

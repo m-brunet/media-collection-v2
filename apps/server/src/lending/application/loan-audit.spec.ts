@@ -13,7 +13,7 @@ it('describes a loan with its book and its receiver', () => {
             title: 'Piranesi',
             isbn: '9781635575637',
             ownership: 'owned',
-            lent: false,
+            lentTo: null,
         },
         receiverId: sam.id,
         now: '2026-10-30T09:00:00.000Z',
