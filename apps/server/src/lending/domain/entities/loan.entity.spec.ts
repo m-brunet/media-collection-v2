@@ -206,3 +206,34 @@ describe('Loan history', () => {
         });
     });
 });
+
+describe('Loan.restore', () => {
+    it('refuses an active loan with a return date', () => {
+        const state = { returnedAt };
+
+        const operation = () => loan(state);
+
+        expect(operation).toThrow(expect.objectContaining({ reason: 'loan-invalid' }));
+    });
+    it('refuses a returned loan without a return date', () => {
+        const state = { status: 'returned' as const };
+
+        const operation = () => loan(state);
+
+        expect(operation).toThrow(expect.objectContaining({ reason: 'loan-invalid' }));
+    });
+    it('refuses an active loan without its book', () => {
+        const state = { bookId: null };
+
+        const operation = () => loan(state);
+
+        expect(operation).toThrow(expect.objectContaining({ reason: 'loan-invalid' }));
+    });
+    it('refuses an unknown status', () => {
+        const state = { status: 'lost' as never, returnedAt };
+
+        const operation = () => loan(state);
+
+        expect(operation).toThrow(expect.objectContaining({ reason: 'loan-invalid' }));
+    });
+});

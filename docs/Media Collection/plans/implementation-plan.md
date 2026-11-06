@@ -95,6 +95,14 @@ Owning docs: `lending.md`, `lending-design-brief.md`.
 - Receivers with name matching; atomic multi-book lend/return, partial returns, preselected removable starting book.
 - Loans page grouped by receiver with search, lending dates, lent indicators; delete/Not Owned blocked while lent; history retained incl. after book deletion; per-book audit with operation ID.
 
+### Task 5.5 — Generated titles for collection Manga and Comics
+Inserted at the user's request (2026-11-06). Owning docs: `book-entry.md` (title generation and editing), `features.md` (Books), `collections.md` (rename/delete effects). Detailed plan: [task-05-5-generated-titles](task-05-5-generated-titles.md).
+- Keep a mandatory stored title; allow blank title input only for Manga/Comics with collection membership. Generate `Collection name - N` or `Collection name - N–M` in the backend.
+- Persist `titleGenerated`; update generated titles on collection rename, membership move and coverage changes; preserve supplied titles. Existing V2 records default to false without changing their titles.
+- Individual removal of membership or category change to Books requires a supplied title, prefilled with the last generated title so one confirmation can keep it. Collection deletion preserves the last generated title and clears the flag automatically.
+- Update domain/application rules, persistence, HTTP contracts, Libris EN/FR form feedback, search/sort, audit and tests; check completed lending integration. Tasks 6 and 7 inherit these rules.
+- V1 import, dump corrections and migration scheduling are excluded.
+
 ### Task 6 — Assisted entry (desktop)
 Owning docs: `book-entry.md`.
 - Select metadata/cover provider (research, licensing, offline failure), integrate behind a port.
@@ -122,7 +130,7 @@ Owning docs: `updates.md`, `design-guidelines.md`.
 
 ## Dependencies
 
-0 → 1 → 2 → 3 → 4; 5 and 6 need 2 (can run in parallel with 3-4); 7 needs 3 and 6; 8 needs 1-5; 9 needs all data tasks; 10 needs 9.
+0 → 1 → 2 → 3 → 4; 5 needs 2; 5.5 follows 5 and needs 2-3; 6 follows 5.5; 7 needs 3, 5.5 and 6; 8 needs 1-5.5; 9 needs all data tasks; 10 needs 9.
 
 ## Status
 
@@ -135,7 +143,8 @@ Owning docs: `updates.md`, `design-guidelines.md`.
 | UUID keys and Kysely SQL rules | Done (2026-11-05) | `uuid-primary-keys-and-kysely-rules.md` | Done by the user after Task 2 (PR #1); reviewed, full check passes |
 | 3 Collections | Done (2026-11-05) | `task-03-collections.md` | Committed; see its notes for later tasks |
 | 4 Locations, tags, search | Done (2026-11-05) | `task-04-locations-tags-search.md` | Committed; see its notes for later tasks |
-| 5 Lending | In progress (2026-11-06) | [task-05-lending](task-05-lending.md) | Slice 0 = documentation vault |
+| 5 Lending | Done (2026-11-06) | [task-05-lending](task-05-lending.md) | Committed; slice 0 = documentation vault; see its notes for later tasks |
+| 5.5 Generated titles | Not started | [task-05-5-generated-titles](task-05-5-generated-titles.md) | Confirmed business rules; implement after Task 5; V1 import excluded |
 | 6 Assisted entry | Not started | — | |
 | 7 Leaf (mobile) | Not started | — | |
 | 8 Overview and Activity | Not started | — | |

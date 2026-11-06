@@ -26,6 +26,7 @@ function loan(id: string, title: string, lentAt: string) {
             publicationYear: null,
             isbn: null,
             hasCover: false,
+            updatedAt: '2026-01-01T00:00:00.000Z',
         },
     };
 }

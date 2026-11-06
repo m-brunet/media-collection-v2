@@ -1,6 +1,6 @@
 # Task 5 — Lending and returns
 
-Status: approved (2026-11-06), in progress on `master`. Global plan: [implementation plan](implementation-plan.md).
+Status: done (2026-11-06), committed on `master`. Global plan: [implementation plan](implementation-plan.md).
 Owning docs: [lending](../lending.md) (authoritative rules, acceptance scenarios 1-20),
 [lending-design-brief](../lending-design-brief.md), [features](../features.md) (Lending, permissions table), [overview-activity-mobile](../overview-activity-mobile.md) (dates in the
 viewer's time zone, Activity grouping).
@@ -97,7 +97,7 @@ presentation and Overview counter (Task 8), data reset (Task 9).
        EN/FR; component tests.
 7. [x] Browser e2e (`tests/web/lending.e2e-spec.ts`): lend one / several, similar-name choice, partial return across occasions, conflict keeps draft,
        delete blocked while lent, Guest view-only.
-8. [ ] Docs (architecture: lending feature, ports, migration 009), full check, architecture review, commit, plan status.
+8. [x] Docs (architecture: lending feature, ports, migration 009), full check, architecture review, commit, plan status.
 
 ## Implementation changes (vs. the plan)
 
@@ -145,6 +145,27 @@ presentation and Overview counter (Task 8), data reset (Task 9).
    mixing loans of different receivers (`loans-different-receivers`).
 2. Plan approved; slice 0 adds the Obsidian documentation vault as the task's first commit. Work happens directly on `master` (no feature branch or pull request unless asked).
 
+## Architecture review (2026-11-06)
+
+Mandatory findings, fixed: `lending/application/loan-audit.ts` had no same-directory spec (added
+`loan-audit.spec.ts`); `Loan.restore` rebuilt loans without checking their invariants (the constructor now refuses an
+inconsistent status / return date / missing book of an active loan, `loan-invalid`). Optional improvement applied:
+active-loan book views carry `updatedAt`, so the Lent books page versions cover addresses like the other pages.
+
+Deferred optional points:
+- API e2e helpers that arrange books and loans over HTTP (`book`/`lend`/`lentTo`) are repeated in the loans,
+  receivers and books controller specs (as noted for Task 4 helpers); a `tests/api/fixtures` loan fixture would need
+  lending ports in the test context.
+- `FindReceivers` filters all receivers in memory, like author search; fine for a household, revisit if large.
+- After a refused handover the lend page re-reads each offending book with its own request.
+
 ## Notes for later tasks
 
-- (filled in at the end of the task)
+- Activity (Task 8): `loan.lent` entries have subject `book`, `loan.returned` entries subject `loan`; both carry
+  `{ loan: { loanId, bookId, title, isbn, receiver: { id, name }, status, lentAt, returnedAt } }` and share the
+  operation ID of their lending or return, with a related `receiver.created` when a lending created the receiver.
+  Group by operation ID for "You lent 3 books to Sam" / returns. Failed entries are not Activity.
+- Overview (Task 8): the currently-lent counter is the number of loans across `GET /api/loans` groups.
+- Data reset (Task 9): delete `loans` before `receivers` (`loans.receiver_id` has no cascade).
+- Leaf (Task 7): no lending pages; `BookListItemDto.loan` is available if a lent mark is wanted.
+- `AuditedOperation.runBatch` is available for any other multi-subject operation.

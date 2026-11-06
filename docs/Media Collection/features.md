@@ -8,7 +8,7 @@ Owners and the protected first administrator can add, edit, and delete books. Gu
 
 | Field | Requirement |
 | --- | --- |
-| Name/title | Mandatory |
+| Name/title | Mandatory in storage. Input optional only for Manga/Comics belonging to a collection: blank input generates `Collection name - N` (or `N–M` for a range) in the backend. Supplied titles are preserved; see [title rules](book-entry.md#collection-based-titles) |
 | Authors | Mandatory; one or more shared author identities, created/reused by name and linked to books; shared corrections apply everywhere. Exact comparison ignores case, accents, and outer whitespace; similar names prompt a choice |
 | ISBN | Required unless the user explicitly selects 'This book has no ISBN'. Accept valid ISBN-10 or ISBN-13 input, convert ISBN-10 to equivalent ISBN-13, and display/use ISBN-13 consistently. Equivalent numbers cannot create duplicate editions. No-ISBN title/author duplicate warnings can be overridden |
 | Category | Books, Manga, or Comics; Books is the default |

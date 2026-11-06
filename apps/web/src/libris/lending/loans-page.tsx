@@ -142,7 +142,7 @@ export function LoansPage() {
                                                         loan.book.hasCover
                                                             ? BookFormat.cover(
                                                                   loan.book.id,
-                                                                  loan.lentAt,
+                                                                  loan.book.updatedAt,
                                                               )
                                                             : null
                                                     }

@@ -9,6 +9,8 @@ export interface LoanBookView {
     publicationYear: number | null;
     isbn: string | null;
     hasCover: boolean;
+    // Last change of the book, which versions its cover address.
+    updatedAt: string;
 }
 
 export interface ActiveLoanView {

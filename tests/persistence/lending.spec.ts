@@ -437,6 +437,7 @@ describe('KyselyActiveLoans', () => {
                 publicationYear: 2020,
                 isbn: '9781635575637',
                 hasCover: true,
+                updatedAt: now,
             },
         });
     });
