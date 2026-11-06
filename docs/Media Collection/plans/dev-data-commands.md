@@ -43,7 +43,7 @@ volume up to it is present and Owned and none goes beyond, otherwise it stays un
 
 - [x] 1. Development-only launch: flags, guard, worker messages, npm scripts; `ResetDevelopmentData` with the
   library eraser and cover cleanup; tests.
-- [ ] 2. Books `ImportBook` use case (V1 creation date) and its provider; tests.
+- [x] 2. Books `ImportBook` use case (V1 creation date) and its provider; tests.
 - [ ] 3. `ImportV1Library`: dump/corrections reader, V1 planner (mapping rules), cached cover downloads, composition;
   tests with a synthetic dump.
 - [ ] 4. Local inputs (dump copy, corrections), real run on `.dev-data`, docs and architecture review.

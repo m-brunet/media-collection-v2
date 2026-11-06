@@ -28,6 +28,7 @@ import type { MemberTitles } from '../../../collections/application/ports/driven
 import { LentBookGuard } from '../../application/services/lent-book-guard.service.js';
 import { CorrectAuthor } from '../../application/use-cases/correct-author.usecase.js';
 import { CreateBook } from '../../application/use-cases/create-book.usecase.js';
+import { ImportBook } from '../../application/use-cases/import-book.usecase.js';
 import { DeleteBook } from '../../application/use-cases/delete-book.usecase.js';
 import { DeletePersonalNote } from '../../application/use-cases/delete-personal-note.usecase.js';
 import { NameAuthors } from '../../application/use-cases/name-authors.usecase.js';
@@ -236,6 +237,46 @@ const useCaseProviders: Provider[] = [
                 readings,
                 covers,
                 viewer,
+                ids,
+                clock,
+                operations,
+            ),
+    },
+    // No HTTP endpoint: used by the development V1 import only.
+    {
+        provide: 'BOOKS_IMPORT',
+        inject: [
+            token.books,
+            token.builder,
+            token.identity,
+            token.titles,
+            token.collections,
+            token.readings,
+            token.covers,
+            token.ids,
+            token.clock,
+            token.operations,
+        ],
+        useFactory: (
+            books: BookRepository,
+            builder: BookDetailsBuilder,
+            identity: BookIdentityCheck,
+            titles: GeneratedTitleSync,
+            collections: CollectionMembership,
+            readings: ReadingStatusStore,
+            covers: CoverStorage,
+            ids: IdGenerator,
+            clock: Clock,
+            operations: AuditedOperation,
+        ) =>
+            new ImportBook(
+                books,
+                builder,
+                identity,
+                titles,
+                collections,
+                readings,
+                covers,
                 ids,
                 clock,
                 operations,
