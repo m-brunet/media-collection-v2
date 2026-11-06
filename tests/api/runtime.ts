@@ -24,6 +24,8 @@ export interface RuntimeOptions {
     port?: number | null;
     main?: boolean;
     environmentPort?: number;
+    // Where Find book asks BnF and Open Library: a local stand-in instead of the real catalogues.
+    lookupAddresses?: { bnf: string; openLibrary: string };
 }
 
 export class ElectronRuntime {
@@ -52,6 +54,9 @@ export class ElectronRuntime {
             APP_TEST_PORT: options.port === null ? undefined : String(options.port ?? 0),
             APP_TEST_RECOVERY: options.recovery ? '1' : '0',
             APP_TEST_FAKE_CLOCK: options.fakeClock ? '1' : '0',
+            APP_TEST_LOOKUP_ADDRESSES: options.lookupAddresses
+                ? JSON.stringify(options.lookupAddresses)
+                : undefined,
             APP_HIDDEN_WINDOWS: '1',
         };
 

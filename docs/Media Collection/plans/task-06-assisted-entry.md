@@ -179,7 +179,7 @@ address, never a person's email).
 4. [x] Approved source adapters, cover tokens, endpoints, API tests
 5. [x] Libris Find book: review, conflicts, covers, states, cover helpers (search, paste/drop, image address),
    component tests (5a lookup review and draft filling; 5b search, paste, drop; 5c image address)
-6. [ ] Browser journeys with stubbed sources
+6. [x] Browser journeys with stubbed sources
 7. [ ] Architecture review, `npm run check`, docs (credits list for the future credits page)
 
 ## Notes from step 1
@@ -238,6 +238,19 @@ address, never a person's email).
   (at most 3). Residual risk accepted for a household app: DNS answers could change between the check and the
   request (no IP pinning).
 - Messages: no result, unavailable (naming sources) with Retry lookup, partial results, cover failures; EN/FR.
+
+## Notes from step 6
+
+- Browser journeys (`tests/web/book-lookup.e2e-spec.ts`, real built app, 1440 px and 1280 px) run Find book through the
+  real backend chain against `LookupSourcesStub`, a local stand-in serving the recorded BnF answers, Open Library
+  records and a cover picture. Covered: fill and save with the cover, picking the other source's value, existing ISBN
+  (no source asked), typed title kept on conflict, no result, both sources failing then Retry lookup, BnF asking to
+  retry later (partial result from Open Library), the review at 1280 px without horizontal scrolling.
+- How the app is pointed at the stand-in: a **test-only** backend option `lookupAddresses` (like the test `clock`),
+  set only by the test worker (`tests/runtime/test-worker.mjs`) from `APP_TEST_LOOKUP_ADDRESSES`. Production startup
+  never sets it and reads no new setting, so the real catalogue addresses always apply there.
+- Image address helper: in the browser, an address on this computer is refused without being fetched (the home-network
+  guard); the successful download stays covered by the API and adapter tests, since the stand-in itself is local.
 
 ## Fix after user testing (2026-11-06): BnF authors
 
