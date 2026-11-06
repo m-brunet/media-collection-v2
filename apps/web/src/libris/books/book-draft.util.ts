@@ -26,7 +26,11 @@ export interface DraftTag {
 export interface BookDraftValues {
     isbn: string;
     noIsbn: boolean;
+    // Blank on an eligible book (Manga or Comics in a collection) to have it named from its
+    // collection; a generated title of a saved book starts blank.
     title: string;
+    // The saved generated title, offered again if the book stops being eligible.
+    lastGeneratedTitle: string | null;
     authors: DraftAuthor[];
     category: BookCategory;
     ownership: BookOwnership;
@@ -75,6 +79,7 @@ export class BookDraft {
             isbn: '',
             noIsbn: false,
             title: '',
+            lastGeneratedTitle: null,
             authors: [],
             category: 'books',
             ownership: 'owned',
@@ -108,7 +113,8 @@ export class BookDraft {
         return {
             isbn: book.isbn ?? '',
             noIsbn: book.noIsbn,
-            title: book.title,
+            title: book.titleGenerated ? '' : book.title,
+            lastGeneratedTitle: book.titleGenerated ? book.title : null,
             authors: book.authors.map((author) => ({ ...author, distinct: false })),
             category: book.category,
             ownership: book.ownership,
@@ -160,6 +166,48 @@ export class BookDraft {
             shelfId: values.bookcaseId ? values.shelfId : null,
             tags: values.tags.map((tag) => (tag.id ? { id: tag.id } : { name: tag.name })),
         };
+    }
+
+    // Only Manga and Comics in a collection may leave their title blank.
+    static titleOptional(values: BookDraftValues): boolean {
+        return (values.category === 'manga' || values.category === 'comics') && values.inCollection;
+    }
+
+    // The title the server would generate, shown as a hint; null until it can be told.
+    static generatedTitle(values: BookDraftValues): string | null {
+        const name = values.collectionName.trim();
+        const from = BookDraft.number(values.volumeFrom);
+        const to = values.omnibus ? BookDraft.number(values.volumeTo) : from;
+
+        if (
+            !BookDraft.titleOptional(values) ||
+            !name ||
+            !Number.isInteger(from) ||
+            !Number.isInteger(to)
+        ) {
+            return null;
+        }
+
+        return name + ' - ' + (to! > from! ? from + '–' + to : String(from));
+    }
+
+    // Applies changes to the draft. A blank title that stops being optional is prefilled with the
+    // last generated title, so one save keeps it as a supplied title.
+    static changed(current: BookDraftValues, changes: Partial<BookDraftValues>): BookDraftValues {
+        const next = { ...current, ...changes };
+
+        if (
+            BookDraft.titleOptional(current) &&
+            !BookDraft.titleOptional(next) &&
+            next.title.trim() === ''
+        ) {
+            return {
+                ...next,
+                title: current.lastGeneratedTitle ?? BookDraft.generatedTitle(current) ?? '',
+            };
+        }
+
+        return next;
     }
 
     static collectionProblem(values: BookDraftValues): CollectionProblem | null {

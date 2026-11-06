@@ -244,3 +244,91 @@ describe('BookDraft', () => {
         expect(problems).toEqual(['shelf-required', null, null]);
     });
 });
+
+describe('BookDraft titles', () => {
+    const gunnm = {
+        ...BookDraft.empty(),
+        category: 'manga' as const,
+        inCollection: true,
+        collectionName: 'Gunnm',
+        volumeFrom: '3',
+    };
+
+    it('lets a Manga in a collection leave its title blank', () => {
+        const values = gunnm;
+
+        const result = BookDraft.titleOptional(values);
+
+        expect(result).toBe(true);
+    });
+    it('requires a title for a Books record in a collection', () => {
+        const values = { ...gunnm, category: 'books' as const };
+
+        const result = BookDraft.titleOptional(values);
+
+        expect(result).toBe(false);
+    });
+    it('requires a title for a Manga outside any collection', () => {
+        const values = { ...gunnm, inCollection: false };
+
+        const result = BookDraft.titleOptional(values);
+
+        expect(result).toBe(false);
+    });
+    it('shows the title the collection gives one volume', () => {
+        const values = gunnm;
+
+        const result = BookDraft.generatedTitle(values);
+
+        expect(result).toBe('Gunnm - 3');
+    });
+    it('shows the title the collection gives a range', () => {
+        const values = { ...gunnm, omnibus: true, volumeTo: '5' };
+
+        const result = BookDraft.generatedTitle(values);
+
+        expect(result).toBe('Gunnm - 3–5');
+    });
+    it('shows no title while the volume is not a number', () => {
+        const values = { ...gunnm, volumeFrom: 'three' };
+
+        const result = BookDraft.generatedTitle(values);
+
+        expect(result).toBeNull();
+    });
+    it('starts a generated title blank, remembering it', () => {
+        const saved = book({ title: 'Gunnm - 3', titleGenerated: true });
+
+        const result = BookDraft.fromBook(saved, 'en-GB');
+
+        expect(result).toMatchObject({ title: '', lastGeneratedTitle: 'Gunnm - 3' });
+    });
+    it('prefills the last generated title when the book leaves its collection', () => {
+        const current = { ...gunnm, lastGeneratedTitle: 'Gunnm - 3' };
+
+        const result = BookDraft.changed(current, { inCollection: false });
+
+        expect(result.title).toBe('Gunnm - 3');
+    });
+    it('prefills the title the collection would give when a new book becomes a Books record', () => {
+        const current = gunnm;
+
+        const result = BookDraft.changed(current, { category: 'books' });
+
+        expect(result.title).toBe('Gunnm - 3');
+    });
+    it('keeps a typed title when the book stops being eligible', () => {
+        const current = { ...gunnm, title: 'Rusty Angel' };
+
+        const result = BookDraft.changed(current, { inCollection: false });
+
+        expect(result.title).toBe('Rusty Angel');
+    });
+    it('leaves a blank title blank while the book stays eligible', () => {
+        const current = gunnm;
+
+        const result = BookDraft.changed(current, { category: 'comics' });
+
+        expect(result.title).toBe('');
+    });
+});

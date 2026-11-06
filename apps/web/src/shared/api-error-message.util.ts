@@ -26,6 +26,7 @@ export class ApiErrorMessage {
         'certificate-incomplete': 'reason.certificateIncomplete',
         'color-scheme-unknown': 'reason.colorSchemeUnknown',
         'title-invalid': 'reason.titleInvalid',
+        'title-required': 'reason.titleRequired',
         'isbn-required': 'reason.isbnRequired',
         'isbn-invalid': 'reason.isbnInvalid',
         'isbn-taken': 'reason.isbnTaken',

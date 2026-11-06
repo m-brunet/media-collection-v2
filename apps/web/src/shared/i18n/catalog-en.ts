@@ -280,6 +280,10 @@ export const en = {
     'form.isbnHint': 'ISBN-10 or ISBN-13, with or without hyphens.',
     'form.noIsbn': 'This book has no ISBN',
     'form.title': 'Title',
+    'form.titleGenerated':
+        'Optional: leave it empty to name the book from its collection, “{title}”.',
+    'form.titleGeneratedLater':
+        'Optional: leave it empty to name the book from its collection and volume.',
     'form.authors': 'Authors',
     'form.authorsHint': 'Choose a suggestion, or press Enter to add the typed name.',
     'form.authorPlaceholder': 'Add author',
@@ -795,6 +799,9 @@ export const en = {
     'reason.loanAlreadyReturned': 'A selected book has already been returned.',
     'reason.loansDifferentReceivers': 'Record the returns of one receiver at a time.',
     'reason.selectionEmpty': 'Select at least one book.',
+    'details.titleGenerated': 'Named from its collection',
+    'reason.titleRequired':
+        'Enter a title. Only Manga and Comics in a collection can be named from it.',
     'reason.selectionDuplicate': 'Each book can be selected only once.',
 } as const;
 

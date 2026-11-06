@@ -297,6 +297,10 @@ export const fr = {
     'form.isbnHint': 'ISBN-10 ou ISBN-13, avec ou sans tirets.',
     'form.noIsbn': 'Ce livre n’a pas d’ISBN',
     'form.title': 'Titre',
+    'form.titleGenerated':
+        'Facultatif : laissez-le vide pour nommer le livre d’après sa collection, « {title} ».',
+    'form.titleGeneratedLater':
+        'Facultatif : laissez-le vide pour nommer le livre d’après sa collection et son tome.',
     'form.authors': 'Auteurs',
     'form.authorsHint':
         'Choisissez une suggestion, ou appuyez sur Entrée pour ajouter le nom saisi.',
@@ -825,5 +829,8 @@ export const fr = {
     'reason.loanAlreadyReturned': 'Un livre sélectionné a déjà été rendu.',
     'reason.loansDifferentReceivers': 'Enregistrez les retours d’un seul emprunteur à la fois.',
     'reason.selectionEmpty': 'Sélectionnez au moins un livre.',
+    'details.titleGenerated': 'Nommé d’après sa collection',
+    'reason.titleRequired':
+        'Saisissez un titre. Seuls les mangas et comics d’une collection peuvent être nommés d’après elle.',
     'reason.selectionDuplicate': 'Chaque livre ne peut être sélectionné qu’une fois.',
 } satisfies Catalog;
