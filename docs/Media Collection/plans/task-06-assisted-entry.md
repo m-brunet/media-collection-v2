@@ -148,9 +148,10 @@ address, never a person's email).
 
 - `sharp` 0.35 loads at backend start; its native files are unpacked from the app archive (`asarUnpack`), checked in
   the packaged app (decode, crop, WebP encode) and by `npm run test:packaged`.
-- The packaged smoke test's final cleanup now retries briefly: on Windows the backend process, started in the
-  temporary data folder, can still hold it for a moment after the window closed (seen once `sharp` was loaded; no
-  process remains afterwards).
+- The packaged smoke test's final cleanup now retries briefly: on Windows the folder can stay locked for a moment
+  after the app closed (its backend runs in that folder). Intermittent: 2 of 3 runs without the retry failed, 3 of 3
+  measured runs released it within ~8 ms. Not proven to be caused by `sharp` (the one `master` run that passed is too
+  little to tell). No process remains afterwards.
 - The trimmer is registered inside `BooksModule` (no configuration needed), so app, API tests and development
   commands share it.
 
