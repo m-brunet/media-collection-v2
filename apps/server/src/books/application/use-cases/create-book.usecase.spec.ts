@@ -296,8 +296,8 @@ describe('CreateBook titles', () => {
             false,
         );
 
-        expect(result).toMatchObject({ title: 'Gunnm - 3', titleGenerated: true });
-        expect(current.books.books.get(result.id)!.details.title).toBe('Gunnm - 3');
+        expect(result).toMatchObject({ title: 'Gunnm Vol. 3', titleGenerated: true });
+        expect(current.books.books.get(result.id)!.details.title).toBe('Gunnm Vol. 3');
     });
     it('names a Comics range with an en dash (example 1)', async () => {
         const current = library();
@@ -312,7 +312,7 @@ describe('CreateBook titles', () => {
             false,
         );
 
-        expect(result.title).toBe('Saga - 1–3');
+        expect(result.title).toBe('Saga Vol. 1–3');
     });
     it('uses the spelling of the existing collection the typed name joined', async () => {
         const current = library();
@@ -325,7 +325,7 @@ describe('CreateBook titles', () => {
             false,
         );
 
-        expect(result.title).toBe('GUNNM - 3');
+        expect(result.title).toBe('GUNNM Vol. 3');
     });
     it('names a book joining a collection chosen by its identity', async () => {
         const current = library();
@@ -342,7 +342,7 @@ describe('CreateBook titles', () => {
             false,
         );
 
-        expect(result.title).toBe('Gunnm - 9');
+        expect(result.title).toBe('Gunnm Vol. 9');
     });
     it('keeps a supplied tome title (example 2)', async () => {
         const current = library();
@@ -366,7 +366,7 @@ describe('CreateBook titles', () => {
 
         expect(current.trail.entries.at(-1)).toMatchObject({
             category: 'book.created',
-            after: expect.objectContaining({ title: 'Gunnm - 3', titleGenerated: true }),
+            after: expect.objectContaining({ title: 'Gunnm Vol. 3', titleGenerated: true }),
         });
     });
 });

@@ -216,3 +216,11 @@ while the real service reports only titles it changed; collections tests only ch
   operations (same operation ID); group them under the collection change.
 - Task 9 (backup): the new columns travel with the database.
 
+
+## Format change (user, 2026-11-06)
+
+Generated titles now read `Name Vol. N` / `Name Vol. N–M` (en dash, no spaces; `Name Vol. 0` with volume 0) instead of
+`Name - N` / `Name - N–M`. `Vol.` is stored as is, the same in every interface language. The longest generated title
+is now 215 characters (200 + ` Vol. 9999–9999`), still under the 300-character limit. Titles stored before the change
+keep their text until their book or collection is next saved, renamed or moved; no migration rewrites them (no
+released data exists yet). The `- N` notes above describe the original format.

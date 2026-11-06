@@ -28,7 +28,7 @@ release's data:
   to download or are not JPEG/PNG/WebP are skipped and reported.
 - Categories: `local-imports/v1/category-corrections.json` (collection name → `books`/`manga`/`comics`) overrides
   V1 `type` for every book of that collection. An untitled book that is still a Book in a collection is saved with
-  its collection title (`Name - N`) as a supplied title and reported (user, 2026-11-06); an untitled book outside a
+  its collection title (`Name Vol. N`) as a supplied title and reported (user, 2026-11-06); an untitled book outside a
   collection stops the import.
 
 ## V1 mapping (agreed earlier)

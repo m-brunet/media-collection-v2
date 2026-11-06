@@ -763,7 +763,7 @@ it('explains that a Manga in a collection may leave its title empty', async () =
 
     expect(screen.getByLabelText(/^Title/)).not.toBeRequired();
     expect(screen.getByLabelText(/^Title/)).toHaveAccessibleDescription(
-        'Optional: leave it empty to name the book from its collection, “Gunnm - 3”.',
+        'Optional: leave it empty to name the book from its collection, “Gunnm Vol. 3”.',
     );
 });
 
@@ -771,7 +771,7 @@ it('starts a generated title empty, so other edits keep it generated', async () 
     new FakeApi().signedIn(account()).on('GET /books/b1', () => ({
         status: 200,
         body: bookDto({
-            title: 'Gunnm - 3',
+            title: 'Gunnm Vol. 3',
             titleGenerated: true,
             category: 'manga',
             collection: { id: 'c1', name: 'Gunnm', volumeFrom: 3, volumeTo: 3 },
@@ -790,7 +790,7 @@ it('prefills the last generated title when the book leaves its collection', asyn
     new FakeApi().signedIn(account()).on('GET /books/b1', () => ({
         status: 200,
         body: bookDto({
-            title: 'Gunnm - 3',
+            title: 'Gunnm Vol. 3',
             titleGenerated: true,
             category: 'manga',
             collection: { id: 'c1', name: 'Gunnm', volumeFrom: 3, volumeTo: 3 },
@@ -801,6 +801,6 @@ it('prefills the last generated title when the book leaves its collection', asyn
 
     await userEvent.click(screen.getByRole('checkbox', { name: 'Part of a collection' }));
 
-    expect(screen.getByLabelText(/^Title/)).toHaveValue('Gunnm - 3');
+    expect(screen.getByLabelText(/^Title/)).toHaveValue('Gunnm Vol. 3');
     expect(screen.getByLabelText(/^Title/)).toBeRequired();
 });

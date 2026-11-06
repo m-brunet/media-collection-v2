@@ -280,14 +280,14 @@ describe('BookDraft titles', () => {
 
         const result = BookDraft.generatedTitle(values);
 
-        expect(result).toBe('Gunnm - 3');
+        expect(result).toBe('Gunnm Vol. 3');
     });
     it('shows the title the collection gives a range', () => {
         const values = { ...gunnm, omnibus: true, volumeTo: '5' };
 
         const result = BookDraft.generatedTitle(values);
 
-        expect(result).toBe('Gunnm - 3–5');
+        expect(result).toBe('Gunnm Vol. 3–5');
     });
     it('shows no title while the volume is not a number', () => {
         const values = { ...gunnm, volumeFrom: 'three' };
@@ -297,25 +297,25 @@ describe('BookDraft titles', () => {
         expect(result).toBeNull();
     });
     it('starts a generated title blank, remembering it', () => {
-        const saved = book({ title: 'Gunnm - 3', titleGenerated: true });
+        const saved = book({ title: 'Gunnm Vol. 3', titleGenerated: true });
 
         const result = BookDraft.fromBook(saved, 'en-GB');
 
-        expect(result).toMatchObject({ title: '', lastGeneratedTitle: 'Gunnm - 3' });
+        expect(result).toMatchObject({ title: '', lastGeneratedTitle: 'Gunnm Vol. 3' });
     });
     it('prefills the last generated title when the book leaves its collection', () => {
-        const current = { ...gunnm, lastGeneratedTitle: 'Gunnm - 3' };
+        const current = { ...gunnm, lastGeneratedTitle: 'Gunnm Vol. 3' };
 
         const result = BookDraft.changed(current, { inCollection: false });
 
-        expect(result.title).toBe('Gunnm - 3');
+        expect(result.title).toBe('Gunnm Vol. 3');
     });
     it('prefills the title the collection would give when a new book becomes a Books record', () => {
         const current = gunnm;
 
         const result = BookDraft.changed(current, { category: 'books' });
 
-        expect(result.title).toBe('Gunnm - 3');
+        expect(result.title).toBe('Gunnm Vol. 3');
     });
     it('keeps a typed title when the book stops being eligible', () => {
         const current = { ...gunnm, title: 'Rusty Angel' };

@@ -123,7 +123,7 @@ it('replaces and removes the cover', () => {
 const later = '2026-02-01T00:00:00.000Z';
 
 function generated(overrides: Partial<BookDetails> = {}): Book {
-    return book({ title: 'Gunnm - 3', titleGenerated: true, category: 'manga', ...overrides });
+    return book({ title: 'Gunnm Vol. 3', titleGenerated: true, category: 'manga', ...overrides });
 }
 
 it('accepts a generated title for a Manga', () => {
@@ -131,7 +131,7 @@ it('accepts a generated title for a Manga', () => {
 
     const result = generated(overrides).details;
 
-    expect(result).toMatchObject({ title: 'Gunnm - 3', titleGenerated: true });
+    expect(result).toMatchObject({ title: 'Gunnm Vol. 3', titleGenerated: true });
 });
 
 it('accepts a generated title for a Comics', () => {
@@ -159,8 +159,8 @@ it('regenerates a generated title from the collection name and coverage', () => 
     );
 
     expect(result).toBe(true);
-    expect(subject.details.title).toBe('Battle Angel Alita - 3–4');
-    expect(subject.titleKey).toBe('battle angel alita - 3–4');
+    expect(subject.details.title).toBe('Battle Angel Alita Vol. 3–4');
+    expect(subject.titleKey).toBe('battle angel alita vol. 3–4');
     expect(subject.snapshot.updatedAt).toBe(later);
 });
 
@@ -174,12 +174,12 @@ it('leaves a generated title that already matches its collection unchanged', () 
 });
 
 it('never replaces a supplied title, even one that looks generated', () => {
-    const subject = book({ title: 'Gunnm - 3', category: 'manga' });
+    const subject = book({ title: 'Gunnm Vol. 3', category: 'manga' });
 
     const result = subject.regenerateTitle({ name: 'Alita', volumeFrom: 3, volumeTo: 3 }, later);
 
     expect(result).toBe(false);
-    expect(subject.details).toMatchObject({ title: 'Gunnm - 3', titleGenerated: false });
+    expect(subject.details).toMatchObject({ title: 'Gunnm Vol. 3', titleGenerated: false });
 });
 
 it('keeps a generated title as a supplied one when its collection is deleted', () => {
@@ -188,7 +188,7 @@ it('keeps a generated title as a supplied one when its collection is deleted', (
     const result = subject.keepTitle(later);
 
     expect(result).toBe(true);
-    expect(subject.details).toMatchObject({ title: 'Gunnm - 3', titleGenerated: false });
+    expect(subject.details).toMatchObject({ title: 'Gunnm Vol. 3', titleGenerated: false });
     expect(subject.snapshot.updatedAt).toBe(later);
 });
 
@@ -202,15 +202,17 @@ it('changes nothing when keeping a title that was supplied', () => {
 });
 
 it('orders numbered titles by the value of their numbers', () => {
-    const books = ['Gunnm - 10', 'Gunnm - 2', 'Gunnm - 1–3'].map((title) => generated({ title }));
+    const books = ['Gunnm Vol. 10', 'Gunnm Vol. 2', 'Gunnm Vol. 1–3'].map((title) =>
+        generated({ title }),
+    );
 
     const result = books.sort((first, second) =>
         first.titleSortKey.localeCompare(second.titleSortKey),
     );
 
     expect(result.map((value) => value.details.title)).toEqual([
-        'Gunnm - 1–3',
-        'Gunnm - 2',
-        'Gunnm - 10',
+        'Gunnm Vol. 1–3',
+        'Gunnm Vol. 2',
+        'Gunnm Vol. 10',
     ]);
 });

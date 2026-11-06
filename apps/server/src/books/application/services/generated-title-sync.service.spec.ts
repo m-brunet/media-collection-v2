@@ -10,7 +10,7 @@ async function stored(current: ReturnType<typeof library>, overrides: Partial<Bo
     const book = new Book({
         id: 'book-' + current.books.books.size,
         details: {
-            title: '… - 3',
+            title: '… Vol. 3',
             titleGenerated: true,
             isbn: null,
             noIsbn: true,
@@ -41,7 +41,7 @@ it('gives a generated title its final text from the collection the book joined',
     await current.titles.apply(book, gunnm, false);
 
     expect(current.books.books.get(book.id)!.details).toMatchObject({
-        title: 'Gunnm - 3',
+        title: 'Gunnm Vol. 3',
         titleGenerated: true,
     });
 });
@@ -61,13 +61,13 @@ it('leaves a book without collection as it is', async () => {
 
     await current.titles.apply(book, null, false);
 
-    expect(current.books.books.get(book.id)!.details.title).toBe('… - 3');
+    expect(current.books.books.get(book.id)!.details.title).toBe('… Vol. 3');
 });
 
 it('warns about a possible duplicate of the final title', async () => {
     const current = library();
 
-    await stored(current, { title: 'Gunnm - 3' });
+    await stored(current, { title: 'Gunnm Vol. 3' });
     const book = await stored(current);
 
     const result = current.titles.apply(book, gunnm, false);
@@ -78,10 +78,10 @@ it('warns about a possible duplicate of the final title', async () => {
 it('keeps a possible duplicate once the person confirmed it is another edition', async () => {
     const current = library();
 
-    await stored(current, { title: 'Gunnm - 3' });
+    await stored(current, { title: 'Gunnm Vol. 3' });
     const book = await stored(current);
 
     await current.titles.apply(book, gunnm, true);
 
-    expect(current.books.books.get(book.id)!.details.title).toBe('Gunnm - 3');
+    expect(current.books.books.get(book.id)!.details.title).toBe('Gunnm Vol. 3');
 });

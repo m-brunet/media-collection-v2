@@ -147,8 +147,8 @@ describe('V1LibraryPlanner', () => {
 
         const result = V1LibraryPlanner.plan(books, none);
 
-        expect(result.books[0]).toMatchObject({ title: 'Gunnm - 3', category: 'books' });
-        expect(result.titled).toEqual([{ record: 1, title: 'Gunnm - 3' }]);
+        expect(result.books[0]).toMatchObject({ title: 'Gunnm Vol. 3', category: 'books' });
+        expect(result.titled).toEqual([{ record: 1, title: 'Gunnm Vol. 3' }]);
     });
     it('refuses an untitled book outside a collection', () => {
         const books = [v1({ title: '', collectionName: null, volume: null })];

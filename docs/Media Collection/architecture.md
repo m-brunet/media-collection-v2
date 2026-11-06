@@ -125,7 +125,7 @@ through `BookOrganiser`; views and audit snapshots use the readers through `Book
 one instance to both ports of a pair (`LocationsModule.assignment`, `TagsModule.assignment`).
 
 Generated titles cross the books/collections boundary the other way. `books` owns titles and their provenance
-(`BookDetails.titleGenerated`, the `GeneratedTitle` format `Name - N` / `Name - N–M`, the Manga/Comics eligibility and
+(`BookDetails.titleGenerated`, the `GeneratedTitle` format `Name Vol. N` / `Name Vol. N–M`, the Manga/Comics eligibility and
 `title-required`); a blank title asks for generation. After a book save applies its membership, `GeneratedTitleSync`
 gives a generated title the resolved collection spelling and coverage, then reruns the no-ISBN duplicate check on it.
 For collection-wide changes `collections` declares `MemberTitles`, implemented by the books service

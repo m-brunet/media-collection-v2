@@ -53,7 +53,7 @@ describe('BookDetailsBuilder titles', () => {
             input({ title: '  ', category: 'manga', collection: gunnm }),
         );
 
-        expect(result).toMatchObject({ title: 'Gunnm - 3', titleGenerated: true });
+        expect(result).toMatchObject({ title: 'Gunnm Vol. 3', titleGenerated: true });
     });
     it('asks for a generated title when a Comics in a collection has none', async () => {
         const current = library();
@@ -62,7 +62,7 @@ describe('BookDetailsBuilder titles', () => {
             input({ title: '', category: 'comics', collection: { ...gunnm, volumeTo: 5 } }),
         );
 
-        expect(result).toMatchObject({ title: 'Gunnm - 3–5', titleGenerated: true });
+        expect(result).toMatchObject({ title: 'Gunnm Vol. 3–5', titleGenerated: true });
     });
     it('refuses a blank title for a Books record in a collection', async () => {
         const current = library();

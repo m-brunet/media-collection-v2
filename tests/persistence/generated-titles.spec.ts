@@ -155,18 +155,18 @@ describe('migration 010', () => {
 describe('generated titles in storage', () => {
     it('keeps the provenance of a generated title', async () => {
         const { books, save } = await library();
-        const saved = await save({ title: 'Gunnm - 3', titleGenerated: true });
+        const saved = await save({ title: 'Gunnm Vol. 3', titleGenerated: true });
 
         const result = await books.findById(saved.id);
 
-        expect(result?.details).toMatchObject({ title: 'Gunnm - 3', titleGenerated: true });
+        expect(result?.details).toMatchObject({ title: 'Gunnm Vol. 3', titleGenerated: true });
     });
     it('lists titles in natural order, numbers compared by value', async () => {
         const { catalog, save } = await library();
 
-        await save({ title: 'Gunnm - 10' });
-        await save({ title: 'Gunnm - 2' });
-        await save({ title: 'Gunnm - 1' });
+        await save({ title: 'Gunnm Vol. 10' });
+        await save({ title: 'Gunnm Vol. 2' });
+        await save({ title: 'Gunnm Vol. 1' });
 
         const result = await catalog.search({
             search: '',
@@ -179,9 +179,9 @@ describe('generated titles in storage', () => {
         });
 
         expect(result.items.map((item) => item.title)).toEqual([
-            'Gunnm - 1',
-            'Gunnm - 2',
-            'Gunnm - 10',
+            'Gunnm Vol. 1',
+            'Gunnm Vol. 2',
+            'Gunnm Vol. 10',
         ]);
     });
 });

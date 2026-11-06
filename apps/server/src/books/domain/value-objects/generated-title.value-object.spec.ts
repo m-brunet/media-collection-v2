@@ -6,7 +6,7 @@ it('names a single volume after its collection', () => {
 
     const result = GeneratedTitle.of(name, 3, 3);
 
-    expect(result.text).toBe('Gunnm - 3');
+    expect(result.text).toBe('Gunnm Vol. 3');
 });
 
 it('names a consecutive range with an en dash', () => {
@@ -14,7 +14,7 @@ it('names a consecutive range with an en dash', () => {
 
     const result = GeneratedTitle.of(name, 1, 3);
 
-    expect(result.text).toBe('Saga - 1–3');
+    expect(result.text).toBe('Saga Vol. 1–3');
 });
 
 it('names volume 0 like any other volume', () => {
@@ -22,7 +22,7 @@ it('names volume 0 like any other volume', () => {
 
     const result = GeneratedTitle.of(name, 0, 0);
 
-    expect(result.text).toBe('Gunnm - 0');
+    expect(result.text).toBe('Gunnm Vol. 0');
 });
 
 it('keeps the display spelling of the collection name, without its outer spaces', () => {
@@ -30,7 +30,7 @@ it('keeps the display spelling of the collection name, without its outer spaces'
 
     const result = GeneratedTitle.of(name, 12, 12);
 
-    expect(result.text).toBe('Ranma ½ - 12');
+    expect(result.text).toBe('Ranma ½ Vol. 12');
 });
 
 it('fits the title limit for the longest collection name and range', () => {

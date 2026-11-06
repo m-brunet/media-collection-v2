@@ -61,7 +61,7 @@ export interface V1LibraryPlan {
     // Collection names (as first written) to mark Finished once their books are saved.
     finished: string[];
     unfinished: UnfinishedCollection[];
-    // Untitled Books in a collection, given the collection title (`Name - N`) as a supplied title,
+    // Untitled Books in a collection, given the collection title (`Name Vol. N`) as a supplied title,
     // since V2 only generates titles for Manga and Comics.
     titled: { record: number; title: string }[];
 }
@@ -163,7 +163,7 @@ export class V1LibraryPlanner {
         }
 
         if (!title && category === 'books') {
-            title = collectionName + ' - ' + book.volume;
+            title = collectionName + ' Vol. ' + book.volume;
             titled.push({ record: book.record, title });
         }
 

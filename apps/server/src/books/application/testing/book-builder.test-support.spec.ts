@@ -49,12 +49,12 @@ describe('BookBuilder.build', () => {
         expect(result).toBe('not-owned');
     });
     it('builds a Manga whose title was generated from its collection', () => {
-        const builder = new BookBuilder().asGenerated('Gunnm - 3');
+        const builder = new BookBuilder().asGenerated('Gunnm Vol. 3');
 
         const result = builder.build().details;
 
         expect(result).toMatchObject({
-            title: 'Gunnm - 3',
+            title: 'Gunnm Vol. 3',
             titleGenerated: true,
             category: 'manga',
         });
