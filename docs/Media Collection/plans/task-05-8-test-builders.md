@@ -61,9 +61,23 @@ browser e2e arrangement, production code changes.
 1. [x] Base class and lending builders (`ReceiverBuilder`, `LoanBuilder`) with their unit tests; convert the lending
        unit tests.
 2. [x] `BookBuilder` with its unit tests; `TestLibrary` composing books and lending, with parent creation.
-3. [ ] API test context: lending repositories; convert the loans, receivers and books controller specs' lending
+3. [x] API test context: lending repositories; convert the loans, receivers and books controller specs' lending
        helpers; check the architecture tests accept the test-support imports.
 4. [ ] Docs (architecture: test data arrangement), full check, architecture review, commit, plan status.
+
+## Implementation changes (vs. the plan)
+
+- **`TestLibrary` lives in `tests/api/fixtures/test-library.ts`, not `tests/support/`.** The architecture lint lets
+  controller specs import test code from `tests/api/` only; widening that rule would weaken an architecture check.
+  The location still honours decision 1 (outside the application source, feature builders stay in their features).
+- Feature boundaries apply to tests: a lending controller spec may not import the books builder, so
+  `TestLibrary.book()` also accepts plain `BookFacts` (title, authors, ISBN, publisher, year, planned).
+- `LendingArrangement` (`tests/api/fixtures/lending-arrangement.ts`) replaces the three API specs' HTTP lending
+  helpers: it lends books (given as a loan records them) to a receiver and records returns through the builders,
+  dated in December 2025 a minute apart, before the test application's own clock.
+- Builders use `TestIds` (deterministic UUIDs accepted by the SQLite checks) since application test support must stay
+  pure (no `node:crypto`). Domain specs keep their local factories: builders are application test support.
+- The API test context exposes `lending: { loans, receivers }` and `builders: TestLibrary`.
 
 ## Decisions confirmed by the user (2026-11-06)
 

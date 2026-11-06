@@ -53,6 +53,7 @@ import { KyselyPersonalNoteRepository } from '../../../apps/server/src/books/inf
 import { FileCoverStorage } from '../../../apps/server/src/books/infrastructure/adapters/driven/filesystem/file-cover-storage.adapter.js';
 import { DatabaseManager } from './database-manager.js';
 import type { ApiFixture } from './fixture.js';
+import { TestLibrary } from '../fixtures/test-library.js';
 import type { TestAppContext } from './test-app-context.js';
 
 export class TestApp {
@@ -102,6 +103,8 @@ export class TestApp {
             };
             const collections = new KyselyCollectionRepository(database.connections);
             const members = new KyselyCollectionMemberStore(database.connections);
+            const loans = new KyselyLoanRepository(database.connections);
+            const receivers = new KyselyReceiverRepository(database.connections);
 
             this.context = {
                 users,
@@ -112,6 +115,13 @@ export class TestApp {
                 books,
                 audit: new AuditLogProbe(database),
                 library: new LibraryProbe(database),
+                lending: { loans, receivers },
+                builders: new TestLibrary({
+                    books: books.books,
+                    authors: books.authors,
+                    loans,
+                    receivers,
+                }),
             };
             const clock = { now: () => new Date(this.now) };
             const membership = CollectionsModule.membership(collections, members, ids, clock);
@@ -122,8 +132,6 @@ export class TestApp {
             const bookTags = new KyselyBookTagStore(database.connections);
             const shelving = LocationsModule.assignment(bookcases, shelves, bookShelves);
             const tagging = TagsModule.assignment(tags, bookTags, ids, clock);
-            const loans = new KyselyLoanRepository(database.connections);
-            const receivers = new KyselyReceiverRepository(database.connections);
             const secret = randomBytes(32);
             const tokens = new JwtSessionTokens(secret, clock);
             const accounts = new AccountLoader(users);

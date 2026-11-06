@@ -1,12 +1,8 @@
-import type {
-    BookDto,
-    LendingDto,
-    ReceiverDto,
-} from '../../../../../../../../packages/contracts/src/http.js';
+import { ReceiverBuilder } from '../../../../application/testing/receiver-builder.test-support.js';
+import type { ReceiverDto } from '../../../../../../../../packages/contracts/src/http.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { TestApp } from '../../../../../../../../tests/api/setup/test-app.js';
 import { UserFixture } from '../../../../../../../../tests/api/fixtures/user.fixture.js';
-import { BookInputFixture } from '../../../../../../../../tests/api/fixtures/book-input.fixture.js';
 
 let app: TestApp;
 const owner = new UserFixture({ username: 'camille', role: 'owner' });
@@ -21,24 +17,11 @@ afterEach(async () => {
     await app?.teardown();
 });
 
-// Lends a new book to a receiver as an Owner, which is how receivers come to exist.
+// Saves a receiver with the builders.
 async function receiver(name: string) {
-    const client = await app.authenticatedClient(owner);
-    const saved = await client.call<BookDto>(
-        '/books',
-        'POST',
-        BookInputFixture.of({ title: 'For ' + name, isbn: null, noIsbn: true }),
-    );
-    const response = await client.call<LendingDto>('/loans', 'POST', {
-        receiver: { name },
-        bookIds: [saved.body.id],
-    });
+    const saved = await app.dependencies.builders.receiver(new ReceiverBuilder().withName(name));
 
-    if (saved.status !== 201 || response.status !== 201) {
-        throw new Error('Arranging the scenario failed: ' + response.text);
-    }
-
-    return response.body.receiver;
+    return { id: saved.id, name: saved.snapshot.name };
 }
 
 describe('GET /api/receivers', () => {
