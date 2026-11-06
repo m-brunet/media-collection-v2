@@ -5,6 +5,7 @@ import type { CollectionMembership } from '../../../books/application/ports/driv
 import type { CollectionBookSearch } from '../../application/ports/driven/collection-book-search.interface.js';
 import type { CollectionMemberStore } from '../../application/ports/driven/collection-member-store.interface.js';
 import type { CollectionRepository } from '../../application/ports/driven/collection-repository.interface.js';
+import type { MemberTitles } from '../../application/ports/driven/member-titles.interface.js';
 import { BookCollectionMembership } from '../../application/services/book-collection-membership.service.js';
 import { CollectionLoader } from '../../application/services/collection-loader.service.js';
 import { CollectionUpkeep } from '../../application/services/collection-upkeep.service.js';
@@ -26,6 +27,8 @@ export interface CollectionsDependencies {
     collections: CollectionRepository;
     members: CollectionMemberStore;
     search: CollectionBookSearch;
+    // Owned by the books feature, composed by the application root.
+    titles: MemberTitles;
     clock: Clock;
     operations: AuditedOperation;
 }
@@ -34,6 +37,7 @@ const token = {
     collections: 'COLLECTIONS_REPOSITORY',
     members: 'COLLECTIONS_MEMBERS',
     search: 'COLLECTIONS_BOOK_SEARCH',
+    titles: 'COLLECTIONS_MEMBER_TITLES',
     clock: 'COLLECTIONS_CLOCK',
     operations: 'COLLECTIONS_AUDITED_OPERATION',
     loader: 'COLLECTIONS_LOADER',
@@ -114,18 +118,39 @@ const useCaseProviders: Provider[] = [
             viewer: CollectionViewer,
         ) => new GetCollection(loader, members, viewer),
     },
-    changeProvider('COLLECTIONS_UPDATE', UpdateCollection),
-    changeProvider('COLLECTIONS_FINISH', FinishCollection),
-    changeProvider('COLLECTIONS_REOPEN', ReopenCollection),
     {
-        provide: 'COLLECTIONS_DELETE',
-        inject: [token.collections, token.members, token.loader, token.operations],
+        provide: 'COLLECTIONS_UPDATE',
+        inject: [
+            token.collections,
+            token.members,
+            token.loader,
+            token.viewer,
+            token.titles,
+            token.clock,
+            token.operations,
+        ],
         useFactory: (
             collections: CollectionRepository,
             members: CollectionMemberStore,
             loader: CollectionLoader,
+            viewer: CollectionViewer,
+            titles: MemberTitles,
+            clock: Clock,
             operations: AuditedOperation,
-        ) => new DeleteCollection(collections, members, loader, operations),
+        ) => new UpdateCollection(collections, members, loader, viewer, titles, clock, operations),
+    },
+    changeProvider('COLLECTIONS_FINISH', FinishCollection),
+    changeProvider('COLLECTIONS_REOPEN', ReopenCollection),
+    {
+        provide: 'COLLECTIONS_DELETE',
+        inject: [token.collections, token.members, token.loader, token.titles, token.operations],
+        useFactory: (
+            collections: CollectionRepository,
+            members: CollectionMemberStore,
+            loader: CollectionLoader,
+            titles: MemberTitles,
+            operations: AuditedOperation,
+        ) => new DeleteCollection(collections, members, loader, titles, operations),
     },
 ];
 

@@ -145,7 +145,7 @@ describe('POST /api/books', () => {
         const response = await client.call('/books', 'POST', BookInputFixture.of({ title: ' ' }));
 
         expect(response.status).toBe(400);
-        expect(response.body.reason).toBe('title-invalid');
+        expect(response.body.reason).toBe('title-required');
     });
     it('refuses a Guest', async () => {
         const client = await app.authenticatedClient(guest);

@@ -11,6 +11,8 @@ export const BookAudit = {
     updated: 'book.updated',
     deleted: 'book.deleted',
     organised: 'book.organised',
+    // A title changed by a collection-wide operation (rename or deletion of its collection).
+    retitled: 'book.retitled',
     coverChanged: 'book.cover-changed',
     authorCorrected: 'author.corrected',
     readingStatusChanged: 'book.reading-status-changed',
@@ -33,6 +35,7 @@ export class BookSnapshot {
 
         return {
             title: details.title,
+            titleGenerated: details.titleGenerated,
             isbn: details.isbn?.isbn13 ?? null,
             noIsbn: details.noIsbn,
             authorIds: [...details.authorIds],

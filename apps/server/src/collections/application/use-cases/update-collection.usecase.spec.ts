@@ -14,6 +14,7 @@ function subject(current: ReturnType<typeof shelf>) {
         current.members,
         current.loader,
         current.viewer,
+        current.titles,
         current.clock,
         current.operations,
     );
@@ -99,5 +100,47 @@ describe('UpdateCollection', () => {
         const operation = subject(current).execute(guest, 'collection-1', { name: 'Other' });
 
         await expect(operation).rejects.toMatchObject({ code: 'forbidden' });
+    });
+});
+
+describe('UpdateCollection titles', () => {
+    it('regenerates the generated titles of its books with the new name (example 3)', async () => {
+        const current = shelf();
+
+        await member(current, 'one', 'owned', 'Gunnm', 1);
+        await member(current, 'two', 'owned', 'Gunnm', 2, 3);
+
+        await subject(current).execute(owner, 'collection-1', { name: 'Battle Angel Alita' });
+
+        expect(current.titles.regenerated).toEqual([
+            {
+                collectionName: 'Battle Angel Alita',
+                members: [
+                    { bookId: 'one', volumeFrom: 1, volumeTo: 1 },
+                    { bookId: 'two', volumeFrom: 2, volumeTo: 3 },
+                ],
+            },
+        ]);
+    });
+    it('records the title changes with the rename', async () => {
+        const current = shelf();
+
+        await member(current, 'one', 'owned', 'Gunnm', 1);
+
+        await subject(current).execute(owner, 'collection-1', { name: 'Battle Angel Alita' });
+
+        expect(current.trail.entries.map((entry) => [entry.category, entry.operationId])).toEqual([
+            ['collection.updated', 'operation-1'],
+            ['book.retitled', 'operation-1'],
+        ]);
+    });
+    it('leaves titles alone when the name does not change', async () => {
+        const current = shelf();
+
+        await member(current, 'one', 'owned', 'Gunnm', 0);
+
+        await subject(current).execute(owner, 'collection-1', { includesVolumeZero: true });
+
+        expect(current.titles.regenerated).toEqual([]);
     });
 });

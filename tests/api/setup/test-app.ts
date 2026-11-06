@@ -190,6 +190,7 @@ export class TestApp {
                         collections,
                         members,
                         search: books.catalog,
+                        titles: BooksModule.memberTitles(books.books, clock),
                         clock,
                         operations,
                     }),

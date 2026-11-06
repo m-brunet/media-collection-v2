@@ -14,6 +14,7 @@ import { BookLoader } from '../services/book-loader.service.js';
 import { LentBookGuard } from '../services/lent-book-guard.service.js';
 import { BookRemoval } from '../services/book-removal.service.js';
 import { BookViewer } from '../services/book-viewer.service.js';
+import { GeneratedTitleSync } from '../services/generated-title-sync.service.js';
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 import type { AuditedOperation } from '../../../shared/application/services/audited-operation.service.js';
 import type { Actor } from '../../../shared/domain/actor.helper.js';
@@ -34,6 +35,7 @@ export class UpdateBook implements UpdateBookUseCase {
         private readonly loader: BookLoader,
         private readonly builder: BookDetailsBuilder,
         private readonly identity: BookIdentityCheck,
+        private readonly titles: GeneratedTitleSync,
         private readonly guard: LentBookGuard,
         private readonly viewer: BookViewer,
         private readonly clock: Clock,
@@ -71,6 +73,12 @@ export class UpdateBook implements UpdateBookUseCase {
                     { id: bookId, ownership: details.ownership },
                     input.collection,
                     replacing,
+                );
+
+                await this.titles.apply(
+                    book,
+                    membership.collection,
+                    input.confirmDistinct ?? false,
                 );
                 const organised = await this.organiser.apply(bookId, {
                     shelfId: input.shelfId,
