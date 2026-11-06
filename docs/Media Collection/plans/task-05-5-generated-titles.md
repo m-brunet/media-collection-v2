@@ -1,6 +1,6 @@
 # Task 5.5 — Generated titles for collection Manga and Comics
 
-Status: not started. Business rules confirmed (2026-11-06); implementation remains future work.
+Status: technical design proposed (2026-11-06), awaiting user approval. Business rules confirmed (2026-11-06).
 Global plan: [implementation plan](implementation-plan.md).
 Owning docs: [book-entry](../book-entry.md#collection-based-titles) (authoritative title rules and acceptance examples),
 [features](../features.md) (Books), [collections](../collections.md) (membership, rename and deletion).
@@ -80,6 +80,99 @@ external title recovery; new collection or lending workflows. Tasks 6 and 7 adop
 - Regress lending title/search/history behavior and no-ISBN duplicate checks. Map cases to the owning acceptance examples.
 - Before implementation completion, perform the required architecture-review skill and relevant format, lint, type,
   unit, API, persistence and web checks, including the repository's required full check.
+
+## Technical design (proposed 2026-11-06, awaiting user approval)
+
+Written against the completed Task 5 code. Existing names: `Book`/`BookDetails` (title 1-300 characters,
+`title-invalid`), `CreateBook`/`UpdateBook`, `BookDetailsBuilder`, `BookIdentityCheck`, `CollectionMembership.assign`
+(returns the resolved `BookCollection { id, name, volumeFrom, volumeTo }`), `UpdateCollection` (rename),
+`DeleteCollection`, `CollectionMemberStore`, the catalog's `books.title_key` (search and title sort).
+
+### Ownership
+
+- **books** owns the title, its provenance and generation: `BookDetails` gains `titleGenerated`; a pure domain value
+  `GeneratedTitle.of(collectionName, volumeFrom, volumeTo)` formats `Name - N` / `Name - N–M` (hyphen-minus with
+  spaces as separator, en dash without spaces in a range, display name kept as is); eligibility is a `Book` rule
+  (category Manga/Comics **and** a collection membership).
+- **collections** owns the collection-wide operations and declares one driven port, `MemberTitles`, implemented by a
+  books application service and wired at the root (like `CollectionBookSearch`):
+  - `regenerate(collectionName, members)` on rename: retitles members whose title is generated, returns related
+    changes;
+  - `release(bookIds)` before whole-collection deletion: clears the flag, keeps the text, returns related changes.
+- Length: a collection name has at most 200 characters, so the longest generated title (200 + ` - 9999–9999`) is 212,
+  under the 300-character title limit. No truncation case exists; a test pins this.
+
+### Book saves (create and update)
+
+- Input contract unchanged: `title: string`. **A blank (or whitespace-only) title means "generate"**; any nonblank
+  text is a supplied title (flag false), even when identical to the generated one. Blank on a non-eligible book is
+  refused with a new reason `title-required` ("Enter a title; only Manga and Comics in a collection get one
+  automatically."). `title-invalid` stays for the length rule.
+- Order in the transaction: build details (generated mode carries a provisional title) → save the book → assign the
+  membership → if generated, set the final title from the **resolved** collection (an equivalent existing collection
+  may be spelled differently from what was typed) and save again → run the no-ISBN duplicate check on the final title
+  (moved after the membership; it excludes the book itself and a refusal rolls everything back).
+- Moving to another collection or changing coverage regenerates a generated title. An unrelated edit keeps generation
+  because the form sends a blank title for a generated book (see interface).
+- Losing eligibility individually (membership removed, or category set to Books) with a blank title: `title-required`
+  (no silent acceptance); the form prefills the last generated title, so one save supplies it.
+
+### Collection rename and deletion
+
+- `UpdateCollection` with a new name calls `MemberTitles.regenerate` with its members (it already reads them) and
+  passes the returned changes as related audit changes.
+- `DeleteCollection` calls `MemberTitles.release(memberIds)` before clearing the membership.
+- Related audit records use one new category, `book.retitled` (subject: the book; before/after
+  `{ title, titleGenerated }`), sharing the collection operation's ID, so Activity can group them under the rename or
+  deletion. Book snapshots (`BookSnapshot`) gain `titleGenerated`.
+
+### Persistence
+
+- Migration `010-generated-titles`: `books.title_generated INTEGER NOT NULL DEFAULT 0 CHECK (title_generated IN
+  (0, 1))`; existing rows get 0 (example 6). Repository mapping, catalog rows, member records unchanged otherwise.
+- `title_key` is recomputed on every title change by the existing repository save (search stays consistent).
+- See question 1 for title ordering.
+
+### HTTP and Libris
+
+- `BookDto` gains `titleGenerated`. List items, loans and collection views keep showing the stored title.
+- Book form, Title field:
+  - eligible (Manga/Comics with a collection): not required; hint "Leave empty to name it from the collection:
+    Gunnm - 3" (computed live in the form for feedback only; the server decides).
+  - editing a generated title: the field starts **empty** with that hint, so an unrelated edit keeps generation;
+    typing any text, even the same one, makes it supplied.
+  - losing eligibility (unticking the collection or choosing Books) while the field is empty: the field becomes
+    required and is prefilled with the last generated title; saving accepts it in one click.
+  - Book details show a small "Named from the collection" mark next to a generated title (provenance visible).
+- EN/FR texts; `title-required` reason.
+- Lending: active-loan and picker reads use the live title, so they follow regeneration; a loan's title copy is
+  refreshed only at book deletion, as in Task 5. No change needed beyond regression tests.
+
+### Steps
+
+1. [ ] Domain: `GeneratedTitle`, `Book` title provenance and eligibility, `title-required`; unit tests (examples 1-6).
+2. [ ] Persistence: migration 010 (+ question 1 if approved), repository mapping, SQLite tests (backfill, constraint).
+3. [ ] Application: create/update ordering and regeneration, `MemberTitles` service and port, rename/delete
+       integration with related `book.retitled` changes, snapshots; unit tests.
+4. [ ] HTTP: `titleGenerated` in contracts, reasons; API e2e for books (create/edit/move/coverage/eligibility loss)
+       and collections (rename regenerates, delete releases, rollback).
+5. [ ] Libris: title field states, details mark, EN/FR; component tests.
+6. [ ] Browser e2e: blank-title Manga in a collection, rename regenerates, removal prefill accepted in one click,
+       collection deletion keeps titles; lending regression.
+7. [ ] Docs (architecture: `MemberTitles`, migration 010), full check, architecture review, commit, plan status.
+
+### Questions for the user
+
+1. **Title order of numbered titles.** Titles sort as plain text today, so generated titles list as `Gunnm - 1,
+   Gunnm - 10, Gunnm - 11, Gunnm - 2`. Recommended: sort by a "natural" key where numbers compare by value
+   (`Gunnm - 2` before `Gunnm - 10`), for every title (supplied ones like "Vol. 2" / "Vol. 10" benefit too): a new
+   `title_sort_key` column (digit runs zero-padded), backfilled by migration 010. Alternative: keep plain-text order.
+2. **Format check.** I read the rule as `Gunnm - 3`, `Gunnm - 1–3` (en dash, no spaces), `Gunnm - 0` with volume 0,
+   and the collection name exactly as displayed. Confirm, or correct the separators.
+3. **Duplicate warning.** Two no-ISBN editions of the same volume in one collection (a permitted Owned overlap) would
+   both be named `Gunnm - 3`, so the second one triggers the existing "possible duplicate" warning, which can be
+   overridden. Recommended: keep that behaviour (it is a likely duplicate). Alternative: skip the warning for
+   generated titles.
 
 ## Delivery and dependencies
 
