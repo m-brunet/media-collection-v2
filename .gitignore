@@ -166,6 +166,9 @@ session.key
 /design/
 /docs/local-notes/
 
+# Local database dumps and import corrections; never committed.
+/local-imports/
+
 # Additional IDE workspace settings
 .vscode/
 

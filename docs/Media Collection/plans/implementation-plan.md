@@ -135,7 +135,20 @@ Owning docs: `updates.md`, `design-guidelines.md`.
 
 ## Dependencies
 
-0 → 1 → 2 → 3 → 4; 5 needs 2; 5.5 follows 5 and needs 2-3; 6 follows 5.5; 7 needs 3, 5.5 and 6; 8 needs 1-5.5; 9 needs all data tasks; 10 needs 9.
+0 → 1 → 2 → 3 → 4; 5 needs 2; 5.5 follows 5 and needs 2-3; 5.8 follows 5.5; 6 follows 5.8; 7 needs 3, 5.5 and 6; 8 needs 1-5.5; 9 needs all data tasks; 10 needs 9.
+
+## Future development data commands (outside Task 5.5)
+
+Reserve repository-root `local-imports/` for local source dumps, ISBN/category corrections and import reports. The
+entire directory is Git-ignored; for example, the V1 source can live at `local-imports/v1/books.json`. No real dump or
+personal-data fixture belongs in version control. This is source material, separate from `.dev-data/` runtime storage:
+resetting development data must not delete the import inputs. Create the directory locally as needed; Git does not
+track empty directories.
+
+The future development-only importer may accept that source path; the reset command requires no dump. Both require
+strict development data-directory isolation and exclusive access while the development app is closed. Import also
+depends on Task 5.5 and finalized category mappings. These commands and their implementation/scheduling remain separate
+future work; reserving the folder does not implement or run an import.
 
 ## Status
 
