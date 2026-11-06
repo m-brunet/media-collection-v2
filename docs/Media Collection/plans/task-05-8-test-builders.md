@@ -1,6 +1,6 @@
 # Task 5.8 — Test entity builders
 
-Status: planned (2026-11-06), awaiting user approval. Inserted at the user's request between Tasks 5 and 6.
+Status: approved (2026-11-06); to be done after Task 5.5. Inserted at the user's request after Task 5.
 Global plan: [implementation plan](implementation-plan.md). Origin: optional review point 1 of
 [Task 5](task-05-lending.md) (duplicated API test helpers) and the user's reference to test builders.
 
@@ -64,10 +64,8 @@ browser e2e arrangement, production code changes.
        helpers; check the architecture tests accept the test-support imports.
 4. [ ] Docs (architecture: test data arrangement), full check, architecture review, commit, plan status.
 
-## Questions for the user
+## Decisions confirmed by the user (2026-11-06)
 
-1. **Where `TestLibrary` lives.** It crosses features (a loan needs a book), which feature code may not do. Recommended:
-   `tests/support/test-library.ts`, outside `apps/server/src`, importing the feature builders; the feature builders
-   stay feature-owned. Alternative: one builder folder per feature only, and tests compose parents by hand.
-2. **`UserFixture`.** Recommended: keep it working as is in this task, and move it onto a `UserBuilder` when identity
-   tests are next touched.
+1. `TestLibrary` lives in `tests/support/test-library.ts`, outside the application source; feature builders stay in
+   their features' `application/testing/` folders.
+2. `UserFixture` stays as is in this task; it moves onto a `UserBuilder` when identity tests are next touched.
