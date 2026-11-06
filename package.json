@@ -28,6 +28,8 @@
         "typecheck": "tsc --noEmit -p tsconfig.runtime.json && tsc --noEmit -p apps/web/tsconfig.json && tsc --noEmit -p tsconfig.tools.json && tsc --noEmit -p tsconfig.tests.json && tsc --noEmit -p apps/server/tsconfig.json",
         "check": "npm run build && npm run typecheck && npm run lint && npm run format:check && vitest run",
         "reset-admin": "electron . --reset-admin",
+        "dev:reset-data": "npm run build:runtime && electron . --dev-reset-data",
+        "dev:import-v1": "npm run build:runtime && electron . --dev-import-v1",
         "package": "npm run build && electron-builder",
         "package:dir": "npm run build && electron-builder --dir",
         "test:packaged": "node tools/packaged-smoke.mjs"

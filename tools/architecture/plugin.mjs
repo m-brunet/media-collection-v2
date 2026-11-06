@@ -83,7 +83,7 @@ function permitted(from, to) {
             (to.area === 'server' &&
                 to.feature === '$root' &&
                 to.composition &&
-                /\/(bootstrap|recovery)\.ts$/.test(to.path))
+                /\/(bootstrap|recovery|development-data)\.ts$/.test(to.path))
         );
     }
 
