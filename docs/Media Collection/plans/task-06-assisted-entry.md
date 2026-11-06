@@ -168,7 +168,8 @@ address, never a person's email).
 1. [x] Cover padding removal (own commit); development covers still to clean (`npm run dev:import-v1` refused
    while the development app was open)
 2. [x] Source trial, report, user choice of sources and order
-3. [ ] Domain/application: combining, chains, budgets, formatting, collection suggestion, `LookUpBook`, unit tests
+3. [x] Domain/application: combining, chains, budgets, collection suggestion, `LookUpBook`, unit tests
+   (source formatting moves to the adapters, step 4: it is specific to each source's format)
 4. [ ] Approved source adapters, cover tokens, endpoints, API tests
 5. [ ] Libris Find book: review, conflicts, covers, states, cover helpers (search, paste/drop, address,
    desktop search panel), component tests
@@ -185,4 +186,15 @@ address, never a person's email).
   little to tell). No process remains afterwards.
 - The trimmer is registered inside `BooksModule` (no configuration needed), so app, API tests and development
   commands share it.
+
+## Notes from step 3
+
+- Domain: `LookupAnswer` (one source's cleaned answer), `LookupCombination` (field choices, preferred first,
+  equivalent values merged, summary only in the edition language), `CoverCombination` (minimum height 300 px, same
+  fingerprint shown once at its best resolution).
+- Application: one generic driven port `LookupSource<T>` (name, published limit, `find`), `SourceBudget` (sliding
+  window plus pause after "retry later"), and the chain of responsibility `SourceLink`/`SourceStep`: `begin` starts
+  every request, `handle` passes answers on in preference order; a limited, failing or 8-second-silent source is
+  reported and skipped. `LookUpBook` returns `existing` or `looked-up` (fields, covers, unavailable sources).
+- Not wired yet: the module composes the chains with the adapters in step 4. Cover addresses become tokens there.
 

@@ -15,6 +15,8 @@ import type {
     MembershipRequest,
 } from '../ports/driven/collection-membership.interface.js';
 import type { CoverStorage } from '../ports/driven/cover-storage.interface.js';
+import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
+import type { LookupSource, SourceReply } from '../ports/driven/lookup-source.interface.js';
 import type { CoverImage } from '../../domain/value-objects/cover-image.value-object.js';
 import type { CoverTrimmer } from '../ports/driven/cover-trimmer.interface.js';
 import type { PersonalNoteStore } from '../ports/driven/personal-note-store.interface.js';
@@ -186,6 +188,44 @@ export class MemoryTrimmer implements CoverTrimmer {
         this.received.push(cover);
 
         return this.result ?? cover;
+    }
+}
+
+// A lookup source answering from a script: a fixed reply, a failure (`'fail'`), or never (`'hang'`).
+export class ScriptedSource<T> implements LookupSource<T> {
+    readonly asked: string[] = [];
+
+    constructor(
+        readonly name: string,
+        private readonly reply: SourceReply<T> | 'fail' | 'hang',
+        readonly limit = { requests: 100, seconds: 60 },
+    ) {}
+
+    async find(isbn13: string): Promise<SourceReply<T>> {
+        this.asked.push(isbn13);
+
+        if (this.reply === 'fail') {
+            throw new Error('Source unreachable');
+        }
+
+        if (this.reply === 'hang') {
+            return new Promise(() => undefined);
+        }
+
+        return this.reply;
+    }
+}
+
+// A clock that only moves when told to.
+export class ManualClock implements Clock {
+    constructor(private current = new Date('2026-03-01T10:00:00Z')) {}
+
+    now(): Date {
+        return this.current;
+    }
+
+    advance(seconds: number): void {
+        this.current = new Date(this.current.getTime() + seconds * 1000);
     }
 }
 
