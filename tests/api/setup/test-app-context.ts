@@ -24,6 +24,8 @@ export interface TestAppContext {
         | 'locationReader'
         | 'tags'
         | 'tagReader'
+        | 'loans'
+        | 'loanHistory'
     >;
     audit: AuditLogProbe;
     library: LibraryProbe;

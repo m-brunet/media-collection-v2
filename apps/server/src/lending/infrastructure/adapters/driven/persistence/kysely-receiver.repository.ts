@@ -22,6 +22,20 @@ export class KyselyReceiverRepository implements ReceiverRepository {
         return row ? this.map(row) : null;
     }
 
+    async findByIds(ids: readonly string[]): Promise<Receiver[]> {
+        if (ids.length === 0) {
+            return [];
+        }
+
+        const rows = await this.db
+            .selectFrom('receivers')
+            .selectAll()
+            .where('id', 'in', [...ids])
+            .execute();
+
+        return rows.map((row) => this.map(row));
+    }
+
     async findByKey(key: string): Promise<Receiver | null> {
         const row = await this.db
             .selectFrom('receivers')

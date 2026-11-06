@@ -14,6 +14,7 @@ function subject(current: ReturnType<typeof library>) {
         current.loader,
         current.builder,
         current.identity,
+        current.guard,
         current.viewer,
         current.clock,
         current.operations,
@@ -184,5 +185,34 @@ describe('UpdateBook', () => {
             before: { location: { shelfId: 'top' }, tags: [{ name: 'Fantasy' }] },
             after: { location: { shelfId: 'shelf-3' }, tags: [] },
         });
+    });
+});
+
+describe('UpdateBook with loans', () => {
+    it('refuses to change a lent book to Not Owned and keeps it Owned', async () => {
+        const current = library();
+        const book = await saved(current);
+
+        current.loans.lend(book.id, 'Sam Taylor');
+
+        const result = subject(current).execute(owner, book.id, input({ ownership: 'not-owned' }));
+
+        await expect(result).rejects.toMatchObject({ code: 'conflict', reason: 'book-lent' });
+        expect(current.books.books.get(book.id)!.details.ownership).toBe('owned');
+    });
+    it('saves other changes of a lent book', async () => {
+        const current = library();
+        const book = await saved(current);
+
+        current.loans.lend(book.id);
+
+        const result = await subject(current).execute(
+            owner,
+            book.id,
+            input({ title: 'Piranesi (2nd)' }),
+        );
+
+        expect(result).toMatchObject({ title: 'Piranesi (2nd)', ownership: 'owned' });
+        expect(result.loan).not.toBeNull();
     });
 });

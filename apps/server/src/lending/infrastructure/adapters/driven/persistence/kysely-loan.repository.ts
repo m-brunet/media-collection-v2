@@ -32,6 +32,21 @@ export class KyselyLoanRepository implements LoanRepository {
         });
     }
 
+    async findActiveByBooks(bookIds: readonly string[]): Promise<Loan[]> {
+        if (bookIds.length === 0) {
+            return [];
+        }
+
+        const rows = await this.db
+            .selectFrom('loans')
+            .selectAll()
+            .where('status', '=', 'lent')
+            .where('book_id', 'in', [...bookIds])
+            .execute();
+
+        return rows.map((row) => this.map(row));
+    }
+
     async create(loan: Loan): Promise<void> {
         const row = this.row(loan);
 
@@ -49,6 +64,18 @@ export class KyselyLoanRepository implements LoanRepository {
             .updateTable('loans')
             .set({ status: state.status, returned_at: state.returnedAt })
             .where('id', '=', state.id)
+            .execute();
+    }
+
+    async keepIdentification(book: {
+        id: string;
+        title: string;
+        isbn: string | null;
+    }): Promise<void> {
+        await this.db
+            .updateTable('loans')
+            .set({ book_title: book.title, book_isbn: book.isbn })
+            .where('book_id', '=', book.id)
             .execute();
     }
 

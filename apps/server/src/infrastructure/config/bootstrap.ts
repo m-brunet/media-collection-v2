@@ -37,6 +37,9 @@ import { SetupAccess } from '../../identity/infrastructure/adapters/driving/web/
 import { BooksModule } from '../../books/infrastructure/config/books.module.js';
 import { CollectionsModule } from '../../collections/infrastructure/config/collections.module.js';
 import { LocationsModule } from '../../locations/infrastructure/config/locations.module.js';
+import { LendingModule } from '../../lending/infrastructure/config/lending.module.js';
+import { KyselyLoanRepository } from '../../lending/infrastructure/adapters/driven/persistence/kysely-loan.repository.js';
+import { KyselyReceiverRepository } from '../../lending/infrastructure/adapters/driven/persistence/kysely-receiver.repository.js';
 import { KyselyBookcaseRepository } from '../../locations/infrastructure/adapters/driven/persistence/kysely-bookcase.repository.js';
 import { KyselyShelfRepository } from '../../locations/infrastructure/adapters/driven/persistence/kysely-shelf.repository.js';
 import { KyselyBookShelfStore } from '../../locations/infrastructure/adapters/driven/persistence/kysely-book-shelf-store.adapter.js';
@@ -163,6 +166,8 @@ export class BackendRuntime {
             const bookTags = new KyselyBookTagStore(database.connections);
             const shelving = LocationsModule.assignment(bookcases, shelves, bookShelves);
             const tagging = TagsModule.assignment(tags, bookTags, ids, clock);
+            const loans = new KyselyLoanRepository(database.connections);
+            const receivers = new KyselyReceiverRepository(database.connections);
             const operations = new AuditedOperation(
                 database.connections,
                 new KyselyAuditTrail(database.connections, ids),
@@ -245,6 +250,8 @@ export class BackendRuntime {
                             locationReader: shelving,
                             tags: tagging,
                             tagReader: tagging,
+                            loans: LendingModule.bookLoans(loans, receivers),
+                            loanHistory: LendingModule.history(loans),
                             ids,
                             clock,
                             operations,

@@ -1,4 +1,5 @@
 import type { BookCollection } from './ports/driven/book-collection-reader.interface.js';
+import type { BookLoan } from './ports/driven/book-loan-reader.interface.js';
 import type { BookFilter } from '../../shared/application/book-filter.js';
 import type { BookLocation } from './ports/driven/book-location-reader.interface.js';
 import type { BookTag } from './ports/driven/book-tag-reader.interface.js';
@@ -35,6 +36,8 @@ export interface BookView {
     location: BookLocation | null;
     // Ordered by name.
     tags: BookTag[];
+    // The active loan, if the book is currently lent.
+    loan: BookLoan | null;
     createdAt: string;
     updatedAt: string;
     // The viewer's own reading status and note; null for Guests.
@@ -54,7 +57,8 @@ export interface BookListQuery {
     readerId: string | null;
 }
 
-export interface BookListItem {
+// A book of the list as the catalog finds it.
+export interface CatalogBookItem {
     id: string;
     title: string;
     authors: string[];
@@ -64,6 +68,16 @@ export interface BookListItem {
     collection: { name: string; volumeFrom: number; volumeTo: number } | null;
     updatedAt: string;
     read: boolean | null;
+}
+
+export interface CatalogPage {
+    total: number;
+    items: CatalogBookItem[];
+}
+
+// A book of the list with its active loan, for the Lent indicator.
+export interface BookListItem extends CatalogBookItem {
+    loan: BookLoan | null;
 }
 
 export interface BookListPage {

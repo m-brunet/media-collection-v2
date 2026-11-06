@@ -1,8 +1,10 @@
-import type { AuthorView, BookListPage, BookListQuery } from '../book-views.js';
+import type { AuthorView, BookListQuery, CatalogPage } from '../book-views.js';
 import type { BookInput } from '../book-input.js';
 import type { AuthorRepository } from '../ports/driven/author-repository.interface.js';
 import type { BookCatalog } from '../ports/driven/book-catalog.interface.js';
 import type { BookRepository } from '../ports/driven/book-repository.interface.js';
+import type { BookLoan, BookLoanReader } from '../ports/driven/book-loan-reader.interface.js';
+import type { LoanHistory } from '../ports/driven/loan-history.interface.js';
 import type {
     BookCollection,
     BookCollectionReader,
@@ -34,6 +36,7 @@ import { BookOrganisationReader } from '../services/book-organisation-reader.ser
 import { BookOrganiser } from '../services/book-organiser.service.js';
 import { BookRemoval } from '../services/book-removal.service.js';
 import { BookViewer } from '../services/book-viewer.service.js';
+import { LentBookGuard } from '../services/lent-book-guard.service.js';
 import { Author } from '../../domain/entities/author.entity.js';
 import { Book } from '../../domain/entities/book.entity.js';
 import type { CoverMediaType } from '../../domain/value-objects/cover-image.value-object.js';
@@ -193,6 +196,44 @@ export class MemoryCovers implements CoverStorage {
 }
 
 // Minimal catalog: author names in book order; searching is covered by SQLite tests.
+// Active loans of books and the history kept for deleted books, without the lending rules the
+// lending feature tests.
+export class MemoryLoans implements BookLoanReader, LoanHistory {
+    readonly active = new Map<string, BookLoan>();
+    readonly retained: { id: string; title: string; isbn: string | null }[] = [];
+
+    lend(bookId: string, receiverName = 'Sam Taylor'): BookLoan {
+        const loan = {
+            id: 'loan-' + bookId,
+            receiverId: 'receiver-' + NameKey.of(receiverName),
+            receiverName,
+            lentAt: '2026-02-01T09:00:00.000Z',
+        };
+
+        this.active.set(bookId, loan);
+
+        return loan;
+    }
+
+    async of(bookId: string): Promise<BookLoan | null> {
+        return this.active.get(bookId) ?? null;
+    }
+
+    async ofBooks(bookIds: readonly string[]): Promise<Map<string, BookLoan>> {
+        return new Map(
+            bookIds.flatMap((id) => {
+                const loan = this.active.get(id);
+
+                return loan ? [[id, loan] as const] : [];
+            }),
+        );
+    }
+
+    async retain(book: { id: string; title: string; isbn: string | null }): Promise<void> {
+        this.retained.push({ ...book });
+    }
+}
+
 export class MemoryCatalog implements BookCatalog {
     constructor(
         private readonly books: MemoryBooks,
@@ -201,7 +242,7 @@ export class MemoryCatalog implements BookCatalog {
 
     readonly queries: BookListQuery[] = [];
 
-    async search(query: BookListQuery): Promise<BookListPage> {
+    async search(query: BookListQuery): Promise<CatalogPage> {
         this.queries.push(query);
         const items = [...this.books.books.values()].map((book) => ({
             id: book.id,
@@ -399,6 +440,8 @@ export function library() {
     const collections = new MemoryMembership();
     const shelving = new MemoryShelving();
     const tagging = new MemoryTagging();
+    const loans = new MemoryLoans();
+    const guard = new LentBookGuard(loans);
     const organisation = new BookOrganisationReader(shelving, tagging);
     const organiser = new BookOrganiser(shelving, tagging, organisation);
     const loader = new BookLoader(books);
@@ -417,6 +460,8 @@ export function library() {
         collections,
         shelving,
         tagging,
+        loans,
+        guard,
         organisation,
         organiser,
         ids,
@@ -425,8 +470,8 @@ export function library() {
         builder: new BookDetailsBuilder(new AuthorResolver(authors, ids, clock)),
         identity: new BookIdentityCheck(books, authors),
         loader,
-        removal: new BookRemoval(books, authors, collections, loader),
-        viewer: new BookViewer(catalog, readings, notes, collections, organisation),
+        removal: new BookRemoval(books, authors, collections, loader, guard, loans),
+        viewer: new BookViewer(catalog, readings, notes, collections, organisation, loans),
     };
 }
 

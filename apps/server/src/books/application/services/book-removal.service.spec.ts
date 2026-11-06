@@ -47,3 +47,36 @@ describe('BookRemoval', () => {
         ]);
     });
 });
+
+describe('BookRemoval with loans', () => {
+    it('keeps the title and ISBN of the removed book for its completed loans', async () => {
+        const current = library();
+        const book = await saved(current);
+
+        await current.removal.remove(book.id);
+
+        expect(current.loans.retained).toEqual([
+            { id: book.id, title: 'Piranesi', isbn: '9781635575637' },
+        ]);
+    });
+    it('keeps no ISBN for a removed book without one', async () => {
+        const current = library();
+        const book = await saved(current, { isbn: null, noIsbn: true });
+
+        await current.removal.remove(book.id);
+
+        expect(current.loans.retained).toEqual([{ id: book.id, title: 'Piranesi', isbn: null }]);
+    });
+    it('refuses a lent book, removing nothing', async () => {
+        const current = library();
+        const book = await saved(current);
+
+        current.loans.lend(book.id);
+
+        const operation = current.removal.remove(book.id);
+
+        await expect(operation).rejects.toMatchObject({ reason: 'book-lent' });
+        expect(current.books.books.has(book.id)).toBe(true);
+        expect(current.loans.retained).toEqual([]);
+    });
+});

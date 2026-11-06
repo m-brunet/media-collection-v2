@@ -11,6 +11,7 @@ import { BookDetailsBuilder } from '../services/book-details-builder.service.js'
 import { BookIdentityCheck } from '../services/book-identity-check.service.js';
 import { BookOrganiser } from '../services/book-organiser.service.js';
 import { BookLoader } from '../services/book-loader.service.js';
+import { LentBookGuard } from '../services/lent-book-guard.service.js';
 import { BookRemoval } from '../services/book-removal.service.js';
 import { BookViewer } from '../services/book-viewer.service.js';
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
@@ -19,7 +20,8 @@ import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
 // Edits shared book information, collection membership, location and tags. Coverage rules apply again, since
-// ownership or volumes may change. Authors no longer linked to any book disappear.
+// ownership or volumes may change. Authors no longer linked to any book disappear. A lent book
+// cannot become Not Owned.
 export class UpdateBook implements UpdateBookUseCase {
     constructor(
         private readonly books: BookRepository,
@@ -32,6 +34,7 @@ export class UpdateBook implements UpdateBookUseCase {
         private readonly loader: BookLoader,
         private readonly builder: BookDetailsBuilder,
         private readonly identity: BookIdentityCheck,
+        private readonly guard: LentBookGuard,
         private readonly viewer: BookViewer,
         private readonly clock: Clock,
         private readonly operations: AuditedOperation,
@@ -55,6 +58,10 @@ export class UpdateBook implements UpdateBookUseCase {
                 const previousAuthors = book.details.authorIds;
                 const details = await this.builder.build(input);
                 const replacing = input.replacePlanned ?? [];
+
+                if (details.ownership === 'not-owned') {
+                    await this.guard.ensureNotLent(bookId);
+                }
 
                 await this.identity.ensureUnique(details, bookId, input.confirmDistinct ?? false);
                 book.edit(details, this.clock.now().toISOString());

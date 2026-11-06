@@ -108,3 +108,37 @@ describe('DeleteBook', () => {
         });
     });
 });
+
+describe('DeleteBook with loans', () => {
+    it('refuses to delete a lent book and keeps it', async () => {
+        const current = library();
+        const book = await saved(current);
+
+        current.loans.lend(book.id, 'Sam Taylor');
+
+        const result = subject(current).execute(owner, book.id);
+
+        await expect(result).rejects.toMatchObject({
+            code: 'conflict',
+            reason: 'book-lent',
+            details: { receiverName: 'Sam Taylor' },
+        });
+        expect(current.books.books.has(book.id)).toBe(true);
+    });
+    it('records the refused deletion of a lent book as Failed', async () => {
+        const current = library();
+        const book = await saved(current);
+
+        current.loans.lend(book.id);
+
+        await subject(current)
+            .execute(owner, book.id)
+            .catch(() => undefined);
+
+        expect(current.trail.entries.at(-1)).toMatchObject({
+            category: 'book.deleted',
+            outcome: 'failed',
+            failure: 'conflict:book-lent',
+        });
+    });
+});

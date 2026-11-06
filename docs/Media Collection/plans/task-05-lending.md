@@ -89,7 +89,7 @@ presentation and Overview counter (Task 8), data reset (Task 9).
 2. [x] Persistence: migration 009 + SQLite tests (constraints, partial unique index, SET NULL on book deletion,
        upgrade of a populated database); receiver/loan repositories, active-loans query, lendable-books adapter.
 3. [x] Shared: batch form of `AuditedOperation` (per-subject Successful/Failed records, one operation ID); tests.
-4. [ ] Application: lend, return, list active loans, find receivers; receiver resolver; books ports (loan reader,
+4. [x] Application: lend, return, list active loans, find receivers; receiver resolver; books ports (loan reader,
        history) and the delete / Not Owned guards; book views; unit tests covering scenarios 1-15, 18-19.
 5. [ ] HTTP: loans and receivers controllers, schemas, failure reasons; books payload changes; API e2e for every
        endpoint, roles, conflicts, rollback (no orphan receiver), audit records.
@@ -110,6 +110,17 @@ presentation and Overview counter (Task 8), data reset (Task 9).
 - `AuditedOperation.runBatch(context, change)`: `context.subjectIds` are the requested books (each gets a Failed
   record on failure; none requested → one Failed record without subject); the change returns `entries` (one
   Successful record per subject) and optional `related` changes.
+- Audit subjects: a lending records one `loan.lent` entry per **book** (book IDs are known before the operation); a
+  return records one `loan.returned` entry per **loan** (loan IDs are what the request names). Snapshots carry
+  `{ loan: { loanId, bookId, title, isbn, receiver, status, lentAt, returnedAt } }` (`{ loan: null }` before a
+  lending), so each record reads on its own and survives the book's deletion.
+- Books integration: `BookLoanReader` (`of`, `ofBooks`) and `LoanHistory` (`retain`) declared by books, implemented
+  by `BookLoanLookup` and `BookLoanHistory` in lending, built by `LendingModule.bookLoans` / `.history` at the root.
+  `LentBookGuard` (`book-lent`, details `receiverName`) runs in `BookRemoval` (so every removal path is covered)
+  and in `UpdateBook` when the new ownership is Not Owned. `ListBooks` adds each item's `loan` from
+  `BookLoanReader.ofBooks` (the catalog returns `CatalogPage`), so the books catalog never reads lending tables.
+- Lending checks run in this order: selection (empty/duplicate) → missing books → Not Owned / already lent (every
+  offending book named) → receiver (similar-name prompt last, so it is only asked once the books are fine).
 - Persistence tests: `tests/persistence/lending.spec.ts`. The UUID-key table count guard is now 17.
 
 ## Decisions confirmed by the user (2026-11-06)
