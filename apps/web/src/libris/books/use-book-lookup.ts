@@ -1,0 +1,153 @@
+import type { Dispatch, SetStateAction } from 'react';
+import { useState } from 'react';
+import type { BookLookupDto } from '../../../../../packages/contracts/src/http';
+import { api, ApiError } from '../../shared/api.util';
+import { ApiErrorMessage } from '../../shared/api-error-message.util';
+import { useI18n } from '../../shared/i18n/i18n-context';
+import type { BookDraftValues } from './book-draft.util';
+import type { CoverChoice } from './cover-picker';
+import { useSourceNames } from './lookup-dialogs';
+import type { LookupConflict, LookupField, LookupSelection } from './lookup-fill.util';
+import { LookupFill } from './lookup-fill.util';
+
+export type LookedUpBook = Extract<BookLookupDto, { kind: 'looked-up' }>;
+
+// The outcome of a lookup, shown under the page title; `retry` turns Find book into Retry lookup.
+export interface LookupMessage {
+    tone: 'info' | 'warning' | 'success';
+    text: string;
+    retry: boolean;
+}
+
+// Find book on the Add a book form (book entry rules, "Assisted lookup"): the library first,
+// then the sources. An ISBN already saved opens that book; otherwise the result is reviewed
+// (`review`), empty fields are filled, and typed values are replaced only after confirmation
+// (`replacing`). Nothing is saved here.
+export function useBookLookup({
+    values,
+    setValues,
+    cover,
+    setCover,
+    openBook,
+    showIsbnProblem,
+    showAdditional,
+}: {
+    values: BookDraftValues;
+    setValues: Dispatch<SetStateAction<BookDraftValues>>;
+    cover: CoverChoice;
+    setCover(choice: CoverChoice): void;
+    openBook(bookId: string): void;
+    // Shows a refusal of the typed ISBN beside the field, or clears the form's error with null.
+    showIsbnProblem(text: string | null): void;
+    showAdditional(): void;
+}) {
+    const { t } = useI18n();
+    const sourceNames = useSourceNames();
+    const [busy, setBusy] = useState(false);
+    const [message, setMessage] = useState<LookupMessage | null>(null);
+    const [review, setReview] = useState<LookedUpBook | null>(null);
+    const [replacing, setReplacing] = useState<{
+        selection: LookupSelection;
+        conflicts: LookupConflict[];
+    } | null>(null);
+    const find = async () => {
+        setBusy(true);
+        setMessage(null);
+        showIsbnProblem(null);
+
+        try {
+            const result = await api.request<BookLookupDto>('/books/lookups', {
+                method: 'POST',
+                body: { isbn: values.isbn },
+            });
+
+            if (result.kind === 'existing') {
+                openBook(result.bookId);
+            } else if (result.found) {
+                setReview(result);
+            } else if (result.unavailable.length > 0) {
+                setMessage({
+                    tone: 'warning',
+                    text: t('lookup.unavailable', { sources: unavailableNames(result) }),
+                    retry: true,
+                });
+            } else {
+                setMessage({ tone: 'info', text: t('lookup.noResult'), retry: false });
+            }
+        } catch (error) {
+            if (error instanceof ApiError && error.reason === 'isbn-invalid') {
+                showIsbnProblem(t(ApiErrorMessage.key(error)));
+            } else {
+                setMessage({ tone: 'warning', text: t('lookup.unavailableAll'), retry: true });
+            }
+        } finally {
+            setBusy(false);
+        }
+    };
+    // The reviewed values: empty fields are filled at once, typed ones only after confirmation.
+    // A chosen cover is downloaded unless the person already chose one.
+    const use = async (selection: LookupSelection, coverToken: string | null) => {
+        const result = review!;
+        const { next, conflicts } = LookupFill.apply(values, selection);
+        const additional = [
+            selection.publisher,
+            selection.publication,
+            selection.pageCount,
+            selection.summary,
+        ];
+
+        setReview(null);
+        setValues(next);
+
+        if (additional.some((value) => value !== null)) {
+            showAdditional();
+        }
+
+        setMessage(
+            result.unavailable.length > 0
+                ? {
+                      tone: 'warning',
+                      text: t('lookup.partial', { sources: unavailableNames(result) }),
+                      retry: false,
+                  }
+                : { tone: 'success', text: t('lookup.applied'), retry: false },
+        );
+
+        if (conflicts.length > 0) {
+            setReplacing({ selection, conflicts });
+        }
+
+        if (coverToken && !cover.file) {
+            try {
+                const image = await api.download('/books/lookups/covers/' + coverToken);
+
+                setCover({
+                    file: new File([image], 'cover', { type: image.type }),
+                    removed: false,
+                });
+            } catch {
+                // Justified: the book can still be saved; the person is told to choose a cover.
+                setMessage({ tone: 'warning', text: t('lookup.coverFailed'), retry: false });
+            }
+        }
+    };
+    // The typed values the person chose to replace with the lookup's.
+    const replace = (fields: LookupField[]) => {
+        setValues((current) => LookupFill.replace(current, replacing!.selection, fields));
+        setReplacing(null);
+    };
+    const unavailableNames = (result: LookedUpBook) =>
+        sourceNames(result.unavailable.map(({ source }) => source));
+
+    return {
+        busy,
+        message,
+        find,
+        review,
+        use,
+        closeReview: () => setReview(null),
+        replacing,
+        replace,
+        closeReplacing: () => setReplacing(null),
+    };
+}
