@@ -8,6 +8,8 @@ export type V1ImportReport = {
     collections: number;
     finished: string[];
     unfinished: UnfinishedCollection[];
+    // Untitled V1 Books given their collection title as a supplied title.
+    titled: { record: number; title: string }[];
     coversStored: number;
     // Books saved without their V1 cover, with the reason.
     coversSkipped: { record: number; title: string; reason: 'unavailable' | 'unusable' }[];

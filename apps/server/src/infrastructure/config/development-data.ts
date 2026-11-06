@@ -142,6 +142,14 @@ export class DevelopmentDataCommands {
                         : '') +
                     ').',
             ),
+            ...report.titled.map(
+                (book) =>
+                    'Untitled Book, record ' +
+                    book.record +
+                    ': saved with the title "' +
+                    book.title +
+                    '".',
+            ),
             ...report.coversSkipped.map(
                 (skipped) =>
                     'No cover for record ' +

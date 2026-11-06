@@ -142,14 +142,20 @@ describe('V1LibraryPlanner', () => {
 
         expect(result.books.map((book) => book.category)).toEqual(['manga', 'manga']);
     });
-    it('reports every untitled Book at once, naming the collection to correct', () => {
-        const books = [volume(1, 1, { type: 'book' }), volume(2, 2, { type: 'book' })];
+    it('gives an untitled Book in a collection its collection title, as supplied', () => {
+        const books = [volume(1, 3, { type: 'book' })];
+
+        const result = V1LibraryPlanner.plan(books, none);
+
+        expect(result.books[0]).toMatchObject({ title: 'Gunnm - 3', category: 'books' });
+        expect(result.titled).toEqual([{ record: 1, title: 'Gunnm - 3' }]);
+    });
+    it('refuses an untitled book outside a collection', () => {
+        const books = [v1({ title: '', collectionName: null, volume: null })];
 
         const operation = () => V1LibraryPlanner.plan(books, none);
 
-        expect(operation).toThrow(
-            /Record 1: no title.*\n- Record 2: no title.*"Gunnm" in category-corrections.json/s,
-        );
+        expect(operation).toThrow('Record 1: no title, and no collection to give it one.');
     });
     it('refuses an unknown V1 type', () => {
         const books = [v1({ type: 'dvd' })];
