@@ -29,7 +29,7 @@ Using one port keeps internet access to a single router forwarding rule. Leaf ac
 
 ## Visual direction
 
-Quiet dark surfaces, book covers in portrait proportions without cropping, and a green accent. Inter for body text, Space Grotesk for headings and the product name, IBM Plex Mono for small uppercase section labels. Fonts are bundled with the application, never loaded from the internet, because desktop use must work offline.
+Quiet dark surfaces, book covers in portrait proportions without cropping (shop padding around a cover is removed when it is saved; see [book entry](book-entry.md#cover-padding)), and a green accent. Inter for body text, Space Grotesk for headings and the product name, IBM Plex Mono for small uppercase section labels. Fonts are bundled with the application, never loaded from the internet, because desktop use must work offline.
 
 The artifact's CSS is generated per screen and is not reused. Implementation defines a small set of named design values (colours, type scale, spacing, radii, borders) and reusable components (shell/sidebar, buttons, inputs, selects, dialogs, book cover with missing-cover fallback, status labels, empty/loading/error states), so that new pages inherit the style automatically.
 
