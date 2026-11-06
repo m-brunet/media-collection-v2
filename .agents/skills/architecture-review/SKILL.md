@@ -5,7 +5,7 @@ description: Review code in this Electron foundation for mandatory SOLID princip
 
 # Architecture review
 
-Read root `AGENTS.md` and `docs/architecture.md` first. Their current rules and explicit user decisions take precedence
+Read root `AGENTS.md` and `docs/Media Collection/architecture.md` first. Their current rules and explicit user decisions take precedence
 over older planning context. Establish whether the user wants findings or fixes; a review-only request authorizes
 findings, not edits.
 
@@ -71,7 +71,7 @@ then ask; do not invent a product requirement.
     tests.
 
 Source and automated enforcement follow the driving/driven/config layout. Consult
-`docs/architecture-migration-plan.md` for the migration record and known baseline limitations. Do not treat shared
+`docs/Media Collection/architecture-migration-plan.md` for the migration record and known baseline limitations. Do not treat shared
 infrastructure ancestry as permission for driving/driven/config boundary crossings.
 
 Run relevant repository checks for code changes when execution is available: `npm run typecheck`, `npm run lint`, `npm run format:check`,

@@ -144,7 +144,6 @@ vite.config.ts.timestamp-*
 
 # IDE
 .idea/
-.plans/
 
 .gitconfig
 .aiignore
@@ -172,3 +171,8 @@ session.key
 
 # Local startup overrides; keep config.sample.json versioned.
 /config.json
+
+# Obsidian documentation vault: share its settings, not each machine's open panes and caches.
+/docs/Media Collection/.obsidian/workspace*.json
+/docs/Media Collection/.obsidian/cache
+/docs/Media Collection/.trash/

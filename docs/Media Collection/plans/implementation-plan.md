@@ -1,0 +1,145 @@
+# Media Collection — global implementation plan
+
+Created 2026-11-03. Working plan, kept with the documentation in the Obsidian vault (`docs/Media Collection/plans/`). This is the single place to resume implementation in a new thread.
+
+## How to resume in a new thread
+
+1. Read `AGENTS.md` (mandatory architecture/SOLID/validation rules and the required review skill), then this file.
+2. Check the **Status** table below and `git log --oneline -15` to find the current task and whether it is planned, in progress, or done.
+3. If the current task has a detailed plan (`plans/task-NN-*.md`), read it and continue from its own checklist. If not, write it first (see "Per-task workflow") and get user approval before implementing.
+4. Before stopping, update the Status table and the task plan's checklist so the next thread can continue. Never leave work uncommitted between tasks without noting it here.
+
+## Sources of truth
+
+- Product rules: the vault root `docs/Media Collection/` (start with [product-scope](../product-scope.md), [features](../features.md), [decisions-and-open-questions](../decisions-and-open-questions.md)). Each task names its owning documents. Acceptance examples in those documents are test cases.
+- Design: [design-guidelines](../design-guidelines.md). Local copy of the design artifact in Git-ignored `design/`; open `design/artifact/index.html`. Specs win over drawn screens; the design is a style/layout guide, not exhaustive or pixel-perfect; placeholder data/copy is not specified content.
+- Architecture: `AGENTS.md`, [architecture](../architecture.md). Hexagonal NestJS backend, Kysely/SQLite, React web, Electron desktop, shared `packages/contracts`. Business operations over HTTP only; no business IPC. Host-local maintenance (recovery, backup/restore, updates) is the only Electron-local path.
+
+## Key decisions already made (do not reopen silently)
+
+- Names: product/installer/releases **Media Collection**; desktop web UI **Libris** (shown with "by Media Collection" underneath); mobile web UI **Leaf**.
+- Libris at `/`, Leaf at `/leaf/`, same host and port, shared API. Default HTTP port 34345 (range 1024-65535).
+- Minimum desktop size 1280 x 720. Fonts bundled locally (offline). Accessibility baseline in design guidelines.
+- Icon sets: installation-wide Admin setting, Lucide default; alternative sets need credits page (CC BY).
+- Timestamps stored UTC, displayed in viewer's time zone and language; exact details include zone label.
+- Mobile existing Not Owned ISBN: confirm, then review existing record, no external lookup.
+- Markdown excluded from oxfmt. `npm run check` builds before lint.
+
+## Testing strategy (applies to every task)
+
+Every task delivers tests at all relevant levels:
+
+1. **Unit tests** (Vitest): domain entities/value objects and use cases with in-memory ports, covering the owning documents' acceptance examples.
+2. **API end-to-end tests** (existing `tests/api` harness against the real runtime/SQLite): HTTP contracts, permission enforcement per role (Admin/Owner/Guest), validation errors, audit records.
+3. **Frontend component tests** (to be introduced in Task 0: Vitest + Testing Library + jsdom): form behaviour, validation feedback, role-dependent controls, accessibility queries by role/label.
+4. **Frontend end-to-end tests** (to be introduced in Task 0: Playwright driving a real built application in Chromium): main user journeys of each task for Libris (desktop viewport 1280x720 and 1440 wide) and Leaf (phone viewport), including Guest variants. Camera/barcode and external lookup are replaced by test doubles at the boundary.
+5. Existing Electron desktop e2e (`tests/desktop`) stays for Electron-specific behaviour (window, recovery, maintenance).
+
+Run all suites from PowerShell on Windows (the user's environment). `npm run check` must pass before a task is done.
+
+## Per-task workflow
+
+1. Write `plans/task-NN-<name>.md`: scope, owning docs, domain rules, persistence/migrations, API contracts, screens/states, audit events, test list mapped to acceptance examples, open questions. Ask the user to review.
+2. Implement in small internal steps; keep `npm run check` green as often as possible.
+3. Run the required architecture review skill from `AGENTS.md` on the changes.
+4. Commit (one commit per task or a few logical commits). Push only when the user asks.
+5. Update the Status table.
+
+## Tasks
+
+Delivery order follows the agreed product sequence. Each task is a complete vertical feature: backend, API, Libris UI, EN/FR strings, audit integration, tests.
+
+### Task 0 — Platform and UI foundation
+Owning docs: `design-guidelines.md`, `product-scope.md` (foundation/access), `release-expectations.md` (languages), `configuration.md`.
+- Rename package/app identity to Media Collection; Libris branding; default port 34345.
+- Remove the foundation Notes demo feature.
+- Design tokens, reusable components, Libris app shell (sidebar, routing), bundled fonts, Lucide icons through an icon abstraction (ready for set switching later).
+- Minimum window 1280x720; accessibility baseline in components.
+- EN/FR i18n infrastructure: pre-login device/browser language with selector, per-user saved preference (needs user table field), date/time formatting per language and viewer time zone.
+- Leaf skeleton served at `/leaf/` (separate front-end bundle).
+- Introduce frontend component tests and Playwright e2e tooling.
+
+### Task 1 — Access and accountability
+Owning docs: `accounts.md`, `features.md` (accounts, audit), `overview-activity-mobile.md` (Guest mobile denial).
+- Technical audit log: category, Successful/Failed outcome, actor, timestamp, before/after without credentials, operation ID; failed records survive rollback.
+- First-launch Admin setup form replacing the foundation's seeded `admin / p@ssw0rd`.
+- Roles Admin (protected first user) / Owner / Guest, fixed at creation; create account with temporary password, reset password, deactivate/reactivate with session ending and username reservation, rename and released-name reuse.
+- My account (username, password, language), sign out; server-side permission enforcement; permission-denied page; Guest denied on Leaf.
+- Existing local Admin recovery kept working.
+
+### Task 1b — Appearance: colour schemes
+Inserted at the user's request (2026-11-04). Owning doc: `design-guidelines.md`; source `design/color-charts.html`.
+- Installation-wide colour scheme (Mint, Emerald, Forest, Spring green; default Spring green) chosen by the Admin, applied to Libris and Leaf including before sign-in. Task 10 adds the icon set to the same Appearance page.
+
+### Task 2 — Books (core library)
+Owning docs: `features.md` (books), `book-entry.md`, `collection-editions-impact.md`.
+- Book record and all fields with validation; ISBN-10/13 validation, conversion and uniqueness; no-ISBN with overridable duplicate warning.
+- Shared authors with exact reuse and similar-name prompt; author correction/deletion rules.
+- Covers (upload, fallback), category, ownership, per-user reading status (new users/books start Not read), private per-user note.
+- Three-section form, book details (ISBN conversion indicator), deletion, My books list with simple search and sorting, discard confirmation, save failure keeps draft.
+- If it grows too large, split into "records and rules" and "screens".
+
+### Task 3 — Collections
+Owning docs: `collections.md`, `collection-editions-impact.md`.
+- Membership, single/omnibus coverage, volume 0, expected range, inferred/missing, Finished/reopen, overlap rules and conflict resolutions, rename/delete, auto-removal of empty collections.
+- Collection list (name sort, search) and detail page with expandable volume entries.
+
+### Task 4 — Locations, tags and advanced search
+Owning docs: `locations-tags-search.md`, `features.md`.
+- Bookcases/shelves with naming, move and deletion rules; shelf assignment in the book form.
+- Tags management page and inline creation; deletion/rename rules.
+- Advanced filters (all fields, AND/OR, tag include/exclude, No location/No collection), applied to books and collection listing (single-book match rule, whole-collection counts).
+
+### Task 5 — Lending and returns
+Owning docs: `lending.md`, `lending-design-brief.md`.
+- Receivers with name matching; atomic multi-book lend/return, partial returns, preselected removable starting book.
+- Loans page grouped by receiver with search, lending dates, lent indicators; delete/Not Owned blocked while lent; history retained incl. after book deletion; per-book audit with operation ID.
+
+### Task 6 — Assisted entry (desktop)
+Owning docs: `book-entry.md`.
+- Select metadata/cover provider (research, licensing, offline failure), integrate behind a port.
+- Find book flow: library check first, redirect if existing, result/cover choice, replacement confirmation, failure/no-result feedback with manual completion.
+
+### Task 7 — Leaf (mobile)
+Owning docs: `overview-activity-mobile.md`, `collections.md` (shopping), `book-entry.md`.
+- Mobile home, unfinished-collection shopping, confirmed mark-Owned quick add.
+- Barcode scanning, scan-gated add form, existing Owned/Not Owned branches, single user-triggered retry, success/failure screens.
+
+### Task 8 — Overview and Activity
+Owning docs: `overview-activity-mobile.md`, `features.md` (Activity, Overview).
+- Overview counters, recently added, personal reading summary (none for Guests).
+- Activity projection from audit: eligible successful shared events, grouped lending operations, household "You" wording, relative time, exact details on hover/focus, load older.
+
+### Task 9 — Host maintenance and data safety
+Owning docs: `release-expectations.md`, `accounts.md`, `features.md` (recovery, data reset).
+- Local Electron maintenance window (pre-login): Admin recovery, full backup create/restore (same version, replace, end sessions, reject invalid/other versions, preserve data on failure).
+- Authenticated Admin data reset with password confirmation.
+
+### Task 10 — Release readiness
+Owning docs: `updates.md`, `design-guidelines.md`.
+- GitHub Releases update checks, Windows integrated download/install with automatic backup, macOS/Linux backup-and-open-download-page, backup folder, failure handling.
+- Packaging/installer naming; icon set switching (Admin setting) and credits/licences page.
+
+## Dependencies
+
+0 → 1 → 2 → 3 → 4; 5 and 6 need 2 (can run in parallel with 3-4); 7 needs 3 and 6; 8 needs 1-5; 9 needs all data tasks; 10 needs 9.
+
+## Status
+
+| Task | Status | Detailed plan | Notes |
+| --- | --- | --- | --- |
+| 0 Platform and UI foundation | Done (2026-11-03) | `task-00-platform-ui-foundation.md` | Committed; see its notes for later tasks |
+| 1 Access and accountability | Done (2026-11-04) | `task-01-access-accountability.md` | Committed; see its notes for later tasks |
+| 1b Appearance: colour schemes | Done (2026-11-04) | `task-01b-appearance-color-schemes.md` | Inserted at the user's request |
+| 2 Books | Done (2026-11-04) | `task-02-books.md` | Committed; see its notes for later tasks |
+| UUID keys and Kysely SQL rules | Done (2026-11-05) | `uuid-primary-keys-and-kysely-rules.md` | Done by the user after Task 2 (PR #1); reviewed, full check passes |
+| 3 Collections | Done (2026-11-05) | `task-03-collections.md` | Committed; see its notes for later tasks |
+| 4 Locations, tags, search | Done (2026-11-05) | `task-04-locations-tags-search.md` | Committed; see its notes for later tasks |
+| 5 Lending | In progress (2026-11-06) | [task-05-lending](task-05-lending.md) | Branch `feat/lending`; slice 0 = documentation vault |
+| 6 Assisted entry | Not started | — | |
+| 7 Leaf (mobile) | Not started | — | |
+| 8 Overview and Activity | Not started | — | |
+| 9 Host maintenance | Not started | — | |
+| 10 Release readiness | Not started | — | |
+
+Pre-implementation fixes done (2026-11-03): docs/design decisions recorded, foundation formatted with oxfmt, `whoami`/`icacls` resolved from System32, `npm run check` order fixed. Full check passes (41 files, 409 tests).

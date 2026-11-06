@@ -1,7 +1,7 @@
 # Architecture migration plan and completion record
 
 Status: implemented and verified locally. The original plan is retained below as the migration record.
-[AGENTS.md](../AGENTS.md) defines the mandatory rules; [architecture.md](architecture.md) describes the implemented
+[AGENTS.md](../../AGENTS.md) defines the mandatory rules; [architecture.md](architecture.md) describes the implemented
 layout. The initial documentation was committed and pushed as `2af1906`; implementation is delivered in the follow-up
 migration commit.
 

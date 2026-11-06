@@ -6,21 +6,23 @@ The application uses electron-base-app as its foundation. Its source, tests, bui
 
 ## Documentation
 
-- [Product scope](docs/product-scope.md): audience, platforms, initial scope, and exclusions.
-- [Features](docs/features.md): confirmed behavior and explicitly unresolved details.
-- [Book entry](docs/book-entry.md): Task 2 form, ISBN, lookup, and personal-note decisions.
-- [Locations, tags, and search](docs/locations-tags-search.md): completed Task 3 rules and acceptance examples.
-- [Accounts](docs/accounts.md): completed Task 5 setup, fixed-role account lifecycle, and personal-data rules.
-- [Overview, Activity, and mobile](docs/overview-activity-mobile.md): completed Task 6 rules, screen reconciliation, and acceptance examples.
-- [Release expectations](docs/release-expectations.md): completed Task 7 languages, offline use, backup/restore, reset rules, and acceptance examples.
-- [Application updates](docs/updates.md): approved GitHub Releases distribution, Windows integrated updates, manual macOS/Linux updates with backup assistance, and acceptance examples.
-- [Collections and shopping](docs/collections.md): completed Task 1 rules and acceptance examples.
-- [Edition impact analysis](docs/collection-editions-impact.md): book counts versus volume coverage.
-- [Decisions and open questions](docs/decisions-and-open-questions.md): rationale, recommendations, and questions to resolve before implementation.
-- [Design guidelines](docs/design-guidelines.md): design reference location and authority, product names (Libris, Leaf), icon sets, accessibility, and window size.
-- [Foundation import](docs/foundation-import.md): baseline provenance and verification.
-- [Configuration](docs/configuration.md): everyday settings and optional startup overrides.
-- [Lending](docs/lending.md): business flows, open decisions, and implementation-planning handoff.
-- [Lending design brief](docs/lending-design-brief.md): required lending screens and states.
+The documentation is an [Obsidian](https://obsidian.md) vault: open the `docs/Media Collection/` folder as a vault in Obsidian, starting from [Home](docs/Media%20Collection/Home.md). It holds the product documents below and the [implementation plans](docs/Media%20Collection/plans/implementation-plan.md). Links are standard relative Markdown links, so they also work on GitHub and in editors.
+
+- [Product scope](docs/Media%20Collection/product-scope.md): audience, platforms, initial scope, and exclusions.
+- [Features](docs/Media%20Collection/features.md): confirmed behavior and explicitly unresolved details.
+- [Book entry](docs/Media%20Collection/book-entry.md): Task 2 form, ISBN, lookup, and personal-note decisions.
+- [Locations, tags, and search](docs/Media%20Collection/locations-tags-search.md): completed Task 3 rules and acceptance examples.
+- [Accounts](docs/Media%20Collection/accounts.md): completed Task 5 setup, fixed-role account lifecycle, and personal-data rules.
+- [Overview, Activity, and mobile](docs/Media%20Collection/overview-activity-mobile.md): completed Task 6 rules, screen reconciliation, and acceptance examples.
+- [Release expectations](docs/Media%20Collection/release-expectations.md): completed Task 7 languages, offline use, backup/restore, reset rules, and acceptance examples.
+- [Application updates](docs/Media%20Collection/updates.md): approved GitHub Releases distribution, Windows integrated updates, manual macOS/Linux updates with backup assistance, and acceptance examples.
+- [Collections and shopping](docs/Media%20Collection/collections.md): completed Task 1 rules and acceptance examples.
+- [Edition impact analysis](docs/Media%20Collection/collection-editions-impact.md): book counts versus volume coverage.
+- [Decisions and open questions](docs/Media%20Collection/decisions-and-open-questions.md): rationale, recommendations, and questions to resolve before implementation.
+- [Design guidelines](docs/Media%20Collection/design-guidelines.md): design reference location and authority, product names (Libris, Leaf), icon sets, accessibility, and window size.
+- [Foundation import](docs/Media%20Collection/foundation-import.md): baseline provenance and verification.
+- [Configuration](docs/Media%20Collection/configuration.md): everyday settings and optional startup overrides.
+- [Lending](docs/Media%20Collection/lending.md): business flows, open decisions, and implementation-planning handoff.
+- [Lending design brief](docs/Media%20Collection/lending-design-brief.md): required lending screens and states.
 
 The product is Media Collection: its desktop web interface is Libris and its mobile web interface is Leaf. These documents describe v2 even where design filenames contain `v3`. Latest explicit product decisions take precedence over the design artifact. Proposals and open questions are not accepted requirements.

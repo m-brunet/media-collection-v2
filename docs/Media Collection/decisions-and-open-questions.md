@@ -55,6 +55,6 @@ The separate [MC update topic](updates.md) is complete with acceptance examples:
 
 ## Workflow and delivery sequence
 
-Discuss one product topic at a time, record decisions/examples, and commit each completed task before asking the next task's questions. Working plans live in ignored .plans/. Pushing is separate from committing. Reopen an earlier product decision explicitly if a later choice changes it; do not silently replace it.
+Discuss one product topic at a time, record decisions/examples, and commit each completed task before asking the next task's questions. Working plans live in [plans](plans/implementation-plan.md) inside this Obsidian vault and are committed with the documentation. Pushing is separate from committing. Reopen an earlier product decision explicitly if a later choice changes it; do not silently replace it.
 
 Agreed product delivery order: access/accountability with audit capture from first implemented changes; core manual library; organisation; lending/returns; assisted entry; mobile; Overview/Activity presentation. This is the agreed sequence, not a technical task breakdown. Product planning is complete for the initial seven topics; technical agents can now produce implementation plans from the owning references and acceptance examples.
