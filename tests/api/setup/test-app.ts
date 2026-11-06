@@ -32,6 +32,9 @@ import { SetupAccess } from '../../../apps/server/src/identity/infrastructure/ad
 import { BooksModule } from '../../../apps/server/src/books/infrastructure/config/books.module.js';
 import { CollectionsModule } from '../../../apps/server/src/collections/infrastructure/config/collections.module.js';
 import { LocationsModule } from '../../../apps/server/src/locations/infrastructure/config/locations.module.js';
+import { LendingModule } from '../../../apps/server/src/lending/infrastructure/config/lending.module.js';
+import { KyselyLoanRepository } from '../../../apps/server/src/lending/infrastructure/adapters/driven/persistence/kysely-loan.repository.js';
+import { KyselyReceiverRepository } from '../../../apps/server/src/lending/infrastructure/adapters/driven/persistence/kysely-receiver.repository.js';
 import { KyselyBookcaseRepository } from '../../../apps/server/src/locations/infrastructure/adapters/driven/persistence/kysely-bookcase.repository.js';
 import { KyselyShelfRepository } from '../../../apps/server/src/locations/infrastructure/adapters/driven/persistence/kysely-shelf.repository.js';
 import { KyselyBookShelfStore } from '../../../apps/server/src/locations/infrastructure/adapters/driven/persistence/kysely-book-shelf-store.adapter.js';
@@ -117,6 +120,8 @@ export class TestApp {
             const bookTags = new KyselyBookTagStore(database.connections);
             const shelving = LocationsModule.assignment(bookcases, shelves, bookShelves);
             const tagging = TagsModule.assignment(tags, bookTags, ids, clock);
+            const loans = new KyselyLoanRepository(database.connections);
+            const receivers = new KyselyReceiverRepository(database.connections);
             const secret = randomBytes(32);
             const tokens = new JwtSessionTokens(secret, clock);
             const accounts = new AccountLoader(users);
@@ -173,6 +178,8 @@ export class TestApp {
                         locationReader: shelving,
                         tags: tagging,
                         tagReader: tagging,
+                        loans: LendingModule.bookLoans(loans, receivers),
+                        loanHistory: LendingModule.history(loans),
                         ids,
                         clock,
                         operations,

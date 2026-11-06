@@ -493,3 +493,48 @@ describe('KyselyActiveLoans', () => {
         expect(result).toEqual([]);
     });
 });
+
+describe('KyselyLoanRepository for the books feature', () => {
+    it('finds only the active loans of the given books', async () => {
+        const { loans, book, receiver, lend, giveBack } = await library();
+        const sam = await receiver('Sam');
+        const dune = await book({ title: 'Dune' });
+        const piranesi = await book({ title: 'Piranesi' });
+        const overstory = await book({ title: 'Overstory' });
+        const active = await lend(dune, sam);
+
+        await giveBack(await lend(piranesi, sam));
+        await lend(overstory, sam);
+
+        const result = await loans.findActiveByBooks([dune, piranesi]);
+
+        expect(result.map((loan) => loan.id)).toEqual([active.id]);
+    });
+    it('refreshes the title and ISBN copy of every loan of a book', async () => {
+        const { loans, book, receiver, lend, giveBack } = await library();
+        const dune = await book({ title: 'Dune' });
+        const first = await lend(dune, await receiver('Sam'));
+
+        await giveBack(first);
+
+        await loans.keepIdentification({ id: dune, title: 'Dune (Deluxe)', isbn: '9780593099322' });
+
+        expect((await loans.findByIds([first.id]))[0]?.snapshot).toMatchObject({
+            bookTitle: 'Dune (Deluxe)',
+            bookIsbn: '9780593099322',
+        });
+    });
+});
+
+describe('KyselyReceiverRepository.findByIds', () => {
+    it('finds the given receivers and leaves out unknown ones', async () => {
+        const { receivers, receiver } = await library();
+        const sam = await receiver('Sam');
+
+        await receiver('Morgan');
+
+        const result = await receivers.findByIds([sam, randomUUID()]);
+
+        expect(result.map((item) => item.snapshot.name)).toEqual(['Sam']);
+    });
+});

@@ -76,3 +76,23 @@ describe('BookViewer', () => {
         expect(result.tags).toEqual([{ id: 'tag-Fantasy', name: 'Fantasy' }]);
     });
 });
+
+describe('BookViewer with loans', () => {
+    it('shows who has a lent book and since when', async () => {
+        const current = library();
+        const book = await saved(current);
+        const loan = current.loans.lend(book.id, 'Sam Taylor');
+
+        const result = await current.viewer.view(await current.loader.load(book.id), guest);
+
+        expect(result.loan).toEqual(loan);
+    });
+    it('shows no loan for a book that is not lent', async () => {
+        const current = library();
+        const book = await saved(current);
+
+        const result = await current.viewer.view(await current.loader.load(book.id), owner);
+
+        expect(result.loan).toBeNull();
+    });
+});

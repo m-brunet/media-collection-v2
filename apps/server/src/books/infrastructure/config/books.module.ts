@@ -10,6 +10,8 @@ import type { PersonalNoteStore } from '../../application/ports/driven/personal-
 import type { ReadingStatusStore } from '../../application/ports/driven/reading-status-store.interface.js';
 import type { BookLocationReader } from '../../application/ports/driven/book-location-reader.interface.js';
 import type { BookTagReader } from '../../application/ports/driven/book-tag-reader.interface.js';
+import type { BookLoanReader } from '../../application/ports/driven/book-loan-reader.interface.js';
+import type { LoanHistory } from '../../application/ports/driven/loan-history.interface.js';
 import type { ShelfAssignment } from '../../application/ports/driven/shelf-assignment.interface.js';
 import type { TagAssignment } from '../../application/ports/driven/tag-assignment.interface.js';
 import { AuthorResolver } from '../../application/services/author-resolver.service.js';
@@ -20,6 +22,7 @@ import { BookOrganisationReader } from '../../application/services/book-organisa
 import { BookOrganiser } from '../../application/services/book-organiser.service.js';
 import { BookRemoval } from '../../application/services/book-removal.service.js';
 import { BookViewer } from '../../application/services/book-viewer.service.js';
+import { LentBookGuard } from '../../application/services/lent-book-guard.service.js';
 import { CorrectAuthor } from '../../application/use-cases/correct-author.usecase.js';
 import { CreateBook } from '../../application/use-cases/create-book.usecase.js';
 import { DeleteBook } from '../../application/use-cases/delete-book.usecase.js';
@@ -59,6 +62,9 @@ export interface BooksDependencies {
     locationReader: BookLocationReader;
     tags: TagAssignment;
     tagReader: BookTagReader;
+    // Owned by the lending feature.
+    loans: BookLoanReader;
+    loanHistory: LoanHistory;
     ids: IdGenerator;
     clock: Clock;
     operations: AuditedOperation;
@@ -77,6 +83,8 @@ const token = {
     locationReader: 'BOOKS_LOCATION_READER',
     tags: 'BOOKS_TAG_ASSIGNMENT',
     tagReader: 'BOOKS_TAG_READER',
+    loans: 'BOOKS_LOAN_READER',
+    loanHistory: 'BOOKS_LOAN_HISTORY',
     ids: 'BOOKS_IDS',
     clock: 'BOOKS_CLOCK',
     operations: 'BOOKS_AUDITED_OPERATION',
@@ -87,6 +95,7 @@ const token = {
     removal: 'BOOKS_REMOVAL',
     organiser: 'BOOKS_ORGANISER',
     organisation: 'BOOKS_ORGANISATION_READER',
+    guard: 'BOOKS_LENT_BOOK_GUARD',
 } as const;
 
 function dependencyProviders(dependencies: BooksDependencies): Provider[] {
@@ -130,6 +139,11 @@ const serviceProviders: Provider[] = [
         ) => new BookOrganiser(shelves, tags, organisation),
     },
     {
+        provide: token.guard,
+        inject: [token.loans],
+        useFactory: (loans: BookLoanReader) => new LentBookGuard(loans),
+    },
+    {
         provide: token.viewer,
         inject: [
             token.catalog,
@@ -137,6 +151,7 @@ const serviceProviders: Provider[] = [
             token.notes,
             token.collectionReader,
             token.organisation,
+            token.loans,
         ],
         useFactory: (
             catalog: BookCatalog,
@@ -144,17 +159,27 @@ const serviceProviders: Provider[] = [
             notes: PersonalNoteStore,
             collections: BookCollectionReader,
             organisation: BookOrganisationReader,
-        ) => new BookViewer(catalog, readings, notes, collections, organisation),
+            loans: BookLoanReader,
+        ) => new BookViewer(catalog, readings, notes, collections, organisation, loans),
     },
     {
         provide: token.removal,
-        inject: [token.books, token.authors, token.collections, token.loader],
+        inject: [
+            token.books,
+            token.authors,
+            token.collections,
+            token.loader,
+            token.guard,
+            token.loanHistory,
+        ],
         useFactory: (
             books: BookRepository,
             authors: AuthorRepository,
             collections: CollectionMembership,
             loader: BookLoader,
-        ) => new BookRemoval(books, authors, collections, loader),
+            guard: LentBookGuard,
+            history: LoanHistory,
+        ) => new BookRemoval(books, authors, collections, loader, guard, history),
     },
 ];
 const useCaseProviders: Provider[] = [
@@ -216,6 +241,7 @@ const useCaseProviders: Provider[] = [
             token.loader,
             token.builder,
             token.identity,
+            token.guard,
             token.viewer,
             token.clock,
             token.operations,
@@ -231,6 +257,7 @@ const useCaseProviders: Provider[] = [
             loader: BookLoader,
             builder: BookDetailsBuilder,
             identity: BookIdentityCheck,
+            guard: LentBookGuard,
             viewer: BookViewer,
             clock: Clock,
             operations: AuditedOperation,
@@ -246,6 +273,7 @@ const useCaseProviders: Provider[] = [
                 loader,
                 builder,
                 identity,
+                guard,
                 viewer,
                 clock,
                 operations,
@@ -285,8 +313,8 @@ const useCaseProviders: Provider[] = [
     },
     {
         provide: 'BOOKS_LIST',
-        inject: [token.catalog],
-        useFactory: (catalog: BookCatalog) => new ListBooks(catalog),
+        inject: [token.catalog, token.loans],
+        useFactory: (catalog: BookCatalog, loans: BookLoanReader) => new ListBooks(catalog, loans),
     },
     {
         provide: 'BOOKS_FIND_AUTHORS',

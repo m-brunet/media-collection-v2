@@ -1,6 +1,7 @@
 import type { BookView } from '../book-views.js';
 import type { BookCatalog } from '../ports/driven/book-catalog.interface.js';
 import type { BookCollectionReader } from '../ports/driven/book-collection-reader.interface.js';
+import type { BookLoanReader } from '../ports/driven/book-loan-reader.interface.js';
 import type { PersonalNoteStore } from '../ports/driven/personal-note-store.interface.js';
 import type { ReadingStatusStore } from '../ports/driven/reading-status-store.interface.js';
 import { BookOrganisationReader } from './book-organisation-reader.service.js';
@@ -16,6 +17,7 @@ export class BookViewer {
         private readonly notes: PersonalNoteStore,
         private readonly collections: BookCollectionReader,
         private readonly organisation: BookOrganisationReader,
+        private readonly loans: BookLoanReader,
     ) {}
 
     async view(book: Book, actor: Actor): Promise<BookView> {
@@ -41,6 +43,7 @@ export class BookViewer {
             collection: await this.collections.of(id),
             location,
             tags,
+            loan: await this.loans.of(id),
             createdAt,
             updatedAt,
             personal:

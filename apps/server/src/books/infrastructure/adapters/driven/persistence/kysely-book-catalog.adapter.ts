@@ -2,9 +2,9 @@ import type { ExpressionBuilder } from 'kysely';
 import type { BookCatalog } from '../../../../application/ports/driven/book-catalog.interface.js';
 import type {
     AuthorView,
-    BookListItem,
-    BookListPage,
     BookListQuery,
+    CatalogBookItem,
+    CatalogPage,
 } from '../../../../application/book-views.js';
 import type { BookCategory, Ownership } from '../../../../domain/entities/book.entity.js';
 import { Isbn } from '../../../../domain/value-objects/isbn.value-object.js';
@@ -25,7 +25,7 @@ export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
         return this.connections.current;
     }
 
-    async search(query: BookListQuery): Promise<BookListPage> {
+    async search(query: BookListQuery): Promise<CatalogPage> {
         const filter = this.matching(query.search, query.filter, query.readerId);
         const counted = await this.db
             .selectFrom('books')
@@ -76,7 +76,7 @@ export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
 
         return {
             total: Number(counted.total),
-            items: page.map((row): BookListItem => ({
+            items: page.map((row): CatalogBookItem => ({
                 id: row.id,
                 title: row.title,
                 authors: authors.get(row.id) ?? [],
