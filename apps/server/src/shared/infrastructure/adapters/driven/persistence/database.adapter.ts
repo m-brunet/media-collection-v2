@@ -137,6 +137,24 @@ interface BookTagsTable {
     tag_id: string;
 }
 
+interface ReceiversTable {
+    id: string;
+    name: string;
+    name_key: string;
+    created_at: string;
+}
+
+interface LoansTable {
+    id: string;
+    book_id: string | null;
+    receiver_id: string;
+    status: string;
+    lent_at: string;
+    returned_at: string | null;
+    book_title: string;
+    book_isbn: string | null;
+}
+
 export interface DatabaseSchema {
     users: UsersTable;
     server_settings: SettingsTable;
@@ -153,6 +171,8 @@ export interface DatabaseSchema {
     book_shelves: BookShelvesTable;
     tags: TagsTable;
     book_tags: BookTagsTable;
+    receivers: ReceiversTable;
+    loans: LoansTable;
 }
 
 export class Database {

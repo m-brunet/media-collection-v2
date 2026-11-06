@@ -86,7 +86,7 @@ presentation and Overview counter (Task 8), data reset (Task 9).
 0. [x] Slice 0 (user request): Obsidian vault in `docs/Media Collection/` holding the product docs and these plans
        (plans now committed instead of Git-ignored); references updated.
 1. [x] Domain: Receiver, Loan (lend eligibility, returns of one receiver together), Selection; unit tests.
-2. [ ] Persistence: migration 009 + SQLite tests (constraints, partial unique index, SET NULL on book deletion,
+2. [x] Persistence: migration 009 + SQLite tests (constraints, partial unique index, SET NULL on book deletion,
        upgrade of a populated database); receiver/loan repositories, active-loans query, lendable-books adapter.
 3. [ ] Shared: batch form of `AuditedOperation` (per-subject Successful/Failed records, one operation ID); tests.
 4. [ ] Application: lend, return, list active loans, find receivers; receiver resolver; books ports (loan reader,
@@ -98,6 +98,16 @@ presentation and Overview counter (Task 8), data reset (Task 9).
 7. [ ] Browser e2e: lend one / several, similar-name choice, partial return across occasions, conflict keeps draft,
        delete blocked while lent, Guest view-only.
 8. [ ] Docs (architecture: lending feature, ports, migration 009), full check, architecture review, commit, plan status.
+
+## Implementation changes (vs. the plan)
+
+- `loans` also has two CHECK constraints: a return date exactly when returned, and an active loan always keeps its
+  `book_id`. Deleting a lent book therefore fails in the database too (the `ON DELETE SET NULL` would break the
+  check), behind the application's `book-lent` guard.
+- Lending ports so far: `ReceiverRepository`, `LoanRepository` (`findByIds`, `create`, `save`), `LendableBooks`,
+  `ActiveLoans` (read model in `lending/application/loan-views.ts`). `LoanRepository.create` maps the partial unique
+  index to `book-already-lent` naming the book.
+- Persistence tests: `tests/persistence/lending.spec.ts`. The UUID-key table count guard is now 17.
 
 ## Decisions confirmed by the user (2026-11-06)
 
