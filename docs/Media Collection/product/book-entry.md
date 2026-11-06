@@ -60,6 +60,18 @@ One record per edition is the accepted restriction. Different editions may have 
 
 Camera barcode scanning is mobile-only; do not add a scanner to Electron or the desktop-browser interface. On mobile, a successful scan is required to access the add form; scanning fills ISBN and the user presses Find book to start lookup. No manual ISBN-entry bypass is offered: camera/scan failure explains the problem and offers Retry or Back to home. No automatic lookup or creation occurs merely from scanning. Mobile is Owner/Admin-only, with no Guest access. Task 6 specifies mobile-specific failure and existing-record presentation, superseding any broader manual-fallback assumption on mobile. Desktop manual entry is unchanged. Provider selection remains a technical choice.
 
+## Lookup sources
+
+Decided 2026-11-06.
+
+- One lookup asks several sources and combines them: a field missing from the preferred source is completed from the next ones. Where sources disagree, the preferred source's value is the first choice and the other values are offered as alternatives, each with its source. Values differing only by case, accents, punctuation or author name order count as the same.
+- Covers come from their own list of sources. The same picture offered by several sources is shown once, at its best resolution. Very small thumbnails are not offered.
+- A summary is kept only when it is in the edition's language (French users may own English books); otherwise the summary stays empty. Titles, authors and other fields come from the edition itself.
+- Category, price, ownership and collection are never filled from a lookup.
+- Sources with rate limits may be used only if the application enforces those limits itself: it stops asking a source before its limit, honours "retry later" answers, and continues the lookup with the other sources, saying which were unavailable. Requests identify the application, never a person.
+- Scraping shop websites is a last resort, used only after an explicit human decision; it is never the default.
+- The preference order and the lists of sources are technical choices, made from a measured trial and approved by the user (Task 6).
+
 ## Failure and incomplete results
 
 On desktop, if no book is found, an external service is unavailable, or the app encounters an error, preserve the entered ISBN and permit manual completion. Show clear feedback explaining the known problem. Do not silently fail or describe an application/service error as a successful search with no result. The interface need not expose internal implementation details or raw errors.
@@ -68,7 +80,7 @@ The manual-completion fallback above is desktop behavior. Task 6 explicitly rest
 
 Populate empty fields from lookup while preserving manually entered values. If a result conflicts with a manually entered value, ask before replacing it. A lookup must not silently overwrite the draft.
 
-Retain useful partial results and let the user complete missing information. Saving still requires all mandatory fields; an incomplete lookup does not waive those rules. Full publication dates are reduced to month/year as above. When several usable metadata results or covers are available, the user chooses the result/cover; do not arbitrarily select one. Existing manual values remain protected by the replacement-confirmation rule. Manual entry always remains available on desktop; mobile failure behavior follows Task 6.
+Retain useful partial results and let the user complete missing information. Saving still requires all mandatory fields; an incomplete lookup does not waive those rules. Full publication dates are reduced to month/year as above. When several sources answer, combine them as described in [Lookup sources](#lookup-sources): the user reviews the combined values, sees the alternatives where sources disagree, and chooses the cover; nothing is applied without that review. Existing manual values remain protected by the replacement-confirmation rule. Manual entry always remains available on desktop; mobile failure behavior follows Task 6.
 
 ## Cover padding
 
@@ -115,12 +127,15 @@ Guests have no personal notes feature and no reading-status display or controls.
 9. Leave publication date empty or enter year only/month-year: valid. Month alone is invalid. A full lookup date contributes only month/year.
 10. Leave price empty: unknown, not free. Enter zero: free, displayed with two decimals. Negative or over-precision prices are invalid. Unknown pages remain empty; supplied pages must be positive integers.
 11. Press Find book for an existing ISBN: open its details; do not create a duplicate or automatically change ownership. A new result needs editable review and explicit saving.
-12. Lookup returns incomplete information or conflicts with a manual draft: keep useful data, ask before replacing conflicts, and require missing mandatory information before saving. Multiple usable results/covers require user choice.
+12. Lookup returns incomplete information or conflicts with a manual draft: keep useful data, ask before replacing conflicts, and require missing mandatory information before saving. Several sources are combined: the preferred value comes first, disagreements offer alternatives, and the user reviews before anything is applied.
 13. Desktop lookup fails or finds nothing: preserve ISBN and manual completion, visibly explaining the known problem rather than silently failing. Mobile instead follows the scan gate and limited-retry/error-home rule confirmed in Task 6.
 14. Desktop has no camera scanner. Mobile scanning fills ISBN; only pressing Find book starts lookup. No scanning or retrieval alone creates a book.
 15. Save a cover that is a shop thumbnail (cover centred between two equal white bars): store it without the bars, in book proportions.
 16. Save a cover whose artwork is white along one edge, or white on more than one pair of sides: store it unchanged.
 17. Save a portrait cover without padding: store it unchanged, byte for byte.
+18. The preferred source has no page count and another source has one: the review offers that page count, naming its source. Two sources give different publishers: the preferred source's publisher is selected first and the other is offered.
+19. A French edition's only summary is in English: leave the summary empty. An English edition's English summary is kept.
+20. One source is rate-limited or unreachable: the lookup completes with the other sources and says which source was unavailable; the limited source is not asked again before it allows it.
 
 ## Assigned follow-ups
 
