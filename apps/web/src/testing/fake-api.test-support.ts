@@ -52,6 +52,13 @@ export class FakeApi {
 
         const result = handler(body);
 
+        if (result.body instanceof Blob) {
+            return new Response(result.body, {
+                status: result.status,
+                headers: { 'Content-Type': result.body.type },
+            });
+        }
+
         return result.status === 204
             ? new Response(null, { status: 204 })
             : Response.json(result.body ?? {}, { status: result.status });

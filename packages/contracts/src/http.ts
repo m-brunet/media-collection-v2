@@ -267,6 +267,43 @@ export interface CoverageConflictDetails {
 
 export type VolumeState = 'owned' | 'planned' | 'inferred';
 
+// One value a lookup offers for a field, with the sources that gave it.
+export interface LookupChoiceDto<T> {
+    value: T;
+    sources: string[];
+}
+
+// Each field's choices, the preferred source's value first; empty when no source knew it.
+export interface BookLookupFieldsDto {
+    title: LookupChoiceDto<string>[];
+    authors: LookupChoiceDto<string[]>[];
+    publisher: LookupChoiceDto<string>[];
+    publicationDate: LookupChoiceDto<{ year: number; month: number | null }>[];
+    pageCount: LookupChoiceDto<number>[];
+    summary: LookupChoiceDto<string>[];
+    collection: LookupChoiceDto<{ name: string; volume: number }>[];
+}
+
+// A cover offered by a lookup, shown from `/api/books/lookups/covers/:token` for half an hour.
+export interface LookupCoverDto {
+    token: string;
+    width: number | null;
+    height: number | null;
+    sources: string[];
+}
+
+// Find book: the ISBN is already in the library, or what the sources know about it.
+export type BookLookupDto =
+    | { kind: 'existing'; bookId: string }
+    | {
+          kind: 'looked-up';
+          isbn13: string;
+          found: boolean;
+          fields: BookLookupFieldsDto;
+          covers: LookupCoverDto[];
+          unavailable: { source: string; reason: 'limited' | 'failed' }[];
+      };
+
 export interface CollectionSummaryDto {
     id: string;
     name: string;

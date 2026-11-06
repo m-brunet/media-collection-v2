@@ -1,6 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import type { DragEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { api } from '../../shared/api.util';
+import { ApiErrorMessage } from '../../shared/api-error-message.util';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Button } from '../../shared/ui/button';
+import { Icon } from '../../shared/ui/icon';
+import { TextField } from '../../shared/ui/text-field';
 import { BookCover } from './book-cover';
 
 const types = ['image/jpeg', 'image/png', 'image/webp'];
@@ -12,21 +17,29 @@ export interface CoverChoice {
     removed: boolean;
 }
 
+// The cover of the form, chosen from a file, pasted (Ctrl+V outside text fields), dropped, or
+// fetched from an image address; a web search helps find one (Task 6 cover helpers).
 export function CoverPicker({
     title,
     savedCover,
+    searchTerms,
     choice,
     onChange,
 }: {
     title: string;
     // Address of the book's current cover, if it has one.
     savedCover: string | null;
+    // What a web search for the cover looks for; empty when nothing identifies the book yet.
+    searchTerms: string;
     choice: CoverChoice;
     onChange(choice: CoverChoice): void;
 }) {
     const { t } = useI18n();
     const input = useRef<HTMLInputElement>(null);
     const [error, setError] = useState<string | null>(null);
+    const [address, setAddress] = useState('');
+    const [fetching, setFetching] = useState(false);
+    const [dragging, setDragging] = useState(false);
     const preview = useMemo(
         () => (choice.file ? URL.createObjectURL(choice.file) : null),
         [choice.file],
@@ -42,17 +55,98 @@ export function CoverPicker({
         [preview],
     );
 
+    const accept = useCallback(
+        (file: File) => {
+            if (!types.includes(file.type)) {
+                setError(t('reason.coverFormat'));
+            } else if (file.size > limit) {
+                setError(t('reason.coverTooLarge'));
+            } else {
+                setError(null);
+                onChange({ file, removed: false });
+            }
+        },
+        [onChange, t],
+    );
+    const fromAddress = async (value: string) => {
+        setFetching(true);
+        setError(null);
+
+        try {
+            const image = await api.download('/books/lookups/covers', { address: value.trim() });
+
+            accept(new File([image], 'cover', { type: image.type }));
+            setAddress('');
+        } catch (failure) {
+            setError(t(ApiErrorMessage.key(failure)));
+        } finally {
+            setFetching(false);
+        }
+    };
+    const drop = (event: DragEvent) => {
+        event.preventDefault();
+        setDragging(false);
+        const file = [...event.dataTransfer.files].find((item) => item.type.startsWith('image/'));
+        // A picture dragged from a web page usually brings its address rather than a file.
+        const link = (
+            event.dataTransfer.getData('text/uri-list') || event.dataTransfer.getData('text/plain')
+        )
+            .split(/\r?\n/)
+            .map((line) => line.trim())
+            .find((line) => /^https?:\/\//i.test(line));
+
+        if (file) {
+            accept(file);
+        } else if (link) {
+            void fromAddress(link);
+        }
+    };
+
+    // An image pasted anywhere in the page, except into a text field, becomes the cover.
+    useEffect(() => {
+        const paste = (event: ClipboardEvent) => {
+            const target = event.target instanceof Element ? event.target : null;
+
+            if (target?.closest('input, textarea, select, [contenteditable="true"]')) {
+                return;
+            }
+
+            const file = [...(event.clipboardData?.files ?? [])].find((item) =>
+                item.type.startsWith('image/'),
+            );
+
+            if (file) {
+                event.preventDefault();
+                accept(file);
+            }
+        };
+
+        document.addEventListener('paste', paste);
+
+        return () => document.removeEventListener('paste', paste);
+    }, [accept]);
+
     return (
         <div className="cover-picker">
             <p className="field__label">{t('form.cover')}</p>
-            {shown ? (
-                <BookCover src={shown} title={title} />
-            ) : (
-                <div className="cover-picker__empty">
-                    <BookCover src={null} title={title} />
-                    <span className="visually-hidden">{t('form.coverNone')}</span>
-                </div>
-            )}
+            <div
+                className={'cover-picker__drop' + (dragging ? ' cover-picker__drop--active' : '')}
+                onDragOver={(event) => {
+                    event.preventDefault();
+                    setDragging(true);
+                }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={drop}
+            >
+                {shown ? (
+                    <BookCover src={shown} title={title} />
+                ) : (
+                    <div className="cover-picker__empty">
+                        <BookCover src={null} title={title} />
+                        <span className="visually-hidden">{t('form.coverNone')}</span>
+                    </div>
+                )}
+            </div>
             <input
                 ref={input}
                 type="file"
@@ -65,17 +159,8 @@ export function CoverPicker({
 
                     event.target.value = '';
 
-                    if (!file) {
-                        return;
-                    }
-
-                    if (!types.includes(file.type)) {
-                        setError(t('reason.coverFormat'));
-                    } else if (file.size > limit) {
-                        setError(t('reason.coverTooLarge'));
-                    } else {
-                        setError(null);
-                        onChange({ file, removed: false });
+                    if (file) {
+                        accept(file);
                     }
                 }}
             />
@@ -96,6 +181,51 @@ export function CoverPicker({
                 )}
             </div>
             <p className="field__hint">{t('form.coverHint')}</p>
+            <p className="field__hint">{t('cover.pasteHint')}</p>
+            {searchTerms.trim() && (
+                <a
+                    className="cover-picker__search"
+                    // Google Images for the ISBN, or the title and authors without one.
+                    href={
+                        'https://www.google.com/search?tbm=isch&q=' +
+                        encodeURIComponent(searchTerms.trim())
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    <Icon name="search" size={16} />
+                    {t('cover.search')}
+                    <span className="visually-hidden"> {t('cover.newTab')}</span>
+                </a>
+            )}
+            <div className="cover-picker__address">
+                <TextField
+                    label={t('cover.address')}
+                    type="url"
+                    inputMode="url"
+                    autoComplete="off"
+                    maxLength={2000}
+                    value={address}
+                    onChange={(event) => setAddress(event.target.value)}
+                    onKeyDown={(event) => {
+                        // Enter fetches the image instead of saving the whole form.
+                        if (event.key === 'Enter') {
+                            event.preventDefault();
+
+                            if (address.trim()) {
+                                void fromAddress(address);
+                            }
+                        }
+                    }}
+                />
+                <Button
+                    busy={fetching}
+                    disabled={!address.trim()}
+                    onClick={() => void fromAddress(address)}
+                >
+                    {t('cover.addressUse')}
+                </Button>
+            </div>
             {error && (
                 <p className="field__error" role="alert">
                     {error}

@@ -189,6 +189,7 @@ try {
         await closeDesktop(child);
     }
 
-    // Only the unique directory returned by mkdtemp is removed.
-    await rm(directory, { recursive: true, force: true });
+    // Only the unique directory returned by mkdtemp is removed. On Windows the backend process
+    // can hold it (its working directory) for a moment after the window closed, so retry briefly.
+    await rm(directory, { recursive: true, force: true, maxRetries: 10, retryDelay: 500 });
 }
