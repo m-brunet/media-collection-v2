@@ -126,3 +126,6 @@ multiple membership, merging, unnumbered specials.
   `GET /api/collections/:id`; quick add is a normal `PUT /api/books/:id` with ownership Owned.
 - Overview counters (Task 8): `GET /api/collections` total gives the collection count.
 - Volumes are integers 0-9999.
+
+Later (2026-11-06): the Libris Collections pages were brought back to the design (cards with cover previews,
+callouts, volume cards, editions with covers); see [design-fix-collections](design-fix-collections.md).

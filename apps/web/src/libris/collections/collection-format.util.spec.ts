@@ -50,6 +50,57 @@ describe('CollectionFormat', () => {
 
         expect(result).toEqual({ key: 'volume.range', values: { from: 5, to: 11 } });
     });
+    it('states the expected coverage of a range in sentence case', () => {
+        expect(CollectionFormat.expected(summary())).toEqual({
+            key: 'collection.expectedRange',
+            values: { from: 1, to: 12 },
+        });
+    });
+
+    it('states the expected coverage of a single volume', () => {
+        expect(CollectionFormat.expected(summary({ expectedFrom: 1, expectedTo: 1 }))).toEqual({
+            key: 'collection.expectedOne',
+            values: { number: 1 },
+        });
+    });
+
+    it('describes an edition by its publisher and ISBN', () => {
+        const parts = CollectionFormat.edition(
+            member({ publisher: 'DC Comics', isbn: '9781401207526' }),
+        );
+
+        expect(parts).toEqual([
+            'DC Comics',
+            { key: 'collection.book.isbn', values: { isbn: '9781401207526' } },
+        ]);
+    });
+
+    it('describes an edition without a publisher by its ISBN only', () => {
+        const parts = CollectionFormat.edition(member({ isbn: '9781401207526' }));
+
+        expect(parts).toEqual([{ key: 'collection.book.isbn', values: { isbn: '9781401207526' } }]);
+    });
+
+    it('describes an edition without an ISBN by its publisher only', () => {
+        expect(CollectionFormat.edition(member({ publisher: 'DC Comics' }))).toEqual(['DC Comics']);
+    });
+
+    it('says an edition with neither publisher nor ISBN has no ISBN', () => {
+        expect(CollectionFormat.edition(member())).toEqual([{ key: 'collection.book.noIsbn' }]);
+    });
+
+    it('starts with Not Owned and the omnibus coverage when they apply', () => {
+        const parts = CollectionFormat.edition(
+            member({ ownership: 'not-owned', volumeTo: 3, publisher: 'DC Comics' }),
+        );
+
+        expect(parts).toEqual([
+            { key: 'status.notOwned' },
+            { key: 'collection.book.omnibus', values: { from: 1, to: 3 } },
+            'DC Comics',
+        ]);
+    });
+
     it('counts the missing volumes of an unfinished collection', () => {
         const result = CollectionFormat.status(summary());
 

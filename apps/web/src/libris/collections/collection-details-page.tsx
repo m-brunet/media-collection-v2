@@ -11,35 +11,40 @@ import { useI18n } from '../../shared/i18n/i18n-context';
 import { useSession } from '../../shared/session/session-context';
 import { Button } from '../../shared/ui/button';
 import { Icon } from '../../shared/ui/icon';
-import { PageHeader, Panel } from '../../shared/ui/layout';
+import { PageHeader } from '../../shared/ui/layout';
 import { Notice } from '../../shared/ui/notice';
 import { EmptyState, LoadingState } from '../../shared/ui/states';
 import { useAction } from '../../shared/use-action';
+import { BookCover } from '../books/book-cover';
+import { BookFormat } from '../books/book-format.util';
 import { EditCollectionDialog } from './collection-dialogs';
 import { CollectionFormat } from './collection-format.util';
 
+// One edition covering a volume: its cover, title, publisher and ISBN, and a way to open it.
 function MemberBook({ book }: { book: CollectionMemberDto }) {
     const { t } = useI18n();
-    const omnibus = book.volumeTo > book.volumeFrom;
-    const detail = omnibus
-        ? t('collection.book.omnibus', { from: book.volumeFrom, to: book.volumeTo })
-        : book.isbn
-          ? t('collection.book.isbn', { isbn: book.isbn })
-          : t('collection.book.noIsbn');
+    const detail = CollectionFormat.edition(book)
+        .map((part) => (typeof part === 'string' ? part : t(part.key, part.values)))
+        .join(' · ');
 
     return (
         <li className="volume-entry__book">
-            <span className="volume-entry__book-title">{book.title}</span>
-            <span className="muted">
-                {book.ownership === 'not-owned' ? t('status.notOwned') + ' · ' : ''}
-                {detail}
-            </span>
-            <Link
-                to={'/books/' + book.id}
-                aria-label={t('collection.book.view') + ' · ' + book.title}
-            >
-                {t('collection.book.view')} <Icon name="expand" size={14} />
-            </Link>
+            <BookCover
+                src={book.hasCover ? BookFormat.cover(book.id, book.updatedAt) : null}
+                title={book.title}
+                size="small"
+            />
+            <div className="volume-entry__book-identity">
+                <span className="volume-entry__book-title">{book.title}</span>
+                <span className="volume-entry__book-detail">{detail}</span>
+                <Link
+                    to={'/books/' + book.id}
+                    className="volume-entry__book-link"
+                    aria-label={t('collection.book.view') + ' · ' + book.title}
+                >
+                    {t('collection.book.view')} <span aria-hidden="true">→</span>
+                </Link>
+            </div>
         </li>
     );
 }
@@ -64,8 +69,10 @@ function VolumeEntry({ volume }: { volume: CollectionVolumeDto }) {
                 disabled={!expandable}
                 onClick={() => setOpen(!open)}
             >
-                <Icon name={open ? 'collapse' : 'expand'} size={16} />
-                <span className="volume-entry__label">{t(label.key, label.values)}</span>{' '}
+                <span className="volume-entry__label">
+                    <Icon name={open ? 'collapse' : 'expand'} size={16} />
+                    {t(label.key, label.values)}
+                </span>{' '}
                 <span className="volume-entry__state">{t(state.key, state.values)}</span>
             </button>
             {expandable && (
@@ -130,7 +137,8 @@ export function CollectionDetailsPage() {
     }
 
     const badge = CollectionFormat.badge(collection);
-    const expected = CollectionFormat.volumes(collection.expectedFrom, collection.expectedTo);
+    const expected = CollectionFormat.expected(collection);
+    const blocked = !collection.finished && collection.missingCount > 0;
     const change = (path: 'finish' | 'reopen') =>
         void action.run(async () =>
             setCollection(
@@ -148,6 +156,8 @@ export function CollectionDetailsPage() {
                 breadcrumb={
                     <nav aria-label={t('details.breadcrumb')} className="breadcrumb">
                         <Link to="/collections">{t('collections.title')}</Link>
+                        <span aria-hidden="true"> / </span>
+                        <span>{collection.name}</span>
                         <span aria-hidden="true"> · </span>
                         <span>
                             {t('collection.ownedOf', {
@@ -173,24 +183,26 @@ export function CollectionDetailsPage() {
                     )
                 }
             />
-            <div className="stack">
-                <Panel className="collection-summary">
-                    <p className="eyebrow">{t(badge.key, badge.values)}</p>
-                    <p className="collection-summary__expected">
-                        {t('collection.expected', {
-                            volumes: t(expected.key, expected.values),
-                        })}
-                    </p>
-                    <p className="muted">
-                        {t('collection.facts', {
-                            zero: t(
-                                collection.includesVolumeZero ? 'collection.on' : 'collection.off',
-                            ),
-                            highest: collection.expectedTo,
-                        })}
-                    </p>
+            <div className="collection-page">
+                <div className="collection-summary">
+                    <div className="collection-summary__coverage">
+                        <p className="eyebrow">{t(badge.key, badge.values)}</p>
+                        <p className="collection-summary__expected">
+                            {t(expected.key, expected.values)}
+                        </p>
+                        <p className="collection-summary__facts">
+                            {t('collection.facts', {
+                                zero: t(
+                                    collection.includesVolumeZero
+                                        ? 'collection.on'
+                                        : 'collection.off',
+                                ),
+                                highest: collection.expectedTo,
+                            })}
+                        </p>
+                    </div>
                     {editor && (
-                        <div className="actions">
+                        <div className="actions collection-summary__actions">
                             <Button icon="edit" onClick={() => setEditing(true)}>
                                 {t('collection.edit')}
                             </Button>
@@ -202,11 +214,9 @@ export function CollectionDetailsPage() {
                                 <Button
                                     icon="check"
                                     busy={action.busy}
-                                    disabled={collection.missingCount > 0}
+                                    disabled={blocked}
                                     aria-describedby={
-                                        collection.missingCount > 0
-                                            ? 'collection-finish-hint'
-                                            : undefined
+                                        blocked ? 'collection-finish-hint' : undefined
                                     }
                                     onClick={() => change('finish')}
                                 >
@@ -215,24 +225,26 @@ export function CollectionDetailsPage() {
                             )}
                         </div>
                     )}
-                    {action.feedback && <Notice tone="error">{action.feedback.text}</Notice>}
-                    {collection.finished ? (
-                        <p className="muted">{t('collection.finishedHint')}</p>
-                    ) : (
-                        collection.missingCount > 0 && (
-                            <p id="collection-finish-hint" className="muted">
-                                {t('collection.finishUnavailable')}
-                            </p>
-                        )
-                    )}
-                </Panel>
-                <Panel label={t('collection.volumesLabel')}>
-                    <ul className="volume-list">
-                        {collection.volumes.map((volume) => (
-                            <VolumeEntry key={volume.from} volume={volume} />
-                        ))}
-                    </ul>
-                </Panel>
+                </div>
+                {action.feedback && <Notice tone="error">{action.feedback.text}</Notice>}
+                {collection.finished && (
+                    <p className="collection-callout collection-callout--finished">
+                        {t('collection.finishedHint')}
+                    </p>
+                )}
+                {blocked && (
+                    <p
+                        id="collection-finish-hint"
+                        className="collection-callout collection-callout--blocked"
+                    >
+                        {t('collection.finishUnavailable')}
+                    </p>
+                )}
+                <ul className="volume-list" aria-label={t('collection.volumesLabel')}>
+                    {collection.volumes.map((volume) => (
+                        <VolumeEntry key={volume.from} volume={volume} />
+                    ))}
+                </ul>
             </div>
             {editor && (
                 <EditCollectionDialog

@@ -752,24 +752,82 @@ body {
     color: var(--color-accent);
 }
 
-.collection-summary__expected {
+.collection-page {
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+}
+
+/* Collection details: coverage summary with its actions on the right */
+.collection-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4) var(--space-5);
+}
+
+.collection-summary__coverage {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.collection-summary__coverage p {
     margin: 0;
-    font-size: var(--text-lg);
+}
+
+.collection-summary__expected {
+    font-size: 18px;
+}
+
+.collection-summary__facts {
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+}
+
+.collection-summary__actions {
+    gap: var(--space-5);
+}
+
+/* Why the collection cannot be marked Finished yet, or what Finished means */
+.collection-callout {
+    margin: 0;
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-md);
+}
+
+.collection-callout--blocked {
+    background: var(--color-warning-surface);
+    color: var(--color-warning);
+}
+
+.collection-callout--finished {
+    background: var(--color-success-surface);
+    color: var(--color-accent-strong);
+}
+
+/* Volumes: one card each; expanding shows the editions side by side */
+.volume-list {
+    gap: var(--space-3);
 }
 
 .volume-entry {
-    border-radius: var(--radius-sm);
-    background: var(--color-control);
+    border-radius: var(--radius-lg);
+    background: var(--color-panel);
 }
 
 .volume-entry__toggle {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: center;
-    gap: var(--space-3);
+    gap: var(--space-4);
     width: 100%;
-    padding: var(--space-3) var(--space-4);
+    padding: var(--space-4);
     border: none;
+    border-radius: inherit;
     background: none;
     color: var(--color-text);
     font: inherit;
@@ -790,31 +848,62 @@ body {
     box-shadow: var(--focus-ring);
 }
 
+.volume-entry__label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: 16px;
+}
+
 .volume-entry__state {
     color: var(--color-text-secondary);
-    font-size: var(--text-md);
+    font-size: var(--text-sm);
 }
 
-.volume-entry--owned .volume-entry__state {
-    color: var(--color-accent-strong);
-}
-
-.volume-entry__books {
-    padding: 0 var(--space-4) var(--space-3) var(--space-10);
+.volume-list .volume-entry__books {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-5);
+    padding: 0 var(--space-4) var(--space-4);
 }
 
 .volume-entry__book {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: var(--space-1) var(--space-4);
-    padding: var(--space-3);
-    border-radius: var(--radius-sm);
-    background: var(--color-surface);
+    display: flex;
+    flex: 1 1 280px;
+    align-items: flex-start;
+    gap: 14px;
+    min-width: 0;
 }
 
-.volume-entry__book a {
-    grid-row: span 2;
-    align-self: center;
+.volume-entry__book .book-cover {
+    flex: none;
+    width: 50px;
+}
+
+.volume-entry__book-identity {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+}
+
+.volume-entry__book-title {
+    font-size: var(--text-base);
+}
+
+.volume-entry__book-detail {
+    color: var(--color-text-secondary);
+    font-size: var(--text-xs);
+}
+
+.volume-entry__book-link {
+    color: var(--color-accent);
+    font-size: var(--text-sm);
+    text-decoration: none;
+}
+
+.volume-entry__book-link:hover {
+    text-decoration: underline;
 }
 
 .actions__end {

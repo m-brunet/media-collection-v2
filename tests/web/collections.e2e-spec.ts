@@ -85,8 +85,8 @@ async function finish(book: BookDto) {
     }
 }
 
-async function signedIn(username: string): Promise<Page> {
-    const page = await browser.page(base, { viewport: viewports.referenceDesktop });
+async function signedIn(username: string, viewport = viewports.referenceDesktop): Promise<Page> {
+    const page = await browser.page(base, { viewport });
 
     await page.goto('/');
     await page.getByLabel(/^Username/).fill(username);
@@ -158,7 +158,7 @@ describe('Collections', () => {
             .getByRole('listitem')
             .filter({ has: page.getByRole('button', { name: /Volume 2/ }) });
 
-        expect(await entry.getByText('Omnibus · Covers 1–3 · One book').isVisible()).toBe(true);
+        expect(await entry.getByText('Omnibus · Covers 1–3').isVisible()).toBe(true);
         expect(await entry.getByRole('link', { name: /View this book/ }).count()).toBe(2);
     });
 
@@ -257,6 +257,46 @@ describe('Collections', () => {
 
         await page.getByText('“Batman” was deleted. Its books were kept.').waitFor();
         expect((await admin.call<BookDto>('/books/' + book.id)).body.collection).toBeNull();
+    });
+
+    it('keeps the collection cards in two columns at 1280 px', async () => {
+        await member(membership('Batman', 1));
+        await member(membership('Dune', 1, 3));
+        const page = await signedIn('camille', viewports.minimumDesktop);
+
+        await page.getByRole('link', { name: 'Collections' }).click();
+
+        const cards = page.locator('.collection-card');
+
+        await cards.nth(1).waitFor();
+        const [first, second] = await Promise.all([
+            cards.nth(0).boundingBox(),
+            cards.nth(1).boundingBox(),
+        ]);
+
+        expect(second!.y).toBe(first!.y);
+        expect(second!.x).toBeGreaterThan(first!.x + first!.width);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+            viewports.minimumDesktop.width,
+        );
+        await capture(page, 'collections-list-1280');
+    });
+
+    it('shows the editions of a volume without clipping at 1280 px', async () => {
+        await member(membership('Dune', 1));
+        await member(membership('Dune', 1, 3), { publisher: 'Chilton Books' });
+        const page = await signedIn('camille', viewports.minimumDesktop);
+
+        await openCollection(page, 'Dune');
+        await page.getByRole('button', { name: /Volume 1 Owned/ }).click();
+
+        await page.getByText('Omnibus · Covers 1–3 · Chilton Books').first().waitFor();
+        expect(await page.getByRole('link', { name: /View this book/ }).count()).toBe(2);
+        expect(await page.getByRole('button', { name: 'Mark Finished' }).isVisible()).toBe(true);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+            viewports.minimumDesktop.width,
+        );
+        await capture(page, 'collection-details-1280');
     });
 
     it('lets a Guest read collections without changing them', async () => {

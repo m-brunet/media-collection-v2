@@ -1,4 +1,5 @@
 import type {
+    CollectionMemberDto,
     CollectionSummaryDto,
     CollectionVolumeDto,
 } from '../../../../../packages/contracts/src/http';
@@ -23,6 +24,44 @@ export class CollectionFormat {
         return from === to
             ? { key: 'volume.one', values: { number: from } }
             : { key: 'volume.range', values: { from, to } };
+    }
+
+    // "Expected coverage: volumes 1–12", in sentence case.
+    static expected(collection: CollectionSummaryDto): Message {
+        const { expectedFrom: from, expectedTo: to } = collection;
+
+        return from === to
+            ? { key: 'collection.expectedOne', values: { number: from } }
+            : { key: 'collection.expectedRange', values: { from, to } };
+    }
+
+    // The detail line of an edition: Not Owned and omnibus coverage when they apply, then its
+    // publisher and ISBN, whichever it has ("No ISBN" for a single volume with neither).
+    static edition(book: CollectionMemberDto): (Message | string)[] {
+        const parts: (Message | string)[] = [];
+
+        if (book.ownership === 'not-owned') {
+            parts.push({ key: 'status.notOwned' });
+        }
+
+        if (book.volumeTo > book.volumeFrom) {
+            parts.push({
+                key: 'collection.book.omnibus',
+                values: { from: book.volumeFrom, to: book.volumeTo },
+            });
+        }
+
+        if (book.publisher) {
+            parts.push(book.publisher);
+        }
+
+        if (book.isbn) {
+            parts.push({ key: 'collection.book.isbn', values: { isbn: book.isbn } });
+        } else if (!book.publisher && book.volumeTo === book.volumeFrom) {
+            parts.push({ key: 'collection.book.noIsbn' });
+        }
+
+        return parts;
     }
 
     // Short state of a collection in the list.

@@ -1,6 +1,6 @@
 # Design fix: Collections pages (Libris)
 
-Status: approved (2026-11-06), in progress on `master`. Inserted before Task 6 at the user's request.
+Status: done (2026-11-06), committed on `master`. Inserted before Task 6 at the user's request.
 
 Scope: only the Collections pages go back to the design. The shell/sidebar stays as it is; other sections are
 compared later, after the user reviews their designs.
@@ -97,6 +97,24 @@ reuse it if its look can match).
 
 1. [x] Contract and backend: member `publisher`/`updatedAt`, summary `previews`
 2. [x] List page cards
-3. [ ] Details page: summary, callouts, volume cards, editions with covers, copy
-4. [ ] 1280/1440 browser check
-5. [ ] Review, check, docs
+3. [x] Details page: summary, callouts, volume cards, editions with covers, copy
+4. [x] 1280/1440 browser check
+5. [x] Review, check, docs
+
+## Architecture review (2026-11-06)
+
+No mandatory findings. The backend change is additive read-model data: the collections member store reads the book's
+publisher and change time with the columns it already joined, and `CollectionViewer` chooses the previews in a private
+method. The browser pages reuse `BookCover`/`BookFormat` from `libris/books` (browser-only code) and keep wording in
+`CollectionFormat`. One review fix: the 1280 px browser check was split into one case per page.
+
+## Notes for later tasks
+
+- Collection cards take their link name from `aria-label` (name, counts, status): spans inside a link otherwise run
+  together for screen readers ("BatmanOpen"), and the covers are decorative there.
+- The volume heading and card identity use two equal columns, as drawn: the state starts mid-card, not at the right.
+- Other sections were not compared; the user reviews their designs first.
+- Open: the empty list differs from the drawn empty state (drawn: vertically centred 480 px column, left-aligned,
+  muted 16 px sentence, full-width Add a book; built: the shared `EmptyState`, centred, bold sentence, small button).
+  `EmptyState` serves every page, so changing it is outside this Collections-only fix; awaiting the user's decision.
+
