@@ -10,6 +10,7 @@ function book(coverFile: string | null) {
         id: 'b1',
         details: {
             title: 'Piranesi',
+            titleGenerated: false,
             isbn: Isbn.parse('0306406152'),
             noIsbn: false,
             authorIds: ['a1'],

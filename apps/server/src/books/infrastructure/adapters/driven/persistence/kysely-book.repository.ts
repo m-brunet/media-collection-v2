@@ -101,6 +101,7 @@ export class KyselyBookRepository implements BookRepository {
             id: row.id,
             details: {
                 title: row.title,
+                titleGenerated: Boolean(row.title_generated),
                 isbn: row.isbn13 ? Isbn.stored(row.isbn13, Boolean(row.isbn_converted)) : null,
                 noIsbn: Boolean(row.no_isbn),
                 authorIds: links.map((link) => link.author_id),
@@ -125,6 +126,8 @@ export class KyselyBookRepository implements BookRepository {
             id,
             title: details.title,
             title_key: book.titleKey,
+            title_generated: Number(details.titleGenerated),
+            title_sort_key: book.titleSortKey,
             isbn13: details.isbn?.isbn13 ?? null,
             isbn_converted: Number(details.isbn?.convertedFromIsbn10 ?? false),
             no_isbn: Number(details.noIsbn),

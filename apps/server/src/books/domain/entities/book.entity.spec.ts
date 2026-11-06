@@ -5,6 +5,7 @@ import { Isbn } from '../value-objects/isbn.value-object.js';
 
 const details: BookDetails = {
     title: ' Piranesi ',
+    titleGenerated: false,
     isbn: Isbn.parse('9781635575637'),
     noIsbn: false,
     authorIds: ['clarke'],
@@ -117,4 +118,99 @@ it('replaces and removes the cover', () => {
     subject.replaceCover(null, '2026-02-01T00:00:00.000Z');
 
     expect(subject.snapshot.coverFile).toBeNull();
+});
+
+const later = '2026-02-01T00:00:00.000Z';
+
+function generated(overrides: Partial<BookDetails> = {}): Book {
+    return book({ title: 'Gunnm - 3', titleGenerated: true, category: 'manga', ...overrides });
+}
+
+it('accepts a generated title for a Manga', () => {
+    const overrides = { category: 'manga' as const };
+
+    const result = generated(overrides).details;
+
+    expect(result).toMatchObject({ title: 'Gunnm - 3', titleGenerated: true });
+});
+
+it('accepts a generated title for a Comics', () => {
+    const overrides = { category: 'comics' as const };
+
+    const result = generated(overrides).details.titleGenerated;
+
+    expect(result).toBe(true);
+});
+
+it('refuses a generated title for a Books record', () => {
+    const overrides = { category: 'books' as const };
+
+    const operation = () => generated(overrides);
+
+    expect(operation).toThrow(expect.objectContaining({ reason: 'title-required' }));
+});
+
+it('regenerates a generated title from the collection name and coverage', () => {
+    const subject = generated();
+
+    const result = subject.regenerateTitle(
+        { name: 'Battle Angel Alita', volumeFrom: 3, volumeTo: 4 },
+        later,
+    );
+
+    expect(result).toBe(true);
+    expect(subject.details.title).toBe('Battle Angel Alita - 3–4');
+    expect(subject.titleKey).toBe('battle angel alita - 3–4');
+    expect(subject.snapshot.updatedAt).toBe(later);
+});
+
+it('leaves a generated title that already matches its collection unchanged', () => {
+    const subject = generated();
+
+    const result = subject.regenerateTitle({ name: 'Gunnm', volumeFrom: 3, volumeTo: 3 }, later);
+
+    expect(result).toBe(false);
+    expect(subject.snapshot.updatedAt).toBe(created);
+});
+
+it('never replaces a supplied title, even one that looks generated', () => {
+    const subject = book({ title: 'Gunnm - 3', category: 'manga' });
+
+    const result = subject.regenerateTitle({ name: 'Alita', volumeFrom: 3, volumeTo: 3 }, later);
+
+    expect(result).toBe(false);
+    expect(subject.details).toMatchObject({ title: 'Gunnm - 3', titleGenerated: false });
+});
+
+it('keeps a generated title as a supplied one when its collection is deleted', () => {
+    const subject = generated();
+
+    const result = subject.keepTitle(later);
+
+    expect(result).toBe(true);
+    expect(subject.details).toMatchObject({ title: 'Gunnm - 3', titleGenerated: false });
+    expect(subject.snapshot.updatedAt).toBe(later);
+});
+
+it('changes nothing when keeping a title that was supplied', () => {
+    const subject = book();
+
+    const result = subject.keepTitle(later);
+
+    expect(result).toBe(false);
+    expect(subject.snapshot.updatedAt).toBe(created);
+});
+
+it('orders numbered titles by the value of their numbers', () => {
+    const books = ['Gunnm - 10', 'Gunnm - 2', 'Gunnm - 1–3'].map((title) => generated({ title }));
+
+    const result = books.sort((first, second) =>
+        first.titleSortKey.localeCompare(second.titleSortKey),
+    );
+
+    expect(result.map((value) => value.details.title)).toEqual([
+        'Gunnm - 1–3',
+        'Gunnm - 2',
+        'Gunnm - 10',
+    ]);
 });

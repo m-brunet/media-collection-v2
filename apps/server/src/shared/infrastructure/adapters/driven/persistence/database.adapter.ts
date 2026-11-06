@@ -50,6 +50,8 @@ interface BooksTable {
     id: string;
     title: string;
     title_key: string;
+    title_generated: number;
+    title_sort_key: string;
     isbn13: string | null;
     isbn_converted: number;
     no_isbn: number;

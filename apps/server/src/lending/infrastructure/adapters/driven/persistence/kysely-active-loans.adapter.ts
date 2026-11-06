@@ -50,7 +50,7 @@ export class KyselyActiveLoans implements ActiveLoans {
             .orderBy('receivers.name_key')
             .orderBy('receivers.id')
             .orderBy('loans.lent_at', 'desc')
-            .orderBy('books.title_key')
+            .orderBy('books.title_sort_key')
             .execute();
         const authors = await this.authorsOf(loans.map((loan) => loan.book_id));
         const groups: ReceiverLoansView[] = [];
