@@ -1,6 +1,6 @@
 # Task 5 — Lending and returns
 
-Status: approved (2026-11-06), in progress on branch `feat/lending`. Global plan: [implementation plan](implementation-plan.md).
+Status: approved (2026-11-06), in progress on `master`. Global plan: [implementation plan](implementation-plan.md).
 Owning docs: [lending](../lending.md) (authoritative rules, acceptance scenarios 1-20),
 [lending-design-brief](../lending-design-brief.md), [features](../features.md) (Lending, permissions table), [overview-activity-mobile](../overview-activity-mobile.md) (dates in the
 viewer's time zone, Activity grouping).
@@ -85,7 +85,7 @@ presentation and Overview counter (Task 8), data reset (Task 9).
 
 0. [x] Slice 0 (user request): Obsidian vault in `docs/Media Collection/` holding the product docs and these plans
        (plans now committed instead of Git-ignored); references updated.
-1. [ ] Domain: Receiver, Loan, LendingSelection; unit tests.
+1. [x] Domain: Receiver, Loan (lend eligibility, returns of one receiver together), Selection; unit tests.
 2. [ ] Persistence: migration 009 + SQLite tests (constraints, partial unique index, SET NULL on book deletion,
        upgrade of a populated database); receiver/loan repositories, active-loans query, lendable-books adapter.
 3. [ ] Shared: batch form of `AuditedOperation` (per-subject Successful/Failed records, one operation ID); tests.
@@ -103,7 +103,7 @@ presentation and Overview counter (Task 8), data reset (Task 9).
 
 1. One return operation covers one receiver only: it may return several books, but the server refuses a request
    mixing loans of different receivers (`loans-different-receivers`).
-2. Plan approved; slice 0 adds the Obsidian documentation vault as the branch's first commit.
+2. Plan approved; slice 0 adds the Obsidian documentation vault as the task's first commit. Work happens directly on `master` (no feature branch or pull request unless asked).
 
 ## Notes for later tasks
 

@@ -42,7 +42,7 @@ Run all suites from PowerShell on Windows (the user's environment). `npm run che
 1. Write `plans/task-NN-<name>.md`: scope, owning docs, domain rules, persistence/migrations, API contracts, screens/states, audit events, test list mapped to acceptance examples, open questions. Ask the user to review.
 2. Implement in small internal steps; keep `npm run check` green as often as possible.
 3. Run the required architecture review skill from `AGENTS.md` on the changes.
-4. Commit (one commit per task or a few logical commits). Push only when the user asks.
+4. Commit directly on `master` (one commit per task or a few logical commits); no feature branches or pull requests unless the user asks. Push only when the user asks.
 5. Update the Status table.
 
 ## Tasks
@@ -135,7 +135,7 @@ Owning docs: `updates.md`, `design-guidelines.md`.
 | UUID keys and Kysely SQL rules | Done (2026-11-05) | `uuid-primary-keys-and-kysely-rules.md` | Done by the user after Task 2 (PR #1); reviewed, full check passes |
 | 3 Collections | Done (2026-11-05) | `task-03-collections.md` | Committed; see its notes for later tasks |
 | 4 Locations, tags, search | Done (2026-11-05) | `task-04-locations-tags-search.md` | Committed; see its notes for later tasks |
-| 5 Lending | In progress (2026-11-06) | [task-05-lending](task-05-lending.md) | Branch `feat/lending`; slice 0 = documentation vault |
+| 5 Lending | In progress (2026-11-06) | [task-05-lending](task-05-lending.md) | Slice 0 = documentation vault |
 | 6 Assisted entry | Not started | — | |
 | 7 Leaf (mobile) | Not started | — | |
 | 8 Overview and Activity | Not started | — | |
