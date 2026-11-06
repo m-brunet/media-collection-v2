@@ -38,5 +38,6 @@ rules.
   [UUID keys and Kysely rules](plans/uuid-primary-keys-and-kysely-rules.md),
   [3 Collections](plans/task-03-collections.md),
   [4 Locations, tags, and search](plans/task-04-locations-tags-search.md),
-  [5 Lending](plans/task-05-lending.md).
+  [5 Lending](plans/task-05-lending.md),
+  [5.8 Test entity builders](plans/task-05-8-test-builders.md).
 - [Product clarification plan](plans/product-clarification-plan.md): history of the product decisions.
