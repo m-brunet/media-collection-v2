@@ -18,15 +18,26 @@ export interface CollectionSummaryView {
     ownedCount: number;
     missingCount: number;
     lastOwned: number | null;
+    // Up to two books whose covers stand for the collection.
+    previews: CollectionPreviewView[];
+}
+
+// A book shown by its cover.
+export interface CollectionPreviewView {
+    id: string;
+    title: string;
+    updatedAt: string;
 }
 
 export interface MemberBookView {
     id: string;
     title: string;
     isbn: string | null;
+    publisher: string | null;
     category: 'books' | 'manga' | 'comics';
     ownership: 'owned' | 'not-owned';
     hasCover: boolean;
+    updatedAt: string;
     volumeFrom: number;
     volumeTo: number;
 }

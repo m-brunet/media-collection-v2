@@ -73,7 +73,10 @@ export class MemoryCollections implements CollectionRepository {
     }
 }
 
-type SavedBook = Pick<MemberRecord, 'title' | 'isbn' | 'category' | 'ownership' | 'hasCover'>;
+type SavedBook = Pick<
+    MemberRecord,
+    'title' | 'isbn' | 'publisher' | 'category' | 'ownership' | 'hasCover' | 'updatedAt'
+>;
 
 // Memberships, with the saved books they describe (written by the books feature in production).
 export class MemoryMembers implements CollectionMemberStore {
@@ -83,8 +86,22 @@ export class MemoryMembers implements CollectionMemberStore {
         { collectionId: string; volumeFrom: number; volumeTo: number }
     >();
 
-    saveBook(id: string, ownership: MemberRecord['ownership'], title = 'Book ' + id): void {
-        this.books.set(id, { title, isbn: null, category: 'comics', ownership, hasCover: false });
+    saveBook(
+        id: string,
+        ownership: MemberRecord['ownership'],
+        title = 'Book ' + id,
+        details: Partial<SavedBook> = {},
+    ): void {
+        this.books.set(id, {
+            title,
+            isbn: null,
+            publisher: null,
+            category: 'comics',
+            ownership,
+            hasCover: false,
+            updatedAt: '2026-01-01T00:00:00.000Z',
+            ...details,
+        });
     }
 
     async ofBook(bookId: string): Promise<MemberRecord | null> {

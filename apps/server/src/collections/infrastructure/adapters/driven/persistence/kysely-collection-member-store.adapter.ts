@@ -77,9 +77,11 @@ export class KyselyCollectionMemberStore implements CollectionMemberStore {
                 'collection_books.volume_to',
                 'books.title',
                 'books.isbn13',
+                'books.publisher',
                 'books.category',
                 'books.ownership',
                 'books.cover_file',
+                'books.updated_at',
             ]);
     }
 
@@ -90,9 +92,11 @@ export class KyselyCollectionMemberStore implements CollectionMemberStore {
         volume_to: number;
         title: string;
         isbn13: string | null;
+        publisher: string | null;
         category: string;
         ownership: string;
         cover_file: string | null;
+        updated_at: string;
     }): MemberRecord {
         return {
             bookId: row.book_id,
@@ -101,9 +105,11 @@ export class KyselyCollectionMemberStore implements CollectionMemberStore {
             volumeTo: row.volume_to,
             title: row.title,
             isbn: row.isbn13,
+            publisher: row.publisher,
             category: row.category as MemberRecord['category'],
             ownership: row.ownership as MemberRecord['ownership'],
             hasCover: row.cover_file !== null,
+            updatedAt: row.updated_at,
         };
     }
 }

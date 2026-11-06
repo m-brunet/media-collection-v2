@@ -27,6 +27,7 @@ function summary(overrides: Partial<CollectionSummaryDto> = {}): CollectionSumma
         ownedCount: 4,
         missingCount: 8,
         lastOwned: 4,
+        previews: [],
         ...overrides,
     };
 }

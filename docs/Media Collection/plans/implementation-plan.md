@@ -162,6 +162,7 @@ Implemented on 2026-11-06 as `npm run dev:reset-data` and `npm run dev:import-v1
 | 5 Lending | Done (2026-11-06) | [task-05-lending](task-05-lending.md) | Committed; slice 0 = documentation vault; see its notes for later tasks |
 | 5.5 Generated titles | Done (2026-11-06) | [task-05-5-generated-titles](task-05-5-generated-titles.md) | Committed; see its notes for later tasks |
 | 5.8 Test entity builders | Done (2026-11-06) | [task-05-8-test-builders](task-05-8-test-builders.md) | Committed; see its notes for later tasks |
+| Design fix: Collections pages | In progress (2026-11-06) | [design-fix-collections](design-fix-collections.md) | Inserted at the user's request |
 | 6 Assisted entry | Not started | — | |
 | 7 Leaf (mobile) | Not started | — | |
 | 8 Overview and Activity | Not started | — | |

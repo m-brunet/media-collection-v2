@@ -10,9 +10,11 @@ it('turns saved memberships into coverage members', () => {
             volumeTo: 3,
             title: 'Batman omnibus',
             isbn: null,
+            publisher: null,
             category: 'comics' as const,
             ownership: 'owned' as const,
             hasCover: false,
+            updatedAt: '2026-01-01T00:00:00.000Z',
         },
     ];
 
