@@ -135,11 +135,22 @@ address, never a person's email).
   rate-limited sources.
 
 **Step list**
-1. [ ] Cover padding removal (own commit) and development covers cleaned
+1. [x] Cover padding removal (own commit); development covers still to clean (`npm run dev:import-v1` refused
+   while the development app was open)
 2. [ ] Source trial, report, user choice of sources and order
 3. [ ] Domain/application: combining, chains, budgets, `LookUpBook`, unit tests
 4. [ ] Approved source adapters, cover tokens, endpoints, API tests
 5. [ ] Libris Find book: review, conflicts, covers, states, component tests
 6. [ ] Browser journeys with stubbed sources
 7. [ ] Architecture review, `npm run check`, docs (credits list for the future credits page)
+
+## Notes from step 1
+
+- `sharp` 0.35 loads at backend start; its native files are unpacked from the app archive (`asarUnpack`), checked in
+  the packaged app (decode, crop, WebP encode) and by `npm run test:packaged`.
+- The packaged smoke test's final cleanup now retries briefly: on Windows the backend process, started in the
+  temporary data folder, can still hold it for a moment after the window closed (seen once `sharp` was loaded; no
+  process remains afterwards).
+- The trimmer is registered inside `BooksModule` (no configuration needed), so app, API tests and development
+  commands share it.
 

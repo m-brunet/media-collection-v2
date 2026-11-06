@@ -15,6 +15,8 @@ import type {
     MembershipRequest,
 } from '../ports/driven/collection-membership.interface.js';
 import type { CoverStorage } from '../ports/driven/cover-storage.interface.js';
+import type { CoverImage } from '../../domain/value-objects/cover-image.value-object.js';
+import type { CoverTrimmer } from '../ports/driven/cover-trimmer.interface.js';
 import type { PersonalNoteStore } from '../ports/driven/personal-note-store.interface.js';
 import type { ReadingStatusStore } from '../ports/driven/reading-status-store.interface.js';
 import type {
@@ -172,6 +174,18 @@ export class MemoryNotes implements PersonalNoteStore {
 
     async delete(userId: string, bookId: string): Promise<void> {
         this.notes.delete(userId + '/' + bookId);
+    }
+}
+
+// Records the covers it was asked to trim and gives back `result` when set, the cover otherwise.
+export class MemoryTrimmer implements CoverTrimmer {
+    readonly received: CoverImage[] = [];
+    result: CoverImage | null = null;
+
+    async trim(cover: CoverImage): Promise<CoverImage> {
+        this.received.push(cover);
+
+        return this.result ?? cover;
     }
 }
 
@@ -446,6 +460,7 @@ export function library() {
     const readings = new MemoryReadings();
     const notes = new MemoryNotes();
     const covers = new MemoryCovers();
+    const trimmer = new MemoryTrimmer();
     const trail = new MemoryAuditTrail();
     const catalog = new MemoryCatalog(books, authors);
     const collections = new MemoryMembership();
@@ -467,6 +482,7 @@ export function library() {
         readings,
         notes,
         covers,
+        trimmer,
         trail,
         catalog,
         collections,

@@ -6,6 +6,7 @@ import type { BookCollectionReader } from '../../application/ports/driven/book-c
 import type { BookRepository } from '../../application/ports/driven/book-repository.interface.js';
 import type { CollectionMembership } from '../../application/ports/driven/collection-membership.interface.js';
 import type { CoverStorage } from '../../application/ports/driven/cover-storage.interface.js';
+import type { CoverTrimmer } from '../../application/ports/driven/cover-trimmer.interface.js';
 import type { PersonalNoteStore } from '../../application/ports/driven/personal-note-store.interface.js';
 import type { ReadingStatusStore } from '../../application/ports/driven/reading-status-store.interface.js';
 import type { BookLocationReader } from '../../application/ports/driven/book-location-reader.interface.js';
@@ -49,6 +50,7 @@ import { AuthorsController } from '../adapters/driving/web/authors.controller.js
 import { BooksController } from '../adapters/driving/web/books.controller.js';
 import { CoversController } from '../adapters/driving/web/covers.controller.js';
 import { PersonalReadingController } from '../adapters/driving/web/personal-reading.controller.js';
+import { SharpCoverTrimmer } from '../adapters/driven/image/sharp-cover-trimmer.adapter.js';
 
 // Driven adapters and shared services the books feature is composed from.
 export interface BooksDependencies {
@@ -101,6 +103,7 @@ const token = {
     organisation: 'BOOKS_ORGANISATION_READER',
     guard: 'BOOKS_LENT_BOOK_GUARD',
     titles: 'BOOKS_GENERATED_TITLE_SYNC',
+    trimmer: 'BOOKS_COVER_TRIMMER',
 } as const;
 
 function dependencyProviders(dependencies: BooksDependencies): Provider[] {
@@ -111,6 +114,10 @@ function dependencyProviders(dependencies: BooksDependencies): Provider[] {
 }
 
 const serviceProviders: Provider[] = [
+    {
+        provide: token.trimmer,
+        useFactory: (): CoverTrimmer => new SharpCoverTrimmer(),
+    },
     {
         provide: token.builder,
         inject: [token.authors, token.ids, token.clock],
@@ -354,6 +361,7 @@ const useCaseProviders: Provider[] = [
         inject: [
             token.books,
             token.covers,
+            token.trimmer,
             token.loader,
             token.viewer,
             token.clock,
@@ -362,11 +370,12 @@ const useCaseProviders: Provider[] = [
         useFactory: (
             books: BookRepository,
             covers: CoverStorage,
+            trimmer: CoverTrimmer,
             loader: BookLoader,
             viewer: BookViewer,
             clock: Clock,
             operations: AuditedOperation,
-        ) => new ReplaceCover(books, covers, loader, viewer, clock, operations),
+        ) => new ReplaceCover(books, covers, trimmer, loader, viewer, clock, operations),
     },
     {
         provide: 'BOOKS_REMOVE_COVER',
@@ -430,6 +439,7 @@ const developmentProviders: Provider[] = [
             token.collections,
             token.readings,
             token.covers,
+            token.trimmer,
             token.ids,
             token.clock,
             token.operations,
@@ -442,6 +452,7 @@ const developmentProviders: Provider[] = [
             collections: CollectionMembership,
             readings: ReadingStatusStore,
             covers: CoverStorage,
+            trimmer: CoverTrimmer,
             ids: IdGenerator,
             clock: Clock,
             operations: AuditedOperation,
@@ -454,6 +465,7 @@ const developmentProviders: Provider[] = [
                 collections,
                 readings,
                 covers,
+                trimmer,
                 ids,
                 clock,
                 operations,

@@ -8,6 +8,7 @@ import { BookAudit, BookSnapshot } from '../book-audit.js';
 import type { BookRepository } from '../ports/driven/book-repository.interface.js';
 import type { CollectionMembership } from '../ports/driven/collection-membership.interface.js';
 import type { CoverStorage } from '../ports/driven/cover-storage.interface.js';
+import type { CoverTrimmer } from '../ports/driven/cover-trimmer.interface.js';
 import type { ReadingStatusStore } from '../ports/driven/reading-status-store.interface.js';
 import { BookDetailsBuilder } from '../services/book-details-builder.service.js';
 import { BookIdentityCheck } from '../services/book-identity-check.service.js';
@@ -34,6 +35,7 @@ export class ImportBook implements ImportBookUseCase {
         private readonly collections: CollectionMembership,
         private readonly readings: ReadingStatusStore,
         private readonly covers: CoverStorage,
+        private readonly trimmer: CoverTrimmer,
         private readonly ids: IdGenerator,
         private readonly clock: Clock,
         private readonly operations: AuditedOperation,
@@ -62,7 +64,9 @@ export class ImportBook implements ImportBookUseCase {
                     await this.identity.ensureUnique(details, id, true);
 
                     if (cover) {
-                        stored = await this.covers.store(cover.bytes, cover.mediaType);
+                        const trimmed = await this.trimmer.trim(cover);
+
+                        stored = await this.covers.store(trimmed.bytes, trimmed.mediaType);
                     }
 
                     const book = new Book({
