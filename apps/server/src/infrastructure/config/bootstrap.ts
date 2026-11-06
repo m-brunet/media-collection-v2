@@ -40,6 +40,8 @@ import { LocationsModule } from '../../locations/infrastructure/config/locations
 import { LendingModule } from '../../lending/infrastructure/config/lending.module.js';
 import { KyselyLoanRepository } from '../../lending/infrastructure/adapters/driven/persistence/kysely-loan.repository.js';
 import { KyselyReceiverRepository } from '../../lending/infrastructure/adapters/driven/persistence/kysely-receiver.repository.js';
+import { KyselyLendableBooks } from '../../lending/infrastructure/adapters/driven/persistence/kysely-lendable-books.adapter.js';
+import { KyselyActiveLoans } from '../../lending/infrastructure/adapters/driven/persistence/kysely-active-loans.adapter.js';
 import { KyselyBookcaseRepository } from '../../locations/infrastructure/adapters/driven/persistence/kysely-bookcase.repository.js';
 import { KyselyShelfRepository } from '../../locations/infrastructure/adapters/driven/persistence/kysely-shelf.repository.js';
 import { KyselyBookShelfStore } from '../../locations/infrastructure/adapters/driven/persistence/kysely-book-shelf-store.adapter.js';
@@ -272,6 +274,15 @@ export class BackendRuntime {
                             operations,
                         }),
                         TagsModule.register({ tags, store: bookTags, ids, clock, operations }),
+                        LendingModule.register({
+                            loans,
+                            receivers,
+                            books: new KyselyLendableBooks(database.connections),
+                            active: new KyselyActiveLoans(database.connections),
+                            ids,
+                            clock,
+                            operations,
+                        }),
                     ],
                     controllers: [HealthController],
                 },

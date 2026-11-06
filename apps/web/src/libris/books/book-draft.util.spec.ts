@@ -22,6 +22,7 @@ function book(overrides: Partial<BookDto> = {}): BookDto {
         collection: null,
         location: null,
         tags: [],
+        loan: null,
         createdAt: '2026-01-01T00:00:00.000Z',
         updatedAt: '2026-01-01T00:00:00.000Z',
         personal: { read: true, note: { text: 'Mine.', updatedAt: '2026-01-01T00:00:00.000Z' } },
