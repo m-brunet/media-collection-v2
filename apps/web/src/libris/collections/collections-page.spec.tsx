@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { CollectionSummaryDto } from '../../../../../packages/contracts/src/http';
@@ -68,6 +68,48 @@ it('shows each collection with its whole-collection counts', async () => {
         'No known missing volumes · Unfinished',
     );
     expect(screen.getByRole('link', { name: /Lord of the Rings/ })).toHaveTextContent('Finished');
+});
+
+it('previews a collection with the covers it was given, outside the link name', async () => {
+    new FakeApi().signedIn(account()).on(
+        'GET /collections',
+        listing([
+            summary({
+                previews: [
+                    { id: 'b1', title: 'Year One', updatedAt: '2026-01-01T00:00:00.000Z' },
+                    {
+                        id: 'b2',
+                        title: 'The Long Halloween',
+                        updatedAt: '2026-01-02T00:00:00.000Z',
+                    },
+                ],
+            }),
+        ]),
+    );
+
+    show();
+
+    const batman = await screen.findByRole('link', { name: /Batman/ });
+
+    expect(
+        within(batman)
+            .getAllByRole('img', { hidden: true })
+            .map((image) => image.getAttribute('src')),
+    ).toEqual([
+        '/api/books/b1/cover?v=2026-01-01T00%3A00%3A00.000Z',
+        '/api/books/b2/cover?v=2026-01-02T00%3A00%3A00.000Z',
+    ]);
+    expect(batman).toHaveAccessibleName('Batman, 4 / 12 volumes Owned, 8 missing · Unfinished');
+});
+
+it('shows no cover for a collection without previews', async () => {
+    new FakeApi().signedIn(account()).on('GET /collections', listing([summary()]));
+
+    show();
+
+    const batman = await screen.findByRole('link', { name: /Batman/ });
+
+    expect(within(batman).queryAllByRole('img', { hidden: true })).toEqual([]);
 });
 
 it('invites an Owner to add a book when no collection exists', async () => {

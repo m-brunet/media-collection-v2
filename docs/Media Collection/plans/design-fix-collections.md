@@ -96,7 +96,7 @@ reuse it if its look can match).
 ## Steps
 
 1. [x] Contract and backend: member `publisher`/`updatedAt`, summary `previews`
-2. [ ] List page cards
+2. [x] List page cards
 3. [ ] Details page: summary, callouts, volume cards, editions with covers, copy
 4. [ ] 1280/1440 browser check
 5. [ ] Review, check, docs
