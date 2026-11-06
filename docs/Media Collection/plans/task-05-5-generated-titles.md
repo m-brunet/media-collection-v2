@@ -1,6 +1,6 @@
 # Task 5.5 — Generated titles for collection Manga and Comics
 
-Status: technical design proposed (2026-11-06), awaiting user approval. Business rules confirmed (2026-11-06).
+Status: technical design approved (2026-11-06), in progress on `master`. Business rules confirmed (2026-11-06).
 Global plan: [implementation plan](implementation-plan.md).
 Owning docs: [book-entry](../book-entry.md#collection-based-titles) (authoritative title rules and acceptance examples),
 [features](../features.md) (Books), [collections](../collections.md) (membership, rename and deletion).
@@ -81,7 +81,7 @@ external title recovery; new collection or lending workflows. Tasks 6 and 7 adop
 - Before implementation completion, perform the required architecture-review skill and relevant format, lint, type,
   unit, API, persistence and web checks, including the repository's required full check.
 
-## Technical design (proposed 2026-11-06, awaiting user approval)
+## Technical design (approved 2026-11-06)
 
 Written against the completed Task 5 code. Existing names: `Book`/`BookDetails` (title 1-300 characters,
 `title-invalid`), `CreateBook`/`UpdateBook`, `BookDetailsBuilder`, `BookIdentityCheck`, `CollectionMembership.assign`
@@ -161,18 +161,12 @@ Written against the completed Task 5 code. Existing names: `Book`/`BookDetails` 
        collection deletion keeps titles; lending regression.
 7. [ ] Docs (architecture: `MemberTitles`, migration 010), full check, architecture review, commit, plan status.
 
-### Questions for the user
+### Decisions confirmed by the user (2026-11-06)
 
-1. **Title order of numbered titles.** Titles sort as plain text today, so generated titles list as `Gunnm - 1,
-   Gunnm - 10, Gunnm - 11, Gunnm - 2`. Recommended: sort by a "natural" key where numbers compare by value
-   (`Gunnm - 2` before `Gunnm - 10`), for every title (supplied ones like "Vol. 2" / "Vol. 10" benefit too): a new
-   `title_sort_key` column (digit runs zero-padded), backfilled by migration 010. Alternative: keep plain-text order.
-2. **Format check.** I read the rule as `Gunnm - 3`, `Gunnm - 1–3` (en dash, no spaces), `Gunnm - 0` with volume 0,
-   and the collection name exactly as displayed. Confirm, or correct the separators.
-3. **Duplicate warning.** Two no-ISBN editions of the same volume in one collection (a permitted Owned overlap) would
-   both be named `Gunnm - 3`, so the second one triggers the existing "possible duplicate" warning, which can be
-   overridden. Recommended: keep that behaviour (it is a likely duplicate). Alternative: skip the warning for
-   generated titles.
+1. Titles sort naturally (numbers by value) for every book: a `title_sort_key` column with digit runs zero-padded,
+   backfilled by migration 010; the catalog's title sort uses it.
+2. Format: `Name - N`, `Name - N–M` (en dash, no spaces), `Name - 0` with volume 0, collection display name as is.
+3. Two editions generating the same title keep the existing, overridable "possible duplicate" warning.
 
 ## Delivery and dependencies
 
