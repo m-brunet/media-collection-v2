@@ -14,7 +14,8 @@ import { ImportV1Library } from '../../development-data/application/use-cases/im
 import { ResetDevelopmentData } from '../../development-data/application/use-cases/reset-development-data.usecase.js';
 import { KyselyLibraryEraser } from '../../development-data/infrastructure/adapters/driven/persistence/kysely-library-eraser.adapter.js';
 import { KyselyCoverFileCleanup } from '../../development-data/infrastructure/adapters/driven/persistence/kysely-cover-file-cleanup.adapter.js';
-import { KyselyLibraryAdministrator } from '../../development-data/infrastructure/adapters/driven/persistence/kysely-library-administrator.adapter.js';
+import { IdentityModule } from '../../identity/infrastructure/config/identity.module.js';
+import { KyselyUserRepository } from '../../identity/infrastructure/adapters/driven/persistence/kysely-user.repository.js';
 import { JsonV1Dump } from '../../development-data/infrastructure/adapters/driven/filesystem/json-v1-dump.adapter.js';
 import { DevelopmentDataReport } from '../../development-data/infrastructure/adapters/driving/command-line/development-data-report.adapter.js';
 import { FileCoverStorage } from '../../books/infrastructure/adapters/driven/filesystem/file-cover-storage.adapter.js';
@@ -63,13 +64,16 @@ export class DevelopmentDataCommands {
             const context = await NestFactory.createApplicationContext(
                 {
                     module: DevelopmentDataContext,
-                    imports: LibraryModules.register({
-                        database,
-                        dataDirectory,
-                        ids,
-                        clock,
-                        operations,
-                    }),
+                    imports: LibraryModules.register(
+                        {
+                            database,
+                            dataDirectory,
+                            ids,
+                            clock,
+                            operations,
+                        },
+                        { developmentImport: true },
+                    ),
                 },
                 { logger: false, abortOnError: false },
             );
@@ -81,7 +85,7 @@ export class DevelopmentDataCommands {
                 const report = await new ImportV1Library(
                     new JsonV1Dump(source),
                     new CachedCoverDownloads(join(dirname(source), 'covers')),
-                    new KyselyLibraryAdministrator(database.connections),
+                    IdentityModule.administrator(new KyselyUserRepository(database.connections)),
                     new KyselyLibraryEraser(database.connections),
                     new KyselyCoverFileCleanup(
                         database.connections,

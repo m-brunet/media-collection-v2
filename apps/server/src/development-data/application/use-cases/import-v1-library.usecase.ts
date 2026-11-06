@@ -19,8 +19,6 @@ import { NameKey } from '../../../shared/domain/name-key.helper.js';
 // fetched before anything is written; then the library is erased and the books saved, as the
 // administrator, in one transaction, so a failure keeps the previous library.
 export class ImportV1Library implements ImportV1LibraryUseCase {
-    private static readonly parallelDownloads = 8;
-
     constructor(
         private readonly dump: V1Dump,
         private readonly downloads: CoverDownloads,
@@ -115,20 +113,15 @@ export class ImportV1Library implements ImportV1LibraryUseCase {
     }
 
     private async download(books: readonly PlannedBook[]): Promise<Map<number, Uint8Array>> {
-        const images = new Map<number, Uint8Array>();
-        const queue = books.filter((book) => book.coverUrl !== null);
-        const worker = async () => {
-            for (let book = queue.shift(); book; book = queue.shift()) {
-                const bytes = await this.downloads.fetch(book.coverUrl!);
+        const urls = books.flatMap((book) => (book.coverUrl ? [book.coverUrl] : []));
+        const images = await this.downloads.fetchAll(urls);
 
-                if (bytes) {
-                    images.set(book.record, bytes);
-                }
-            }
-        };
+        return new Map(
+            books.flatMap((book) => {
+                const bytes = book.coverUrl ? images.get(book.coverUrl) : undefined;
 
-        await Promise.all(Array.from({ length: ImportV1Library.parallelDownloads }, worker));
-
-        return images;
+                return bytes ? [[book.record, bytes] as const] : [];
+            }),
+        );
     }
 }

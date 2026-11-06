@@ -32,19 +32,23 @@ describe('CachedCoverDownloads', () => {
         return new CachedCoverDownloads(join(directory, 'covers'), download);
     }
 
+    async function one(covers: CachedCoverDownloads, url: string) {
+        return (await covers.fetchAll([url])).get(url) ?? null;
+    }
+
     it('downloads a cover and keeps it in the cache', async () => {
         const covers = downloads();
 
-        const result = await covers.fetch('http://example.test/1.jpg');
+        const result = await one(covers, 'http://example.test/1.jpg');
 
         expect(result).toEqual(jpeg);
         expect(await readdir(join(directory, 'covers'))).toHaveLength(1);
     });
     it('reuses the cached cover instead of downloading it again', async () => {
-        await downloads().fetch('http://example.test/1.jpg');
+        await one(downloads(), 'http://example.test/1.jpg');
         const covers = downloads();
 
-        const result = await covers.fetch('http://example.test/1.jpg');
+        const result = await one(covers, 'http://example.test/1.jpg');
 
         expect(result).toEqual(jpeg);
         expect(requests).toEqual(['http://example.test/1.jpg']);
@@ -52,7 +56,7 @@ describe('CachedCoverDownloads', () => {
     it('gives no cover for a missing image, and caches nothing', async () => {
         const covers = downloads(404);
 
-        const result = await covers.fetch('http://example.test/missing.jpg');
+        const result = await one(covers, 'http://example.test/missing.jpg');
 
         expect(result).toBeNull();
         await expect(readdir(join(directory, 'covers'))).rejects.toMatchObject({ code: 'ENOENT' });
@@ -60,7 +64,7 @@ describe('CachedCoverDownloads', () => {
     it('gives no cover when the host cannot be reached', async () => {
         const covers = downloads(200, new TypeError('fetch failed'));
 
-        const result = await covers.fetch('http://unknown.test/1.jpg');
+        const result = await one(covers, 'http://unknown.test/1.jpg');
 
         expect(result).toBeNull();
     });
@@ -68,7 +72,7 @@ describe('CachedCoverDownloads', () => {
         const covers = downloads();
         const url = '\ndata:image/jpeg;base64,' + Buffer.from(jpeg).toString('base64');
 
-        const result = await covers.fetch(url);
+        const result = await one(covers, url);
 
         expect(result).toEqual(jpeg);
         expect(requests).toEqual([]);
@@ -76,9 +80,32 @@ describe('CachedCoverDownloads', () => {
     it('ignores other kinds of address', async () => {
         const covers = downloads();
 
-        const result = await covers.fetch('file:///etc/passwd');
+        const result = await one(covers, 'file:///etc/passwd');
 
         expect(result).toBeNull();
         expect(requests).toEqual([]);
+    });
+    it('downloads several covers at once, each address once', async () => {
+        let running = 0;
+        let mostAtOnce = 0;
+        const download = (async (url: string | URL | Request) => {
+            requests.push(String(url));
+            mostAtOnce = Math.max(mostAtOnce, ++running);
+            await new Promise((resolve) => setTimeout(resolve, 5));
+            running--;
+
+            return new Response(jpeg, { status: 200 });
+        }) as typeof fetch;
+        const covers = new CachedCoverDownloads(join(directory, 'covers'), download);
+        const urls = Array.from(
+            { length: 20 },
+            (_, index) => 'http://example.test/' + index + '.jpg',
+        );
+
+        const result = await covers.fetchAll([...urls, urls[0]!]);
+
+        expect(result.size).toBe(20);
+        expect(requests).toHaveLength(20);
+        expect(mostAtOnce).toBe(8);
     });
 });

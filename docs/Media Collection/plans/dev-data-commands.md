@@ -59,6 +59,9 @@ volume up to it is present and Owned and none goes beyond, otherwise it stays un
 - Cover cleanup asks the books `CoverStorage` (`list`, `remove`) which covers are stored, instead of knowing their
   folder and naming. The terminal output is a feature driving adapter (`DevelopmentDataReport`); root config only
   composes.
-- Not done (optional review suggestions): an identity-owned reader for the import administrator, registering
-  `BOOKS_IMPORT` only in the development context, and moving parallel cover downloads into the downloads adapter.
+- Optional review suggestions, done at the user's request: identity finds the import administrator
+  (`LibraryAdministratorLookup`, implementing the development-data `LibraryAdministrator` port through the identity
+  `User` rules); `BOOKS_IMPORT` is registered only for the development commands (`developmentImport` option of
+  `LibraryModules`/`BooksModule`), not in the HTTP backend; the downloads adapter fetches all covers, 8 at a time
+  (`CoverDownloads.fetchAll`), so the import use case only asks for them.
 

@@ -242,46 +242,6 @@ const useCaseProviders: Provider[] = [
                 operations,
             ),
     },
-    // No HTTP endpoint: used by the development V1 import only.
-    {
-        provide: 'BOOKS_IMPORT',
-        inject: [
-            token.books,
-            token.builder,
-            token.identity,
-            token.titles,
-            token.collections,
-            token.readings,
-            token.covers,
-            token.ids,
-            token.clock,
-            token.operations,
-        ],
-        useFactory: (
-            books: BookRepository,
-            builder: BookDetailsBuilder,
-            identity: BookIdentityCheck,
-            titles: GeneratedTitleSync,
-            collections: CollectionMembership,
-            readings: ReadingStatusStore,
-            covers: CoverStorage,
-            ids: IdGenerator,
-            clock: Clock,
-            operations: AuditedOperation,
-        ) =>
-            new ImportBook(
-                books,
-                builder,
-                identity,
-                titles,
-                collections,
-                readings,
-                covers,
-                ids,
-                clock,
-                operations,
-            ),
-    },
     {
         provide: 'BOOKS_UPDATE',
         inject: [
@@ -458,10 +418,56 @@ const useCaseProviders: Provider[] = [
             new DeletePersonalNote(notes, loader, operations),
     },
 ];
+// No HTTP endpoint: registered for the development V1 import only.
+const developmentProviders: Provider[] = [
+    {
+        provide: 'BOOKS_IMPORT',
+        inject: [
+            token.books,
+            token.builder,
+            token.identity,
+            token.titles,
+            token.collections,
+            token.readings,
+            token.covers,
+            token.ids,
+            token.clock,
+            token.operations,
+        ],
+        useFactory: (
+            books: BookRepository,
+            builder: BookDetailsBuilder,
+            identity: BookIdentityCheck,
+            titles: GeneratedTitleSync,
+            collections: CollectionMembership,
+            readings: ReadingStatusStore,
+            covers: CoverStorage,
+            ids: IdGenerator,
+            clock: Clock,
+            operations: AuditedOperation,
+        ) =>
+            new ImportBook(
+                books,
+                builder,
+                identity,
+                titles,
+                collections,
+                readings,
+                covers,
+                ids,
+                clock,
+                operations,
+            ),
+    },
+];
 
 @Module({})
 export class BooksModule {
-    static register(dependencies: BooksDependencies): DynamicModule {
+    // `developmentImport` adds `BOOKS_IMPORT`, for the development data commands only.
+    static register(
+        dependencies: BooksDependencies,
+        options: { developmentImport?: boolean } = {},
+    ): DynamicModule {
         return {
             module: BooksModule,
             controllers: [
@@ -474,6 +480,7 @@ export class BooksModule {
                 ...dependencyProviders(dependencies),
                 ...serviceProviders,
                 ...useCaseProviders,
+                ...(options.developmentImport ? developmentProviders : []),
             ],
         };
     }

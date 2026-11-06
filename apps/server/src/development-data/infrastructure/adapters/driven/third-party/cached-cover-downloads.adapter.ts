@@ -5,17 +5,37 @@ import type { CoverDownloads } from '../../../../application/ports/driven/cover-
 
 // Downloads V1 covers once into a local cache (`local-imports/v1/covers/`, Git-ignored), which
 // later imports reuse: re-running the import is fast, works offline and survives dead addresses.
-// Only successful downloads are cached, so failed ones are tried again next time.
+// Only successful downloads are cached, so failed ones are tried again next time. Several covers are
+// downloaded at once.
 export class CachedCoverDownloads implements CoverDownloads {
     private static readonly maximumBytes = 10 * 1024 * 1024;
     private static readonly timeoutMilliseconds = 20_000;
+    private static readonly parallelDownloads = 8;
 
     constructor(
         private readonly cacheDirectory: string,
         private readonly download: typeof fetch = fetch,
     ) {}
 
-    async fetch(url: string): Promise<Uint8Array | null> {
+    async fetchAll(urls: readonly string[]): Promise<Map<string, Uint8Array>> {
+        const images = new Map<string, Uint8Array>();
+        const queue = [...new Set(urls)];
+        const worker = async () => {
+            for (let url = queue.shift(); url !== undefined; url = queue.shift()) {
+                const bytes = await this.fetch(url);
+
+                if (bytes) {
+                    images.set(url, bytes);
+                }
+            }
+        };
+
+        await Promise.all(Array.from({ length: CachedCoverDownloads.parallelDownloads }, worker));
+
+        return images;
+    }
+
+    private async fetch(url: string): Promise<Uint8Array | null> {
         const inline = url.trim().match(/^data:[^;,]*;base64,(?<data>.*)$/s)?.groups?.data;
 
         if (inline !== undefined) {
