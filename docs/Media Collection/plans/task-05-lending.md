@@ -95,7 +95,7 @@ presentation and Overview counter (Task 8), data reset (Task 9).
        endpoint, roles, conflicts, rollback (no orphan receiver), audit records.
 6. [x] Libris: Lent books page, Lend and Record returns pages, book details panel and actions, Lent chips, form guard;
        EN/FR; component tests.
-7. [ ] Browser e2e: lend one / several, similar-name choice, partial return across occasions, conflict keeps draft,
+7. [x] Browser e2e (`tests/web/lending.e2e-spec.ts`): lend one / several, similar-name choice, partial return across occasions, conflict keeps draft,
        delete blocked while lent, Guest view-only.
 8. [ ] Docs (architecture: lending feature, ports, migration 009), full check, architecture review, commit, plan status.
 
