@@ -62,3 +62,9 @@ export const bookListSchema = z.strictObject({
 });
 
 export { idSchema };
+
+// Find book: the ISBN as typed; the domain validates and normalises it.
+export const bookLookupSchema = z.strictObject({ isbn: z.string().max(40) });
+
+// A cover image address someone pasted; the use case checks it is a web address.
+export const coverAddressSchema = z.strictObject({ address: z.string().max(2000) });

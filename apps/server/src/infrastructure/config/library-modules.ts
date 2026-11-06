@@ -32,14 +32,18 @@ export interface LibraryDependencies {
     ids: IdGenerator;
     clock: Clock;
     operations: AuditedOperation;
+    // Test-only override of the outside sources' addresses; absent in production.
+    lookupAddresses?: LookupAddresses;
 }
+
+export type LookupAddresses = { bnf?: string; openLibrary?: string };
 
 // The shared library features (books, collections, locations, tags, lending) wired to SQLite and
 // the data directory, for the HTTP backend and the development data commands alike.
 // `developmentImport` adds the use cases only the development V1 import needs.
 export class LibraryModules {
     static register(
-        { database, dataDirectory, ids, clock, operations }: LibraryDependencies,
+        { database, dataDirectory, ids, clock, operations, lookupAddresses }: LibraryDependencies,
         options: { developmentImport?: boolean } = {},
     ): DynamicModule[] {
         const connections = database.connections;
@@ -67,6 +71,7 @@ export class LibraryModules {
                     readings: new KyselyReadingStatusRepository(connections),
                     notes: new KyselyPersonalNoteRepository(connections),
                     covers: new FileCoverStorage(dataDirectory),
+                    lookup: BooksModule.lookupSources(lookupAddresses),
                     collections: membership,
                     collectionReader: membership,
                     shelves: shelving,

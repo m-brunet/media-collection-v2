@@ -15,6 +15,12 @@ import type {
     MembershipRequest,
 } from '../ports/driven/collection-membership.interface.js';
 import type { CoverStorage } from '../ports/driven/cover-storage.interface.js';
+import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
+import type { LookupSource, SourceReply } from '../ports/driven/lookup-source.interface.js';
+import type { LookupCoverRegistry } from '../ports/driven/lookup-cover-registry.interface.js';
+import type { CoverDownloader } from '../ports/driven/cover-downloader.interface.js';
+import type { CoverImage } from '../../domain/value-objects/cover-image.value-object.js';
+import type { CoverTrimmer } from '../ports/driven/cover-trimmer.interface.js';
 import type { PersonalNoteStore } from '../ports/driven/personal-note-store.interface.js';
 import type { ReadingStatusStore } from '../ports/driven/reading-status-store.interface.js';
 import type {
@@ -172,6 +178,90 @@ export class MemoryNotes implements PersonalNoteStore {
 
     async delete(userId: string, bookId: string): Promise<void> {
         this.notes.delete(userId + '/' + bookId);
+    }
+}
+
+// Records the covers it was asked to trim and gives back `result` when set, the cover otherwise.
+export class MemoryTrimmer implements CoverTrimmer {
+    readonly received: CoverImage[] = [];
+    result: CoverImage | null = null;
+
+    async trim(cover: CoverImage): Promise<CoverImage> {
+        this.received.push(cover);
+
+        return this.result ?? cover;
+    }
+}
+
+// A lookup source answering from a script: a fixed reply, a failure (`'fail'`), or never (`'hang'`).
+export class ScriptedSource<T> implements LookupSource<T> {
+    readonly asked: string[] = [];
+
+    constructor(
+        readonly name: string,
+        private readonly reply: SourceReply<T> | 'fail' | 'hang',
+        readonly limit = { requests: 100, seconds: 60 },
+    ) {}
+
+    async find(isbn13: string): Promise<SourceReply<T>> {
+        this.asked.push(isbn13);
+
+        if (this.reply === 'fail') {
+            throw new Error('Source unreachable');
+        }
+
+        if (this.reply === 'hang') {
+            return new Promise(() => undefined);
+        }
+
+        return this.reply;
+    }
+}
+
+// Lookup covers under predictable tokens; `forget` makes a token expire.
+export class MemoryCoverRegistry implements LookupCoverRegistry {
+    readonly addresses = new Map<string, string>();
+
+    register(address: string): string {
+        const token = 'lookup-cover-' + (this.addresses.size + 1);
+
+        this.addresses.set(token, address);
+
+        return token;
+    }
+
+    address(token: string): string | null {
+        return this.addresses.get(token) ?? null;
+    }
+
+    forget(token: string): void {
+        this.addresses.delete(token);
+    }
+}
+
+// Downloads from a fixed table of addresses; anything else cannot be fetched.
+export class TableDownloader implements CoverDownloader {
+    readonly requested: string[] = [];
+
+    constructor(private readonly images: Record<string, Uint8Array> = {}) {}
+
+    async download(address: string): Promise<Uint8Array | null> {
+        this.requested.push(address);
+
+        return this.images[address] ?? null;
+    }
+}
+
+// A clock that only moves when told to.
+export class ManualClock implements Clock {
+    constructor(private current = new Date('2026-03-01T10:00:00Z')) {}
+
+    now(): Date {
+        return this.current;
+    }
+
+    advance(seconds: number): void {
+        this.current = new Date(this.current.getTime() + seconds * 1000);
     }
 }
 
@@ -446,6 +536,7 @@ export function library() {
     const readings = new MemoryReadings();
     const notes = new MemoryNotes();
     const covers = new MemoryCovers();
+    const trimmer = new MemoryTrimmer();
     const trail = new MemoryAuditTrail();
     const catalog = new MemoryCatalog(books, authors);
     const collections = new MemoryMembership();
@@ -467,6 +558,7 @@ export function library() {
         readings,
         notes,
         covers,
+        trimmer,
         trail,
         catalog,
         collections,

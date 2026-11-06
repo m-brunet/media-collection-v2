@@ -1,4 +1,5 @@
 import type { BookDto } from '../../../../../../../../packages/contracts/src/http.js';
+import sharp from 'sharp';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { TestApp } from '../../../../../../../../tests/api/setup/test-app.js';
 import { UserFixture } from '../../../../../../../../tests/api/fixtures/user.fixture.js';
@@ -29,6 +30,22 @@ function upload(bytes: Buffer, contentType = 'image/png') {
     return { raw: { bytes, contentType } };
 }
 
+// A 200 × 300 cover centred on a white 300 × 300 square, as online shops serve them.
+async function shopThumbnail() {
+    const art = await sharp({
+        create: { width: 200, height: 300, channels: 3, background: { r: 40, g: 60, b: 120 } },
+    })
+        .png()
+        .toBuffer();
+
+    return sharp({
+        create: { width: 300, height: 300, channels: 3, background: { r: 255, g: 255, b: 255 } },
+    })
+        .composite([{ input: art, left: 50, top: 0 }])
+        .png()
+        .toBuffer();
+}
+
 describe('PUT /api/books/:id/cover', () => {
     it('stores the cover image', async () => {
         const { client, book } = await created();
@@ -42,6 +59,25 @@ describe('PUT /api/books/:id/cover', () => {
 
         expect(response.status).toBe(200);
         expect(response.body.hasCover).toBe(true);
+    });
+    it('stores the cover without the white bars of a shop thumbnail', async () => {
+        const { client, book } = await created();
+        const thumbnail = await shopThumbnail();
+
+        const response = await client.call<BookDto>(
+            '/books/' + book.id + '/cover',
+            'PUT',
+            undefined,
+            upload(thumbnail),
+        );
+
+        const saved = await app.dependencies.books.books.findById(book.id);
+        const stored = await app.dependencies.books.covers.read(saved!.snapshot.coverFile!);
+        const { width, height } = await sharp(stored!.bytes).metadata();
+
+        expect(response.status).toBe(200);
+        expect({ width, height }).toEqual({ width: 200, height: 300 });
+        expect(stored!.mediaType).toBe('image/png');
     });
     it('rejects a file that is not a supported image', async () => {
         const { client, book } = await created();

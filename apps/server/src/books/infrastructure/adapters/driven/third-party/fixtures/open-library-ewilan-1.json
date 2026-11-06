@@ -1,0 +1,67 @@
+{
+    "ISBN:9782253164692": {
+        "url": "http://openlibrary.org/books/OL32749895M/La_qu\u00eate_d'Ewilan",
+        "key": "/books/OL32749895M",
+        "title": "La qu\u00eate d'Ewilan",
+        "authors": [
+            {
+                "url": "http://openlibrary.org/authors/OL3135944A/Pierre_Bottero",
+                "name": "Pierre Bottero"
+            },
+            {
+                "url": "http://openlibrary.org/authors/OL3135945A/Jean-Louis_Thouard",
+                "name": "Jean-Louis Thouard"
+            }
+        ],
+        "pagination": "3 vol.",
+        "by_statement": "Pierre Bottero",
+        "identifiers": {
+            "isbn_10": ["2253164690", "2253164704", "2253164712"],
+            "isbn_13": ["9782253164692", "9782253164708", "9782253164715"],
+            "oclc": ["999768658"],
+            "openlibrary": ["OL32749895M"]
+        },
+        "publishers": [{ "name": "Le livre de poche" }],
+        "publish_places": [{ "name": "Paris" }],
+        "publish_date": "2012",
+        "subjects": [
+            {
+                "name": "French Fantasy fiction",
+                "url": "https://openlibrary.org/subjects/french_fantasy_fiction"
+            }
+        ],
+        "notes": "Enfants (9-12 ans)",
+        "table_of_contents": [
+            {
+                "level": 0,
+                "label": "",
+                "title": "Vol. 1 : D'un monde \u00e0 l'autre.",
+                "pagenum": ""
+            },
+            { "level": 0, "label": "", "title": "257 p.", "pagenum": "" },
+            {
+                "level": 0,
+                "label": "",
+                "title": "Vol. 2 : Les fronti\u00e8res de glace.",
+                "pagenum": ""
+            },
+            { "level": 0, "label": "", "title": "281 p.", "pagenum": "" },
+            { "level": 0, "label": "", "title": "Vol. 3 : L'\u00eele du destin.", "pagenum": "" },
+            { "level": 0, "label": "", "title": "304 p.", "pagenum": "" }
+        ],
+        "ebooks": [
+            {
+                "preview_url": "https://archive.org/details/laquetedewilan0000bott",
+                "availability": "borrow",
+                "formats": {},
+                "borrow_url": "https://openlibrary.org/books/OL32749895M/La_qu\u00eate_d'Ewilan/borrow",
+                "checkedout": true
+            }
+        ],
+        "cover": {
+            "small": "https://covers.openlibrary.org/b/id/11376002-S.jpg",
+            "medium": "https://covers.openlibrary.org/b/id/11376002-M.jpg",
+            "large": "https://covers.openlibrary.org/b/id/11376002-L.jpg"
+        }
+    }
+}

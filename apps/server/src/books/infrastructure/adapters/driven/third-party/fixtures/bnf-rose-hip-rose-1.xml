@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?><srw:searchRetrieveResponse xmlns:srw="http://www.loc.gov/zing/srw/" xmlns="http://catalogue.bnf.fr/namespaces/InterXMarc" xmlns:ixm="http://catalogue.bnf.fr/namespaces/InterXMarc" xmlns:mn="http://catalogue.bnf.fr/namespaces/motsnotices" xmlns:sd="http://www.loc.gov/zing/srw/diagnostic/">
+<srw:version>1.2</srw:version>
+<srw:echoedSearchRetrieveRequest>
+<srw:version>1.2</srw:version>
+<srw:query>bib.isbn all "9782845998179"</srw:query>
+</srw:echoedSearchRetrieveRequest>
+<srw:numberOfRecords>1</srw:numberOfRecords>
+<srw:records>
+<srw:record>
+<srw:recordSchema>marcxchange</srw:recordSchema>
+<srw:recordPacking>xml</srw:recordPacking>
+<srw:recordData>
+<mxc:record xmlns:mxc="info:lc/xmlns/marcxchange-v2" format="UNIMARC" id="ark:/12148/cb41185544n" type="Bibliographic">
+<mxc:leader>     cam  22        450 </mxc:leader>
+<mxc:controlfield tag="001">FRBNF411855440000002</mxc:controlfield>
+<mxc:controlfield tag="003">http://catalogue.bnf.fr/ark:/12148/cb41185544n</mxc:controlfield>
+<mxc:datafield tag="010" ind1=" " ind2=" ">
+<mxc:subfield code="a">978-2-84599-817-9</mxc:subfield>
+<mxc:subfield code="b">br.</mxc:subfield>
+<mxc:subfield code="d">6,95 EUR</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="020" ind1=" " ind2=" ">
+<mxc:subfield code="a">FR</mxc:subfield>
+<mxc:subfield code="b">00809128</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="073" ind1=" " ind2="0">
+<mxc:subfield code="a">9782845998179</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="100" ind1=" " ind2=" ">
+<mxc:subfield code="a">20080117d2008    m  y0frey50      ba</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="101" ind1="1" ind2=" ">
+<mxc:subfield code="a">fre</mxc:subfield>
+<mxc:subfield code="c">jpn</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="102" ind1=" " ind2=" ">
+<mxc:subfield code="a">FR</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="105" ind1=" " ind2=" ">
+<mxc:subfield code="a">||||t   00|a|</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="106" ind1=" " ind2=" ">
+<mxc:subfield code="a">r</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="181" ind1=" " ind2="0">
+<mxc:subfield code="6">01</mxc:subfield>
+<mxc:subfield code="a">i </mxc:subfield>
+<mxc:subfield code="b">xxxe  </mxc:subfield>
+<mxc:subfield code="a">b </mxc:subfield>
+<mxc:subfield code="b">xb2e  </mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="181" ind1=" " ind2=" ">
+<mxc:subfield code="6">02</mxc:subfield>
+<mxc:subfield code="c">txt</mxc:subfield>
+<mxc:subfield code="c">sti</mxc:subfield>
+<mxc:subfield code="2">rdacontent</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="182" ind1=" " ind2="0">
+<mxc:subfield code="6">01</mxc:subfield>
+<mxc:subfield code="a">n</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="182" ind1=" " ind2=" ">
+<mxc:subfield code="6">02</mxc:subfield>
+<mxc:subfield code="c">n</mxc:subfield>
+<mxc:subfield code="2">rdamedia</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="200" ind1="1" ind2=" ">
+<mxc:subfield code="a">Rose hip Rose</mxc:subfield>
+<mxc:subfield code="h">1</mxc:subfield>
+<mxc:subfield code="b">Texte imprimé</mxc:subfield>
+<mxc:subfield code="f">Tôru Fujisawa</mxc:subfield>
+<mxc:subfield code="g">[traduction et adaptation de Vincent  Zouzoulkovsky]</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="210" ind1=" " ind2=" ">
+<mxc:subfield code="a">[Boulogne]</mxc:subfield>
+<mxc:subfield code="c">Pika éd.</mxc:subfield>
+<mxc:subfield code="d">DL 2008</mxc:subfield>
+<mxc:subfield code="e">impr. en Italie</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="215" ind1=" " ind2=" ">
+<mxc:subfield code="a">1 vol. (non paginé [ca 176] p.)</mxc:subfield>
+<mxc:subfield code="c">ill., couv. ill., jaquette ill. en coul.</mxc:subfield>
+<mxc:subfield code="d">18 cm</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="316" ind1=" " ind2=" ">
+<mxc:subfield code="5">FR-751131010:41185544002001</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="321" ind1=" " ind2=" ">
+<mxc:subfield code="a">La Revue des livres pour enfants</mxc:subfield>
+<mxc:subfield code="x">0398-8384</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="329" ind1=" " ind2=" ">
+<mxc:subfield code="c">Problème...</mxc:subfield>
+<mxc:subfield code="a">Tôru Fujisawa, dessinateur remarquable entouré d'un studio très efficace, est l'auteur d'une oeuvre importante qui a eu un écho profond, Great Teacher Onizuka (GTO chez Pika). Si ses oeuvres de jeunesse témoignent d'un humour graveleux en construction et d'un graphisme en recherche, les nouvelles séries traduisent au contraire sa qualité. C'est le cas de celle-ci, déjà parue dans l'éphémère magazine Shonen de Pika il y a quelques années, et assez vite arrêtée au Japon (4 volumes). Le concept un peu trop particulier n'a, semble-t-il, pas pris : une lycéenne (Kasumi) joue les super-héroïnes et les auxiliaires de police déguisés, tout en menant une vie normale. Après tout, Peter Parker, Fantômette et bien d'autres n'ont jamais rien fait d'autre. Mais ce schéma ultra-classique présente l'originalité d'être narré du point de vue d'un témoin, un lycéen tout à fait banal (Shohei) qui découvre par hasard ce mystère, et d'être connecté au thème de l'horreur et des serial killer. L'héroïne, Rose Hip, chasseresse et cible à la fois, est aussi jolie que déjantée et affirmée. On n'est pas alors si loin des schémas classiques du cyberpunk japonais (Bubblegum Crisis, Silent Moebius) avec des héroïnes policières en lutte contre des monstres technoïdes ou ésotériques, ou des chasseresses de vampires, liées par une malédiction à leur proie. L'ensemble, sanglant mais esthétique, reste accessible aux adolescents, contrairement à la dernière série de l'auteur (trop gore), Tokko.</mxc:subfield>
+<mxc:subfield code="d">20080401</mxc:subfield>
+<mxc:subfield code="f">OP</mxc:subfield>
+<mxc:subfield code="2">CNLJ</mxc:subfield>
+<mxc:subfield code="k">Avis critique donné par le Centre national de la littérature pour la jeunesse</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="330" ind1=" " ind2=" ">
+<mxc:subfield code="a">Alors qu'il prenait en photo les culottes de filles dans le train, pour alimenter son site Internet, Shôhei Aiba rencontre Kasumi Asakura. La lycéenne est en fait une combattante d'élite qui travaille dans une brigade d'intervention de la police sous le nom de Rose Hip. Et Shôhei se retrouve malgré lui aux côtés de Kasumi pour combattre celui qui terrorise Tokyo, le Bélier.</mxc:subfield>
+<mxc:subfield code="2">Electre</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="333" ind1=" " ind2=" ">
+<mxc:subfield code="a">À partir de 13 ans</mxc:subfield>
+<mxc:subfield code="2">CNLJ</mxc:subfield>
+<mxc:subfield code="k">Avis critique donné par le Centre national de la littérature pour la jeunesse</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="454" ind1=" " ind2="1">
+<mxc:subfield code="t">Rose hip Rose</mxc:subfield>
+<mxc:subfield code="h">Volume 1</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="461" ind1=" " ind2="0">
+<mxc:subfield code="0">41206770</mxc:subfield>
+<mxc:subfield code="t">Rose hip Rose</mxc:subfield>
+<mxc:subfield code="v">1</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="608" ind1=" " ind2=" ">
+<mxc:subfield code="a">Bandes dessinées</mxc:subfield>
+<mxc:subfield code="2">CNLJ</mxc:subfield>
+<mxc:subfield code="k">Avis critique donné par le Centre national de la littérature pour la jeunesse</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="686" ind1=" " ind2=" ">
+<mxc:subfield code="a">805</mxc:subfield>
+<mxc:subfield code="2">Cadre de classement de la Bibliographie nationale française</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="700" ind1=" " ind2="|">
+<mxc:subfield code="3">13742866</mxc:subfield>
+<mxc:subfield code="o">ISNI0000000078388747</mxc:subfield>
+<mxc:subfield code="a">Fujisawa</mxc:subfield>
+<mxc:subfield code="b">Tooru</mxc:subfield>
+<mxc:subfield code="f">1967-....</mxc:subfield>
+<mxc:subfield code="4">070</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="702" ind1=" " ind2="|">
+<mxc:subfield code="3">13523163</mxc:subfield>
+<mxc:subfield code="o">ISNI0000000001405705</mxc:subfield>
+<mxc:subfield code="a">Zouzoulkovsky</mxc:subfield>
+<mxc:subfield code="b">Vincent</mxc:subfield>
+<mxc:subfield code="4">730</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="801" ind1=" " ind2="0">
+<mxc:subfield code="a">FR</mxc:subfield>
+<mxc:subfield code="b">FR-751131015</mxc:subfield>
+<mxc:subfield code="c">20080117</mxc:subfield>
+<mxc:subfield code="g">AFNOR</mxc:subfield>
+<mxc:subfield code="h">FRBNF411855440000002</mxc:subfield>
+<mxc:subfield code="2">intermrc</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="856" ind1=" " ind2="2">
+<mxc:subfield code="u">161147</mxc:subfield>
+<mxc:subfield code="b">Première de couverture</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="930" ind1=" " ind2=" ">
+<mxc:subfield code="5">FR-751131010:41185544001001</mxc:subfield>
+<mxc:subfield code="a">2008-10394</mxc:subfield>
+<mxc:subfield code="b">759999999</mxc:subfield>
+<mxc:subfield code="c">Tolbiac - Rez de Jardin - Littérature et art - Magasin</mxc:subfield>
+<mxc:subfield code="d">O</mxc:subfield>
+</mxc:datafield>
+<mxc:datafield tag="930" ind1=" " ind2=" ">
+<mxc:subfield code="5">FR-751131010:41185544002001</mxc:subfield>
+<mxc:subfield code="a">8-CNLJB-2780</mxc:subfield>
+<mxc:subfield code="b">759999999</mxc:subfield>
+<mxc:subfield code="c">Tolbiac - Rez de Jardin - Littérature et art - Magasin</mxc:subfield>
+<mxc:subfield code="d">O</mxc:subfield>
+</mxc:datafield>
+</mxc:record>      </srw:recordData>
+<srw:recordIdentifier>ark:/12148/cb41185544n</srw:recordIdentifier>
+<srw:recordPosition>1</srw:recordPosition>
+<srw:extraRecordData>
+<ixm:attr name="CreationDate">20080117</ixm:attr>
+<ixm:attr name="LastModificationDate">20151222</ixm:attr>
+<mn:score>6.443307</mn:score>
+</srw:extraRecordData>
+</srw:record>
+</srw:records>
+</srw:searchRetrieveResponse>
