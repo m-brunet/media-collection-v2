@@ -91,7 +91,7 @@ presentation and Overview counter (Task 8), data reset (Task 9).
 3. [x] Shared: batch form of `AuditedOperation` (per-subject Successful/Failed records, one operation ID); tests.
 4. [x] Application: lend, return, list active loans, find receivers; receiver resolver; books ports (loan reader,
        history) and the delete / Not Owned guards; book views; unit tests covering scenarios 1-15, 18-19.
-5. [ ] HTTP: loans and receivers controllers, schemas, failure reasons; books payload changes; API e2e for every
+5. [x] HTTP: loans and receivers controllers, schemas, failure reasons; books payload changes; API e2e for every
        endpoint, roles, conflicts, rollback (no orphan receiver), audit records.
 6. [ ] Libris: Lent books page, Lend and Record returns pages, book details panel and actions, Lent chips, form guard;
        EN/FR; component tests.
@@ -119,6 +119,12 @@ presentation and Overview counter (Task 8), data reset (Task 9).
   `LentBookGuard` (`book-lent`, details `receiverName`) runs in `BookRemoval` (so every removal path is covered)
   and in `UpdateBook` when the new ownership is Not Owned. `ListBooks` adds each item's `loan` from
   `BookLoanReader.ofBooks` (the catalog returns `CatalogPage`), so the books catalog never reads lending tables.
+- HTTP: `LoansController` (`GET /api/loans?search=&receiver=`, `POST /api/loans` → 201, `POST /api/loans/returns`
+  → 200) and `ReceiversController` (`GET /api/receivers?search=`). Empty or duplicate selections pass the transport
+  schema and are refused by the domain (`selection-empty` / `selection-duplicate`, 400) so the interface gets a
+  translatable reason; they are audited as Failed like other refusals. Contracts: `BookLoanDto` on `BookDto` and
+  `BookListItemDto`, `ReceiverDto`, `ReceiverChoiceDto`, `LendBooksDto`, `LendingDto`, `RecordReturnsDto`,
+  `ReturnDto`, `ReceiverLoansDto`. `LibraryProbe` gained `loans()`, `receivers()` and `ownership()`.
 - Lending checks run in this order: selection (empty/duplicate) → missing books → Not Owned / already lent (every
   offending book named) → receiver (similar-name prompt last, so it is only asked once the books are fine).
 - Persistence tests: `tests/persistence/lending.spec.ts`. The UUID-key table count guard is now 17.

@@ -150,6 +150,14 @@ export interface PersonalNoteDto {
     updatedAt: string;
 }
 
+// The active loan of a book: who has it and since when (UTC).
+export interface BookLoanDto {
+    id: string;
+    receiverId: string;
+    receiverName: string;
+    lentAt: string;
+}
+
 export interface BookDto {
     id: string;
     title: string;
@@ -170,6 +178,8 @@ export interface BookDto {
     location: BookLocationDto | null;
     // Ordered by name.
     tags: BookTagDto[];
+    // The active loan, if the book is currently lent.
+    loan: BookLoanDto | null;
     createdAt: string;
     updatedAt: string;
     // The viewer's own reading status and note; null for Guests.
@@ -186,6 +196,7 @@ export interface BookListItemDto {
     collection: { name: string; volumeFrom: number; volumeTo: number } | null;
     updatedAt: string;
     read: boolean | null;
+    loan: BookLoanDto | null;
 }
 
 export interface BookListPageDto {
@@ -336,4 +347,56 @@ export interface TagDto {
     id: string;
     name: string;
     bookCount: number;
+}
+
+export interface ReceiverDto {
+    id: string;
+    name: string;
+}
+
+// An existing receiver, or a name to reuse or create. `distinct` confirms that a name similar to
+// an existing receiver (`receiver-similar`) is really someone else.
+export type ReceiverChoiceDto = { id: string } | { name: string; distinct?: boolean };
+
+// `POST /api/loans`: lends the books together, or none of them.
+export interface LendBooksDto {
+    receiver: ReceiverChoiceDto;
+    bookIds: string[];
+}
+
+export interface LendingDto {
+    receiver: ReceiverDto;
+    loans: { loanId: string; bookId: string; lentAt: string }[];
+}
+
+// `POST /api/loans/returns`: returns loans of one receiver together, or none of them.
+export interface RecordReturnsDto {
+    loanIds: string[];
+}
+
+export interface ReturnDto {
+    receiver: ReceiverDto;
+    returned: { loanId: string; bookId: string | null; returnedAt: string }[];
+}
+
+export interface LoanBookDto {
+    id: string;
+    title: string;
+    authors: string[];
+    publisher: string | null;
+    publicationYear: number | null;
+    isbn: string | null;
+    hasCover: boolean;
+}
+
+export interface ActiveLoanDto {
+    loanId: string;
+    lentAt: string;
+    book: LoanBookDto;
+}
+
+// `GET /api/loans`: the books currently lent, grouped by receiver in name order, newest first.
+export interface ReceiverLoansDto {
+    receiver: ReceiverDto;
+    loans: ActiveLoanDto[];
 }

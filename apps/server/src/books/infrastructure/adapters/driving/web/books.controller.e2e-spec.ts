@@ -2,7 +2,9 @@ import type {
     BookDto,
     BookcaseDto,
     BookListPageDto,
+    LendingDto,
     MembershipDto,
+    ReturnDto,
     ShelfDto,
     TagDto,
 } from '../../../../../../../../packages/contracts/src/http.js';
@@ -1114,5 +1116,181 @@ describe('GET /api/books with filters', () => {
         const response = await client.call('/books?location=room:kitchen');
 
         expect(response.status).toBe(400);
+    });
+});
+
+// Lends books through the API, as an Owner.
+async function lentTo(receiverName: string, ...books: BookDto[]) {
+    const client = await app.authenticatedClient(owner);
+    const response = await client.call<LendingDto>('/loans', 'POST', {
+        receiver: { name: receiverName },
+        bookIds: books.map((book) => book.id),
+    });
+
+    if (response.status !== 201) {
+        throw new Error('Arranging the scenario failed: ' + response.text);
+    }
+
+    return response.body;
+}
+
+// Records the return of loans through the API, as an Owner.
+async function returned(...loanIds: string[]) {
+    const client = await app.authenticatedClient(owner);
+    const response = await client.call<ReturnDto>('/loans/returns', 'POST', { loanIds });
+
+    if (response.status !== 200) {
+        throw new Error('Arranging the scenario failed: ' + response.text);
+    }
+}
+
+describe('GET /api/books/:id of a lent book', () => {
+    it('shows who has it and since when, keeping location, tags and reading status', async () => {
+        const { shelf } = await shelfIn('Oak');
+        const fantasy = await tag('Fantasy');
+        const book = await created({
+            read: true,
+            shelfId: shelf.id,
+            tags: [{ id: fantasy.id }],
+            collection: membership('Southern Reach', 1),
+        });
+        const lending = await lentTo('Sam Taylor', book);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookDto>('/books/' + book.id);
+
+        expect(response.body).toMatchObject({
+            ownership: 'owned',
+            location: book.location,
+            tags: book.tags,
+            collection: book.collection,
+            personal: { read: true },
+            loan: {
+                id: lending.loans[0]!.loanId,
+                receiverId: lending.receiver.id,
+                receiverName: 'Sam Taylor',
+                lentAt: lending.loans[0]!.lentAt,
+            },
+        });
+    });
+    it('shows a Guest who has it', async () => {
+        const book = await created();
+
+        await lentTo('Sam Taylor', book);
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call<BookDto>('/books/' + book.id);
+
+        expect(response.body.loan?.receiverName).toBe('Sam Taylor');
+    });
+    it('shows no loan once the book is returned, keeping it Owned', async () => {
+        const book = await created();
+        const lending = await lentTo('Sam Taylor', book);
+
+        await returned(lending.loans[0]!.loanId);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookDto>('/books/' + book.id);
+
+        expect(response.body).toMatchObject({ ownership: 'owned', loan: null });
+    });
+});
+
+describe('GET /api/books with lent books', () => {
+    it('marks the lent books of the list with their loan', async () => {
+        const lent = await created({ title: 'Dune', isbn: null, noIsbn: true });
+        const kept = await created({
+            title: 'Piranesi',
+            isbn: null,
+            noIsbn: true,
+            confirmDistinct: true,
+        });
+
+        await lentTo('Sam Taylor', lent);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookListPageDto>('/books');
+
+        expect(
+            response.body.items.map((item) => [item.id, item.loan?.receiverName ?? null]),
+        ).toEqual([
+            [lent.id, 'Sam Taylor'],
+            [kept.id, null],
+        ]);
+    });
+});
+
+describe('DELETE /api/books/:id of a lent book', () => {
+    it('refuses to delete a lent book, keeping it', async () => {
+        const book = await created();
+
+        await lentTo('Sam Taylor', book);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/books/' + book.id, 'DELETE');
+
+        expect(response.status).toBe(409);
+        expect(response.body).toMatchObject({
+            reason: 'book-lent',
+            details: { receiverName: 'Sam Taylor' },
+        });
+        expect(await app.dependencies.library.bookIds()).toEqual([book.id]);
+    });
+    it('keeps the completed loan of a deleted book, identified by its former title and ISBN', async () => {
+        const book = await created({ title: 'Piranesi', isbn: '9781635575637' });
+        const lending = await lentTo('Sam Taylor', book);
+
+        await returned(lending.loans[0]!.loanId);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/books/' + book.id, 'DELETE');
+
+        expect(response.status).toBe(204);
+        expect(await app.dependencies.library.loans()).toEqual([
+            {
+                bookId: null,
+                receiverName: 'Sam Taylor',
+                status: 'returned',
+                bookTitle: 'Piranesi',
+                bookIsbn: '9781635575637',
+            },
+        ]);
+    });
+});
+
+describe('PUT /api/books/:id of a lent book', () => {
+    it('refuses to change a lent book to Not Owned, keeping it Owned', async () => {
+        const book = await created();
+
+        await lentTo('Sam Taylor', book);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call(
+            '/books/' + book.id,
+            'PUT',
+            changed({ ownership: 'not-owned' }),
+        );
+
+        expect(response.status).toBe(409);
+        expect(response.body.reason).toBe('book-lent');
+        expect(await app.dependencies.library.ownership(book.id)).toBe('owned');
+    });
+    it('saves other changes of a lent book', async () => {
+        const book = await created();
+
+        await lentTo('Sam Taylor', book);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookDto>(
+            '/books/' + book.id,
+            'PUT',
+            changed({ title: 'Piranesi (paperback)' }),
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.body).toMatchObject({
+            title: 'Piranesi (paperback)',
+            loan: expect.objectContaining({ receiverName: 'Sam Taylor' }),
+        });
     });
 });

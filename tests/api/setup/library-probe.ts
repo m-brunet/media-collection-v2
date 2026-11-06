@@ -9,6 +9,14 @@ export interface LocationRecord {
     shelfName: string;
 }
 
+export interface LoanRecord {
+    bookId: string | null;
+    receiverName: string;
+    status: string;
+    bookTitle: string;
+    bookIsbn: string | null;
+}
+
 export interface BookcaseRecord {
     name: string;
     shelves: string[];
@@ -27,6 +35,48 @@ export class LibraryProbe {
         const rows = await this.db.selectFrom('books').select('id').orderBy('id').execute();
 
         return rows.map((row) => row.id);
+    }
+
+    async ownership(bookId: string): Promise<string | null> {
+        const row = await this.db
+            .selectFrom('books')
+            .select('ownership')
+            .where('id', '=', bookId)
+            .executeTakeFirst();
+
+        return row?.ownership ?? null;
+    }
+
+    // Every loan occurrence, completed ones included, in lending order (then by title).
+    async loans(): Promise<LoanRecord[]> {
+        return (
+            this.db
+                .selectFrom('loans')
+                .innerJoin('receivers', 'receivers.id', 'loans.receiver_id')
+                .select([
+                    'loans.book_id as bookId',
+                    'receivers.name as receiverName',
+                    'loans.status',
+                    'loans.book_title as bookTitle',
+                    'loans.book_isbn as bookIsbn',
+                ])
+                .orderBy('loans.lent_at')
+                // At one instant, an earlier completed occurrence comes before the active one.
+                .orderBy('loans.status', 'desc')
+                .orderBy('loans.book_title')
+                .execute()
+        );
+    }
+
+    // Receiver names, in name order.
+    async receivers(): Promise<string[]> {
+        const rows = await this.db
+            .selectFrom('receivers')
+            .select('name')
+            .orderBy('name_key')
+            .execute();
+
+        return rows.map((row) => row.name);
     }
 
     async location(bookId: string): Promise<LocationRecord | null> {
