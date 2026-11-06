@@ -62,3 +62,6 @@ export const bookListSchema = z.strictObject({
 });
 
 export { idSchema };
+
+// Find book: the ISBN as typed; the domain validates and normalises it.
+export const bookLookupSchema = z.strictObject({ isbn: z.string().max(40) });

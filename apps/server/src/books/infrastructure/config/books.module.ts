@@ -50,7 +50,31 @@ import { AuthorsController } from '../adapters/driving/web/authors.controller.js
 import { BooksController } from '../adapters/driving/web/books.controller.js';
 import { CoversController } from '../adapters/driving/web/covers.controller.js';
 import { PersonalReadingController } from '../adapters/driving/web/personal-reading.controller.js';
+import type { LookupSource } from '../../application/ports/driven/lookup-source.interface.js';
+import type { CoverDownloader } from '../../application/ports/driven/cover-downloader.interface.js';
+import type { LookupCoverRegistry } from '../../application/ports/driven/lookup-cover-registry.interface.js';
+import { SourceBudget } from '../../application/services/source-budget.service.js';
+import { SourceLink } from '../../application/services/source-chain.service.js';
+import { LookUpBook } from '../../application/use-cases/look-up-book.usecase.js';
+import { ReadLookupCover } from '../../application/use-cases/read-lookup-cover.usecase.js';
+import type { CoverOffer } from '../../domain/services/cover-combination.service.js';
+import type { LookupAnswer } from '../../domain/value-objects/lookup-answer.value-object.js';
+import { MemoryLookupCoverRegistry } from '../adapters/driven/memory/memory-lookup-cover-registry.adapter.js';
+import { BnfCatalogue } from '../adapters/driven/third-party/bnf-catalogue.adapter.js';
+import { HttpCoverDownloader } from '../adapters/driven/third-party/http-cover-downloader.adapter.js';
+import { OpenLibraryCovers } from '../adapters/driven/third-party/open-library-covers.adapter.js';
+import { OpenLibraryInformation } from '../adapters/driven/third-party/open-library-information.adapter.js';
+import { OpenLibraryRecords } from '../adapters/driven/third-party/open-library-records.adapter.js';
+import { SourceHttp } from '../adapters/driven/third-party/source-http.adapter.js';
+import { LookupsController } from '../adapters/driving/web/lookups.controller.js';
 import { SharpCoverTrimmer } from '../adapters/driven/image/sharp-cover-trimmer.adapter.js';
+
+// The outside sources Find book asks, and how their covers are downloaded.
+export interface BookLookupSources {
+    information: LookupSource<LookupAnswer>[];
+    covers: LookupSource<CoverOffer[]>[];
+    downloader: CoverDownloader;
+}
 
 // Driven adapters and shared services the books feature is composed from.
 export interface BooksDependencies {
@@ -71,6 +95,8 @@ export interface BooksDependencies {
     // Owned by the lending feature.
     loans: BookLoanReader;
     loanHistory: LoanHistory;
+    // Find book's outside sources, each list in order of preference (see `BooksModule.lookupSources`).
+    lookup: BookLookupSources;
     ids: IdGenerator;
     clock: Clock;
     operations: AuditedOperation;
@@ -104,7 +130,19 @@ const token = {
     guard: 'BOOKS_LENT_BOOK_GUARD',
     titles: 'BOOKS_GENERATED_TITLE_SYNC',
     trimmer: 'BOOKS_COVER_TRIMMER',
+    lookup: 'BOOKS_LOOKUP_SOURCES',
+    lookupCovers: 'BOOKS_LOOKUP_COVERS',
+    lookupChains: 'BOOKS_LOOKUP_CHAINS',
 } as const;
+
+// One chain per kind of source, built once so each source's rate budget lasts across lookups.
+function chain<T>(sources: LookupSource<T>[], clock: Clock): SourceLink<T> | null {
+    return sources.reduceRight<SourceLink<T> | null>(
+        (next, source) =>
+            new SourceLink(source, new SourceBudget(source.limit, clock), clock, next),
+        null,
+    );
+}
 
 function dependencyProviders(dependencies: BooksDependencies): Provider[] {
     return (Object.keys(dependencies) as (keyof BooksDependencies)[]).map((name) => ({
@@ -114,6 +152,19 @@ function dependencyProviders(dependencies: BooksDependencies): Provider[] {
 }
 
 const serviceProviders: Provider[] = [
+    {
+        provide: token.lookupCovers,
+        inject: [token.clock],
+        useFactory: (clock: Clock): LookupCoverRegistry => new MemoryLookupCoverRegistry(clock),
+    },
+    {
+        provide: token.lookupChains,
+        inject: [token.lookup, token.clock],
+        useFactory: (lookup: BookLookupSources, clock: Clock) => ({
+            information: chain(lookup.information, clock),
+            covers: chain(lookup.covers, clock),
+        }),
+    },
     {
         provide: token.trimmer,
         useFactory: (): CoverTrimmer => new SharpCoverTrimmer(),
@@ -201,6 +252,24 @@ const serviceProviders: Provider[] = [
     },
 ];
 const useCaseProviders: Provider[] = [
+    {
+        provide: 'BOOKS_LOOK_UP',
+        inject: [token.books, token.lookupChains, token.lookupCovers],
+        useFactory: (
+            books: BookRepository,
+            chains: {
+                information: SourceLink<LookupAnswer> | null;
+                covers: SourceLink<CoverOffer[]> | null;
+            },
+            registry: LookupCoverRegistry,
+        ) => new LookUpBook(books, chains.information, chains.covers, registry),
+    },
+    {
+        provide: 'BOOKS_READ_LOOKUP_COVER',
+        inject: [token.lookupCovers, token.lookup],
+        useFactory: (registry: LookupCoverRegistry, lookup: BookLookupSources) =>
+            new ReadLookupCover(registry, lookup.downloader),
+    },
     {
         provide: 'BOOKS_CREATE',
         inject: [
@@ -487,6 +556,7 @@ export class BooksModule {
                 AuthorsController,
                 CoversController,
                 PersonalReadingController,
+                LookupsController,
             ],
             providers: [
                 ...dependencyProviders(dependencies),
@@ -494,6 +564,24 @@ export class BooksModule {
                 ...useCaseProviders,
                 ...(options.developmentImport ? developmentProviders : []),
             ],
+        };
+    }
+
+    // The real outside sources, in the order of preference decided in Task 6: BnF then Open Library
+    // for book information, Open Library for covers. Addresses can be replaced (browser tests).
+    static lookupSources(
+        addresses: { bnf?: string; openLibrary?: string } = {},
+    ): BookLookupSources {
+        const http = new SourceHttp();
+        const openLibrary = new OpenLibraryRecords(http, addresses.openLibrary);
+
+        return {
+            information: [
+                new BnfCatalogue(http, addresses.bnf),
+                new OpenLibraryInformation(openLibrary),
+            ],
+            covers: [new OpenLibraryCovers(openLibrary)],
+            downloader: new HttpCoverDownloader(),
         };
     }
 

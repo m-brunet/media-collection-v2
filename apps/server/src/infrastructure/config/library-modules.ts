@@ -67,6 +67,7 @@ export class LibraryModules {
                     readings: new KyselyReadingStatusRepository(connections),
                     notes: new KyselyPersonalNoteRepository(connections),
                     covers: new FileCoverStorage(dataDirectory),
+                    lookup: BooksModule.lookupSources(),
                     collections: membership,
                     collectionReader: membership,
                     shelves: shelving,

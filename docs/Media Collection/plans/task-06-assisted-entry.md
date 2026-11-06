@@ -170,7 +170,7 @@ address, never a person's email).
 2. [x] Source trial, report, user choice of sources and order
 3. [x] Domain/application: combining, chains, budgets, collection suggestion, `LookUpBook`, unit tests
    (source formatting moves to the adapters, step 4: it is specific to each source's format)
-4. [ ] Approved source adapters, cover tokens, endpoints, API tests
+4. [x] Approved source adapters, cover tokens, endpoints, API tests
 5. [ ] Libris Find book: review, conflicts, covers, states, cover helpers (search, paste/drop, address,
    desktop search panel), component tests
 6. [ ] Browser journeys with stubbed sources
@@ -197,4 +197,23 @@ address, never a person's email).
   every request, `handle` passes answers on in preference order; a limited, failing or 8-second-silent source is
   reported and skipped. `LookUpBook` returns `existing` or `looked-up` (fields, covers, unavailable sources).
 - Not wired yet: the module composes the chains with the adapters in step 4. Cover addresses become tokens there.
+
+## Notes from step 4
+
+- **BnF in UNIMARC** (`recordSchema=unimarcxchange`) instead of the Dublin Core used in the trial: it gives the
+  **summary** (field 330, often from Electre), the **series and volume** (461 $t/$v, the collection suggestion), the
+  volume's own title (200), authors as surname/first name with roles (700/701; translators in 702 left out), the
+  edition language (101), publisher and date (210/214) and extent (215). So summaries come from BnF after all; a BnF
+  summary is taken as written in the edition's language (assumption, to revisit if English editions show otherwise).
+- Open Library: one Books API request per ISBN serves both the information and the cover link (reused for a minute);
+  covers addressed by cover id. No edition language or summary in these records.
+- Budgets: BnF 30 requests/minute (it publishes no figure), Open Library 20/minute per link; both identify the app with
+  `MediaCollection (+https://github.com/m-brunet/media-collection-v2)`. "429"/"503" with `Retry-After` pause a source.
+- Cover tokens: random UUIDs in memory for 30 minutes; `GET /api/books/lookups/covers/:token` downloads (10 MB cap,
+  http/https only) and checks the image; source addresses never reach the browser.
+- Routes: `POST /api/books/lookups` `{ isbn }`, `GET /api/books/lookups/covers/:token` (Owners/Admin). API tests use
+  `ScriptedLookupSources` (`tests/api/fixtures`); adapter tests replay recorded answers (`third-party/fixtures`).
+- Architecture lint note: `RegExp.exec` trips the SQL guard (it looks for driver `exec`), so the adapters use
+  `String.match`.
+- Live check (2026-11-06): Rose Hip Rose 1 and Ewilan 1 looked up through the real chain as expected.
 

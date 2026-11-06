@@ -9,6 +9,7 @@ import {
     guest,
     library,
     ManualClock,
+    MemoryCoverRegistry,
     owner,
     saved,
     ScriptedSource,
@@ -42,10 +43,12 @@ describe('LookUpBook', () => {
         const book = await saved(current);
         const bnf = new ScriptedSource('bnf', answer({ title: 'Piranesi' }));
 
-        const result = await new LookUpBook(current.books, chain(bnf), null).execute(
-            owner,
-            '978-1-63557-563-7',
-        );
+        const result = await new LookUpBook(
+            current.books,
+            chain(bnf),
+            null,
+            new MemoryCoverRegistry(),
+        ).execute(owner, '978-1-63557-563-7');
 
         expect(result).toEqual({ kind: 'existing', bookId: book.id });
         expect(bnf.asked).toEqual([]);
@@ -54,7 +57,10 @@ describe('LookUpBook', () => {
     it('asks the sources with the ISBN-13 of an ISBN-10', async () => {
         const bnf = new ScriptedSource<LookupAnswer>('bnf', { kind: 'none' });
 
-        await new LookUpBook(library().books, chain(bnf), null).execute(owner, '2253164690');
+        await new LookUpBook(library().books, chain(bnf), null, new MemoryCoverRegistry()).execute(
+            owner,
+            '2253164690',
+        );
 
         expect(bnf.asked).toEqual(['9782253164692']);
     });
@@ -74,6 +80,7 @@ describe('LookUpBook', () => {
             library().books,
             chain(bnf, openLibrary),
             chain(covers),
+            new MemoryCoverRegistry(),
         ).execute(owner, '9782253164692');
 
         expect(result).toMatchObject({
@@ -85,7 +92,9 @@ describe('LookUpBook', () => {
                 publisher: [{ value: 'LGF', sources: ['bnf'] }],
                 pageCount: [{ value: 257, sources: ['openlibrary'] }],
             },
-            covers: [{ address: cover.address, sources: ['openlibrary'] }],
+            covers: [
+                { token: 'lookup-cover-1', width: 400, height: 600, sources: ['openlibrary'] },
+            ],
             unavailable: [],
         });
     });
@@ -93,10 +102,12 @@ describe('LookUpBook', () => {
     it('tells no result apart from unavailable sources (example 13)', async () => {
         const bnf = new ScriptedSource<LookupAnswer>('bnf', { kind: 'none' });
 
-        const result = await new LookUpBook(library().books, chain(bnf), null).execute(
-            owner,
-            '9782253164692',
-        );
+        const result = await new LookUpBook(
+            library().books,
+            chain(bnf),
+            null,
+            new MemoryCoverRegistry(),
+        ).execute(owner, '9782253164692');
 
         expect(result).toMatchObject({ kind: 'looked-up', found: false, unavailable: [] });
     });
@@ -113,6 +124,7 @@ describe('LookUpBook', () => {
             library().books,
             chain(bnf, openLibrary),
             chain(covers),
+            new MemoryCoverRegistry(),
         ).execute(owner, '9782253164692');
 
         expect(result).toMatchObject({
@@ -126,7 +138,7 @@ describe('LookUpBook', () => {
     });
 
     it('rejects an invalid ISBN', async () => {
-        const lookup = new LookUpBook(library().books, null, null);
+        const lookup = new LookUpBook(library().books, null, null, new MemoryCoverRegistry());
 
         const result = lookup.execute(owner, '9782253164691');
 
@@ -136,10 +148,12 @@ describe('LookUpBook', () => {
     it('refuses a Guest', async () => {
         const bnf = new ScriptedSource('bnf', answer({ title: 'Piranesi' }));
 
-        const result = new LookUpBook(library().books, chain(bnf), null).execute(
-            guest,
-            '9782253164692',
-        );
+        const result = new LookUpBook(
+            library().books,
+            chain(bnf),
+            null,
+            new MemoryCoverRegistry(),
+        ).execute(guest, '9782253164692');
 
         await expect(result).rejects.toMatchObject({ reason: 'guest-read-only' });
         expect(bnf.asked).toEqual([]);

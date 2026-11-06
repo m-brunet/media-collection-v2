@@ -3,6 +3,7 @@ import type { BooksDependencies } from '../../../apps/server/src/books/infrastru
 import type { AuditLogProbe } from './audit-log-probe.js';
 import type { LibraryProbe } from './library-probe.js';
 import type { TestLibrary } from '../fixtures/test-library.js';
+import type { ScriptedLookupSources } from '../fixtures/scripted-lookup-sources.js';
 import type { LoanRepository } from '../../../apps/server/src/lending/application/ports/driven/loan-repository.interface.js';
 import type { ReceiverRepository } from '../../../apps/server/src/lending/application/ports/driven/receiver-repository.interface.js';
 import type { PasswordHasher } from '../../../apps/server/src/identity/application/ports/driven/password-hasher.interface.js';
@@ -29,7 +30,8 @@ export interface TestAppContext {
         | 'tagReader'
         | 'loans'
         | 'loanHistory'
-    >;
+        | 'lookup'
+    > & { lookup: ScriptedLookupSources };
     audit: AuditLogProbe;
     library: LibraryProbe;
     lending: { loans: LoanRepository; receivers: ReceiverRepository };

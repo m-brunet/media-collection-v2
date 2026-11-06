@@ -26,6 +26,7 @@ import { AuditedOperation } from '../../../apps/server/src/shared/application/se
 import { KyselyAuditTrail } from '../../../apps/server/src/shared/infrastructure/adapters/driven/persistence/kysely-audit-trail.adapter.js';
 import { AuditLogProbe } from './audit-log-probe.js';
 import { LibraryProbe } from './library-probe.js';
+import { ScriptedLookupSources } from '../fixtures/scripted-lookup-sources.js';
 import { AppearanceModule } from '../../../apps/server/src/appearance/infrastructure/config/appearance.module.js';
 import { KyselyAppearanceRepository } from '../../../apps/server/src/appearance/infrastructure/adapters/driven/persistence/kysely-appearance.repository.js';
 import { SetupAccess } from '../../../apps/server/src/identity/infrastructure/adapters/driving/web/setup-access.service.js';
@@ -100,6 +101,7 @@ export class TestApp {
                 readings: new KyselyReadingStatusRepository(database.connections),
                 notes: new KyselyPersonalNoteRepository(database.connections),
                 covers: new FileCoverStorage(directory),
+                lookup: new ScriptedLookupSources(),
             };
             const collections = new KyselyCollectionRepository(database.connections);
             const members = new KyselyCollectionMemberStore(database.connections);
