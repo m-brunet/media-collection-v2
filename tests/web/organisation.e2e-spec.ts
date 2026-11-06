@@ -457,7 +457,7 @@ describe('Advanced filters', () => {
         await page.goto('/collections?author=' + authors[0]!.id + '&tag=' + fantasy.id);
 
         await page.getByText('1 of 2 collections').waitFor();
-        const rows = page.locator('.collection-row');
+        const rows = page.locator('.collection-card');
 
         expect(await rows.count()).toBe(1);
         expect(await rows.first().textContent()).toContain('Dune');

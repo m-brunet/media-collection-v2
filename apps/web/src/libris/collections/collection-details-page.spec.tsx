@@ -89,7 +89,7 @@ it('shows whole-collection counts and the expected range', async () => {
     expect(await screen.findByRole('heading', { name: 'Batman' })).toBeInTheDocument();
     expect(screen.getByText('3 of 12 expected volumes Owned')).toBeInTheDocument();
     expect(screen.getByText('9 missing · Unfinished')).toBeInTheDocument();
-    expect(screen.getByText('Expected coverage: Volumes 1–12')).toBeInTheDocument();
+    expect(screen.getByText('Expected coverage: volumes 1–12')).toBeInTheDocument();
     expect(
         screen.getByText('Includes volume 0: Off · Highest saved coverage: 12'),
     ).toBeInTheDocument();
@@ -112,7 +112,58 @@ it('expands a volume to choose one of its editions', async () => {
     expect(
         within(editions).getByRole('link', { name: 'View this book · Year One' }),
     ).toHaveAttribute('href', '/books/year-one');
-    expect(within(editions).getByText('Omnibus · Covers 1–3 · One book')).toBeVisible();
+    expect(within(editions).getByText('Omnibus · Covers 1–3')).toBeVisible();
+});
+
+it('describes an edition by its cover, publisher and ISBN', async () => {
+    new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
+        status: 200,
+        body: batman({
+            volumes: [
+                {
+                    from: 1,
+                    to: 1,
+                    state: 'owned',
+                    books: [
+                        member({
+                            publisher: 'DC Comics',
+                            hasCover: true,
+                            updatedAt: '2026-02-01T00:00:00.000Z',
+                        }),
+                    ],
+                },
+            ],
+        }),
+    }));
+
+    show();
+    await userEvent.click(await screen.findByRole('button', { name: /Volume 1 Owned/ }));
+
+    const edition = screen.getByText('Year One').closest('li')!;
+
+    expect(within(edition).getByText('DC Comics · ISBN 9781401207526')).toBeVisible();
+    expect(within(edition).getByRole('img', { name: 'Cover of Year One' })).toHaveAttribute(
+        'src',
+        '/api/books/year-one/cover?v=2026-02-01T00%3A00%3A00.000Z',
+    );
+});
+
+it('explains what Finished means for a Finished collection', async () => {
+    new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
+        status: 200,
+        body: batman({ finished: true, missingCount: 0 }),
+    }));
+
+    show();
+
+    expect(
+        await screen.findByText(
+            'Finished collections remain on desktop and are hidden from mobile shopping.',
+        ),
+    ).toBeInTheDocument();
+    expect(
+        screen.queryByText('Own every expected volume before marking this collection Finished.'),
+    ).not.toBeInTheDocument();
 });
 
 it('describes inferred and planned volumes as missing', async () => {
