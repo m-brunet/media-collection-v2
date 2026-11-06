@@ -1,7 +1,7 @@
 // Fetching function, injectable so adapter tests replay recorded answers without the network.
 export type Fetcher = (
     url: string,
-    init: { headers: Record<string, string>; signal: AbortSignal },
+    init: { headers: Record<string, string>; signal: AbortSignal; redirect?: RequestRedirect },
 ) => Promise<Response>;
 
 export type SourceResponse =

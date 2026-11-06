@@ -57,11 +57,13 @@ import { SourceBudget } from '../../application/services/source-budget.service.j
 import { SourceLink } from '../../application/services/source-chain.service.js';
 import { LookUpBook } from '../../application/use-cases/look-up-book.usecase.js';
 import { ReadLookupCover } from '../../application/use-cases/read-lookup-cover.usecase.js';
+import { FetchCoverFromAddress } from '../../application/use-cases/fetch-cover-from-address.usecase.js';
 import type { CoverOffer } from '../../domain/services/cover-combination.service.js';
 import type { LookupAnswer } from '../../domain/value-objects/lookup-answer.value-object.js';
 import { MemoryLookupCoverRegistry } from '../adapters/driven/memory/memory-lookup-cover-registry.adapter.js';
 import { BnfCatalogue } from '../adapters/driven/third-party/bnf-catalogue.adapter.js';
 import { HttpCoverDownloader } from '../adapters/driven/third-party/http-cover-downloader.adapter.js';
+import { PublicAddresses } from '../adapters/driven/third-party/public-addresses.adapter.js';
 import { OpenLibraryCovers } from '../adapters/driven/third-party/open-library-covers.adapter.js';
 import { OpenLibraryInformation } from '../adapters/driven/third-party/open-library-information.adapter.js';
 import { OpenLibraryRecords } from '../adapters/driven/third-party/open-library-records.adapter.js';
@@ -263,6 +265,12 @@ const useCaseProviders: Provider[] = [
             },
             registry: LookupCoverRegistry,
         ) => new LookUpBook(books, chains.information, chains.covers, registry),
+    },
+    {
+        // Image addresses people paste: public web only, checked at every redirect.
+        provide: 'BOOKS_FETCH_COVER_FROM_ADDRESS',
+        useFactory: () =>
+            new FetchCoverFromAddress(new HttpCoverDownloader(fetch, new PublicAddresses())),
     },
     {
         provide: 'BOOKS_READ_LOOKUP_COVER',

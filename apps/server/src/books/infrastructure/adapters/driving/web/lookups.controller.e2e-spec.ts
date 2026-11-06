@@ -209,3 +209,57 @@ describe('GET /api/books/lookups/covers/:token', () => {
         expect(response.status).toBe(401);
     });
 });
+
+describe('POST /api/books/lookups/covers', () => {
+    it('rejects something that is not a web address', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/books/lookups/covers', 'POST', {
+            address: 'file:///etc/hosts',
+        });
+
+        expect(response.status).toBe(400);
+        expect(response.body.reason).toBe('cover-address-invalid');
+    });
+
+    it('never fetches an address inside the home network', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/books/lookups/covers', 'POST', {
+            address: 'http://127.0.0.1:34345/api/health',
+        });
+
+        expect(response.status).toBe(404);
+        expect(response.body.reason).toBe('cover-address-unavailable');
+    });
+
+    it('rejects a request without an address', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/books/lookups/covers', 'POST', {});
+
+        expect(response.status).toBe(400);
+    });
+
+    it('refuses a Guest', async () => {
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call('/books/lookups/covers', 'POST', {
+            address: 'https://images.example/cover.png',
+        });
+
+        expect(response.status).toBe(403);
+    });
+
+    it('requires a signed-in account', async () => {
+        const client = app.client();
+
+        await client.prepare();
+
+        const response = await client.call('/books/lookups/covers', 'POST', {
+            address: 'https://images.example/cover.png',
+        });
+
+        expect(response.status).toBe(401);
+    });
+});
