@@ -111,6 +111,8 @@ export interface BookCollectionDto {
 }
 
 // Shared information of a book as entered in the form.
+// A blank `title` on a Manga or Comics in a collection asks for one generated from the
+// collection; any other blank title is refused (`title-required`). Typed text is always kept.
 export interface BookInputDto {
     title: string;
     isbn: string | null;
@@ -161,6 +163,8 @@ export interface BookLoanDto {
 export interface BookDto {
     id: string;
     title: string;
+    // True when the title is generated from the book's collection (`Name - N`).
+    titleGenerated: boolean;
     isbn: string | null;
     isbnConvertedFromIsbn10: boolean;
     noIsbn: boolean;

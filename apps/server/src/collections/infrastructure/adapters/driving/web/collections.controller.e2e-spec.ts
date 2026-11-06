@@ -419,3 +419,78 @@ describe('GET /api/collections with filters', () => {
         expect(response.body.reason).toBe('reading-filter-unavailable');
     });
 });
+
+describe('Generated titles of member books', () => {
+    // A Manga of the collection saved without title, so its title is generated.
+    async function generated(collection: MembershipDto) {
+        return book(collection, { title: '', category: 'manga' });
+    }
+
+    it('renames the generated titles with their collection, keeping supplied ones (examples 2 and 3)', async () => {
+        const one = await generated(membership('Gunnm', 1));
+        const two = await book(membership('Gunnm', 2), {
+            title: 'Tears of an Angel',
+            category: 'manga',
+        });
+        const client = await app.authenticatedClient(owner);
+
+        await client.call('/collections/' + one.collection!.id, 'PATCH', {
+            name: 'Battle Angel Alita',
+        });
+
+        expect(await app.dependencies.library.title(one.id)).toEqual({
+            title: 'Battle Angel Alita - 1',
+            titleGenerated: true,
+        });
+        expect(await app.dependencies.library.title(two.id)).toEqual({
+            title: 'Tears of an Angel',
+            titleGenerated: false,
+        });
+    });
+    it('records the title changes in the rename operation', async () => {
+        const one = await generated(membership('Gunnm', 1));
+        const client = await app.authenticatedClient(owner);
+
+        await client.call('/collections/' + one.collection!.id, 'PATCH', { name: 'Alita' });
+
+        const entries = await app.dependencies.audit.entries();
+        const renamed = entries.find((entry) => entry.category === 'collection.updated');
+
+        expect(entries).toContainEqual(
+            expect.objectContaining({
+                category: 'book.retitled',
+                operationId: renamed!.operationId,
+                subjectId: one.id,
+                after: { title: 'Alita - 1', titleGenerated: true },
+            }),
+        );
+    });
+    it('changes no title when the rename is refused', async () => {
+        const one = await generated(membership('Gunnm', 1));
+
+        await book(membership('Alita', 1));
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/collections/' + one.collection!.id, 'PATCH', {
+            name: 'ALITA',
+        });
+
+        expect(response.status).toBe(409);
+        expect(await app.dependencies.library.title(one.id)).toEqual({
+            title: 'Gunnm - 1',
+            titleGenerated: true,
+        });
+    });
+    it('keeps the generated titles of the books of a deleted collection as supplied (example 5)', async () => {
+        const one = await generated(membership('Gunnm', 1));
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/collections/' + one.collection!.id, 'DELETE');
+
+        expect(response.status).toBe(204);
+        expect(await app.dependencies.library.title(one.id)).toEqual({
+            title: 'Gunnm - 1',
+            titleGenerated: false,
+        });
+    });
+});

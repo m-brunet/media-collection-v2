@@ -1294,3 +1294,106 @@ describe('PUT /api/books/:id of a lent book', () => {
         });
     });
 });
+
+describe('Generated titles of books', () => {
+    const gunnm = () => membership('Gunnm', 3);
+
+    // A Manga of Gunnm saved without title, so its title is generated.
+    async function generated() {
+        return created({
+            title: '',
+            isbn: null,
+            noIsbn: true,
+            category: 'manga',
+            collection: gunnm(),
+        });
+    }
+
+    it('names a Manga saved without title after its collection (example 1)', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookDto>(
+            '/books',
+            'POST',
+            BookInputFixture.of({
+                title: ' ',
+                isbn: null,
+                noIsbn: true,
+                category: 'manga',
+                collection: gunnm(),
+            }),
+        );
+
+        expect(response.status).toBe(201);
+        expect(response.body).toMatchObject({ title: 'Gunnm - 3', titleGenerated: true });
+        expect(await app.dependencies.library.title(response.body.id)).toEqual({
+            title: 'Gunnm - 3',
+            titleGenerated: true,
+        });
+    });
+    it('refuses a blank title for a Manga outside any collection', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call(
+            '/books',
+            'POST',
+            BookInputFixture.of({ title: '', category: 'manga' }),
+        );
+
+        expect(response.status).toBe(400);
+        expect(response.body.reason).toBe('title-required');
+    });
+    it('keeps generation through an unrelated edit (example 3)', async () => {
+        const book = await generated();
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookDto>(
+            '/books/' + book.id,
+            'PUT',
+            edited(book, { title: '', category: 'manga', collection: gunnm(), pageCount: 199 }),
+        );
+
+        expect(response.body).toMatchObject({ title: 'Gunnm - 3', titleGenerated: true });
+    });
+    it('regenerates the title of a book given more volumes (example 3)', async () => {
+        const book = await generated();
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookDto>(
+            '/books/' + book.id,
+            'PUT',
+            edited(book, { title: '', category: 'manga', collection: membership('Gunnm', 3, 4) }),
+        );
+
+        expect(response.body.title).toBe('Gunnm - 3–4');
+    });
+    it('requires a title when the book leaves its collection, changing nothing (example 4)', async () => {
+        const book = await generated();
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call(
+            '/books/' + book.id,
+            'PUT',
+            edited(book, { title: '', category: 'manga', collection: null }),
+        );
+
+        expect(response.status).toBe(400);
+        expect(response.body.reason).toBe('title-required');
+        expect(await app.dependencies.library.title(book.id)).toEqual({
+            title: 'Gunnm - 3',
+            titleGenerated: true,
+        });
+    });
+    it('saves the accepted last generated title as supplied (example 4)', async () => {
+        const book = await generated();
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookDto>(
+            '/books/' + book.id,
+            'PUT',
+            edited(book, { title: 'Gunnm - 3', category: 'books', collection: null }),
+        );
+
+        expect(response.body).toMatchObject({ title: 'Gunnm - 3', titleGenerated: false });
+    });
+});

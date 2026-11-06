@@ -6,6 +6,7 @@ function book(overrides: Partial<BookDto> = {}): BookDto {
     return {
         id: 'b1',
         title: 'Piranesi',
+        titleGenerated: false,
         isbn: '9781635575637',
         isbnConvertedFromIsbn10: false,
         noIsbn: false,
