@@ -328,6 +328,17 @@ export const fr = {
     'lookup.apply': 'Appliquer',
     'lookup.coverFailed':
         'La couverture choisie n’a pas pu être récupérée. Choisissez-en une vous-même.',
+    'cover.search': 'Chercher cette couverture sur le web',
+    'cover.newTab': '(s’ouvre dans un nouvel onglet)',
+    'cover.pasteHint': 'Vous pouvez aussi coller (Ctrl+V) ou déposer une image ici.',
+    'cover.address': 'Adresse de l’image',
+    'cover.addressUse': 'Utiliser cette image',
+    'reason.coverAddressInvalid': 'Saisissez une adresse web commençant par http:// ou https://.',
+    'reason.coverAddressUnavailable': 'Aucune image utilisable n’a été trouvée à cette adresse.',
+    'reason.lookupCoverMissing':
+        'Cette couverture n’est plus disponible. Relancez la recherche du livre.',
+    'reason.lookupCoverUnavailable':
+        'La source de cette couverture n’a pas fourni d’image utilisable.',
     'source.bnf': 'BnF',
     'source.openlibrary': 'Open Library',
     'form.noIsbn': 'Ce livre n’a pas d’ISBN',

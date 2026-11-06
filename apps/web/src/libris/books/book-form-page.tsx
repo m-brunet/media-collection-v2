@@ -626,6 +626,13 @@ function BookForm({ book }: { book: BookDto | null }) {
                             savedCover={
                                 book?.hasCover ? BookFormat.cover(book.id, book.updatedAt) : null
                             }
+                            searchTerms={
+                                values.isbn.trim() && !values.noIsbn
+                                    ? values.isbn.trim()
+                                    : [values.title, ...values.authors.map(({ name }) => name)]
+                                          .join(' ')
+                                          .trim()
+                            }
                             choice={cover}
                             onChange={setCover}
                         />

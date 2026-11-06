@@ -1058,3 +1058,158 @@ describe('Find book', () => {
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 });
+
+describe('Cover helpers', () => {
+    const png = new File([new Uint8Array([0x89, 0x50, 0x4e, 0x47])], 'cover.png', {
+        type: 'image/png',
+    });
+
+    beforeEach(() => {
+        vi.stubGlobal(
+            'URL',
+            Object.assign(URL, { createObjectURL: () => 'blob:cover', revokeObjectURL: () => {} }),
+        );
+    });
+
+    // A paste or drop event carrying `data`, as browsers send them.
+    function transfer(type: 'paste' | 'drop', data: { files?: File[]; text?: string }) {
+        const event = new Event(type, { bubbles: true, cancelable: true });
+        const carried = {
+            files: data.files ?? [],
+            getData: (format: string) =>
+                format === 'text/uri-list' || format === 'text/plain' ? (data.text ?? '') : '',
+        };
+
+        Object.defineProperty(event, type === 'paste' ? 'clipboardData' : 'dataTransfer', {
+            value: carried,
+        });
+
+        return event;
+    }
+
+    function coverArea() {
+        return document.querySelector('.cover-picker__drop')!;
+    }
+
+    it('searches the web for the cover by ISBN, in a new tab', async () => {
+        new FakeApi().signedIn(account());
+
+        addPage();
+        await userEvent.type(await screen.findByLabelText(/^ISBN/), '9782253164692');
+
+        const link = screen.getByRole('link', { name: /Search this cover on the web/ });
+
+        expect(link).toHaveAttribute(
+            'href',
+            'https://www.google.com/search?tbm=isch&q=9782253164692',
+        );
+        expect(link).toHaveAttribute('target', '_blank');
+    });
+
+    it('searches by title and author for a book without ISBN', async () => {
+        new FakeApi().signedIn(account());
+
+        addPage();
+        await userEvent.click(
+            await screen.findByRole('checkbox', { name: 'This book has no ISBN' }),
+        );
+        await userEvent.type(screen.getByLabelText(/^Title/), 'Piranesi');
+
+        expect(screen.getByRole('link', { name: /Search this cover on the web/ })).toHaveAttribute(
+            'href',
+            'https://www.google.com/search?tbm=isch&q=Piranesi',
+        );
+    });
+
+    it('takes an image pasted outside the text fields', async () => {
+        new FakeApi().signedIn(account());
+
+        addPage();
+        await screen.findByRole('button', { name: 'Choose cover' });
+
+        document.body.dispatchEvent(transfer('paste', { files: [png] }));
+
+        expect(await screen.findByRole('img', { name: /Cover of/ })).toBeInTheDocument();
+    });
+
+    it('leaves a paste into a text field to that field', async () => {
+        new FakeApi().signedIn(account());
+
+        addPage();
+        const title = await screen.findByLabelText(/^Title/);
+
+        title.dispatchEvent(transfer('paste', { files: [png] }));
+
+        expect(screen.queryByRole('img', { name: /Cover of/ })).not.toBeInTheDocument();
+    });
+
+    it('takes an image file dropped on the cover', async () => {
+        new FakeApi().signedIn(account());
+
+        addPage();
+        await screen.findByRole('button', { name: 'Choose cover' });
+
+        coverArea().dispatchEvent(transfer('drop', { files: [png] }));
+
+        expect(await screen.findByRole('img', { name: /Cover of/ })).toBeInTheDocument();
+    });
+
+    it('fetches a picture dragged from a web page by its address', async () => {
+        const image = new Blob([new Uint8Array([0xff, 0xd8, 0xff])], { type: 'image/jpeg' });
+        const api = new FakeApi()
+            .signedIn(account())
+            .on('POST /books/lookups/covers', () => ({ status: 200, body: image }));
+
+        addPage();
+        await screen.findByRole('button', { name: 'Choose cover' });
+
+        coverArea().dispatchEvent(
+            transfer('drop', { text: 'https://images.example/piranesi.jpg' }),
+        );
+
+        expect(await screen.findByRole('img', { name: /Cover of/ })).toBeInTheDocument();
+        expect(api.calls.find((call) => call.route === 'POST /books/lookups/covers')?.body).toEqual(
+            { address: 'https://images.example/piranesi.jpg' },
+        );
+    });
+
+    it('uses the image at a pasted address', async () => {
+        const image = new Blob([new Uint8Array([0xff, 0xd8, 0xff])], { type: 'image/jpeg' });
+        const api = new FakeApi()
+            .signedIn(account())
+            .on('POST /books/lookups/covers', () => ({ status: 200, body: image }));
+
+        addPage();
+        await userEvent.type(
+            await screen.findByLabelText('Image address'),
+            'https://images.example/piranesi.jpg',
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: 'Use this image' }));
+
+        expect(await screen.findByRole('img', { name: /Cover of/ })).toBeInTheDocument();
+        expect(screen.getByLabelText('Image address')).toHaveValue('');
+        expect(api.calls.find((call) => call.route === 'POST /books/lookups/covers')?.body).toEqual(
+            { address: 'https://images.example/piranesi.jpg' },
+        );
+    });
+
+    it('explains an address without a usable image', async () => {
+        new FakeApi().signedIn(account()).on('POST /books/lookups/covers', () => ({
+            status: 404,
+            body: { message: 'No image', reason: 'cover-address-unavailable' },
+        }));
+
+        addPage();
+        await userEvent.type(
+            await screen.findByLabelText('Image address'),
+            'https://images.example/page.html',
+        );
+
+        await userEvent.click(screen.getByRole('button', { name: 'Use this image' }));
+
+        expect(await screen.findByRole('alert')).toHaveTextContent(
+            'No usable image was found at this address.',
+        );
+    });
+});

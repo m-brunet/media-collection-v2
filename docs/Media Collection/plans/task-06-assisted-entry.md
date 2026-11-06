@@ -177,7 +177,7 @@ address, never a person's email).
 3. [x] Domain/application: combining, chains, budgets, collection suggestion, `LookUpBook`, unit tests
    (source formatting moves to the adapters, step 4: it is specific to each source's format)
 4. [x] Approved source adapters, cover tokens, endpoints, API tests
-5. [ ] Libris Find book: review, conflicts, covers, states, cover helpers (search, paste/drop, image address),
+5. [x] Libris Find book: review, conflicts, covers, states, cover helpers (search, paste/drop, image address),
    component tests (5a lookup review and draft filling; 5b search, paste, drop; 5c image address)
 6. [ ] Browser journeys with stubbed sources
 7. [ ] Architecture review, `npm run check`, docs (credits list for the future credits page)
@@ -222,4 +222,20 @@ address, never a person's email).
 - Architecture lint note: `RegExp.exec` trips the SQL guard (it looks for driver `exec`), so the adapters use
   `String.match`.
 - Live check (2026-11-06): Rose Hip Rose 1 and Ewilan 1 looked up through the real chain as expected.
+
+## Notes from step 5
+
+- 5a: `LookupFill` (web, pure) turns the reviewed selection into draft changes: empty fields are filled, differing
+  typed fields become conflicts (case/accents/author order ignored), confirmed in one dialog (keep mine by default).
+  The review dialog lists each field's values with their sources, the preferred one selected; a manga/comic in a
+  collection with a blank title keeps "Keep the generated title" selected. A chosen lookup cover is downloaded as a
+  file only when the person has not chosen one. Additional information opens when the lookup filled it.
+- 5b: search link (Google Images by ISBN, or title and authors without one; the desktop app already opens outside
+  links in the system browser), paste anywhere outside text fields, drop of a file or of a picture's address.
+- 5c: `POST /api/books/lookups/covers` `{ address }` (`FetchCoverFromAddress`): web addresses only, fetched through
+  `HttpCoverDownloader` with `PublicAddresses`, which refuses any name resolving inside the home network (private,
+  loopback, link-local, shared, documentation, multicast ranges, IPv4-mapped IPv6), checked again at every redirect
+  (at most 3). Residual risk accepted for a household app: DNS answers could change between the check and the
+  request (no IP pinning).
+- Messages: no result, unavailable (naming sources) with Retry lookup, partial results, cover failures; EN/FR.
 

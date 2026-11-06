@@ -83,9 +83,23 @@ export class ApiClient {
         return response.status === 204 ? (undefined as T) : ((await response.json()) as T);
     }
 
-    // A binary resource (an image), failing like `request` does.
-    async download(path: string): Promise<Blob> {
-        const response = await fetch('/api' + path, { credentials: 'same-origin' });
+    // A binary resource (an image), failing like `request` does. With a body, it is asked for by
+    // POST (for example an image fetched from an address).
+    async download(path: string, body?: unknown): Promise<Blob> {
+        const response = await fetch(
+            '/api' + path,
+            body === undefined
+                ? { credentials: 'same-origin' }
+                : {
+                      method: 'POST',
+                      credentials: 'same-origin',
+                      headers: {
+                          'Content-Type': 'application/json',
+                          'X-CSRF-Token': await this.csrf(),
+                      },
+                      body: JSON.stringify(body),
+                  },
+        );
 
         if (!response.ok) {
             const result = (await response

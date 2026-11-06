@@ -3,29 +3,57 @@ import { CoverImage } from '../../../../domain/value-objects/cover-image.value-o
 import type { Fetcher } from './source-http.adapter.js';
 import { SourceHttp } from './source-http.adapter.js';
 
+// Which addresses a download may reach, checked at every redirect.
+export interface AddressPolicy {
+    allows(url: URL): Promise<boolean>;
+}
+
+const anyWebAddress: AddressPolicy = { allows: async () => true };
+
 // Downloads a cover over HTTP(S), stopping as soon as it exceeds the size a cover may have.
-// Only addresses a lookup source offered reach it (see `LookupCoverRegistry`).
+// Redirects are followed one by one (at most `maximumRedirects`) so that `policy` checks each
+// address: lookup sources are trusted as they are; an address a person pasted is not.
 export class HttpCoverDownloader implements CoverDownloader {
-    constructor(private readonly fetcher: Fetcher = fetch) {}
+    static readonly maximumRedirects = 3;
+
+    constructor(
+        private readonly fetcher: Fetcher = fetch,
+        private readonly policy: AddressPolicy = anyWebAddress,
+    ) {}
 
     async download(address: string): Promise<Uint8Array | null> {
-        if (!/^https?:\/\//i.test(address)) {
-            return null;
-        }
-
         try {
-            const response = await this.fetcher(address, {
-                headers: { 'User-Agent': SourceHttp.userAgent, Accept: 'image/*' },
-                signal: AbortSignal.timeout(SourceHttp.timeoutSeconds * 1000),
-            });
+            let url = new URL(address);
 
-            if (!response.ok || !response.body) {
-                return null;
+            for (
+                let redirects = 0;
+                redirects <= HttpCoverDownloader.maximumRedirects;
+                redirects++
+            ) {
+                if (!/^https?:$/.test(url.protocol) || !(await this.policy.allows(url))) {
+                    return null;
+                }
+
+                const response = await this.fetcher(url.href, {
+                    headers: { 'User-Agent': SourceHttp.userAgent, Accept: 'image/*' },
+                    signal: AbortSignal.timeout(SourceHttp.timeoutSeconds * 1000),
+                    redirect: 'manual',
+                });
+                const location = response.headers.get('Location');
+
+                if (response.status >= 300 && response.status < 400 && location) {
+                    url = new URL(location, url);
+                    continue;
+                }
+
+                return response.ok && response.body
+                    ? await HttpCoverDownloader.read(response.body)
+                    : null;
             }
 
-            return await HttpCoverDownloader.read(response.body);
+            return null;
         } catch {
-            // Justified: an unreachable or interrupted source only means this cover is unavailable.
+            // Justified: an unreachable source or a malformed address only means no cover here.
             return null;
         }
     }
