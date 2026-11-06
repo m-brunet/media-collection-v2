@@ -37,6 +37,16 @@ export class LibraryProbe {
         return rows.map((row) => row.id);
     }
 
+    async title(bookId: string): Promise<{ title: string; titleGenerated: boolean } | null> {
+        const row = await this.db
+            .selectFrom('books')
+            .select(['title', 'title_generated'])
+            .where('id', '=', bookId)
+            .executeTakeFirst();
+
+        return row ? { title: row.title, titleGenerated: row.title_generated === 1 } : null;
+    }
+
     async ownership(bookId: string): Promise<string | null> {
         const row = await this.db
             .selectFrom('books')
