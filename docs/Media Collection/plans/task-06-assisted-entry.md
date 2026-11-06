@@ -47,6 +47,12 @@ cover), `YSboR` (no result, manual completion), `f0mDwI` (service unavailable), 
      network);
   4. every cover still goes through padding removal;
   5. desktop app only: the search opens in a panel inside Libris and a click on a picture makes it the cover.
+     **Deferred (2026-11-06):** it needs an architecture exception (a channel between the desktop shell and the
+     Libris window, which today has none). Helpers 1–4 come first; the user decides on the panel after trying them.
+- **Leaf needs its own cover solution (open, for Task 7):** the panel and clipboard tricks cannot work in a mobile
+  browser, and pasting images is unreliable on phones. Available there: web search, "copy image address" then paste,
+  or saving the picture and choosing it from the photo library. Ideas to discuss: a prominent address field; on
+  Android, Leaf installed to the home screen as a share target.
 - **Rejected or deferred:** a phone photo of the cover in Leaf (quality and lighting would look inconsistent);
   scraping shops (Amazon's terms forbid automated extraction, and the first version needed a fake browser
   identity); Amazon's official API (needs an Associates account with regular sales); publishers' websites (would
@@ -171,8 +177,8 @@ address, never a person's email).
 3. [x] Domain/application: combining, chains, budgets, collection suggestion, `LookUpBook`, unit tests
    (source formatting moves to the adapters, step 4: it is specific to each source's format)
 4. [x] Approved source adapters, cover tokens, endpoints, API tests
-5. [ ] Libris Find book: review, conflicts, covers, states, cover helpers (search, paste/drop, address,
-   desktop search panel), component tests
+5. [ ] Libris Find book: review, conflicts, covers, states, cover helpers (search, paste/drop, image address),
+   component tests (5a lookup review and draft filling; 5b search, paste, drop; 5c image address)
 6. [ ] Browser journeys with stubbed sources
 7. [ ] Architecture review, `npm run check`, docs (credits list for the future credits page)
 
