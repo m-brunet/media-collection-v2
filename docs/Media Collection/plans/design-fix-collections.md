@@ -51,8 +51,8 @@ Compared by rendering the current pages with design-like data next to the design
 
 ### Empty list
 
-9. To verify during implementation against the drawn empty state (icon, sentence and full-width `Add a book` in a
-   480 px column, left-aligned); fix only if the shared `EmptyState` differs.
+9. The drawn empty state (480 px left-aligned column, full-width `Add a book`) differs from the shared `EmptyState`;
+   kept as built by the user's decision.
 
 Not differences: the toolbar (search, Advanced filters, sort) and the page header already match; the native sort
 select stays (accessible and matches in style). The whole card stays one link (larger target, same as now).
@@ -114,9 +114,8 @@ method. The browser pages reuse `BookCover`/`BookFormat` from `libris/books` (br
   together for screen readers ("BatmanOpen"), and the covers are decorative there.
 - The volume heading and card identity use two equal columns, as drawn: the state starts mid-card, not at the right.
 - Other sections were not compared; the user reviews their designs first.
-- Open: the empty list differs from the drawn empty state (drawn: vertically centred 480 px column, left-aligned,
-  muted 16 px sentence, full-width Add a book; built: the shared `EmptyState`, centred, bold sentence, small button).
-  `EmptyState` serves every page, so changing it is outside this Collections-only fix; awaiting the user's decision.
+- Empty list: kept as built (shared `EmptyState`), by the user's decision (2026-11-06); only the list and details
+  pages needed rework.
 - Some covers look smaller with white edges: 177 of 437 development covers are padded shop squares. Decided
   (2026-11-06): remove the padding when covers are saved, as Task 6 step 1; see
   [book entry · Cover padding](../product/book-entry.md#cover-padding).
