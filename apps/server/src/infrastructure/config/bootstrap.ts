@@ -13,6 +13,7 @@ import { PrivateStorage } from '../../shared/infrastructure/adapters/driven/file
 import { SystemClock } from '../../shared/infrastructure/adapters/driven/runtime/system-clock.adapter.js';
 import { UuidGenerator } from '../../shared/infrastructure/adapters/driven/runtime/uuid-generator.adapter.js';
 import type { Clock } from '../../shared/application/ports/driven/clock.interface.js';
+import type { LookupAddresses } from './library-modules.js';
 import { KyselyUserRepository } from '../../identity/infrastructure/adapters/driven/persistence/kysely-user.repository.js';
 import { ScryptPasswordHasher } from '../../identity/infrastructure/adapters/driven/security/scrypt-password-hasher.adapter.js';
 import { JwtSessionTokens } from '../../identity/infrastructure/adapters/driven/security/jwt-session-tokens.adapter.js';
@@ -44,6 +45,9 @@ export interface BackendOptions {
     webDirectory?: string;
     development?: boolean;
     clock?: Clock;
+    // Test-only: where Find book asks BnF and Open Library (a local stand-in in browser tests).
+    // Production never sets it, so the real catalogue addresses apply.
+    lookupAddresses?: LookupAddresses;
     // Per-launch secret that the Electron window attaches to first-launch setup requests.
     setupToken?: string;
 }
@@ -211,6 +215,7 @@ export class BackendRuntime {
                             ids,
                             clock,
                             operations,
+                            lookupAddresses: options.lookupAddresses,
                         }),
                     ],
                     controllers: [HealthController],
