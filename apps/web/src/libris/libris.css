@@ -657,7 +657,6 @@ body {
     font-size: var(--text-sm);
 }
 
-.collection-list,
 .volume-list,
 .volume-entry__books {
     display: flex;
@@ -668,43 +667,88 @@ body {
     list-style: none;
 }
 
-.collection-row {
+/* Collections list: two columns of cards */
+.collection-grid {
     display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1.5fr) auto;
-    align-items: center;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-5) var(--space-6);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.collection-card {
+    display: flex;
+    flex-direction: column;
     gap: var(--space-4);
-    padding: var(--space-4);
-    border: var(--border);
-    border-radius: var(--radius-md);
-    background: var(--color-surface);
+    height: 100%;
+    padding: var(--space-6);
+    border-radius: var(--radius-lg);
+    background: var(--color-panel);
     color: var(--color-text);
     text-decoration: none;
 }
 
-.collection-row:hover .collection-row__name {
-    color: var(--color-accent-strong);
-}
-
-.collection-row:focus-visible {
+.collection-card:focus-visible {
     outline: none;
     box-shadow: var(--focus-ring);
 }
 
-.collection-row__name {
-    font-family: var(--font-heading);
-    font-size: var(--text-lg);
-}
-
-.collection-row__status,
-.collection-row__open {
-    color: var(--color-text-secondary);
-    font-size: var(--text-md);
-}
-
-.collection-row__open {
-    display: inline-flex;
+.collection-card__identity {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: center;
-    gap: var(--space-1);
+    gap: var(--space-4);
+}
+
+.collection-card__name {
+    font-family: var(--font-heading);
+    font-size: 23px;
+    line-height: 1.25;
+}
+
+.collection-card:hover .collection-card__name {
+    color: var(--color-accent-strong);
+}
+
+.collection-card__open {
+    color: var(--color-accent);
+    font-size: var(--text-sm);
+}
+
+.collection-card__coverage {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.collection-card__covers {
+    display: flex;
+    flex: none;
+    gap: 18px;
+}
+
+.collection-card__covers .book-cover {
+    width: 67px;
+}
+
+.collection-card__counts {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    min-width: 0;
+}
+
+.collection-card__owned {
+    font-size: 16px;
+}
+
+.collection-card__status {
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+}
+
+.collection-card__status--finished {
     color: var(--color-accent);
 }
 

@@ -10,6 +10,8 @@ import { useI18n } from '../../shared/i18n/i18n-context';
 import { useSession } from '../../shared/session/session-context';
 import { Button } from '../../shared/ui/button';
 import { Icon } from '../../shared/ui/icon';
+import { BookCover } from '../books/book-cover';
+import { BookFormat } from '../books/book-format.util';
 import { PageHeader } from '../../shared/ui/layout';
 import { Notice } from '../../shared/ui/notice';
 import { EmptyState, LoadingState } from '../../shared/ui/states';
@@ -25,24 +27,55 @@ interface Listing {
     items: CollectionSummaryDto[];
 }
 
-function CollectionRow({ collection }: { collection: CollectionSummaryDto }) {
+// One collection as a card: its name, up to two covers standing for it, and whole-collection
+// coverage. The covers are decorative; the name and coverage name the link.
+function CollectionCard({ collection }: { collection: CollectionSummaryDto }) {
     const { t } = useI18n();
-    const status = CollectionFormat.status(collection);
+    const message = CollectionFormat.status(collection);
+    const status = t(message.key, message.values);
+    const owned = t('collections.owned', {
+        owned: collection.ownedCount,
+        expected: collection.expectedCount,
+    });
 
     return (
         <li>
-            <Link to={'/collections/' + collection.id} className="collection-row">
-                <span className="collection-row__name">{collection.name}</span>
-                <span className="collection-row__owned">
-                    {t('collections.owned', {
-                        owned: collection.ownedCount,
-                        expected: collection.expectedCount,
-                    })}
-                </span>
-                <span className="collection-row__status">{t(status.key, status.values)}</span>
-                <span className="collection-row__open">
-                    {t('collections.open')} <Icon name="expand" size={14} />
-                </span>
+            <Link
+                to={'/collections/' + collection.id}
+                className="collection-card"
+                aria-label={[collection.name, owned, status].join(', ')}
+            >
+                <div className="collection-card__identity">
+                    <span className="collection-card__name">{collection.name}</span>
+                    <span className="collection-card__open">
+                        {t('collections.open')} <span aria-hidden="true">→</span>
+                    </span>
+                </div>
+                <div className="collection-card__coverage">
+                    {collection.previews.length > 0 && (
+                        <div className="collection-card__covers" aria-hidden="true">
+                            {collection.previews.map((preview) => (
+                                <BookCover
+                                    key={preview.id}
+                                    src={BookFormat.cover(preview.id, preview.updatedAt)}
+                                    title={preview.title}
+                                    size="small"
+                                />
+                            ))}
+                        </div>
+                    )}
+                    <div className="collection-card__counts">
+                        <span className="collection-card__owned">{owned}</span>
+                        <span
+                            className={
+                                'collection-card__status' +
+                                (collection.finished ? ' collection-card__status--finished' : '')
+                            }
+                        >
+                            {status}
+                        </span>
+                    </div>
+                </div>
             </Link>
         </li>
     );
@@ -269,9 +302,9 @@ export function CollectionsPage() {
                 )}
                 {current && current.items.length > 0 && (
                     <>
-                        <ul className="collection-list">
+                        <ul className="collection-grid">
                             {current.items.map((collection) => (
-                                <CollectionRow key={collection.id} collection={collection} />
+                                <CollectionCard key={collection.id} collection={collection} />
                             ))}
                         </ul>
                         {current.items.length < current.total && (
