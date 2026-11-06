@@ -223,7 +223,7 @@ describe('LendBooks', () => {
 
         await expect(result).rejects.toMatchObject({
             reason: 'book-already-lent',
-            details: { bookIds: [dune] },
+            details: { bookIds: [dune], lentTo: { [dune]: 'Morgan' } },
         });
         expect(current.loans.of(piranesi)).toEqual([]);
         expect(current.receivers.receivers.size).toBe(1);

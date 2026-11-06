@@ -338,7 +338,7 @@ describe('POST /api/loans', () => {
         expect(response.status).toBe(409);
         expect(response.body).toMatchObject({
             reason: 'book-already-lent',
-            details: { bookIds: [dune.id] },
+            details: { bookIds: [dune.id], lentTo: { [dune.id]: 'Morgan' } },
         });
         expect((await app.dependencies.library.loans()).map((loan) => loan.bookId)).toEqual([
             dune.id,

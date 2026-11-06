@@ -757,6 +757,7 @@ export const fr = {
     'lend.addNamed': 'Ajouter {title} à la sélection',
     'lend.available': 'Possédé · Disponible',
     'lend.alreadyLent': 'Déjà prêté à {name}',
+    'lend.alreadyLentUnknown': 'Déjà prêté',
     'lend.notOwned': 'Non possédé',
     'lend.inSelection': 'Dans la sélection',
     'lend.gone': 'N’est plus dans la bibliothèque',

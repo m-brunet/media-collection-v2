@@ -9,7 +9,7 @@ const book = (overrides: Partial<LendableBook> = {}): LendableBook => ({
     title: 'Piranesi',
     isbn: '9781635575637',
     ownership: 'owned',
-    lent: false,
+    lentTo: null,
     ...overrides,
 });
 
@@ -71,7 +71,7 @@ describe('Loan.lend', () => {
         );
     });
     it('refuses a book that is already lent', () => {
-        const lent = book({ lent: true });
+        const lent = book({ lentTo: 'Morgan' });
 
         const operation = () =>
             Loan.lend({ id: 'loan-1', book: lent, receiverId: 'sam', now: lentAt });
@@ -80,7 +80,7 @@ describe('Loan.lend', () => {
             expect.objectContaining({
                 code: 'conflict',
                 reason: 'book-already-lent',
-                details: { bookIds: ['piranesi'] },
+                details: { bookIds: ['piranesi'], lentTo: { piranesi: 'Morgan' } },
             }),
         );
     });
@@ -112,9 +112,9 @@ describe('Loan.ensureLendable', () => {
     });
     it('names every already lent book of the selection', () => {
         const books = [
-            book({ id: 'dune', lent: true }),
+            book({ id: 'dune', lentTo: 'Morgan' }),
             book(),
-            book({ id: 'overstory', lent: true }),
+            book({ id: 'overstory', lentTo: 'Sam Taylor' }),
         ];
 
         const operation = () => Loan.ensureLendable(books);
@@ -122,7 +122,10 @@ describe('Loan.ensureLendable', () => {
         expect(operation).toThrow(
             expect.objectContaining({
                 reason: 'book-already-lent',
-                details: { bookIds: ['dune', 'overstory'] },
+                details: {
+                    bookIds: ['dune', 'overstory'],
+                    lentTo: { dune: 'Morgan', overstory: 'Sam Taylor' },
+                },
             }),
         );
     });

@@ -729,6 +729,7 @@ export const en = {
     'lend.addNamed': 'Add {title} to the selection',
     'lend.available': 'Owned · Available',
     'lend.alreadyLent': 'Already lent to {name}',
+    'lend.alreadyLentUnknown': 'Already lent',
     'lend.notOwned': 'Not Owned',
     'lend.inSelection': 'In the selection',
     'lend.gone': 'No longer in the library',

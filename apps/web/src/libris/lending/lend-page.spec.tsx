@@ -179,31 +179,15 @@ it('creates a distinct receiver once the person confirms a similar name is someo
 });
 
 it('keeps the draft and marks the book lent meanwhile by another account', async () => {
-    let reads = 0;
+    const api = lendingApi().on('POST /loans', () => ({
+        status: 409,
+        body: {
+            reason: 'book-already-lent',
+            message: 'Lent',
+            details: { bookIds: ['b1'], lentTo: { b1: 'Morgan' } },
+        },
+    }));
 
-    lendingApi()
-        .on('GET /books/b1', () => ({
-            status: 200,
-            body:
-                ++reads === 1
-                    ? bookDto()
-                    : bookDto({
-                          loan: {
-                              id: 'l9',
-                              receiverId: 'r-morgan',
-                              receiverName: 'Morgan',
-                              lentAt: '2026-10-30T08:00:00.000Z',
-                          },
-                      }),
-        }))
-        .on('POST /loans', () => ({
-            status: 409,
-            body: {
-                reason: 'book-already-lent',
-                message: 'Lent',
-                details: { bookIds: ['b1'] },
-            },
-        }));
     show();
     await screen.findByRole('list', { name: 'Selected books · 1' });
     await userEvent.type(screen.getByLabelText(/^Receiver name/), 'Sam Taylor');
@@ -211,9 +195,26 @@ it('keeps the draft and marks the book lent meanwhile by another account', async
     await userEvent.click(screen.getByRole('button', { name: 'Lend 1 book' }));
 
     expect(await screen.findByText(/Already lent: Piranesi/)).toBeInTheDocument();
-    expect(await within(selection()).findByText('Already lent to Morgan')).toBeInTheDocument();
+    expect(within(selection()).getByText('Already lent to Morgan')).toBeInTheDocument();
     expect(screen.getByLabelText(/^Receiver name/)).toHaveValue('Sam Taylor');
     expect(screen.getByRole('button', { name: 'Lend 1 book' })).toBeDisabled();
+    expect(api.calls.filter((call) => call.route === 'GET /books/b1')).toHaveLength(1);
+});
+
+it('marks a book refused as Not Owned', async () => {
+    lendingApi().on('POST /loans', () => ({
+        status: 409,
+        body: { reason: 'book-not-owned', message: 'Not owned', details: { bookIds: ['b1'] } },
+    }));
+
+    show();
+    await screen.findByRole('list', { name: 'Selected books · 1' });
+    await userEvent.type(screen.getByLabelText(/^Receiver name/), 'Sam Taylor');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Lend 1 book' }));
+
+    expect(await within(selection()).findByText('Not Owned')).toBeInTheDocument();
+    expect(screen.getByText(/Not Owned: Piranesi/)).toBeInTheDocument();
 });
 
 it('tells when a typed name is an existing receiver', async () => {
