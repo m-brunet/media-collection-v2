@@ -17,6 +17,8 @@ import type {
 import type { CoverStorage } from '../ports/driven/cover-storage.interface.js';
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 import type { LookupSource, SourceReply } from '../ports/driven/lookup-source.interface.js';
+import type { LookupCoverRegistry } from '../ports/driven/lookup-cover-registry.interface.js';
+import type { CoverDownloader } from '../ports/driven/cover-downloader.interface.js';
 import type { CoverImage } from '../../domain/value-objects/cover-image.value-object.js';
 import type { CoverTrimmer } from '../ports/driven/cover-trimmer.interface.js';
 import type { PersonalNoteStore } from '../ports/driven/personal-note-store.interface.js';
@@ -213,6 +215,40 @@ export class ScriptedSource<T> implements LookupSource<T> {
         }
 
         return this.reply;
+    }
+}
+
+// Lookup covers under predictable tokens; `forget` makes a token expire.
+export class MemoryCoverRegistry implements LookupCoverRegistry {
+    readonly addresses = new Map<string, string>();
+
+    register(address: string): string {
+        const token = 'lookup-cover-' + (this.addresses.size + 1);
+
+        this.addresses.set(token, address);
+
+        return token;
+    }
+
+    address(token: string): string | null {
+        return this.addresses.get(token) ?? null;
+    }
+
+    forget(token: string): void {
+        this.addresses.delete(token);
+    }
+}
+
+// Downloads from a fixed table of addresses; anything else cannot be fetched.
+export class TableDownloader implements CoverDownloader {
+    readonly requested: string[] = [];
+
+    constructor(private readonly images: Record<string, Uint8Array> = {}) {}
+
+    async download(address: string): Promise<Uint8Array | null> {
+        this.requested.push(address);
+
+        return this.images[address] ?? null;
     }
 }
 

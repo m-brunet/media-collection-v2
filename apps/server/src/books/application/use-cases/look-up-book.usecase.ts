@@ -3,6 +3,7 @@ import type {
     LookUpBookUseCase,
 } from '../ports/driving/look-up-book-use-case.interface.js';
 import type { BookRepository } from '../ports/driven/book-repository.interface.js';
+import type { LookupCoverRegistry } from '../ports/driven/lookup-cover-registry.interface.js';
 import type { SourceLink, SourceUnavailability } from '../services/source-chain.service.js';
 import type { CoverOffer } from '../../domain/services/cover-combination.service.js';
 import { CoverCombination } from '../../domain/services/cover-combination.service.js';
@@ -21,6 +22,7 @@ export class LookUpBook implements LookUpBookUseCase {
         // The book information sources and the cover sources, each in order of preference.
         private readonly information: SourceLink<LookupAnswer> | null,
         private readonly covers: SourceLink<CoverOffer[]> | null,
+        private readonly registry: LookupCoverRegistry,
     ) {}
 
     async execute(actor: Actor, isbn: string): Promise<BookLookup> {
@@ -61,7 +63,12 @@ export class LookUpBook implements LookUpBookUseCase {
             isbn13,
             found: fields.found || coverChoices.length > 0,
             fields: fields.result(),
-            covers: coverChoices,
+            covers: coverChoices.map(({ address, width, height, sources }) => ({
+                token: this.registry.register(address),
+                width,
+                height,
+                sources,
+            })),
             unavailable,
         };
     }

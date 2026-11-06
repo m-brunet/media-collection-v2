@@ -1,5 +1,4 @@
 import type { Actor } from '../../../../shared/domain/actor.helper.js';
-import type { CoverChoice } from '../../../domain/services/cover-combination.service.js';
 import type { CombinedLookup } from '../../../domain/services/lookup-combination.service.js';
 import type { SourceUnavailability } from '../../services/source-chain.service.js';
 
@@ -7,6 +6,14 @@ import type { SourceUnavailability } from '../../services/source-chain.service.j
 export type ExistingBookLookup = {
     kind: 'existing';
     bookId: string;
+};
+
+// A cover offered for review, behind a short-lived token (see `ReadLookupCoverUseCase`).
+export type LookupCoverView = {
+    token: string;
+    width: number | null;
+    height: number | null;
+    sources: string[];
 };
 
 // What the sources know about an ISBN not yet in the library, for the person to review.
@@ -17,7 +24,7 @@ export type LookedUpBook = {
     isbn13: string;
     found: boolean;
     fields: CombinedLookup;
-    covers: CoverChoice[];
+    covers: LookupCoverView[];
     unavailable: SourceUnavailability[];
 };
 
