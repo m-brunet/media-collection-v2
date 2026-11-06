@@ -55,7 +55,7 @@ See [edition impact analysis](collection-editions-impact.md) for counting implic
 
 ## Lending and returns
 
-Task 4 is complete: see [lending business rules](lending.md) and the [design brief](lending-design-brief.md). Owners/Admin manage loans; Guests view them. One active loan per Owned book, reusable name-only receivers, removable starting selection, partial returns, and atomic multi-book operations are confirmed. Lending changes only loan state; keep ownership, shelf, reading, tags, and collection coverage. Block deletion/Not Owned changes during active loans. Show receiver/lending indicators, active loans with lending date, and search by receiver name or book title only. Retain completed history and former title/ISBN after later book deletion; dedicated history UI is future scope. Per-book audit records group into one Activity entry per operation, using household-wide You wording and receiver name.
+Task 4 is complete: see [lending business rules](lending.md) and the [design brief](../design/lending-design-brief.md). Owners/Admin manage loans; Guests view them. One active loan per Owned book, reusable name-only receivers, removable starting selection, partial returns, and atomic multi-book operations are confirmed. Lending changes only loan state; keep ownership, shelf, reading, tags, and collection coverage. Block deletion/Not Owned changes during active loans. Show receiver/lending indicators, active loans with lending date, and search by receiver name or book title only. Retain completed history and former title/ISBN after later book deletion; dedicated history UI is future scope. Per-book audit records group into one Activity entry per operation, using household-wide You wording and receiver name.
 
 ## Physical locations
 
@@ -89,7 +89,7 @@ Removing a tag association or deleting a tag preserves books. Rename to an equiv
 
 ## Lists, search, and sorting
 
-Book and collection listing views are simple listings with simple search, advanced multiple-criteria filtering, and ordering options. The cover-based design is a style guide; see [design guidelines](design-guidelines.md).
+Book and collection listing views are simple listings with simple search, advanced multiple-criteria filtering, and ordering options. The cover-based design is a style guide; see [design guidelines](../design/design-guidelines.md).
 
 - Simple search covers title, authors, ISBN, and collection name, with case/accent-insensitive partial matches and equivalent ISBN-10/13 recognition.
 - Confirmed sort fields: title, date added, and publication date only.
@@ -129,7 +129,7 @@ Activity tells every user what happened recently in the application. It uses sel
 - No category or date-range filters initially. Categories select eligible events internally, not through an initial filtering interface.
 - Show newest entries first and allow loading older entries.
 
-All account roles can view desktop Activity. Initial hiding of before/after values is a presentation rule, not a reason to omit them from the technical record. Exact timestamp details appear on hover and on keyboard focus, as required by the accessibility baseline in [design guidelines](design-guidelines.md); click/tap reveal is not required. Timestamps are stored in UTC and displayed in each viewer's own time zone (the browser's), formatted for the viewer's chosen language; exact timestamp details include the time-zone label, for example '1 November 2026 · 13:42 (CET) · Performed by Alex'. Username changes use the current user-table value; deactivated users remain available for attribution. Reading goals are deferred.
+All account roles can view desktop Activity. Initial hiding of before/after values is a presentation rule, not a reason to omit them from the technical record. Exact timestamp details appear on hover and on keyboard focus, as required by the accessibility baseline in [design guidelines](../design/design-guidelines.md); click/tap reveal is not required. Timestamps are stored in UTC and displayed in each viewer's own time zone (the browser's), formatted for the viewer's chosen language; exact timestamp details include the time-zone label, for example '1 November 2026 · 13:42 (CET) · Performed by Alex'. Username changes use the current user-table value; deactivated users remain available for attribution. Reading goals are deferred.
 
 ## Accounts and permissions
 
@@ -177,7 +177,7 @@ Accepted approach: trust access to the host computer's operating-system account;
 - Use a narrowly scoped local Electron communication path with validated callers, not browser identification or a spoofable request header.
 - Desktop browsers and mobile clients cannot invoke the recovery feature.
 
-Manual backup/restore are also exclusive to the same local Electron-maintenance area, not authenticated application-role endpoints or browser/mobile features. Restore keeps backed-up identities/passwords; Admin recovery remains the failsafe. See [release expectations](release-expectations.md) for full-data scope and replacement/failure rules.
+Manual backup/restore are also exclusive to the same local Electron-maintenance area, not authenticated application-role endpoints or browser/mobile features. Restore keeps backed-up identities/passwords; Admin recovery remains the failsafe. See [release expectations](../operations/release-expectations.md) for full-data scope and replacement/failure rules.
 
 Accepted tradeoff: anyone able to use the application under the host OS account can recover administrator access. This does not protect against someone controlling the host machine or modifying its database. A hypothetical Electron client connected to another host must not gain recovery privileges for that host.
 
@@ -185,7 +185,7 @@ Accepted tradeoff: anyone able to use the application under the host OS account 
 
 Only the first administrator can reset the installation to its initial-data state. Keep its current username and password; delete books, covers, collections, locations, tags, receivers, loans, activity/audit history, other users, and application preferences. The deleted history must not be represented as surviving this reset.
 
-Require the current Admin password and explicit confirmation explaining erased data and retained Admin credentials. Preserve separately saved backups; after reset, clear saved preferences to defaults, end all sessions, and return to login with Admin credentials still valid. Do not delete external startup overrides by inference. See [release expectations](release-expectations.md); implementation mechanisms remain with technical agents.
+Require the current Admin password and explicit confirmation explaining erased data and retained Admin credentials. Preserve separately saved backups; after reset, clear saved preferences to defaults, end all sessions, and return to login with Admin credentials still valid. Do not delete external startup overrides by inference. See [release expectations](../operations/release-expectations.md); implementation mechanisms remain with technical agents.
 
 ## Mobile
 

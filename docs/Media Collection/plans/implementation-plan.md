@@ -11,9 +11,9 @@ Created 2026-11-03. Working plan, kept with the documentation in the Obsidian va
 
 ## Sources of truth
 
-- Product rules: the vault root `docs/Media Collection/` (start with [product-scope](../product-scope.md), [features](../features.md), [decisions-and-open-questions](../decisions-and-open-questions.md)). Each task names its owning documents. Acceptance examples in those documents are test cases.
-- Design: [design-guidelines](../design-guidelines.md). Local copy of the design artifact in Git-ignored `design/`; open `design/artifact/index.html`. Specs win over drawn screens; the design is a style/layout guide, not exhaustive or pixel-perfect; placeholder data/copy is not specified content.
-- Architecture: `AGENTS.md`, [architecture](../architecture.md). Hexagonal NestJS backend, Kysely/SQLite, React web, Electron desktop, shared `packages/contracts`. Business operations over HTTP only; no business IPC. Host-local maintenance (recovery, backup/restore, updates) is the only Electron-local path.
+- Product rules: `docs/Media Collection/product/` (start with [product-scope](../product/product-scope.md), [features](../product/features.md), [decisions-and-open-questions](../product/decisions-and-open-questions.md)). Each task names its owning documents. Acceptance examples in those documents are test cases.
+- Design: [design-guidelines](../design/design-guidelines.md). Local copy of the design artifact in Git-ignored `design/`; open `design/artifact/index.html`. Specs win over drawn screens; the design is a style/layout guide, not exhaustive or pixel-perfect; placeholder data/copy is not specified content.
+- Architecture: `AGENTS.md`, [architecture](../architecture/architecture.md). Hexagonal NestJS backend, Kysely/SQLite, React web, Electron desktop, shared `packages/contracts`. Business operations over HTTP only; no business IPC. Host-local maintenance (recovery, backup/restore, updates) is the only Electron-local path.
 
 ## Key decisions already made (do not reopen silently)
 
@@ -50,7 +50,7 @@ Run all suites from PowerShell on Windows (the user's environment). `npm run che
 Delivery order follows the agreed product sequence. Each task is a complete vertical feature: backend, API, Libris UI, EN/FR strings, audit integration, tests.
 
 ### Task 0 — Platform and UI foundation
-Owning docs: `design-guidelines.md`, `product-scope.md` (foundation/access), `release-expectations.md` (languages), `configuration.md`.
+Owning docs: `../design/design-guidelines.md`, `../product/product-scope.md` (foundation/access), `../operations/release-expectations.md` (languages), `../operations/configuration.md`.
 - Rename package/app identity to Media Collection; Libris branding; default port 34345.
 - Remove the foundation Notes demo feature.
 - Design tokens, reusable components, Libris app shell (sidebar, routing), bundled fonts, Lucide icons through an icon abstraction (ready for set switching later).
@@ -60,7 +60,7 @@ Owning docs: `design-guidelines.md`, `product-scope.md` (foundation/access), `re
 - Introduce frontend component tests and Playwright e2e tooling.
 
 ### Task 1 — Access and accountability
-Owning docs: `accounts.md`, `features.md` (accounts, audit), `overview-activity-mobile.md` (Guest mobile denial).
+Owning docs: `../product/accounts.md`, `../product/features.md` (accounts, audit), `../product/overview-activity-mobile.md` (Guest mobile denial).
 - Technical audit log: category, Successful/Failed outcome, actor, timestamp, before/after without credentials, operation ID; failed records survive rollback.
 - First-launch Admin setup form replacing the foundation's seeded `admin / p@ssw0rd`.
 - Roles Admin (protected first user) / Owner / Guest, fixed at creation; create account with temporary password, reset password, deactivate/reactivate with session ending and username reservation, rename and released-name reuse.
@@ -68,11 +68,11 @@ Owning docs: `accounts.md`, `features.md` (accounts, audit), `overview-activity-
 - Existing local Admin recovery kept working.
 
 ### Task 1b — Appearance: colour schemes
-Inserted at the user's request (2026-11-04). Owning doc: `design-guidelines.md`; source `design/color-charts.html`.
+Inserted at the user's request (2026-11-04). Owning doc: `../design/design-guidelines.md`; source `design/color-charts.html`.
 - Installation-wide colour scheme (Mint, Emerald, Forest, Spring green; default Spring green) chosen by the Admin, applied to Libris and Leaf including before sign-in. Task 10 adds the icon set to the same Appearance page.
 
 ### Task 2 — Books (core library)
-Owning docs: `features.md` (books), `book-entry.md`, `collection-editions-impact.md`.
+Owning docs: `../product/features.md` (books), `../product/book-entry.md`, `../product/collection-editions-impact.md`.
 - Book record and all fields with validation; ISBN-10/13 validation, conversion and uniqueness; no-ISBN with overridable duplicate warning.
 - Shared authors with exact reuse and similar-name prompt; author correction/deletion rules.
 - Covers (upload, fallback), category, ownership, per-user reading status (new users/books start Not read), private per-user note.
@@ -80,23 +80,23 @@ Owning docs: `features.md` (books), `book-entry.md`, `collection-editions-impact
 - If it grows too large, split into "records and rules" and "screens".
 
 ### Task 3 — Collections
-Owning docs: `collections.md`, `collection-editions-impact.md`.
+Owning docs: `../product/collections.md`, `../product/collection-editions-impact.md`.
 - Membership, single/omnibus coverage, volume 0, expected range, inferred/missing, Finished/reopen, overlap rules and conflict resolutions, rename/delete, auto-removal of empty collections.
 - Collection list (name sort, search) and detail page with expandable volume entries.
 
 ### Task 4 — Locations, tags and advanced search
-Owning docs: `locations-tags-search.md`, `features.md`.
+Owning docs: `../product/locations-tags-search.md`, `../product/features.md`.
 - Bookcases/shelves with naming, move and deletion rules; shelf assignment in the book form.
 - Tags management page and inline creation; deletion/rename rules.
 - Advanced filters (all fields, AND/OR, tag include/exclude, No location/No collection), applied to books and collection listing (single-book match rule, whole-collection counts).
 
 ### Task 5 — Lending and returns
-Owning docs: `lending.md`, `lending-design-brief.md`.
+Owning docs: `../product/lending.md`, `../design/lending-design-brief.md`.
 - Receivers with name matching; atomic multi-book lend/return, partial returns, preselected removable starting book.
 - Loans page grouped by receiver with search, lending dates, lent indicators; delete/Not Owned blocked while lent; history retained incl. after book deletion; per-book audit with operation ID.
 
 ### Task 5.5 — Generated titles for collection Manga and Comics
-Inserted at the user's request (2026-11-06). Owning docs: `book-entry.md` (title generation and editing), `features.md` (Books), `collections.md` (rename/delete effects). Detailed plan: [task-05-5-generated-titles](task-05-5-generated-titles.md).
+Inserted at the user's request (2026-11-06). Owning docs: `../product/book-entry.md` (title generation and editing), `../product/features.md` (Books), `../product/collections.md` (rename/delete effects). Detailed plan: [task-05-5-generated-titles](task-05-5-generated-titles.md).
 - Keep a mandatory stored title; allow blank title input only for Manga/Comics with collection membership. Generate `Collection name Vol. N` or `Collection name Vol. N–M` in the backend (format changed from `Name - N` by the user, 2026-11-06).
 - Persist `titleGenerated`; update generated titles on collection rename, membership move and coverage changes; preserve supplied titles. Existing V2 records default to false without changing their titles.
 - Individual removal of membership or category change to Books requires a supplied title, prefilled with the last generated title so one confirmation can keep it. Collection deletion preserves the last generated title and clears the flag automatically.
@@ -109,9 +109,9 @@ Inserted at the user's request (2026-11-06), after Task 5's review. Plan: [task-
   and API tests; a cross-feature `TestLibrary` entry point; replace the duplicated lending test helpers.
 
 ### Task 6 — Assisted entry (desktop)
-Owning docs: `book-entry.md`.
+Owning docs: `../product/book-entry.md`.
 - **Step 1, own commit (decided 2026-11-06):** remove shop padding from covers when they are saved (upload, V1 import,
-  and later lookup results), by the deterministic rule in [book entry · Cover padding](../book-entry.md#cover-padding).
+  and later lookup results), by the deterministic rule in [book entry · Cover padding](../product/book-entry.md#cover-padding).
   Needs a server image library (proposed: `sharp`; check native packaging like `better-sqlite3`, and JPEG/PNG/WebP
   support). Behind a books driven port; unit tests on the rule, API test on upload, check on the V1 import; then
   re-run `npm run dev:import-v1` to clean the development covers. Found while bringing Collections back to the design
@@ -120,22 +120,22 @@ Owning docs: `book-entry.md`.
 - Find book flow: library check first, redirect if existing, result/cover choice, replacement confirmation, failure/no-result feedback with manual completion.
 
 ### Task 7 — Leaf (mobile)
-Owning docs: `overview-activity-mobile.md`, `collections.md` (shopping), `book-entry.md`.
+Owning docs: `../product/overview-activity-mobile.md`, `../product/collections.md` (shopping), `../product/book-entry.md`.
 - Mobile home, unfinished-collection shopping, confirmed mark-Owned quick add.
 - Barcode scanning, scan-gated add form, existing Owned/Not Owned branches, single user-triggered retry, success/failure screens.
 
 ### Task 8 — Overview and Activity
-Owning docs: `overview-activity-mobile.md`, `features.md` (Activity, Overview).
+Owning docs: `../product/overview-activity-mobile.md`, `../product/features.md` (Activity, Overview).
 - Overview counters, recently added, personal reading summary (none for Guests).
 - Activity projection from audit: eligible successful shared events, grouped lending operations, household "You" wording, relative time, exact details on hover/focus, load older.
 
 ### Task 9 — Host maintenance and data safety
-Owning docs: `release-expectations.md`, `accounts.md`, `features.md` (recovery, data reset).
+Owning docs: `../operations/release-expectations.md`, `../product/accounts.md`, `../product/features.md` (recovery, data reset).
 - Local Electron maintenance window (pre-login): Admin recovery, full backup create/restore (same version, replace, end sessions, reject invalid/other versions, preserve data on failure).
 - Authenticated Admin data reset with password confirmation.
 
 ### Task 10 — Release readiness
-Owning docs: `updates.md`, `design-guidelines.md`.
+Owning docs: `../operations/updates.md`, `../design/design-guidelines.md`.
 - GitHub Releases update checks, Windows integrated download/install with automatic backup, macOS/Linux backup-and-open-download-page, backup folder, failure handling.
 - Packaging/installer naming; icon set switching (Admin setting) and credits/licences page.
 

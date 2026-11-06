@@ -98,3 +98,7 @@ A separate desktop page mirroring mobile ownership progression is future scope, 
 10. Delete a collection: keep all books but remove membership/coverage. Move its final book elsewhere: keep that book and remove the now-empty collection.
 11. An unfinished collection with all known volumes Owned stays visible on mobile with last owned and no known gaps.
 12. Mobile quick add of a saved ordinary Not Owned book requires confirmation; inferred volumes and omnibus books cannot use it.
+
+## Implementation references
+
+[task-03-collections](../plans/task-03-collections.md), [design-fix-collections](../plans/design-fix-collections.md). See the [global implementation plan](../plans/implementation-plan.md) for status and resume instructions.

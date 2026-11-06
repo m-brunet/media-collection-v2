@@ -12,7 +12,7 @@ The Libris Collections list and collection details pages work (Task 3) but do no
 empty). The exported artifact screens yUD6M, C68ok, zq1kt and yJXFw show the same layouts. As always, product documents
 win over drawn screens, and names, counts, covers and copy in the design are placeholders.
 
-Owning documents: [collections](../collections.md), [design-guidelines](../design-guidelines.md),
+Owning documents: [collections](../product/collections.md), [design-guidelines](../design/design-guidelines.md),
 [task-03-collections](task-03-collections.md).
 
 ## Differences found
@@ -119,4 +119,4 @@ method. The browser pages reuse `BookCover`/`BookFormat` from `libris/books` (br
   `EmptyState` serves every page, so changing it is outside this Collections-only fix; awaiting the user's decision.
 - Some covers look smaller with white edges: 177 of 437 development covers are padded shop squares. Decided
   (2026-11-06): remove the padding when covers are saved, as Task 6 step 1; see
-  [book entry · Cover padding](../book-entry.md#cover-padding).
+  [book entry · Cover padding](../product/book-entry.md#cover-padding).

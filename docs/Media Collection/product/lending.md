@@ -40,7 +40,7 @@ Offer additional books based on their being currently lent to the same receiver,
 
 Provide a dedicated page showing lent books and their receiver. The user must be able to answer 'Which books are lent, and who has them?' without opening each book.
 
-Initially show active loans only, including each book's lending date. Search supports receiver name and book title only, not author or ISBN. Completed loans are retained, but a returned-history interface is future scope. Grouping and return entry points follow the selected design with detailed screen refinement assigned to Task 6. Receiver management is excluded from initial scope: create/reuse through lending only, with no dedicated rename/delete/merge interface. Keep receiver identity independent so management can be added later if needed. See the [design brief](lending-design-brief.md).
+Initially show active loans only, including each book's lending date. Search supports receiver name and book title only, not author or ISBN. Completed loans are retained, but a returned-history interface is future scope. Grouping and return entry points follow the selected design with detailed screen refinement assigned to Task 6. Receiver management is excluded from initial scope: create/reuse through lending only, with no dedicated rename/delete/merge interface. Keep receiver identity independent so management can be added later if needed. See the [design brief](../design/lending-design-brief.md).
 
 Show 'Lent to [receiver]' on book details and a compact Lent indicator in book listings. This displays loan state, not a new ownership or reading status.
 
@@ -131,3 +131,7 @@ Full application reset deletes receivers and loan records along with the other l
 The receiver table and loan-association concept are explicit user direction; table/column names and detailed schema are not prescribed. Plan within the existing pure hexagonal architecture and HTTP business boundary. Do not add business IPC.
 
 Use the confirmed rules and acceptance examples above when planning migrations and API contracts. The future plan should cover lending, returns, active-loan queries, receiver selection, permission enforcement, validation/concurrency, audit integration, and history/deletion policy. Keep receiver identities separate from authenticated actors. Consider repeat occurrences before choosing association-table keys. No implementation tasks or migrations are authorized by this feature draft alone.
+
+## Implementation references
+
+[task-05-lending](../plans/task-05-lending.md). See the [global implementation plan](../plans/implementation-plan.md) for status and resume instructions.

@@ -162,9 +162,8 @@ session.key
 # Per-repository identity, included by .git/config.
 /.gitconfig
 
-# Local design reference (copy of the external "designs ui" folder) and scratch notes; never committed.
+# Local design reference (copy of the external "designs ui" folder); never committed.
 /design/
-/docs/local-notes/
 
 # Local database dumps and import corrections; never committed.
 /local-imports/
@@ -175,7 +174,6 @@ session.key
 # Local startup overrides; keep config.sample.json versioned.
 /config.json
 
-# Obsidian documentation vault: share its settings, not each machine's open panes and caches.
-/docs/Media Collection/.obsidian/workspace*.json
-/docs/Media Collection/.obsidian/cache
-/docs/Media Collection/.trash/
+# Version the entire documentation tree, including Obsidian settings and workspace files.
+!/docs/
+!/docs/**

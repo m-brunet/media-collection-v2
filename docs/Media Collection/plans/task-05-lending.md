@@ -1,8 +1,8 @@
 # Task 5 — Lending and returns
 
 Status: done (2026-11-06), committed on `master`. Global plan: [implementation plan](implementation-plan.md).
-Owning docs: [lending](../lending.md) (authoritative rules, acceptance scenarios 1-20),
-[lending-design-brief](../lending-design-brief.md), [features](../features.md) (Lending, permissions table), [overview-activity-mobile](../overview-activity-mobile.md) (dates in the
+Owning docs: [lending](../product/lending.md) (authoritative rules, acceptance scenarios 1-20),
+[lending-design-brief](../design/lending-design-brief.md), [features](../product/features.md) (Lending, permissions table), [overview-activity-mobile](../product/overview-activity-mobile.md) (dates in the
 viewer's time zone, Activity grouping).
 Design: `design/artifact/screens/` K1Sp0 (Lent books), pAfho (Loans empty), mwe4d (Lend books), K42ycP (Lend books,
 name match + book picker), cclIx (empty selection), x2d8V (availability conflict), Njkmn (Record returns), iDevJ

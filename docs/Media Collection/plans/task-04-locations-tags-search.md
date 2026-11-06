@@ -1,7 +1,7 @@
 # Task 4 — Locations, tags and advanced search
 
 Status: done (2026-11-05). Committed and pushed (ddf3f0f). Global plan: [implementation plan](implementation-plan.md).
-Owning docs: [locations-tags-search](../locations-tags-search.md) (authoritative rules, acceptance examples 1-14), [features](../features.md)
+Owning docs: [locations-tags-search](../product/locations-tags-search.md) (authoritative rules, acceptance examples 1-14), [features](../product/features.md)
 (Physical locations, Tags and filtering, Lists/search/sorting, permissions table).
 Design: `design/artifact/screens/` ZRBZB (Bookshelves), g7I2l (Bookshelves empty), ty6Jg (Create shelf, also used for
 Move shelf), q84uEO (Delete shelf), R60eQ2 (Tags), y41k8 (Delete tag), q2GzCK (Advanced book filters), FFPyb (filters,

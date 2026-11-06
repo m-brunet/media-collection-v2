@@ -42,7 +42,7 @@ the root of `apps/server/src/`; frameworks, protocols, persistence, and runtime 
 periphery. Use **driving** for inputs/triggers and **driven** for outputs/dependencies in paths and documentation.
 
 This is the single source of truth for agent rules, including Claude via `.claude/CLAUDE.md`. Source and automated
-checks follow the structure below. The [migration record](docs/Media%20Collection/architecture-migration-plan.md) documents the change;
+checks follow the structure below. The [migration record](docs/Media%20Collection/architecture/architecture-migration-plan.md) documents the change;
 existing violations are not permission to introduce new ones.
 
 Before adding or modifying backend code:

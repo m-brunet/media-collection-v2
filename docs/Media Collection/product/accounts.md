@@ -46,7 +46,7 @@ Pre-login recovery is available only locally through Electron on the host, with 
 
 Recovery restores credentials; it does not erase data or delete/recreate the Admin. The user's earlier factory-reset reference was clarified in favor of this recovery feature, not an additional destructive action.
 
-Task 7 adds manual backup and restore beside recovery in local pre-login Electron maintenance, not under authenticated application roles or browser routes. These actions share recovery's host OS-account trust boundary. Restore reinstates backed-up user identities/passwords and signs everyone out; if credentials are forgotten, use Admin recovery. This is distinct from the authenticated Admin-settings data reset, which still keeps the current Admin credentials. See [release expectations](release-expectations.md).
+Task 7 adds manual backup and restore beside recovery in local pre-login Electron maintenance, not under authenticated application roles or browser routes. These actions share recovery's host OS-account trust boundary. Restore reinstates backed-up user identities/passwords and signs everyone out; if credentials are forgotten, use Admin recovery. This is distinct from the authenticated Admin-settings data reset, which still keeps the current Admin credentials. See [release expectations](../operations/release-expectations.md).
 
 ## Acceptance examples
 
@@ -66,3 +66,7 @@ Task 7 adds manual backup and restore beside recovery in local pre-login Electro
 ## Assigned follow-ups
 
 Task 6 covers setup/login/temporary-password/self-settings/user-management/recovery screen treatment and feedback. Task 7 finalizes data-reset confirmation, backup expectations, and operational consequences. These tasks must preserve the access and retention rules here. Technical agents choose authentication/session mechanisms, storage, and authorization enforcement; no such implementation is prescribed by this product closure.
+
+## Implementation references
+
+[task-01-access-accountability](../plans/task-01-access-accountability.md). See the [global implementation plan](../plans/implementation-plan.md) for status and resume instructions.

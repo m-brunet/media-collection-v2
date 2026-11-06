@@ -4,7 +4,7 @@ Status: Task 2 product decisions complete. This document records confirmed produ
 
 ## Collection-based titles
 
-Additional product decisions confirmed on 2026-11-06; implementation belongs to [Task 5.5](plans/task-05-5-generated-titles.md), before assisted entry and mobile implementation. These rules concern the application, not V1 import.
+Additional product decisions confirmed on 2026-11-06; implementation belongs to [Task 5.5](../plans/task-05-5-generated-titles.md), before assisted entry and mobile implementation. These rules concern the application, not V1 import.
 
 - A nonblank title remains mandatory in storage. Title input is mandatory for Books and for standalone Manga/Comics.
 - Manga/Comics with collection membership may leave the title input blank or whitespace-only. The backend generates `Collection name Vol. N` for one volume, or `Collection name Vol. N–M` for consecutive coverage (`Vol.` in every interface language). Volume 0 uses the same format when enabled. Use the collection's display name, not its normalized comparison key.
@@ -128,3 +128,7 @@ Guests have no personal notes feature and no reading-status display or controls.
 - Task 6: detailed mobile pages, scanner/error states, field-level feedback, similarity-warning layout, and conversion-icon explanation. Keep the confirmed form structure and explicit actions.
 - Technical agents: metadata/cover provider investigation, matching mechanics, validation implementation, and storage/privacy enforcement. No provider or implementation algorithm is selected by these product rules.
 - No extra internal-space collapsing or arbitrary date limits are required by the product baseline. Preserve the supplied comparison reference and assess any additional requirements explicitly rather than inventing them.
+
+## Implementation references
+
+[task-02-books](../plans/task-02-books.md), [task-05-5-generated-titles](../plans/task-05-5-generated-titles.md). See the [global implementation plan](../plans/implementation-plan.md) for status and resume instructions.

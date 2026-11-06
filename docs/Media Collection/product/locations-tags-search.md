@@ -75,3 +75,7 @@ Collection ownership/completeness totals always describe the entire collection, 
 ## Assigned follow-ups
 
 Task 6 handles the exact tag-filter controls, list/card composition, display wording, and loading/empty/error states, preserving these rules. Technical agents choose storage, query mechanics, and similarity algorithms. No clickable bookcase visualisation or tag-merging feature is introduced; those remain future scope.
+
+## Implementation references
+
+[task-04-locations-tags-search](../plans/task-04-locations-tags-search.md). See the [global implementation plan](../plans/implementation-plan.md) for status and resume instructions.

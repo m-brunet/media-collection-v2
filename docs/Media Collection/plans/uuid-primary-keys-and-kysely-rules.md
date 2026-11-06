@@ -31,7 +31,7 @@ Status: done. Implemented in commit `5bc0aa2` and merged into `master` through P
    normalized title/author keys. Searches use SQLite `instr()` through Kysely's function builder.
 5. Added architecture lint enforcement for raw-SQL imports/re-exports, direct driver execution, migration access
    from runtime adapters, and the restricted connection PRAGMAs. Migration exceptions use the dedicated folder.
-6. Documented the rules in `AGENTS.md` and [architecture](../architecture.md).
+6. Documented the rules in `AGENTS.md` and [architecture](../architecture/architecture.md).
 
 ## Verification
 

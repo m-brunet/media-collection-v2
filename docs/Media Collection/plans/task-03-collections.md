@@ -1,9 +1,9 @@
 # Task 3 — Collections
 
 Status: done (2026-11-05). Committed locally, not pushed. Global plan: [implementation plan](implementation-plan.md).
-Owning docs: [collections](../collections.md) (authoritative rules and acceptance examples 1-12), [collection-editions-impact](../collection-editions-impact.md),
-[features](../features.md) (Collections, Lists/search/sorting), [locations-tags-search](../locations-tags-search.md) (collection listing part),
-[book-entry](../book-entry.md) (name matching).
+Owning docs: [collections](../product/collections.md) (authoritative rules and acceptance examples 1-12), [collection-editions-impact](../product/collection-editions-impact.md),
+[features](../product/features.md) (Collections, Lists/search/sorting), [locations-tags-search](../product/locations-tags-search.md) (collection listing part),
+[book-entry](../product/book-entry.md) (name matching).
 Design: `design/artifact/screens/` yUD6M (Collections list), yJXFw (empty), C68ok (details, unfinished), zq1kt (details,
 Finished), K8bbtH (Edit collection: rename + volume 0), LLSI1 (planned edition conflict), kz30p (omnibus conflict),
 tr7ll/FOZxg (collection block of the book form).
@@ -103,7 +103,7 @@ multiple membership, merging, unnumbered specials.
 - Membership lives in its own `collection_books` table (composite key book + collection, unique book index), written
   only by collections adapters, instead of columns on `books`: `books` stays unaware of coverage and multiple membership
   remains possible. Read adapters join across feature tables; writes stay with the owning feature (documented in
-  [architecture](../architecture.md)).
+  [architecture](../architecture/architecture.md)).
 - Coverage lives in the value objects `VolumeRange` and `CollectionCoverage` (domain/value-objects) rather than a domain
   service. The membership ports are `CollectionMembership` (`assign(book, request, replacing)`, `leave(bookId)`) and
   `BookCollectionReader` (`of(bookId)`), split after the architecture review (ISP); the books use
