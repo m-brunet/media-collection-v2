@@ -14,6 +14,7 @@ function subject(current: ReturnType<typeof library>) {
         current.loader,
         current.builder,
         current.identity,
+        current.titles,
         current.guard,
         current.viewer,
         current.clock,
@@ -214,5 +215,96 @@ describe('UpdateBook with loans', () => {
 
         expect(result).toMatchObject({ title: 'Piranesi (2nd)', ownership: 'owned' });
         expect(result.loan).not.toBeNull();
+    });
+});
+
+describe('UpdateBook titles', () => {
+    const gunnm = { collection: { name: 'Gunnm' }, volumeFrom: 3, volumeTo: 3 };
+    const generated = { title: '', category: 'manga' as const, collection: gunnm };
+
+    it('keeps generation through an unrelated edit (example 3)', async () => {
+        const current = library();
+        const book = await saved(current, generated);
+
+        const result = await subject(current).execute(
+            owner,
+            book.id,
+            input({ ...generated, pageCount: 200 }),
+        );
+
+        expect(result).toMatchObject({ title: 'Gunnm - 3', titleGenerated: true, pageCount: 200 });
+    });
+    it('regenerates the title when the coverage changes (example 3)', async () => {
+        const current = library();
+        const book = await saved(current, generated);
+
+        const result = await subject(current).execute(
+            owner,
+            book.id,
+            input({ ...generated, collection: { ...gunnm, volumeFrom: 3, volumeTo: 4 } }),
+        );
+
+        expect(result.title).toBe('Gunnm - 3–4');
+    });
+    it('regenerates the title when the book moves to another collection (example 3)', async () => {
+        const current = library();
+        const book = await saved(current, generated);
+
+        const result = await subject(current).execute(
+            owner,
+            book.id,
+            input({ ...generated, collection: { ...gunnm, collection: { name: 'Alita' } } }),
+        );
+
+        expect(result.title).toBe('Alita - 3');
+    });
+    it('turns a typed title into a supplied one, even when identical to the generated one', async () => {
+        const current = library();
+        const book = await saved(current, generated);
+
+        const result = await subject(current).execute(
+            owner,
+            book.id,
+            input({ ...generated, title: 'Gunnm - 3' }),
+        );
+
+        expect(result).toMatchObject({ title: 'Gunnm - 3', titleGenerated: false });
+    });
+    it('requires a title when the book leaves its collection (example 4)', async () => {
+        const current = library();
+        const book = await saved(current, generated);
+
+        const result = subject(current).execute(
+            owner,
+            book.id,
+            input({ ...generated, collection: null }),
+        );
+
+        await expect(result).rejects.toMatchObject({ reason: 'title-required' });
+        expect(current.books.books.get(book.id)!.details.titleGenerated).toBe(true);
+    });
+    it('requires a title when the book becomes a Books record (example 4)', async () => {
+        const current = library();
+        const book = await saved(current, generated);
+
+        const result = subject(current).execute(
+            owner,
+            book.id,
+            input({ ...generated, category: 'books' }),
+        );
+
+        await expect(result).rejects.toMatchObject({ reason: 'title-required' });
+    });
+    it('saves the last generated title as supplied when the person accepts it (example 4)', async () => {
+        const current = library();
+        const book = await saved(current, generated);
+
+        const result = await subject(current).execute(
+            owner,
+            book.id,
+            input({ ...generated, title: 'Gunnm - 3', collection: null }),
+        );
+
+        expect(result).toMatchObject({ title: 'Gunnm - 3', titleGenerated: false });
     });
 });

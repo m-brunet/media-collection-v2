@@ -158,6 +158,7 @@ export class BackendRuntime {
             const tls = new FileTlsStore(database.connections, options.dataDirectory, storage, ids);
             const httpSettings = new KyselyHttpSettingsRepository(database.connections, ids);
             const catalog = new KyselyBookCatalog(database.connections);
+            const bookRepository = new KyselyBookRepository(database.connections);
             const collections = new KyselyCollectionRepository(database.connections);
             const members = new KyselyCollectionMemberStore(database.connections);
             const membership = CollectionsModule.membership(collections, members, ids, clock);
@@ -240,7 +241,7 @@ export class BackendRuntime {
                             operations,
                         ),
                         BooksModule.register({
-                            books: new KyselyBookRepository(database.connections),
+                            books: bookRepository,
                             authors: new KyselyAuthorRepository(database.connections),
                             catalog,
                             readings: new KyselyReadingStatusRepository(database.connections),
@@ -262,6 +263,7 @@ export class BackendRuntime {
                             collections,
                             members,
                             search: catalog,
+                            titles: BooksModule.memberTitles(bookRepository, clock),
                             clock,
                             operations,
                         }),

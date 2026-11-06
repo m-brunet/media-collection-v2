@@ -36,6 +36,7 @@ import { BookOrganisationReader } from '../services/book-organisation-reader.ser
 import { BookOrganiser } from '../services/book-organiser.service.js';
 import { BookRemoval } from '../services/book-removal.service.js';
 import { BookViewer } from '../services/book-viewer.service.js';
+import { GeneratedTitleSync } from '../services/generated-title-sync.service.js';
 import { LentBookGuard } from '../services/lent-book-guard.service.js';
 import { Author } from '../../domain/entities/author.entity.js';
 import { Book } from '../../domain/entities/book.entity.js';
@@ -376,6 +377,9 @@ export class MemoryTagging implements TagAssignment, BookTagReader {
 export class MemoryMembership implements CollectionMembership, BookCollectionReader {
     readonly memberships = new Map<string, BookCollection>();
     readonly replaced: string[][] = [];
+    // Existing collections' display names, by identity or by comparison key of an equivalent
+    // typed name, as the collections feature would resolve them.
+    readonly names = new Map<string, string>();
     // Collection changes the next assign or leave reports, as the collections feature would.
     changes: RelatedChange[] = [];
 
@@ -399,7 +403,10 @@ export class MemoryMembership implements CollectionMembership, BookCollectionRea
         const choice = request.collection;
         const membership = {
             id: 'id' in choice ? choice.id : 'collection-' + choice.name,
-            name: 'name' in choice ? choice.name : 'Collection',
+            name:
+                'name' in choice
+                    ? (this.names.get(NameKey.of(choice.name)) ?? choice.name)
+                    : (this.names.get(choice.id) ?? 'Collection'),
             volumeFrom: request.volumeFrom,
             volumeTo: request.volumeTo,
         };
@@ -448,6 +455,7 @@ export function library() {
     let counter = 0;
     const ids = { next: () => 'id-' + ++counter };
     const clock = { now: () => new Date('2026-03-01T10:00:00Z') };
+    const identity = new BookIdentityCheck(books, authors);
 
     return {
         books,
@@ -468,7 +476,8 @@ export function library() {
         clock,
         operations: auditedOperation(trail),
         builder: new BookDetailsBuilder(new AuthorResolver(authors, ids, clock)),
-        identity: new BookIdentityCheck(books, authors),
+        identity,
+        titles: new GeneratedTitleSync(books, identity, clock),
         loader,
         removal: new BookRemoval(books, authors, collections, loader, guard, loans),
         viewer: new BookViewer(catalog, readings, notes, collections, organisation, loans),
@@ -518,6 +527,7 @@ export async function saved(
         current.books,
         current.builder,
         current.identity,
+        current.titles,
         current.collections,
         current.removal,
         current.organiser,

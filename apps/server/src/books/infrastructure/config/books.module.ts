@@ -22,6 +22,9 @@ import { BookOrganisationReader } from '../../application/services/book-organisa
 import { BookOrganiser } from '../../application/services/book-organiser.service.js';
 import { BookRemoval } from '../../application/services/book-removal.service.js';
 import { BookViewer } from '../../application/services/book-viewer.service.js';
+import { CollectionMemberTitles } from '../../application/services/collection-member-titles.service.js';
+import { GeneratedTitleSync } from '../../application/services/generated-title-sync.service.js';
+import type { MemberTitles } from '../../../collections/application/ports/driven/member-titles.interface.js';
 import { LentBookGuard } from '../../application/services/lent-book-guard.service.js';
 import { CorrectAuthor } from '../../application/use-cases/correct-author.usecase.js';
 import { CreateBook } from '../../application/use-cases/create-book.usecase.js';
@@ -96,6 +99,7 @@ const token = {
     organiser: 'BOOKS_ORGANISER',
     organisation: 'BOOKS_ORGANISATION_READER',
     guard: 'BOOKS_LENT_BOOK_GUARD',
+    titles: 'BOOKS_GENERATED_TITLE_SYNC',
 } as const;
 
 function dependencyProviders(dependencies: BooksDependencies): Provider[] {
@@ -137,6 +141,12 @@ const serviceProviders: Provider[] = [
             tags: TagAssignment,
             organisation: BookOrganisationReader,
         ) => new BookOrganiser(shelves, tags, organisation),
+    },
+    {
+        provide: token.titles,
+        inject: [token.books, token.identity, token.clock],
+        useFactory: (books: BookRepository, identity: BookIdentityCheck, clock: Clock) =>
+            new GeneratedTitleSync(books, identity, clock),
     },
     {
         provide: token.guard,
@@ -189,6 +199,7 @@ const useCaseProviders: Provider[] = [
             token.books,
             token.builder,
             token.identity,
+            token.titles,
             token.collections,
             token.removal,
             token.organiser,
@@ -203,6 +214,7 @@ const useCaseProviders: Provider[] = [
             books: BookRepository,
             builder: BookDetailsBuilder,
             identity: BookIdentityCheck,
+            titles: GeneratedTitleSync,
             collections: CollectionMembership,
             removal: BookRemoval,
             organiser: BookOrganiser,
@@ -217,6 +229,7 @@ const useCaseProviders: Provider[] = [
                 books,
                 builder,
                 identity,
+                titles,
                 collections,
                 removal,
                 organiser,
@@ -241,6 +254,7 @@ const useCaseProviders: Provider[] = [
             token.loader,
             token.builder,
             token.identity,
+            token.titles,
             token.guard,
             token.viewer,
             token.clock,
@@ -257,6 +271,7 @@ const useCaseProviders: Provider[] = [
             loader: BookLoader,
             builder: BookDetailsBuilder,
             identity: BookIdentityCheck,
+            titles: GeneratedTitleSync,
             guard: LentBookGuard,
             viewer: BookViewer,
             clock: Clock,
@@ -273,6 +288,7 @@ const useCaseProviders: Provider[] = [
                 loader,
                 builder,
                 identity,
+                titles,
                 guard,
                 viewer,
                 clock,
@@ -419,5 +435,10 @@ export class BooksModule {
                 ...useCaseProviders,
             ],
         };
+    }
+
+    // The titles of member books, kept in line by the collections feature's rename and deletion.
+    static memberTitles(books: BookRepository, clock: Clock): MemberTitles {
+        return new CollectionMemberTitles(books, clock);
     }
 }

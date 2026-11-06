@@ -27,6 +27,7 @@ export class BookViewer {
         return {
             id,
             title: details.title,
+            titleGenerated: details.titleGenerated,
             isbn: details.isbn?.isbn13 ?? null,
             isbnConvertedFromIsbn10: details.isbn?.convertedFromIsbn10 ?? false,
             noIsbn: details.noIsbn,

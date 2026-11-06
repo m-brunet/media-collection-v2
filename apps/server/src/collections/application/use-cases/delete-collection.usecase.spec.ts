@@ -7,6 +7,7 @@ function subject(current: ReturnType<typeof shelf>) {
         current.collections,
         current.members,
         current.loader,
+        current.titles,
         current.operations,
     );
 }
@@ -47,5 +48,18 @@ describe('DeleteCollection', () => {
 
         await expect(operation).rejects.toMatchObject({ code: 'forbidden' });
         expect(current.collections.collections.size).toBe(1);
+    });
+});
+
+describe('DeleteCollection titles', () => {
+    it('keeps the titles of its books (example 5)', async () => {
+        const current = shelf();
+
+        await member(current, 'one', 'owned', 'Gunnm', 1);
+        await member(current, 'two', 'owned', 'Gunnm', 2);
+
+        await subject(current).execute(owner, 'collection-1');
+
+        expect(current.titles.kept).toEqual([['one', 'two']]);
     });
 });

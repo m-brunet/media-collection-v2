@@ -4,8 +4,10 @@ import type { CollectionChanges, CollectionDetailsView } from '../collection-vie
 import { MemberCoverage } from '../member-coverage.helper.js';
 import type { CollectionMemberStore } from '../ports/driven/collection-member-store.interface.js';
 import type { CollectionRepository } from '../ports/driven/collection-repository.interface.js';
+import type { MemberTitles } from '../ports/driven/member-titles.interface.js';
 import { CollectionLoader } from '../services/collection-loader.service.js';
 import { CollectionViewer } from '../services/collection-viewer.service.js';
+import type { RelatedChange } from '../../../shared/application/ports/driven/audit-entry.interface.js';
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 import type { AuditedOperation } from '../../../shared/application/services/audited-operation.service.js';
 import type { Actor } from '../../../shared/domain/actor.helper.js';
@@ -13,7 +15,8 @@ import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { NameKey } from '../../../shared/domain/name-key.helper.js';
 
-// Renaming changes the name every member book shows; an equivalent existing name is refused,
+// Renaming changes the name every member book shows, and the generated titles of its books; an
+// equivalent existing name is refused,
 // since merging collections is not available. Including volume 0 reopens a Finished
 // collection that has no volume 0 yet.
 export class UpdateCollection implements UpdateCollectionUseCase {
@@ -22,6 +25,7 @@ export class UpdateCollection implements UpdateCollectionUseCase {
         private readonly members: CollectionMemberStore,
         private readonly loader: CollectionLoader,
         private readonly viewer: CollectionViewer,
+        private readonly titles: MemberTitles,
         private readonly clock: Clock,
         private readonly operations: AuditedOperation,
     ) {}
@@ -45,10 +49,19 @@ export class UpdateCollection implements UpdateCollectionUseCase {
                 const records = await this.members.ofCollections([collectionId]);
                 const members = MemberCoverage.of(records);
                 const now = this.clock.now().toISOString();
+                let retitled: RelatedChange[] = [];
 
                 if (changes.name !== undefined) {
                     await this.ensureAvailable(collectionId, changes.name);
                     collection.rename(changes.name, now);
+                    retitled = await this.titles.regenerate(
+                        collection.snapshot.name,
+                        records.map(({ bookId, volumeFrom, volumeTo }) => ({
+                            bookId,
+                            volumeFrom,
+                            volumeTo,
+                        })),
+                    );
                 }
 
                 if (changes.includesVolumeZero !== undefined) {
@@ -62,6 +75,7 @@ export class UpdateCollection implements UpdateCollectionUseCase {
                     result: this.viewer.details(collection, records),
                     before,
                     after: CollectionSnapshot.of(collection),
+                    related: retitled,
                 };
             },
         );

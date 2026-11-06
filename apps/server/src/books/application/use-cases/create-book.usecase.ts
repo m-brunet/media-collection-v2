@@ -11,6 +11,7 @@ import { BookIdentityCheck } from '../services/book-identity-check.service.js';
 import { BookOrganiser } from '../services/book-organiser.service.js';
 import { BookRemoval } from '../services/book-removal.service.js';
 import { BookViewer } from '../services/book-viewer.service.js';
+import { GeneratedTitleSync } from '../services/generated-title-sync.service.js';
 import { Book } from '../../domain/entities/book.entity.js';
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 import type { IdGenerator } from '../../../shared/application/ports/driven/id-generator.interface.js';
@@ -25,6 +26,7 @@ export class CreateBook implements CreateBookUseCase {
         private readonly books: BookRepository,
         private readonly builder: BookDetailsBuilder,
         private readonly identity: BookIdentityCheck,
+        private readonly titles: GeneratedTitleSync,
         private readonly collections: CollectionMembership,
         private readonly removal: BookRemoval,
         private readonly organiser: BookOrganiser,
@@ -66,6 +68,12 @@ export class CreateBook implements CreateBookUseCase {
                     { id, ownership: details.ownership },
                     input.collection,
                     replacing,
+                );
+
+                await this.titles.apply(
+                    book,
+                    membership.collection,
+                    input.confirmDistinct ?? false,
                 );
                 const organised = await this.organiser.apply(id, {
                     shelfId: input.shelfId,

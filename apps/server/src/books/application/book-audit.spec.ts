@@ -34,6 +34,7 @@ describe('BookSnapshot', () => {
 
         expect(result).toEqual({
             title: 'Piranesi',
+            titleGenerated: false,
             isbn: '9780306406157',
             noIsbn: false,
             authorIds: ['a1'],

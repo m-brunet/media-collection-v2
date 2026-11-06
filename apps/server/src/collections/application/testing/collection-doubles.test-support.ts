@@ -1,3 +1,5 @@
+import type { RelatedChange } from '../../../shared/application/ports/driven/audit-entry.interface.js';
+import type { MemberTitles, TitledMember } from '../ports/driven/member-titles.interface.js';
 import type { CollectionBookSearch } from '../ports/driven/collection-book-search.interface.js';
 import { BookFilter } from '../../../shared/application/book-filter.js';
 import type {
@@ -148,6 +150,36 @@ export class FixedBookSearch implements CollectionBookSearch {
 export const anyBook = BookFilter.of();
 
 // Collections with all doubles and services wired as in production.
+// Records the member-title calls of collection operations and answers with prepared changes.
+export class RecordedMemberTitles implements MemberTitles {
+    readonly regenerated: { collectionName: string; members: TitledMember[] }[] = [];
+    readonly kept: string[][] = [];
+
+    async regenerate(
+        collectionName: string,
+        members: readonly TitledMember[],
+    ): Promise<RelatedChange[]> {
+        this.regenerated.push({
+            collectionName,
+            members: members.map((member) => ({ ...member })),
+        });
+
+        return members.map((member) => ({
+            category: 'book.retitled',
+            subjectType: 'book',
+            subjectId: member.bookId,
+            before: null,
+            after: { collectionName },
+        }));
+    }
+
+    async keep(bookIds: readonly string[]): Promise<RelatedChange[]> {
+        this.kept.push([...bookIds]);
+
+        return [];
+    }
+}
+
 export function shelf() {
     const collections = new MemoryCollections();
     const members = new MemoryMembers();
@@ -167,6 +199,7 @@ export function shelf() {
         ids,
         clock,
         search: new FixedBookSearch(),
+        titles: new RecordedMemberTitles(),
         viewer: new CollectionViewer(),
         operations: auditedOperation(trail),
         membership: new BookCollectionMembership(collections, members, loader, upkeep, ids, clock),

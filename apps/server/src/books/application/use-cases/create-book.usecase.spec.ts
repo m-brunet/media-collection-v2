@@ -7,6 +7,7 @@ function subject(current = library()) {
         current.books,
         current.builder,
         current.identity,
+        current.titles,
         current.collections,
         current.removal,
         current.organiser,
@@ -220,7 +221,7 @@ describe('CreateBook', () => {
             false,
         );
 
-        await expect(result).rejects.toMatchObject({ reason: 'title-invalid' });
+        await expect(result).rejects.toMatchObject({ reason: 'title-required' });
         expect(current.books.books.has(planned.id)).toBe(true);
     });
     it('records the collection it created in the same operation', async () => {
@@ -280,5 +281,92 @@ describe('CreateBook', () => {
 
         await expect(result).rejects.toMatchObject({ reason: 'shelf-missing' });
         expect(current.trail.entries).toEqual([expect.objectContaining({ outcome: 'failed' })]);
+    });
+});
+
+describe('CreateBook titles', () => {
+    const gunnm = { collection: { name: 'Gunnm' }, volumeFrom: 3, volumeTo: 3 };
+
+    it('names a Manga without title after its collection and volume (example 1)', async () => {
+        const current = library();
+
+        const result = await subject(current).execute(
+            owner,
+            input({ title: '', category: 'manga', collection: gunnm }),
+            false,
+        );
+
+        expect(result).toMatchObject({ title: 'Gunnm - 3', titleGenerated: true });
+        expect(current.books.books.get(result.id)!.details.title).toBe('Gunnm - 3');
+    });
+    it('names a Comics range with an en dash (example 1)', async () => {
+        const current = library();
+
+        const result = await subject(current).execute(
+            owner,
+            input({
+                title: '',
+                category: 'comics',
+                collection: { collection: { name: 'Saga' }, volumeFrom: 1, volumeTo: 3 },
+            }),
+            false,
+        );
+
+        expect(result.title).toBe('Saga - 1–3');
+    });
+    it('uses the spelling of the existing collection the typed name joined', async () => {
+        const current = library();
+
+        current.collections.names.set('gunnm', 'GUNNM');
+
+        const result = await subject(current).execute(
+            owner,
+            input({ title: '', category: 'manga', collection: gunnm }),
+            false,
+        );
+
+        expect(result.title).toBe('GUNNM - 3');
+    });
+    it('names a book joining a collection chosen by its identity', async () => {
+        const current = library();
+
+        current.collections.names.set('gunnm-id', 'Gunnm');
+
+        const result = await subject(current).execute(
+            owner,
+            input({
+                title: '',
+                category: 'manga',
+                collection: { collection: { id: 'gunnm-id' }, volumeFrom: 9, volumeTo: 9 },
+            }),
+            false,
+        );
+
+        expect(result.title).toBe('Gunnm - 9');
+    });
+    it('keeps a supplied tome title (example 2)', async () => {
+        const current = library();
+
+        const result = await subject(current).execute(
+            owner,
+            input({ title: 'Rusty Angel', category: 'manga', collection: gunnm }),
+            false,
+        );
+
+        expect(result).toMatchObject({ title: 'Rusty Angel', titleGenerated: false });
+    });
+    it('records the generated title and its provenance', async () => {
+        const current = library();
+
+        await subject(current).execute(
+            owner,
+            input({ title: '', category: 'manga', collection: gunnm }),
+            false,
+        );
+
+        expect(current.trail.entries.at(-1)).toMatchObject({
+            category: 'book.created',
+            after: expect.objectContaining({ title: 'Gunnm - 3', titleGenerated: true }),
+        });
     });
 });

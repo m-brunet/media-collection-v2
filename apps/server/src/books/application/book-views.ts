@@ -19,6 +19,8 @@ export type BookOrganisation = { location: BookLocation | null; tags: BookTag[] 
 export interface BookView {
     id: string;
     title: string;
+    // True when the title is generated from the book's collection.
+    titleGenerated: boolean;
     isbn: string | null;
     isbnConvertedFromIsbn10: boolean;
     noIsbn: boolean;

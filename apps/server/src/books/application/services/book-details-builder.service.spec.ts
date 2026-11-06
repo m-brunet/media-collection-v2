@@ -35,3 +35,51 @@ describe('BookDetailsBuilder', () => {
         expect(result.authorIds).toEqual(['id-1']);
     });
 });
+
+describe('BookDetailsBuilder titles', () => {
+    const gunnm = { collection: { name: 'Gunnm' }, volumeFrom: 3, volumeTo: 3 };
+
+    it('keeps a supplied title as supplied', async () => {
+        const current = library();
+
+        const result = await current.builder.build(input({ category: 'manga', collection: gunnm }));
+
+        expect(result).toMatchObject({ title: 'Piranesi', titleGenerated: false });
+    });
+    it('asks for a generated title when a Manga in a collection has none', async () => {
+        const current = library();
+
+        const result = await current.builder.build(
+            input({ title: '  ', category: 'manga', collection: gunnm }),
+        );
+
+        expect(result).toMatchObject({ title: 'Gunnm - 3', titleGenerated: true });
+    });
+    it('asks for a generated title when a Comics in a collection has none', async () => {
+        const current = library();
+
+        const result = await current.builder.build(
+            input({ title: '', category: 'comics', collection: { ...gunnm, volumeTo: 5 } }),
+        );
+
+        expect(result).toMatchObject({ title: 'Gunnm - 3–5', titleGenerated: true });
+    });
+    it('refuses a blank title for a Books record in a collection', async () => {
+        const current = library();
+
+        const result = current.builder.build(
+            input({ title: '', category: 'books', collection: gunnm }),
+        );
+
+        await expect(result).rejects.toMatchObject({ reason: 'title-required' });
+    });
+    it('refuses a blank title for a Manga outside any collection', async () => {
+        const current = library();
+
+        const result = current.builder.build(
+            input({ title: ' ', category: 'manga', collection: null }),
+        );
+
+        await expect(result).rejects.toMatchObject({ reason: 'title-required' });
+    });
+});
