@@ -31,31 +31,10 @@ import { IdentityModule } from '../../identity/infrastructure/config/identity.mo
 import { SettingsModule } from '../../server-settings/infrastructure/config/settings.module.js';
 import { HttpSessions } from '../../shared/infrastructure/adapters/driving/web/http-sessions.service.js';
 import { HealthController } from '../adapters/driving/web/health.controller.js';
+import { LibraryModules } from './library-modules.js';
 import { AppearanceModule } from '../../appearance/infrastructure/config/appearance.module.js';
 import { KyselyAppearanceRepository } from '../../appearance/infrastructure/adapters/driven/persistence/kysely-appearance.repository.js';
 import { SetupAccess } from '../../identity/infrastructure/adapters/driving/web/setup-access.service.js';
-import { BooksModule } from '../../books/infrastructure/config/books.module.js';
-import { CollectionsModule } from '../../collections/infrastructure/config/collections.module.js';
-import { LocationsModule } from '../../locations/infrastructure/config/locations.module.js';
-import { LendingModule } from '../../lending/infrastructure/config/lending.module.js';
-import { KyselyLoanRepository } from '../../lending/infrastructure/adapters/driven/persistence/kysely-loan.repository.js';
-import { KyselyReceiverRepository } from '../../lending/infrastructure/adapters/driven/persistence/kysely-receiver.repository.js';
-import { KyselyLendableBooks } from '../../lending/infrastructure/adapters/driven/persistence/kysely-lendable-books.adapter.js';
-import { KyselyActiveLoans } from '../../lending/infrastructure/adapters/driven/persistence/kysely-active-loans.adapter.js';
-import { KyselyBookcaseRepository } from '../../locations/infrastructure/adapters/driven/persistence/kysely-bookcase.repository.js';
-import { KyselyShelfRepository } from '../../locations/infrastructure/adapters/driven/persistence/kysely-shelf.repository.js';
-import { KyselyBookShelfStore } from '../../locations/infrastructure/adapters/driven/persistence/kysely-book-shelf-store.adapter.js';
-import { TagsModule } from '../../tags/infrastructure/config/tags.module.js';
-import { KyselyTagRepository } from '../../tags/infrastructure/adapters/driven/persistence/kysely-tag.repository.js';
-import { KyselyBookTagStore } from '../../tags/infrastructure/adapters/driven/persistence/kysely-book-tag-store.adapter.js';
-import { KyselyCollectionRepository } from '../../collections/infrastructure/adapters/driven/persistence/kysely-collection.repository.js';
-import { KyselyCollectionMemberStore } from '../../collections/infrastructure/adapters/driven/persistence/kysely-collection-member-store.adapter.js';
-import { KyselyBookRepository } from '../../books/infrastructure/adapters/driven/persistence/kysely-book.repository.js';
-import { KyselyAuthorRepository } from '../../books/infrastructure/adapters/driven/persistence/kysely-author.repository.js';
-import { KyselyBookCatalog } from '../../books/infrastructure/adapters/driven/persistence/kysely-book-catalog.adapter.js';
-import { KyselyReadingStatusRepository } from '../../books/infrastructure/adapters/driven/persistence/kysely-reading-status.repository.js';
-import { KyselyPersonalNoteRepository } from '../../books/infrastructure/adapters/driven/persistence/kysely-personal-note.repository.js';
-import { FileCoverStorage } from '../../books/infrastructure/adapters/driven/filesystem/file-cover-storage.adapter.js';
 
 export interface BackendOptions {
     dataDirectory: string;
@@ -157,20 +136,6 @@ export class BackendRuntime {
             const sessions = new HttpSessions(secret, HttpApplication.uploadPaths);
             const tls = new FileTlsStore(database.connections, options.dataDirectory, storage, ids);
             const httpSettings = new KyselyHttpSettingsRepository(database.connections, ids);
-            const catalog = new KyselyBookCatalog(database.connections);
-            const bookRepository = new KyselyBookRepository(database.connections);
-            const collections = new KyselyCollectionRepository(database.connections);
-            const members = new KyselyCollectionMemberStore(database.connections);
-            const membership = CollectionsModule.membership(collections, members, ids, clock);
-            const bookcases = new KyselyBookcaseRepository(database.connections);
-            const shelves = new KyselyShelfRepository(database.connections);
-            const bookShelves = new KyselyBookShelfStore(database.connections);
-            const tags = new KyselyTagRepository(database.connections);
-            const bookTags = new KyselyBookTagStore(database.connections);
-            const shelving = LocationsModule.assignment(bookcases, shelves, bookShelves);
-            const tagging = TagsModule.assignment(tags, bookTags, ids, clock);
-            const loans = new KyselyLoanRepository(database.connections);
-            const receivers = new KyselyReceiverRepository(database.connections);
             const operations = new AuditedOperation(
                 database.connections,
                 new KyselyAuditTrail(database.connections, ids),
@@ -240,47 +205,9 @@ export class BackendRuntime {
                             new KyselyAppearanceRepository(database.connections, ids),
                             operations,
                         ),
-                        BooksModule.register({
-                            books: bookRepository,
-                            authors: new KyselyAuthorRepository(database.connections),
-                            catalog,
-                            readings: new KyselyReadingStatusRepository(database.connections),
-                            notes: new KyselyPersonalNoteRepository(database.connections),
-                            covers: new FileCoverStorage(options.dataDirectory),
-                            collections: membership,
-                            collectionReader: membership,
-                            shelves: shelving,
-                            locationReader: shelving,
-                            tags: tagging,
-                            tagReader: tagging,
-                            loans: LendingModule.bookLoans(loans, receivers),
-                            loanHistory: LendingModule.history(loans),
-                            ids,
-                            clock,
-                            operations,
-                        }),
-                        CollectionsModule.register({
-                            collections,
-                            members,
-                            search: catalog,
-                            titles: BooksModule.memberTitles(bookRepository, clock),
-                            clock,
-                            operations,
-                        }),
-                        LocationsModule.register({
-                            bookcases,
-                            shelves,
-                            store: bookShelves,
-                            ids,
-                            clock,
-                            operations,
-                        }),
-                        TagsModule.register({ tags, store: bookTags, ids, clock, operations }),
-                        LendingModule.register({
-                            loans,
-                            receivers,
-                            books: new KyselyLendableBooks(database.connections),
-                            active: new KyselyActiveLoans(database.connections),
+                        ...LibraryModules.register({
+                            database,
+                            dataDirectory: options.dataDirectory,
                             ids,
                             clock,
                             operations,
