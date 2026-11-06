@@ -50,6 +50,14 @@ write(
 );
 write('apps/server/src/infrastructure/config/bootstrap.ts', 'export function startBackend() {}');
 write(
+    'apps/server/src/infrastructure/config/development-data.ts',
+    'export class DevelopmentDataCommands {}',
+);
+write(
+    'apps/server/src/infrastructure/config/http-application.module.ts',
+    'export class HttpApplicationModule {}',
+);
+write(
     'apps/server/src/shared/infrastructure/adapters/driven/runtime/system-clock.adapter.ts',
     'export class SystemClock {}',
 );
@@ -662,6 +670,27 @@ describe('target hexagonal adapter boundaries', () => {
 
         expect(result.error).toBeUndefined();
         expect(result.status, result.stdout + result.stderr).toBe(0);
+    });
+    it('accepts desktop access to the root development data commands', () => {
+        const path = 'apps/desktop/src/maintenance.ts';
+        const source =
+            'export { DevelopmentDataCommands } from "../../server/src/infrastructure/config/development-data.js";';
+
+        const result = lint(path, source);
+
+        expect(result.error).toBeUndefined();
+        expect(result.status, result.stdout + result.stderr).toBe(0);
+    });
+    it('rejects desktop access to other root composition files', () => {
+        const path = 'apps/desktop/src/modules.ts';
+        const source =
+            'export { HttpApplicationModule } from "../../server/src/infrastructure/config/http-application.module.js";';
+
+        const result = lint(path, source);
+
+        expect(result.error).toBeUndefined();
+        expect(result.status, result.stdout + result.stderr).not.toBe(0);
+        expect(result.stdout + result.stderr).not.toContain('Cannot resolve');
     });
     it('accepts the root health controller in the driving boundary', () => {
         const path = 'apps/server/src/infrastructure/adapters/driving/web/health.controller.ts';

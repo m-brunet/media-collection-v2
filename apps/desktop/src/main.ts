@@ -2,7 +2,9 @@ import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { existsSync, mkdirSync } from 'node:fs';
+import type { DevelopmentMaintenance } from './configuration.util.js';
 import { DesktopConfigurationParser } from './configuration.util.js';
+import { DevelopmentDataGuard } from './development-data-guard.util.js';
 import { BackendProcess } from './backend-process.adapter.js';
 import { SetupRequestSigner } from './setup-request-signer.adapter.js';
 
@@ -17,11 +19,15 @@ let shutdownComplete = false;
 let window: BrowserWindow | undefined;
 let restarting = false;
 const setupSigner = new SetupRequestSigner();
+// Development data commands run from a terminal: they report there instead of in dialogs.
+const commandLine = process.argv.some(
+    (arg) => arg === '--dev-reset-data' || arg === '--dev-import-v1',
+);
 const startupOptions = (() => {
     try {
         const defaultData = app.isPackaged
             ? app.getPath('userData')
-            : join(app.getAppPath(), '.dev-data');
+            : join(app.getAppPath(), DevelopmentDataGuard.directoryName);
         const options = DesktopConfigurationParser.parse(
             process.argv.slice(1),
             process.env,
@@ -32,6 +38,16 @@ const startupOptions = (() => {
             throw new Error('Recovery requires an existing data directory.');
         }
 
+        // Before anything is created in the data directory.
+        if (options.maintenance) {
+            DevelopmentDataGuard.ensure({
+                packaged: app.isPackaged,
+                appPath: app.getAppPath(),
+                dataDirectory: options.dataDirectory,
+                dataDirectoryOverridden: options.dataDirectoryOverridden,
+            });
+        }
+
         const profile = join(options.dataDirectory, 'electron-profile');
 
         mkdirSync(profile, { recursive: true, mode: 0o700 });
@@ -39,10 +55,13 @@ const startupOptions = (() => {
 
         return options;
     } catch (error) {
-        dialog.showErrorBox(
-            'Invalid application configuration',
-            error instanceof Error ? error.message : 'Configuration failed.',
-        );
+        const message = error instanceof Error ? error.message : 'Configuration failed.';
+
+        if (commandLine) {
+            console.error(message);
+        } else {
+            dialog.showErrorBox('Invalid application configuration', message);
+        }
 
         return undefined;
     }
@@ -51,8 +70,15 @@ const startupOptions = (() => {
 if (!startupOptions) {
     app.exit(1);
 } else if (!app.requestSingleInstanceLock()) {
-    console.error('The application is already running. Close it before using recovery.');
+    // The lock follows the data directory's profile: only an instance using the same data blocks this one.
+    console.error(
+        'The application is already running with this data directory. Close it before using recovery or development data commands.',
+    );
     app.exit(1);
+} else if (startupOptions.maintenance) {
+    const { dataDirectory, maintenance } = startupOptions;
+
+    void app.whenReady().then(() => maintain(dataDirectory, maintenance));
 } else {
     app.on('second-instance', () => {
         if (!hiddenWindows) {
@@ -218,6 +244,38 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
             }
         }
     }
+}
+
+// Runs one development data command without a window, reports in the terminal and exits.
+async function maintain(dataDirectory: string, maintenance: DevelopmentMaintenance): Promise<void> {
+    const worker = new BackendProcess(join(directory, 'worker.js'));
+    let code = 0;
+
+    try {
+        const response = await worker.request(
+            maintenance.type === 'reset'
+                ? { type: 'dev-reset', dataDirectory }
+                : { type: 'dev-import-v1', dataDirectory, source: maintenance.source },
+            60 * 60,
+        );
+
+        if (response.type !== 'maintained') {
+            throw new Error('Unexpected development data response.');
+        }
+
+        for (const line of response.report) {
+            console.log(line);
+        }
+    } catch (error) {
+        console.error(
+            error instanceof Error ? error.message : 'The development data command failed.',
+        );
+        code = 1;
+    } finally {
+        await worker.close();
+    }
+
+    app.exit(code);
 }
 
 async function recovery(dataDirectory: string, login: string): Promise<void> {

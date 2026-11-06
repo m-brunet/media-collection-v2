@@ -13,8 +13,58 @@ it('defaults to remotely accessible HTTP', () => {
         httpPort: undefined,
         httpPortSource: undefined,
         dataDirectory: resolve('data'),
+        dataDirectoryOverridden: false,
         recoveryLogin: null,
+        maintenance: null,
     });
+});
+it('reports a data directory chosen through the environment', () => {
+    const environment = { APP_DATA_DIR: 'elsewhere' };
+
+    const result = DesktopConfigurationParser.parse([], environment, 'data');
+
+    expect(result).toMatchObject({
+        dataDirectory: resolve('elsewhere'),
+        dataDirectoryOverridden: true,
+    });
+});
+it('selects the development data reset', () => {
+    const args = ['--dev-reset-data'];
+
+    const result = DesktopConfigurationParser.parse(args, {}, 'data');
+
+    expect(result.maintenance).toEqual({ type: 'reset' });
+});
+it('selects the V1 import with its resolved source file', () => {
+    const args = ['--dev-import-v1', 'local-imports/v1/books.json'];
+
+    const result = DesktopConfigurationParser.parse(args, {}, 'data');
+
+    expect(result.maintenance).toEqual({
+        type: 'import-v1',
+        source: resolve('local-imports/v1/books.json'),
+    });
+});
+it('requires the source file of the V1 import', () => {
+    const args = ['--dev-import-v1'];
+
+    const operation = () => DesktopConfigurationParser.parse(args, {}, 'data');
+
+    expect(operation).toThrow('value');
+});
+it('refuses both development data commands at once', () => {
+    const args = ['--dev-reset-data', '--dev-import-v1', 'books.json'];
+
+    const operation = () => DesktopConfigurationParser.parse(args, {}, 'data');
+
+    expect(operation).toThrow('either');
+});
+it('refuses a development data command combined with recovery', () => {
+    const args = ['--reset-admin', '--login', 'admin', '--dev-reset-data'];
+
+    const operation = () => DesktopConfigurationParser.parse(args, {}, 'data');
+
+    expect(operation).toThrow('separately');
 });
 it('gives CLI settings precedence over environment', () => {
     const args = ['--http-port', '1024', '--host', '127.0.0.1', '--data-dir', 'custom'];

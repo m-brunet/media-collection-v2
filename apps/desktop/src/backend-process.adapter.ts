@@ -37,7 +37,8 @@ export class BackendProcess {
         this.exitListeners.add(listener);
     }
 
-    request(message: WorkerRequest): Promise<WorkerResponse> {
+    // Long development data commands (downloading covers) allow more than the default 30 seconds.
+    request(message: WorkerRequest, timeoutSeconds = 30): Promise<WorkerResponse> {
         if (this.exited) {
             return Promise.reject(new Error('The backend process has stopped.'));
         }
@@ -45,8 +46,10 @@ export class BackendProcess {
         return new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
                 this.waiters.delete(receive);
-                reject(new Error('The backend did not respond within 30 seconds.'));
-            }, 30000);
+                reject(
+                    new Error('The backend did not respond within ' + timeoutSeconds + ' seconds.'),
+                );
+            }, timeoutSeconds * 1000);
             const receive = (response: WorkerResponse) => {
                 clearTimeout(timeout);
                 this.waiters.delete(receive);

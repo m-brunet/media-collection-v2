@@ -1,6 +1,7 @@
 import type { BackendHandle } from '../../server/src/infrastructure/config/bootstrap.js';
 import { startBackend } from '../../server/src/infrastructure/config/bootstrap.js';
 import { recoverAdministrator } from '../../server/src/infrastructure/config/recovery.js';
+import { DevelopmentDataCommands } from '../../server/src/infrastructure/config/development-data.js';
 import type { WorkerRequest, WorkerResponse } from './protocol.js';
 
 const parent = process.parentPort;
@@ -39,6 +40,20 @@ parent.on('message', (event) => {
 
                 await recoverAdministrator(message.dataDirectory, message.login, message.password);
                 send({ type: 'recovered' });
+            } else if (message.type === 'dev-reset' || message.type === 'dev-import-v1') {
+                if (starting) {
+                    throw new Error('Development data commands cannot run with the server active.');
+                }
+
+                const report =
+                    message.type === 'dev-reset'
+                        ? await DevelopmentDataCommands.reset(message.dataDirectory)
+                        : await DevelopmentDataCommands.importV1(
+                              message.dataDirectory,
+                              message.source,
+                          );
+
+                send({ type: 'maintained', report });
             } else if (message.type === 'stop') {
                 await backend?.close();
                 send({ type: 'stopped' });
