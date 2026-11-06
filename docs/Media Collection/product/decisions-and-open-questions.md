@@ -4,7 +4,7 @@ Status: Tasks 1-7 are complete, with confirmed business rules and acceptance exa
 
 ## Authority and documentation map
 
-Latest explicit user decisions take precedence, followed by the owning product documents below. The design artifact is a style guide only; see [design guidelines](design-guidelines.md). The imported architecture documentation describes the foundation, not the v2 feature set; follow AGENTS.md and the required review skill for implementation.
+Latest explicit user decisions take precedence, followed by the owning product documents below. The design artifact is a style guide only; see [design guidelines](../design/design-guidelines.md). The imported architecture documentation describes the foundation, not the v2 feature set; follow AGENTS.md and the required review skill for implementation.
 
 | Product area | Current reference |
 | --- | --- |
@@ -13,12 +13,12 @@ Latest explicit user decisions take precedence, followed by the owning product d
 | Collections and shopping, Task 1 | [Collections](collections.md), [edition impacts](collection-editions-impact.md) |
 | Book entry, lookup, personal notes, Task 2 | [Book entry](book-entry.md) |
 | Locations, tags, search, ordering, Task 3 | [Locations, tags, search](locations-tags-search.md) |
-| Lending and returns, Task 4 | [Lending](lending.md), [design brief](lending-design-brief.md) |
+| Lending and returns, Task 4 | [Lending](lending.md), [design brief](../design/lending-design-brief.md) |
 | Accounts and personal defaults, Task 5 | [Accounts](accounts.md) |
 | Overview, Activity, mobile, Task 6 | [Overview, Activity, mobile](overview-activity-mobile.md) |
-| Languages, offline use, backup/reset, Task 7 | [Release expectations](release-expectations.md) |
-| Optional startup configuration direction | [Configuration](configuration.md) |
-| Design reference, names, icons, accessibility | [Design guidelines](design-guidelines.md) |
+| Languages, offline use, backup/reset, Task 7 | [Release expectations](../operations/release-expectations.md) |
+| Optional startup configuration direction | [Configuration](../operations/configuration.md) |
+| Design reference, names, icons, accessibility | [Design guidelines](../design/design-guidelines.md) |
 
 ## Key boundaries
 
@@ -45,16 +45,16 @@ Technical audits capture the agreed successful/failed use-case outcomes and befo
 
 ## Design follow-up
 
-The Libris design artifact (see [design guidelines](design-guidelines.md)) is the only design reference; earlier exports and handoffs are retired. Where a drawn screen differs from these documents, the documents win. Undrawn pages and states are built in the established style; they are not unanswered authorization or ownership rules. Detailed component arrangement and feedback copy can evolve while preserving confirmed behavior.
+The Libris design artifact (see [design guidelines](../design/design-guidelines.md)) is the only design reference; earlier exports and handoffs are retired. Where a drawn screen differs from these documents, the documents win. Undrawn pages and states are built in the established style; they are not unanswered authorization or ownership rules. Detailed component arrangement and feedback copy can evolve while preserving confirmed behavior.
 
 ## Explicit deferrals
 
 Reading goals/in-progress Reading status, personal ratings, separate Lists, multiple collection membership, identical-edition copy management, nonconsecutive omnibus coverage, numbered treatment of specials, collection/tag/author merging, bulk planned-book generation, receiver management, returned-history UI, clickable visual bookcases, a separate desktop shopping-progression page, currency selection, scheduled backups, cross-version restoration, and a reusable v1 import interface are outside initial scope. V1 migration is likely a future one-off script using the retained MongoDB dumps.
 
-The separate [MC update topic](updates.md) is complete with acceptance examples: stable GitHub Releases, pre-login local controls, Windows-only integrated installation, manual macOS/Linux installation with backup assistance, startup/manual checks, postponement, retained update backups, failure retries, and manual recovery. Only the Restart and install confirmation is required before Windows restart, without additional unsaved-work or remote advance warnings. Technical mechanisms remain delegated.
+The separate [MC update topic](../operations/updates.md) is complete with acceptance examples: stable GitHub Releases, pre-login local controls, Windows-only integrated installation, manual macOS/Linux installation with backup assistance, startup/manual checks, postponement, retained update backups, failure retries, and manual recovery. Only the Restart and install confirmation is required before Windows restart, without additional unsaved-work or remote advance warnings. Technical mechanisms remain delegated.
 
 ## Workflow and delivery sequence
 
-Discuss one product topic at a time, record decisions/examples, and commit each completed task before asking the next task's questions. Working plans live in [plans](plans/implementation-plan.md) inside this Obsidian vault and are committed with the documentation. Pushing is separate from committing. Reopen an earlier product decision explicitly if a later choice changes it; do not silently replace it.
+Discuss one product topic at a time, record decisions/examples, and commit each completed task before asking the next task's questions. Working plans live in [plans](../plans/implementation-plan.md) inside this Obsidian vault and are committed with the documentation. Pushing is separate from committing. Reopen an earlier product decision explicitly if a later choice changes it; do not silently replace it.
 
 Agreed product delivery order: access/accountability with audit capture from first implemented changes; core manual library; organisation; lending/returns; assisted entry; mobile; Overview/Activity presentation. This is the agreed sequence, not a technical task breakdown. Product planning is complete for the initial seven topics; technical agents can now produce implementation plans from the owning references and acceptance examples.

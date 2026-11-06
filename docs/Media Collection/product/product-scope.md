@@ -1,6 +1,6 @@
 # Product scope
 
-Status: product baseline reconciled after Tasks 1-7 and the application-update discussion. This is a requirements document, not a claim of implemented behavior. [Application updates](updates.md) defines GitHub Releases distribution, Windows integrated installation, and manual macOS/Linux installation with backup assistance.
+Status: product baseline reconciled after Tasks 1-7 and the application-update discussion. This is a requirements document, not a claim of implemented behavior. [Application updates](../operations/updates.md) defines GitHub Releases distribution, Windows integrated installation, and manual macOS/Linux installation with backup assistance.
 
 ## Purpose
 
@@ -8,7 +8,7 @@ Media Collection v2 helps people manage books in their home, locate them on phys
 
 Managing books the user actually owns is the primary workflow. Pre-registering Not Owned books is supported but expected to be extremely rare, not a wishlist/catalogue-planning focus. Ownership-conflict handling should protect data with clear confirmations without dominating the interface or expanding initial scope.
 
-The product is named Media Collection; its desktop web interface is Libris and its mobile web interface is Leaf. See [design guidelines](design-guidelines.md) for naming and display rules.
+The product is named Media Collection; its desktop web interface is Libris and its mobile web interface is Leaf. See [design guidelines](../design/design-guidelines.md) for naming and display rules.
 
 The audience includes people without technical or security knowledge. Forms should remain approachable, including when optional metadata is available.
 
@@ -39,9 +39,9 @@ Lending introduces an explicit exception for receiver names: a receiver is store
 - Integer-numbered collections, inferred missing volumes without manual enumeration, ownership visibility, and explicit Finished status.
 - Reusable tags and inclusion/exclusion filtering.
 - Simple search, advanced multiple-criteria filtering, and selected sort options.
-- Overview and book/collection/location views following the [design guidelines](design-guidelines.md).
-- An installation-wide colour scheme chosen by Admin (Spring green by default, or Mint, Emerald, Forest). See [design guidelines](design-guidelines.md).
-- An installation-wide icon set chosen by Admin in application settings, Lucide by default, with a credits/licences page for bundled third-party assets. See [design guidelines](design-guidelines.md).
+- Overview and book/collection/location views following the [design guidelines](../design/design-guidelines.md).
+- An installation-wide colour scheme chosen by Admin (Spring green by default, or Mint, Emerald, Forest). See [design guidelines](../design/design-guidelines.md).
+- An installation-wide icon set chosen by Admin in application settings, Lucide by default, with a credits/licences page for bundled third-party assets. See [design guidelines](../design/design-guidelines.md).
 - Technical audit logs for user-initiated use-case changes from the first release, with category, actor, timestamp, and before/after values excluding passwords. A distinct Activity feature presents selected events to all users, with actor and relative time but no before/after values initially; authentication events stay out of Activity.
 - Audit outcome is Successful or Failed, independently of category. Activity shows only successful eligible events and resolves the actor's current username from the user table.
 - Account management, permissions, local first-administrator recovery, and first-administrator data reset.
@@ -72,7 +72,7 @@ Tasks 1-7 have confirmed business rules and acceptance examples in their owning 
 ## Reference authority
 
 1. Latest explicit user decisions, reflected in these v2 documents.
-2. The Libris design artifact described in [design guidelines](design-guidelines.md), as a guide for style and layout only, not an exhaustive or pixel-perfect specification.
+2. The Libris design artifact described in [design guidelines](../design/design-guidelines.md), as a guide for style and layout only, not an exhaustive or pixel-perfect specification.
 3. v1 repositories as historical context only.
 
 No database schema, external metadata provider, or final UI interaction design has been selected by these documents.

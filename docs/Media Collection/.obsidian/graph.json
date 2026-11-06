@@ -6,7 +6,50 @@
   "hideUnresolved": false,
   "showOrphans": true,
   "collapse-color-groups": true,
-  "colorGroups": [],
+  "colorGroups": [
+    {
+      "query": "path:\"home.md\"",
+      "color": {
+        "a": 1,
+        "rgb": 15119440
+      }
+    },
+    {
+      "query": "path:\"product/\"",
+      "color": {
+        "a": 1,
+        "rgb": 7583852
+      }
+    },
+    {
+      "query": "path:\"design/\"",
+      "color": {
+        "a": 1,
+        "rgb": 11635688
+      }
+    },
+    {
+      "query": "path:\"architecture/\"",
+      "color": {
+        "a": 1,
+        "rgb": 6924267
+      }
+    },
+    {
+      "query": "path:\"operations/\"",
+      "color": {
+        "a": 1,
+        "rgb": 13458524
+      }
+    },
+    {
+      "query": "path:\"plans/\"",
+      "color": {
+        "a": 1,
+        "rgb": 15309654
+      }
+    }
+  ],
   "collapse-display": true,
   "showArrow": false,
   "textFadeMultiplier": 0,

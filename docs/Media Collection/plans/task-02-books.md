@@ -1,7 +1,7 @@
 # Task 2 — Books (core library)
 
 Status: in progress (started 2026-11-04). Global plan: [implementation plan](implementation-plan.md).
-Owning docs: [features](../features.md) (Books, Lists/search/sorting), [book-entry](../book-entry.md) (manual entry, ISBN, authors, dates, price, notes; lookup is Task 6), [collection-editions-impact](../collection-editions-impact.md), [locations-tags-search](../locations-tags-search.md) (simple search and sorting part).
+Owning docs: [features](../product/features.md) (Books, Lists/search/sorting), [book-entry](../product/book-entry.md) (manual entry, ISBN, authors, dates, price, notes; lookup is Task 6), [collection-editions-impact](../product/collection-editions-impact.md), [locations-tags-search](../product/locations-tags-search.md) (simple search and sorting part).
 Design: `design/artifact/screens/` ceW00 (My books), L2S5Lp/v9MipE/gRcO9 (details), tr7ll/FOZxg (add/edit), I6aLY5 (no-ISBN duplicate), dp3g6 (author correction), U5T73Q (discard), WvaIi/zKGk3/BUKLy (empty, no results, loading).
 
 ## Scope

@@ -1,6 +1,6 @@
 # Overview, Activity, and mobile experience
 
-Status: Task 6 product decisions complete. Confirmed behavior and acceptance examples below supersede contradictory design widgets; this is not an implementation plan. The design artifact is a style guide; see [design guidelines](design-guidelines.md).
+Status: Task 6 product decisions complete. Confirmed behavior and acceptance examples below supersede contradictory design widgets; this is not an implementation plan. The design artifact is a style guide; see [design guidelines](../design/design-guidelines.md).
 
 ## Overview
 
@@ -28,7 +28,7 @@ Preserve the previously confirmed presentation:
 - Group a lending/return operation into one Activity entry, while retaining its per-book technical audit records. Receiver names may appear.
 - Never expose personal-note contents through this shared view.
 
-Show Activity newest first and provide a way to load older entries. Pagination/load-more mechanics are implementation/design choices, not an added filtering feature. Exact timestamp/actor details appear on hover and on keyboard focus (accessibility baseline in [design guidelines](design-guidelines.md)); click/tap reveal is not required.
+Show Activity newest first and provide a way to load older entries. Pagination/load-more mechanics are implementation/design choices, not an added filtering feature. Exact timestamp/actor details appear on hover and on keyboard focus (accessibility baseline in [design guidelines](../design/design-guidelines.md)); click/tap reveal is not required.
 
 ## Mobile baseline from completed tasks
 

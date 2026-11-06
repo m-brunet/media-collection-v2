@@ -1,6 +1,6 @@
 # Lending: interface design brief
 
-Status: design brief reconciled after Task 4 product closure. Read [lending business rules](lending.md) first. Items marked proposed remain visual options, not additional business requirements.
+Status: design brief reconciled after Task 4 product closure. Read [lending business rules](../product/lending.md) first. Items marked proposed remain visual options, not additional business requirements.
 
 The lending screens are drawn in the Libris design artifact described in [design guidelines](design-guidelines.md). This brief records the required coverage; states not drawn there are built in the same style.
 

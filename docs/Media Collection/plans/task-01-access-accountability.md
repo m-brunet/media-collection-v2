@@ -1,7 +1,7 @@
 # Task 1 — Access and accountability
 
 Status: done (2026-11-04). Global plan: [implementation plan](implementation-plan.md).
-Owning docs: [accounts](../accounts.md), [features](../features.md) (accounts/permissions, audit logs), [overview-activity-mobile](../overview-activity-mobile.md) (Guest mobile denial), [product-scope](../product-scope.md).
+Owning docs: [accounts](../product/accounts.md), [features](../product/features.md) (accounts/permissions, audit logs), [overview-activity-mobile](../product/overview-activity-mobile.md) (Guest mobile denial), [product-scope](../product/product-scope.md).
 
 ## Goal
 

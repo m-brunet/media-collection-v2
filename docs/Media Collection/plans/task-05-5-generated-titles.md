@@ -2,8 +2,8 @@
 
 Status: done (2026-11-06), committed on `master`. Business rules confirmed (2026-11-06).
 Global plan: [implementation plan](implementation-plan.md).
-Owning docs: [book-entry](../book-entry.md#collection-based-titles) (authoritative title rules and acceptance examples),
-[features](../features.md) (Books), [collections](../collections.md) (membership, rename and deletion).
+Owning docs: [book-entry](../product/book-entry.md#collection-based-titles) (authoritative title rules and acceptance examples),
+[features](../product/features.md) (Books), [collections](../product/collections.md) (membership, rename and deletion).
 
 ## Scope
 

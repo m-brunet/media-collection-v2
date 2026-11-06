@@ -1,7 +1,7 @@
 # Task 0 — Platform and UI foundation
 
 Status: done (2026-11-03). Global plan: [implementation plan](implementation-plan.md).
-Owning docs: [design-guidelines](../design-guidelines.md), [product-scope](../product-scope.md) (foundation/access), [release-expectations](../release-expectations.md) (languages), [configuration](../configuration.md).
+Owning docs: [design-guidelines](../design/design-guidelines.md), [product-scope](../product/product-scope.md) (foundation/access), [release-expectations](../operations/release-expectations.md) (languages), [configuration](../operations/configuration.md).
 
 ## Goal
 
