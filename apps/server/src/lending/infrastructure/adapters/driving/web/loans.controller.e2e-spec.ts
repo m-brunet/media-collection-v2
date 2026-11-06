@@ -1,17 +1,19 @@
+import {
+    TestLibrary,
+    type BookFacts,
+} from '../../../../../../../../tests/api/fixtures/test-library.js';
+import { LendingArrangement } from '../../../../../../../../tests/api/fixtures/lending-arrangement.js';
 import type {
-    BookDto,
-    LendBooksDto,
     LendingDto,
-    NewBookDto,
     ReceiverLoansDto,
     ReturnDto,
 } from '../../../../../../../../packages/contracts/src/http.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { TestApp } from '../../../../../../../../tests/api/setup/test-app.js';
 import { UserFixture } from '../../../../../../../../tests/api/fixtures/user.fixture.js';
-import { BookInputFixture } from '../../../../../../../../tests/api/fixtures/book-input.fixture.js';
 
 let app: TestApp;
+let arrangement: LendingArrangement;
 const owner = new UserFixture({ username: 'camille', role: 'owner' });
 const administrator = new UserFixture({ username: 'alex', role: 'admin' });
 const guest = new UserFixture({ username: 'morgan', role: 'guest' });
@@ -20,66 +22,34 @@ beforeEach(async () => {
     app = new TestApp();
     await app.setup();
     await app.loadFixtures([owner, administrator, guest]);
+    arrangement = new LendingArrangement(app.dependencies);
 });
 afterEach(async () => {
     await app?.teardown();
 });
 
-// Saves a book as an Owner; titles of one scenario are distinct books.
-async function book(title: string, overrides: Partial<NewBookDto> = {}) {
-    const client = await app.authenticatedClient(owner);
-    const response = await client.call<BookDto>(
-        '/books',
-        'POST',
-        BookInputFixture.of({
-            title,
-            isbn: null,
-            noIsbn: true,
-            confirmDistinct: true,
-            ...overrides,
-        }),
-    );
+// Saves a book with the builders; titles of one scenario are distinct books.
+async function book(title: string, facts: BookFacts = {}) {
+    const saved = await app.dependencies.builders.book({ title, ...facts });
 
-    if (response.status !== 201) {
-        throw new Error('Arranging the scenario failed: ' + response.text);
-    }
-
-    return response.body;
+    return { ...TestLibrary.lendable(saved), updatedAt: saved.snapshot.updatedAt };
 }
 
-// Lends books as an Owner.
-async function lend(receiver: LendBooksDto['receiver'], ...books: BookDto[]) {
-    const client = await app.authenticatedClient(owner);
-    const response = await client.call<LendingDto>('/loans', 'POST', {
-        receiver,
-        bookIds: books.map((value) => value.id),
-    });
-
-    if (response.status !== 201) {
-        throw new Error('Arranging the scenario failed: ' + response.text);
-    }
-
-    return response.body;
+async function lend(...args: Parameters<LendingArrangement['lend']>) {
+    return arrangement.lend(...args);
 }
 
-// Records returns as an Owner.
 async function giveBack(...loanIds: string[]) {
-    const client = await app.authenticatedClient(owner);
-    const response = await client.call<ReturnDto>('/loans/returns', 'POST', { loanIds });
-
-    if (response.status !== 200) {
-        throw new Error('Arranging the scenario failed: ' + response.text);
-    }
-
-    return response.body;
+    await arrangement.giveBack(...loanIds);
 }
 
 describe('GET /api/loans', () => {
     it('shows a Guest the lent books grouped by receiver, with their lending dates', async () => {
         const piranesi = await book('Piranesi', {
-            authors: [{ name: 'Susanna Clarke' }],
+            authors: ['Susanna Clarke'],
             isbn: '9781635575637',
-            noIsbn: false,
+            publisher: 'Bloomsbury',
+            publicationYear: 2020,
         });
         const dune = await book('Dune');
         const sweetgrass = await book('Braiding Sweetgrass');
@@ -144,10 +114,7 @@ describe('GET /api/loans', () => {
         ).toEqual(['Piranesi']);
     });
     it('does not search authors', async () => {
-        await lend(
-            { name: 'Sam Taylor' },
-            await book('Dune', { authors: [{ name: 'Frank Herbert' }] }),
-        );
+        await lend({ name: 'Sam Taylor' }, await book('Dune', { authors: ['Frank Herbert'] }));
         const client = await app.authenticatedClient(owner);
 
         const response = await client.call<ReceiverLoansDto[]>('/loans?search=Herbert');
@@ -307,7 +274,7 @@ describe('POST /api/loans', () => {
     });
     it('refuses a Not Owned book, lending nothing and creating no receiver', async () => {
         const piranesi = await book('Piranesi');
-        const planned = await book('Children of Dune', { ownership: 'not-owned' });
+        const planned = await book('Children of Dune', { planned: true });
         const client = await app.authenticatedClient(owner);
 
         const response = await client.call('/loans', 'POST', {
@@ -347,7 +314,7 @@ describe('POST /api/loans', () => {
     });
     it('keeps a Failed record for every selected book of a refused lending', async () => {
         const dune = await book('Dune');
-        const planned = await book('Children of Dune', { ownership: 'not-owned' });
+        const planned = await book('Children of Dune', { planned: true });
         const client = await app.authenticatedClient(owner);
 
         await client.call('/loans', 'POST', {

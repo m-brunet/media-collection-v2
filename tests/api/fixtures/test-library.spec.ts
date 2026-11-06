@@ -2,14 +2,14 @@ import { expect, it } from 'vitest';
 import {
     MemoryAuthors,
     MemoryBooks,
-} from '../../apps/server/src/books/application/testing/book-doubles.test-support.js';
-import { BookBuilder } from '../../apps/server/src/books/application/testing/book-builder.test-support.js';
+} from '../../../apps/server/src/books/application/testing/book-doubles.test-support.js';
+import { BookBuilder } from '../../../apps/server/src/books/application/testing/book-builder.test-support.js';
 import {
     MemoryLoanStore,
     MemoryReceivers,
-} from '../../apps/server/src/lending/application/testing/lending-doubles.test-support.js';
-import { LoanBuilder } from '../../apps/server/src/lending/application/testing/loan-builder.test-support.js';
-import { ReceiverBuilder } from '../../apps/server/src/lending/application/testing/receiver-builder.test-support.js';
+} from '../../../apps/server/src/lending/application/testing/lending-doubles.test-support.js';
+import { LoanBuilder } from '../../../apps/server/src/lending/application/testing/loan-builder.test-support.js';
+import { ReceiverBuilder } from '../../../apps/server/src/lending/application/testing/receiver-builder.test-support.js';
 import { TestLibrary } from './test-library.js';
 
 // A library backed by the memory doubles of the books and lending features.

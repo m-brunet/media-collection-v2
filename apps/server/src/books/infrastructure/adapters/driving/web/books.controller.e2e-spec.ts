@@ -1,10 +1,9 @@
+import { LendingArrangement } from '../../../../../../../../tests/api/fixtures/lending-arrangement.js';
 import type {
     BookDto,
     BookcaseDto,
     BookListPageDto,
-    LendingDto,
     MembershipDto,
-    ReturnDto,
     ShelfDto,
     TagDto,
 } from '../../../../../../../../packages/contracts/src/http.js';
@@ -1119,29 +1118,14 @@ describe('GET /api/books with filters', () => {
     });
 });
 
-// Lends books through the API, as an Owner.
+// Lends saved books to a receiver, through the builders.
 async function lentTo(receiverName: string, ...books: BookDto[]) {
-    const client = await app.authenticatedClient(owner);
-    const response = await client.call<LendingDto>('/loans', 'POST', {
-        receiver: { name: receiverName },
-        bookIds: books.map((book) => book.id),
-    });
-
-    if (response.status !== 201) {
-        throw new Error('Arranging the scenario failed: ' + response.text);
-    }
-
-    return response.body;
+    return new LendingArrangement(app.dependencies).lend({ name: receiverName }, ...books);
 }
 
-// Records the return of loans through the API, as an Owner.
+// Records the return of loans, through the builders.
 async function returned(...loanIds: string[]) {
-    const client = await app.authenticatedClient(owner);
-    const response = await client.call<ReturnDto>('/loans/returns', 'POST', { loanIds });
-
-    if (response.status !== 200) {
-        throw new Error('Arranging the scenario failed: ' + response.text);
-    }
+    await new LendingArrangement(app.dependencies).giveBack(...loanIds);
 }
 
 describe('GET /api/books/:id of a lent book', () => {
