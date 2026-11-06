@@ -141,9 +141,9 @@ line, and blank lines around control statements and before returns. Consecutive 
 may preserve blank lines between declarations for Arrange, Act, and Assert. `npm run lint:fix` applies safe lint fixes
 and then runs Oxfmt.
 
-See [architecture](docs/architecture.md) and [agent guidance](AGENTS.md), the single source of truth for agents.
+See [architecture](docs/Media%20Collection/architecture.md) and [agent guidance](AGENTS.md), the single source of truth for agents.
 Claude agents are redirected there by [.claude/CLAUDE.md](.claude/CLAUDE.md). The backend and lint checks follow the
 Screaming/Hexagonal driving/driven/config layout with mandatory SOLID principles.
-The [architecture migration record](docs/architecture-migration-plan.md) describes the changes and verification. The
+The [architecture migration record](docs/Media%20Collection/architecture-migration-plan.md) describes the changes and verification. The
 repository [architecture review skill](.agents/skills/architecture-review/SKILL.md)
 checks manual additions and must be used before agents finish code changes.

@@ -6,7 +6,7 @@ separately launched, local administrator recovery dialog.
 
 ## Architecture and layout
 
-[AGENTS.md](../AGENTS.md) is authoritative for agent rules. All five SOLID principles and the dependency boundaries
+[AGENTS.md](../../AGENTS.md) is authoritative for agent rules. All five SOLID principles and the dependency boundaries
 are mandatory. The backend uses Screaming Architecture: business features remain at the root of `apps/server/src/`,
 with framework/protocol details at the infrastructure periphery. The official terms are **driving** for inputs and
 **driven** for outputs. All project-owned folders and production source basenames use kebab-case: words are separated
@@ -76,7 +76,7 @@ and Nest-only composition.
 Classes are preferred over standalone functions for production behavior, including reusable helpers and utilities.
 Keep helpers used by one class as private methods. Inject dependencies through constructors; pure, stateless helper
 and utility classes may use static methods. React functional components/hooks, API callbacks and Nest factory providers
-retain their function forms. See [AGENTS.md](../AGENTS.md#class-preference) for the project convention.
+retain their function forms. See [AGENTS.md](../../AGENTS.md#class-preference) for the project convention.
 
 HTTP and TLS settings are immutable domain value objects in `.value-object.ts` files. Their constructors enforce port
 bounds and the certificate requirement for enabled TLS; snapshots carry plain values across HTTP and storage boundaries.
@@ -232,7 +232,7 @@ remain the reference pattern for browser → controller → focused use case/ent
 
 ## Review and tests
 
-Read [AGENTS.md](../AGENTS.md) and use [architecture-review](../.agents/skills/architecture-review/SKILL.md) before
+Read [AGENTS.md](../../AGENTS.md) and use [architecture-review](../../.agents/skills/architecture-review/SKILL.md) before
 finishing changes. Core tests use direct constructors and manual port doubles. Every HTTP endpoint has HTTP
 `.e2e-spec.ts` coverage; storage and runtime tests use actual SQLite and Electron. Treat demonstrated SOLID and
 dependency violations as mandatory findings. Label only improvements beyond compliance as optional. Simple compliant designs need no speculative strategies or interfaces.

@@ -1,7 +1,7 @@
 # Architecture review skill validation
 
 These are manual review scenarios and expected outcomes, not claims of automated SOLID verification. The revised skill
-targets [AGENTS.md](../AGENTS.md). Source and CLI fixtures enforce the driving/driven/config layout; the
+targets [AGENTS.md](../../AGENTS.md). Source and CLI fixtures enforce the driving/driven/config layout; the
 [migration record](architecture-migration-plan.md) describes implementation and verification.
 
 | Scenario                                                                              | Expected review outcome                                                                                      |

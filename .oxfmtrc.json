@@ -3,7 +3,7 @@
     "singleQuote": true,
     "tabWidth": 4,
     "ignorePatterns": [
-        ".plans/**",
+        "docs/**",
         ".agents/**",
         "**/*.md",
         "package-lock.json",
