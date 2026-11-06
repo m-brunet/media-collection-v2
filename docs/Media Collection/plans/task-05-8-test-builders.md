@@ -1,6 +1,6 @@
 # Task 5.8 — Test entity builders
 
-Status: in progress (2026-11-06) on `master`. Inserted at the user's request after Task 5.
+Status: done (2026-11-06), committed on `master`. Inserted at the user's request after Task 5.
 Global plan: [implementation plan](implementation-plan.md). Origin: optional review point 1 of
 [Task 5](task-05-lending.md) (duplicated API test helpers) and the user's reference to the welii test builders
 (`weliihq/welii`, `apps/backend/src/_tests_/builders`, `PureTestBuilder`).
@@ -63,7 +63,7 @@ browser e2e arrangement, production code changes.
 2. [x] `BookBuilder` with its unit tests; `TestLibrary` composing books and lending, with parent creation.
 3. [x] API test context: lending repositories; convert the loans, receivers and books controller specs' lending
        helpers; check the architecture tests accept the test-support imports.
-4. [ ] Docs (architecture: test data arrangement), full check, architecture review, commit, plan status.
+4. [x] Docs (architecture: test data arrangement), full check, architecture review, commit, plan status.
 
 ## Implementation changes (vs. the plan)
 
@@ -84,3 +84,16 @@ browser e2e arrangement, production code changes.
 1. `TestLibrary` lives in `tests/support/test-library.ts`, outside the application source; feature builders stay in
    their features' `application/testing/` folders.
 2. `UserFixture` stays as is in this task; it moves onto a `UserBuilder` when identity tests are next touched.
+
+## Architecture review (2026-11-06)
+
+No mandatory findings; no production code changed. Builders are pure application test support (enforced by the
+lint), cross-feature arrangement stays under `tests/api/`, and every builder has its same-directory spec.
+
+## Notes for later tasks
+
+- Use `app.dependencies.builders` (API tests) or the feature builders with the memory doubles (unit tests) to arrange
+  data; add `with…`/`as…` methods as scenarios need them, and builders for other features when their tests are next
+  touched (Task 6 adopts them first). `UserFixture` moves onto a `UserBuilder` when identity tests are touched.
+- Collection membership, shelves and tags are not built yet; a `TestLibrary` method per feature is the natural place.
+

@@ -163,7 +163,7 @@ future work; reserving the folder does not implement or run an import.
 | 4 Locations, tags, search | Done (2026-11-05) | `task-04-locations-tags-search.md` | Committed; see its notes for later tasks |
 | 5 Lending | Done (2026-11-06) | [task-05-lending](task-05-lending.md) | Committed; slice 0 = documentation vault; see its notes for later tasks |
 | 5.5 Generated titles | Done (2026-11-06) | [task-05-5-generated-titles](task-05-5-generated-titles.md) | Committed; see its notes for later tasks |
-| 5.8 Test entity builders | Approved (2026-11-06), next | [task-05-8-test-builders](task-05-8-test-builders.md) | Inserted at the user's request |
+| 5.8 Test entity builders | Done (2026-11-06) | [task-05-8-test-builders](task-05-8-test-builders.md) | Committed; see its notes for later tasks |
 | 6 Assisted entry | Not started | — | |
 | 7 Leaf (mobile) | Not started | — | |
 | 8 Overview and Activity | Not started | — | |

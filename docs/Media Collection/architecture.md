@@ -265,6 +265,16 @@ through typed ports, loaded in dependency order. Independent clients prepare rea
 CSRF. Fixture setup/teardown belongs in hooks; cases arrange their scenario, perform one endpoint request, and assert
 its outcome with visible blank-line separation and no block-label comments or routine try/catch.
 
+Arranging test data uses entity builders (Task 5.8). Each feature owns its builders next to its doubles in
+`application/testing/` (`BookBuilder`, `ReceiverBuilder`, `LoanBuilder`, base `EntityBuilder` and `TestIds` in
+`shared/application/testing/`): `with…` sets one value, `as…` sets a coherent state (`asPlanned()`, `asGenerated()`,
+`asReturned()`), `build()` returns the entity and `buildAndSave(ports)` stores it through the repository ports
+(memory doubles in unit tests, SQLite adapters in API tests), creating missing parents. `TestLibrary`
+(`tests/api/fixtures/test-library.ts`) composes builders across features (a loan without a book gets one) and accepts
+plain `BookFacts` for specs outside the books feature, which feature boundaries keep from the books builder; the API
+test context exposes it as `builders`. Builders only arrange preconditions: a test about a rule uses its use case or
+endpoint. Browser tests keep arranging data over HTTP. Other features adopt builders when their tests are next touched.
+
 Runtime scenarios in `tests/api/foundation.e2e-spec.ts` and desktop cases retain Electron startup/restart/recovery
 coverage. They complement controller tests. Unit tests for executable entities, value objects, use cases, and utilities
 use exact matching sibling `.spec.ts` files. Pure core tests use manual port doubles, never Nest testing modules.
