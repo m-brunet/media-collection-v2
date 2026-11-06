@@ -30,6 +30,27 @@ cover), `YSboR` (no result, manual completion), `f0mDwI` (service unavailable), 
 - Scraping shop websites only as a last resort, after a careful human decision; never by default.
 - `sharp` approved for image decoding/encoding. Find book on the edit form left for later.
 - Draft conflicts are confirmed in **one dialog** listing every conflicting field (each Keep mine / Use lookup).
+- **Sources (after the trial, step 2):** BnF first, then Open Library, for book information; Open Library for covers.
+  Google Books needs an API key (no keyless quota) and getting one is too technical for most users: a later
+  nice-to-have, with summaries. No other automatic source for now.
+- **Approximate page counts** (BnF "non paginé [ca 192] p.": the pages exist but carry no printed numbers) are filled.
+- **Manga/Comics in a collection with a blank title:** the lookup title is offered as an alternative, not filled, so the
+  generated title stays unless the person picks the lookup one.
+- **Source formatting is tidied:** authors "Fujisawa, Tooru (1967-....). Auteur du texte" → "Tooru Fujisawa";
+  publisher place removed ("Pika éd. (Boulogne)" → "Pika éd.").
+- **Collection suggestion (to test):** BnF titles/series ("Rose hip Rose. 1") may suggest the collection and volume,
+  matched to an existing collection, for the person to accept.
+- **Covers: make adding one by hand take seconds,** since automatic sources find about a third:
+  1. "Search this cover on the web" (Google Images, ISBN query) in the person's browser;
+  2. paste (Ctrl+V) or drag and drop an image into the cover area;
+  3. paste an image address, downloaded by the server (image only, size-limited, never an address inside the home
+     network);
+  4. every cover still goes through padding removal;
+  5. desktop app only: the search opens in a panel inside Libris and a click on a picture makes it the cover.
+- **Rejected or deferred:** a phone photo of the cover in Leaf (quality and lighting would look inconsistent);
+  scraping shops (Amazon's terms forbid automated extraction, and the first version needed a fake browser
+  identity); Amazon's official API (needs an Associates account with regular sales); publishers' websites (would
+  mostly fix the one-off V1 import; the product focuses on books added one at a time); paid databases.
 - Implementation: a **chain of responsibility** for the sources (below), if it stays suitable during implementation.
 
 ## Step 1 — Cover padding removal (own commit)
@@ -62,7 +83,12 @@ Candidates, terms checked 2026-11-06:
 | Google Books API | Metadata, summaries with a language, small covers | Free at low volume. Google attribution required next to displayed results; content must not be altered; storing cover copies unclear |
 | Open Library (Books API + Covers) | Metadata, covers | Free. ISBN cover lookups limited to 100 per IP per 5 minutes; covers for display, not bulk download; a link back appreciated |
 
-A development-only trial command reads the ISBNs of the development library (437 books, from V1) and queries each
+**Done (2026-11-06)**, results posted on the pull request: 446 development ISBNs, one request per 1.5 s per site.
+BnF found 66% (manga 68%), Open Library 47% (manga 35%); combined, BnF first: 93% found, title/authors/publisher
+92–93%, page count 72%, cover 36% (Open Library only, nearly all ≥ 300 px tall), no summaries. 30 ISBNs found nowhere.
+Google Books refused every request without a key.
+
+Original method: a development-only trial command reads the ISBNs of the development library (437 books, from V1) and queries each
 source **slowly, below every published limit** (one request at a time with a pause; Open Library's Books API rather
 than its Covers endpoint). Per source it reports: found; title, authors, publisher, date, pages present; summary
 present and its language versus the edition's; cover present and its size. Nothing is stored. I bring you the numbers
@@ -129,7 +155,11 @@ address, never a person's email).
   (`OGDgW` pattern), one row per field with Keep mine / Use lookup; keeping is the default.
 - No result (`YSboR`) and unavailable (`f0mDwI`): a message under the page title, the ISBN kept, `Retry lookup`,
   manual completion always possible; the message says which case it is and which sources were unavailable.
-- Attribution: the review names each value's source (and shows Google's mark if Google Books is approved).
+- Attribution: the review names each value's source.
+- Cover helpers (decisions above): search button, paste/drop, paste an address, and the desktop search panel. The
+  panel needs the desktop app to hand the chosen picture's address to the open form: a narrow desktop-only bridge
+  carrying one image address, the cover itself still saved over HTTP. Architecture rules keep IPC to lifecycle and
+  recovery, so this exception needs the user's approval before step 5.
 - Tests: component tests for each state, EN/FR strings; browser journeys (1280 and 1440) against a local stub
   standing in for the sources (adapters take their base address from configuration), including unavailable and
   rate-limited sources.
@@ -137,10 +167,11 @@ address, never a person's email).
 **Step list**
 1. [x] Cover padding removal (own commit); development covers still to clean (`npm run dev:import-v1` refused
    while the development app was open)
-2. [ ] Source trial, report, user choice of sources and order
-3. [ ] Domain/application: combining, chains, budgets, `LookUpBook`, unit tests
+2. [x] Source trial, report, user choice of sources and order
+3. [ ] Domain/application: combining, chains, budgets, formatting, collection suggestion, `LookUpBook`, unit tests
 4. [ ] Approved source adapters, cover tokens, endpoints, API tests
-5. [ ] Libris Find book: review, conflicts, covers, states, component tests
+5. [ ] Libris Find book: review, conflicts, covers, states, cover helpers (search, paste/drop, address,
+   desktop search panel), component tests
 6. [ ] Browser journeys with stubbed sources
 7. [ ] Architecture review, `npm run check`, docs (credits list for the future credits page)
 
