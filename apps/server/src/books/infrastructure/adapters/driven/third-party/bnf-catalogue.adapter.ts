@@ -9,9 +9,9 @@ type Subfields = Map<string, string[]>;
 type Fields = Map<string, Subfields[]>;
 
 // The BnF general catalogue (SRU, UNIMARC records), queried by ISBN. Licence Ouverte: free
-// reuse, source credited. Fields used: 101 language, 200 title, 210/214 publisher and date,
-// 215 extent, 330 summary, 461 series and volume, 700/701 authors (702 secondary
-// responsibilities such as translators are left out).
+// reuse, source credited. Fields used: 101 language, 200 title (and volume), 210/214 publisher
+// and date, 215 extent, 330 summary, 461 series and volume, 70X persons and 71X organisations
+// as authors (see `authors`).
 export class BnfCatalogue implements LookupSource<LookupAnswer> {
     static readonly address = 'https://catalogue.bnf.fr/api/SRU';
 
@@ -60,8 +60,12 @@ export class BnfCatalogue implements LookupSource<LookupAnswer> {
         // "1 vol. (257 p.)", "856 p.", "380 p", "1 vol. (non paginé [ca 176] p.)".
         const pages = (first('215', 'a') ?? '').match(/(\d+)\]?\s*p(?:\.|\b)/)?.[1];
         const summary = first('330', 'a');
-        const seriesName = first('461', 't');
-        const volume = (first('461', 'v') ?? '').match(/(\d+)/)?.[1];
+        // The series field, or else a title with its volume number ("La Passe-miroir", 1).
+        const titleVolume = (first('200', 'h') ?? '').match(/^\D*(\d+)\D*$/)?.[1];
+        const seriesName = first('461', 't') ?? (titleVolume ? first('200', 'a') : null);
+        const volume = fields.has('461')
+            ? (first('461', 'v') ?? '').match(/(\d+)/)?.[1]
+            : titleVolume;
 
         return LookupAnswer.of({
             title,
@@ -79,12 +83,37 @@ export class BnfCatalogue implements LookupSource<LookupAnswer> {
         });
     }
 
+    // Main and alternative responsibilities (700/701 persons, 710/711 organisations) are authors;
+    // secondary ones (702/712) only as author, illustrator or scenarist, by role code or, in some
+    // newer records, by role text. Translators, preface writers and the like are left out.
     // "Fujisawa" + "Tooru" → "Tooru Fujisawa"; life dates and roles are separate subfields.
     private static authors(fields: Fields): string[] {
-        return [...(fields.get('700') ?? []), ...(fields.get('701') ?? [])].map((person) =>
-            [person.get('b')?.[0], person.get('a')?.[0]].filter(Boolean).join(' '),
+        const people = (tags: string[]) => tags.flatMap((tag) => fields.get(tag) ?? []);
+        const person = (entry: Subfields) =>
+            [entry.get('b')?.[0], entry.get('a')?.[0]].filter(Boolean).join(' ');
+        const organisation = (entry: Subfields) =>
+            [entry.get('a')?.[0], entry.get('b')?.[0]].filter(Boolean).join('. ');
+
+        return [
+            ...people(['700', '701']).map(person),
+            ...people(['702']).filter(BnfCatalogue.authorRole).map(person),
+            ...people(['710', '711']).map(organisation),
+            ...people(['712']).filter(BnfCatalogue.authorRole).map(organisation),
+        ];
+    }
+
+    private static authorRole(entry: Subfields): boolean {
+        const codes = entry.get('4') ?? [];
+        const roles = (entry.get('c') ?? []).join(' ');
+
+        return (
+            codes.some((code) => BnfCatalogue.authorCodes.includes(code)) ||
+            /auteur du texte|^auteur$|illustrat|dessinat|scénari/i.test(roles.trim())
         );
     }
+
+    // UNIMARC relator codes: 070 author, 440 illustrator, 690 scenarist.
+    private static readonly authorCodes = ['070', '440', '690'];
 
     // The data fields of the first record: tag → occurrences → subfield code → values.
     private static firstRecord(xml: string): Fields | null {
