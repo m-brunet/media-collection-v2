@@ -124,6 +124,15 @@ related change for the book operation's audit). Book saves and `PATCH /api/books
 through `BookOrganiser`; views and audit snapshots use the readers through `BookOrganisationReader`. The root wires
 one instance to both ports of a pair (`LocationsModule.assignment`, `TagsModule.assignment`).
 
+Generated titles cross the books/collections boundary the other way. `books` owns titles and their provenance
+(`BookDetails.titleGenerated`, the `GeneratedTitle` format `Name - N` / `Name - N–M`, the Manga/Comics eligibility and
+`title-required`); a blank title asks for generation. After a book save applies its membership, `GeneratedTitleSync`
+gives a generated title the resolved collection spelling and coverage, then reruns the no-ISBN duplicate check on it.
+For collection-wide changes `collections` declares `MemberTitles`, implemented by the books service
+`CollectionMemberTitles` (`BooksModule.memberTitles`, wired at the root): a rename regenerates generated titles and a
+whole-collection deletion keeps them as supplied titles, each change recorded as a related `book.retitled` entry of
+the collection operation.
+
 Books and lending collaborate through two ports declared by `books`, both implemented in the lending application
 layer and built at the root (`LendingModule.bookLoans`, `LendingModule.history`): `BookLoanReader` (`BookLoanLookup`)
 gives book details and list items their active loan and feeds `LentBookGuard`, which refuses (`book-lent`) to delete a
@@ -290,6 +299,8 @@ occurrence. A partial unique index on `loans(book_id) WHERE status = 'lent'` kee
 for simultaneous confirmations; CHECK constraints tie the return date to the status and keep an active loan's book.
 Deleting a book sets `book_id` to null on its completed loans, which stay identifiable by their title and ISBN copy;
 a lent book cannot be deleted.
+Migration 010 adds `books.title_generated` (0/1, existing titles 0) and `books.title_sort_key`, the title key with
+digit runs zero-padded so title order compares numbers by value; the books repository writes both on every save.
 
 Runtime adapters use Kysely builders, including `instr` for literal searches on normalized keys. Raw SQL is allowed
 in migrations and database-boundary tests only. Connection setup retains a narrow exception for driver construction

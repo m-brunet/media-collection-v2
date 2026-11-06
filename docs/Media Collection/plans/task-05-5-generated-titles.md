@@ -1,6 +1,6 @@
 # Task 5.5 — Generated titles for collection Manga and Comics
 
-Status: technical design approved (2026-11-06), in progress on `master`. Business rules confirmed (2026-11-06).
+Status: done (2026-11-06), committed on `master`. Business rules confirmed (2026-11-06).
 Global plan: [implementation plan](implementation-plan.md).
 Owning docs: [book-entry](../book-entry.md#collection-based-titles) (authoritative title rules and acceptance examples),
 [features](../features.md) (Books), [collections](../collections.md) (membership, rename and deletion).
@@ -159,7 +159,7 @@ Written against the completed Task 5 code. Existing names: `Book`/`BookDetails` 
 5. [x] Libris: title field states, details mark, EN/FR; component tests.
 6. [x] Browser e2e (`tests/web/generated-titles.e2e-spec.ts`): blank-title Manga in a collection, rename regenerates, removal prefill accepted in one click,
        collection deletion keeps titles; lending regression.
-7. [ ] Docs (architecture: `MemberTitles`, migration 010), full check, architecture review, commit, plan status.
+7. [x] Docs (architecture: `MemberTitles`, migration 010), full check, architecture review, commit, plan status.
 
 ### Decisions confirmed by the user (2026-11-06)
 
@@ -174,11 +174,45 @@ Implement after Task 5, before Task 6; leave the Task 5 implementation and its p
 rules rather than reinstating unconditional title input. Task 8 reads consistent titles/audits; Task 9 backs up the new
 flag with the database. Choose detailed contracts/wiring after inspecting completed Task 5 code.
 
-- [ ] Finalize technical contracts and schema migration against completed Task 5.
-- [ ] Implement inner rules, persistence and atomic cross-feature updates.
-- [ ] Update HTTP contracts, Libris EN/FR forms and dependent reads.
-- [ ] Complete acceptance coverage, architecture review and required checks.
-- [ ] Record completion and handoff notes in the global plan.
+- [x] Finalize technical contracts and schema migration against completed Task 5.
+- [x] Implement inner rules, persistence and atomic cross-feature updates.
+- [x] Update HTTP contracts, Libris EN/FR forms and dependent reads.
+- [x] Complete acceptance coverage, architecture review and required checks.
+- [x] Record completion and handoff notes in the global plan.
 
 No pending product question remains from this discussion. Technical planning must preserve the confirmed prefilled
 confirmation behavior and bulk-deletion exception; V1 import is a separate future discussion.
+
+## Implementation notes (2026-11-06)
+
+- Builder: a blank title on an eligible book gets a provisional title (`Name - N` from a typed collection name, or
+  `… - N` for a collection chosen by identity); `GeneratedTitleSync.apply` sets the final title after the membership
+  is applied and reruns the duplicate check on it. A blank title on any other book is `title-required` (this replaces
+  the former `title-invalid` answer to a blank title; `title-invalid` remains for the length rule).
+- `UpdateCollection` gained its own provider (it no longer shares the Finish/Reopen factory); `DeleteCollection`
+  calls `MemberTitles.keep` before clearing the membership.
+- Natural order: `Book.titleSortKey`; the catalog's title sort, collection members and active loans order by
+  `title_sort_key`. Migration 010 freezes its own copy of the key rule for the backfill.
+- Libris: `BookDraft` keeps `lastGeneratedTitle`, `titleOptional`, `generatedTitle` (hint) and `changed` (prefill
+  when eligibility is lost); the form's field and collection changes go through `changed`. Book details show
+  "Named from its collection".
+- Tests: domain, builder, sync, member titles, use cases (create/update/rename/delete), persistence
+  (`tests/persistence/generated-titles.spec.ts`), API (books and collections controller specs), web components and
+  browser journeys (`tests/web/generated-titles.e2e-spec.ts`), with lending regression.
+
+## Architecture review (2026-11-06)
+
+No mandatory findings. Optional: `RecordedMemberTitles` (collections test double) reports one change per member,
+while the real service reports only titles it changed; collections tests only check that the calls are made, and
+`CollectionMemberTitles` is tested on its own.
+
+## Notes for later tasks
+
+- Task 5.8 (builders): `BookBuilder` needs `asGenerated()` (blank title + Manga in a collection) next to `with…`.
+- Task 6 (assisted entry): a lookup result must not overwrite a blank (generation) title silently; keep the form's
+  title rules (`BookDraft.titleOptional`, `changed`) and send a blank title to keep generation.
+- Task 7 (Leaf): the same server rules apply; quick add of a Manga in a collection may leave its title blank.
+- Task 8 (Activity): `book.retitled` entries are related records of `collection.updated` / `collection.deleted`
+  operations (same operation ID); group them under the collection change.
+- Task 9 (backup): the new columns travel with the database.
+
