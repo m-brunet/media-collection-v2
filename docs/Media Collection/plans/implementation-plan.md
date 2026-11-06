@@ -103,6 +103,11 @@ Inserted at the user's request (2026-11-06). Owning docs: `book-entry.md` (title
 - Update domain/application rules, persistence, HTTP contracts, Libris EN/FR form feedback, search/sort, audit and tests; check completed lending integration. Tasks 6 and 7 inherit these rules.
 - V1 import, dump corrections and migration scheduling are excluded.
 
+### Task 5.8 — Test entity builders
+Inserted at the user's request (2026-11-06), after Task 5's review. Plan: [task-05-8-test-builders](task-05-8-test-builders.md).
+- Fluent builders (`with…`, `as…`) for domain entities, saved through repository ports so one builder serves unit
+  and API tests; a cross-feature `TestLibrary` entry point; replace the duplicated lending test helpers.
+
 ### Task 6 — Assisted entry (desktop)
 Owning docs: `book-entry.md`.
 - Select metadata/cover provider (research, licensing, offline failure), integrate behind a port.
@@ -145,6 +150,7 @@ Owning docs: `updates.md`, `design-guidelines.md`.
 | 4 Locations, tags, search | Done (2026-11-05) | `task-04-locations-tags-search.md` | Committed; see its notes for later tasks |
 | 5 Lending | Done (2026-11-06) | [task-05-lending](task-05-lending.md) | Committed; slice 0 = documentation vault; see its notes for later tasks |
 | 5.5 Generated titles | Not started | [task-05-5-generated-titles](task-05-5-generated-titles.md) | Confirmed business rules; implement after Task 5; V1 import excluded |
+| 5.8 Test entity builders | Planned (2026-11-06), awaiting approval | [task-05-8-test-builders](task-05-8-test-builders.md) | Inserted at the user's request |
 | 6 Assisted entry | Not started | — | |
 | 7 Leaf (mobile) | Not started | — | |
 | 8 Overview and Activity | Not started | — | |
