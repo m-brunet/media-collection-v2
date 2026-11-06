@@ -116,6 +116,7 @@ describe('GET /api/loans', () => {
                             publicationYear: 2020,
                             isbn: '9781635575637',
                             hasCover: false,
+                            updatedAt: piranesi.updatedAt,
                         },
                     },
                     expect.objectContaining({ loanId: toSam.loans[0]!.loanId }),

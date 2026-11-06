@@ -124,6 +124,18 @@ related change for the book operation's audit). Book saves and `PATCH /api/books
 through `BookOrganiser`; views and audit snapshots use the readers through `BookOrganisationReader`. The root wires
 one instance to both ports of a pair (`LocationsModule.assignment`, `TagsModule.assignment`).
 
+Books and lending collaborate through two ports declared by `books`, both implemented in the lending application
+layer and built at the root (`LendingModule.bookLoans`, `LendingModule.history`): `BookLoanReader` (`BookLoanLookup`)
+gives book details and list items their active loan and feeds `LentBookGuard`, which refuses (`book-lent`) to delete a
+lent book or save it as Not Owned; `LoanHistory` (`BookLoanHistory`) refreshes the title and ISBN copy kept on a
+book's completed loans just before the book is deleted. `ListBooks` adds loans to the catalog page itself, so the
+books catalog never reads lending tables. Lending reads the books it lends through its own `LendableBooks` port.
+
+A lending or a return is one operation over several subjects. `AuditedOperation.runBatch` records one Successful entry
+per subject, all sharing the operation ID (per book for `loan.lent`, per loan for `loan.returned`), plus related
+changes such as `receiver.created`; if the batch fails, nothing persists and every requested subject gets a Failed
+entry written after the rollback.
+
 Advanced book filters are a shared application value, `BookFilter` (`shared/application/book-filter.ts`), because two
 features apply it: the books catalog filters book listings and, through `CollectionBookSearch`, the collection
 listing, where one book must satisfy the whole expression. Its query parameters and their mapping are shared driving
@@ -273,7 +285,11 @@ books), never write them. Collection membership has its own `collection_books` t
 by book and collection, with a unique book index for the current one-collection rule (migration 007). Migration 008
 adds `bookcases`, `shelves` (names unique per bookcase), `book_shelves` (keyed by book and shelf, with a unique book
 index: at most one shelf per book), `tags` and `book_tags`; deleting a bookcase, shelf, tag or book cascades to its
-links, never to books.
+links, never to books. Migration 009 adds `receivers` (unique comparison key) and `loans`, one row per loan
+occurrence. A partial unique index on `loans(book_id) WHERE status = 'lent'` keeps one active loan per book even
+for simultaneous confirmations; CHECK constraints tie the return date to the status and keep an active loan's book.
+Deleting a book sets `book_id` to null on its completed loans, which stay identifiable by their title and ISBN copy;
+a lent book cannot be deleted.
 
 Runtime adapters use Kysely builders, including `instr` for literal searches on normalized keys. Raw SQL is allowed
 in migrations and database-boundary tests only. Connection setup retains a narrow exception for driver construction

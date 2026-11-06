@@ -29,9 +29,17 @@ export class Loan {
     private readonly state: LoanState;
 
     private constructor(state: LoanState) {
+        Failure.ensure(
+            (state.status === 'lent' && state.returnedAt === null && state.bookId !== null) ||
+                (state.status === 'returned' && state.returnedAt !== null),
+            'This loan record is inconsistent.',
+            'loan-invalid',
+        );
         this.state = { ...state };
     }
 
+    // Rebuilds a saved loan. An active loan has its book and no return date; a returned loan has a
+    // return date and may have outlived its book.
     static restore(state: LoanState): Loan {
         return new Loan(state);
     }

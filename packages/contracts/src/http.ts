@@ -387,6 +387,7 @@ export interface LoanBookDto {
     publicationYear: number | null;
     isbn: string | null;
     hasCover: boolean;
+    updatedAt: string;
 }
 
 export interface ActiveLoanDto {

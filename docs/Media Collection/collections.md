@@ -17,6 +17,8 @@ A book belongs to at most one collection initially. Future multiple membership s
 - A collection with no books does not exist: deleting, moving, or unlinking its final book automatically removes the empty collection. Moving/unlinking preserves the book itself.
 - Changing ownership does not delete a record: Not Owned records keep their collection present.
 
+Task 5.5 adds [collection-based titles](book-entry.md#collection-based-titles): renaming a collection updates generated member-book titles as well as the collection label; supplied titles remain unchanged. Moving a generated-title book or editing coverage regenerates its title. Individual unlinking requires a supplied title, prefilled with the last generated value for one-click acceptance. Deleting an entire collection instead keeps the last generated titles and clears their `titleGenerated` flags automatically along with membership/coverage; it does not require title entry for every book.
+
 ## Coverage and ownership vocabulary
 
 - Owned / Not Owned: the two saved ownership statuses. Defaults are defined in the book rules.

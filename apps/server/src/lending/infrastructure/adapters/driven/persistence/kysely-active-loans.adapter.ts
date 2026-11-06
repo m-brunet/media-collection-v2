@@ -29,6 +29,7 @@ export class KyselyActiveLoans implements ActiveLoans {
                 'books.publication_year',
                 'books.isbn13',
                 'books.cover_file',
+                'books.updated_at',
             ])
             .where('loans.status', '=', 'lent');
 
@@ -73,6 +74,7 @@ export class KyselyActiveLoans implements ActiveLoans {
                     publicationYear: loan.publication_year,
                     isbn: loan.isbn13,
                     hasCover: loan.cover_file !== null,
+                    updatedAt: loan.updated_at,
                 },
             });
         }

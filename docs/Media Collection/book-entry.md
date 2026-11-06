@@ -2,6 +2,28 @@
 
 Status: Task 2 product decisions complete. This document records confirmed product behavior, not implementation choices. [Features](features.md) lists book fields; [collections](collections.md) defines coverage and ownership conflicts. Screen refinements and detailed mobile pages belong to Task 6.
 
+## Collection-based titles
+
+Additional product decisions confirmed on 2026-11-06; implementation belongs to [Task 5.5](plans/task-05-5-generated-titles.md), before assisted entry and mobile implementation. These rules concern the application, not V1 import.
+
+- A nonblank title remains mandatory in storage. Title input is mandatory for Books and for standalone Manga/Comics.
+- Manga/Comics with collection membership may leave the title input blank or whitespace-only. The backend generates `Collection name - N` for one volume, or `Collection name - N–M` for consecutive coverage. Volume 0 uses the same format when enabled. Use the collection's display name, not its normalized comparison key.
+- A supplied nonblank title is retained under normal title validation. Store `titleGenerated` to distinguish supplied titles from generated ones; never infer provenance from matching text. Existing V2 titles are retained with the flag false.
+- While generation remains enabled, renaming the collection, changing coverage or moving the book to another collection regenerates its title. Supplied titles remain unchanged.
+- Editing a generated title into a supplied title clears the flag, even if the supplied text happens to equal the fallback. Leaving a title blank on an eligible book selects generation. An unrelated edit must preserve generation rather than silently turn the displayed title into a supplied title.
+- When individually removing collection membership or changing category to Books, require a supplied title before saving. Prefill the title input with the last generated title so the user can confirm it in one click or replace it. Saving that explicit choice clears the flag; a blank title is rejected. No separate mandatory rename or extra confirmation dialog is required.
+- Deleting an entire collection preserves each book's last generated title and clears its flag automatically, while removing membership/coverage. Supplied titles are untouched. This is the bulk-deletion exception to the individual-edit rule.
+- Generation is a backend business rule shared by all entry paths. The form explains conditional optionality; assisted lookup and mobile use the same rules when implemented. Valid titles and normalized search/sort keys must remain consistent after updates.
+
+Acceptance examples:
+
+1. Save a Manga in Gunnm covering volume 3 with blank title: store `Gunnm - 3` and `titleGenerated=true`. A Comics range 1–3 generates `Collection name - 1–3`.
+2. Supply an individual tome title: store it with the flag false. Collection rename or coverage changes do not replace it.
+3. Rename a collection or move/change coverage of a generated-title book: regenerate the title from current membership. An unrelated book edit preserves the flag.
+4. Individually remove membership or change category to Books: show the last generated title in the required input; accepting it saves it as supplied. Clearing it prevents saving.
+5. Delete the whole collection: preserve its books and last titles, clear generated flags and membership/coverage, without requiring a replacement-title form per book.
+6. Upgrade existing V2 data: preserve all titles and set flags false, including titles whose text already matches the generated format.
+
 ## ISBN and duplicate entry
 
 Accept valid ISBN-10 and ISBN-13 input. Convert ISBN-10 to equivalent ISBN-13 and display/use ISBN-13 consistently; equivalent identifiers must not allow duplicate editions. Book details show a small superscript information icon beside the ISBN label when an actual ISBN-10 conversion occurred, explaining why the displayed number differs from the entered one.
