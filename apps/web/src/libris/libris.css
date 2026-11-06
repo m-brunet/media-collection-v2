@@ -1191,3 +1191,159 @@ body {
 .organisation-status--failed {
     color: var(--color-danger);
 }
+
+/* Lending */
+.loans-page__search {
+    max-width: 420px;
+}
+
+.receiver-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-5) var(--space-6);
+    border-radius: var(--radius-lg);
+    background: var(--color-panel);
+}
+
+.receiver-group__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-4);
+}
+
+.receiver-group__name {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: var(--text-xl);
+    overflow-wrap: anywhere;
+}
+
+.loan-list,
+.lend-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.loan-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+}
+
+.loan-row .book-cover {
+    width: 40px;
+}
+
+.loan-row__book,
+.lend-row__book {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.loan-row__title,
+.lend-row__title {
+    color: var(--color-text);
+    font-weight: 600;
+}
+
+.loan-row__date {
+    color: var(--color-text-secondary);
+    font-size: var(--text-md);
+}
+
+.loan-row__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+.lend-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: var(--space-6);
+    align-items: start;
+}
+
+.lend-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+}
+
+.lend-row__problem {
+    color: var(--color-warning);
+    font-size: var(--text-md);
+}
+
+.return-row {
+    grid-column: 1 / -1;
+    align-items: center;
+}
+
+.similar-receiver {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    background: var(--color-warning-surface);
+}
+
+.similar-receiver__title {
+    margin: 0;
+    font-weight: 600;
+}
+
+.lend-summary {
+    position: sticky;
+    top: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.lend-summary__count {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: var(--text-2xl);
+}
+
+.lend-summary__lists {
+    margin: 0;
+}
+
+.lend-summary__lists dt {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    text-transform: uppercase;
+}
+
+.lend-summary__lists dd {
+    margin: 0 0 var(--space-2);
+    overflow-wrap: anywhere;
+}
+
+.lend-summary__actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+}

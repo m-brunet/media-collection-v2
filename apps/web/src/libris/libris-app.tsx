@@ -22,6 +22,9 @@ import { CollectionsPage } from './collections/collections-page';
 import { FiltersPage } from './filters/filters-page';
 import { BookshelvesPage } from './locations/bookshelves-page';
 import { TagsPage } from './tags/tags-page';
+import { LendPage } from './lending/lend-page';
+import { LoansPage } from './lending/loans-page';
+import { ReturnPage } from './lending/return-page';
 
 function NotFoundPage() {
     const { t } = useI18n();
@@ -115,6 +118,23 @@ function LibrisRoutes() {
                 <Route path="/collections/:id" element={<CollectionDetailsPage />} />
                 <Route path="/bookshelves" element={<BookshelvesPage />} />
                 <Route path="/tags" element={<TagsPage />} />
+                <Route path="/loans" element={<LoansPage />} />
+                <Route
+                    path="/loans/lend"
+                    element={
+                        <LibraryEditorOnly>
+                            <LendPage />
+                        </LibraryEditorOnly>
+                    }
+                />
+                <Route
+                    path="/loans/return"
+                    element={
+                        <LibraryEditorOnly>
+                            <ReturnPage />
+                        </LibraryEditorOnly>
+                    }
+                />
                 <Route path="/account" element={<AccountPage />} />
                 <Route
                     path="/admin/accounts"

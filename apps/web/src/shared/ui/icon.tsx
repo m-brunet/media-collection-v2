@@ -7,6 +7,8 @@ import {
     SlidersHorizontal,
     Tag,
     BookOpen,
+    BookDown,
+    BookUp,
     Check,
     ChevronDown,
     ChevronRight,
@@ -67,6 +69,8 @@ const lucide = {
     inbox: Inbox,
     filter: SlidersHorizontal,
     move: ArrowRightLeft,
+    lend: BookUp,
+    'lend-return': BookDown,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof lucide;

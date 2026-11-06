@@ -255,3 +255,28 @@ it('offers to clear the filters when nothing matches them', async () => {
     ).not.toBeInTheDocument();
     expect(router.state.location.search).toBe('');
 });
+
+it('marks a lent book in the list', async () => {
+    new FakeApi().signedIn(account()).on('GET /books', () => ({
+        status: 200,
+        body: {
+            total: 1,
+            items: [
+                bookItem({
+                    loan: {
+                        id: 'l1',
+                        receiverId: 'r-sam',
+                        receiverName: 'Sam Taylor',
+                        lentAt: '2026-10-30T09:00:00.000Z',
+                    },
+                }),
+            ],
+        },
+    }));
+
+    show();
+
+    expect(await screen.findByRole('link', { name: /Piranesi/ })).toHaveTextContent(
+        'Owned · Not read · Lent',
+    );
+});

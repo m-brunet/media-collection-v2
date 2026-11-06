@@ -712,3 +712,26 @@ it('keeps the location and tags of an edited book', async () => {
         }),
     );
 });
+
+it('keeps a lent book Owned and explains why', async () => {
+    new FakeApi().signedIn(account()).on('GET /books/b1', () => ({
+        status: 200,
+        body: bookDto({
+            loan: {
+                id: 'l1',
+                receiverId: 'r-sam',
+                receiverName: 'Sam Taylor',
+                lentAt: '2026-10-30T09:00:00.000Z',
+            },
+        }),
+    }));
+
+    editPage();
+
+    const ownership = await screen.findByLabelText(/^Ownership/);
+
+    expect(within(ownership).getByRole('option', { name: 'Not owned' })).toBeDisabled();
+    expect(ownership).toHaveAccessibleDescription(
+        'This book is lent to Sam Taylor: it stays Owned until its return is recorded.',
+    );
+});

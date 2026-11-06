@@ -17,6 +17,8 @@ import { BookBreadcrumb } from './book-breadcrumb';
 import { CollectionFormat } from '../collections/collection-format.util';
 import { BookFormat } from './book-format.util';
 import { OrganisationEditor } from './organisation-editor';
+import { LoanPanel } from '../lending/loan-panel';
+import { LoanLinks } from '../lending/loan-links.util';
 
 function ReadingPanel({ book, onChange }: { book: BookDto; onChange(read: boolean): void }) {
     const { t } = useI18n();
@@ -288,6 +290,11 @@ function BookDetails({ id }: { id: string }) {
                                 {t('details.edit')}
                             </Button>
                         )}
+                        {editor && book.ownership === 'owned' && !book.loan && (
+                            <Button icon="lend" onClick={() => navigate(LoanLinks.lend(book.id))}>
+                                {t('details.lend')}
+                            </Button>
+                        )}
                     </div>
                     <div className="book-details__info">
                         <p className="eyebrow">
@@ -351,6 +358,7 @@ function BookDetails({ id }: { id: string }) {
                         {extent.length > 0 && <p className="muted">{extent.join(' · ')}</p>}
                     </div>
                 </div>
+                <LoanPanel book={book} editor={editor} />
                 <OrganisationEditor book={book} editor={editor} onSaved={setBook} />
                 {book.personal && (
                     <div className="book-details__personal">
