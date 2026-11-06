@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { FileCoverStorage } from './file-cover-storage.adapter.js';
@@ -12,10 +12,16 @@ afterEach(() => {
     }
 });
 
-function directory() {
+// A data directory, with files that the storage did not name already in its covers folder.
+function directory(...strayFiles: string[]) {
     const value = mkdtempSync(join(tmpdir(), 'cover-storage-'));
 
     directories.push(value);
+
+    for (const file of strayFiles) {
+        mkdirSync(join(value, 'covers'), { recursive: true });
+        writeFileSync(join(value, 'covers', file), 'kept');
+    }
 
     return value;
 }
@@ -54,5 +60,20 @@ describe('FileCoverStorage', () => {
         await storage.remove(file);
 
         expect(existsSync(join(data, 'covers', file))).toBe(false);
+    });
+    it('lists the stored images only', async () => {
+        const storage = new FileCoverStorage(directory('notes.txt'));
+        const file = await storage.store(new Uint8Array([1]), 'image/png');
+
+        const result = await storage.list();
+
+        expect(result).toEqual([file]);
+    });
+    it('lists nothing before any image is stored', async () => {
+        const storage = new FileCoverStorage(directory());
+
+        const result = await storage.list();
+
+        expect(result).toEqual([]);
     });
 });

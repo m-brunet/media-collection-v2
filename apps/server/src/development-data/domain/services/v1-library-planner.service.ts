@@ -33,7 +33,7 @@ export interface V1Corrections {
 
 export interface PlannedBook {
     record: number;
-    // Blank: generated from the collection (Manga and Comics only).
+    // Blank: titled from the collection by the books import.
     title: string;
     isbn: string;
     authors: string[];
@@ -61,9 +61,6 @@ export interface V1LibraryPlan {
     // Collection names (as first written) to mark Finished once their books are saved.
     finished: string[];
     unfinished: UnfinishedCollection[];
-    // Untitled Books in a collection, given the collection title (`Name Vol. N`) as a supplied title,
-    // since V2 only generates titles for Manga and Comics.
-    titled: { record: number; title: string }[];
 }
 
 const types: Record<string, V1Category> = { book: 'books', manga: 'manga', comics: 'comics' };
@@ -77,9 +74,8 @@ export class V1LibraryPlanner {
         const categories = new Map(
             corrections.categories.map((entry) => [NameKey.of(entry.collection), entry.category]),
         );
-        const titled: V1LibraryPlan['titled'] = [];
         const planned = books.flatMap((book) => {
-            const result = V1LibraryPlanner.book(book, isbns, categories, problems, titled);
+            const result = V1LibraryPlanner.book(book, isbns, categories, problems);
 
             return result ? [result] : [];
         });
@@ -93,7 +89,7 @@ export class V1LibraryPlanner {
             );
         }
 
-        return { books: planned, titled, ...V1LibraryPlanner.completion(books, planned) };
+        return { books: planned, ...V1LibraryPlanner.completion(books, planned) };
     }
 
     private static isbnCorrections(
@@ -127,7 +123,6 @@ export class V1LibraryPlanner {
         isbns: Map<number, string>,
         categories: Map<string, V1Category>,
         problems: string[],
-        titled: V1LibraryPlan['titled'],
     ): PlannedBook | null {
         const label =
             'Record ' + book.record + (book.title?.trim() ? ' ("' + book.title.trim() + '")' : '');
@@ -136,7 +131,7 @@ export class V1LibraryPlanner {
             (collectionName ? categories.get(NameKey.of(collectionName)) : undefined) ??
             types[book.type];
         const isbn = book.isbn?.trim() || isbns.get(book.record) || null;
-        let title = book.title?.trim() ?? '';
+        const title = book.title?.trim() ?? '';
         const count = problems.length;
 
         if (!category) {
@@ -160,11 +155,6 @@ export class V1LibraryPlanner {
 
         if (problems.length > count || !category || !isbn) {
             return null;
-        }
-
-        if (!title && category === 'books') {
-            title = collectionName + ' Vol. ' + book.volume;
-            titled.push({ record: book.record, title });
         }
 
         return {

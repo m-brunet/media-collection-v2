@@ -14,6 +14,7 @@ import { BookIdentityCheck } from '../services/book-identity-check.service.js';
 import { GeneratedTitleSync } from '../services/generated-title-sync.service.js';
 import { Book } from '../../domain/entities/book.entity.js';
 import { CoverImage } from '../../domain/value-objects/cover-image.value-object.js';
+import { GeneratedTitle } from '../../domain/value-objects/generated-title.value-object.js';
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 import type { IdGenerator } from '../../../shared/application/ports/driven/id-generator.interface.js';
 import type { AuditedOperation } from '../../../shared/application/services/audited-operation.service.js';
@@ -89,6 +90,7 @@ export class ImportBook implements ImportBookUseCase {
                     return {
                         result: {
                             bookId: id,
+                            title: book.details.title,
                             collectionId: membership.collection?.id ?? null,
                             cover: cover ? 'stored' : imported.cover ? 'rejected' : 'none',
                         },
@@ -110,7 +112,7 @@ export class ImportBook implements ImportBookUseCase {
 
     private input(imported: ImportedBook): BookInput {
         return {
-            title: imported.title,
+            title: ImportBook.title(imported),
             isbn: imported.isbn,
             noIsbn: imported.isbn === null,
             authors: imported.authors.map((name) => ({ name, distinct: true })),
@@ -131,6 +133,18 @@ export class ImportBook implements ImportBookUseCase {
             shelfId: null,
             tags: [],
         };
+    }
+
+    // A Book cannot have a generated title, so an untitled one in a collection is given the
+    // collection title as a supplied title.
+    private static title(imported: ImportedBook): string {
+        if (imported.title.trim() || imported.category !== 'books' || !imported.collection) {
+            return imported.title;
+        }
+
+        const { name, volume } = imported.collection;
+
+        return GeneratedTitle.of(name, volume, volume).text;
     }
 
     private usableCover(bytes: Uint8Array | null): CoverImage | null {

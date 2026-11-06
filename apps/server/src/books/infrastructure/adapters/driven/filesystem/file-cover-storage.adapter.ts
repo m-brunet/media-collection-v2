@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { CoverStorage } from '../../../../application/ports/driven/cover-storage.interface.js';
 import type { CoverMediaType } from '../../../../domain/value-objects/cover-image.value-object.js';
@@ -49,6 +49,20 @@ export class FileCoverStorage implements CoverStorage {
     async remove(file: string): Promise<void> {
         if (FileCoverStorage.fileName.test(file)) {
             await rm(join(this.directory, file), { force: true });
+        }
+    }
+
+    async list(): Promise<string[]> {
+        try {
+            const files = await readdir(this.directory);
+
+            return files.filter((file) => FileCoverStorage.fileName.test(file));
+        } catch (error) {
+            if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+                return [];
+            }
+
+            throw error;
         }
     }
 }

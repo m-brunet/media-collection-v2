@@ -57,7 +57,7 @@ export class ImportV1Library implements ImportV1LibraryUseCase {
                     collections: 0,
                     finished: plan.finished,
                     unfinished: plan.unfinished,
-                    titled: plan.titled,
+                    titled: [],
                     coversStored: 0,
                     coversSkipped: [],
                 };
@@ -80,6 +80,10 @@ export class ImportV1Library implements ImportV1LibraryUseCase {
 
                     report.books++;
 
+                    if (!book.title && book.category === 'books') {
+                        report.titled.push({ record: book.record, title: outcome.title });
+                    }
+
                     if (book.collection && outcome.collectionId) {
                         collectionIds.set(NameKey.of(book.collection.name), outcome.collectionId);
                     }
@@ -89,9 +93,7 @@ export class ImportV1Library implements ImportV1LibraryUseCase {
                     } else if (book.coverUrl) {
                         report.coversSkipped.push({
                             record: book.record,
-                            title:
-                                book.title ||
-                                book.collection!.name + ' Vol. ' + book.collection!.volume,
+                            title: outcome.title,
                             reason: outcome.cover === 'rejected' ? 'unusable' : 'unavailable',
                         });
                     }

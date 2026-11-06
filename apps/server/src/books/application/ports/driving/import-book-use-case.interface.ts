@@ -3,7 +3,8 @@ import type { BookCategory, Ownership } from '../../../domain/entities/book.enti
 
 // A book recorded earlier in another library (the V1 application), as it is to be saved here.
 export type ImportedBook = {
-    // Blank for a generated title (Manga and Comics in a collection only).
+    // Blank in a collection: Manga and Comics get a generated title; a Book, which never has one,
+    // gets the same text (`Name Vol. N`) as a supplied title. Required outside a collection.
     title: string;
     // Null states that the edition has no ISBN.
     isbn: string | null;
@@ -28,6 +29,8 @@ export type ImportedBook = {
 
 export type ImportedBookOutcome = {
     bookId: string;
+    // The title saved.
+    title: string;
     collectionId: string | null;
     cover: 'stored' | 'none' | 'rejected';
 };

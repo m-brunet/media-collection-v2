@@ -1,6 +1,6 @@
 # Development data commands — reset and V1 import
 
-Status: in progress (2026-11-06), on `master`. Requested by the user after Task 5.5; see "Future development data
+Status: done (2026-11-06), on `master`. Requested by the user after Task 5.5; see "Future development data
 commands" in the [implementation plan](implementation-plan.md). Development tooling only: it adds no product feature
 and no HTTP endpoint.
 
@@ -48,4 +48,17 @@ volume up to it is present and Owned and none goes beyond, otherwise it stays un
 - [x] 2. Books `ImportBook` use case (V1 creation date) and its provider; tests.
 - [x] 3. `ImportV1Library`: dump/corrections reader, V1 planner (mapping rules), cached cover downloads, composition;
   tests with a synthetic dump.
-- [ ] 4. Local inputs (dump copy, corrections), real run on `.dev-data`, docs and architecture review.
+- [x] 4. Local inputs (dump copy, corrections), real run on `.dev-data`, docs and architecture review.
+
+## Implementation notes (2026-11-06)
+
+- Real run on `.dev-data`: 446 V1 records → 446 books in 91 collections, 437 covers; 18 collections set to Manga in
+  `category-corrections.json`; 2 collections left unfinished (Doubt, Samurai Girl); 9 covers unusable or unavailable.
+- The collection title of an untitled Book is built by books (`ImportBook`, through `GeneratedTitle`), which returns
+  the saved title; the planner only checks that the book is in a collection.
+- Cover cleanup asks the books `CoverStorage` (`list`, `remove`) which covers are stored, instead of knowing their
+  folder and naming. The terminal output is a feature driving adapter (`DevelopmentDataReport`); root config only
+  composes.
+- Not done (optional review suggestions): an identity-owned reader for the import administrator, registering
+  `BOOKS_IMPORT` only in the development context, and moving parallel cover downloads into the downloads adapter.
+

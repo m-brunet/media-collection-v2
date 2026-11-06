@@ -105,6 +105,34 @@ administrator account, starts no HTTP/HTTPS listeners, invalidates previous sess
 temporary password at the next login. The normal and recovery processes cannot open the same application profile
 concurrently.
 
+## Development data
+
+Two commands act only on the development data directory, `.dev-data/`, never on an installed release's data. Close the
+development application first; they refuse to run while it is open, when the application is packaged, or with a
+changed data directory (`--data-dir`, `APP_DATA_DIR`).
+
+```sh
+npm run dev:reset-data
+npm run dev:import-v1 -- local-imports/v1/books.json
+```
+
+`dev:reset-data` deletes the library (books, authors, collections, bookcases, tags, receivers, loans, reading statuses,
+personal notes, covers) and the audit log, signs every session out, and keeps the accounts and server settings.
+
+`dev:import-v1` replaces the library with a Media Collection V1 (MongoDB) export, in one transaction: if anything fails,
+the previous library stays. It needs the administrator account. Keep the inputs in the Git-ignored `local-imports/v1/`:
+
+- `books.json`: the V1 `books` collection exported as MongoDB Extended JSON.
+- `isbn-corrections.json` (optional): `[{ "record": 12, "title": "…", "isbn": "…" }]` for books without an ISBN; the
+  record is the position in `books.json`, from 1, and the title must match it.
+- `category-corrections.json` (optional): `{ "<collection name>": "books" | "manga" | "comics" }`, overriding the V1
+  type of every book of that collection.
+- `covers/`: filled by the first import with the downloaded covers, and reused by the next ones.
+
+Every problem in the dump is listed at once before anything is written. The report lists the collections marked
+Finished or left unfinished, untitled Books given their collection title, and covers that could not be used. The
+mapping rules are in [the plan](docs/Media%20Collection/plans/dev-data-commands.md).
+
 ## Checks and packaging
 
 ```sh

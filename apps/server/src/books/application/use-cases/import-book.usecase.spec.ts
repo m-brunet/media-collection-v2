@@ -99,9 +99,21 @@ describe('ImportBook', () => {
             titleGenerated: true,
         });
     });
-    it('refuses a missing title for a book outside the Manga and Comics rules', async () => {
+    it('gives an untitled Book in a collection its collection title, as supplied', async () => {
         const current = library();
         const book = imported({ title: '', collection: { name: 'Gunnm', volume: 3 } });
+
+        const result = await subject(current).execute(administrator, book);
+
+        expect(result.title).toBe('Gunnm Vol. 3');
+        expect(current.books.books.get(result.bookId)!.details).toMatchObject({
+            title: 'Gunnm Vol. 3',
+            titleGenerated: false,
+        });
+    });
+    it('refuses a missing title for a book outside a collection', async () => {
+        const current = library();
+        const book = imported({ title: '' });
 
         const result = subject(current).execute(administrator, book);
 

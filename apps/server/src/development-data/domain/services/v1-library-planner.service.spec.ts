@@ -142,13 +142,12 @@ describe('V1LibraryPlanner', () => {
 
         expect(result.books.map((book) => book.category)).toEqual(['manga', 'manga']);
     });
-    it('gives an untitled Book in a collection its collection title, as supplied', () => {
+    it('keeps an untitled Book in a collection, left blank for the books import to title', () => {
         const books = [volume(1, 3, { type: 'book' })];
 
         const result = V1LibraryPlanner.plan(books, none);
 
-        expect(result.books[0]).toMatchObject({ title: 'Gunnm Vol. 3', category: 'books' });
-        expect(result.titled).toEqual([{ record: 1, title: 'Gunnm Vol. 3' }]);
+        expect(result.books[0]).toMatchObject({ title: '', category: 'books' });
     });
     it('refuses an untitled book outside a collection', () => {
         const books = [v1({ title: '', collectionName: null, volume: null })];
