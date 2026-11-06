@@ -150,8 +150,8 @@ Written against the completed Task 5 code. Existing names: `Book`/`BookDetails` 
 
 ### Steps
 
-1. [ ] Domain: `GeneratedTitle`, `Book` title provenance and eligibility, `title-required`; unit tests (examples 1-6).
-2. [ ] Persistence: migration 010 (+ question 1 if approved), repository mapping, SQLite tests (backfill, constraint).
+1. [x] Domain: `GeneratedTitle`, `Book` title provenance and eligibility, `title-required`; unit tests (examples 1-6).
+2. [x] Persistence: migration 010 (+ question 1 if approved), repository mapping, SQLite tests (backfill, constraint).
 3. [ ] Application: create/update ordering and regeneration, `MemberTitles` service and port, rename/delete
        integration with related `book.retitled` changes, snapshots; unit tests.
 4. [ ] HTTP: `titleGenerated` in contracts, reasons; API e2e for books (create/edit/move/coverage/eligibility loss)

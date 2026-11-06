@@ -141,6 +141,8 @@ async function library() {
                     id,
                     title: book.title,
                     title_key: NameKey.of(book.title),
+                    title_generated: 0,
+                    title_sort_key: NameKey.of(book.title),
                     isbn13: book.isbn13 ?? null,
                     isbn_converted: 0,
                     no_isbn: book.isbn13 ? 0 : 1,

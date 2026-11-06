@@ -69,6 +69,8 @@ async function library() {
                 id,
                 title: row.title,
                 title_key: NameKey.of(row.title),
+                title_generated: 0,
+                title_sort_key: NameKey.of(row.title),
                 isbn13: row.isbn13 ?? null,
                 isbn_converted: 0,
                 no_isbn: row.isbn13 ? 0 : 1,

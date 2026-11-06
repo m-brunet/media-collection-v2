@@ -67,7 +67,7 @@ export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
         }
 
         const page = await rows
-            .orderBy('books.title_key', query.sort === 'title' ? direction : 'asc')
+            .orderBy('books.title_sort_key', query.sort === 'title' ? direction : 'asc')
             .orderBy('books.id')
             .limit(query.limit)
             .offset(query.offset)

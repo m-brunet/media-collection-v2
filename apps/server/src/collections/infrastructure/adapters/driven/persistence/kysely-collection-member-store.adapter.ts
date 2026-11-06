@@ -30,7 +30,7 @@ export class KyselyCollectionMemberStore implements CollectionMemberStore {
             .where('collection_books.collection_id', 'in', collectionIds)
             .orderBy('collection_books.volume_from')
             .orderBy('collection_books.volume_to')
-            .orderBy('books.title_key')
+            .orderBy('books.title_sort_key')
             .orderBy('books.id')
             .execute();
 

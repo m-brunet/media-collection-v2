@@ -15,6 +15,7 @@ export class BookDetailsBuilder {
 
         return {
             title: input.title,
+            titleGenerated: false,
             isbn,
             noIsbn: input.noIsbn,
             authorIds: await this.authors.resolve(input.authors),

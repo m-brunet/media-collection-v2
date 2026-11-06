@@ -3,6 +3,7 @@ import { NameKey } from '../../../shared/domain/name-key.helper.js';
 import type { Isbn } from '../value-objects/isbn.value-object.js';
 import type { Price } from '../value-objects/price.value-object.js';
 import type { PublicationDate } from '../value-objects/publication-date.value-object.js';
+import { GeneratedTitle } from '../value-objects/generated-title.value-object.js';
 
 export type BookCategory = 'books' | 'manga' | 'comics';
 export type Ownership = 'owned' | 'not-owned';
@@ -10,6 +11,9 @@ export type Ownership = 'owned' | 'not-owned';
 // Shared edition information, as entered or corrected by an Owner or the administrator.
 export interface BookDetails {
     title: string;
+    // True when the title was generated from the book's collection rather than supplied. Only
+    // Manga and Comics in a collection may have one; it follows the collection's name and coverage.
+    titleGenerated: boolean;
     // Exactly one of: an ISBN, or the explicit statement that the book has none.
     isbn: Isbn | null;
     noIsbn: boolean;
@@ -58,6 +62,55 @@ export class Book {
         return NameKey.of(this.state.details.title);
     }
 
+    // Title order that compares numbers by value: "Gunnm - 2" before "Gunnm - 10".
+    get titleSortKey(): string {
+        return this.titleKey.replace(/\d+/g, (digits) => digits.padStart(10, '0'));
+    }
+
+    // Only Manga and Comics take a title from their collection.
+    static generatesTitle(category: BookCategory): boolean {
+        return category === 'manga' || category === 'comics';
+    }
+
+    // A generated title follows the collection's current name and the book's coverage. Returns
+    // whether the title changed; a supplied title is never replaced.
+    regenerateTitle(
+        collection: { name: string; volumeFrom: number; volumeTo: number },
+        now: string,
+    ): boolean {
+        if (!this.state.details.titleGenerated) {
+            return false;
+        }
+
+        const title = GeneratedTitle.of(
+            collection.name,
+            collection.volumeFrom,
+            collection.volumeTo,
+        ).text;
+
+        if (title === this.state.details.title) {
+            return false;
+        }
+
+        this.state.details = Book.validate({ ...this.state.details, title });
+        this.state.updatedAt = now;
+
+        return true;
+    }
+
+    // When its whole collection is deleted, a book keeps its last generated title as a supplied
+    // one. Returns whether anything changed.
+    keepTitle(now: string): boolean {
+        if (!this.state.details.titleGenerated) {
+            return false;
+        }
+
+        this.state.details = { ...this.state.details, titleGenerated: false };
+        this.state.updatedAt = now;
+
+        return true;
+    }
+
     edit(details: BookDetails, now: string): void {
         this.state.details = Book.validate(details);
         this.state.updatedAt = now;
@@ -88,6 +141,11 @@ export class Book {
             'authors-required',
         );
         Failure.ensure(categories.includes(details.category), 'Choose a category.');
+        Failure.ensure(
+            !details.titleGenerated || Book.generatesTitle(details.category),
+            'Enter a title; only Manga and Comics in a collection get one automatically.',
+            'title-required',
+        );
         Failure.ensure(ownerships.includes(details.ownership), 'Choose Owned or Not Owned.');
         Failure.ensure(
             details.pageCount === null ||
