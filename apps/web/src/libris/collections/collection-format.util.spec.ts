@@ -18,6 +18,7 @@ function summary(overrides: Partial<CollectionSummaryDto> = {}): CollectionSumma
         ownedCount: 4,
         missingCount: 8,
         lastOwned: 4,
+        previews: [],
         ...overrides,
     };
 }
@@ -27,9 +28,11 @@ function member(overrides: Partial<CollectionMemberDto> = {}): CollectionMemberD
         id: 'b1',
         title: 'Year One',
         isbn: null,
+        publisher: null,
         category: 'comics',
         ownership: 'owned',
         hasCover: false,
+        updatedAt: '2026-01-01T00:00:00.000Z',
         volumeFrom: 1,
         volumeTo: 1,
         ...overrides,

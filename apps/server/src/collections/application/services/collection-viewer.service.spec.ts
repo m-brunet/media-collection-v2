@@ -30,7 +30,45 @@ describe('CollectionViewer', () => {
             ownedCount: 1,
             missingCount: 9,
             lastOwned: 5,
+            previews: [],
         });
+    });
+
+    it('previews the covers of owned books first, in coverage order, then the others', async () => {
+        const current = shelf();
+        const covered = (id: string, ownership: 'owned' | 'not-owned') =>
+            current.members.saveBook(id, ownership, 'Batman ' + id, {
+                hasCover: true,
+                updatedAt: '2026-02-0' + id.length + 'T00:00:00.000Z',
+            });
+
+        await member(current, 'one', 'not-owned', 'Batman', 1);
+        await member(current, 'two', 'owned', 'Batman', 2);
+        await member(current, 'three', 'owned', 'Batman', 3);
+        await member(current, 'four', 'owned', 'Batman', 4);
+        covered('one', 'not-owned');
+        covered('three', 'owned');
+        covered('four', 'owned');
+        const collection = (await current.collections.findById('collection-1'))!;
+        const records = await current.members.ofCollections(['collection-1']);
+
+        const summary = current.viewer.summary(collection, records);
+
+        expect(summary.previews).toEqual([
+            { id: 'three', title: 'Batman three', updatedAt: '2026-02-05T00:00:00.000Z' },
+            { id: 'four', title: 'Batman four', updatedAt: '2026-02-04T00:00:00.000Z' },
+        ]);
+    });
+
+    it('falls back to the covers of books not owned', async () => {
+        const { current, collection } = await batman();
+
+        current.members.saveBook('ten', 'not-owned', 'Batman ten', { hasCover: true });
+        const records = await current.members.ofCollections(['collection-1']);
+
+        const summary = current.viewer.summary(collection, records);
+
+        expect(summary.previews.map((preview) => preview.id)).toEqual(['ten']);
     });
 
     it('describes each expected volume with the books covering it', async () => {
@@ -44,7 +82,20 @@ describe('CollectionViewer', () => {
                 from: 5,
                 to: 5,
                 state: 'owned',
-                books: [expect.objectContaining({ id: 'five', volumeFrom: 5, volumeTo: 5 })],
+                books: [
+                    {
+                        id: 'five',
+                        title: 'Book five',
+                        isbn: null,
+                        publisher: null,
+                        category: 'comics',
+                        ownership: 'owned',
+                        hasCover: false,
+                        updatedAt: '2026-01-01T00:00:00.000Z',
+                        volumeFrom: 5,
+                        volumeTo: 5,
+                    },
+                ],
             },
             { from: 6, to: 9, state: 'inferred', books: [] },
             {

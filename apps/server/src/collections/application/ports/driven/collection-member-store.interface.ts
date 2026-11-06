@@ -6,9 +6,12 @@ export type MemberRecord = {
     volumeTo: number;
     title: string;
     isbn: string | null;
+    publisher: string | null;
     category: 'books' | 'manga' | 'comics';
     ownership: 'owned' | 'not-owned';
     hasCover: boolean;
+    // The book's last change, which versions its cover.
+    updatedAt: string;
 };
 
 // Membership of books in collections. Members come in coverage order (first volume, then title).

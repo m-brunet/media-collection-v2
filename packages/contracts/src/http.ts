@@ -279,15 +279,25 @@ export interface CollectionSummaryDto {
     ownedCount: number;
     missingCount: number;
     lastOwned: number | null;
+    // Up to two books whose covers stand for the collection.
+    previews: CollectionPreviewDto[];
+}
+
+export interface CollectionPreviewDto {
+    id: string;
+    title: string;
+    updatedAt: string;
 }
 
 export interface CollectionMemberDto {
     id: string;
     title: string;
     isbn: string | null;
+    publisher: string | null;
     category: BookCategory;
     ownership: BookOwnership;
     hasCover: boolean;
+    updatedAt: string;
     volumeFrom: number;
     volumeTo: number;
 }

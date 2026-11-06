@@ -53,6 +53,21 @@ async function book(collection: MembershipDto | null, overrides: Partial<NewBook
     return response.body;
 }
 
+// Gives a saved book a cover, as an Owner.
+async function withCover(saved: BookDto) {
+    const client = await app.authenticatedClient(owner);
+    const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
+    const response = await client.call<BookDto>('/books/' + saved.id + '/cover', 'PUT', undefined, {
+        raw: { bytes: png, contentType: 'image/png' },
+    });
+
+    if (response.status !== 200) {
+        throw new Error('Arranging the scenario failed: ' + response.text);
+    }
+
+    return response.body;
+}
+
 describe('GET /api/collections', () => {
     it('lists collections by name with whole-collection counts', async () => {
         await book(membership('Dune', 1));
@@ -73,6 +88,23 @@ describe('GET /api/collections', () => {
             lastOwned: 3,
             finished: false,
         });
+    });
+    it('previews the covers of owned books before the others', async () => {
+        const planned = await withCover(
+            await book(membership('Batman', 1), { ownership: 'not-owned' }),
+        );
+
+        await book(membership('Batman', 2));
+        const owned = await withCover(await book(membership('Batman', 3)));
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call<CollectionListPageDto>('/collections');
+
+        expect(response.status).toBe(200);
+        expect(response.body.items[0]?.previews).toEqual([
+            { id: owned.id, title: owned.title, updatedAt: owned.updatedAt },
+            { id: planned.id, title: planned.title, updatedAt: planned.updatedAt },
+        ]);
     });
     it('sorts collections from Z to A', async () => {
         await book(membership('Dune', 1));
@@ -169,6 +201,24 @@ describe('GET /api/collections/:id', () => {
             [4, 11, 'inferred', []],
             [12, 12, 'planned', [planned.id]],
         ]);
+    });
+    it('describes each edition with its publisher and cover version', async () => {
+        const saved = await withCover(
+            await book(membership('Dune', 1), { publisher: 'Chilton Books' }),
+        );
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call<CollectionDetailsDto>(
+            '/collections/' + saved.collection!.id,
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.body.volumes[0]?.books[0]).toMatchObject({
+            id: saved.id,
+            publisher: 'Chilton Books',
+            hasCover: true,
+            updatedAt: saved.updatedAt,
+        });
     });
     it('reports an unknown collection', async () => {
         const client = await app.authenticatedClient(owner);

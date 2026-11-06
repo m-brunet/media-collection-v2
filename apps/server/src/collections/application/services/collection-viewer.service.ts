@@ -1,5 +1,6 @@
 import type {
     CollectionDetailsView,
+    CollectionPreviewView,
     CollectionSummaryView,
     MemberBookView,
 } from '../collection-views.js';
@@ -26,6 +27,7 @@ export class CollectionViewer {
             ownedCount: coverage.ownedVolumes,
             missingCount: coverage.missing.length,
             lastOwned: coverage.lastOwned,
+            previews: this.previews(records),
         };
     }
 
@@ -44,14 +46,28 @@ export class CollectionViewer {
         };
     }
 
+    // Covers of the first owned books in coverage order, then of the other members.
+    private previews(records: readonly MemberRecord[]): CollectionPreviewView[] {
+        const covered = records.filter((record) => record.hasCover);
+
+        return [
+            ...covered.filter((record) => record.ownership === 'owned'),
+            ...covered.filter((record) => record.ownership !== 'owned'),
+        ]
+            .slice(0, 2)
+            .map(({ bookId, title, updatedAt }) => ({ id: bookId, title, updatedAt }));
+    }
+
     private book(record: MemberRecord): MemberBookView {
         return {
             id: record.bookId,
             title: record.title,
             isbn: record.isbn,
+            publisher: record.publisher,
             category: record.category,
             ownership: record.ownership,
             hasCover: record.hasCover,
+            updatedAt: record.updatedAt,
             volumeFrom: record.volumeFrom,
             volumeTo: record.volumeTo,
         };
