@@ -145,10 +145,8 @@ personal-data fixture belongs in version control. This is source material, separ
 resetting development data must not delete the import inputs. Create the directory locally as needed; Git does not
 track empty directories.
 
-The future development-only importer may accept that source path; the reset command requires no dump. Both require
-strict development data-directory isolation and exclusive access while the development app is closed. Import also
-depends on Task 5.5 and finalized category mappings. These commands and their implementation/scheduling remain separate
-future work; reserving the folder does not implement or run an import.
+Implemented on 2026-11-06 as `npm run dev:reset-data` and `npm run dev:import-v1`; see
+[dev-data-commands.md](dev-data-commands.md) and the README.
 
 ## Status
 

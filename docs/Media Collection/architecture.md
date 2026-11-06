@@ -99,7 +99,7 @@ retain the full source basename, such as `user.entity.spec.ts`; controller tests
 | Config modules/bootstrap | Dependencies needed for composition                                                             |
 | Web                      | Web and HTTP contracts                                                                          |
 | Contracts                | Contracts                                                                                       |
-| Desktop                  | Desktop/contracts and the server's bootstrap/recovery entry points                              |
+| Desktop                  | Desktop/contracts and the server's bootstrap/recovery/development-data command entry points    |
 
 Cross-feature collaboration uses explicit narrow inner contracts; a feature cannot import another feature's
 infrastructure. Root composition may wire features; shared adapters must not reach into feature implementations.

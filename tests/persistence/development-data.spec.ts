@@ -255,7 +255,6 @@ describe('development data reset', () => {
         const directory = await populated('dev-data-');
 
         const report = await DevelopmentDataCommands.reset(directory);
-
         const after = await contents(directory);
 
         expect(report.join('\n')).toContain(

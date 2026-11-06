@@ -1,20 +1,16 @@
-import { readdir, rm } from 'node:fs/promises';
-import { join } from 'node:path';
 import type { CoverFileCleanup } from '../../../../application/ports/driven/cover-file-cleanup.interface.js';
+import type { CoverStorage } from '../../../../../books/application/ports/driven/cover-storage.interface.js';
 import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
 
-// Compares `<data directory>/covers` with the books' cover references. Only files named like stored
-// covers are candidates; anything else in the folder is left alone.
+// Compares the books' cover references with the covers the books storage holds, and removes the
+// stored covers no book refers to. The storage decides what a stored cover is.
 export class KyselyCoverFileCleanup implements CoverFileCleanup {
-    private static readonly coverFile = /^[0-9a-f-]{36}\.(jpg|png|webp)$/;
-
     constructor(
         private readonly connections: DatabaseConnections,
-        private readonly dataDirectory: string,
+        private readonly covers: CoverStorage,
     ) {}
 
     async removeUnreferenced(): Promise<number> {
-        const directory = join(this.dataDirectory, 'covers');
         const rows = await this.connections.current
             .selectFrom('books')
             .select('cover_file')
@@ -23,25 +19,13 @@ export class KyselyCoverFileCleanup implements CoverFileCleanup {
         const referenced = new Set(rows.map((row) => row.cover_file));
         let removed = 0;
 
-        for (const file of await this.files(directory)) {
-            if (KyselyCoverFileCleanup.coverFile.test(file) && !referenced.has(file)) {
-                await rm(join(directory, file), { force: true });
+        for (const file of await this.covers.list()) {
+            if (!referenced.has(file)) {
+                await this.covers.remove(file);
                 removed++;
             }
         }
 
         return removed;
-    }
-
-    private async files(directory: string): Promise<string[]> {
-        try {
-            return await readdir(directory);
-        } catch (error) {
-            if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-                return [];
-            }
-
-            throw error;
-        }
     }
 }

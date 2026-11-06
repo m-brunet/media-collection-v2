@@ -194,6 +194,10 @@ export class MemoryCovers implements CoverStorage {
     async remove(file: string): Promise<void> {
         this.files.delete(file);
     }
+
+    async list(): Promise<string[]> {
+        return [...this.files.keys()];
+    }
 }
 
 // Minimal catalog: author names in book order; searching is covered by SQLite tests.

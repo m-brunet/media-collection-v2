@@ -103,6 +103,7 @@ function doubles(books: V1Book[], options: { administrator?: Actor | null; failA
 
             return {
                 bookId: 'book-' + saved.length,
+                title: book.title || book.collection!.name + ' Vol. ' + book.collection!.volume,
                 collectionId: book.collection ? 'collection-' + book.collection.name : null,
                 cover: book.cover ? 'stored' : 'none',
             };
@@ -180,6 +181,13 @@ describe('ImportV1Library', () => {
 
         expect(current.finished).toEqual(['collection-Gunnm']);
         expect(result.finished).toEqual(['Gunnm']);
+    });
+    it('reports the untitled Books, with the title the books import saved', async () => {
+        const current = doubles([v1(1), v1(2, { type: 'book' })]);
+
+        const result = await current.subject.execute();
+
+        expect(result.titled).toEqual([{ record: 2, title: 'Gunnm Vol. 2' }]);
     });
     it('rolls everything back when one book cannot be saved, then tidies the covers', async () => {
         const current = doubles([v1(1), v1(2)], { failAt: 2 });
