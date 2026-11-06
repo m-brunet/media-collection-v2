@@ -70,6 +70,24 @@ Populate empty fields from lookup while preserving manually entered values. If a
 
 Retain useful partial results and let the user complete missing information. Saving still requires all mandatory fields; an incomplete lookup does not waive those rules. Full publication dates are reduced to month/year as above. When several usable metadata results or covers are available, the user chooses the result/cover; do not arbitrarily select one. Existing manual values remain protected by the replacement-confirmation rule. Manual entry always remains available on desktop; mobile failure behavior follows Task 6.
 
+## Cover padding
+
+Decided 2026-11-06. Many covers are online-shop thumbnails: the real cover centred in a white square. Shown whole in a
+portrait frame, they look smaller than other covers and keep visible white edges. When a cover is saved (upload,
+assisted lookup, V1 import), remove that padding automatically, without AI or network access:
+
+- Measure from each edge the rows/columns that are near-white (every colour channel at least 235, allowing JPEG
+  noise) on at least 99% of their pixels.
+- Remove them only when they look like shop padding: white bars on exactly one pair of opposite sides (left/right or
+  top/bottom), each at least 2% of the image dimension, of about the same width (difference at most 2 px or 10%), and
+  at most 1 px on the other two sides. Otherwise store the cover exactly as provided.
+- The rule never cuts into the cover itself: a cover whose own artwork is white at an edge is kept unchanged, even if
+  that leaves some padding. A trimmed image is re-encoded at high quality; an untrimmed one is stored unchanged.
+
+Trial on the 437 development covers (V1 import): 174 of 177 padded squares and 6 padded portraits trimmed to book
+proportions (width/height 0.59–0.74); 3 left unchanged safely (grey padding, or white artwork at an edge); no cover
+cut into. "Covers are shown whole, never cropped" still holds for display.
+
 ## Form structure
 
 1. Visible main block: mandatory information/statuses, category, collection-membership controls and required coverage when enabled, plus the optional cover preview/upload control. A missing cover uses a neutral fallback; cover controls are always visible inside this first block.
@@ -100,6 +118,9 @@ Guests have no personal notes feature and no reading-status display or controls.
 12. Lookup returns incomplete information or conflicts with a manual draft: keep useful data, ask before replacing conflicts, and require missing mandatory information before saving. Multiple usable results/covers require user choice.
 13. Desktop lookup fails or finds nothing: preserve ISBN and manual completion, visibly explaining the known problem rather than silently failing. Mobile instead follows the scan gate and limited-retry/error-home rule confirmed in Task 6.
 14. Desktop has no camera scanner. Mobile scanning fills ISBN; only pressing Find book starts lookup. No scanning or retrieval alone creates a book.
+15. Save a cover that is a shop thumbnail (cover centred between two equal white bars): store it without the bars, in book proportions.
+16. Save a cover whose artwork is white along one edge, or white on more than one pair of sides: store it unchanged.
+17. Save a portrait cover without padding: store it unchanged, byte for byte.
 
 ## Assigned follow-ups
 

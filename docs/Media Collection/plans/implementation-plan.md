@@ -110,6 +110,12 @@ Inserted at the user's request (2026-11-06), after Task 5's review. Plan: [task-
 
 ### Task 6 — Assisted entry (desktop)
 Owning docs: `book-entry.md`.
+- **Step 1, own commit (decided 2026-11-06):** remove shop padding from covers when they are saved (upload, V1 import,
+  and later lookup results), by the deterministic rule in [book entry · Cover padding](../book-entry.md#cover-padding).
+  Needs a server image library (proposed: `sharp`; check native packaging like `better-sqlite3`, and JPEG/PNG/WebP
+  support). Behind a books driven port; unit tests on the rule, API test on upload, check on the V1 import; then
+  re-run `npm run dev:import-v1` to clean the development covers. Found while bringing Collections back to the design
+  ([design-fix-collections](design-fix-collections.md)).
 - Select metadata/cover provider (research, licensing, offline failure), integrate behind a port.
 - Find book flow: library check first, redirect if existing, result/cover choice, replacement confirmation, failure/no-result feedback with manual completion.
 
@@ -163,7 +169,7 @@ Implemented on 2026-11-06 as `npm run dev:reset-data` and `npm run dev:import-v1
 | 5.5 Generated titles | Done (2026-11-06) | [task-05-5-generated-titles](task-05-5-generated-titles.md) | Committed; see its notes for later tasks |
 | 5.8 Test entity builders | Done (2026-11-06) | [task-05-8-test-builders](task-05-8-test-builders.md) | Committed; see its notes for later tasks |
 | Design fix: Collections pages | Done (2026-11-06) | [design-fix-collections](design-fix-collections.md) | Inserted at the user's request; see its notes |
-| 6 Assisted entry | Not started | — | |
+| 6 Assisted entry | Not started | — | Step 1 decided: cover padding removal (own commit) |
 | 7 Leaf (mobile) | Not started | — | |
 | 8 Overview and Activity | Not started | — | |
 | 9 Host maintenance | Not started | — | |

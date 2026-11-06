@@ -117,4 +117,6 @@ method. The browser pages reuse `BookCover`/`BookFormat` from `libris/books` (br
 - Open: the empty list differs from the drawn empty state (drawn: vertically centred 480 px column, left-aligned,
   muted 16 px sentence, full-width Add a book; built: the shared `EmptyState`, centred, bold sentence, small button).
   `EmptyState` serves every page, so changing it is outside this Collections-only fix; awaiting the user's decision.
-
+- Some covers look smaller with white edges: 177 of 437 development covers are padded shop squares. Decided
+  (2026-11-06): remove the padding when covers are saved, as Task 6 step 1; see
+  [book entry · Cover padding](../book-entry.md#cover-padding).
