@@ -5,16 +5,13 @@ import type { AddressPolicy } from './http-cover-downloader.adapter.js';
 // Resolves a host name to all its IP addresses.
 export type HostResolver = (hostname: string) => Promise<string[]>;
 
-const resolveAll: HostResolver = async (hostname) =>
-    (await lookup(hostname, { all: true })).map(({ address }) => address);
-
 // Only addresses on the public internet: an image address someone pastes must never make the
 // server reach into the home network (router, NAS, the server itself). Every address a name
 // resolves to must be public; a name that cannot be resolved is refused.
 export class PublicAddresses implements AddressPolicy {
     private static readonly reserved = PublicAddresses.ranges();
 
-    constructor(private readonly resolve: HostResolver = resolveAll) {}
+    constructor(private readonly resolve: HostResolver = PublicAddresses.resolveAll) {}
 
     async allows(url: URL): Promise<boolean> {
         const hostname = url.hostname.replace(/^\[|\]$/g, '');
@@ -30,6 +27,11 @@ export class PublicAddresses implements AddressPolicy {
             // Justified: a name that does not resolve cannot be checked, so it is refused.
             return false;
         }
+    }
+
+    // Every address the system resolver gives for the name.
+    private static async resolveAll(hostname: string): Promise<string[]> {
+        return (await lookup(hostname, { all: true })).map(({ address }) => address);
     }
 
     private static public(address: string): boolean {

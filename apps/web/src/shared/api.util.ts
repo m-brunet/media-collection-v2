@@ -50,30 +50,7 @@ export class ApiClient {
         });
 
         if (!response.ok) {
-            const result = (await response
-                .json()
-                .catch(() => ({ message: 'The request failed.' }))) as {
-                message: string;
-                code?: string;
-                reason?: string | null;
-                details?: Record<string, unknown>;
-            };
-
-            if (response.status === 401 && path !== '/auth/login') {
-                window.dispatchEvent(new Event('session-expired'));
-            }
-
-            if (response.status === 403) {
-                this.csrfToken = undefined;
-            }
-
-            throw new ApiError(
-                result.message,
-                response.status,
-                result.code ?? null,
-                result.reason ?? null,
-                result.details ?? null,
-            );
+            throw await this.failure(response, path);
         }
 
         if (path === '/auth/logout') {
@@ -102,23 +79,39 @@ export class ApiClient {
         );
 
         if (!response.ok) {
-            const result = (await response
-                .json()
-                .catch(() => ({ message: 'The request failed.' }))) as {
-                message: string;
-                code?: string;
-                reason?: string | null;
-            };
-
-            throw new ApiError(
-                result.message,
-                response.status,
-                result.code ?? null,
-                result.reason ?? null,
-            );
+            throw await this.failure(response, path);
         }
 
         return response.blob();
+    }
+
+    // The server's refusal as an `ApiError`. An expired session is announced so the sign-in
+    // prompt appears; a refused request forgets the CSRF token so the next one fetches a new one.
+    private async failure(response: Response, path: string): Promise<ApiError> {
+        const result = (await response
+            .json()
+            .catch(() => ({ message: 'The request failed.' }))) as {
+            message: string;
+            code?: string;
+            reason?: string | null;
+            details?: Record<string, unknown>;
+        };
+
+        if (response.status === 401 && path !== '/auth/login') {
+            window.dispatchEvent(new Event('session-expired'));
+        }
+
+        if (response.status === 403) {
+            this.csrfToken = undefined;
+        }
+
+        return new ApiError(
+            result.message,
+            response.status,
+            result.code ?? null,
+            result.reason ?? null,
+            result.details ?? null,
+        );
     }
 
     private async csrf(): Promise<string> {

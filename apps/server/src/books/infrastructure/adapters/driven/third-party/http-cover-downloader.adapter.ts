@@ -8,17 +8,17 @@ export interface AddressPolicy {
     allows(url: URL): Promise<boolean>;
 }
 
-const anyWebAddress: AddressPolicy = { allows: async () => true };
-
 // Downloads a cover over HTTP(S), stopping as soon as it exceeds the size a cover may have.
 // Redirects are followed one by one (at most `maximumRedirects`) so that `policy` checks each
 // address: lookup sources are trusted as they are; an address a person pasted is not.
 export class HttpCoverDownloader implements CoverDownloader {
     static readonly maximumRedirects = 3;
+    // Lookup sources are trusted: any web address they offer may be downloaded.
+    private static readonly anyWebAddress: AddressPolicy = { allows: async () => true };
 
     constructor(
         private readonly fetcher: Fetcher = fetch,
-        private readonly policy: AddressPolicy = anyWebAddress,
+        private readonly policy: AddressPolicy = HttpCoverDownloader.anyWebAddress,
     ) {}
 
     async download(address: string): Promise<Uint8Array | null> {
@@ -65,9 +65,8 @@ export class HttpCoverDownloader implements CoverDownloader {
         for await (const chunk of body) {
             size += chunk.length;
 
+            // Too large for a cover: leaving the loop stops the download.
             if (size > CoverImage.maximumBytes) {
-                await body.cancel();
-
                 return null;
             }
 

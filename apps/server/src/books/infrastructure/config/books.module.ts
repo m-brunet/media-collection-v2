@@ -53,7 +53,6 @@ import { PersonalReadingController } from '../adapters/driving/web/personal-read
 import type { LookupSource } from '../../application/ports/driven/lookup-source.interface.js';
 import type { CoverDownloader } from '../../application/ports/driven/cover-downloader.interface.js';
 import type { LookupCoverRegistry } from '../../application/ports/driven/lookup-cover-registry.interface.js';
-import { SourceBudget } from '../../application/services/source-budget.service.js';
 import { SourceLink } from '../../application/services/source-chain.service.js';
 import { LookUpBook } from '../../application/use-cases/look-up-book.usecase.js';
 import { ReadLookupCover } from '../../application/use-cases/read-lookup-cover.usecase.js';
@@ -75,7 +74,10 @@ import { SharpCoverTrimmer } from '../adapters/driven/image/sharp-cover-trimmer.
 export interface BookLookupSources {
     information: LookupSource<LookupAnswer>[];
     covers: LookupSource<CoverOffer[]>[];
+    // Downloads the covers the sources offer.
     downloader: CoverDownloader;
+    // Downloads an image address a person pasted: public web only.
+    addressDownloader: CoverDownloader;
 }
 
 // Driven adapters and shared services the books feature is composed from.
@@ -137,15 +139,6 @@ const token = {
     lookupChains: 'BOOKS_LOOKUP_CHAINS',
 } as const;
 
-// One chain per kind of source, built once so each source's rate budget lasts across lookups.
-function chain<T>(sources: LookupSource<T>[], clock: Clock): SourceLink<T> | null {
-    return sources.reduceRight<SourceLink<T> | null>(
-        (next, source) =>
-            new SourceLink(source, new SourceBudget(source.limit, clock), clock, next),
-        null,
-    );
-}
-
 function dependencyProviders(dependencies: BooksDependencies): Provider[] {
     return (Object.keys(dependencies) as (keyof BooksDependencies)[]).map((name) => ({
         provide: token[name],
@@ -163,8 +156,8 @@ const serviceProviders: Provider[] = [
         provide: token.lookupChains,
         inject: [token.lookup, token.clock],
         useFactory: (lookup: BookLookupSources, clock: Clock) => ({
-            information: chain(lookup.information, clock),
-            covers: chain(lookup.covers, clock),
+            information: SourceLink.chain(lookup.information, clock),
+            covers: SourceLink.chain(lookup.covers, clock),
         }),
     },
     {
@@ -267,10 +260,10 @@ const useCaseProviders: Provider[] = [
         ) => new LookUpBook(books, chains.information, chains.covers, registry),
     },
     {
-        // Image addresses people paste: public web only, checked at every redirect.
         provide: 'BOOKS_FETCH_COVER_FROM_ADDRESS',
-        useFactory: () =>
-            new FetchCoverFromAddress(new HttpCoverDownloader(fetch, new PublicAddresses())),
+        inject: [token.lookup],
+        useFactory: (lookup: BookLookupSources) =>
+            new FetchCoverFromAddress(lookup.addressDownloader),
     },
     {
         provide: 'BOOKS_READ_LOOKUP_COVER',
@@ -590,6 +583,8 @@ export class BooksModule {
             ],
             covers: [new OpenLibraryCovers(openLibrary)],
             downloader: new HttpCoverDownloader(),
+            // Image addresses people paste: public web only, checked at every redirect.
+            addressDownloader: new HttpCoverDownloader(fetch, new PublicAddresses()),
         };
     }
 

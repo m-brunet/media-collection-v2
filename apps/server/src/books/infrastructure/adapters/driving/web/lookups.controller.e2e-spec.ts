@@ -211,6 +211,31 @@ describe('GET /api/books/lookups/covers/:token', () => {
 });
 
 describe('POST /api/books/lookups/covers', () => {
+    it('hands back the image at a pasted web address', async () => {
+        sources().webImage('https://images.example/piranesi.jpg', jpeg);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/books/lookups/covers', 'POST', {
+            address: 'https://images.example/piranesi.jpg',
+        });
+
+        expect(response.status).toBe(200);
+        expect(response.headers['content-type']).toBe('image/jpeg');
+        expect(response.headers['cache-control']).toBe('no-store');
+        expect(new Uint8Array(response.bytes)).toEqual(jpeg);
+    });
+
+    it('reports an address without an image', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/books/lookups/covers', 'POST', {
+            address: 'https://images.example/page.html',
+        });
+
+        expect(response.status).toBe(404);
+        expect(response.body.reason).toBe('cover-address-unavailable');
+    });
+
     it('rejects something that is not a web address', async () => {
         const client = await app.authenticatedClient(owner);
 
