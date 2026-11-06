@@ -62,7 +62,7 @@ it('requires text UUID identities on every single-column application primary key
     const schemas = await sql<{ name: string; sql: string }>`select name, sql from sqlite_master
         where type = 'table' and name not like 'kysely_%' and name not like 'sqlite_%'`.execute(db);
 
-    expect(schemas.rows).toHaveLength(15);
+    expect(schemas.rows).toHaveLength(17);
 
     for (const table of schemas.rows) {
         const columns = await sql<{
