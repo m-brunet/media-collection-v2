@@ -27,7 +27,9 @@ release's data:
 - Covers: downloaded once into `local-imports/v1/covers/` (Git-ignored), reused by later imports. Covers that fail
   to download or are not JPEG/PNG/WebP are skipped and reported.
 - Categories: `local-imports/v1/category-corrections.json` (collection name → `books`/`manga`/`comics`) overrides
-  V1 `type` for every book of that collection. An untitled book that is still a Book stops the import.
+  V1 `type` for every book of that collection. An untitled book that is still a Book in a collection is saved with
+  its collection title (`Name - N`) as a supplied title and reported (user, 2026-11-06); an untitled book outside a
+  collection stops the import.
 
 ## V1 mapping (agreed earlier)
 

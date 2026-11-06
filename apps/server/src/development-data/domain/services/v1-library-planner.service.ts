@@ -33,7 +33,7 @@ export interface V1Corrections {
 
 export interface PlannedBook {
     record: number;
-    // Blank: generated from the collection.
+    // Blank: generated from the collection (Manga and Comics only).
     title: string;
     isbn: string;
     authors: string[];
@@ -61,6 +61,9 @@ export interface V1LibraryPlan {
     // Collection names (as first written) to mark Finished once their books are saved.
     finished: string[];
     unfinished: UnfinishedCollection[];
+    // Untitled Books in a collection, given the collection title (`Name - N`) as a supplied title,
+    // since V2 only generates titles for Manga and Comics.
+    titled: { record: number; title: string }[];
 }
 
 const types: Record<string, V1Category> = { book: 'books', manga: 'manga', comics: 'comics' };
@@ -74,8 +77,9 @@ export class V1LibraryPlanner {
         const categories = new Map(
             corrections.categories.map((entry) => [NameKey.of(entry.collection), entry.category]),
         );
+        const titled: V1LibraryPlan['titled'] = [];
         const planned = books.flatMap((book) => {
-            const result = V1LibraryPlanner.book(book, isbns, categories, problems);
+            const result = V1LibraryPlanner.book(book, isbns, categories, problems, titled);
 
             return result ? [result] : [];
         });
@@ -89,7 +93,7 @@ export class V1LibraryPlanner {
             );
         }
 
-        return { books: planned, ...V1LibraryPlanner.completion(books, planned) };
+        return { books: planned, titled, ...V1LibraryPlanner.completion(books, planned) };
     }
 
     private static isbnCorrections(
@@ -123,6 +127,7 @@ export class V1LibraryPlanner {
         isbns: Map<number, string>,
         categories: Map<string, V1Category>,
         problems: string[],
+        titled: V1LibraryPlan['titled'],
     ): PlannedBook | null {
         const label =
             'Record ' + book.record + (book.title?.trim() ? ' ("' + book.title.trim() + '")' : '');
@@ -131,7 +136,7 @@ export class V1LibraryPlanner {
             (collectionName ? categories.get(NameKey.of(collectionName)) : undefined) ??
             types[book.type];
         const isbn = book.isbn?.trim() || isbns.get(book.record) || null;
-        const title = book.title?.trim() ?? '';
+        let title = book.title?.trim() ?? '';
         const count = problems.length;
 
         if (!category) {
@@ -149,20 +154,17 @@ export class V1LibraryPlanner {
             problems.push(label + ': collection "' + collectionName + '" without a valid volume.');
         }
 
-        if (!title && !(collectionName && (category === 'manga' || category === 'comics'))) {
-            problems.push(
-                label +
-                    ': no title, and only Manga or Comics in a collection get a generated title' +
-                    (collectionName
-                        ? '; set the category of "' +
-                          collectionName +
-                          '" in category-corrections.json.'
-                        : '.'),
-            );
+        if (!title && !collectionName) {
+            problems.push(label + ': no title, and no collection to give it one.');
         }
 
         if (problems.length > count || !category || !isbn) {
             return null;
+        }
+
+        if (!title && category === 'books') {
+            title = collectionName + ' - ' + book.volume;
+            titled.push({ record: book.record, title });
         }
 
         return {

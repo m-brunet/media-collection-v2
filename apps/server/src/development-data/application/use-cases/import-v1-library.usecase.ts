@@ -57,6 +57,7 @@ export class ImportV1Library implements ImportV1LibraryUseCase {
                     collections: 0,
                     finished: plan.finished,
                     unfinished: plan.unfinished,
+                    titled: plan.titled,
                     coversStored: 0,
                     coversSkipped: [],
                 };
