@@ -735,3 +735,72 @@ it('keeps a lent book Owned and explains why', async () => {
         'This book is lent to Sam Taylor: it stays Owned until its return is recorded.',
     );
 });
+
+it('lets a Manga in a collection be saved without title, named from it', async () => {
+    const api = new FakeApi()
+        .signedIn(account())
+        .on('POST /books', () => ({ status: 201, body: bookDto() }));
+
+    addPage();
+    await userEvent.type(await screen.findByLabelText(/^ISBN/), '0-306-40615-2');
+    await userEvent.type(screen.getByRole('combobox', { name: 'Add author' }), 'Yukito Kishiro');
+    await userEvent.keyboard('{Enter}');
+    await userEvent.selectOptions(screen.getByLabelText(/^Category/), 'manga');
+    await joinCollection('Gunnm', '3');
+
+    await userEvent.click(saveButton());
+
+    await vi.waitFor(() => expect(posted(api)).toHaveLength(1));
+    expect(posted(api)[0]).toMatchObject({ title: '' });
+});
+
+it('explains that a Manga in a collection may leave its title empty', async () => {
+    new FakeApi().signedIn(account());
+    addPage();
+    await userEvent.selectOptions(await screen.findByLabelText(/^Category/), 'manga');
+
+    await joinCollection('Gunnm', '3');
+
+    expect(screen.getByLabelText(/^Title/)).not.toBeRequired();
+    expect(screen.getByLabelText(/^Title/)).toHaveAccessibleDescription(
+        'Optional: leave it empty to name the book from its collection, “Gunnm - 3”.',
+    );
+});
+
+it('starts a generated title empty, so other edits keep it generated', async () => {
+    new FakeApi().signedIn(account()).on('GET /books/b1', () => ({
+        status: 200,
+        body: bookDto({
+            title: 'Gunnm - 3',
+            titleGenerated: true,
+            category: 'manga',
+            collection: { id: 'c1', name: 'Gunnm', volumeFrom: 3, volumeTo: 3 },
+        }),
+    }));
+
+    editPage();
+
+    const title = await screen.findByLabelText(/^Title/);
+
+    expect(title).toHaveValue('');
+    expect(title).not.toBeRequired();
+});
+
+it('prefills the last generated title when the book leaves its collection', async () => {
+    new FakeApi().signedIn(account()).on('GET /books/b1', () => ({
+        status: 200,
+        body: bookDto({
+            title: 'Gunnm - 3',
+            titleGenerated: true,
+            category: 'manga',
+            collection: { id: 'c1', name: 'Gunnm', volumeFrom: 3, volumeTo: 3 },
+        }),
+    }));
+    editPage();
+    await screen.findByLabelText(/^Title/);
+
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Part of a collection' }));
+
+    expect(screen.getByLabelText(/^Title/)).toHaveValue('Gunnm - 3');
+    expect(screen.getByLabelText(/^Title/)).toBeRequired();
+});

@@ -156,7 +156,7 @@ Written against the completed Task 5 code. Existing names: `Book`/`BookDetails` 
        integration with related `book.retitled` changes, snapshots; unit tests.
 4. [x] HTTP: `titleGenerated` in contracts, reasons; API e2e for books (create/edit/move/coverage/eligibility loss)
        and collections (rename regenerates, delete releases, rollback).
-5. [ ] Libris: title field states, details mark, EN/FR; component tests.
+5. [x] Libris: title field states, details mark, EN/FR; component tests.
 6. [ ] Browser e2e: blank-title Manga in a collection, rename regenerates, removal prefill accepted in one click,
        collection deletion keeps titles; lending regression.
 7. [ ] Docs (architecture: `MemberTitles`, migration 010), full check, architecture review, commit, plan status.

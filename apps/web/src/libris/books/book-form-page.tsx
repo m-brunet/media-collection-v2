@@ -62,6 +62,7 @@ const fieldOfReason: Record<string, Field> = {
     'isbn-invalid': 'isbn',
     'isbn-taken': 'isbn',
     'title-invalid': 'title',
+    'title-required': 'title',
     'authors-required': 'authors',
     'author-name-invalid': 'authors',
     'author-missing': 'authors',
@@ -182,8 +183,12 @@ function BookForm({ book }: { book: BookDto | null }) {
     );
     const personal = account?.role !== 'guest';
     const { bookcases } = useBookcases();
+    const update = (changes: Partial<BookDraftValues>) =>
+        setValues((current) => BookDraft.changed(current, changes));
     const set = <K extends keyof BookDraftValues>(key: K, value: BookDraftValues[K]) =>
-        setValues((current) => ({ ...current, [key]: value }));
+        update({ [key]: value } as Partial<BookDraftValues>);
+    const titleOptional = BookDraft.titleOptional(values);
+    const generatedTitle = BookDraft.generatedTitle(values);
     const errorFor = (field: Field) => (failure?.field === field ? failure.text : undefined);
 
     useEffect(() => {
@@ -404,7 +409,14 @@ function BookForm({ book }: { book: BookDto | null }) {
                             </label>
                             <TextField
                                 label={t('form.title')}
-                                required
+                                required={!titleOptional}
+                                hint={
+                                    titleOptional
+                                        ? generatedTitle
+                                            ? t('form.titleGenerated', { title: generatedTitle })
+                                            : t('form.titleGeneratedLater')
+                                        : undefined
+                                }
                                 maxLength={300}
                                 error={errorFor('title')}
                                 value={values.title}
@@ -471,9 +483,7 @@ function BookForm({ book }: { book: BookDto | null }) {
                             <CollectionField
                                 values={values}
                                 error={errorFor('collection')}
-                                onChange={(changes) =>
-                                    setValues((current) => ({ ...current, ...changes }))
-                                }
+                                onChange={(changes) => update(changes)}
                             />
                         </div>
                         <CoverPicker

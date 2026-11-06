@@ -402,3 +402,23 @@ it('offers a Guest no lending', async () => {
     expect(await screen.findByRole('heading', { name: 'Piranesi' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Lend' })).not.toBeInTheDocument();
 });
+
+it('tells that a title was named from its collection', async () => {
+    new FakeApi().signedIn(account()).on('GET /books/b1', () => ({
+        status: 200,
+        body: bookDto({ title: 'Gunnm - 3', titleGenerated: true, category: 'manga' }),
+    }));
+
+    show();
+
+    expect(await screen.findByText('Named from its collection')).toBeInTheDocument();
+});
+
+it('shows no naming mark for a supplied title', async () => {
+    new FakeApi().signedIn(account()).on('GET /books/b1', () => ({ status: 200, body: bookDto() }));
+
+    show();
+
+    expect(await screen.findByRole('heading', { name: 'Piranesi' })).toBeInTheDocument();
+    expect(screen.queryByText('Named from its collection')).not.toBeInTheDocument();
+});

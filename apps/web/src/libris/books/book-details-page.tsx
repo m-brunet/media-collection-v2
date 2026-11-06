@@ -302,6 +302,9 @@ function BookDetails({ id }: { id: string }) {
                             {t(BookFormat.ownership(book.ownership))}
                         </p>
                         <h2 className="book-details__title">{book.title}</h2>
+                        {book.titleGenerated && (
+                            <p className="muted">{t('details.titleGenerated')}</p>
+                        )}
                         <p className="book-details__authors">
                             {book.authors.map((author) => author.name).join(', ')}
                         </p>
