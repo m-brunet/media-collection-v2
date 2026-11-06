@@ -63,6 +63,17 @@ export class ApiErrorMessage {
         'shelf-missing': 'reason.shelfMissing',
         'tag-missing': 'reason.tagMissing',
         'reading-filter-unavailable': 'reason.readingFilterUnavailable',
+        'receiver-name-invalid': 'reason.receiverNameInvalid',
+        'receiver-missing': 'reason.receiverMissing',
+        'receiver-similar': 'reason.receiverSimilar',
+        'book-not-owned': 'reason.bookNotOwned',
+        'book-already-lent': 'reason.bookAlreadyLent',
+        'book-lent': 'reason.bookLent',
+        'loan-missing': 'reason.loanMissing',
+        'loan-already-returned': 'reason.loanAlreadyReturned',
+        'loans-different-receivers': 'reason.loansDifferentReceivers',
+        'selection-empty': 'reason.selectionEmpty',
+        'selection-duplicate': 'reason.selectionDuplicate',
         'session-ended': 'errors.unauthorized',
     };
 

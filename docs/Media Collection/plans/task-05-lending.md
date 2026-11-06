@@ -93,7 +93,7 @@ presentation and Overview counter (Task 8), data reset (Task 9).
        history) and the delete / Not Owned guards; book views; unit tests covering scenarios 1-15, 18-19.
 5. [x] HTTP: loans and receivers controllers, schemas, failure reasons; books payload changes; API e2e for every
        endpoint, roles, conflicts, rollback (no orphan receiver), audit records.
-6. [ ] Libris: Lent books page, Lend and Record returns pages, book details panel and actions, Lent chips, form guard;
+6. [x] Libris: Lent books page, Lend and Record returns pages, book details panel and actions, Lent chips, form guard;
        EN/FR; component tests.
 7. [ ] Browser e2e: lend one / several, similar-name choice, partial return across occasions, conflict keeps draft,
        delete blocked while lent, Guest view-only.
@@ -125,6 +125,16 @@ presentation and Overview counter (Task 8), data reset (Task 9).
   translatable reason; they are audited as Failed like other refusals. Contracts: `BookLoanDto` on `BookDto` and
   `BookListItemDto`, `ReceiverDto`, `ReceiverChoiceDto`, `LendBooksDto`, `LendingDto`, `RecordReturnsDto`,
   `ReturnDto`, `ReceiverLoansDto`. `LibraryProbe` gained `loans()`, `receivers()` and `ownership()`.
+- Libris (`apps/web/src/libris/lending/`): `LoansPage` (`/loans`), `LendPage` (`/loans/lend?book=`), `ReturnPage`
+  (`/loans/return?receiver=&loan=`), `LoanPanel` on book details, `LoanLinks` and `LendingChoice` utils. Lend and
+  return pages are Owner/Admin routes. After a successful lending or return the person lands on Lent books with a
+  confirmation (rather than on the starting book). The receiver field uses suggestions (`GET /api/receivers`) and
+  tells whether the typed name is an existing receiver; the similar-name choice appears inline after the server's
+  `receiver-similar` answer, and the person then confirms again. After a refused handover the selected books are
+  re-read and the offending ones show why; confirming stays disabled until they are removed. A refused return
+  reloads the receiver's active loans, keeping the selection of those still lent. The Lent label appears on My books
+  cards and on shelf rows (Bookshelves); collection details show volumes, not loans. The book form disables Not Owned
+  for a lent book with an explanation. Sidebar: Loans (BookUp icon).
 - Lending checks run in this order: selection (empty/duplicate) → missing books → Not Owned / already lent (every
   offending book named) → receiver (similar-name prompt last, so it is only asked once the books are fine).
 - Persistence tests: `tests/persistence/lending.spec.ts`. The UUID-key table count guard is now 17.

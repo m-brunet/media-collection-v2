@@ -108,7 +108,14 @@ function ShelfBooks({ shelf }: { shelf: ShelfDto }) {
                                 size="small"
                             />
                             <span className="shelf-book__title">{book.title}</span>
-                            <span className="muted">{t(BookFormat.ownership(book.ownership))}</span>
+                            <span className="muted">
+                                {[
+                                    t(BookFormat.ownership(book.ownership)),
+                                    book.loan ? t('books.lent') : null,
+                                ]
+                                    .filter(Boolean)
+                                    .join(' · ')}
+                            </span>
                         </Link>
                     </li>
                 ))}

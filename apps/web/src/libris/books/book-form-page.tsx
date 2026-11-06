@@ -156,6 +156,8 @@ function BookForm({ book }: { book: BookDto | null }) {
         return collection ? BookDraft.inCollection(collection) : BookDraft.empty();
     });
     const [values, setValues] = useState<BookDraftValues>(initial);
+    // A lent book stays Owned until its return is recorded.
+    const lentTo = book?.loan?.receiverName ?? null;
     const [cover, setCover] = useState<CoverChoice>({ file: null, removed: false });
     const [expanded, setExpanded] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -432,10 +434,17 @@ function BookForm({ book }: { book: BookDto | null }) {
                                 <SelectField
                                     label={t('form.ownership')}
                                     required
+                                    hint={
+                                        lentTo
+                                            ? t('form.ownershipLent', { name: lentTo })
+                                            : undefined
+                                    }
                                     value={values.ownership}
                                     options={BookFormat.ownerships.map((ownership) => ({
                                         value: ownership,
                                         label: t(BookFormat.ownership(ownership)),
+                                        // A lent book stays Owned until its return is recorded.
+                                        disabled: lentTo !== null && ownership === 'not-owned',
                                     }))}
                                     onChange={(event) =>
                                         set(

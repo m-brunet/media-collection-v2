@@ -307,3 +307,98 @@ it('shows a Guest the location and tags without editing them', async () => {
     expect(screen.getByText('Fantasy')).toBeInTheDocument();
     expect(screen.queryByRole('combobox', { name: 'Find or create tag' })).not.toBeInTheDocument();
 });
+
+it('shows who has a lent book and offers to record its return', async () => {
+    new FakeApi().signedIn(account()).on('GET /books/b1', () => ({
+        status: 200,
+        body: bookDto({
+            loan: {
+                id: 'l1',
+                receiverId: 'r-sam',
+                receiverName: 'Sam Taylor',
+                lentAt: '2026-10-30T09:00:00.000Z',
+            },
+        }),
+    }));
+    show();
+    await screen.findByText('Lent to Sam Taylor');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Record return' }));
+
+    expect(await screen.findByText('Elsewhere: /loans/return')).toBeInTheDocument();
+});
+
+it('explains that a lent book must be returned before deletion', async () => {
+    new FakeApi().signedIn(account()).on('GET /books/b1', () => ({
+        status: 200,
+        body: bookDto({
+            loan: {
+                id: 'l1',
+                receiverId: 'r-sam',
+                receiverName: 'Sam Taylor',
+                lentAt: '2026-10-30T09:00:00.000Z',
+            },
+        }),
+    }));
+
+    show();
+
+    expect(await screen.findByText('Lent on 30 October 2026')).toBeInTheDocument();
+    expect(
+        screen.getByText('Return this book before deleting it or changing it to Not Owned.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Lend' })).not.toBeInTheDocument();
+});
+
+it('shows a Guest who has a lent book without the return action', async () => {
+    new FakeApi().signedIn(account({ role: 'guest' })).on('GET /books/b1', () => ({
+        status: 200,
+        body: bookDto({
+            loan: {
+                id: 'l1',
+                receiverId: 'r-sam',
+                receiverName: 'Sam Taylor',
+                lentAt: '2026-10-30T09:00:00.000Z',
+            },
+            personal: null,
+        }),
+    }));
+
+    show();
+
+    expect(await screen.findByText('Lent to Sam Taylor')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Record return' })).not.toBeInTheDocument();
+});
+
+it('opens the lending page from an Owned book that is not lent', async () => {
+    new FakeApi().signedIn(account()).on('GET /books/b1', () => ({ status: 200, body: bookDto() }));
+    show();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Lend' }));
+
+    expect(await screen.findByText('Elsewhere: /loans/lend')).toBeInTheDocument();
+});
+
+it('offers no lending for a Not Owned book', async () => {
+    new FakeApi().signedIn(account()).on('GET /books/b1', () => ({
+        status: 200,
+        body: bookDto({ ownership: 'not-owned' }),
+    }));
+
+    show();
+
+    expect(await screen.findByRole('heading', { name: 'Piranesi' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Lend' })).not.toBeInTheDocument();
+});
+
+it('offers a Guest no lending', async () => {
+    new FakeApi().signedIn(account({ role: 'guest' })).on('GET /books/b1', () => ({
+        status: 200,
+        body: bookDto({ personal: null }),
+    }));
+
+    show();
+
+    expect(await screen.findByRole('heading', { name: 'Piranesi' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Lend' })).not.toBeInTheDocument();
+});

@@ -195,3 +195,27 @@ it('invites to create the first bookcase', async () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Create bookcase' })).toBeInTheDocument();
 });
+
+it('marks a lent book among the books of a shelf', async () => {
+    api().on('GET /books', () => ({
+        status: 200,
+        body: {
+            total: 1,
+            items: [
+                bookItem({
+                    title: 'Dune',
+                    loan: {
+                        id: 'l1',
+                        receiverId: 'r-sam',
+                        receiverName: 'Sam Taylor',
+                        lentAt: '2026-10-30T09:00:00.000Z',
+                    },
+                }),
+            ],
+        },
+    }));
+
+    show('/bookshelves?shelf=top');
+
+    expect(await screen.findByRole('link', { name: /Dune/ })).toHaveTextContent('Owned · Lent');
+});

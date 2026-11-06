@@ -32,6 +32,10 @@ function BookCard({ book }: { book: BookListItemDto }) {
         status.push(t(BookFormat.reading(book.read)));
     }
 
+    if (book.loan) {
+        status.push(t('books.lent'));
+    }
+
     const volumes = book.collection
         ? CollectionFormat.volumes(book.collection.volumeFrom, book.collection.volumeTo)
         : null;

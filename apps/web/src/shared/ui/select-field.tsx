@@ -4,6 +4,8 @@ import { useId } from 'react';
 export interface SelectOption {
     value: string;
     label: string;
+    // Shown but not selectable, for a choice the current state does not allow.
+    disabled?: boolean;
 }
 
 export function SelectField({
@@ -42,7 +44,7 @@ export function SelectField({
                     </option>
                 )}
                 {options.map((option) => (
-                    <option key={option.value} value={option.value}>
+                    <option key={option.value} value={option.value} disabled={option.disabled}>
                         {option.label}
                     </option>
                 ))}
