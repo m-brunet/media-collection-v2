@@ -10,6 +10,9 @@ import type { IdGenerator } from '../../../shared/application/ports/driven/id-ge
 import { RenewSession } from '../../application/use-cases/renew-session.usecase.js';
 import type { AuditedOperation } from '../../../shared/application/services/audited-operation.service.js';
 import { ManagedAccountLoader } from '../../application/services/managed-account-loader.service.js';
+import { LibraryAdministratorLookup } from '../../application/services/library-administrator-lookup.service.js';
+import type { UserReader } from '../../application/ports/driven/user-reader.interface.js';
+import type { LibraryAdministrator } from '../../../development-data/application/ports/driven/library-administrator.interface.js';
 import { CompleteSetup } from '../../application/use-cases/complete-setup.usecase.js';
 import { DeactivateAccount } from '../../application/use-cases/deactivate-account.usecase.js';
 import { ReactivateAccount } from '../../application/use-cases/reactivate-account.usecase.js';
@@ -241,5 +244,10 @@ export class IdentityModule {
                 { provide: LoginLimiter, useFactory: () => new LoginLimiter() },
             ],
         };
+    }
+
+    // The protected administrator, for the development V1 import (wired at the root).
+    static administrator(users: UserReader): LibraryAdministrator {
+        return new LibraryAdministratorLookup(users);
     }
 }

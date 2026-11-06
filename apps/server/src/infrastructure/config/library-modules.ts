@@ -36,14 +36,12 @@ export interface LibraryDependencies {
 
 // The shared library features (books, collections, locations, tags, lending) wired to SQLite and
 // the data directory, for the HTTP backend and the development data commands alike.
+// `developmentImport` adds the use cases only the development V1 import needs.
 export class LibraryModules {
-    static register({
-        database,
-        dataDirectory,
-        ids,
-        clock,
-        operations,
-    }: LibraryDependencies): DynamicModule[] {
+    static register(
+        { database, dataDirectory, ids, clock, operations }: LibraryDependencies,
+        options: { developmentImport?: boolean } = {},
+    ): DynamicModule[] {
         const connections = database.connections;
         const catalog = new KyselyBookCatalog(connections);
         const books = new KyselyBookRepository(connections);
@@ -61,25 +59,28 @@ export class LibraryModules {
         const receivers = new KyselyReceiverRepository(connections);
 
         return [
-            BooksModule.register({
-                books,
-                authors: new KyselyAuthorRepository(connections),
-                catalog,
-                readings: new KyselyReadingStatusRepository(connections),
-                notes: new KyselyPersonalNoteRepository(connections),
-                covers: new FileCoverStorage(dataDirectory),
-                collections: membership,
-                collectionReader: membership,
-                shelves: shelving,
-                locationReader: shelving,
-                tags: tagging,
-                tagReader: tagging,
-                loans: LendingModule.bookLoans(loans, receivers),
-                loanHistory: LendingModule.history(loans),
-                ids,
-                clock,
-                operations,
-            }),
+            BooksModule.register(
+                {
+                    books,
+                    authors: new KyselyAuthorRepository(connections),
+                    catalog,
+                    readings: new KyselyReadingStatusRepository(connections),
+                    notes: new KyselyPersonalNoteRepository(connections),
+                    covers: new FileCoverStorage(dataDirectory),
+                    collections: membership,
+                    collectionReader: membership,
+                    shelves: shelving,
+                    locationReader: shelving,
+                    tags: tagging,
+                    tagReader: tagging,
+                    loans: LendingModule.bookLoans(loans, receivers),
+                    loanHistory: LendingModule.history(loans),
+                    ids,
+                    clock,
+                    operations,
+                },
+                options,
+            ),
             CollectionsModule.register({
                 collections,
                 members,

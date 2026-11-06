@@ -52,10 +52,12 @@ function doubles(books: V1Book[], options: { administrator?: Actor | null; failA
         read: async () => ({ books, corrections: { isbns: [], categories: [] } }),
     };
     const downloads: CoverDownloads = {
-        fetch: async (url) => {
-            events.push('download ' + url);
+        fetchAll: async (urls) => {
+            events.push(...urls.map((url) => 'download ' + url));
 
-            return url.endsWith('/2.jpg') ? null : image;
+            return new Map(
+                urls.filter((url) => !url.endsWith('/2.jpg')).map((url) => [url, image]),
+            );
         },
     };
     const administrator: LibraryAdministrator = {

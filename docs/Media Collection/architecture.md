@@ -124,6 +124,11 @@ related change for the book operation's audit). Book saves and `PATCH /api/books
 through `BookOrganiser`; views and audit snapshots use the readers through `BookOrganisationReader`. The root wires
 one instance to both ports of a pair (`LocationsModule.assignment`, `TagsModule.assignment`).
 
+The development data commands (development only) follow the same rule. `development-data` declares
+`LibraryAdministrator`, implemented by the identity service `LibraryAdministratorLookup` (`IdentityModule.administrator`),
+and `CoverFileCleanup`, which compares the books' cover references with the books `CoverStorage` (`list`, `remove`).
+It saves books through the books `ImportBook` use case, registered only for these commands (`developmentImport`).
+
 Generated titles cross the books/collections boundary the other way. `books` owns titles and their provenance
 (`BookDetails.titleGenerated`, the `GeneratedTitle` format `Name Vol. N` / `Name Vol. N–M`, the Manga/Comics eligibility and
 `title-required`); a blank title asks for generation. After a book save applies its membership, `GeneratedTitleSync`
