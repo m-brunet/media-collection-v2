@@ -59,7 +59,7 @@ browser e2e arrangement, production code changes.
 
 1. [x] Base class and lending builders (`ReceiverBuilder`, `LoanBuilder`) with their unit tests; convert the lending
        unit tests.
-2. [ ] `BookBuilder` with its unit tests; `TestLibrary` composing books and lending, with parent creation.
+2. [x] `BookBuilder` with its unit tests; `TestLibrary` composing books and lending, with parent creation.
 3. [ ] API test context: lending repositories; convert the loans, receivers and books controller specs' lending
        helpers; check the architecture tests accept the test-support imports.
 4. [ ] Docs (architecture: test data arrangement), full check, architecture review, commit, plan status.
