@@ -97,7 +97,7 @@ Owning docs: `lending.md`, `lending-design-brief.md`.
 
 ### Task 5.5 — Generated titles for collection Manga and Comics
 Inserted at the user's request (2026-11-06). Owning docs: `book-entry.md` (title generation and editing), `features.md` (Books), `collections.md` (rename/delete effects). Detailed plan: [task-05-5-generated-titles](task-05-5-generated-titles.md).
-- Keep a mandatory stored title; allow blank title input only for Manga/Comics with collection membership. Generate `Collection name - N` or `Collection name - N–M` in the backend.
+- Keep a mandatory stored title; allow blank title input only for Manga/Comics with collection membership. Generate `Collection name Vol. N` or `Collection name Vol. N–M` in the backend (format changed from `Name - N` by the user, 2026-11-06).
 - Persist `titleGenerated`; update generated titles on collection rename, membership move and coverage changes; preserve supplied titles. Existing V2 records default to false without changing their titles.
 - Individual removal of membership or category change to Books requires a supplied title, prefilled with the last generated title so one confirmation can keep it. Collection deletion preserves the last generated title and clears the flag automatically.
 - Update domain/application rules, persistence, HTTP contracts, Libris EN/FR form feedback, search/sort, audit and tests; check completed lending integration. Tasks 6 and 7 inherit these rules.

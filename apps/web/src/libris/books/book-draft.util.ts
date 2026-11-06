@@ -188,7 +188,7 @@ export class BookDraft {
             return null;
         }
 
-        return name + ' - ' + (to! > from! ? from + '–' + to : String(from));
+        return name + ' Vol. ' + (to! > from! ? from + '–' + to : String(from));
     }
 
     // Applies changes to the draft. A blank title that stops being optional is prefilled with the

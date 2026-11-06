@@ -232,7 +232,11 @@ describe('UpdateBook titles', () => {
             input({ ...generated, pageCount: 200 }),
         );
 
-        expect(result).toMatchObject({ title: 'Gunnm - 3', titleGenerated: true, pageCount: 200 });
+        expect(result).toMatchObject({
+            title: 'Gunnm Vol. 3',
+            titleGenerated: true,
+            pageCount: 200,
+        });
     });
     it('regenerates the title when the coverage changes (example 3)', async () => {
         const current = library();
@@ -244,7 +248,7 @@ describe('UpdateBook titles', () => {
             input({ ...generated, collection: { ...gunnm, volumeFrom: 3, volumeTo: 4 } }),
         );
 
-        expect(result.title).toBe('Gunnm - 3–4');
+        expect(result.title).toBe('Gunnm Vol. 3–4');
     });
     it('regenerates the title when the book moves to another collection (example 3)', async () => {
         const current = library();
@@ -256,7 +260,7 @@ describe('UpdateBook titles', () => {
             input({ ...generated, collection: { ...gunnm, collection: { name: 'Alita' } } }),
         );
 
-        expect(result.title).toBe('Alita - 3');
+        expect(result.title).toBe('Alita Vol. 3');
     });
     it('turns a typed title into a supplied one, even when identical to the generated one', async () => {
         const current = library();
@@ -265,10 +269,10 @@ describe('UpdateBook titles', () => {
         const result = await subject(current).execute(
             owner,
             book.id,
-            input({ ...generated, title: 'Gunnm - 3' }),
+            input({ ...generated, title: 'Gunnm Vol. 3' }),
         );
 
-        expect(result).toMatchObject({ title: 'Gunnm - 3', titleGenerated: false });
+        expect(result).toMatchObject({ title: 'Gunnm Vol. 3', titleGenerated: false });
     });
     it('requires a title when the book leaves its collection (example 4)', async () => {
         const current = library();
@@ -302,9 +306,9 @@ describe('UpdateBook titles', () => {
         const result = await subject(current).execute(
             owner,
             book.id,
-            input({ ...generated, title: 'Gunnm - 3', collection: null }),
+            input({ ...generated, title: 'Gunnm Vol. 3', collection: null }),
         );
 
-        expect(result).toMatchObject({ title: 'Gunnm - 3', titleGenerated: false });
+        expect(result).toMatchObject({ title: 'Gunnm Vol. 3', titleGenerated: false });
     });
 });

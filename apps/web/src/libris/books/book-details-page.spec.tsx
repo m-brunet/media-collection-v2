@@ -406,7 +406,7 @@ it('offers a Guest no lending', async () => {
 it('tells that a title was named from its collection', async () => {
     new FakeApi().signedIn(account()).on('GET /books/b1', () => ({
         status: 200,
-        body: bookDto({ title: 'Gunnm - 3', titleGenerated: true, category: 'manga' }),
+        body: bookDto({ title: 'Gunnm Vol. 3', titleGenerated: true, category: 'manga' }),
     }));
 
     show();

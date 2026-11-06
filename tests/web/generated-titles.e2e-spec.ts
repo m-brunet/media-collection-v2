@@ -110,16 +110,16 @@ describe('Generated titles', () => {
         await page.getByRole('textbox', { name: /Volume number/ }).fill('3');
         await page
             .getByText(
-                'Optional: leave it empty to name the book from its collection, “Gunnm - 3”.',
+                'Optional: leave it empty to name the book from its collection, “Gunnm Vol. 3”.',
             )
             .waitFor();
         await capture(page, 'generated-title-form');
 
         await page.getByRole('button', { name: 'Save book' }).first().click();
 
-        await page.getByText('Gunnm - 3').first().waitFor();
+        await page.getByText('Gunnm Vol. 3').first().waitFor();
         expect((await admin.call<{ items: BookDto[] }>('/books')).body.items[0]).toMatchObject({
-            title: 'Gunnm - 3',
+            title: 'Gunnm Vol. 3',
         });
     });
 
@@ -137,7 +137,7 @@ describe('Generated titles', () => {
 
         await page.getByRole('heading', { name: 'Battle Angel Alita' }).waitFor();
         expect(await stored(book)).toMatchObject({
-            title: 'Battle Angel Alita - 3',
+            title: 'Battle Angel Alita Vol. 3',
             titleGenerated: true,
         });
     });
@@ -151,9 +151,9 @@ describe('Generated titles', () => {
 
         await page.getByRole('button', { name: 'Save changes' }).first().click();
 
-        await page.getByRole('heading', { name: 'Gunnm - 3' }).waitFor();
+        await page.getByRole('heading', { name: 'Gunnm Vol. 3' }).waitFor();
         expect(await page.getByText('Named from its collection').count()).toBe(0);
-        expect(await stored(book)).toMatchObject({ title: 'Gunnm - 3', titleGenerated: false });
+        expect(await stored(book)).toMatchObject({ title: 'Gunnm Vol. 3', titleGenerated: false });
     });
 
     it('keeps the titles of the books of a deleted collection', async () => {
@@ -174,7 +174,7 @@ describe('Generated titles', () => {
 
         await page.getByText('“Gunnm” was deleted. Its books were kept.').waitFor();
         expect(await stored(book)).toMatchObject({
-            title: 'Gunnm - 3',
+            title: 'Gunnm Vol. 3',
             titleGenerated: false,
             collection: null,
         });
@@ -195,6 +195,6 @@ describe('Generated titles', () => {
         const sam = page.getByRole('region', { name: 'Sam Taylor' });
 
         await sam.waitFor();
-        expect(await sam.getByRole('link', { name: 'Alita - 3' }).count()).toBe(1);
+        expect(await sam.getByRole('link', { name: 'Alita Vol. 3' }).count()).toBe(1);
     });
 });

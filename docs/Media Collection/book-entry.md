@@ -7,7 +7,7 @@ Status: Task 2 product decisions complete. This document records confirmed produ
 Additional product decisions confirmed on 2026-11-06; implementation belongs to [Task 5.5](plans/task-05-5-generated-titles.md), before assisted entry and mobile implementation. These rules concern the application, not V1 import.
 
 - A nonblank title remains mandatory in storage. Title input is mandatory for Books and for standalone Manga/Comics.
-- Manga/Comics with collection membership may leave the title input blank or whitespace-only. The backend generates `Collection name - N` for one volume, or `Collection name - N–M` for consecutive coverage. Volume 0 uses the same format when enabled. Use the collection's display name, not its normalized comparison key.
+- Manga/Comics with collection membership may leave the title input blank or whitespace-only. The backend generates `Collection name Vol. N` for one volume, or `Collection name Vol. N–M` for consecutive coverage (`Vol.` in every interface language). Volume 0 uses the same format when enabled. Use the collection's display name, not its normalized comparison key.
 - A supplied nonblank title is retained under normal title validation. Store `titleGenerated` to distinguish supplied titles from generated ones; never infer provenance from matching text. Existing V2 titles are retained with the flag false.
 - While generation remains enabled, renaming the collection, changing coverage or moving the book to another collection regenerates its title. Supplied titles remain unchanged.
 - Editing a generated title into a supplied title clears the flag, even if the supplied text happens to equal the fallback. Leaving a title blank on an eligible book selects generation. An unrelated edit must preserve generation rather than silently turn the displayed title into a supplied title.
@@ -17,7 +17,7 @@ Additional product decisions confirmed on 2026-11-06; implementation belongs to 
 
 Acceptance examples:
 
-1. Save a Manga in Gunnm covering volume 3 with blank title: store `Gunnm - 3` and `titleGenerated=true`. A Comics range 1–3 generates `Collection name - 1–3`.
+1. Save a Manga in Gunnm covering volume 3 with blank title: store `Gunnm Vol. 3` and `titleGenerated=true`. A Comics range 1–3 generates `Collection name Vol. 1–3`.
 2. Supply an individual tome title: store it with the flag false. Collection rename or coverage changes do not replace it.
 3. Rename a collection or move/change coverage of a generated-title book: regenerate the title from current membership. An unrelated book edit preserves the flag.
 4. Individually remove membership or change category to Books: show the last generated title in the required input; accepting it saves it as supplied. Clearing it prevents saving.

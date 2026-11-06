@@ -439,7 +439,7 @@ describe('Generated titles of member books', () => {
         });
 
         expect(await app.dependencies.library.title(one.id)).toEqual({
-            title: 'Battle Angel Alita - 1',
+            title: 'Battle Angel Alita Vol. 1',
             titleGenerated: true,
         });
         expect(await app.dependencies.library.title(two.id)).toEqual({
@@ -461,7 +461,7 @@ describe('Generated titles of member books', () => {
                 category: 'book.retitled',
                 operationId: renamed!.operationId,
                 subjectId: one.id,
-                after: { title: 'Alita - 1', titleGenerated: true },
+                after: { title: 'Alita Vol. 1', titleGenerated: true },
             }),
         );
     });
@@ -477,7 +477,7 @@ describe('Generated titles of member books', () => {
 
         expect(response.status).toBe(409);
         expect(await app.dependencies.library.title(one.id)).toEqual({
-            title: 'Gunnm - 1',
+            title: 'Gunnm Vol. 1',
             titleGenerated: true,
         });
     });
@@ -489,7 +489,7 @@ describe('Generated titles of member books', () => {
 
         expect(response.status).toBe(204);
         expect(await app.dependencies.library.title(one.id)).toEqual({
-            title: 'Gunnm - 1',
+            title: 'Gunnm Vol. 1',
             titleGenerated: false,
         });
     });

@@ -387,8 +387,8 @@ describe('development V1 import', () => {
             ['Angel', 0, 'manga'],
             ['Last Order', 0, 'manga'],
             ['Piranesi', 0, 'books'],
-            ['Ubel Blatt - 0', 1, 'manga'],
-            ['Ubel Blatt - 1', 1, 'manga'],
+            ['Ubel Blatt Vol. 0', 1, 'manga'],
+            ['Ubel Blatt Vol. 1', 1, 'manga'],
         ]);
         expect(books[2]).toMatchObject({
             page_count: null,

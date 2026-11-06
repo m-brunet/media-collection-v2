@@ -91,7 +91,7 @@ export class ImportV1Library implements ImportV1LibraryUseCase {
                             record: book.record,
                             title:
                                 book.title ||
-                                book.collection!.name + ' - ' + book.collection!.volume,
+                                book.collection!.name + ' Vol. ' + book.collection!.volume,
                             reason: outcome.cover === 'rejected' ? 'unusable' : 'unavailable',
                         });
                     }

@@ -95,7 +95,7 @@ describe('ImportBook', () => {
             volumeTo: 3,
         });
         expect(current.books.books.get(result.bookId)!.details).toMatchObject({
-            title: 'Gunnm - 3',
+            title: 'Gunnm Vol. 3',
             titleGenerated: true,
         });
     });

@@ -1309,9 +1309,9 @@ describe('Generated titles of books', () => {
         );
 
         expect(response.status).toBe(201);
-        expect(response.body).toMatchObject({ title: 'Gunnm - 3', titleGenerated: true });
+        expect(response.body).toMatchObject({ title: 'Gunnm Vol. 3', titleGenerated: true });
         expect(await app.dependencies.library.title(response.body.id)).toEqual({
-            title: 'Gunnm - 3',
+            title: 'Gunnm Vol. 3',
             titleGenerated: true,
         });
     });
@@ -1337,7 +1337,7 @@ describe('Generated titles of books', () => {
             edited(book, { title: '', category: 'manga', collection: gunnm(), pageCount: 199 }),
         );
 
-        expect(response.body).toMatchObject({ title: 'Gunnm - 3', titleGenerated: true });
+        expect(response.body).toMatchObject({ title: 'Gunnm Vol. 3', titleGenerated: true });
     });
     it('regenerates the title of a book given more volumes (example 3)', async () => {
         const book = await generated();
@@ -1349,7 +1349,7 @@ describe('Generated titles of books', () => {
             edited(book, { title: '', category: 'manga', collection: membership('Gunnm', 3, 4) }),
         );
 
-        expect(response.body.title).toBe('Gunnm - 3–4');
+        expect(response.body.title).toBe('Gunnm Vol. 3–4');
     });
     it('requires a title when the book leaves its collection, changing nothing (example 4)', async () => {
         const book = await generated();
@@ -1364,7 +1364,7 @@ describe('Generated titles of books', () => {
         expect(response.status).toBe(400);
         expect(response.body.reason).toBe('title-required');
         expect(await app.dependencies.library.title(book.id)).toEqual({
-            title: 'Gunnm - 3',
+            title: 'Gunnm Vol. 3',
             titleGenerated: true,
         });
     });
@@ -1375,9 +1375,9 @@ describe('Generated titles of books', () => {
         const response = await client.call<BookDto>(
             '/books/' + book.id,
             'PUT',
-            edited(book, { title: 'Gunnm - 3', category: 'books', collection: null }),
+            edited(book, { title: 'Gunnm Vol. 3', category: 'books', collection: null }),
         );
 
-        expect(response.body).toMatchObject({ title: 'Gunnm - 3', titleGenerated: false });
+        expect(response.body).toMatchObject({ title: 'Gunnm Vol. 3', titleGenerated: false });
     });
 });

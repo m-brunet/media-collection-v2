@@ -156,7 +156,7 @@ describe('ImportV1Library', () => {
             books: 2,
             collections: 1,
             coversStored: 1,
-            coversSkipped: [{ record: 2, title: 'Gunnm - 2', reason: 'unavailable' }],
+            coversSkipped: [{ record: 2, title: 'Gunnm Vol. 2', reason: 'unavailable' }],
         });
     });
     it('fetches every cover before erasing anything, and tidies covers last', async () => {

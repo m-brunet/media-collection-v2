@@ -26,14 +26,14 @@ it('gives generated titles the new collection name, recording each change', asyn
         { bookId: book.id, volumeFrom: 3, volumeTo: 3 },
     ]);
 
-    expect(current.books.books.get(book.id)!.details.title).toBe('Battle Angel Alita - 3');
+    expect(current.books.books.get(book.id)!.details.title).toBe('Battle Angel Alita Vol. 3');
     expect(result).toEqual([
         {
             category: 'book.retitled',
             subjectType: 'book',
             subjectId: book.id,
-            before: { title: 'Gunnm - 3', titleGenerated: true },
-            after: { title: 'Battle Angel Alita - 3', titleGenerated: true },
+            before: { title: 'Gunnm Vol. 3', titleGenerated: true },
+            after: { title: 'Battle Angel Alita Vol. 3', titleGenerated: true },
         },
     ]);
 });
@@ -57,15 +57,15 @@ it('keeps generated titles as supplied titles, recording each change', async () 
     const result = await subject(current).keep([book.id]);
 
     expect(current.books.books.get(book.id)!.details).toMatchObject({
-        title: 'Gunnm - 3',
+        title: 'Gunnm Vol. 3',
         titleGenerated: false,
     });
     expect(result).toEqual([
         expect.objectContaining({
             category: 'book.retitled',
             subjectId: book.id,
-            before: { title: 'Gunnm - 3', titleGenerated: true },
-            after: { title: 'Gunnm - 3', titleGenerated: false },
+            before: { title: 'Gunnm Vol. 3', titleGenerated: true },
+            after: { title: 'Gunnm Vol. 3', titleGenerated: false },
         }),
     ]);
 });
