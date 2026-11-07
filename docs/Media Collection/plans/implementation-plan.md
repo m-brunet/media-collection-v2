@@ -7,7 +7,7 @@ Created 2026-11-03. Working plan, kept with the documentation in the Obsidian va
 1. Read `AGENTS.md` (mandatory architecture/SOLID/validation rules and the required review skill), then this file.
 2. Check the **Status** table below and `git log --oneline -15` to find the current task and whether it is planned, in progress, or done.
 3. If the current task has a detailed plan (`plans/task-NN-*.md`), read it and continue from its own checklist. If not, write it first (see "Per-task workflow") and get user approval before implementing.
-4. Check [known issues](known-issues.md): an open entry in the area the task touches is fixed in that task.
+4. Check [known issues and feedback](known-issues.md): an open entry in the area the task touches is handled in that task.
 5. Before stopping, update the Status table and the task plan's checklist so the next thread can continue. Never leave work uncommitted between tasks without noting it here.
 
 ## Sources of truth
@@ -23,7 +23,8 @@ Created 2026-11-03. Working plan, kept with the documentation in the Obsidian va
 - Minimum desktop size 1280 x 720. Fonts bundled locally (offline). Accessibility baseline in design guidelines.
 - Icon sets: installation-wide Admin setting, Lucide default; alternative sets need credits page (CC BY).
 - Timestamps stored UTC, displayed in viewer's time zone and language; exact details include zone label.
-- Mobile existing Not Owned ISBN: confirm, then review existing record, no external lookup.
+- Mobile existing Not Owned ISBN: a warning screen with Mark as Owned (changed 2026-11-07, Task 7), no form, no external lookup.
+- Leaf scanning works without HTTPS: live camera when the page allows it, otherwise a barcode photo read on the phone (2026-11-07).
 - Markdown excluded from oxfmt. `npm run check` builds before lint.
 
 ## Testing strategy (applies to every task)
@@ -139,7 +140,8 @@ Owning docs: `../operations/release-expectations.md`, `../product/accounts.md`, 
 Owning docs: `../operations/updates.md`, `../design/design-guidelines.md`.
 - GitHub Releases update checks, Windows integrated download/install with automatic backup, macOS/Linux backup-and-open-download-page, backup folder, failure handling.
 - Packaging/installer naming; icon set switching (Admin setting) and credits/licences page (include the lookup
-  sources and image libraries listed in [Task 6 · Credits](task-06-assisted-entry.md#credits-for-the-future-credits-page)).
+  sources and image libraries listed in [Task 6 · Credits](task-06-assisted-entry.md#credits-for-the-future-credits-page)
+  and the barcode libraries in [Task 7 · Credits](task-07-leaf.md#credits-for-the-future-credits-page)).
 
 ## Dependencies
 
@@ -171,8 +173,8 @@ Implemented on 2026-11-06 as `npm run dev:reset-data` and `npm run dev:import-v1
 | 5.5 Generated titles | Done (2026-11-06) | [task-05-5-generated-titles](task-05-5-generated-titles.md) | Committed; see its notes for later tasks |
 | 5.8 Test entity builders | Done (2026-11-06) | [task-05-8-test-builders](task-05-8-test-builders.md) | Committed; see its notes for later tasks |
 | Design fix: Collections pages | Done (2026-11-06) | [design-fix-collections](design-fix-collections.md) | Inserted at the user's request; see its notes |
-| 6 Assisted entry | Ready for review (2026-11-06), branch `task-06-assisted-entry`, pull request #2 | [task-06-assisted-entry](task-06-assisted-entry.md) | BnF then Open Library; cover helpers; desktop cover panel deferred; credits listed in its plan; see its notes for later tasks |
-| 7 Leaf (mobile) | Not started | — | |
+| 6 Assisted entry | Done (2026-11-06), PR #2 merged | [task-06-assisted-entry](task-06-assisted-entry.md) | BnF then Open Library; cover helpers; desktop cover panel deferred; credits listed in its plan; see its notes for later tasks |
+| 7 Leaf (mobile) | Ready for review (2026-11-07), branch `task-07-leaf`, pull request | [task-07-leaf](task-07-leaf.md) | Shopping, mark Owned, scanning without HTTPS (live camera or barcode photo), own phone form and covers; credits listed in its plan; see its notes for later tasks |
 | 8 Overview and Activity | Not started | — | |
 | 9 Host maintenance | Not started | — | |
 | 10 Release readiness | Not started | — | |

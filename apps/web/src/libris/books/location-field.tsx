@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 import type { BookcaseDto } from '../../../../../packages/contracts/src/http';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { SelectField } from '../../shared/ui/select-field';
-import type { BookDraftValues } from './book-draft.util';
+import type { BookDraftValues } from '../../shared/book-form/book-draft.util';
 
 // Physical location in the book form: a bookcase, then one of its shelves. Locations are created
 // on the Bookshelves page beforehand; a bookcase alone is not a location.

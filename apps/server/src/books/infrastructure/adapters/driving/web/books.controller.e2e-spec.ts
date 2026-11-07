@@ -385,6 +385,78 @@ describe('PUT /api/books/:id', () => {
     });
 });
 
+describe('POST /api/books/:id/owned', () => {
+    it('marks a Not Owned book Owned', async () => {
+        const planned = await member(membership('Batman', 12), 'not-owned');
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookDto>('/books/' + planned.id + '/owned', 'POST');
+
+        expect(response.status).toBe(200);
+        expect(response.body).toMatchObject({
+            id: planned.id,
+            ownership: 'owned',
+            title: planned.title,
+            collection: { name: 'Batman', volumeFrom: 12, volumeTo: 12 },
+        });
+    });
+    it('records the ownership change in the audit log', async () => {
+        const planned = await created({ ownership: 'not-owned' });
+        const client = await app.authenticatedClient(owner);
+
+        await client.call('/books/' + planned.id + '/owned', 'POST');
+
+        expect(await app.dependencies.audit.entries()).toContainEqual(
+            expect.objectContaining({
+                category: 'book.updated',
+                outcome: 'successful',
+                actorId: owner.id,
+                subjectId: planned.id,
+            }),
+        );
+    });
+    it('refuses a book already Owned', async () => {
+        const book = await created({ ownership: 'owned' });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/books/' + book.id + '/owned', 'POST');
+
+        expect(response.status).toBe(409);
+        expect(response.body.reason).toBe('book-already-owned');
+    });
+    it('refuses a Guest', async () => {
+        const planned = await created({ ownership: 'not-owned' });
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call('/books/' + planned.id + '/owned', 'POST');
+
+        expect(response.status).toBe(403);
+    });
+    it('reports an unknown book', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/books/' + crypto.randomUUID() + '/owned', 'POST');
+
+        expect(response.status).toBe(404);
+    });
+    it('rejects an identifier that is not a UUID', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/books/piranesi/owned', 'POST');
+
+        expect(response.status).toBe(400);
+    });
+    it('requires a signed-in account', async () => {
+        const client = app.client();
+
+        await client.prepare();
+
+        const response = await client.call('/books/' + crypto.randomUUID() + '/owned', 'POST');
+
+        expect(response.status).toBe(401);
+    });
+});
+
 describe('DELETE /api/books/:id', () => {
     it('deletes the book', async () => {
         const book = await created();

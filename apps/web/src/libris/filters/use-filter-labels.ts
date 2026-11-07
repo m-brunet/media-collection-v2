@@ -7,7 +7,7 @@ import type {
 } from '../../../../../packages/contracts/src/http';
 import { api } from '../../shared/api.util';
 import { useI18n } from '../../shared/i18n/i18n-context';
-import { BookFormat } from '../books/book-format.util';
+import { BookFormat } from '../../shared/book-form/book-format.util';
 import { LocationFormat } from '../locations/location-format.util';
 import type { Filter, FilterEntry } from './book-filter.util';
 import { useChosenNames } from './use-chosen-names';

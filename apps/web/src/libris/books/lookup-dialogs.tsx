@@ -7,8 +7,13 @@ import type { MessageKey } from '../../shared/i18n/catalog-en';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Button } from '../../shared/ui/button';
 import { Dialog } from '../../shared/ui/dialog';
-import type { LookupConflict, LookupField, LookupSelection } from './lookup-fill.util';
-import { LookupFill } from './lookup-fill.util';
+import type {
+    LookupConflict,
+    LookupField,
+    LookupSelection,
+} from '../../shared/book-form/lookup-fill.util';
+import { LookupFill } from '../../shared/book-form/lookup-fill.util';
+import { useSourceNames } from '../../shared/book-form/use-source-names';
 
 const labels: Record<LookupField, MessageKey> = {
     title: 'form.title',
@@ -19,18 +24,6 @@ const labels: Record<LookupField, MessageKey> = {
     summary: 'form.summary',
     collection: 'lookup.collection',
 };
-
-// "BnF" or "Open Library"; an unknown source keeps its technical name.
-export function useSourceNames() {
-    const { t } = useI18n();
-    const known: Record<string, MessageKey> = {
-        bnf: 'source.bnf',
-        openlibrary: 'source.openlibrary',
-    };
-
-    return (sources: readonly string[]) =>
-        sources.map((source) => (known[source] ? t(known[source]) : source)).join(', ');
-}
 
 // The lookup's values for review (design VMQcQ): the preferred source's value is selected first,
 // alternatives can be chosen, and nothing reaches the form before "Use these values".

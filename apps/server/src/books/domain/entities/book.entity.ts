@@ -116,6 +116,16 @@ export class Book {
         this.state.updatedAt = now;
     }
 
+    // A Not Owned book bought since: only its ownership changes.
+    markOwned(now: string): void {
+        if (this.state.details.ownership === 'owned') {
+            throw new Failure('conflict', 'This book is already Owned.', 'book-already-owned');
+        }
+
+        this.state.details = { ...this.state.details, ownership: 'owned' };
+        this.state.updatedAt = now;
+    }
+
     replaceCover(file: string | null, now: string): void {
         this.state.coverFile = file;
         this.state.updatedAt = now;

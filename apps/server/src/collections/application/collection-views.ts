@@ -1,3 +1,7 @@
+import type {
+    LastOwnedVolume,
+    MissingVolume,
+} from '../domain/services/collection-shopping.service.js';
 import type { VolumeState } from '../domain/value-objects/collection-coverage.value-object.js';
 import type { BookFilter } from '../../shared/application/book-filter.js';
 
@@ -77,4 +81,25 @@ export interface CollectionNameView {
 export interface CollectionChanges {
     name?: string;
     includesVolumeZero?: boolean;
+}
+
+// An unfinished collection in the mobile shopping list.
+export interface ShoppingCollectionView {
+    id: string;
+    name: string;
+    expectedCount: number;
+    ownedCount: number;
+    missingCount: number;
+    lastOwned: number | null;
+}
+
+// One collection while shopping: the last Owned volume and the missing ones, in volume order.
+export interface CollectionShoppingView {
+    id: string;
+    name: string;
+    finished: boolean;
+    expectedCount: number;
+    ownedCount: number;
+    lastOwned: LastOwnedVolume | null;
+    missing: MissingVolume[];
 }

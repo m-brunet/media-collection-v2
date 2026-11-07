@@ -14,7 +14,9 @@ import { DeleteCollection } from '../../application/use-cases/delete-collection.
 import { FindCollections } from '../../application/use-cases/find-collections.usecase.js';
 import { FinishCollection } from '../../application/use-cases/finish-collection.usecase.js';
 import { GetCollection } from '../../application/use-cases/get-collection.usecase.js';
+import { GetCollectionShopping } from '../../application/use-cases/get-collection-shopping.usecase.js';
 import { ListCollections } from '../../application/use-cases/list-collections.usecase.js';
+import { ListShoppingCollections } from '../../application/use-cases/list-shopping-collections.usecase.js';
 import { ReopenCollection } from '../../application/use-cases/reopen-collection.usecase.js';
 import { UpdateCollection } from '../../application/use-cases/update-collection.usecase.js';
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
@@ -117,6 +119,24 @@ const useCaseProviders: Provider[] = [
             members: CollectionMemberStore,
             viewer: CollectionViewer,
         ) => new GetCollection(loader, members, viewer),
+    },
+    {
+        provide: 'COLLECTIONS_SHOPPING_LIST',
+        inject: [token.collections, token.members, token.viewer],
+        useFactory: (
+            collections: CollectionRepository,
+            members: CollectionMemberStore,
+            viewer: CollectionViewer,
+        ) => new ListShoppingCollections(collections, members, viewer),
+    },
+    {
+        provide: 'COLLECTIONS_SHOPPING_GET',
+        inject: [token.loader, token.members, token.viewer],
+        useFactory: (
+            loader: CollectionLoader,
+            members: CollectionMemberStore,
+            viewer: CollectionViewer,
+        ) => new GetCollectionShopping(loader, members, viewer),
     },
     {
         provide: 'COLLECTIONS_UPDATE',

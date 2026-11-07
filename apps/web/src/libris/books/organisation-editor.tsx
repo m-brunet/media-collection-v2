@@ -12,7 +12,7 @@ import { Icon } from '../../shared/ui/icon';
 import { Panel } from '../../shared/ui/layout';
 import { LocationFormat } from '../locations/location-format.util';
 import { useBookcases } from '../locations/use-bookcases';
-import type { DraftTag } from './book-draft.util';
+import type { DraftTag } from '../../shared/book-form/book-draft.util';
 import { TagPicker } from './tag-picker';
 
 type Status =

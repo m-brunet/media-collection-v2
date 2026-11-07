@@ -5,7 +5,7 @@ import { useI18n } from '../../shared/i18n/i18n-context';
 import { useSession } from '../../shared/session/session-context';
 import { Button } from '../../shared/ui/button';
 import { PageHeader } from '../../shared/ui/layout';
-import { BookFormat } from '../books/book-format.util';
+import { BookFormat } from '../../shared/book-form/book-format.util';
 import { useBookcases } from '../locations/use-bookcases';
 import type { Filter } from './book-filter.util';
 import { BookFilter } from './book-filter.util';

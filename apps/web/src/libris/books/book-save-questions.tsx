@@ -1,5 +1,5 @@
-import type { BookDraftValues, SaveOptions } from './book-draft.util';
-import { BookDraft } from './book-draft.util';
+import type { BookDraftValues, SaveOptions } from '../../shared/book-form/book-draft.util';
+import { BookDraft } from '../../shared/book-form/book-draft.util';
 import {
     CoverageConflictDialog,
     PossibleDuplicateDialog,
@@ -7,7 +7,7 @@ import {
     SimilarCollectionDialog,
     VolumeZeroDialog,
 } from './book-form-dialogs';
-import type { SaveQuestion } from './use-book-save';
+import type { SaveQuestion } from '../../shared/book-form/use-book-save';
 
 // The question the server asked before saving (see `useBookSave`), and what each answer does:
 // most adjust the draft, keep the adjustment in the form, and save again.

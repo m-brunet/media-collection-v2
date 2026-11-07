@@ -51,7 +51,7 @@ After successful book creation, show success and offer Scan another book or Back
 After a successful scan, keep lookup explicitly user-triggered as already agreed. The library ISBN check precedes any external metadata fetch.
 
 - Existing Owned book: show Already owned with Scan another book / Back to home. Do not offer duplicate creation.
-- Existing Not Owned book: show confirmation after successful scanning and the existing-ISBN check. Confirming opens the existing record for review/update and ownership confirmation, not another creation. No external metadata lookup is performed in this flow, before or after the confirmation; the existing metadata is used.
+- Existing Not Owned book: after successful scanning and the existing-ISBN check, show a screen warning that the book is already registered as Not Owned, with a Mark as Owned button (and Scan another book / Back to home). Pressing it changes only the existing book's ownership, not another creation; nothing changes otherwise. No form opens and no external metadata lookup is performed in this flow, before or after; the existing metadata is used. (Changed by the user on 2026-11-07, Task 7: a warning screen with a button instead of opening the record for review.)
 - New ISBN: retrieve data and review the result under the shared book-field rules. Mobile still does not allow entering an ISBN without a successful scan.
 - Failed mobile metadata lookup: after the first failure show a Retry button. Retry only when the user presses it, at most once (two total attempts in that lookup flow); do not retry automatically. After the retry fails, show an error and Back to home, with no further retry or manual-entry fallback. This is a mobile exception to desktop manual completion on lookup failure.
 
@@ -82,7 +82,7 @@ First-launch Admin setup, login/temporary-password replacement, self-account set
 7. No successful scan: mobile add form is unavailable. Camera/scan failure explains the issue and offers Retry or Back to home, with no manual ISBN alternative.
 8. Successful new-ISBN scan: fill ISBN; only pressing Find book begins the lookup. The editable phone form keeps the same three sections/field rules as desktop.
 9. Existing Owned ISBN: show Already owned and Scan another book / Back to home; no duplicate creation.
-10. Existing Not Owned ISBN: request confirmation, reuse the existing book for review/update without any external lookup, and change ownership only after confirmation.
+10. Existing Not Owned ISBN: warn that the book is already registered, offer Mark as Owned, change ownership only when it is pressed, without any external lookup or another creation.
 11. Initial mobile lookup fails: show Retry. One user-triggered retry is allowed; a second failure shows error/Back to home, with no manual completion or further retry.
 12. Desktop lookup fails: the previously confirmed desktop manual-completion fallback remains available; do not apply the mobile limitation globally.
 13. User leaves/cancels a changed form: ask before discarding. Save failure keeps the form and offers retry, without displaying creation success.

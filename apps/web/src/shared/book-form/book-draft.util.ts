@@ -216,6 +216,13 @@ export class BookDraft {
         return next;
     }
 
+    // Whether Additional information holds something, so the form shows it open.
+    static hasAdditional(values: BookDraftValues): boolean {
+        return [values.publisher, values.publicationYear, values.summary, values.pageCount].some(
+            (value) => value.trim() !== '',
+        );
+    }
+
     static collectionProblem(values: BookDraftValues): CollectionProblem | null {
         if (!values.inCollection) {
             return null;
