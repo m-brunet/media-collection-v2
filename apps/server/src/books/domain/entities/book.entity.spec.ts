@@ -216,3 +216,20 @@ it('orders numbered titles by the value of their numbers', () => {
         'Gunnm Vol. 10',
     ]);
 });
+
+it('marks a Not Owned book Owned', () => {
+    const subject = book({ ownership: 'not-owned' });
+
+    subject.markOwned('2026-02-01T00:00:00.000Z');
+
+    expect(subject.details.ownership).toBe('owned');
+    expect(subject.snapshot.updatedAt).toBe('2026-02-01T00:00:00.000Z');
+});
+
+it('refuses to mark an Owned book Owned again', () => {
+    const subject = book({ ownership: 'owned' });
+
+    const operation = () => subject.markOwned('2026-02-01T00:00:00.000Z');
+
+    expect(operation).toThrow(expect.objectContaining({ reason: 'book-already-owned' }));
+});

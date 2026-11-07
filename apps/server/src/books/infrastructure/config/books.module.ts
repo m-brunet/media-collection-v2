@@ -36,6 +36,7 @@ import { NameAuthors } from '../../application/use-cases/name-authors.usecase.js
 import { FindAuthors } from '../../application/use-cases/find-authors.usecase.js';
 import { GetBook } from '../../application/use-cases/get-book.usecase.js';
 import { ListBooks } from '../../application/use-cases/list-books.usecase.js';
+import { MarkBookOwned } from '../../application/use-cases/mark-book-owned.usecase.js';
 import { OrganiseBook } from '../../application/use-cases/organise-book.usecase.js';
 import { ReadCover } from '../../application/use-cases/read-cover.usecase.js';
 import { RemoveCover } from '../../application/use-cases/remove-cover.usecase.js';
@@ -389,6 +390,25 @@ const useCaseProviders: Provider[] = [
             covers: CoverStorage,
             operations: AuditedOperation,
         ) => new DeleteBook(removal, collections, organisation, covers, operations),
+    },
+    {
+        provide: 'BOOKS_MARK_OWNED',
+        inject: [
+            token.books,
+            token.loader,
+            token.collectionReader,
+            token.viewer,
+            token.clock,
+            token.operations,
+        ],
+        useFactory: (
+            books: BookRepository,
+            loader: BookLoader,
+            memberships: BookCollectionReader,
+            viewer: BookViewer,
+            clock: Clock,
+            operations: AuditedOperation,
+        ) => new MarkBookOwned(books, loader, memberships, viewer, clock, operations),
     },
     {
         provide: 'BOOKS_ORGANISE',
