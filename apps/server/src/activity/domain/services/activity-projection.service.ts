@@ -240,7 +240,12 @@ export class ActivityProjection {
         kind: 'books-lent' | 'books-returned',
         records: readonly ActivityRecord[],
     ): ActivityEvent | null {
-        const loans = records.map((record) => record.after ?? record.before);
+        // A loan record holds `{ loan: { title, receiver, … } }`; a lending's before-state is null.
+        const loans = records.map(
+            (record) =>
+                ActivityProjection.values(record.after?.loan) ??
+                ActivityProjection.values(record.before?.loan),
+        );
         const receiver = ActivityProjection.text(
             ActivityProjection.values(loans[0]?.receiver ?? null),
             'name',
