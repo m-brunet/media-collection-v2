@@ -154,6 +154,26 @@ export const en = {
         'This changes the saved book from Not Owned to Owned. It does not create a new book.',
     'leaf.markOwned.confirm': 'Confirm Owned',
     'leaf.markOwned.done': 'Volume {volume} is now Owned.',
+    'leaf.scan.title': 'Scan a book',
+    'leaf.scan.backHome': 'Back to home',
+    'leaf.scan.live': 'Align the book’s barcode inside the guide.',
+    'leaf.scan.liveHint':
+        'Keep the barcode steady and in focus. A successful scan fills the ISBN; you choose when to find the book.',
+    'leaf.scan.videoLabel': 'Camera view',
+    'leaf.scan.starting': 'Starting the camera…',
+    'leaf.scan.notIsbn':
+        'This barcode is not an ISBN. Scan the barcode that starts with 978 or 979.',
+    'leaf.scan.photo': 'Take a photo of the barcode on the back of the book.',
+    'leaf.scan.photoHint': 'The photo is read on this phone and not kept: only the ISBN is used.',
+    'leaf.scan.photoInput': 'Photo of the barcode',
+    'leaf.scan.takePhoto': 'Take a photo of the barcode',
+    'leaf.scan.reading': 'Reading the barcode…',
+    'leaf.scan.noBarcodeTitle': 'No ISBN barcode found',
+    'leaf.scan.noBarcode':
+        'No barcode could be read in this photo. Take a sharper photo of the whole barcode.',
+    'leaf.scan.cameraUnavailable': 'Camera unavailable',
+    'leaf.scan.cameraUnavailableBody':
+        'Allow camera access and try again. A successful barcode scan is required to add a book.',
     'reason.bookAlreadyOwned': 'This book is already Owned.',
     'leaf.signIn.intro': 'Access your household library from your phone.',
     'leaf.password.title': 'Replace your temporary password',

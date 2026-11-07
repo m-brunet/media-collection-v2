@@ -164,6 +164,27 @@ export const fr = {
         'Le livre enregistré passe de Non possédé à Possédé. Aucun nouveau livre n’est créé.',
     'leaf.markOwned.confirm': 'Confirmer possédé',
     'leaf.markOwned.done': 'Le tome {volume} est maintenant possédé.',
+    'leaf.scan.title': 'Scanner un livre',
+    'leaf.scan.backHome': 'Retour à l’accueil',
+    'leaf.scan.live': 'Placez le code-barres du livre dans le cadre.',
+    'leaf.scan.liveHint':
+        'Gardez le code-barres immobile et net. Un scan réussi remplit l’ISBN ; vous choisissez quand rechercher le livre.',
+    'leaf.scan.videoLabel': 'Image de la caméra',
+    'leaf.scan.starting': 'Démarrage de la caméra…',
+    'leaf.scan.notIsbn':
+        'Ce code-barres n’est pas un ISBN. Scannez le code-barres qui commence par 978 ou 979.',
+    'leaf.scan.photo': 'Prenez en photo le code-barres au dos du livre.',
+    'leaf.scan.photoHint':
+        'La photo est lue sur ce téléphone et n’est pas conservée : seul l’ISBN est utilisé.',
+    'leaf.scan.photoInput': 'Photo du code-barres',
+    'leaf.scan.takePhoto': 'Photographier le code-barres',
+    'leaf.scan.reading': 'Lecture du code-barres…',
+    'leaf.scan.noBarcodeTitle': 'Aucun code-barres ISBN trouvé',
+    'leaf.scan.noBarcode':
+        'Aucun code-barres n’a pu être lu sur cette photo. Prenez une photo plus nette de tout le code-barres.',
+    'leaf.scan.cameraUnavailable': 'Caméra indisponible',
+    'leaf.scan.cameraUnavailableBody':
+        'Autorisez l’accès à la caméra et réessayez. Un scan de code-barres réussi est nécessaire pour ajouter un livre.',
     'reason.bookAlreadyOwned': 'Ce livre est déjà possédé.',
     'leaf.signIn.intro': 'Accédez à la bibliothèque de votre foyer depuis votre téléphone.',
     'leaf.password.title': 'Remplacez votre mot de passe temporaire',

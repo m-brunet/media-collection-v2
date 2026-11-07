@@ -170,3 +170,25 @@
 .leaf-shopping__book {
     font-weight: 600;
 }
+
+.leaf-scan__viewfinder {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: #000;
+    aspect-ratio: 3 / 4;
+}
+
+.leaf-scan__video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.leaf-scan__guide {
+    position: absolute;
+    inset: 35% 10%;
+    border: 3px solid var(--color-accent);
+    border-radius: var(--radius-md);
+}
