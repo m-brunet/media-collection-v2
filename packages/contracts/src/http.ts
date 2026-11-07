@@ -536,3 +536,24 @@ export interface ActivityPageDto {
     entries: ActivityEntryDto[];
     older: string | null;
 }
+
+// `GET /api/overview`: shared counters (Owned books are saved Owned editions), the five most
+// recently added Owned books, and the viewer's own reading over Owned books. A Guest gets
+// `reading: null` and `read: null` on each book.
+export interface OverviewDto {
+    ownedBooks: number;
+    collections: number;
+    bookcases: number;
+    shelves: number;
+    lentBooks: number;
+    recentlyAdded: {
+        id: string;
+        title: string;
+        authors: string[];
+        hasCover: boolean;
+        read: boolean | null;
+    }[];
+    reading: { read: number; notRead: number } | null;
+    // In name order.
+    bookcaseList: { id: string; name: string; shelfCount: number }[];
+}

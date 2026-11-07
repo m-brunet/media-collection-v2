@@ -54,6 +54,8 @@ import { KyselyPersonalNoteRepository } from '../../../apps/server/src/books/inf
 import { FileCoverStorage } from '../../../apps/server/src/books/infrastructure/adapters/driven/filesystem/file-cover-storage.adapter.js';
 import { ActivityModule } from '../../../apps/server/src/activity/infrastructure/config/activity.module.js';
 import { KyselyActivityRecordReader } from '../../../apps/server/src/activity/infrastructure/adapters/driven/persistence/kysely-activity-record-reader.adapter.js';
+import { OverviewModule } from '../../../apps/server/src/overview/infrastructure/config/overview.module.js';
+import { KyselyLibrarySummaryReader } from '../../../apps/server/src/overview/infrastructure/adapters/driven/persistence/kysely-library-summary-reader.adapter.js';
 import { DatabaseManager } from './database-manager.js';
 import type { ApiFixture } from './fixture.js';
 import { TestLibrary } from '../fixtures/test-library.js';
@@ -226,6 +228,9 @@ export class TestApp {
                     }),
                     ActivityModule.register({
                         records: new KyselyActivityRecordReader(database.connections),
+                    }),
+                    OverviewModule.register({
+                        summary: new KyselyLibrarySummaryReader(database.connections),
                     }),
                 ],
                 controllers: [HealthController],
