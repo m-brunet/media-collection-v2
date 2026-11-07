@@ -355,6 +355,33 @@ export interface CollectionListPageDto {
     items: CollectionSummaryDto[];
 }
 
+// `GET /api/collections/shopping`: an unfinished collection in Leaf's shopping list.
+export interface ShoppingCollectionDto {
+    id: string;
+    name: string;
+    expectedCount: number;
+    ownedCount: number;
+    missingCount: number;
+    lastOwned: number | null;
+}
+
+// `GET /api/collections/:id/shopping`: the last Owned volume (with its title in the Books
+// category) and the missing volumes in order. `quickAdd`: the saved single-volume Not Owned book
+// that may be marked Owned with `POST /api/books/:id/owned`.
+export interface CollectionShoppingDto {
+    id: string;
+    name: string;
+    finished: boolean;
+    expectedCount: number;
+    ownedCount: number;
+    lastOwned: { volume: number; title: string | null } | null;
+    missing: {
+        volume: number;
+        saved: boolean;
+        quickAdd: { bookId: string; title: string } | null;
+    }[];
+}
+
 export interface CollectionNameDto {
     id: string;
     name: string;

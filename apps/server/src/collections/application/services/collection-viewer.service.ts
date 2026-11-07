@@ -1,12 +1,15 @@
 import type {
     CollectionDetailsView,
     CollectionPreviewView,
+    CollectionShoppingView,
     CollectionSummaryView,
     MemberBookView,
+    ShoppingCollectionView,
 } from '../collection-views.js';
 import { MemberCoverage } from '../member-coverage.helper.js';
 import type { MemberRecord } from '../ports/driven/collection-member-store.interface.js';
 import type { Collection } from '../../domain/entities/collection.entity.js';
+import { CollectionShopping } from '../../domain/services/collection-shopping.service.js';
 
 // Describes a collection from its saved members: whole-collection counts, and the expected
 // volumes in coverage order with the books covering each.
@@ -43,6 +46,32 @@ export class CollectionViewer {
                 state: entry.state,
                 books: entry.bookIds.map((bookId) => books.get(bookId)!),
             })),
+        };
+    }
+
+    shoppingSummary(
+        collection: Collection,
+        records: readonly MemberRecord[],
+    ): ShoppingCollectionView {
+        const { id, name, expectedCount, ownedCount, missingCount, lastOwned } = this.summary(
+            collection,
+            records,
+        );
+
+        return { id, name, expectedCount, ownedCount, missingCount, lastOwned };
+    }
+
+    shopping(collection: Collection, records: readonly MemberRecord[]): CollectionShoppingView {
+        const { id, name, finished } = collection.snapshot;
+        const coverage = collection.coverage(MemberCoverage.of(records));
+
+        return {
+            id,
+            name,
+            finished,
+            expectedCount: coverage.expected,
+            ownedCount: coverage.ownedVolumes,
+            ...CollectionShopping.of(coverage, MemberCoverage.forShopping(records)),
         };
     }
 

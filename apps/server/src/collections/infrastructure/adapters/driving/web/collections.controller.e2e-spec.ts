@@ -4,6 +4,8 @@ import type {
     CollectionDetailsDto,
     CollectionListPageDto,
     CollectionNameDto,
+    CollectionShoppingDto,
+    ShoppingCollectionDto,
     MembershipDto,
     NewBookDto,
 } from '../../../../../../../../packages/contracts/src/http.js';
@@ -232,6 +234,120 @@ describe('GET /api/collections/:id', () => {
         const client = await app.authenticatedClient(owner);
 
         const response = await client.call('/collections/batman');
+
+        expect(response.status).toBe(400);
+    });
+});
+
+describe('GET /api/collections/shopping', () => {
+    it('lists unfinished collections, also without known gaps', async () => {
+        await book(membership('Tintin', 1));
+        await book(membership('Batman', 4));
+        await book(membership('Batman', 6), { ownership: 'not-owned' });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<ShoppingCollectionDto[]>('/collections/shopping');
+
+        expect(response.status).toBe(200);
+        expect(response.body).toMatchObject([
+            { name: 'Batman', expectedCount: 6, ownedCount: 1, missingCount: 5, lastOwned: 4 },
+            { name: 'Tintin', expectedCount: 1, ownedCount: 1, missingCount: 0, lastOwned: 1 },
+        ]);
+    });
+    it('hides Finished collections', async () => {
+        const saved = await book(membership('Dune', 1));
+        const client = await app.authenticatedClient(owner);
+
+        await client.call('/collections/' + saved.collection!.id + '/finish', 'POST');
+
+        const response = await client.call<ShoppingCollectionDto[]>('/collections/shopping');
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual([]);
+    });
+    it('refuses a Guest', async () => {
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call('/collections/shopping');
+
+        expect(response.status).toBe(403);
+    });
+    it('requires a signed-in account', async () => {
+        const client = app.client();
+
+        const response = await client.call('/collections/shopping');
+
+        expect(response.status).toBe(401);
+    });
+});
+
+describe('GET /api/collections/:id/shopping', () => {
+    it('shows the last Owned volume and the missing volumes with their quick add', async () => {
+        await book(membership('Dune', 1), { category: 'books', title: 'Dune' });
+        const planned = await book(membership('Dune', 3), {
+            category: 'books',
+            title: 'Children of Dune',
+            ownership: 'not-owned',
+        });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<CollectionShoppingDto>(
+            '/collections/' + planned.collection!.id + '/shopping',
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({
+            id: planned.collection!.id,
+            name: 'Dune',
+            finished: false,
+            expectedCount: 3,
+            ownedCount: 1,
+            lastOwned: { volume: 1, title: 'Dune' },
+            missing: [
+                { volume: 2, saved: false, quickAdd: null },
+                {
+                    volume: 3,
+                    saved: true,
+                    quickAdd: { bookId: planned.id, title: 'Children of Dune' },
+                },
+            ],
+        });
+    });
+    it('offers no quick add for a Not Owned omnibus', async () => {
+        const omnibus = await book(membership('Batman', 1, 2), { ownership: 'not-owned' });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<CollectionShoppingDto>(
+            '/collections/' + omnibus.collection!.id + '/shopping',
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.body.lastOwned).toBeNull();
+        expect(response.body.missing).toEqual([
+            { volume: 1, saved: true, quickAdd: null },
+            { volume: 2, saved: true, quickAdd: null },
+        ]);
+    });
+    it('refuses a Guest', async () => {
+        const saved = await book(membership('Batman', 1));
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call('/collections/' + saved.collection!.id + '/shopping');
+
+        expect(response.status).toBe(403);
+    });
+    it('reports an unknown collection', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/collections/' + crypto.randomUUID() + '/shopping');
+
+        expect(response.status).toBe(404);
+        expect(response.body.reason).toBe('collection-missing');
+    });
+    it('rejects an identifier that is not a UUID', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/collections/batman/shopping');
 
         expect(response.status).toBe(400);
     });
