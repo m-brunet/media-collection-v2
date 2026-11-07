@@ -23,6 +23,18 @@ export class DateTimeFormatter {
             .concat(' ', this.zoneLabel(value));
     }
 
+    // Exact moment for timestamp details, for example "1 November 2026 · 13:42 (CET)".
+    exact(value: string | Date): string {
+        const time = new Intl.DateTimeFormat(this.locale, {
+            hour: '2-digit',
+            minute: '2-digit',
+            hourCycle: 'h23',
+            timeZone: this.timeZone,
+        }).format(new Date(value));
+
+        return this.date(value) + ' · ' + time + ' (' + this.zoneLabel(value) + ')';
+    }
+
     private zoneLabel(value: string | Date): string {
         const parts = new Intl.DateTimeFormat(this.locale, {
             timeZoneName: 'short',
