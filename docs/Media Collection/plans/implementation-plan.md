@@ -175,7 +175,7 @@ Implemented on 2026-11-06 as `npm run dev:reset-data` and `npm run dev:import-v1
 | Design fix: Collections pages | Done (2026-11-06) | [design-fix-collections](design-fix-collections.md) | Inserted at the user's request; see its notes |
 | 6 Assisted entry | Done (2026-11-06), PR #2 merged | [task-06-assisted-entry](task-06-assisted-entry.md) | BnF then Open Library; cover helpers; desktop cover panel deferred; credits listed in its plan; see its notes for later tasks |
 | 7 Leaf (mobile) | Done (2026-11-07), PR #3 merged | [task-07-leaf](task-07-leaf.md) | Shopping, mark Owned, scanning without HTTPS (live camera or barcode photo), own phone form and covers; credits listed in its plan; see its notes for later tasks |
-| 8 Overview and Activity | Not started | — | |
+| 8 Overview and Activity | In progress (2026-11-08), branch `task-08-overview-activity` | [task-08-overview-activity](task-08-overview-activity.md) | |
 | 9 Host maintenance | Not started | — | |
 | 10 Release readiness | Not started | — | |
 
