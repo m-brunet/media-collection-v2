@@ -17,6 +17,7 @@ import type { CreateBookUseCase } from '../../../../application/ports/driving/cr
 import type { DeleteBookUseCase } from '../../../../application/ports/driving/delete-book-use-case.interface.js';
 import type { GetBookUseCase } from '../../../../application/ports/driving/get-book-use-case.interface.js';
 import type { ListBooksUseCase } from '../../../../application/ports/driving/list-books-use-case.interface.js';
+import type { MarkBookOwnedUseCase } from '../../../../application/ports/driving/mark-book-owned-use-case.interface.js';
 import type { OrganiseBookUseCase } from '../../../../application/ports/driving/organise-book-use-case.interface.js';
 import type { UpdateBookUseCase } from '../../../../application/ports/driving/update-book-use-case.interface.js';
 import type { AuthenticatedRequest } from '../../../../../shared/infrastructure/adapters/driving/web/api-guard.js';
@@ -43,6 +44,7 @@ export class BooksController {
         @Inject('BOOKS_UPDATE') private readonly updateBook: UpdateBookUseCase,
         @Inject('BOOKS_DELETE') private readonly deleteBook: DeleteBookUseCase,
         @Inject('BOOKS_ORGANISE') private readonly organiseBook: OrganiseBookUseCase,
+        @Inject('BOOKS_MARK_OWNED') private readonly markBookOwned: MarkBookOwnedUseCase,
     ) {}
 
     @Get()
@@ -97,6 +99,16 @@ export class BooksController {
         @Req() request: AuthenticatedRequest,
     ): Promise<BookDto> {
         return this.organiseBook.execute(request.actor, id, organisation);
+    }
+
+    // Leaf quick add: a Not Owned book bought since becomes Owned, nothing else changes.
+    @Post(':id/owned')
+    @HttpCode(200)
+    markOwned(
+        @Param('id', { schema: idSchema }) id: string,
+        @Req() request: AuthenticatedRequest,
+    ): Promise<BookDto> {
+        return this.markBookOwned.execute(request.actor, id);
     }
 
     @Delete(':id')
