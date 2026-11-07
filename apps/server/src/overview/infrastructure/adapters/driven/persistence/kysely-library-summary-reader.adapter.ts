@@ -57,7 +57,13 @@ export class KyselyLibrarySummaryReader implements LibrarySummaryReader {
                     .onRef('reading_statuses.book_id', '=', 'books.id')
                     .on('reading_statuses.user_id', '=', viewerId),
             )
-            .select(['books.id', 'books.title', 'books.cover_file', 'reading_statuses.read'])
+            .select([
+                'books.id',
+                'books.title',
+                'books.cover_file',
+                'books.updated_at',
+                'reading_statuses.read',
+            ])
             .where('books.ownership', '=', 'owned')
             .orderBy('books.created_at', 'desc')
             .orderBy('books.id', 'desc')
@@ -87,6 +93,7 @@ export class KyselyLibrarySummaryReader implements LibrarySummaryReader {
                 .filter((author) => author.book_id === book.id)
                 .map((author) => author.name),
             hasCover: book.cover_file !== null,
+            updatedAt: book.updated_at,
             read: book.read === 1,
         }));
     }

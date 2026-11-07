@@ -551,6 +551,7 @@ export interface OverviewDto {
         title: string;
         authors: string[];
         hasCover: boolean;
+        updatedAt: string;
         read: boolean | null;
     }[];
     reading: { read: number; notRead: number } | null;
