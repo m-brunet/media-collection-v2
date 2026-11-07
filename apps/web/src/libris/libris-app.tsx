@@ -23,6 +23,7 @@ import { FiltersPage } from './filters/filters-page';
 import { BookshelvesPage } from './locations/bookshelves-page';
 import { TagsPage } from './tags/tags-page';
 import { OverviewPage } from './overview/overview-page';
+import { ActivityPage } from './activity/activity-page';
 import { LendPage } from './lending/lend-page';
 import { LoansPage } from './lending/loans-page';
 import { ReturnPage } from './lending/return-page';
@@ -91,6 +92,7 @@ function LibrisRoutes() {
         <AppShell>
             <Routes>
                 <Route path="/" element={<OverviewPage />} />
+                <Route path="/activity" element={<ActivityPage />} />
                 <Route path="/books" element={<MyBooksPage />} />
                 <Route path="/books/filters" element={<FiltersPage listing="books" />} />
                 <Route

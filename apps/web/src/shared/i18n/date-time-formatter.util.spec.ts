@@ -35,3 +35,27 @@ it('converts the same moment for a viewer in another time zone', () => {
 
     expect(result).toContain('07:42');
 });
+
+it('gives the exact details of a moment in English with its time zone', () => {
+    const formatter = new DateTimeFormatter('en-GB', 'Europe/Paris');
+
+    const result = formatter.exact(moment);
+
+    expect(result).toMatch(/^1 November 2026 · 13:42 \((CET|GMT\+1)\)$/);
+});
+
+it('gives the exact details of a moment in French', () => {
+    const formatter = new DateTimeFormatter('fr-FR', 'Europe/Paris');
+
+    const result = formatter.exact(moment);
+
+    expect(result).toBe('1 novembre 2026 · 13:42 (UTC+1)');
+});
+
+it('gives the exact details in another viewer time zone', () => {
+    const formatter = new DateTimeFormatter('en-GB', 'America/New_York');
+
+    const result = formatter.exact(moment);
+
+    expect(result).toMatch(/^1 November 2026 · 07:42 \((EST|GMT-5)\)$/);
+});
