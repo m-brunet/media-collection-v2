@@ -55,7 +55,7 @@ describe('MarkBookOwned', () => {
         await subject(current).execute(owner, book.id);
 
         expect(current.trail.entries.at(-1)).toMatchObject({
-            category: 'book.updated',
+            category: 'book.marked-owned',
             outcome: 'successful',
             actorId: owner.id,
             subjectId: book.id,
@@ -72,7 +72,7 @@ describe('MarkBookOwned', () => {
 
         await expect(operation).rejects.toMatchObject({ reason: 'book-already-owned' });
         expect(current.trail.entries.at(-1)).toMatchObject({
-            category: 'book.updated',
+            category: 'book.marked-owned',
             outcome: 'failed',
         });
     });
