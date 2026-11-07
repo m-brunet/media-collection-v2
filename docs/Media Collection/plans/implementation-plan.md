@@ -23,7 +23,8 @@ Created 2026-11-03. Working plan, kept with the documentation in the Obsidian va
 - Minimum desktop size 1280 x 720. Fonts bundled locally (offline). Accessibility baseline in design guidelines.
 - Icon sets: installation-wide Admin setting, Lucide default; alternative sets need credits page (CC BY).
 - Timestamps stored UTC, displayed in viewer's time zone and language; exact details include zone label.
-- Mobile existing Not Owned ISBN: confirm, then review existing record, no external lookup.
+- Mobile existing Not Owned ISBN: a warning screen with Mark as Owned (changed 2026-11-07, Task 7), no form, no external lookup.
+- Leaf scanning works without HTTPS: live camera when the page allows it, otherwise a barcode photo read on the phone (2026-11-07).
 - Markdown excluded from oxfmt. `npm run check` builds before lint.
 
 ## Testing strategy (applies to every task)
@@ -172,7 +173,7 @@ Implemented on 2026-11-06 as `npm run dev:reset-data` and `npm run dev:import-v1
 | 5.8 Test entity builders | Done (2026-11-06) | [task-05-8-test-builders](task-05-8-test-builders.md) | Committed; see its notes for later tasks |
 | Design fix: Collections pages | Done (2026-11-06) | [design-fix-collections](design-fix-collections.md) | Inserted at the user's request; see its notes |
 | 6 Assisted entry | Done (2026-11-06), PR #2 merged | [task-06-assisted-entry](task-06-assisted-entry.md) | BnF then Open Library; cover helpers; desktop cover panel deferred; credits listed in its plan; see its notes for later tasks |
-| 7 Leaf (mobile) | Planning (2026-11-07), branch `task-07-leaf`, plan awaiting review | [task-07-leaf](task-07-leaf.md) | |
+| 7 Leaf (mobile) | In progress (2026-11-07), branch `task-07-leaf` | [task-07-leaf](task-07-leaf.md) | |
 | 8 Overview and Activity | Not started | — | |
 | 9 Host maintenance | Not started | — | |
 | 10 Release readiness | Not started | — | |
