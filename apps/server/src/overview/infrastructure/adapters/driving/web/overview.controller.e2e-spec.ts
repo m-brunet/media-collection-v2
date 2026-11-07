@@ -103,6 +103,7 @@ describe('GET /api/overview', () => {
                 title: 'Piranesi',
                 authors: ['Susanna Clarke'],
                 hasCover: false,
+                updatedAt: piranesi.updatedAt,
                 read: false,
             },
             {
@@ -110,6 +111,7 @@ describe('GET /api/overview', () => {
                 title: 'Dune',
                 authors: ['Susanna Clarke'],
                 hasCover: false,
+                updatedAt: dune.updatedAt,
                 read: false,
             },
         ]);

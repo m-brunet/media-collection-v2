@@ -37,6 +37,7 @@ export class InMemoryLibrarySummary implements LibrarySummaryReader {
             title,
             authors: ['Frank Herbert'],
             hasCover: false,
+            updatedAt: addedAt,
             addedAt,
             readBy,
         });

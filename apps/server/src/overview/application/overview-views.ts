@@ -14,6 +14,8 @@ export type RecentBook = {
     title: string;
     authors: string[];
     hasCover: boolean;
+    // The book's last change, which versions its cover address.
+    updatedAt: string;
     read: boolean;
 };
 
