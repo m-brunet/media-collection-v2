@@ -42,6 +42,19 @@ describe('ReplaceCover', () => {
             mediaType: 'image/jpeg',
         });
     });
+    it('records the change with the book title', async () => {
+        const current = library();
+        const book = await saved(current);
+
+        await subject(current).execute(owner, book.id, png);
+
+        expect(current.trail.entries.at(-1)).toMatchObject({
+            category: 'book.cover-changed',
+            subjectId: book.id,
+            before: { title: book.title, hasCover: false },
+            after: { title: book.title, hasCover: true },
+        });
+    });
     it('removes the replaced image', async () => {
         const current = library();
         const book = await saved(current);

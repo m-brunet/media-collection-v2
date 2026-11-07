@@ -40,8 +40,8 @@ describe('OrganiseBook', () => {
         expect(current.trail.entries.at(-1)).toMatchObject({
             category: 'book.organised',
             subjectId: book.id,
-            before: { location: { shelfId: 'top' }, tags: [] },
-            after: { location: null, tags: [] },
+            before: { title: book.title, location: { shelfId: 'top' }, tags: [] },
+            after: { title: book.title, location: null, tags: [] },
         });
     });
     it('records a tag it created in the same operation', async () => {

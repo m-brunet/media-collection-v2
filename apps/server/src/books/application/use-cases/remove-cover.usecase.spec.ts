@@ -32,6 +32,18 @@ describe('RemoveCover', () => {
         expect(result.hasCover).toBe(false);
         expect(current.covers.files.size).toBe(0);
     });
+    it('records the change with the book title', async () => {
+        const { current, book } = await withCover();
+
+        await subject(current).execute(owner, book.id);
+
+        expect(current.trail.entries.at(-1)).toMatchObject({
+            category: 'book.cover-changed',
+            subjectId: book.id,
+            before: { title: book.title, hasCover: true },
+            after: { title: book.title, hasCover: false },
+        });
+    });
     it('refuses a Guest and keeps the cover', async () => {
         const { current, book } = await withCover();
 
