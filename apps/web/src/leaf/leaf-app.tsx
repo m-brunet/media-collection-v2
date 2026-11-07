@@ -11,6 +11,7 @@ import { Notice } from '../shared/ui/notice';
 import { RoleLabel } from '../shared/role-label.util';
 import { LoadingState } from '../shared/ui/states';
 import { HomePage } from './home-page';
+import { ScanPage } from './scan/scan-page';
 import { CollectionShoppingPage } from './shopping/collection-shopping-page';
 import { ShoppingListPage } from './shopping/shopping-list-page';
 
@@ -112,6 +113,7 @@ function LeafRoutes() {
             <Route path="/" element={<HomePage />} />
             <Route path="/collections" element={<ShoppingListPage />} />
             <Route path="/collections/:id" element={<CollectionShoppingPage />} />
+            <Route path="/scan" element={<ScanPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );
