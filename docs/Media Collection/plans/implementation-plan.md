@@ -171,8 +171,8 @@ Implemented on 2026-11-06 as `npm run dev:reset-data` and `npm run dev:import-v1
 | 5.5 Generated titles | Done (2026-11-06) | [task-05-5-generated-titles](task-05-5-generated-titles.md) | Committed; see its notes for later tasks |
 | 5.8 Test entity builders | Done (2026-11-06) | [task-05-8-test-builders](task-05-8-test-builders.md) | Committed; see its notes for later tasks |
 | Design fix: Collections pages | Done (2026-11-06) | [design-fix-collections](design-fix-collections.md) | Inserted at the user's request; see its notes |
-| 6 Assisted entry | Ready for review (2026-11-06), branch `task-06-assisted-entry`, pull request #2 | [task-06-assisted-entry](task-06-assisted-entry.md) | BnF then Open Library; cover helpers; desktop cover panel deferred; credits listed in its plan; see its notes for later tasks |
-| 7 Leaf (mobile) | Not started | — | |
+| 6 Assisted entry | Done (2026-11-06), PR #2 merged | [task-06-assisted-entry](task-06-assisted-entry.md) | BnF then Open Library; cover helpers; desktop cover panel deferred; credits listed in its plan; see its notes for later tasks |
+| 7 Leaf (mobile) | Planning (2026-11-07), branch `task-07-leaf`, plan awaiting review | [task-07-leaf](task-07-leaf.md) | |
 | 8 Overview and Activity | Not started | — | |
 | 9 Host maintenance | Not started | — | |
 | 10 Release readiness | Not started | — | |
