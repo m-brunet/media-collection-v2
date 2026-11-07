@@ -40,8 +40,8 @@ export class RemoveCover implements RemoveCoverUseCase {
 
                 return {
                     result: await this.viewer.view(book, actor),
-                    before: { hasCover: removed !== null },
-                    after: { hasCover: false },
+                    before: { title: book.snapshot.details.title, hasCover: removed !== null },
+                    after: { title: book.snapshot.details.title, hasCover: false },
                 };
             },
         );

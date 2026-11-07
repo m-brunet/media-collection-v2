@@ -30,13 +30,17 @@ export class OrganiseBook implements OrganiseBookUseCase {
             async () => {
                 ActorAuthorization.requireLibraryEditor(actor);
                 const book = await this.loader.load(bookId);
-                const before = BookSnapshot.organisation(await this.organiser.current(bookId));
+                const title = book.snapshot.details.title;
+                const before = {
+                    title,
+                    ...BookSnapshot.organisation(await this.organiser.current(bookId)),
+                };
                 const { organisation, changes } = await this.organiser.apply(bookId, request);
 
                 return {
                     result: await this.viewer.view(book, actor),
                     before,
-                    after: BookSnapshot.organisation(organisation),
+                    after: { title, ...BookSnapshot.organisation(organisation) },
                     related: changes,
                 };
             },
