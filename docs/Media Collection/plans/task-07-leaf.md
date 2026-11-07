@@ -193,35 +193,23 @@ Browser journeys (Playwright, 390 × 844, real app, fake camera, lookup stub)
 
 Desktop regression: existing Libris component tests and browser journeys pass unchanged after step 1.
 
-## Open questions (to answer before implementing)
+## Answers from the user (2026-11-07)
 
-1. **Barcode library.** Requirements: works offline (no CDN), permissive licence, iPhone and Android browsers.
-   - **Recommended: `barcode-detector`** (MIT), the standard `BarcodeDetector` browser interface, using the phone's
-     own detector where it exists and otherwise `zxing-wasm` (MIT, built from ZXing-C++, Apache-2.0). Its WebAssembly
-     file (~1 MB, reader only) is bundled with Leaf and served by the app itself, never from a CDN. Needs one Content
-     Security Policy addition, `'wasm-unsafe-eval'` in `script-src` (allows compiling WebAssembly, not JavaScript
-     `eval`). Well maintained, robust on blurry phone frames.
-   - Alternative: `@zxing/browser` + `@zxing/library` (Apache-2.0), pure JavaScript, no CSP change, but in maintenance
-     mode and weaker on difficult images.
-   - Alternative: `@ericblade/quagga2` (MIT), pure JavaScript, 1D barcodes only, more tuning needed.
-   - Packaging: all are browser-only JavaScript/WebAssembly in the Leaf bundle; nothing native in Electron.
-2. **Cover on the phone.** Proposal, in order on the form:
-   - covers found by Find book shown as choices (as desktop);
-   - **Search this cover on the web** (opens the browser's image search for the ISBN in a new tab, so the Leaf form
-     stays open);
-   - a **prominent image address field** with a **Paste** button (reads the clipboard after the phone's permission;
-     long-press paste in the field always works), then **Use this picture**; the server downloads it with the existing
-     home-network guard and padding removal;
-   - **Choose from photos**: picks a saved picture from the photo library (`accept="image/*"` without the camera
-     `capture` hint; the phone may still offer its camera in that menu, which we do not promote).
-   - **Android share target: not now.** It needs Leaf installed as an app, which Chrome only allows with a trusted
-     HTTPS certificate (not a self-signed one) and a service worker; the shared picture would also have to find its
-     way back into the open form. Possible later once HTTPS with a trusted certificate is common in households.
-3. **What counts as a failed lookup** for the one-retry rule: proposed above (decision 5) — no book information found
-   counts as a failure, even when every source answered "unknown". Since mobile has no manual completion, a not-found
-   ISBN then ends with Back to home and the person adds it on the desktop. Agree?
-4. **Branch or master.** This branch `task-07-leaf` exists; finishing with a pull request like Task 6, or committing
-   on `master`?
+1. **Barcode library: `barcode-detector`** (MIT; the phone's own detector when available, otherwise the bundled
+   `zxing-wasm` reader, MIT, from ZXing-C++, Apache-2.0). The WebAssembly file is bundled with Leaf and served by the
+   app, never from a CDN; the Content Security Policy gains `'wasm-unsafe-eval'` in `script-src`. Rejected:
+   `@zxing/browser` (maintenance mode, weaker on difficult pictures), `quagga2` (more tuning).
+2. **Phone cover: as proposed**, in this order on the form: Find book covers as choices; **Search this cover on the
+   web** (new tab, the form stays open); a prominent **image address** field with a **Paste** button, then **Use this
+   picture** (server download with the home-network guard and padding removal); **Choose from photos** (saved picture,
+   no camera `capture` hint). **Android share target deferred**: it needs an installed app (manifest, service worker)
+   and a trusted HTTPS certificate.
+3. **Not found counts as a failed lookup** (decision 5): Retry once, then Back to home; the messages still say whether
+   nothing was found or the sources were unavailable. A partial result goes to the review.
+4. **Branch `task-07-leaf` with a pull request** at the end, one commit per step.
+
+## Open question (plan review)
+
 5. **Existing Not Owned ISBN form** (decision 3): Ownership preset to Owned after the confirmation. Agree?
 
 ## Notes for later tasks
