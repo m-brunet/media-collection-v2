@@ -10,6 +10,7 @@ list before starting a task: an open entry in the area a task touches is handled
 | KI-1 | Bug         | The desktop window cannot be closed while the book form has unsaved changes           | Low      | Open   |
 | KI-2 | Improvement | Libris sessions last 24 hours instead of one idle hour                                | Medium   | Open   |
 | KI-3 | Improvement | Additional information uses the same numbered heading as the other book-form sections | Low      | Open   |
+| KI-4 | Improvement | Libris has an application icon in the Windows taskbar                                 | Low      | Open   |
 
 ## Open
 
@@ -57,6 +58,22 @@ list before starting a task: an open entry in the area a task touches is handled
   sections: the label itself stays the expand/collapse button (with its arrow, `aria-expanded` and the closed hint).
   Check the Edit book form too, and whether Leaf's phone form should follow.
 - **Severity:** low (visual consistency). **Planned:** next fix pass, or the next task that touches the book form.
+
+### KI-4 — Libris has an application icon in the Windows taskbar
+
+- **Type:** Improvement.
+- **Reported:** 2026-11-07 by the user.
+- **Today:** no application icon is defined, in the specs or in the code: the desktop windows
+  (`apps/desktop/src/main.ts`, `new BrowserWindow`) set no `icon`, so Windows shows the default Electron icon in the
+  taskbar.
+- **Fix:** until the specs define one, use the mark shown next to the "Libris" title (`Brand`,
+  `apps/web/src/shared/ui/brand.tsx`: the Lucide `Library` icon) drawn in the green accent colour (`--color-accent`,
+  default scheme `#79d670`). Generate the icon files from the Lucide SVG (a Windows `.ico` with the usual sizes, and PNGs
+  for the other systems), keep them in `apps/desktop/assets`, and pass them to every `BrowserWindow` (and the tray, if
+  there is one). Lucide is ISC-licensed: add it to the credits page planned in Task 10. Check whether the web pages
+  should use the same mark as their favicon (Libris and Leaf).
+- **Severity:** low (appearance). **Planned:** next fix pass, or Task 10 (packaging and installer), whichever comes
+  first; the installer icon should use the same files.
 
 ## Done
 
