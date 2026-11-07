@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
+import { useState } from 'react';
+import { createBrowserRouter, Navigate, Route, RouterProvider, Routes } from 'react-router';
 import { useI18n } from '../shared/i18n/i18n-context';
 import { AppearanceProvider } from '../shared/appearance/appearance-context';
 import { SessionProvider, useSession } from '../shared/session/session-context';
@@ -10,6 +11,9 @@ import { LanguageSwitch } from '../shared/ui/language-switch';
 import { Notice } from '../shared/ui/notice';
 import { RoleLabel } from '../shared/role-label.util';
 import { LoadingState } from '../shared/ui/states';
+import { AddBookPage } from './books/add-book-page';
+import { SavedPage } from './books/saved-page';
+import { ScannedPage } from './books/scanned-page';
 import { HomePage } from './home-page';
 import { ScanPage } from './scan/scan-page';
 import { CollectionShoppingPage } from './shopping/collection-shopping-page';
@@ -114,21 +118,31 @@ function LeafRoutes() {
             <Route path="/collections" element={<ShoppingListPage />} />
             <Route path="/collections/:id" element={<CollectionShoppingPage />} />
             <Route path="/scan" element={<ScanPage />} />
+            <Route path="/scan/found" element={<ScannedPage />} />
+            <Route path="/add" element={<AddBookPage />} />
+            <Route path="/saved" element={<SavedPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );
 }
 
-export function LeafApp() {
+function LeafRoot() {
     return (
-        <BrowserRouter basename="/leaf">
-            <AppearanceProvider>
-                <SessionProvider>
-                    <LeafLayout>
-                        <LeafRoutes />
-                    </LeafLayout>
-                </SessionProvider>
-            </AppearanceProvider>
-        </BrowserRouter>
+        <AppearanceProvider>
+            <SessionProvider>
+                <LeafLayout>
+                    <LeafRoutes />
+                </LeafLayout>
+            </SessionProvider>
+        </AppearanceProvider>
     );
+}
+
+// A data router, so the book form can ask before discarding unsaved changes.
+export function LeafApp() {
+    const [router] = useState(() =>
+        createBrowserRouter([{ path: '*', element: <LeafRoot /> }], { basename: '/leaf' }),
+    );
+
+    return <RouterProvider router={router} />;
 }

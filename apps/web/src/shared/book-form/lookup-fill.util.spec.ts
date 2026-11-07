@@ -149,4 +149,43 @@ describe('LookupFill', () => {
 
         expect(next).toMatchObject({ title: 'Piranesi', pageCount: '272' });
     });
+
+    it('builds a selection holding one field only', () => {
+        const result = LookupFill.only('publisher', 'Pika');
+
+        expect(result).toEqual(selection({ publisher: 'Pika' }));
+    });
+
+    it('tells that the draft already holds a lookup value, ignoring case and author order', () => {
+        const typed = draft({
+            authors: [
+                { id: null, name: 'Tooru Fujisawa', distinct: false },
+                { id: null, name: 'Pierre Bottero', distinct: false },
+            ],
+        });
+
+        const result = LookupFill.holds(typed, 'authors', ['pierre bottero', 'Tooru Fujisawa']);
+
+        expect(result).toBe(true);
+    });
+
+    it('tells that the draft holds another value', () => {
+        const typed = draft({ publisher: 'Pika' });
+
+        const result = LookupFill.holds(typed, 'publisher', 'Glénat');
+
+        expect(result).toBe(false);
+    });
+
+    it('shows a publication date as text', () => {
+        const result = LookupFill.text('publication', { year: 2012, month: 3 });
+
+        expect(result).toBe('3/2012');
+    });
+
+    it('shows a collection volume as text', () => {
+        const result = LookupFill.text('collection', { name: 'Batman', volume: 12 });
+
+        expect(result).toBe('Batman · 12');
+    });
 });

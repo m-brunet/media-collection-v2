@@ -7,12 +7,12 @@ import type {
     SimilarCollectionDetails,
     VolumeZeroDetails,
 } from '../../../../../packages/contracts/src/http';
-import { api, ApiError } from '../../shared/api.util';
-import { ApiErrorMessage } from '../../shared/api-error-message.util';
-import { useI18n } from '../../shared/i18n/i18n-context';
-import type { BookDraftValues, SaveOptions } from '../../shared/book-form/book-draft.util';
-import { BookDraft } from '../../shared/book-form/book-draft.util';
-import type { CoverChoice } from './cover-picker';
+import { api, ApiError } from '../api.util';
+import { ApiErrorMessage } from '../api-error-message.util';
+import { useI18n } from '../i18n/i18n-context';
+import type { BookDraftValues, SaveOptions } from './book-draft.util';
+import { BookDraft } from './book-draft.util';
+import type { CoverChoice } from './cover-choice';
 
 // The form fields a refusal can point at.
 export type BookField =
@@ -91,7 +91,8 @@ const questionOfReason: Record<string, SaveQuestion['kind']> = {
 
 // Saving the book form: the shared information first, where a refusal keeps the draft and is
 // shown as an error or asked as a question; then the personal parts and the cover, whose failure
-// is reported after the book is saved.
+// is reported after the book is saved. Libris and Leaf each show the form, the refusals and
+// the questions their own way.
 export function useBookSave({
     book,
     initial,
@@ -99,7 +100,7 @@ export function useBookSave({
     cover,
     onAttempt,
     showAdditional,
-    leave,
+    onSaved,
 }: {
     // The book being edited, or null when adding one.
     book: BookDto | null;
@@ -111,7 +112,10 @@ export function useBookSave({
     // Called as each attempt starts.
     onAttempt: () => void;
     showAdditional: () => void;
-    leave: (path: string, state?: unknown) => void;
+    // Once saved: `updated` when an existing record (the edited book or a planned one) was
+    // saved rather than a new one created; `followUpFailed` when the reading status, the note or
+    // the cover could not be saved afterwards.
+    onSaved: (saved: BookDto, outcome: { updated: boolean; followUpFailed: boolean }) => void;
 }) {
     const { t } = useI18n();
     const [saving, setSaving] = useState(false);
@@ -179,9 +183,7 @@ export function useBookSave({
             followUpFailed = true;
         }
 
-        leave(book || target ? '/books/' + saved.id : '/books/' + saved.id + '/added', {
-            followUpFailed,
-        });
+        onSaved(saved, { updated: Boolean(book || target), followUpFailed });
     };
     // A refusal of the shared information: a question to ask, or an error to show.
     const refused = (error: unknown) => {

@@ -18,14 +18,14 @@ import { BookDraft } from '../../shared/book-form/book-draft.util';
 import { CorrectAuthorDialog, DiscardChangesDialog } from './book-form-dialogs';
 import { BookMainFields } from './book-main-fields';
 import { BookSaveQuestions } from './book-save-questions';
-import type { CoverChoice } from './cover-picker';
+import type { CoverChoice } from '../../shared/book-form/cover-choice';
 import { LocationField } from './location-field';
 import { LookupConflictsDialog, LookupReviewDialog } from './lookup-dialogs';
 import { LookupFill } from '../../shared/book-form/lookup-fill.util';
 import { TagPicker } from './tag-picker';
 import { useBookLookup } from './use-book-lookup';
-import type { BookField } from './use-book-save';
-import { useBookSave } from './use-book-save';
+import type { BookField } from '../../shared/book-form/use-book-save';
+import { useBookSave } from '../../shared/book-form/use-book-save';
 
 // Add and edit form. Nothing is saved before the person confirms; leaving with unsaved changes
 // asks first. The cover, the creator's reading status and note are saved right after the book.
@@ -118,7 +118,8 @@ function BookForm({ book }: { book: BookDto | null }) {
         cover,
         onAttempt: () => setNotice(null),
         showAdditional: () => setExpanded(true),
-        leave,
+        onSaved: (saved, { updated, followUpFailed }) =>
+            leave('/books/' + saved.id + (updated ? '' : '/added'), { followUpFailed }),
     });
     const lookup = useBookLookup({
         values,
