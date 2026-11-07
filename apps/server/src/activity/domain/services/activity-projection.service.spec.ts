@@ -22,7 +22,7 @@ function operation(...records: ActivityRecord[]): ActivityOperation {
 }
 
 function loan(title: string, receiver = 'Sam'): Record<string, unknown> {
-    return { title, receiver: { id: 'receiver-1', name: receiver }, status: 'lent' };
+    return { loan: { title, receiver: { id: 'receiver-1', name: receiver }, status: 'lent' } };
 }
 
 describe('ActivityProjection', () => {

@@ -3,6 +3,8 @@ import type { Clock } from '../../shared/application/ports/driven/clock.interfac
 import type { IdGenerator } from '../../shared/application/ports/driven/id-generator.interface.js';
 import type { AuditedOperation } from '../../shared/application/services/audited-operation.service.js';
 import type { Database } from '../../shared/infrastructure/adapters/driven/persistence/database.adapter.js';
+import { ActivityModule } from '../../activity/infrastructure/config/activity.module.js';
+import { KyselyActivityRecordReader } from '../../activity/infrastructure/adapters/driven/persistence/kysely-activity-record-reader.adapter.js';
 import { BooksModule } from '../../books/infrastructure/config/books.module.js';
 import { CollectionsModule } from '../../collections/infrastructure/config/collections.module.js';
 import { LocationsModule } from '../../locations/infrastructure/config/locations.module.js';
@@ -38,7 +40,7 @@ export interface LibraryDependencies {
 
 export type LookupAddresses = { bnf?: string; openLibrary?: string };
 
-// The shared library features (books, collections, locations, tags, lending) wired to SQLite and
+// The shared library features (books, collections, locations, tags, lending, Activity) wired to SQLite and
 // the data directory, for the HTTP backend and the development data commands alike.
 // `developmentImport` adds the use cases only the development V1 import needs.
 export class LibraryModules {
@@ -112,6 +114,7 @@ export class LibraryModules {
                 clock,
                 operations,
             }),
+            ActivityModule.register({ records: new KyselyActivityRecordReader(connections) }),
         ];
     }
 }

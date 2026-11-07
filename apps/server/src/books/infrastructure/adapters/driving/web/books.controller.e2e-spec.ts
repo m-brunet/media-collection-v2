@@ -915,7 +915,7 @@ describe('PATCH /api/books/:id/organisation', () => {
             expect.objectContaining({
                 category: 'book.organised',
                 subjectId: book.id,
-                before: { location: null, tags: [] },
+                before: { title: book.title, location: null, tags: [] },
             }),
         );
     });

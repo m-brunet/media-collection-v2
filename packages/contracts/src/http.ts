@@ -479,3 +479,60 @@ export interface ReceiverLoansDto {
     receiver: ReceiverDto;
     loans: ActiveLoanDto[];
 }
+
+// What an Activity entry says happened, with the names needed to say it ("You added Dune").
+// `title` is null only for an older record of a book deleted since.
+export type ActivityEventDto =
+    | {
+          kind:
+              | 'book-added'
+              | 'book-updated'
+              | 'book-marked-owned'
+              | 'book-deleted'
+              | 'book-organised'
+              | 'book-cover-changed';
+          title: string | null;
+      }
+    | { kind: 'books-lent' | 'books-returned'; receiver: string; titles: string[] }
+    | {
+          kind:
+              | 'collection-created'
+              | 'collection-updated'
+              | 'collection-finished'
+              | 'collection-reopened'
+              | 'collection-deleted'
+              | 'collection-removed'
+              | 'bookcase-created'
+              | 'bookcase-deleted'
+              | 'tag-created'
+              | 'tag-deleted'
+              | 'receiver-created';
+          name: string;
+      }
+    | {
+          kind: 'author-corrected' | 'collection-renamed' | 'bookcase-renamed' | 'tag-renamed';
+          from: string;
+          to: string;
+      }
+    | { kind: 'shelf-created' | 'shelf-deleted'; name: string; bookcase: string }
+    | { kind: 'shelf-renamed'; from: string; to: string; bookcase: string }
+    | { kind: 'shelf-moved'; name: string; from: string; to: string };
+
+// One operation of the shared Activity: its main change and the changes it caused.
+export interface ActivityEntryDto {
+    // The audit operation ID.
+    id: string;
+    // UTC.
+    occurredAt: string;
+    // The acting account's current username; null when no account was recorded.
+    actor: string | null;
+    event: ActivityEventDto;
+    also: ActivityEventDto[];
+}
+
+// `GET /api/activity?before=`: newest first. Pass `older` as `before` for the next page; null
+// when nothing older exists.
+export interface ActivityPageDto {
+    entries: ActivityEntryDto[];
+    older: string | null;
+}
