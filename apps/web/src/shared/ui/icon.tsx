@@ -20,7 +20,9 @@ import {
     Trash2,
     CircleAlert,
     CircleCheck,
+    History,
     Info,
+    LayoutDashboard,
     Layers,
     Library,
     Palette,
@@ -39,6 +41,8 @@ import {
 // alternative installation-wide sets plug in here later (Task 10).
 const lucide = {
     brand: Library,
+    overview: LayoutDashboard,
+    activity: History,
     account: UserRound,
     administration: ShieldCheck,
     accounts: Users,

@@ -16,6 +16,19 @@ export class FakeApi {
         this.on('GET /setup', () => ({ status: 200, body: { required: false, allowed: true } }));
         this.on('GET /appearance', () => ({ status: 200, body: { colorScheme: 'spring-green' } }));
         this.on('GET /books', () => ({ status: 200, body: { total: 0, items: [] } }));
+        this.on('GET /overview', () => ({
+            status: 200,
+            body: {
+                ownedBooks: 0,
+                collections: 0,
+                bookcases: 0,
+                shelves: 0,
+                lentBooks: 0,
+                recentlyAdded: [],
+                reading: { read: 0, notRead: 0 },
+                bookcaseList: [],
+            },
+        }));
         vi.stubGlobal('fetch', vi.fn(this.fetch.bind(this)));
     }
 
