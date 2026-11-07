@@ -4,11 +4,15 @@ import type { BookLookupDto } from '../../../../../packages/contracts/src/http';
 import { api, ApiError } from '../../shared/api.util';
 import { ApiErrorMessage } from '../../shared/api-error-message.util';
 import { useI18n } from '../../shared/i18n/i18n-context';
-import type { BookDraftValues } from './book-draft.util';
+import type { BookDraftValues } from '../../shared/book-form/book-draft.util';
 import type { CoverChoice } from './cover-picker';
 import { useSourceNames } from './lookup-dialogs';
-import type { LookupConflict, LookupField, LookupSelection } from './lookup-fill.util';
-import { LookupFill } from './lookup-fill.util';
+import type {
+    LookupConflict,
+    LookupField,
+    LookupSelection,
+} from '../../shared/book-form/lookup-fill.util';
+import { LookupFill } from '../../shared/book-form/lookup-fill.util';
 
 export type LookedUpBook = Extract<BookLookupDto, { kind: 'looked-up' }>;
 

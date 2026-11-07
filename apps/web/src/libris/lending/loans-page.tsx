@@ -11,7 +11,7 @@ import { Notice } from '../../shared/ui/notice';
 import { EmptyState, LoadingState } from '../../shared/ui/states';
 import { TextField } from '../../shared/ui/text-field';
 import { BookCover } from '../books/book-cover';
-import { BookFormat } from '../books/book-format.util';
+import { BookFormat } from '../../shared/book-form/book-format.util';
 import { LoanLinks } from './loan-links.util';
 
 // The answer to "which books are lent, and who has them?": active loans grouped by receiver,

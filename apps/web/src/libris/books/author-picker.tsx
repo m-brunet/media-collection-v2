@@ -3,7 +3,7 @@ import type { AuthorDto } from '../../../../../packages/contracts/src/http';
 import { api } from '../../shared/api.util';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Icon } from '../../shared/ui/icon';
-import type { DraftAuthor } from './book-draft.util';
+import type { DraftAuthor } from '../../shared/book-form/book-draft.util';
 import { NamePicker } from './name-picker';
 
 // Chooses the book's authors: existing ones are suggested while typing; Enter adds the typed name

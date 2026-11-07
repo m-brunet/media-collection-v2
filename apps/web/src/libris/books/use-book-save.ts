@@ -10,8 +10,8 @@ import type {
 import { api, ApiError } from '../../shared/api.util';
 import { ApiErrorMessage } from '../../shared/api-error-message.util';
 import { useI18n } from '../../shared/i18n/i18n-context';
-import type { BookDraftValues, SaveOptions } from './book-draft.util';
-import { BookDraft } from './book-draft.util';
+import type { BookDraftValues, SaveOptions } from '../../shared/book-form/book-draft.util';
+import { BookDraft } from '../../shared/book-form/book-draft.util';
 import type { CoverChoice } from './cover-picker';
 
 // The form fields a refusal can point at.

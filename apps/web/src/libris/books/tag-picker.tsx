@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import type { TagDto } from '../../../../../packages/contracts/src/http';
 import { api } from '../../shared/api.util';
 import { useI18n } from '../../shared/i18n/i18n-context';
-import type { DraftTag } from './book-draft.util';
+import type { DraftTag } from '../../shared/book-form/book-draft.util';
 import { NamePicker } from './name-picker';
 
 // Chooses a book's reusable tags: existing tags are suggested while typing; a new name creates the

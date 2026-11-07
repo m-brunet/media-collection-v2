@@ -16,7 +16,7 @@ import { Notice } from '../../shared/ui/notice';
 import { EmptyState, LoadingState } from '../../shared/ui/states';
 import { useAction } from '../../shared/use-action';
 import { BookCover } from '../books/book-cover';
-import { BookFormat } from '../books/book-format.util';
+import { BookFormat } from '../../shared/book-form/book-format.util';
 import { EditCollectionDialog } from './collection-dialogs';
 import { CollectionFormat } from './collection-format.util';
 

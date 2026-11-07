@@ -1,5 +1,5 @@
-import type { BookDraftValues, SaveOptions } from './book-draft.util';
-import { BookDraft } from './book-draft.util';
+import type { BookDraftValues, SaveOptions } from '../../shared/book-form/book-draft.util';
+import { BookDraft } from '../../shared/book-form/book-draft.util';
 import {
     CoverageConflictDialog,
     PossibleDuplicateDialog,

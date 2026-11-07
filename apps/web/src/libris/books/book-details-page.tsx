@@ -15,7 +15,7 @@ import { useAction } from '../../shared/use-action';
 import { BookCover } from './book-cover';
 import { BookBreadcrumb } from './book-breadcrumb';
 import { CollectionFormat } from '../collections/collection-format.util';
-import { BookFormat } from './book-format.util';
+import { BookFormat } from '../../shared/book-form/book-format.util';
 import { OrganisationEditor } from './organisation-editor';
 import { LoanPanel } from '../lending/loan-panel';
 import { LoanLinks } from '../lending/loan-links.util';
