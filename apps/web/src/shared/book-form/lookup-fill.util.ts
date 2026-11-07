@@ -115,6 +115,37 @@ export class LookupFill {
         );
     }
 
+    // A selection holding only this field's value.
+    static only(field: LookupField, value: unknown): LookupSelection {
+        return {
+            title: null,
+            authors: null,
+            publisher: null,
+            publication: null,
+            pageCount: null,
+            summary: null,
+            collection: null,
+            [field]: value,
+        } as LookupSelection;
+    }
+
+    // Whether the draft already holds this lookup value for the field (equal values ignore case,
+    // accents and author order).
+    static holds(draft: BookDraftValues, field: LookupField, value: unknown): boolean {
+        const lookup = LookupFill.lookupText(LookupFill.only(field, value), field);
+
+        return (
+            lookup !== null &&
+            LookupFill.key(field, LookupFill.draftText(draft, field)) ===
+                LookupFill.key(field, lookup)
+        );
+    }
+
+    // A lookup value as shown to the person, for example "3/2012" or "Batman · 12".
+    static text(field: LookupField, value: unknown): string {
+        return LookupFill.lookupText(LookupFill.only(field, value), field) ?? '';
+    }
+
     private static write(selection: LookupSelection, field: LookupField): Partial<BookDraftValues> {
         switch (field) {
             case 'title':

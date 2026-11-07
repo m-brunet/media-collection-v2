@@ -10,9 +10,9 @@ import type { BookDraftValues, DraftFieldSetter } from '../../shared/book-form/b
 import { BookDraft } from '../../shared/book-form/book-draft.util';
 import { BookFormat } from '../../shared/book-form/book-format.util';
 import { CollectionField } from './collection-field';
-import type { CoverChoice } from './cover-picker';
+import type { CoverChoice } from '../../shared/book-form/cover-choice';
 import { CoverPicker } from './cover-picker';
-import type { BookField } from './use-book-save';
+import type { BookField } from '../../shared/book-form/use-book-save';
 
 // "01 / Main information" of the book form: ISBN (with Find book when adding), title, authors,
 // category, ownership, reading status, collection, and the cover beside them.

@@ -6,16 +6,11 @@ import { useI18n } from '../../shared/i18n/i18n-context';
 import { Button } from '../../shared/ui/button';
 import { Icon } from '../../shared/ui/icon';
 import { TextField } from '../../shared/ui/text-field';
+import type { CoverChoice } from '../../shared/book-form/cover-choice';
 import { BookCover } from './book-cover';
 
 const types = ['image/jpeg', 'image/png', 'image/webp'];
 const limit = 10 * 1024 * 1024;
-
-// The cover choice of the form: kept locally and uploaded only when the book is saved.
-export interface CoverChoice {
-    file: File | null;
-    removed: boolean;
-}
 
 // The cover of the form, chosen from a file, pasted (Ctrl+V outside text fields), dropped, or
 // fetched from an image address; a web search helps find one (Task 6 cover helpers).
