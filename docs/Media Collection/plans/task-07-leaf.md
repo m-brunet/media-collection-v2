@@ -1,6 +1,6 @@
 # Task 7 — Leaf (mobile)
 
-Status: **approved, in progress** (2026-11-07), branch `task-07-leaf`. Global plan: [implementation plan](implementation-plan.md).
+Status: **done** (2026-11-07) on branch `task-07-leaf`, ready for review in a pull request. Global plan: [implementation plan](implementation-plan.md).
 
 ## Scope
 
@@ -226,6 +226,63 @@ Desktop regression: existing Libris component tests and browser journeys pass un
 7. **Scanning must work over plain HTTP:** live scanning when allowed, otherwise a barcode photo read on the phone
    (decision 8).
 
+## Step list
+
+1. [x] Shared pure form logic (`book-draft.util`, `book-format.util`, `lookup-fill.util` moved to `shared/book-form/`)
+2. [x] Collections shopping views (`CollectionShopping`, two use cases, two endpoints)
+3. [x] Mark Owned (`MarkBookOwned`, `POST /api/books/:id/owned`)
+4. [x] Leaf shell, home and shopping screens with the confirmed quick add
+5. [x] Scanner: live camera or barcode photo, read on the phone
+6. [x] Scan-to-save flow: library check, Not Owned screen, one retry, Leaf's own form and covers, success
+7. [x] Browser journeys on the phone viewport
+8. [x] Architecture review, `npm run check`, docs
+
 ## Notes for later tasks
 
-(Filled in during implementation.)
+- **Endpoints added:** `GET /api/collections/shopping` (unfinished collections), `GET /api/collections/:id/shopping`
+  (last Owned and missing volumes with `quickAdd`), `POST /api/books/:id/owned` (Not Owned → Owned only, audited as
+  `book.updated`, `409 book-already-owned`). All refuse Guests (`403`). Shopping rules live in the pure domain service
+  `CollectionShopping`; Leaf only displays them.
+- **Leaf routing** is a data router (`createBrowserRouter`, basename `/leaf`), like Libris, so the form can ask
+  before discarding (`useBlocker`). Routes: `/`, `/collections`, `/collections/:id`, `/scan`, `/scan/found`, `/add`,
+  `/saved`. `/scan/found`, `/add` and `/saved` need in-app navigation state (the scanned ISBN, the lookup result, the
+  saved title); opened directly they return home. That is the scan gate.
+- **Scanning without HTTPS:** live camera only on a secure page (HTTPS or the computer itself); otherwise Scan a book
+  opens the camera app through `<input type="file" accept="image/*" capture="environment">`, and the photo is read on
+  the phone and dropped. A refused/missing camera offers Retry (which switches to the photo) or Back to home.
+  Untested on real phones so far: worth a try on Android and iPhone over plain HTTP.
+- **Barcode reader:** `BarcodeReader` port (`leaf/scan/barcode-reader-context.ts`), production adapter
+  `ZxingBarcodeReader`: the browser's own `BarcodeDetector` when it reads EAN-13, otherwise the `barcode-detector`
+  ponyfill with the bundled `zxing_reader.wasm` (~950 kB, loaded only when scanning, served by the app). The Content
+  Security Policy now has `script-src 'self' 'wasm-unsafe-eval'` (WebAssembly only). Both packages are exact-pinned
+  dev dependencies (bundled by Vite, not shipped as Node modules).
+- **Shared web code:** `shared/book-form/` now holds the pure draft/format/lookup-fill rules, `use-book-save` (with an
+  `onSaved` callback instead of Libris paths), `cover-choice`, `cover-file.util` (accepted cover types and size) and
+  `use-source-names`. Leaf's fields, cover helpers and question dialogs are its own (`leaf/books/`).
+- **Phone covers:** the first cover found is selected; other found covers are choices; "Search this cover on the web"
+  (Google Images by ISBN, new tab); image address with Paste (shown only when the browser allows clipboard reading,
+  i.e. on a secure page) and Use this image; Choose from photos. Android share target deferred (needs an installed app
+  and a trusted certificate).
+- **Lookup failure on Leaf:** not found, all sources unavailable, or a request error all count as a failed attempt;
+  two attempts at most, the second failure leaves only Back to home. The messages say which case it was.
+- **Browser tests:** `tests/web/barcode-pictures.ts` generates EAN-13 pictures with the `zxing-wasm` writer and sharp
+  (a PNG for the photo path, a one-frame `.y4m` for Chromium's fake camera; no committed binary).
+  `BrowserFixture.launch(args)` and `page({ permissions, beforeLoad })` were added; the photo path is forced with a
+  `beforeLoad` script setting `isSecureContext` to false, since `127.0.0.1` is a secure origin.
+- **npm 11 install scripts:** `npm install` now asks to approve install scripts (`better-sqlite3`,
+  `electron-winstaller`). Nothing is lost: `better-sqlite3` 13 loads its bundled `prebuilds/win32-x64.node`.
+- **Architecture review (step 8):** no mandatory backend finding (features and layers, pure domain/application,
+  driving ports and string tokens, one operation per use case, same-directory tests, API tests for each new endpoint).
+  Fixed in the web code: three copies of the source-name mapping became `use-source-names`; standalone helpers in the
+  scanner and add-book page became static rules (`ScannedIsbn.reading`, `LookupFill.prefilled`,
+  `BookDraft.hasAdditional`) with unit tests; the cover type/size rules shared by both cover pickers became
+  `CoverFile`. Optional, not changed: `CollectionViewer.shoppingSummary` computes the full summary (with previews) and
+  keeps a few fields; the Google Images search address is written in both cover pickers.
+
+## Credits for the future credits page
+
+| What | Used for | Licence and attribution |
+| --- | --- | --- |
+| barcode-detector (Ze-Zheng Wu and contributors) | Leaf barcode reading where the browser has no detector | MIT |
+| zxing-wasm (Ze-Zheng Wu and contributors) | WebAssembly build of ZXing-C++ bundled with Leaf | MIT |
+| ZXing-C++ (Axel Waggershauser and contributors), compiled into zxing-wasm | Barcode decoding | Apache-2.0: name it and include its licence/NOTICE |

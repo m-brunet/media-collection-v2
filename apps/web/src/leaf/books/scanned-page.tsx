@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router';
 import type { BookDto, BookLookupDto } from '../../../../../packages/contracts/src/http';
 import { api } from '../../shared/api.util';
+import { useSourceNames } from '../../shared/book-form/use-source-names';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { useAction } from '../../shared/use-action';
 import { Button } from '../../shared/ui/button';
@@ -98,12 +99,13 @@ function Existing({ book, onOwned }: { book: BookDto; onOwned(book: BookDto): vo
 
 function FailureMessage({ failure }: { failure: Failure }) {
     const { t } = useI18n();
+    const sourceNames = useSourceNames();
 
     switch (failure.kind) {
         case 'not-found':
             return <>{t('leaf.found.notFound')}</>;
         case 'unavailable':
-            return <>{t('leaf.found.unavailable', { sources: failure.sources.join(', ') })}</>;
+            return <>{t('leaf.found.unavailable', { sources: sourceNames(failure.sources) })}</>;
         case 'error':
             return <>{t('leaf.found.error')}</>;
     }
@@ -114,12 +116,6 @@ function Scanned({ isbn }: { isbn: string }) {
     const navigate = useNavigate();
     const [step, setStep] = useState<Step>({ kind: 'ready' });
     const attempts = step.kind === 'failed' ? step.attempts : 0;
-    const sourceName = (source: string) =>
-        source === 'bnf'
-            ? t('source.bnf')
-            : source === 'openlibrary'
-              ? t('source.openlibrary')
-              : source;
     const failed = (failure: Failure) =>
         setStep({ kind: 'failed', failure, attempts: attempts + 1 });
     const find = async () => {
@@ -151,7 +147,7 @@ function Scanned({ isbn }: { isbn: string }) {
         } else if (result.unavailable.length > 0) {
             failed({
                 kind: 'unavailable',
-                sources: result.unavailable.map(({ source }) => sourceName(source)),
+                sources: result.unavailable.map(({ source }) => source),
             });
         } else {
             failed({ kind: 'not-found' });

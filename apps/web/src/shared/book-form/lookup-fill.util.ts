@@ -76,6 +76,11 @@ export class LookupFill {
         };
     }
 
+    // A new draft filled with every field's preferred value, as Leaf's review form opens.
+    static prefilled(draft: BookDraftValues, fields: BookLookupFieldsDto): BookDraftValues {
+        return LookupFill.apply(draft, LookupFill.defaults(fields, draft)).next;
+    }
+
     // Fills the empty fields; the fields holding something else are returned as conflicts.
     static apply(
         draft: BookDraftValues,

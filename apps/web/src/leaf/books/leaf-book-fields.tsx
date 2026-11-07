@@ -11,6 +11,7 @@ import type { CoverChoice } from '../../shared/book-form/cover-choice';
 import type { LookupField } from '../../shared/book-form/lookup-fill.util';
 import { LookupFill } from '../../shared/book-form/lookup-fill.util';
 import type { BookField } from '../../shared/book-form/use-book-save';
+import { useSourceNames } from '../../shared/book-form/use-source-names';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Button } from '../../shared/ui/button';
 import { Icon } from '../../shared/ui/icon';
@@ -31,21 +32,6 @@ export interface LeafFieldsProps {
     bookcases: BookcaseDto[];
     additionalOpen: boolean;
     setAdditionalOpen(open: boolean): void;
-}
-
-function useSourceNames() {
-    const { t } = useI18n();
-
-    return (sources: readonly string[]) =>
-        sources
-            .map((source) =>
-                source === 'bnf'
-                    ? t('source.bnf')
-                    : source === 'openlibrary'
-                      ? t('source.openlibrary')
-                      : source,
-            )
-            .join(', ');
 }
 
 // The other values the sources gave for a field, each with a button to use it instead.

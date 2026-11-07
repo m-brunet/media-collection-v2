@@ -36,3 +36,21 @@ it('rejects a value that is not thirteen digits', () => {
 
     expect(result).toBeNull();
 });
+
+it('finds the ISBN among the barcodes read in a picture', () => {
+    const result = ScannedIsbn.reading(['3017620422003', '9781635575637']);
+
+    expect(result).toEqual({ kind: 'isbn', isbn: '9781635575637' });
+});
+
+it('reports barcodes that are not ISBNs', () => {
+    const result = ScannedIsbn.reading(['3017620422003']);
+
+    expect(result).toEqual({ kind: 'not-isbn' });
+});
+
+it('reports a picture without any barcode', () => {
+    const result = ScannedIsbn.reading([]);
+
+    expect(result).toEqual({ kind: 'none' });
+});

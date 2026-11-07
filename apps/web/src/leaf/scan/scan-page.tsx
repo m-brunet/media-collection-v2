@@ -5,30 +5,11 @@ import { Button } from '../../shared/ui/button';
 import { Notice } from '../../shared/ui/notice';
 import { LoadingState } from '../../shared/ui/states';
 import { LeafPage } from '../leaf-page';
-import type { BarcodeReader } from './barcode-reader-context';
 import { useBarcodeReader } from './barcode-reader-context';
+import type { BarcodeReading } from './scanned-isbn.util';
 import { ScannedIsbn } from './scanned-isbn.util';
 
 type Mode = 'live' | 'photo' | 'camera-unavailable';
-
-// What the barcodes found in one picture amount to.
-type Reading = { kind: 'isbn'; isbn: string } | { kind: 'not-isbn' } | { kind: 'none' };
-
-async function readIsbn(reader: BarcodeReader, source: HTMLVideoElement | Blob): Promise<Reading> {
-    const values = await reader.read(source);
-    const isbn = values.map((value) => ScannedIsbn.from(value)).find((value) => value !== null);
-
-    if (isbn) {
-        return { kind: 'isbn', isbn };
-    }
-
-    return values.length > 0 ? { kind: 'not-isbn' } : { kind: 'none' };
-}
-
-// Browsers give live camera video only to secure pages (HTTPS, or the computer itself).
-function liveCameraPossible(): boolean {
-    return window.isSecureContext && typeof navigator.mediaDevices?.getUserMedia === 'function';
-}
 
 function useScanned() {
     const navigate = useNavigate();
@@ -67,9 +48,10 @@ function LiveScanner({ onUnavailable }: { onUnavailable(): void }) {
                 return;
             }
 
-            const reading = await readIsbn(reader, video.current).catch((): Reading => ({
-                kind: 'none',
-            }));
+            const reading = await reader
+                .read(video.current)
+                .then((values) => ScannedIsbn.reading(values))
+                .catch((): BarcodeReading => ({ kind: 'none' }));
 
             if (!active) {
                 return;
@@ -145,7 +127,10 @@ function PhotoScanner() {
 
     async function read(file: File) {
         setState('reading');
-        const reading = await readIsbn(reader, file).catch((): Reading => ({ kind: 'none' }));
+        const reading = await reader
+            .read(file)
+            .then((values) => ScannedIsbn.reading(values))
+            .catch((): BarcodeReading => ({ kind: 'none' }));
 
         if (reading.kind === 'isbn') {
             scanned(reading.isbn);
@@ -216,7 +201,12 @@ function CameraUnavailable({ onRetry }: { onRetry(): void }) {
 // Scanning is the only way into the mobile add form: no ISBN can be typed on the phone.
 export function ScanPage() {
     const { t } = useI18n();
-    const [mode, setMode] = useState<Mode>(() => (liveCameraPossible() ? 'live' : 'photo'));
+    // Browsers give live camera video only to secure pages (HTTPS, or the computer itself).
+    const [mode, setMode] = useState<Mode>(() =>
+        window.isSecureContext && typeof navigator.mediaDevices?.getUserMedia === 'function'
+            ? 'live'
+            : 'photo',
+    );
     const unavailable = useCallback(() => setMode('camera-unavailable'), []);
 
     return (

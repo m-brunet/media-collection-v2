@@ -3,13 +3,11 @@ import type { LookupCoverDto } from '../../../../../packages/contracts/src/http'
 import { api } from '../../shared/api.util';
 import { ApiErrorMessage } from '../../shared/api-error-message.util';
 import type { CoverChoice } from '../../shared/book-form/cover-choice';
+import { CoverFile } from '../../shared/book-form/cover-file.util';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Button } from '../../shared/ui/button';
 import { Icon } from '../../shared/ui/icon';
 import { TextField } from '../../shared/ui/text-field';
-
-const types = ['image/jpeg', 'image/png', 'image/webp'];
-const limit = 10 * 1024 * 1024;
 
 // The phone's cover helpers (Task 7 decision): covers found by Find book, a web search in a new
 // tab, an image address (with Paste), and a saved picture from the photo library. Desktop paste
@@ -41,9 +39,9 @@ export function LeafCoverField({
     useEffect(() => () => void (preview && URL.revokeObjectURL(preview)), [preview]);
 
     const accept = (file: Blob) => {
-        if (!types.includes(file.type)) {
+        if (CoverFile.problem(file) === 'format') {
             setError(t('reason.coverFormat'));
-        } else if (file.size > limit) {
+        } else if (CoverFile.problem(file) === 'size') {
             setError(t('reason.coverTooLarge'));
         } else {
             setError(null);
@@ -155,7 +153,7 @@ export function LeafCoverField({
                 ref={input}
                 className="visually-hidden"
                 type="file"
-                accept={types.join(',')}
+                accept={CoverFile.types.join(',')}
                 aria-label={t('leaf.cover.photos')}
                 tabIndex={-1}
                 onChange={(event) => {

@@ -1,3 +1,9 @@
+// What the barcodes found in one picture amount to.
+export type BarcodeReading =
+    | { kind: 'isbn'; isbn: string }
+    | { kind: 'not-isbn' }
+    | { kind: 'none' };
+
 // Book barcodes are EAN-13 codes in the 978 and 979 "Bookland" ranges: their 13 digits are the
 // ISBN-13 itself. Any other barcode (a price label, a shop code) is not an ISBN.
 export class ScannedIsbn {
@@ -9,6 +15,18 @@ export class ScannedIsbn {
         }
 
         return ScannedIsbn.checkDigitValid(digits) ? digits : null;
+    }
+
+    // The first ISBN among the barcode values read in one picture; any other barcode is reported
+    // as not an ISBN.
+    static reading(values: readonly string[]): BarcodeReading {
+        const isbn = values.map((value) => ScannedIsbn.from(value)).find((value) => value !== null);
+
+        if (isbn) {
+            return { kind: 'isbn', isbn };
+        }
+
+        return values.length > 0 ? { kind: 'not-isbn' } : { kind: 'none' };
     }
 
     private static checkDigitValid(digits: string): boolean {
