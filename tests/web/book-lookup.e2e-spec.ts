@@ -105,6 +105,8 @@ async function addBookWith(isbn: string, viewport = viewports.referenceDesktop):
     await page.getByLabel(/^Username/).fill('camille');
     await page.getByLabel(/^Password/).fill('camille-password');
     await page.getByRole('button', { name: 'Sign in' }).click();
+    await page.getByRole('heading', { name: 'Overview' }).waitFor();
+    await page.getByRole('link', { name: 'My books' }).click();
     await page.getByRole('heading', { name: 'My books' }).waitFor();
     await page.getByRole('button', { name: 'Add a book' }).first().click();
     await page.getByLabel(/^ISBN/).fill(isbn);
