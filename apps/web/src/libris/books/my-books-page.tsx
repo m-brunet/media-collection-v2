@@ -12,7 +12,7 @@ import { Notice } from '../../shared/ui/notice';
 import { EmptyState, LoadingState } from '../../shared/ui/states';
 import { BookCover } from './book-cover';
 import { CollectionFormat } from '../collections/collection-format.util';
-import { BookFormat } from './book-format.util';
+import { BookFormat } from '../../shared/book-form/book-format.util';
 import { AppliedFilters, useListingFilter } from '../filters/applied-filters';
 import { BookFilter } from '../filters/book-filter.util';
 

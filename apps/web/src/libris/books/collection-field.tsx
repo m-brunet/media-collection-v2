@@ -4,8 +4,8 @@ import { api } from '../../shared/api.util';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { SelectField } from '../../shared/ui/select-field';
 import { TextField } from '../../shared/ui/text-field';
-import type { BookDraftValues } from './book-draft.util';
-import { BookDraft } from './book-draft.util';
+import type { BookDraftValues } from '../../shared/book-form/book-draft.util';
+import { BookDraft } from '../../shared/book-form/book-draft.util';
 
 type CollectionValues = Pick<
     BookDraftValues,

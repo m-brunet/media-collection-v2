@@ -11,7 +11,7 @@ import { useSession } from '../../shared/session/session-context';
 import { Button } from '../../shared/ui/button';
 import { Icon } from '../../shared/ui/icon';
 import { BookCover } from '../books/book-cover';
-import { BookFormat } from '../books/book-format.util';
+import { BookFormat } from '../../shared/book-form/book-format.util';
 import { PageHeader } from '../../shared/ui/layout';
 import { Notice } from '../../shared/ui/notice';
 import { EmptyState, LoadingState } from '../../shared/ui/states';

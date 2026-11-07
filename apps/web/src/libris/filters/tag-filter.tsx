@@ -6,7 +6,7 @@ import type { MessageKey } from '../../shared/i18n/catalog-en';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Icon } from '../../shared/ui/icon';
 import { Notice } from '../../shared/ui/notice';
-import { BookDraft } from '../books/book-draft.util';
+import { BookDraft } from '../../shared/book-form/book-draft.util';
 import type { Filter, TagChoice } from './book-filter.util';
 import { BookFilter } from './book-filter.util';
 

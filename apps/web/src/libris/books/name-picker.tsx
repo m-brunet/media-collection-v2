@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useEffect, useId, useState } from 'react';
 import { Icon } from '../../shared/ui/icon';
-import { BookDraft } from './book-draft.util';
+import { BookDraft } from '../../shared/book-form/book-draft.util';
 
 // A saved identity (author, tag) suggested while typing.
 export interface NamedChoice {

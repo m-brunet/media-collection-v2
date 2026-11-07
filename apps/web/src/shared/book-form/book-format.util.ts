@@ -3,7 +3,7 @@ import type {
     BookOwnership,
     BookSort,
 } from '../../../../../packages/contracts/src/http';
-import type { MessageKey } from '../../shared/i18n/catalog-en';
+import type { MessageKey } from '../i18n/catalog-en';
 
 export interface SortChoice {
     sort: BookSort;

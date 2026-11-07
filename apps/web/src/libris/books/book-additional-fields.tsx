@@ -3,8 +3,8 @@ import { Button } from '../../shared/ui/button';
 import { Icon } from '../../shared/ui/icon';
 import { SelectField } from '../../shared/ui/select-field';
 import { TextAreaField, TextField } from '../../shared/ui/text-field';
-import type { BookDraftValues, DraftFieldSetter } from './book-draft.util';
-import { BookFormat } from './book-format.util';
+import type { BookDraftValues, DraftFieldSetter } from '../../shared/book-form/book-draft.util';
+import { BookFormat } from '../../shared/book-form/book-format.util';
 import type { BookField } from './use-book-save';
 
 // "Additional information" of the book form, folded by default: publisher, publication date,

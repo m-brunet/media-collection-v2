@@ -7,8 +7,12 @@ import type { MessageKey } from '../../shared/i18n/catalog-en';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Button } from '../../shared/ui/button';
 import { Dialog } from '../../shared/ui/dialog';
-import type { LookupConflict, LookupField, LookupSelection } from './lookup-fill.util';
-import { LookupFill } from './lookup-fill.util';
+import type {
+    LookupConflict,
+    LookupField,
+    LookupSelection,
+} from '../../shared/book-form/lookup-fill.util';
+import { LookupFill } from '../../shared/book-form/lookup-fill.util';
 
 const labels: Record<LookupField, MessageKey> = {
     title: 'form.title',

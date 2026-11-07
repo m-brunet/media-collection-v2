@@ -16,7 +16,7 @@ import { Notice } from '../../shared/ui/notice';
 import { TextField } from '../../shared/ui/text-field';
 import { useAction } from '../../shared/use-action';
 import { CollectionFormat } from '../collections/collection-format.util';
-import { BookFormat } from './book-format.util';
+import { BookFormat } from '../../shared/book-form/book-format.util';
 
 // A typed author name is close to existing authors: reuse one, or confirm a different person.
 export function SimilarAuthorDialog({
