@@ -16,7 +16,9 @@ import type { DeleteCollectionUseCase } from '../../../../application/ports/driv
 import type { FindCollectionsUseCase } from '../../../../application/ports/driving/find-collections-use-case.interface.js';
 import type { FinishCollectionUseCase } from '../../../../application/ports/driving/finish-collection-use-case.interface.js';
 import type { GetCollectionUseCase } from '../../../../application/ports/driving/get-collection-use-case.interface.js';
+import type { GetCollectionShoppingUseCase } from '../../../../application/ports/driving/get-collection-shopping-use-case.interface.js';
 import type { ListCollectionsUseCase } from '../../../../application/ports/driving/list-collections-use-case.interface.js';
+import type { ListShoppingCollectionsUseCase } from '../../../../application/ports/driving/list-shopping-collections-use-case.interface.js';
 import type { ReopenCollectionUseCase } from '../../../../application/ports/driving/reopen-collection-use-case.interface.js';
 import type { UpdateCollectionUseCase } from '../../../../application/ports/driving/update-collection-use-case.interface.js';
 import type { AuthenticatedRequest } from '../../../../../shared/infrastructure/adapters/driving/web/api-guard.js';
@@ -25,6 +27,8 @@ import type {
     CollectionDetailsDto,
     CollectionListPageDto,
     CollectionNameDto,
+    CollectionShoppingDto,
+    ShoppingCollectionDto,
 } from '../../../../../../../../packages/contracts/src/http.js';
 import {
     collectionChangesSchema,
@@ -34,6 +38,7 @@ import {
 } from './collection-schemas.js';
 
 // Collections every signed-in account may read and Owners may rename, finish, reopen or delete.
+// The shopping views serve Leaf, which is for Owners and the Admin only.
 @Controller('api/collections')
 export class CollectionsController {
     constructor(
@@ -44,6 +49,10 @@ export class CollectionsController {
         @Inject('COLLECTIONS_FINISH') private readonly finishCollection: FinishCollectionUseCase,
         @Inject('COLLECTIONS_REOPEN') private readonly reopenCollection: ReopenCollectionUseCase,
         @Inject('COLLECTIONS_DELETE') private readonly deleteCollection: DeleteCollectionUseCase,
+        @Inject('COLLECTIONS_SHOPPING_LIST')
+        private readonly listShopping: ListShoppingCollectionsUseCase,
+        @Inject('COLLECTIONS_SHOPPING_GET')
+        private readonly getShopping: GetCollectionShoppingUseCase,
     ) {}
 
     @Get()
@@ -68,6 +77,20 @@ export class CollectionsController {
         @Query({ schema: collectionNamesSchema }) query: z.infer<typeof collectionNamesSchema>,
     ): Promise<CollectionNameDto[]> {
         return this.findCollections.execute(query.search);
+    }
+
+    // Declared before `:id` so that `shopping` is not read as an identifier.
+    @Get('shopping')
+    shoppingList(@Req() request: AuthenticatedRequest): Promise<ShoppingCollectionDto[]> {
+        return this.listShopping.execute(request.actor);
+    }
+
+    @Get(':id/shopping')
+    shopping(
+        @Param('id', { schema: collectionIdSchema }) id: string,
+        @Req() request: AuthenticatedRequest,
+    ): Promise<CollectionShoppingDto> {
+        return this.getShopping.execute(request.actor, id);
     }
 
     @Get(':id')

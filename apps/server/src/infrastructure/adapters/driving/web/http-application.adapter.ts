@@ -22,6 +22,9 @@ export class HttpApplication {
                     : {
                           directives: {
                               'upgrade-insecure-requests': null,
+                              // Leaf reads barcodes with a bundled WebAssembly reader; this allows
+                              // compiling WebAssembly only, not JavaScript `eval`.
+                              'script-src': ["'self'", "'wasm-unsafe-eval'"],
                               // A chosen cover is previewed locally before it is uploaded.
                               'img-src': ["'self'", 'data:', 'blob:'],
                           },

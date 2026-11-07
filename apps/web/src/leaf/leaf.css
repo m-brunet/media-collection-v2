@@ -32,3 +32,342 @@
     min-height: 48px;
     font-size: 16px;
 }
+
+.leaf__subtitle {
+    font-size: var(--text-lg);
+}
+
+.leaf__back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 44px;
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+}
+
+.leaf__footer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.leaf__account {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.leaf .button {
+    justify-content: center;
+}
+
+.leaf-home__actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.leaf-home__action {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    min-height: 88px;
+    padding: var(--space-5);
+    border: var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--color-panel);
+    color: var(--color-text);
+    text-decoration: none;
+}
+
+.leaf-home__action:focus-visible,
+.leaf-list__item:focus-visible,
+.leaf__back:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
+
+.leaf-home__action-text,
+.leaf-list__item,
+.leaf-volume__text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+}
+
+.leaf-home__action-title,
+.leaf-list__name {
+    font-family: var(--font-heading);
+    font-size: var(--text-lg);
+}
+
+.leaf-home__action-hint,
+.leaf-list__detail,
+.leaf-volume__state {
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+}
+
+.leaf-list,
+.leaf-volumes {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.leaf-list__item {
+    min-height: 64px;
+    padding: var(--space-4);
+    border: var(--border);
+    border-radius: var(--radius-md);
+    background: var(--color-panel);
+    color: var(--color-text);
+    text-decoration: none;
+}
+
+.leaf-volume {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    min-height: 56px;
+    padding: var(--space-3) var(--space-4);
+    border: var(--border);
+    border-radius: var(--radius-md);
+    background: var(--color-panel);
+}
+
+.leaf-volume__name {
+    font-weight: 600;
+}
+
+.leaf-shopping__last {
+    padding: var(--space-4);
+    border: var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--color-panel);
+}
+
+.leaf-shopping__last-volume {
+    font-family: var(--font-mono);
+    font-size: var(--text-3xl);
+}
+
+.leaf-shopping__none {
+    font-size: var(--text-lg);
+}
+
+.leaf-shopping__book {
+    font-weight: 600;
+}
+
+.leaf-scan__viewfinder {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: #000;
+    aspect-ratio: 3 / 4;
+}
+
+.leaf-scan__video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.leaf-scan__guide {
+    position: absolute;
+    inset: 35% 10%;
+    border: 3px solid var(--color-accent);
+    border-radius: var(--radius-md);
+}
+
+.leaf-found__isbn {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-4);
+    border: var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--color-panel);
+}
+
+.leaf-found__digits {
+    font-family: var(--font-mono);
+    font-size: var(--text-xl);
+    overflow-wrap: anywhere;
+}
+
+.leaf-found__book {
+    font-weight: 600;
+}
+
+.leaf-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+.leaf-form__section,
+.leaf-form__additional {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-width: 0;
+    margin: 0;
+    padding: var(--space-4);
+    border: var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--color-panel);
+}
+
+.leaf-form__additional[open] > summary {
+    margin-bottom: var(--space-4);
+}
+
+.leaf-form__additional > :not(summary) + :not(summary) {
+    margin-top: var(--space-4);
+}
+
+.leaf-form__legend {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+}
+
+.leaf-form__group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.leaf-alternatives {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-top: calc(-1 * var(--space-2));
+}
+
+.leaf-alternatives__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+}
+
+.leaf-alternatives__text {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.leaf-names,
+.leaf-names__add {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.leaf-names__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.leaf-cover {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.leaf-cover__preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 140px;
+    aspect-ratio: 2 / 3;
+    border: var(--border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    overflow: hidden;
+}
+
+.leaf-cover__preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.leaf-cover__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+    text-align: center;
+}
+
+.leaf-cover__found {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.leaf-cover__found legend {
+    margin-bottom: var(--space-2);
+}
+
+.leaf-cover__option {
+    width: 72px;
+    aspect-ratio: 2 / 3;
+    padding: 0;
+    border: 2px solid transparent;
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    overflow: hidden;
+}
+
+.leaf-cover__option[aria-pressed='true'] {
+    border-color: var(--color-accent);
+}
+
+.leaf-cover__option img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.leaf-cover__actions,
+.leaf-question__answers {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.leaf-question__books {
+    margin: 0;
+    padding-left: var(--space-5);
+}

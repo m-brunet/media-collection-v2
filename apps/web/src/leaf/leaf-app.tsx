@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
+import { useState } from 'react';
+import { createBrowserRouter, Navigate, Route, RouterProvider, Routes } from 'react-router';
 import { useI18n } from '../shared/i18n/i18n-context';
 import { AppearanceProvider } from '../shared/appearance/appearance-context';
 import { SessionProvider, useSession } from '../shared/session/session-context';
@@ -8,7 +9,15 @@ import { Brand } from '../shared/ui/brand';
 import { Button } from '../shared/ui/button';
 import { LanguageSwitch } from '../shared/ui/language-switch';
 import { Notice } from '../shared/ui/notice';
+import { RoleLabel } from '../shared/role-label.util';
 import { LoadingState } from '../shared/ui/states';
+import { AddBookPage } from './books/add-book-page';
+import { SavedPage } from './books/saved-page';
+import { ScannedPage } from './books/scanned-page';
+import { HomePage } from './home-page';
+import { ScanPage } from './scan/scan-page';
+import { CollectionShoppingPage } from './shopping/collection-shopping-page';
+import { ShoppingListPage } from './shopping/shopping-list-page';
 
 function LeafLayout({ children }: { children: ReactNode }) {
     return (
@@ -18,6 +27,7 @@ function LeafLayout({ children }: { children: ReactNode }) {
             </header>
             <main className="leaf__main">{children}</main>
             <footer className="leaf__footer">
+                <SignedInAs />
                 <LanguageSwitch />
             </footer>
         </div>
@@ -35,17 +45,22 @@ function SignOutButton() {
     );
 }
 
-// Mobile home. Collection shopping and scanning arrive in Task 7.
-function HomePage() {
+// The signed-in account and its role, with Sign out, under every Owner/Admin screen.
+function SignedInAs() {
     const { t } = useI18n();
+    const { account } = useSession();
+
+    if (!account || account.role === 'guest' || account.mustChangePassword) {
+        return null;
+    }
 
     return (
-        <section className="leaf__section">
-            <p className="eyebrow">{t('leaf.home.eyebrow')}</p>
-            <h1 className="leaf__title">{t('leaf.home.title')}</h1>
-            <p className="muted">{t('leaf.home.pending')}</p>
+        <div className="leaf__account">
+            <span className="muted">
+                {account.username} · {t(RoleLabel.name(account.role))}
+            </span>
             <SignOutButton />
-        </section>
+        </div>
     );
 }
 
@@ -100,21 +115,34 @@ function LeafRoutes() {
     return (
         <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/collections" element={<ShoppingListPage />} />
+            <Route path="/collections/:id" element={<CollectionShoppingPage />} />
+            <Route path="/scan" element={<ScanPage />} />
+            <Route path="/scan/found" element={<ScannedPage />} />
+            <Route path="/add" element={<AddBookPage />} />
+            <Route path="/saved" element={<SavedPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );
 }
 
-export function LeafApp() {
+function LeafRoot() {
     return (
-        <BrowserRouter basename="/leaf">
-            <AppearanceProvider>
-                <SessionProvider>
-                    <LeafLayout>
-                        <LeafRoutes />
-                    </LeafLayout>
-                </SessionProvider>
-            </AppearanceProvider>
-        </BrowserRouter>
+        <AppearanceProvider>
+            <SessionProvider>
+                <LeafLayout>
+                    <LeafRoutes />
+                </LeafLayout>
+            </SessionProvider>
+        </AppearanceProvider>
     );
+}
+
+// A data router, so the book form can ask before discarding unsaved changes.
+export function LeafApp() {
+    const [router] = useState(() =>
+        createBrowserRouter([{ path: '*', element: <LeafRoot /> }], { basename: '/leaf' }),
+    );
+
+    return <RouterProvider router={router} />;
 }

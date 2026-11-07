@@ -11,7 +11,7 @@ import { NameDialog } from '../../shared/ui/name-dialog';
 import { Notice } from '../../shared/ui/notice';
 import { EmptyState, LoadingState } from '../../shared/ui/states';
 import { TextField } from '../../shared/ui/text-field';
-import { BookDraft } from '../books/book-draft.util';
+import { BookDraft } from '../../shared/book-form/book-draft.util';
 
 type Editing =
     | { kind: 'create' }
