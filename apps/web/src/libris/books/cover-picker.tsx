@@ -7,10 +7,8 @@ import { Button } from '../../shared/ui/button';
 import { Icon } from '../../shared/ui/icon';
 import { TextField } from '../../shared/ui/text-field';
 import type { CoverChoice } from '../../shared/book-form/cover-choice';
+import { CoverFile } from '../../shared/book-form/cover-file.util';
 import { BookCover } from './book-cover';
-
-const types = ['image/jpeg', 'image/png', 'image/webp'];
-const limit = 10 * 1024 * 1024;
 
 // The cover of the form, chosen from a file, pasted (Ctrl+V outside text fields), dropped, or
 // fetched from an image address; a web search helps find one (Task 6 cover helpers).
@@ -52,9 +50,9 @@ export function CoverPicker({
 
     const accept = useCallback(
         (file: File) => {
-            if (!types.includes(file.type)) {
+            if (CoverFile.problem(file) === 'format') {
                 setError(t('reason.coverFormat'));
-            } else if (file.size > limit) {
+            } else if (CoverFile.problem(file) === 'size') {
                 setError(t('reason.coverTooLarge'));
             } else {
                 setError(null);
@@ -145,7 +143,7 @@ export function CoverPicker({
             <input
                 ref={input}
                 type="file"
-                accept={types.join(',')}
+                accept={CoverFile.types.join(',')}
                 className="visually-hidden"
                 tabIndex={-1}
                 aria-hidden="true"

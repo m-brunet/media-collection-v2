@@ -13,6 +13,7 @@ import type {
     LookupSelection,
 } from '../../shared/book-form/lookup-fill.util';
 import { LookupFill } from '../../shared/book-form/lookup-fill.util';
+import { useSourceNames } from '../../shared/book-form/use-source-names';
 
 const labels: Record<LookupField, MessageKey> = {
     title: 'form.title',
@@ -23,18 +24,6 @@ const labels: Record<LookupField, MessageKey> = {
     summary: 'form.summary',
     collection: 'lookup.collection',
 };
-
-// "BnF" or "Open Library"; an unknown source keeps its technical name.
-export function useSourceNames() {
-    const { t } = useI18n();
-    const known: Record<string, MessageKey> = {
-        bnf: 'source.bnf',
-        openlibrary: 'source.openlibrary',
-    };
-
-    return (sources: readonly string[]) =>
-        sources.map((source) => (known[source] ? t(known[source]) : source)).join(', ');
-}
 
 // The lookup's values for review (design VMQcQ): the preferred source's value is selected first,
 // alternatives can be chosen, and nothing reaches the form before "Use these values".

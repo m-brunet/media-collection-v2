@@ -9,6 +9,7 @@ import type { CoverChoice } from '../../shared/book-form/cover-choice';
 import { LookupFill } from '../../shared/book-form/lookup-fill.util';
 import type { BookField } from '../../shared/book-form/use-book-save';
 import { useBookSave } from '../../shared/book-form/use-book-save';
+import { useSourceNames } from '../../shared/book-form/use-source-names';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Button } from '../../shared/ui/button';
 import { Dialog } from '../../shared/ui/dialog';
@@ -32,27 +33,17 @@ export interface SavedBookState {
     followUpFailed: boolean;
 }
 
-// The values Find book found, as the form opens: every field from its preferred source.
-function prefilled(isbn: string, lookup: LookedUpBook): BookDraftValues {
-    const empty = { ...BookDraft.empty(), isbn };
-
-    return LookupFill.apply(empty, LookupFill.defaults(lookup.fields, empty)).next;
-}
-
-function hasAdditional(values: BookDraftValues): boolean {
-    return [values.publisher, values.publicationYear, values.summary, values.pageCount].some(
-        (value) => value.trim() !== '',
-    );
-}
-
 function AddBookForm({ isbn, lookup }: AddBookState) {
     const { t } = useI18n();
     const navigate = useNavigate();
-    const [initial] = useState(() => prefilled(isbn, lookup));
+    const sourceNames = useSourceNames();
+    const [initial] = useState(() =>
+        LookupFill.prefilled({ ...BookDraft.empty(), isbn }, lookup.fields),
+    );
     const [values, setValues] = useState(initial);
     const [cover, setCover] = useState<CoverChoice>({ file: null, removed: false });
     const [coverTouched, setCoverTouched] = useState(false);
-    const [additionalOpen, setAdditionalOpen] = useState(() => hasAdditional(initial));
+    const [additionalOpen, setAdditionalOpen] = useState(() => BookDraft.hasAdditional(initial));
     const { resource: bookcases } = useLeafResource<BookcaseDto[]>('/bookcases');
     const leaving = useRef(false);
     const changed = coverTouched || !BookDraft.same(values, initial);
@@ -122,13 +113,7 @@ function AddBookForm({ isbn, lookup }: AddBookState) {
         event.preventDefault();
         void saving.save(values);
     };
-    const unavailable = lookup.unavailable.map(({ source }) =>
-        source === 'bnf'
-            ? t('source.bnf')
-            : source === 'openlibrary'
-              ? t('source.openlibrary')
-              : source,
-    );
+    const unavailable = sourceNames(lookup.unavailable.map(({ source }) => source));
 
     return (
         <LeafPage
@@ -136,10 +121,8 @@ function AddBookForm({ isbn, lookup }: AddBookState) {
             title={t('leaf.form.title')}
             intro={t('leaf.form.intro')}
         >
-            {unavailable.length > 0 && (
-                <Notice tone="warning">
-                    {t('lookup.partial', { sources: unavailable.join(', ') })}
-                </Notice>
+            {unavailable && (
+                <Notice tone="warning">{t('lookup.partial', { sources: unavailable })}</Notice>
             )}
             <form className="leaf-form" onSubmit={submit} noValidate>
                 <LeafBookFields

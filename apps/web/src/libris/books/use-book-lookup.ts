@@ -6,7 +6,7 @@ import { ApiErrorMessage } from '../../shared/api-error-message.util';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import type { BookDraftValues } from '../../shared/book-form/book-draft.util';
 import type { CoverChoice } from '../../shared/book-form/cover-choice';
-import { useSourceNames } from './lookup-dialogs';
+import { useSourceNames } from '../../shared/book-form/use-source-names';
 import type {
     LookupConflict,
     LookupField,

@@ -188,4 +188,18 @@ describe('LookupFill', () => {
 
         expect(result).toBe('Batman · 12');
     });
+
+    it('prefills a new draft with every preferred value', () => {
+        const found = fields({
+            title: [{ value: 'Piranesi', sources: ['bnf'] }],
+            publisher: [
+                { value: 'Bloomsbury', sources: ['bnf'] },
+                { value: 'Bloomsbury Publishing', sources: ['openlibrary'] },
+            ],
+        });
+
+        const result = LookupFill.prefilled(draft(), found);
+
+        expect(result).toMatchObject({ title: 'Piranesi', publisher: 'Bloomsbury' });
+    });
 });
