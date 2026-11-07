@@ -25,7 +25,7 @@ export class MarkBookOwned implements MarkBookOwnedUseCase {
     async execute(actor: Actor, bookId: string): Promise<BookView> {
         return this.operations.run(
             {
-                category: BookAudit.updated,
+                category: BookAudit.markedOwned,
                 actorId: actor.id,
                 subjectType: BookAudit.book,
                 subjectId: bookId,
