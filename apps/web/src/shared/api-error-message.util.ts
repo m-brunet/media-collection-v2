@@ -49,6 +49,7 @@ export class ApiErrorMessage {
         'lookup-cover-missing': 'reason.lookupCoverMissing',
         'lookup-cover-unavailable': 'reason.lookupCoverUnavailable',
         'book-missing': 'reason.bookMissing',
+        'book-already-owned': 'reason.bookAlreadyOwned',
         'cover-missing': 'reason.coverMissing',
         'request-too-large': 'reason.requestTooLarge',
         'collection-name-invalid': 'reason.collectionNameInvalid',

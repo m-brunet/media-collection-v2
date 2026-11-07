@@ -64,3 +64,36 @@ it('asks to finish first-launch setup on the host computer', async () => {
         await screen.findByRole('heading', { name: 'Setup is not finished yet' }),
     ).toBeInTheDocument();
 });
+
+it('offers Collections and Scan on the mobile home', async () => {
+    new FakeApi().signedIn(account());
+
+    render(<LeafApp />);
+
+    expect(await screen.findByRole('link', { name: /Collections/ })).toHaveAttribute(
+        'href',
+        '/leaf/collections',
+    );
+    expect(screen.getByRole('link', { name: /Scan a book/ })).toHaveAttribute('href', '/leaf/scan');
+});
+
+it('shows the signed-in account and its role with Sign out', async () => {
+    new FakeApi().signedIn(account({ username: 'alex', role: 'admin' }));
+
+    render(<LeafApp />);
+
+    expect(await screen.findByText('alex · Administrator')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Sign out' })).toBeInTheDocument();
+});
+
+it('refuses a Guest who opens a shopping link directly', async () => {
+    window.history.replaceState(null, '', '/leaf/collections');
+    const api = new FakeApi().signedIn(account({ role: 'guest' }));
+
+    render(<LeafApp />);
+
+    expect(
+        await screen.findByRole('heading', { name: 'Owner or Admin required' }),
+    ).toBeInTheDocument();
+    expect(api.calls.map((call) => call.route)).not.toContain('GET /collections/shopping');
+});
