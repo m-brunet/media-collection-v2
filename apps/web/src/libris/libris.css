@@ -1555,24 +1555,24 @@ body {
     margin-top: var(--space-2);
 }
 
-/* Overview */
+/* Overview (design nZknF: counters, recently added across the page, then reading and locations
+   side by side) */
 .overview {
-    display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+    display: flex;
+    flex-direction: column;
     gap: var(--space-6);
-    align-items: start;
 }
 
 .overview-counters {
-    grid-column: 1 / -1;
     display: flex;
+    flex-wrap: wrap;
     gap: var(--space-6);
     margin: 0;
 }
 
 .overview-counter {
     display: flex;
-    flex: 1 1 0;
+    flex: 1 1 160px;
     flex-direction: column-reverse;
     gap: var(--space-2);
     padding: var(--space-2) 0 var(--space-5);
@@ -1591,7 +1591,13 @@ body {
     color: var(--color-text-secondary);
 }
 
-.overview-panel__heading {
+.overview-recent {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+.overview-recent__heading {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
@@ -1600,8 +1606,13 @@ body {
 
 .overview-books {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: var(--space-4);
+    /* One slot per recent book (the server sends at most 5), spread across the row. A shorter
+       list keeps the same positions instead of being pushed to the edges. Covers grow with the
+       window height (20vh, between 148px and 240px wide) so tall windows show bigger covers
+       without short ones having to scroll; slots shrink in narrow windows. */
+    grid-template-columns: repeat(5, minmax(0, clamp(148px, 20vh, 240px)));
+    justify-content: space-between;
+    gap: var(--space-6);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -1610,14 +1621,16 @@ body {
 .overview-book {
     display: flex;
     flex-direction: column;
-    gap: var(--space-1);
+    gap: var(--space-2);
     color: inherit;
     text-decoration: none;
 }
 
+/* Keeps every cover box at its 2:3 shape; without it a tall image stretches its box and the
+   titles below no longer line up. */
 .overview-book .book-cover {
-    width: 100%;
-    margin-bottom: var(--space-2);
+    min-height: 0;
+    overflow: hidden;
 }
 
 .overview-book__title {
@@ -1640,24 +1653,52 @@ body {
     color: var(--color-text-muted);
 }
 
-.overview-side {
-    display: flex;
-    flex-direction: column;
+.overview-cards {
+    display: grid;
+    /* Two halves at most, so a Guest's lone locations card keeps its width. */
+    grid-template-columns: repeat(auto-fill, minmax(max(280px, calc(50% - var(--space-6))), 1fr));
     gap: var(--space-6);
 }
 
 .overview-reading__counts {
     font-family: var(--font-heading);
-    font-size: var(--text-xl);
+    font-size: var(--text-2xl);
+}
+
+.overview-reading__bar {
+    display: flex;
+    gap: 3px;
+    height: 8px;
+}
+
+.overview-reading__read,
+.overview-reading__not-read {
+    flex-basis: 0;
+    border-radius: 2px;
+}
+
+.overview-reading__read {
+    background: var(--color-accent);
+}
+
+.overview-reading__not-read {
+    background: var(--color-border-strong);
 }
 
 .overview-bookcases {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
+    gap: var(--space-1);
     margin: 0;
     padding: 0;
     list-style: none;
+    color: var(--color-text-secondary);
+}
+
+.overview-bookcases__first {
+    margin-bottom: var(--space-2);
+    font-size: var(--text-lg);
+    color: var(--color-text);
 }
 
 /* Activity (design E5DS9p: full-width feed, icon, action over its relative time) */

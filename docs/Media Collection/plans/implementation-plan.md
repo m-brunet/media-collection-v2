@@ -13,7 +13,7 @@ Created 2026-11-03. Working plan, kept with the documentation in the Obsidian va
 ## Sources of truth
 
 - Product rules: `docs/Media Collection/product/` (start with [product-scope](../product/product-scope.md), [features](../product/features.md), [decisions-and-open-questions](../product/decisions-and-open-questions.md)). Each task names its owning documents. Acceptance examples in those documents are test cases.
-- Design: [design-guidelines](../design/design-guidelines.md). Local copy of the design artifact in Git-ignored `design/`; open `design/artifact/index.html`. Specs win over drawn screens; the design is a style/layout guide, not exhaustive or pixel-perfect; placeholder data/copy is not specified content.
+- Design: [design-guidelines](../design/design-guidelines.md). Reference: the Doop canvas `shiKEeCX2V` (it replaces the Pen file); exports and the earlier artifact (`design/artifact/index.html`) in Git-ignored `design/`. Specs win over drawn screens; the design is a style/layout guide, not exhaustive or pixel-perfect; placeholder data/copy is not specified content.
 - Architecture: `AGENTS.md`, [architecture](../architecture/architecture.md). Hexagonal NestJS backend, Kysely/SQLite, React web, Electron desktop, shared `packages/contracts`. Business operations over HTTP only; no business IPC. Host-local maintenance (recovery, backup/restore, updates) is the only Electron-local path.
 
 ## Key decisions already made (do not reopen silently)

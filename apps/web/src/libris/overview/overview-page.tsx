@@ -47,6 +47,19 @@ function RecentBookCard({ book }: { book: RecentBook }) {
     );
 }
 
+// Read and Not read shares of the viewer's owned books. The counts are written out beside it,
+// so the bar itself is decorative.
+function ReadingBar({ read, notRead }: { read: number; notRead: number }) {
+    return (
+        <div className="overview-reading__bar" aria-hidden="true">
+            {read > 0 && <span className="overview-reading__read" style={{ flexGrow: read }} />}
+            {(notRead > 0 || read === 0) && (
+                <span className="overview-reading__not-read" style={{ flexGrow: notRead || 1 }} />
+            )}
+        </div>
+    );
+}
+
 // The household library at a glance. Counts come from the server; the reading part is the
 // viewer's own and absent for Guests.
 export function OverviewPage() {
@@ -104,8 +117,8 @@ export function OverviewPage() {
                         />
                         <Counter value={String(overview.lentBooks)} label={t('overview.lent')} />
                     </dl>
-                    <Panel className="overview-recent">
-                        <div className="overview-panel__heading">
+                    <section className="overview-recent">
+                        <div className="overview-recent__heading">
                             <h2 className="eyebrow">{t('overview.recent')}</h2>
                             <Link to="/books?sort=added-desc">{t('overview.allBooks')}</Link>
                         </div>
@@ -122,8 +135,8 @@ export function OverviewPage() {
                                 ))}
                             </ul>
                         )}
-                    </Panel>
-                    <div className="overview-side">
+                    </section>
+                    <div className="overview-cards">
                         {overview.reading && (
                             <Panel className="overview-reading">
                                 <h2 className="eyebrow">{t('overview.reading')}</h2>
@@ -133,6 +146,10 @@ export function OverviewPage() {
                                         notRead: overview.reading.notRead,
                                     })}
                                 </p>
+                                <ReadingBar
+                                    read={overview.reading.read}
+                                    notRead={overview.reading.notRead}
+                                />
                                 <p className="muted">{t('overview.readingNote')}</p>
                             </Panel>
                         )}
@@ -142,8 +159,15 @@ export function OverviewPage() {
                                 <p className="muted">{t('overview.noBookcases')}</p>
                             ) : (
                                 <ul className="overview-bookcases">
-                                    {overview.bookcaseList.map((bookcase) => (
-                                        <li key={bookcase.id}>
+                                    {overview.bookcaseList.map((bookcase, index) => (
+                                        <li
+                                            key={bookcase.id}
+                                            className={
+                                                index === 0
+                                                    ? 'overview-bookcases__first'
+                                                    : undefined
+                                            }
+                                        >
                                             {t(
                                                 bookcase.shelfCount === 1
                                                     ? 'overview.bookcaseOne'
