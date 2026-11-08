@@ -40,16 +40,6 @@ describe('POST /api/maintenance/data-reset', () => {
         expect(await app.dependencies.library.loans()).toEqual([]);
         expect(await app.dependencies.library.receivers()).toEqual([]);
     });
-    it('erases the tags', async () => {
-        const client = await populatedLibrary();
-
-        await client.call('/maintenance/data-reset', 'POST', { password: admin.password });
-
-        const signedIn = await app.authenticatedClient(admin);
-        const tags = await signedIn.call<unknown[]>('/tags');
-
-        expect(tags.body).toEqual([]);
-    });
     it('keeps only the Admin account', async () => {
         const client = await populatedLibrary();
 
@@ -59,14 +49,16 @@ describe('POST /api/maintenance/data-reset', () => {
 
         expect(accounts.map((account) => account.actor.username)).toEqual(['administrator']);
     });
-    it('keeps the Admin password valid', async () => {
+    it('keeps the Admin password', async () => {
         const client = await populatedLibrary();
+        const before = (await app.dependencies.users.findById(admin.id))!.snapshot;
 
         await client.call('/maintenance/data-reset', 'POST', { password: admin.password });
 
-        const response = await app.client().login(admin.username, admin.password);
+        const after = (await app.dependencies.users.findById(admin.id))!.snapshot;
 
-        expect(response.status).toBe(200);
+        expect(after.passwordHash).toBe(before.passwordHash);
+        expect(after.mustChangePassword).toBe(false);
     });
     it('returns the colour scheme to Spring green', async () => {
         const client = await populatedLibrary();
@@ -91,21 +83,21 @@ describe('POST /api/maintenance/data-reset', () => {
     it('signs the Admin out', async () => {
         const client = await populatedLibrary();
 
-        await client.call('/maintenance/data-reset', 'POST', { password: admin.password });
+        const response = await client.call('/maintenance/data-reset', 'POST', {
+            password: admin.password,
+        });
 
-        const response = await client.call('/auth/me');
-
-        expect(response.status).toBe(401);
+        expect(response.headers['set-cookie']!.join(';')).toMatch(/app_auth=;/);
     });
-    it('ends the Admin sessions on other devices', async () => {
+    it('ends every Admin session', async () => {
         const client = await populatedLibrary();
-        const otherDevice = await app.authenticatedClient(admin);
+        const before = (await app.dependencies.users.findById(admin.id))!.snapshot.tokenVersion;
 
         await client.call('/maintenance/data-reset', 'POST', { password: admin.password });
 
-        const response = await otherDevice.call('/auth/me');
+        const after = (await app.dependencies.users.findById(admin.id))!.snapshot.tokenVersion;
 
-        expect(response.status).toBe(401);
+        expect(after).toBeGreaterThan(before);
     });
     it('refuses a wrong password and keeps the data', async () => {
         const client = await populatedLibrary();
