@@ -16,9 +16,9 @@ design.
 | KI-1 | Bug         | The desktop window cannot be closed while the book form has unsaved changes           | Low      | Open   |
 | KI-2 | Improvement | Libris sessions last 24 hours instead of one idle hour                                | Medium   | Open   |
 | KI-3 | Improvement | Additional information uses the same numbered heading as the other book-form sections | Low      | Open   |
-| KI-4 | Improvement | Libris has an application icon in the Windows taskbar                                 | Low      | Open   |
-| KI-5 | Bug         | Bookshelves count not vertically centred with the search field                         | Low      | Open   |
-| KI-6 | Improvement | Appearance offers seven new colour schemes; Mint, Emerald and Forest are removed        | Medium   | Open   |
+| KI-4 | Improvement | Libris has an application icon in the Windows taskbar                                 | Low      | Done   |
+| KI-5 | Bug         | Bookshelves count not vertically centred with the search field                        | Low      | Open   |
+| KI-6 | Improvement | Appearance offers seven new colour schemes; Mint, Emerald and Forest are removed      | Medium   | Open   |
 | KI-7 | Improvement | Interface text needs slightly wider letter spacing                                    | Low      | Open   |
 
 ## Open
@@ -67,33 +67,6 @@ design.
   sections: the label itself stays the expand/collapse button (with its arrow, `aria-expanded` and the closed hint).
   Check the Edit book form too, and whether Leaf's phone form should follow.
 - **Severity:** low (visual consistency). **Planned:** next fix pass, or the next task that touches the book form.
-
-### KI-4 — Libris has an application icon in the Windows taskbar
-
-- **Type:** Improvement.
-- **Reported:** 2026-11-07 by the user.
-- **Today:** no application icon is defined, in the specs or in the code: the desktop windows
-  (`apps/desktop/src/main.ts`, `new BrowserWindow`) set no `icon`, so Windows shows the default Electron icon in the
-  taskbar.
-- **Decided (2026-11-08, user):** the library brand mark of the icon set **"02 · Hand-inked editorial sketches"**
-  becomes the **official Libris icon**, everywhere Libris shows its mark: the taskbar and window icon of the desktop
-  app, the mark next to the "Libris" title (`Brand`, `apps/web/src/shared/ui/brand.tsx`, Lucide `Library` today) and
-  the favicon of the browser version. It is always drawn in the **Spring green** accent `#79d670`
-  (`--scheme-accent` of `[data-color-scheme='spring-green']`, `apps/web/src/shared/ui/tokens.css`), whatever colour
-  scheme or icon set is chosen. Leaf keeps its current mark and has no favicon yet: to be decided later.
-- **Fix:** take `design/artifact/icons/02-hand-inked-editorial/library-brand.svg` (Git-ignored `design/` folder;
-  Streamline Freehand icon `06-hand-inked/01` in `SOURCES-AND-LICENSES.json`), recolour it from its set ink `#86D39A`
-  to `#79d670` and keep it as `apps/web/public/libris.svg`: the Libris page links it as its favicon and `Brand` shows it
-  for Libris. Generate the desktop icon files from it (a Windows `.ico` with the usual sizes and a 512 px PNG for the
-  other systems) into `apps/desktop/assets/icons` and pass them to every `BrowserWindow` (and the tray, if there is
-  one). If `design/` is missing, ask the user for the file rather than redrawing it.
-- **Licence:** the mark is "Freehand free icons" by Streamline (https://www.streamlinehq.com,
-  https://github.com/webalys-hq/streamline-vectors), CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/),
-  recoloured and resized; it no longer comes from Lucide. Attribution is required: add it, with the licence link and the
-  note that it was modified, to the credits page planned in Task 10 (wording in `design/artifact/icons/CREDITS.md`), and
-  keep a `CREDITS.md` with the same attribution next to the icon files.
-- **Severity:** low (appearance). **Planned:** next fix pass, or Task 10 (packaging and installer), whichever comes
-  first; the installer icon should use the same files.
 
 ### KI-5 — Bookshelves count not vertically centred with the search field
 
@@ -181,4 +154,31 @@ design.
 
 ## Done
 
-None yet.
+### KI-4 — Libris has an application icon in the Windows taskbar
+
+- **Type:** Improvement.
+- **Reported:** 2026-11-07 by the user.
+- **Today:** no application icon is defined, in the specs or in the code: the desktop windows
+  (`apps/desktop/src/main.ts`, `new BrowserWindow`) set no `icon`, so Windows shows the default Electron icon in the
+  taskbar.
+- **Decided (2026-11-08, user):** the library brand mark of the icon set **"02 · Hand-inked editorial sketches"**
+  becomes the **official Libris icon**, everywhere Libris shows its mark: the taskbar and window icon of the desktop
+  app, the mark next to the "Libris" title (`Brand`, `apps/web/src/shared/ui/brand.tsx`, Lucide `Library` today) and
+  the favicon of the browser version. It is always drawn in the **Spring green** accent `#79d670`
+  (`--scheme-accent` of `[data-color-scheme='spring-green']`, `apps/web/src/shared/ui/tokens.css`), whatever colour
+  scheme or icon set is chosen. Leaf keeps its current mark and has no favicon yet: to be decided later.
+- **Fix:** take `design/artifact/icons/02-hand-inked-editorial/library-brand.svg` (Git-ignored `design/` folder;
+  Streamline Freehand icon `06-hand-inked/01` in `SOURCES-AND-LICENSES.json`), recolour it from its set ink `#86D39A`
+  to `#79d670` and keep it as `apps/web/public/libris.svg`: the Libris page links it as its favicon and `Brand` shows it
+  for Libris. Generate the desktop icon files from it (a Windows `.ico` with the usual sizes and a 512 px PNG for the
+  other systems) into `apps/desktop/assets/icons` and pass them to every `BrowserWindow` (and the tray, if there is
+  one). If `design/` is missing, ask the user for the file rather than redrawing it.
+- **Licence:** the mark is "Freehand free icons" by Streamline (https://www.streamlinehq.com,
+  https://github.com/webalys-hq/streamline-vectors), CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/),
+  recoloured and resized; it no longer comes from Lucide. Attribution is required: add it, with the licence link and the
+  note that it was modified, to the credits page planned in Task 10 (wording in `design/artifact/icons/CREDITS.md`), and
+  keep a `CREDITS.md` with the same attribution next to the icon files.
+- **Done:** 2026-11-08, commit `b4e2f3d` (branch `ki-4-libris-icon`): `apps/web/public/libris.svg`, favicon, `Brand`
+  for Libris, `apps/desktop/assets/icons` (`.ico`, PNG, `CREDITS.md`, generated by `tools/generate-libris-icons.mjs`)
+  on both desktop windows. Still to do in Task 10: the credits page entry and the installer icon.
+- **Severity:** low (appearance).
