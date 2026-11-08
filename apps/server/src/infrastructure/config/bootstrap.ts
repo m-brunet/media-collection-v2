@@ -6,7 +6,6 @@ import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import type { Server } from 'node:http';
 import { createServer as createHttpServer } from 'node:http';
-import { createServer as createHttpsServer } from 'node:https';
 import { networkInterfaces } from 'node:os';
 import { Database } from '../../shared/infrastructure/adapters/driven/persistence/database.adapter.js';
 import { PrivateStorage } from '../../shared/infrastructure/adapters/driven/filesystem/private-storage.adapter.js';
@@ -29,6 +28,8 @@ import { HttpSettings } from '../../server-settings/domain/value-objects/http-se
 import type { TlsSettingsState } from '../../server-settings/domain/value-objects/tls-settings.value-object.js';
 import { TlsSettings } from '../../server-settings/domain/value-objects/tls-settings.value-object.js';
 import { PemCertificateValidator } from '../../server-settings/infrastructure/adapters/driven/security/pem-certificate-validator.adapter.js';
+import { TlsAlpnChallenges } from '../../server-settings/infrastructure/adapters/driven/security/tls-alpn-challenges.adapter.js';
+import { NodeHttpsRuntime } from '../../server-settings/infrastructure/adapters/driven/runtime/node-https-runtime.adapter.js';
 import { IdentityModule } from '../../identity/infrastructure/config/identity.module.js';
 import { SettingsModule } from '../../server-settings/infrastructure/config/settings.module.js';
 import { HttpSessions } from '../../shared/infrastructure/adapters/driving/web/http-sessions.service.js';
@@ -130,7 +131,7 @@ export class BackendRuntime {
         const ids = new UuidGenerator();
         const database = await Database.open(options.dataDirectory, ids);
         let http: Server | undefined;
-        let https: Server | undefined;
+        let https: NodeHttpsRuntime | undefined;
         let nest: Awaited<ReturnType<typeof NestFactory.create>> | undefined;
 
         try {
@@ -176,7 +177,7 @@ export class BackendRuntime {
                 read: async () => ({
                     running: {
                         httpPort,
-                        httpsPort,
+                        httpsPort: https?.port ?? null,
                         httpsError,
                         addresses: this.addresses(options.host, httpPort),
                         httpPortOverride: options.httpPortSource
@@ -189,6 +190,13 @@ export class BackendRuntime {
                 }),
             };
             const application = HttpApplication.create(sessions, options);
+            const runtime = new NodeHttpsRuntime(
+                application,
+                options.host,
+                new TlsAlpnChallenges(),
+            );
+
+            https = runtime;
 
             nest = await NestFactory.create(
                 {
@@ -278,8 +286,10 @@ export class BackendRuntime {
                         material.cert.toString(),
                         material.key.toString(),
                     );
-                    https = createHttpsServer({ ...material, minVersion: 'TLSv1.2' }, application);
-                    httpsPort = await this.listen(https, settings.port, options.host);
+                    httpsPort = await runtime.start(settings.port, {
+                        chain: material.cert.toString(),
+                        key: material.key.toString(),
+                    });
                 }
             } catch (error) {
                 const code =
@@ -293,8 +303,7 @@ export class BackendRuntime {
                     'HTTPS could not start (' +
                     code +
                     '). HTTP is available. Check settings and restart the application.';
-                await this.stop(https);
-                https = undefined;
+                await runtime.close();
             }
 
             let closed: Promise<void> | undefined;
@@ -306,7 +315,7 @@ export class BackendRuntime {
                 close: () => {
                     closed ??= (async () => {
                         try {
-                            await Promise.all([this.stop(http), this.stop(https)]);
+                            await Promise.all([this.stop(http), https?.close()]);
                         } finally {
                             try {
                                 await nest?.close();
@@ -321,7 +330,7 @@ export class BackendRuntime {
             };
         } catch (error) {
             try {
-                await Promise.all([this.stop(http), this.stop(https)]);
+                await Promise.all([this.stop(http), https?.close()]);
             } finally {
                 try {
                     await nest?.close();
