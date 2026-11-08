@@ -56,6 +56,7 @@ export class RuntimeFixture {
     async recover(current: { runtime: ElectronRuntime; directory: string }, password: string) {
         const result = await current.runtime.send({
             type: 'recover',
+            version: '0.1.0',
             dataDirectory: current.directory,
             password,
         });

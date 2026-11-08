@@ -52,3 +52,24 @@ it('carries details needed to resolve the failure', () => {
 
     expect(result.details).toEqual(details);
 });
+it('names a failure with its reason for the audit log', () => {
+    const failure = new Failure('conflict', 'Taken', 'username-taken');
+
+    const result = Failure.auditCode(failure);
+
+    expect(result).toBe('conflict:username-taken');
+});
+it('names a failure without reason by its code', () => {
+    const failure = new Failure('not_found', 'Missing');
+
+    const result = Failure.auditCode(failure);
+
+    expect(result).toBe('not_found');
+});
+it('names an unexpected error generically', () => {
+    const error = new Error('disk full');
+
+    const result = Failure.auditCode(error);
+
+    expect(result).toBe('error');
+});

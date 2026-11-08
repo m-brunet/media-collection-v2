@@ -311,7 +311,12 @@ async function recovery(dataDirectory: string): Promise<void> {
         resetting = true;
 
         try {
-            await backend!.request({ type: 'recover', dataDirectory, password });
+            await backend!.request({
+                type: 'recover',
+                dataDirectory,
+                version: app.getVersion(),
+                password,
+            });
 
             return {
                 success: true,

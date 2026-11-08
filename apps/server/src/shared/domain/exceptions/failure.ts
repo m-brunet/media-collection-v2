@@ -13,6 +13,13 @@ export class Failure extends Error {
         this.name = 'Failure';
     }
 
+    // How an audit record names the failure of an operation, for example `conflict:username-taken`.
+    static auditCode(error: unknown): string {
+        return error instanceof Failure
+            ? error.code + (error.reason ? ':' + error.reason : '')
+            : 'error';
+    }
+
     static ensure(condition: unknown, message: string, reason?: string): asserts condition {
         if (!condition) {
             throw new Failure('invalid_input', message, reason ?? null);
