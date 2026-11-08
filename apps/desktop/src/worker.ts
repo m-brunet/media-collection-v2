@@ -2,7 +2,7 @@ import type { BackendHandle } from '../../server/src/infrastructure/config/boots
 import { BackendRuntime } from '../../server/src/infrastructure/config/bootstrap.js';
 import { LocalMaintenance } from '../../server/src/infrastructure/config/maintenance.js';
 import { DevelopmentDataCommands } from '../../server/src/infrastructure/config/development-data.js';
-import type { WorkerRequest, WorkerResponse } from './protocol.js';
+import type { WorkerNotice, WorkerRequest, WorkerResponse } from './protocol.js';
 
 const parent = process.parentPort;
 
@@ -13,7 +13,7 @@ if (!parent) {
 let backend: BackendHandle | undefined;
 let starting = false;
 let operation: Promise<void> = Promise.resolve();
-const send = (response: WorkerResponse) => parent.postMessage(response);
+const send = (response: WorkerResponse | WorkerNotice) => parent.postMessage(response);
 
 parent.on('message', (event) => {
     const message = event.data as WorkerRequest;
@@ -26,7 +26,10 @@ parent.on('message', (event) => {
                 }
 
                 starting = true;
-                backend = await new BackendRuntime().start(message);
+                backend = await new BackendRuntime().start({
+                    ...message,
+                    onKeepAwake: (enabled) => send({ type: 'keep-awake', enabled }),
+                });
                 send({
                     type: 'ready',
                     httpPort: backend.httpPort,

@@ -24,6 +24,11 @@ void app
         let stopping = false;
 
         worker.on('message', (message) => {
+            // The keep-awake notice is for the desktop main process, not an answer to a test request.
+            if (message.type === 'keep-awake') {
+                return;
+            }
+
             process.stdout.write(JSON.stringify({ ...message, requestId }) + '\n');
 
             if (message.type === 'stopped') {

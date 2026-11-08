@@ -255,7 +255,11 @@ and phone and what to report back; the next step starts from the results.
   UPnP rule (443 → a closed test port) was left and removed by hand; Let's Encrypt probably issued about two real
   certificates for the public address, which count toward its limit of 5 per address per week. The harness now
   selects the test worker for the internet access stand-ins too.
-- [ ] **10. Desktop keep awake**: worker message and `powerSaveBlocker` in the main process; desktop e2e check.
+- [x] **10. Desktop keep awake**: worker message and `powerSaveBlocker` in the main process; desktop e2e check.
+  Done: the worker sends a `keep-awake` notice (at startup and on each change), kept apart from request answers;
+  `KeepAwake` holds a `prevent-app-suspension` blocker (the screen may still turn off) and releases it when the
+  server stops (quit, maintenance, crash). Desktop e2e tests read the blockers recorded by the main harness: on,
+  off, and on again from startup.
 - [ ] **11. Real-world check (with the user)**: on the user's router and phone (mobile data, not Wi-Fi): setup,
   QR code, Leaf scanning over HTTPS, turn off. Results and router behaviour noted here.
 - [ ] **12. Wrap-up**: implementation plan status, credits list for Task 10 (ACME client, NAT library, QR code
