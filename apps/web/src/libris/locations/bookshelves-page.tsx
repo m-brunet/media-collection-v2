@@ -267,7 +267,7 @@ export function BookshelvesPage() {
                             onChange={(event) => setSearch(event.target.value)}
                         />
                     </div>
-                    <span className="muted">
+                    <span className="muted book-toolbar__count">
                         {t('bookshelves.totals', {
                             bookcases:
                                 bookcases.length === 1
