@@ -57,7 +57,6 @@ export class RuntimeFixture {
         const result = await current.runtime.send({
             type: 'recover',
             dataDirectory: current.directory,
-            login: 'admin',
             password,
         });
         const restarted = await this.restart(current);
