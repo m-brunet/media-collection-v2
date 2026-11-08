@@ -13,7 +13,7 @@ list before starting a task: an open entry in the area a task touches is handled
 | KI-4 | Improvement | Libris has an application icon in the Windows taskbar                                 | Low      | Open   |
 | KI-5 | Bug         | Bookshelves count not vertically centred with the search field                         | Low      | Open   |
 | KI-6 | Improvement | Appearance offers seven new colour schemes; Mint, Emerald and Forest are removed        | Medium   | Open   |
-| KI-7 | Improvement | Sidebar navigation labels need slightly wider letter spacing                          | Low      | Open   |
+| KI-7 | Improvement | Interface text needs slightly wider letter spacing                                    | Low      | Open   |
 
 ## Open
 
@@ -143,21 +143,22 @@ list before starting a task: an open entry in the area a task touches is handled
 - **Severity:** medium (visible choice, touches every screen's colours). **Planned:** next fix pass, or Task 10 with
   the icon sets on the same Appearance page, whichever comes first.
 
-### KI-7 — Sidebar navigation labels need slightly wider letter spacing
+### KI-7 — Interface text needs slightly wider letter spacing
 
 - **Type:** Improvement.
-- **Reported:** 2026-11-08 by the user, on the Libris sidebar (screenshot in French: Vue d’ensemble, Mes livres,
-  Collections, Bibliothèques, Étiquettes, Prêts, Activité, Comptes, Apparence, Paramètres du serveur).
-- **Asked:** "The letter spacing could be a tiny bit bigger."
-- **Today:** the navigation links (`.nav-link` in `apps/web/src/libris/libris.css`) set no `letter-spacing`, so they
-  use the font's default (0). The section labels ("BIBLIOTHÈQUE PARTAGÉE", "ADMINISTRATION") are `.eyebrow`
-  (`apps/web/src/shared/ui/base.css`, already `0.06em`).
-- **Fix:** a small positive spacing on the navigation labels, for example `letter-spacing: 0.01em`–`0.02em` on
-  `.nav-link` (the footer links My account / Sign out use the same class), ideally as a token in `tokens.css`. Check
-  that long French labels ("Paramètres du serveur") still fit the 232 px sidebar without extra wrapping, at
-  1280 × 720 and 1440 wide, and whether Leaf's menus should follow. Assumed: only the navigation labels, not the
-  section labels or the "Libris" brand; confirm with the user if in doubt.
-- **Severity:** low (typography). **Planned:** next fix pass, or the next task that touches the Libris shell.
+- **Reported:** 2026-11-08 by the user, first on the Libris sidebar (screenshot in French: Vue d’ensemble, Mes livres,
+  Paramètres du serveur…): "The letter spacing could be a tiny bit bigger." Widened to all interface text after
+  discussion the same day.
+- **Today:** the body text (`body` in `apps/web/src/shared/ui/base.css`, `--font-body` Inter at `--text-base`) sets
+  no `letter-spacing`, so menus, buttons, labels, fields and tables use the font's default (0), which is a little
+  tight at 13–14 px. Already spaced and unchanged by this fix: section labels and other `.eyebrow` text (`0.06em`) and
+  the elements in `components.css` with `0.02em`.
+- **Fix:** one token in `apps/web/src/shared/ui/tokens.css` (for example `--tracking-body: 0.01em`) applied to `body`,
+  so Libris and Leaf follow together. Headings (`--font-heading`, Space Grotesk), monospace text and the brand name
+  keep their current spacing (set it back to `normal` on headings if they inherit it). Check the places where text is
+  tight: the sidebar (long French labels such as "Paramètres du serveur"), buttons, table columns, the book form and
+  Leaf at phone width, in English and French, at 1280 × 720 and 1440 wide.
+- **Severity:** low (typography). **Planned:** next fix pass, or the next task that touches shared styles.
 
 ## Done
 
