@@ -1,6 +1,6 @@
 import { crc32, deflateSync } from 'node:zlib';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import type { Page } from 'playwright';
+import type { Locator, Page } from 'playwright';
 import type { BookDto, NewBookDto } from '../../packages/contracts/src/http.js';
 import { RuntimeFixture, RuntimeSetup } from '../api/runtime-setup.js';
 import { Client } from '../api/client.js';
@@ -101,6 +101,21 @@ async function signedIn(username: string, viewport = viewports.referenceDesktop)
     return page;
 }
 
+async function titleStyle(title: Locator) {
+    return title.evaluate((element) => {
+        const style = getComputedStyle(element);
+
+        return [
+            style.fontFamily,
+            style.fontSize,
+            style.fontWeight,
+            style.color,
+            style.letterSpacing,
+            style.textTransform,
+        ];
+    });
+}
+
 async function addAuthor(page: Page, name: string) {
     await page.getByRole('combobox', { name: 'Add author' }).fill(name);
     await page.getByRole('option', { name: 'Add “' + name + '” as a new author' }).click();
@@ -120,7 +135,10 @@ describe('Adding books', () => {
             buffer: png,
         });
         await page.getByRole('img', { name: 'Cover of Piranesi' }).waitFor();
-        await page.getByRole('button', { name: 'Additional information' }).click();
+        expect(
+            await titleStyle(page.getByRole('button', { name: '03 / Additional information' })),
+        ).toEqual(await titleStyle(page.getByText('02 / Location & tags · Optional')));
+        await page.getByRole('button', { name: '03 / Additional information' }).click();
         await page.getByLabel('Price (€)').fill('16,90');
         await capture(page, 'books-add-form');
         await page.getByRole('button', { name: 'Save book' }).first().click();
