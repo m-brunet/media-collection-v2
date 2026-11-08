@@ -20,6 +20,7 @@ design.
 | KI-5 | Bug         | Bookshelves count not vertically centred with the search field                        | Low      | Open   |
 | KI-6 | Improvement | Appearance offers seven new colour schemes; Mint, Emerald and Forest are removed      | Medium   | Open   |
 | KI-7 | Improvement | Interface text needs slightly wider letter spacing                                    | Low      | Open   |
+| KI-8 | Improvement | Server settings addresses need more space between them                                | Low      | Open   |
 
 ## Open
 
@@ -151,6 +152,20 @@ design.
   tight: the sidebar (long French labels such as "Paramètres du serveur"), buttons, table columns, the book form and
   Leaf at phone width, in English and French, at 1280 × 720 and 1440 wide.
 - **Severity:** low (typography). **Planned:** next fix pass, or the next task that touches shared styles.
+
+### KI-8 — Server settings addresses need more space between them
+
+- **Type:** Improvement.
+- **Reported:** 2026-11-08 by the user, on the Libris Server settings page (French: "Adresses actuelles"), Task 9.5
+  branch. The user likes how the addresses are shown, but the lines are too close together.
+- **Today:** the addresses (`http://127.0.0.1:34345`, the Tailscale and local network addresses) are links in a
+  `.plain-list` (`apps/web/src/libris/libris.css`), which only removes the list's margins and bullets, so the links sit
+  line against line. The same list style holds the "next addresses" shown after an HTTP port change
+  (`apps/web/src/libris/administration/server-settings-page.tsx`).
+- **Fix:** space the items of both address lists, for example a dedicated class
+  (`display: grid; gap: var(--space-2)`) instead of the bare `.plain-list`. Keep the current look of the links.
+  Check on the reference desktop viewport, in both languages.
+- **Severity:** low (readability). **Planned:** next fix pass, or the next task that touches Server settings.
 
 ## Done
 
