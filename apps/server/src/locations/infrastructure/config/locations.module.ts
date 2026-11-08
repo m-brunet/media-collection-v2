@@ -1,5 +1,6 @@
 import type { DynamicModule, Provider } from '@nestjs/common';
 import { Module } from '@nestjs/common';
+import { ValueProviders } from '../../../shared/infrastructure/config/value-providers.helper.js';
 import type { BookLocationReader } from '../../../books/application/ports/driven/book-location-reader.interface.js';
 import type { ShelfAssignment } from '../../../books/application/ports/driven/shelf-assignment.interface.js';
 import type { BookShelfStore } from '../../application/ports/driven/book-shelf-store.interface.js';
@@ -44,14 +45,6 @@ const token = {
     naming: 'LOCATIONS_NAMING',
     overview: 'LOCATIONS_OVERVIEW',
 } as const;
-
-function dependencyProviders(dependencies: LocationsDependencies): Provider[] {
-    return (Object.keys(dependencies) as (keyof LocationsDependencies)[]).map((name) => ({
-        provide: token[name],
-        useValue: dependencies[name],
-    }));
-}
-
 const serviceProviders: Provider[] = [
     {
         provide: token.loader,
@@ -188,7 +181,7 @@ export class LocationsModule {
             module: LocationsModule,
             controllers: [BookcasesController, ShelvesController],
             providers: [
-                ...dependencyProviders(dependencies),
+                ...ValueProviders.of(dependencies, token),
                 ...serviceProviders,
                 ...useCaseProviders,
             ],

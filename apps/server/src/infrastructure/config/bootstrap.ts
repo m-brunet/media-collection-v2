@@ -314,8 +314,3 @@ export class BackendRuntime {
         }
     }
 }
-
-// Electron-owned runtime entry point.
-export function startBackend(options: BackendOptions): Promise<BackendHandle> {
-    return new BackendRuntime().start(options);
-}

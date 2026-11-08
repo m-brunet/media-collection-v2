@@ -1,14 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import {
-    furniture,
-    guest,
-    owner,
-    placed,
-    withShelf,
-} from '../testing/location-doubles.test-support.js';
+import { guest, LocationDoubles, owner } from '../testing/location-doubles.test-support.js';
 import { DeleteBookcase } from './delete-bookcase.usecase.js';
 
-function subject(current: ReturnType<typeof furniture>) {
+function subject(current: ReturnType<typeof LocationDoubles.furniture>) {
     return new DeleteBookcase(
         current.bookcases,
         current.loader,
@@ -19,10 +13,10 @@ function subject(current: ReturnType<typeof furniture>) {
 
 describe('DeleteBookcase', () => {
     it('removes the bookcase and its shelves, unassigning their books', async () => {
-        const current = furniture();
-        const { bookcase, shelf } = await withShelf(current, 'Oak', 'Top');
+        const current = LocationDoubles.furniture();
+        const { bookcase, shelf } = await LocationDoubles.withShelf(current, 'Oak', 'Top');
 
-        await placed(current, 'dune', shelf.id);
+        await LocationDoubles.placed(current, 'dune', shelf.id);
 
         await subject(current).execute(owner, bookcase.id);
 
@@ -31,11 +25,11 @@ describe('DeleteBookcase', () => {
         expect(current.store.shelves.has('dune')).toBe(false);
     });
     it('records its shelves and the number of unassigned books', async () => {
-        const current = furniture();
-        const { bookcase, shelf } = await withShelf(current, 'Oak', 'Top');
+        const current = LocationDoubles.furniture();
+        const { bookcase, shelf } = await LocationDoubles.withShelf(current, 'Oak', 'Top');
 
-        await withShelf(current, 'Oak', 'Bottom');
-        await placed(current, 'dune', shelf.id);
+        await LocationDoubles.withShelf(current, 'Oak', 'Bottom');
+        await LocationDoubles.placed(current, 'dune', shelf.id);
 
         await subject(current).execute(owner, bookcase.id);
 
@@ -46,15 +40,15 @@ describe('DeleteBookcase', () => {
         });
     });
     it('reports an unknown bookcase', async () => {
-        const current = furniture();
+        const current = LocationDoubles.furniture();
 
         const result = subject(current).execute(owner, 'unknown');
 
         await expect(result).rejects.toMatchObject({ reason: 'bookcase-missing' });
     });
     it('refuses a Guest and keeps the bookcase', async () => {
-        const current = furniture();
-        const { bookcase } = await withShelf(current, 'Oak', 'Top');
+        const current = LocationDoubles.furniture();
+        const { bookcase } = await LocationDoubles.withShelf(current, 'Oak', 'Top');
 
         const result = subject(current).execute(guest, bookcase.id);
 

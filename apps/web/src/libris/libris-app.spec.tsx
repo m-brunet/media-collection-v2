@@ -79,7 +79,7 @@ it('applies the language saved on the account after sign-in', async () => {
 
     render(<LibrisApp />);
 
-    expect(await screen.findByRole('heading', { name: 'Mes livres' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Vue d’ensemble' })).toBeInTheDocument();
 });
 
 it('shows administration only to an administrator', async () => {
@@ -99,7 +99,7 @@ it('hides administration from other accounts', async () => {
 
     render(<LibrisApp />);
 
-    expect(await screen.findByRole('heading', { name: 'My books' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Overview' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Accounts' })).not.toBeInTheDocument();
 });
 
@@ -157,7 +157,7 @@ it('creates the administrator and opens the library', async () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Create administrator' }));
 
-    expect(await screen.findByRole('heading', { name: 'My books' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Overview' })).toBeInTheDocument();
     expect(api.calls).toContainEqual({
         route: 'POST /setup',
         body: { username: 'alex', password: 'chosen-password' },
@@ -195,11 +195,11 @@ it('saves a language change to the signed-in account', async () => {
         .on('PATCH /account/language', () => ({ status: 200, body: account({ language: 'fr' }) }));
 
     render(<LibrisApp />);
-    await screen.findByRole('heading', { name: 'My books' });
+    await screen.findByRole('heading', { name: 'Overview' });
 
     await userEvent.click(screen.getAllByRole('button', { name: 'Français' })[0]!);
 
-    expect(await screen.findByRole('heading', { name: 'Mes livres' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Vue d’ensemble' })).toBeInTheDocument();
     expect(api.calls).toContainEqual({
         route: 'PATCH /account/language',
         body: { language: 'fr' },
@@ -215,14 +215,15 @@ it('reports a page that does not exist', async () => {
     expect(await screen.findByText('Page not found')).toBeInTheDocument();
 });
 
-it('opens the shared library first', async () => {
+it('opens the Overview first', async () => {
     new FakeApi().signedIn(account());
 
     render(<LibrisApp />);
 
-    expect(await screen.findByRole('heading', { name: 'My books' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'My books' })).toHaveAttribute('aria-current', 'page');
-    expect(window.location.pathname).toBe('/books');
+    expect(await screen.findByRole('heading', { name: 'Overview' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Overview' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: 'My books' })).not.toHaveAttribute('aria-current');
+    expect(window.location.pathname).toBe('/');
 });
 
 it('explains that a Guest cannot add a book', async () => {

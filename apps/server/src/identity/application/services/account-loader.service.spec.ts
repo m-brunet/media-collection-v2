@@ -1,11 +1,11 @@
 import { expect, it } from 'vitest';
 import { AccountLoader } from './account-loader.service.js';
-import { MemoryUsers, user } from '../testing/identity-doubles.test-support.js';
+import { IdentityDoubles, MemoryUsers } from '../testing/identity-doubles.test-support.js';
 
 it('loads an existing account', async () => {
     const users = new MemoryUsers();
 
-    await users.create(user());
+    await users.create(IdentityDoubles.user());
     const subject = new AccountLoader(users);
 
     const result = await subject.load('owner');
@@ -23,7 +23,7 @@ it('rejects an absent account as unauthorized', async () => {
 it('treats a deactivated account as signed out', async () => {
     const users = new MemoryUsers();
 
-    await users.create(user({ role: 'owner', active: false }));
+    await users.create(IdentityDoubles.user({ role: 'owner', active: false }));
     const subject = new AccountLoader(users);
 
     const result = subject.load('owner');

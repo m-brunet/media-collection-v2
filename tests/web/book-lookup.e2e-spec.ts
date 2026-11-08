@@ -2,7 +2,7 @@ import { crc32, deflateSync } from 'node:zlib';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type { Page } from 'playwright';
 import type { BookDto, NewBookDto } from '../../packages/contracts/src/http.js';
-import { administrator, RuntimeFixture } from '../api/runtime-setup.js';
+import { RuntimeFixture, RuntimeSetup } from '../api/runtime-setup.js';
 import { Client } from '../api/client.js';
 import { BookInputFixture } from '../api/fixtures/book-input.fixture.js';
 import { BrowserFixture, capture, viewports } from './browser.js';
@@ -30,7 +30,7 @@ beforeEach(async () => {
 
     base = started.client.base;
     admin = started.client;
-    await administrator(admin);
+    await RuntimeSetup.administrator(admin);
     await owner('camille');
     sources.bnf(ewilan, 'bnf-ewilan-1.xml').openLibrary(ewilan, {
         title: "La quête d'Ewilan",
@@ -105,6 +105,8 @@ async function addBookWith(isbn: string, viewport = viewports.referenceDesktop):
     await page.getByLabel(/^Username/).fill('camille');
     await page.getByLabel(/^Password/).fill('camille-password');
     await page.getByRole('button', { name: 'Sign in' }).click();
+    await page.getByRole('heading', { name: 'Overview' }).waitFor();
+    await page.getByRole('link', { name: 'My books' }).click();
     await page.getByRole('heading', { name: 'My books' }).waitFor();
     await page.getByRole('button', { name: 'Add a book' }).first().click();
     await page.getByLabel(/^ISBN/).fill(isbn);

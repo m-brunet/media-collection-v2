@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { MemoryUsers, passwords, user } from '../testing/identity-doubles.test-support.js';
+import {
+    IdentityDoubles,
+    MemoryUsers,
+    passwords,
+} from '../testing/identity-doubles.test-support.js';
 import { RecoverAdministrator } from './recover-administrator.usecase.js';
 
 describe('RecoverAdministrator', () => {
     it('resets an existing administrator and requires setup again', async () => {
         const users = new MemoryUsers();
 
-        await users.create(user({ tokenVersion: 1 }));
+        await users.create(IdentityDoubles.user({ tokenVersion: 1 }));
         const subject = new RecoverAdministrator(users, passwords);
 
         await subject.execute(' owner ', 'recovered-password');
@@ -21,7 +25,9 @@ describe('RecoverAdministrator', () => {
         const username = 'missing';
         const users = new MemoryUsers();
 
-        await users.create(user({ id: 'member', username: 'member', role: 'owner' }));
+        await users.create(
+            IdentityDoubles.user({ id: 'member', username: 'member', role: 'owner' }),
+        );
         const subject = new RecoverAdministrator(users, passwords);
 
         const result = subject.execute(username, 'recovered-password');
@@ -32,7 +38,9 @@ describe('RecoverAdministrator', () => {
         const username = 'member';
         const users = new MemoryUsers();
 
-        await users.create(user({ id: 'member', username: 'member', role: 'owner' }));
+        await users.create(
+            IdentityDoubles.user({ id: 'member', username: 'member', role: 'owner' }),
+        );
         const subject = new RecoverAdministrator(users, passwords);
 
         const result = subject.execute(username, 'recovered-password');
@@ -42,7 +50,7 @@ describe('RecoverAdministrator', () => {
     it('rejects a short recovery password', async () => {
         const users = new MemoryUsers();
 
-        await users.create(user());
+        await users.create(IdentityDoubles.user());
         const subject = new RecoverAdministrator(users, passwords);
 
         const result = subject.execute('owner', 'short');

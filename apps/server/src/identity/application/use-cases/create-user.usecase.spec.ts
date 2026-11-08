@@ -1,9 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
-    auditedOperation,
+    AuditDoubles,
     MemoryAuditTrail,
 } from '../../../shared/application/testing/audit-doubles.test-support.js';
-import { clock, MemoryUsers, passwords, user } from '../testing/identity-doubles.test-support.js';
+import {
+    clock,
+    IdentityDoubles,
+    MemoryUsers,
+    passwords,
+} from '../testing/identity-doubles.test-support.js';
 import { CreateUser } from './create-user.usecase.js';
 
 function subject(users = new MemoryUsers(), trail = new MemoryAuditTrail()) {
@@ -12,11 +17,11 @@ function subject(users = new MemoryUsers(), trail = new MemoryAuditTrail()) {
         passwords,
         { next: () => 'member' },
         clock,
-        auditedOperation(trail),
+        AuditDoubles.auditedOperation(trail),
     );
 }
 
-const administrator = user().actor;
+const administrator = IdentityDoubles.user().actor;
 
 describe('CreateUser', () => {
     it('creates an Owner account requiring password replacement', async () => {
@@ -132,7 +137,7 @@ describe('CreateUser', () => {
             role: 'owner' as const,
         };
 
-        const result = subject(users).execute(user({ role: 'owner' }).actor, input);
+        const result = subject(users).execute(IdentityDoubles.user({ role: 'owner' }).actor, input);
 
         await expect(result).rejects.toMatchObject({ code: 'forbidden', reason: 'admin-only' });
         expect(await users.list()).toEqual([]);
@@ -146,7 +151,7 @@ describe('CreateUser', () => {
         };
 
         await subject(new MemoryUsers(), trail)
-            .execute(user({ role: 'guest' }).actor, input)
+            .execute(IdentityDoubles.user({ role: 'guest' }).actor, input)
             .catch(() => undefined);
 
         expect(trail.entries).toEqual([
@@ -166,7 +171,10 @@ describe('CreateUser', () => {
             role: 'owner' as const,
         };
 
-        const result = subject(users).execute(user({ mustChangePassword: true }).actor, input);
+        const result = subject(users).execute(
+            IdentityDoubles.user({ mustChangePassword: true }).actor,
+            input,
+        );
 
         await expect(result).rejects.toMatchObject({ reason: 'temporary-password' });
     });

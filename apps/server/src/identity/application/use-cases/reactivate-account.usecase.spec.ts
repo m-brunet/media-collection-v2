@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { household } from '../testing/account-lifecycle.test-support.js';
+import { AccountLifecycle } from '../testing/account-lifecycle.test-support.js';
 import { ManagedAccountLoader } from '../services/managed-account-loader.service.js';
 import { DeactivateAccount } from './deactivate-account.usecase.js';
 import { ReactivateAccount } from './reactivate-account.usecase.js';
 
 async function deactivated() {
-    const current = await household();
+    const current = await AccountLifecycle.household();
 
     await new DeactivateAccount(
         current.users,
@@ -42,7 +42,7 @@ describe('ReactivateAccount', () => {
         ]);
     });
     it('refuses to reactivate an active account', async () => {
-        const { users, operations, admin } = await household();
+        const { users, operations, admin } = await AccountLifecycle.household();
         const subject = new ReactivateAccount(users, new ManagedAccountLoader(users), operations);
 
         const result = subject.execute(admin, 'owner');

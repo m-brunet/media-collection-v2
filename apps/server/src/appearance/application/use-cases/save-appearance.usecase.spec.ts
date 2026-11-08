@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-    auditedOperation,
+    AuditDoubles,
     MemoryAuditTrail,
 } from '../../../shared/application/testing/audit-doubles.test-support.js';
 import {
@@ -12,7 +12,10 @@ import { SaveAppearance } from './save-appearance.usecase.js';
 describe('SaveAppearance', () => {
     it('saves the chosen colour scheme for the whole installation', async () => {
         const store = new MemoryAppearanceStore();
-        const subject = new SaveAppearance(store, auditedOperation(new MemoryAuditTrail()));
+        const subject = new SaveAppearance(
+            store,
+            AuditDoubles.auditedOperation(new MemoryAuditTrail()),
+        );
 
         const result = await subject.execute(administrator, 'mint');
 
@@ -21,7 +24,10 @@ describe('SaveAppearance', () => {
     });
     it('records the change with the previous and new scheme', async () => {
         const trail = new MemoryAuditTrail();
-        const subject = new SaveAppearance(new MemoryAppearanceStore(), auditedOperation(trail));
+        const subject = new SaveAppearance(
+            new MemoryAppearanceStore(),
+            AuditDoubles.auditedOperation(trail),
+        );
 
         await subject.execute(administrator, 'emerald');
 
@@ -36,7 +42,10 @@ describe('SaveAppearance', () => {
     });
     it('rejects an unknown scheme without changing the saved one', async () => {
         const store = new MemoryAppearanceStore();
-        const subject = new SaveAppearance(store, auditedOperation(new MemoryAuditTrail()));
+        const subject = new SaveAppearance(
+            store,
+            AuditDoubles.auditedOperation(new MemoryAuditTrail()),
+        );
 
         const result = subject.execute(administrator, 'purple');
 
@@ -45,7 +54,10 @@ describe('SaveAppearance', () => {
     });
     it('refuses an Owner', async () => {
         const store = new MemoryAppearanceStore();
-        const subject = new SaveAppearance(store, auditedOperation(new MemoryAuditTrail()));
+        const subject = new SaveAppearance(
+            store,
+            AuditDoubles.auditedOperation(new MemoryAuditTrail()),
+        );
 
         const result = subject.execute({ ...administrator, role: 'owner' }, 'mint');
 

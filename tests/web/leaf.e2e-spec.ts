@@ -3,7 +3,7 @@ import type { Page } from 'playwright';
 import type { BookDto, NewBookDto } from '../../packages/contracts/src/http.js';
 import type { Client } from '../api/client.js';
 import { BookInputFixture } from '../api/fixtures/book-input.fixture.js';
-import { administrator, RuntimeFixture } from '../api/runtime-setup.js';
+import { RuntimeFixture, RuntimeSetup } from '../api/runtime-setup.js';
 import { BrowserFixture, capture, viewports } from './browser.js';
 
 const browser = new BrowserFixture();
@@ -23,7 +23,7 @@ beforeEach(async () => {
 
     base = started.client.base;
     admin = started.client;
-    await administrator(started.client);
+    await RuntimeSetup.administrator(started.client);
     await started.client.call('/users', 'POST', {
         username: 'morgan',
         password: 'guest-temporary',

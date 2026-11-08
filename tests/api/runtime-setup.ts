@@ -23,7 +23,7 @@ export class RuntimeFixture {
         const data = directory ?? (await this.directory());
         const resolved =
             options.main && !options.recovery && options.port === undefined
-                ? { ...options, port: await availablePort() }
+                ? { ...options, port: await RuntimeSetup.availablePort() }
                 : options;
         const runtime = this.launch(data, resolved);
         const ready = await runtime.ready;
@@ -88,55 +88,57 @@ export class RuntimeFixture {
     }
 }
 
-export async function availablePort(): Promise<number> {
-    const listener = createServer();
+export class RuntimeSetup {
+    static async availablePort(): Promise<number> {
+        const listener = createServer();
 
-    await new Promise<void>((resolve, reject) => {
-        listener.once('error', reject);
-        listener.listen(0, '127.0.0.1', resolve);
-    });
-    const port = (listener.address() as { port: number }).port;
+        await new Promise<void>((resolve, reject) => {
+            listener.once('error', reject);
+            listener.listen(0, '127.0.0.1', resolve);
+        });
+        const port = (listener.address() as { port: number }).port;
 
-    await new Promise<void>((resolve) => listener.close(() => resolve()));
+        await new Promise<void>((resolve) => listener.close(() => resolve()));
 
-    return port;
-}
-
-// First launch: creates the protected administrator `admin` and leaves the client signed in.
-export async function administrator(client: Client): Promise<void> {
-    await client.prepare();
-    const setup = await client.call(
-        '/setup',
-        'POST',
-        { username: 'admin', password: 'administrator-new-password' },
-        { headers: desktopWindow },
-    );
-
-    if (setup.status !== 201) {
-        throw new Error('Administrator fixture setup failed: ' + setup.text);
-    }
-}
-
-export async function tlsConfiguration(client: Client): Promise<number> {
-    const certificate = await generate([{ name: 'commonName', value: 'localhost' }], {
-        keySize: 2048,
-    });
-    const occupied = createServer();
-
-    await new Promise<void>((resolve) => occupied.listen(0, '127.0.0.1', resolve));
-    const port = (occupied.address() as { port: number }).port;
-
-    await new Promise<void>((resolve) => occupied.close(() => resolve()));
-    const result = await client.call('/server-settings', 'PUT', {
-        enabled: true,
-        port,
-        chain: certificate.cert,
-        key: certificate.private,
-    });
-
-    if (result.status !== 200) {
-        throw new Error('TLS fixture setup failed: ' + result.text);
+        return port;
     }
 
-    return port;
+    // First launch: creates the protected administrator `admin` and leaves the client signed in.
+    static async administrator(client: Client): Promise<void> {
+        await client.prepare();
+        const setup = await client.call(
+            '/setup',
+            'POST',
+            { username: 'admin', password: 'administrator-new-password' },
+            { headers: desktopWindow },
+        );
+
+        if (setup.status !== 201) {
+            throw new Error('Administrator fixture setup failed: ' + setup.text);
+        }
+    }
+
+    static async tlsConfiguration(client: Client): Promise<number> {
+        const certificate = await generate([{ name: 'commonName', value: 'localhost' }], {
+            keySize: 2048,
+        });
+        const occupied = createServer();
+
+        await new Promise<void>((resolve) => occupied.listen(0, '127.0.0.1', resolve));
+        const port = (occupied.address() as { port: number }).port;
+
+        await new Promise<void>((resolve) => occupied.close(() => resolve()));
+        const result = await client.call('/server-settings', 'PUT', {
+            enabled: true,
+            port,
+            chain: certificate.cert,
+            key: certificate.private,
+        });
+
+        if (result.status !== 200) {
+            throw new Error('TLS fixture setup failed: ' + result.text);
+        }
+
+        return port;
+    }
 }

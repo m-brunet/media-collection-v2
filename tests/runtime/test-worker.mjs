@@ -1,4 +1,4 @@
-import { startBackend } from '../../dist/apps/server/src/infrastructure/config/bootstrap.js';
+import { BackendRuntime } from '../../dist/apps/server/src/infrastructure/config/bootstrap.js';
 
 const parent = process.parentPort;
 let offset = 0;
@@ -14,7 +14,7 @@ parent.on('message', async (event) => {
 
     try {
         if (message.type === 'start') {
-            backend = await startBackend({ ...message, clock, lookupAddresses });
+            backend = await new BackendRuntime().start({ ...message, clock, lookupAddresses });
             parent.postMessage({
                 type: 'ready',
                 httpPort: backend.httpPort,

@@ -510,6 +510,74 @@ export default {
                 };
             },
         },
+        // Backend code is object-oriented: behavior lives in classes (static methods for stateless
+        // utilities), never in standalone functions. Test files may keep small local helpers;
+        // NestJS decorator factories (PascalCase, for example `Access`) are functions by nature.
+        'backend-classes': {
+            meta: {
+                type: 'problem',
+                schema: [],
+                messages: {
+                    standalone:
+                        'Backend code is object-oriented: move {{name}} into a class (a private method of its owner, or a static method of a focused class).',
+                },
+            },
+            create(context) {
+                const root = resolve(context.settings?.architecture?.root ?? process.cwd());
+                const filename = context.filename ?? context.getFilename();
+                const path = relative(root, filename).replaceAll('\\', '/');
+                const checked =
+                    /^(apps\/server\/src|tests\/api)\//.test(path) &&
+                    /\.ts$/.test(path) &&
+                    !/\.(e2e-)?spec\.ts$/.test(path);
+
+                function inspect(declaration) {
+                    if (declaration?.type === 'FunctionDeclaration' && declaration.id) {
+                        context.report({
+                            node: declaration,
+                            messageId: 'standalone',
+                            data: { name: declaration.id.name },
+                        });
+                    }
+
+                    if (declaration?.type === 'VariableDeclaration') {
+                        for (const variable of declaration.declarations) {
+                            const name = variable.id?.name ?? '';
+                            const callable = [
+                                'ArrowFunctionExpression',
+                                'FunctionExpression',
+                            ].includes(variable.init?.type);
+
+                            if (callable && !/^[A-Z]/.test(name)) {
+                                context.report({
+                                    node: variable,
+                                    messageId: 'standalone',
+                                    data: { name },
+                                });
+                            }
+                        }
+                    }
+                }
+
+                return {
+                    Program(node) {
+                        if (!checked) {
+                            return;
+                        }
+
+                        for (const statement of node.body) {
+                            inspect(
+                                ['ExportNamedDeclaration', 'ExportDefaultDeclaration'].includes(
+                                    statement.type,
+                                )
+                                    ? statement.declaration
+                                    : statement,
+                            );
+                        }
+                    },
+                };
+            },
+        },
         boundaries: {
             meta: {
                 type: 'problem',

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { household } from '../testing/account-lifecycle.test-support.js';
+import { AccountLifecycle } from '../testing/account-lifecycle.test-support.js';
 import { passwords } from '../testing/identity-doubles.test-support.js';
 import { ManagedAccountLoader } from '../services/managed-account-loader.service.js';
 import { ResetPassword } from './reset-password.usecase.js';
 
 describe('ResetPassword', () => {
     it('sets a temporary password that must be replaced at the next sign-in', async () => {
-        const { users, operations, admin } = await household();
+        const { users, operations, admin } = await AccountLifecycle.household();
         const subject = new ResetPassword(
             users,
             new ManagedAccountLoader(users),
@@ -23,7 +23,7 @@ describe('ResetPassword', () => {
         });
     });
     it('records the reset without any password', async () => {
-        const { users, trail, operations, admin } = await household();
+        const { users, trail, operations, admin } = await AccountLifecycle.household();
         const subject = new ResetPassword(
             users,
             new ManagedAccountLoader(users),
@@ -44,7 +44,7 @@ describe('ResetPassword', () => {
         expect(JSON.stringify(trail.entries)).not.toContain('temporary-password');
     });
     it('refuses to reset the protected administrator', async () => {
-        const { users, operations, admin } = await household();
+        const { users, operations, admin } = await AccountLifecycle.household();
         const subject = new ResetPassword(
             users,
             new ManagedAccountLoader(users),
@@ -57,7 +57,7 @@ describe('ResetPassword', () => {
         await expect(result).rejects.toMatchObject({ reason: 'protected-administrator' });
     });
     it('rejects a short temporary password', async () => {
-        const { users, operations, admin } = await household();
+        const { users, operations, admin } = await AccountLifecycle.household();
         const subject = new ResetPassword(
             users,
             new ManagedAccountLoader(users),
@@ -71,7 +71,7 @@ describe('ResetPassword', () => {
         expect((await users.findById('owner'))!.snapshot.tokenVersion).toBe(0);
     });
     it('refuses an Owner resetting another password', async () => {
-        const { users, operations } = await household();
+        const { users, operations } = await AccountLifecycle.household();
         const subject = new ResetPassword(
             users,
             new ManagedAccountLoader(users),

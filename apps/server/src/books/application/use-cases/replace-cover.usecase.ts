@@ -48,8 +48,8 @@ export class ReplaceCover implements ReplaceCoverUseCase {
 
                     return {
                         result: await this.viewer.view(book, actor),
-                        before: { hasCover: replaced !== null },
-                        after: { hasCover: true },
+                        before: { title: book.snapshot.details.title, hasCover: replaced !== null },
+                        after: { title: book.snapshot.details.title, hasCover: true },
                     };
                 },
             );

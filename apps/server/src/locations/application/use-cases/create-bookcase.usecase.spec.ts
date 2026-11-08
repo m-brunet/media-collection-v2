@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { furniture, guest, owner, withShelf } from '../testing/location-doubles.test-support.js';
+import { guest, LocationDoubles, owner } from '../testing/location-doubles.test-support.js';
 import { CreateBookcase } from './create-bookcase.usecase.js';
 
-function subject(current: ReturnType<typeof furniture>) {
+function subject(current: ReturnType<typeof LocationDoubles.furniture>) {
     return new CreateBookcase(
         current.bookcases,
         current.naming,
@@ -15,7 +15,7 @@ function subject(current: ReturnType<typeof furniture>) {
 
 describe('CreateBookcase', () => {
     it('creates an empty bookcase that stays available', async () => {
-        const current = furniture();
+        const current = LocationDoubles.furniture();
 
         const result = await subject(current).execute(owner, ' Oak bookcase ');
 
@@ -28,7 +28,7 @@ describe('CreateBookcase', () => {
         expect(current.bookcases.bookcases.size).toBe(1);
     });
     it('records the creation', async () => {
-        const current = furniture();
+        const current = LocationDoubles.furniture();
 
         await subject(current).execute(owner, 'Oak');
 
@@ -42,16 +42,16 @@ describe('CreateBookcase', () => {
         ]);
     });
     it('refuses an equivalent bookcase name', async () => {
-        const current = furniture();
+        const current = LocationDoubles.furniture();
 
-        await withShelf(current, 'Étude', null);
+        await LocationDoubles.withShelf(current, 'Étude', null);
 
         const result = subject(current).execute(owner, 'etude');
 
         await expect(result).rejects.toMatchObject({ reason: 'bookcase-name-taken' });
     });
     it('refuses a Guest', async () => {
-        const current = furniture();
+        const current = LocationDoubles.furniture();
 
         const result = subject(current).execute(guest, 'Oak');
 

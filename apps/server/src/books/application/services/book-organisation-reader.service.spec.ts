@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { library } from '../testing/book-doubles.test-support.js';
+import { BookDoubles } from '../testing/book-doubles.test-support.js';
 
 describe('BookOrganisationReader', () => {
     it('reads the location and tags of a book', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
         await current.organiser.apply('dune', { shelfId: 'top', tags: [{ id: 'history' }] });
 
@@ -20,7 +20,7 @@ describe('BookOrganisationReader', () => {
         });
     });
     it('reads an unorganised book as unassigned and untagged', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
         const result = await current.organisation.current('dune');
 

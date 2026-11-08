@@ -6,11 +6,11 @@ import { TagNaming } from '../services/tag-naming.service.js';
 import { TagViewer } from '../services/tag-viewer.service.js';
 import { Tag } from '../../domain/entities/tag.entity.js';
 import {
-    auditedOperation,
+    AuditDoubles,
     MemoryAuditTrail,
 } from '../../../shared/application/testing/audit-doubles.test-support.js';
-import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
+import { TestActors } from '../../../shared/application/testing/test-actors.test-support.js';
 
 export class MemoryBookTags implements BookTagStore {
     readonly links = new Map<string, string[]>();
@@ -83,55 +83,57 @@ export class MemoryTags implements TagRepository {
     }
 }
 
-// Tags with all doubles and services wired as in production.
-export function labels() {
-    const store = new MemoryBookTags();
-    const tags = new MemoryTags(store);
-    const trail = new MemoryAuditTrail();
-    const loader = new TagLoader(tags);
-    let counter = 0;
-    const ids = { next: () => 'tag-' + ++counter };
-    const clock = { now: () => new Date('2026-03-01T10:00:00Z') };
+export class TagDoubles {
+    // Tags with all doubles and services wired as in production.
+    static labels() {
+        const store = new MemoryBookTags();
+        const tags = new MemoryTags(store);
+        const trail = new MemoryAuditTrail();
+        const loader = new TagLoader(tags);
+        let counter = 0;
+        const ids = { next: () => 'tag-' + ++counter };
+        const clock = { now: () => new Date('2026-03-01T10:00:00Z') };
 
-    return {
-        tags,
-        store,
-        trail,
-        loader,
-        ids,
-        clock,
-        naming: new TagNaming(tags),
-        viewer: new TagViewer(),
-        operations: auditedOperation(trail),
-        assignment: new BookTagAssignment(tags, store, loader, ids, clock),
-    };
+        return {
+            tags,
+            store,
+            trail,
+            loader,
+            ids,
+            clock,
+            naming: new TagNaming(tags),
+            viewer: new TagViewer(),
+            operations: AuditDoubles.auditedOperation(trail),
+            assignment: new BookTagAssignment(tags, store, loader, ids, clock),
+        };
+    }
+
+    // Saves a tag, for arranging scenarios.
+    static async tagged(current: ReturnType<typeof TagDoubles.labels>, name: string): Promise<Tag> {
+        const tag = new Tag({
+            id: current.ids.next(),
+            name,
+            createdAt: '2026-01-01T00:00:00.000Z',
+            updatedAt: '2026-01-01T00:00:00.000Z',
+        });
+
+        await current.tags.create(tag);
+
+        return tag;
+    }
+
+    // Links tags to a book, for arranging scenarios.
+    static async labelled(
+        current: ReturnType<typeof TagDoubles.labels>,
+        bookId: string,
+        ...tags: Tag[]
+    ) {
+        await current.store.replace(
+            bookId,
+            tags.map((tag) => tag.id),
+        );
+    }
 }
 
-// Saves a tag, for arranging scenarios.
-export async function tagged(current: ReturnType<typeof labels>, name: string): Promise<Tag> {
-    const tag = new Tag({
-        id: current.ids.next(),
-        name,
-        createdAt: '2026-01-01T00:00:00.000Z',
-        updatedAt: '2026-01-01T00:00:00.000Z',
-    });
-
-    await current.tags.create(tag);
-
-    return tag;
-}
-
-// Links tags to a book, for arranging scenarios.
-export async function labelled(current: ReturnType<typeof labels>, bookId: string, ...tags: Tag[]) {
-    await current.store.replace(
-        bookId,
-        tags.map((tag) => tag.id),
-    );
-}
-
-function actor(role: Actor['role'], id: string): Actor {
-    return { id, username: id, role, mustChangePassword: false, language: null };
-}
-
-export const owner = actor('owner', 'camille');
-export const guest = actor('guest', 'morgan');
+export const owner = TestActors.of('owner', 'camille');
+export const guest = TestActors.of('guest', 'morgan');

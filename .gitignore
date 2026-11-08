@@ -174,6 +174,8 @@ session.key
 # Local startup overrides; keep config.sample.json versioned.
 /config.json
 
-# Version the entire documentation tree, including Obsidian settings and workspace files.
+# Version the entire documentation tree, including Obsidian settings, but not Obsidian's
+# per-window state (open notes, recent files), which changes whenever a note is opened.
 !/docs/
 !/docs/**
+/docs/Media Collection/.obsidian/workspace*.json

@@ -1,21 +1,26 @@
 import {
-    auditedOperation,
+    AuditDoubles,
     MemoryAuditTrail,
 } from '../../../shared/application/testing/audit-doubles.test-support.js';
 import { describe, expect, it } from 'vitest';
-import { MemoryUsers, passwords, tokens, user } from '../testing/identity-doubles.test-support.js';
+import {
+    IdentityDoubles,
+    MemoryUsers,
+    passwords,
+    tokens,
+} from '../testing/identity-doubles.test-support.js';
 import { Login } from './login.usecase.js';
 
 describe('Login', () => {
     it('trims spaces around the username and issues restricted session claims', async () => {
         const users = new MemoryUsers();
 
-        await users.create(user({ mustChangePassword: true }));
+        await users.create(IdentityDoubles.user({ mustChangePassword: true }));
         const subject = new Login(
             users,
             passwords,
             tokens,
-            auditedOperation(new MemoryAuditTrail()),
+            AuditDoubles.auditedOperation(new MemoryAuditTrail()),
         );
 
         const result = await subject.execute(' owner ', 'old-password');
@@ -26,12 +31,12 @@ describe('Login', () => {
     it('requires the exact letter case of the username', async () => {
         const users = new MemoryUsers();
 
-        await users.create(user());
+        await users.create(IdentityDoubles.user());
         const subject = new Login(
             users,
             passwords,
             tokens,
-            auditedOperation(new MemoryAuditTrail()),
+            AuditDoubles.auditedOperation(new MemoryAuditTrail()),
         );
 
         const result = subject.execute('OWNER', 'old-password');
@@ -44,12 +49,12 @@ describe('Login', () => {
     it('requires the exact letter case of the password', async () => {
         const users = new MemoryUsers();
 
-        await users.create(user());
+        await users.create(IdentityDoubles.user());
         const subject = new Login(
             users,
             passwords,
             tokens,
-            auditedOperation(new MemoryAuditTrail()),
+            AuditDoubles.auditedOperation(new MemoryAuditTrail()),
         );
 
         const result = subject.execute('owner', 'OLD-PASSWORD');
@@ -61,12 +66,12 @@ describe('Login', () => {
         const password = 'old-password';
         const users = new MemoryUsers();
 
-        await users.create(user());
+        await users.create(IdentityDoubles.user());
         const subject = new Login(
             users,
             passwords,
             tokens,
-            auditedOperation(new MemoryAuditTrail()),
+            AuditDoubles.auditedOperation(new MemoryAuditTrail()),
         );
 
         const result = subject.execute(username, password);
@@ -78,12 +83,12 @@ describe('Login', () => {
         const password = 'wrong';
         const users = new MemoryUsers();
 
-        await users.create(user());
+        await users.create(IdentityDoubles.user());
         const subject = new Login(
             users,
             passwords,
             tokens,
-            auditedOperation(new MemoryAuditTrail()),
+            AuditDoubles.auditedOperation(new MemoryAuditTrail()),
         );
 
         const result = subject.execute(username, password);
@@ -96,12 +101,12 @@ describe('Login of deactivated accounts and audit', () => {
     it('refuses a deactivated account like wrong credentials', async () => {
         const users = new MemoryUsers();
 
-        await users.create(user({ role: 'owner', active: false }));
+        await users.create(IdentityDoubles.user({ role: 'owner', active: false }));
         const subject = new Login(
             users,
             passwords,
             tokens,
-            auditedOperation(new MemoryAuditTrail()),
+            AuditDoubles.auditedOperation(new MemoryAuditTrail()),
         );
 
         const result = subject.execute('owner', 'old-password');
@@ -115,8 +120,8 @@ describe('Login of deactivated accounts and audit', () => {
         const users = new MemoryUsers();
         const trail = new MemoryAuditTrail();
 
-        await users.create(user());
-        const subject = new Login(users, passwords, tokens, auditedOperation(trail));
+        await users.create(IdentityDoubles.user());
+        const subject = new Login(users, passwords, tokens, AuditDoubles.auditedOperation(trail));
 
         await subject.execute('owner', 'old-password');
 
@@ -131,7 +136,7 @@ describe('Login of deactivated accounts and audit', () => {
     it('records a failed sign-in of an unknown username without an actor', async () => {
         const users = new MemoryUsers();
         const trail = new MemoryAuditTrail();
-        const subject = new Login(users, passwords, tokens, auditedOperation(trail));
+        const subject = new Login(users, passwords, tokens, AuditDoubles.auditedOperation(trail));
 
         await subject.execute('nobody', 'secret-guess').catch(() => undefined);
 

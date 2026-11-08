@@ -1,15 +1,15 @@
 import { expect, it } from 'vitest';
-import { library, saved } from '../testing/book-doubles.test-support.js';
+import { BookDoubles } from '../testing/book-doubles.test-support.js';
 import { CollectionMemberTitles } from './collection-member-titles.service.js';
 
 const gunnm = { collection: { name: 'Gunnm' }, volumeFrom: 3, volumeTo: 3 };
 
-function subject(current: ReturnType<typeof library>) {
+function subject(current: ReturnType<typeof BookDoubles.library>) {
     return new CollectionMemberTitles(current.books, current.clock);
 }
 
-async function generatedBook(current: ReturnType<typeof library>) {
-    return saved(current, {
+async function generatedBook(current: ReturnType<typeof BookDoubles.library>) {
+    return BookDoubles.saved(current, {
         title: '',
         isbn: null,
         noIsbn: true,
@@ -19,7 +19,7 @@ async function generatedBook(current: ReturnType<typeof library>) {
 }
 
 it('gives generated titles the new collection name, recording each change', async () => {
-    const current = library();
+    const current = BookDoubles.library();
     const book = await generatedBook(current);
 
     const result = await subject(current).regenerate('Battle Angel Alita', [
@@ -39,8 +39,8 @@ it('gives generated titles the new collection name, recording each change', asyn
 });
 
 it('leaves supplied titles unchanged on a rename', async () => {
-    const current = library();
-    const book = await saved(current, { category: 'manga', collection: gunnm });
+    const current = BookDoubles.library();
+    const book = await BookDoubles.saved(current, { category: 'manga', collection: gunnm });
 
     const result = await subject(current).regenerate('Battle Angel Alita', [
         { bookId: book.id, volumeFrom: 3, volumeTo: 3 },
@@ -51,7 +51,7 @@ it('leaves supplied titles unchanged on a rename', async () => {
 });
 
 it('keeps generated titles as supplied titles, recording each change', async () => {
-    const current = library();
+    const current = BookDoubles.library();
     const book = await generatedBook(current);
 
     const result = await subject(current).keep([book.id]);
@@ -71,8 +71,8 @@ it('keeps generated titles as supplied titles, recording each change', async () 
 });
 
 it('records nothing for a supplied title kept on deletion', async () => {
-    const current = library();
-    const book = await saved(current, { category: 'manga', collection: gunnm });
+    const current = BookDoubles.library();
+    const book = await BookDoubles.saved(current, { category: 'manga', collection: gunnm });
 
     const result = await subject(current).keep([book.id]);
 

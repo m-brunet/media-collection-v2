@@ -17,11 +17,13 @@ interface NavigationItem {
 
 // Each feature task adds its own entries here; only implemented pages appear.
 const libraryItems: NavigationItem[] = [
+    { to: '/', label: 'nav.overview', icon: 'overview' },
     { to: '/books', label: 'nav.books', icon: 'books' },
     { to: '/collections', label: 'nav.collections', icon: 'collections' },
     { to: '/bookshelves', label: 'nav.bookshelves', icon: 'bookshelves' },
     { to: '/tags', label: 'nav.tags', icon: 'tag' },
     { to: '/loans', label: 'nav.loans', icon: 'lend' },
+    { to: '/activity', label: 'nav.activity', icon: 'activity' },
 ];
 const administrationItems: NavigationItem[] = [
     { to: '/admin/accounts', label: 'nav.accounts', icon: 'accounts' },
@@ -34,7 +36,7 @@ function NavigationLink({ item }: { item: NavigationItem }) {
 
     return (
         <li>
-            <NavLink to={item.to} className="nav-link">
+            <NavLink to={item.to} end={item.to === '/'} className="nav-link">
                 <Icon name={item.icon} />
                 <span>{t(item.label)}</span>
             </NavLink>
