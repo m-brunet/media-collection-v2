@@ -323,6 +323,7 @@ describe('Electron-managed runtime integration', () => {
         const recovery = await fixture.start(undefined, { recovery: true });
         const command = {
             type: 'recover',
+            version: '0.1.0',
             dataDirectory: recovery.directory,
             password: 'recovery-password',
         };
@@ -363,6 +364,7 @@ describe('Electron-managed runtime integration', () => {
 
         await recovery.runtime.send({
             type: 'recover',
+            version: '0.1.0',
             dataDirectory: current.directory,
             password: 'recovery-password',
         });
@@ -389,6 +391,7 @@ describe('Electron-managed runtime integration', () => {
 
         await recovery.runtime.send({
             type: 'recover',
+            version: '0.1.0',
             dataDirectory: current.directory,
             password: 'recovery-password',
         });

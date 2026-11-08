@@ -33,24 +33,30 @@ parent.on('message', (event) => {
                     httpsPort: backend.httpsPort,
                     httpsError: backend.httpsError,
                 });
-            } else if (message.type === 'recover') {
-                if (starting) {
-                    throw new Error('Recovery cannot run with the server active.');
-                }
-
-                const recovered = await new LocalMaintenance(message.dataDirectory).recover(
-                    message.password,
-                );
-
-                send({ type: 'recovered', username: recovered.username });
-            } else if (message.type === 'maintenance-status') {
+            } else if (
+                message.type === 'maintenance-status' ||
+                message.type === 'recover' ||
+                message.type === 'backup'
+            ) {
                 if (starting) {
                     throw new Error('Maintenance cannot run with the server active.');
                 }
 
-                const status = await new LocalMaintenance(message.dataDirectory).status();
+                const maintenance = new LocalMaintenance(message.dataDirectory, message.version);
 
-                send({ type: 'maintenance-status', ...status });
+                if (message.type === 'maintenance-status') {
+                    send({ type: 'maintenance-status', ...(await maintenance.status()) });
+                } else if (message.type === 'recover') {
+                    send({
+                        type: 'recovered',
+                        username: (await maintenance.recover(message.password)).username,
+                    });
+                } else {
+                    send({
+                        type: 'backed-up',
+                        backup: await maintenance.createBackup(message.destination),
+                    });
+                }
             } else if (message.type === 'dev-reset' || message.type === 'dev-import-v1') {
                 if (starting) {
                     throw new Error('Development data commands cannot run with the server active.');

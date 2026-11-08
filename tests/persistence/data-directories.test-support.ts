@@ -1,4 +1,5 @@
-import { mkdir, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { unzipSync } from 'fflate';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
@@ -11,6 +12,7 @@ const now = '2026-01-01T00:00:00.000Z';
 // Temporary data directories; `populated` holds one record in every library table, an account,
 // a server setting, a cover file and a file that is not a cover.
 export class DataDirectories {
+    static readonly certificate = '6f1c2b0e-7d4a-4e8b-9c3f-2a5d8e1b4c70';
     private readonly paths: string[] = [];
 
     async empty(prefix: string): Promise<string> {
@@ -203,6 +205,10 @@ export class DataDirectories {
         await mkdir(join(directory, 'covers'));
         await writeFile(join(directory, 'covers', cover), 'image');
         await writeFile(join(directory, 'covers', 'notes.txt'), 'not a cover');
+        await mkdir(join(directory, 'tls', DataDirectories.certificate), { recursive: true });
+        await writeFile(join(directory, 'tls', DataDirectories.certificate, 'chain.pem'), 'chain');
+        await writeFile(join(directory, 'tls', DataDirectories.certificate, 'key.pem'), 'key');
+        await writeFile(join(directory, 'session.key'), 'machine secret');
 
         return directory;
     }
@@ -254,6 +260,33 @@ export class DataDirectories {
         } finally {
             await database.close();
         }
+    }
+
+    static async categories(directory: string): Promise<string[]> {
+        const database = Database.openExisting(directory);
+
+        try {
+            const rows = await database.connection
+                .selectFrom('audit_logs')
+                .select('category')
+                .execute();
+
+            return rows.map((row) => row.category);
+        } finally {
+            await database.close();
+        }
+    }
+
+    // The audit categories of the database saved in a backup file.
+    async backupCategories(backup: string): Promise<string[]> {
+        const directory = await this.empty('backup-content-');
+
+        await writeFile(
+            join(directory, 'application.sqlite'),
+            unzipSync(await readFile(backup))['application.sqlite']!,
+        );
+
+        return DataDirectories.categories(directory);
     }
 
     async cleanup(): Promise<void> {

@@ -8,6 +8,15 @@ import { ScryptPasswordHasher } from '../../identity/infrastructure/adapters/dri
 import { RecoverAdministrator } from '../../identity/application/use-cases/recover-administrator.usecase.js';
 import { FindProtectedAdministrator } from '../../identity/application/use-cases/find-protected-administrator.usecase.js';
 import { Failure } from '../../shared/domain/exceptions/failure.js';
+import { PrivateStorage } from '../../shared/infrastructure/adapters/driven/filesystem/private-storage.adapter.js';
+import { CreateBackup } from '../../maintenance/application/use-cases/create-backup.usecase.js';
+import type { BackupDescription } from '../../maintenance/application/backup-description.js';
+import { DataDirectoryFiles } from '../../maintenance/infrastructure/adapters/driven/filesystem/data-directory-files.adapter.js';
+import { ZipBackupArchive } from '../../maintenance/infrastructure/adapters/driven/filesystem/zip-backup-archive.adapter.js';
+import { Sha256Checksums } from '../../maintenance/infrastructure/adapters/driven/runtime/sha256-checksums.adapter.js';
+import { DatabaseSession } from '../../maintenance/infrastructure/adapters/driven/persistence/database-session.adapter.js';
+import { KyselyLibraryContents } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-library-contents.adapter.js';
+import { KyselyMaintenanceJournal } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-maintenance-journal.adapter.js';
 
 export interface MaintenanceStatus {
     administrator: string | null;
@@ -18,17 +27,23 @@ export interface MaintenanceStatus {
 export class LocalMaintenance {
     private readonly ids = new UuidGenerator();
     private readonly clock = new SystemClock();
+    private readonly session: DatabaseSession;
 
-    constructor(private readonly dataDirectory: string) {}
+    constructor(
+        private readonly dataDirectory: string,
+        private readonly version: string,
+    ) {
+        this.session = new DatabaseSession(dataDirectory, this.ids);
+    }
 
     async status(): Promise<MaintenanceStatus> {
         if (!Database.exists(this.dataDirectory)) {
             return { administrator: null };
         }
 
-        return this.withDatabase(async (database) => {
+        return this.session.use(async (connections) => {
             const administrator = await new FindProtectedAdministrator(
-                new KyselyUserRepository(database.connections),
+                new KyselyUserRepository(connections),
             ).execute();
 
             return { administrator: administrator?.username ?? null };
@@ -44,31 +59,33 @@ export class LocalMaintenance {
             );
         }
 
-        return this.withDatabase((database) =>
+        return this.session.use((connections) =>
             new RecoverAdministrator(
-                new KyselyUserRepository(database.connections),
+                new KyselyUserRepository(connections),
                 new ScryptPasswordHasher(),
-                this.operations(database),
+                new AuditedOperation(
+                    connections,
+                    new KyselyAuditTrail(connections, this.ids),
+                    this.clock,
+                    this.ids,
+                ),
             ).execute(password),
         );
     }
 
-    private operations(database: Database): AuditedOperation {
-        return new AuditedOperation(
-            database.connections,
-            new KyselyAuditTrail(database.connections, this.ids),
+    createBackup(destination: string): Promise<BackupDescription> {
+        return new CreateBackup(
+            new DataDirectoryFiles(this.dataDirectory),
+            new KyselyLibraryContents(this.session),
+            new ZipBackupArchive(new PrivateStorage()),
+            new Sha256Checksums(),
+            this.journal(),
             this.clock,
-            this.ids,
-        );
+            this.version,
+        ).execute(destination);
     }
 
-    private async withDatabase<T>(work: (database: Database) => Promise<T>): Promise<T> {
-        const database = await Database.open(this.dataDirectory, this.ids);
-
-        try {
-            return await work(database);
-        } finally {
-            await database.close();
-        }
+    private journal(): KyselyMaintenanceJournal {
+        return new KyselyMaintenanceJournal(this.session, this.ids, this.clock);
     }
 }
