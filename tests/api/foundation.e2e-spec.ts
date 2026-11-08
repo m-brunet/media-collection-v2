@@ -320,7 +320,7 @@ describe('Electron-managed runtime integration', () => {
     });
 
     it('refuses recovery on missing storage without creating a database', async () => {
-        const recovery = await fixture.start(undefined, { recovery: true });
+        const recovery = await fixture.start(undefined, { maintenance: true });
         const command = {
             type: 'recover',
             version: '0.1.0',
@@ -341,7 +341,7 @@ describe('Electron-managed runtime integration', () => {
         const token = current.client.cookies.get('app_auth')!;
 
         await current.runtime.close();
-        const recovery = await fixture.start(current.directory, { recovery: true });
+        const recovery = await fixture.start(current.directory, { maintenance: true });
 
         const restarted = await fixture.recover(recovery, 'recovery-password');
 
@@ -360,7 +360,7 @@ describe('Electron-managed runtime integration', () => {
 
         await RuntimeSetup.administrator(current.client);
         await current.runtime.close();
-        const recovery = await fixture.start(current.directory, { recovery: true });
+        const recovery = await fixture.start(current.directory, { maintenance: true });
 
         await recovery.runtime.send({
             type: 'recover',
@@ -387,7 +387,7 @@ describe('Electron-managed runtime integration', () => {
 
         await RuntimeSetup.administrator(current.client);
         await current.runtime.close();
-        const recovery = await fixture.start(current.directory, { recovery: true });
+        const recovery = await fixture.start(current.directory, { maintenance: true });
 
         await recovery.runtime.send({
             type: 'recover',

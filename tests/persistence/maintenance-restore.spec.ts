@@ -115,7 +115,7 @@ describe('local restore', () => {
 
         const status = await new LocalMaintenance(target, '0.1.0').status();
 
-        expect(status).toEqual({ administrator: 'admin' });
+        expect(status).toEqual({ administrator: 'admin', hasData: true });
     });
     it('ends every session with a new session key', async () => {
         const backup = await backupOf(await directories.populated('source-'));

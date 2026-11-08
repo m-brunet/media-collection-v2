@@ -26,6 +26,7 @@ import { KyselyMaintenanceJournal } from '../../maintenance/infrastructure/adapt
 
 export interface MaintenanceStatus {
     administrator: string | null;
+    hasData: boolean;
 }
 
 // Local host maintenance, run by the Electron worker while no HTTP listener is active. An
@@ -45,7 +46,7 @@ export class LocalMaintenance {
 
     async status(): Promise<MaintenanceStatus> {
         if (!Database.exists(this.dataDirectory)) {
-            return { administrator: null };
+            return { administrator: null, hasData: false };
         }
 
         return this.session.use(async (connections) => {
@@ -53,7 +54,7 @@ export class LocalMaintenance {
                 new KyselyUserRepository(connections),
             ).execute();
 
-            return { administrator: administrator?.username ?? null };
+            return { administrator: administrator?.username ?? null, hasData: true };
         });
     }
 

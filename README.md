@@ -84,26 +84,30 @@ Keep custom data directories private. Back up the entire data directory with the
 `application.sqlite`, `session.key`, `tls/` and `covers/` (book cover images). The Electron browser profile lives below `electron-profile/`. Do not
 commit storage or keys.
 
-## Local administrator recovery
+## Local maintenance: Admin recovery, backup and restore
 
-Close the normal application first. Run the application executable with:
-
-```sh
-<app> --reset-admin --login <administrator-login> [--data-dir <directory>]
-```
-
-For a development checkout:
+Local maintenance runs only on the computer that hosts Media Collection, with no web server and no sign-in. Open it
+from the desktop menu **Maintenance → Open local maintenance…**: the server stops (browsers and phones lose access)
+until the maintenance window is closed, then the application starts again. When the application cannot start, open
+the same window directly:
 
 ```sh
-npm run build
-npm run reset-admin -- --login admin
+<app> --maintenance [--data-dir <directory>]
 ```
 
-For Windows, for example: `"Media Collection.exe" --reset-admin --login admin`. If you changed the login or data directory,
-supply those values. The local dialog asks for a new temporary password. Recovery requires an existing database and
-administrator account, starts no HTTP/HTTPS listeners, invalidates previous sessions, and requires replacement of the
-temporary password at the next login. The normal and recovery processes cannot open the same application profile
-concurrently.
+For a development checkout: `npm run build`, then `npm run maintenance`. On Windows, for example:
+`"Media Collection.exe" --maintenance`.
+
+- **Recover Admin access** shows the protected Admin's username and sets a new temporary password, to be replaced at
+  the next sign-in. It keeps all data and ends the Admin's sessions.
+- **Create a backup** saves all application data (database, covers, HTTPS certificate and settings) in one
+  `.mcbackup` file named after its date and time, by default in `Documents/Media Collection backups`. The file holds
+  private notes and password hashes: keep it private.
+- **Restore a backup** accepts only a backup made by the same Media Collection version, also from another computer.
+  After a confirmation it replaces all current data, keeps the backup's accounts and passwords, and ends every session.
+  An invalid, damaged or other-version file is rejected and the current data stays unchanged.
+
+The normal application and the maintenance window never use the same data at the same time.
 
 ## Development data
 

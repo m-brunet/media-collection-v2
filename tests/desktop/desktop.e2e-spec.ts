@@ -50,31 +50,6 @@ async function readyDesktop() {
     return current;
 }
 
-async function recoveryDesktop() {
-    const current = await readyDesktop();
-
-    await current.runtime.close();
-    const recovery = await fixture.start(current.directory, { main: true, recovery: true });
-
-    await evaluate(
-        recovery.runtime,
-        "document.getElementById('password').value='dialog-recovery-password';document.getElementById('confirmation').value='dialog-recovery-password';true",
-    );
-
-    return {
-        previous: current,
-        current: recovery,
-    };
-}
-
-async function submitRecovery(runtime: ElectronRuntime) {
-    await evaluate(runtime, "document.getElementById('recovery').requestSubmit();true");
-    await waitFor(
-        runtime,
-        "document.getElementById('result').textContent.includes('Password reset.')",
-    );
-}
-
 describe('desktop lifecycle and renderer', () => {
     it('saves the external HTTP port from the actual Server settings screen', async () => {
         const current = await readyDesktop();
@@ -126,20 +101,20 @@ describe('desktop lifecycle and renderer', () => {
         expect(await (await fetch(address + '/account')).text()).toContain('<div id="root">');
     });
 
-    it('starts a sandboxed renderer without a business or recovery bridge', async () => {
+    it('starts a sandboxed renderer without a business or maintenance bridge', async () => {
         const options = { main: true };
 
         const current = await fixture.start(undefined, options);
         const bridge = await evaluate(
             current.runtime,
-            "typeof window.require + ':' + typeof window.administratorRecovery",
+            "typeof window.require + ':' + typeof window.maintenance",
         );
 
         expect(current.ready.value).toMatchObject({
             nodeIntegration: false,
             sandbox: true,
             contextIsolation: true,
-            recovery: false,
+            maintenance: false,
         });
         expect(bridge).toBe('undefined:undefined');
     });
@@ -194,11 +169,11 @@ describe('desktop lifecycle and renderer', () => {
         });
     });
 
-    it('rejects a recovery instance while the normal desktop is running', async () => {
+    it('rejects a maintenance instance while the normal desktop is running', async () => {
         const current = await readyDesktop();
         const client = new Client('http://127.0.0.1:' + current.ready.httpPort);
 
-        const duplicate = fixture.launch(current.directory, { main: true, recovery: true });
+        const duplicate = fixture.launch(current.directory, { main: true, maintenance: true });
 
         await expect(duplicate.ready).rejects.toThrow('already running');
         expect(await duplicate.exited).toBe(1);
@@ -212,56 +187,5 @@ describe('desktop lifecycle and renderer', () => {
         await current.runtime.close();
 
         await expect(client.call('/health')).rejects.toThrow();
-    });
-
-    it('exposes the recovery bridge only in the local sandboxed dialog without listeners', async () => {
-        const previous = await readyDesktop();
-
-        await previous.runtime.close();
-        const client = new Client('http://127.0.0.1:' + previous.ready.httpPort);
-
-        const recovery = await fixture.start(previous.directory, { main: true, recovery: true });
-        const bridge = await evaluate(
-            recovery.runtime,
-            'typeof window.administratorRecovery.reset',
-        );
-
-        expect(recovery.ready.value).toMatchObject({
-            nodeIntegration: false,
-            sandbox: true,
-            contextIsolation: true,
-            recovery: true,
-        });
-        expect(bridge).toBe('function');
-        await expect(client.call('/health')).rejects.toThrow();
-    });
-
-    it('reports successful reset through the local recovery dialog', async () => {
-        const { current } = await recoveryDesktop();
-
-        await submitRecovery(current.runtime);
-        const message = await evaluate(
-            current.runtime,
-            "document.getElementById('result').textContent",
-        );
-
-        expect(message).toContain('Password reset.');
-    });
-
-    it('persists credentials reset through the desktop recovery dialog', async () => {
-        const { current } = await recoveryDesktop();
-
-        await submitRecovery(current.runtime);
-        await current.runtime.close();
-        const restarted = await fixture.start(current.directory, { main: true });
-        const client = new Client('http://127.0.0.1:' + restarted.ready.httpPort);
-
-        await client.prepare();
-        const input = { username: 'admin', password: 'dialog-recovery-password' };
-
-        const response = await client.call('/auth/login', 'POST', input);
-
-        expect(response.status).toBe(200);
-        expect(response.body.mustChangePassword).toBe(true);
     });
 });
