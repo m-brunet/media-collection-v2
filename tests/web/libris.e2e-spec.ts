@@ -216,7 +216,7 @@ describe('Libris accounts', () => {
 
         await page.goto('/admin/server');
 
-        await page.getByRole('heading', { name: 'HTTP / web interface' }).waitFor();
+        await page.getByRole('heading', { name: 'Internet access' }).waitFor();
         expect(new URL(page.url()).pathname).toBe('/admin/server');
     });
 });

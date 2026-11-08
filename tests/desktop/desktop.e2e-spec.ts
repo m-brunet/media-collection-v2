@@ -65,6 +65,10 @@ describe('desktop lifecycle and renderer', () => {
         await waitFor(current.runtime, "Boolean(document.querySelector('[name=httpPort]'))");
         await evaluate(
             current.runtime,
+            "document.querySelector('details.advanced-settings').open = true;true",
+        );
+        await evaluate(
+            current.runtime,
             "document.querySelector('[name=httpPort]').value='" + port + "';true",
         );
 

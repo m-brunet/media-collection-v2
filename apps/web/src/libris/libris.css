@@ -1797,3 +1797,91 @@ body {
     color: var(--color-accent);
     text-transform: uppercase;
 }
+
+/* Server settings: internet access, then the advanced ports and certificate forms */
+.internet-access {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.internet-access__steps {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.internet-access__step {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-2) var(--space-3);
+    border: var(--border);
+    border-radius: var(--radius-md);
+}
+
+.internet-access__step--running {
+    border-color: var(--color-accent);
+}
+
+.internet-access__step--waiting {
+    color: var(--color-text-muted);
+}
+
+.internet-access__address {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--space-6);
+}
+
+.internet-access__facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--space-3) var(--space-6);
+    margin: 0;
+}
+
+.internet-access__facts dt {
+    color: var(--color-text-secondary);
+    font-size: var(--text-md);
+}
+
+.internet-access__facts dd {
+    margin: var(--space-1) 0 0;
+    overflow-wrap: anywhere;
+}
+
+.internet-access__qr {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+}
+
+/* The code stays dark on white so every phone camera reads it. */
+.internet-access__qr img {
+    width: 180px;
+    height: 180px;
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
+    background: #fff;
+}
+
+.internet-access__subtitle {
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-lg);
+}
+
+.advanced-settings > summary {
+    cursor: pointer;
+    padding: var(--space-2) 0;
+    color: var(--color-text-secondary);
+}
+
+.advanced-settings[open] > summary {
+    margin-bottom: var(--space-4);
+}

@@ -242,8 +242,19 @@ and phone and what to report back; the next step starts from the results.
   separate GET. Actions: `POST /internet-access` (202), `POST /internet-access/check` (202), `DELETE /internet-access`,
   `PUT /keep-awake`. `SettingsModule.register` takes one adapters object. The hourly upkeep is a driving adapter
   (`InternetAccessUpkeep`, Nest lifecycle). A live certificate install does not mark a restart as required.
-- [ ] **9. Libris UI**: Internet access panel, QR code, manual screen, keep-awake switch, Advanced section; EN/FR;
+- [x] **9. Libris UI**: Internet access panel, QR code, manual screen, keep-awake switch, Advanced section; EN/FR;
   component tests and Playwright (desktop viewports) with the stand-ins.
+  Done: `InternetAccessPanel` at the top of Server settings (steps followed every 1.5 s while a setup runs, address
+  and QR code of `https://<address>/leaf/`, manual rule values, failure explanations, confirmations to replace a
+  saved certificate and to turn off), keep-awake checkbox, HTTP/HTTPS forms in a collapsed Advanced section (HTTPS
+  locked while internet access is on). No links to provider help pages: the manual screen names the menu
+  ("Port forwarding", "NAT/PAT") instead of guessing addresses. Browser journeys use stand-ins passed to the test
+  worker (`APP_TEST_INTERNET_ACCESS`). `qrcode` 1.5.4 added.
+  **Incident (2026-11-08):** the first browser run used the real desktop worker (the harness only chose the test
+  worker for a fake clock or lookup stand-ins), so it reached the real Freebox and Let's Encrypt production. One
+  UPnP rule (443 → a closed test port) was left and removed by hand; Let's Encrypt probably issued about two real
+  certificates for the public address, which count toward its limit of 5 per address per week. The harness now
+  selects the test worker for the internet access stand-ins too.
 - [ ] **10. Desktop keep awake**: worker message and `powerSaveBlocker` in the main process; desktop e2e check.
 - [ ] **11. Real-world check (with the user)**: on the user's router and phone (mobile data, not Wi-Fi): setup,
   QR code, Leaf scanning over HTTPS, turn off. Results and router behaviour noted here.
