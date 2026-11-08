@@ -320,17 +320,17 @@ describe('Electron-managed runtime integration', () => {
     });
 
     it('refuses recovery on missing storage without creating a database', async () => {
-        const recovery = await fixture.start(undefined, { recovery: true });
+        const recovery = await fixture.start(undefined, { maintenance: true });
         const command = {
             type: 'recover',
+            version: '0.1.0',
             dataDirectory: recovery.directory,
-            login: 'admin',
             password: 'recovery-password',
         };
 
         const result = recovery.runtime.send(command);
 
-        await expect(result).rejects.toThrow('No existing');
+        await expect(result).rejects.toThrow('There is no administrator account yet.');
         await expect(readFile(join(recovery.directory, 'application.sqlite'))).rejects.toThrow();
     });
 
@@ -341,7 +341,7 @@ describe('Electron-managed runtime integration', () => {
         const token = current.client.cookies.get('app_auth')!;
 
         await current.runtime.close();
-        const recovery = await fixture.start(current.directory, { recovery: true });
+        const recovery = await fixture.start(current.directory, { maintenance: true });
 
         const restarted = await fixture.recover(recovery, 'recovery-password');
 
@@ -360,12 +360,12 @@ describe('Electron-managed runtime integration', () => {
 
         await RuntimeSetup.administrator(current.client);
         await current.runtime.close();
-        const recovery = await fixture.start(current.directory, { recovery: true });
+        const recovery = await fixture.start(current.directory, { maintenance: true });
 
         await recovery.runtime.send({
             type: 'recover',
+            version: '0.1.0',
             dataDirectory: current.directory,
-            login: 'admin',
             password: 'recovery-password',
         });
         await recovery.runtime.close();
@@ -387,12 +387,12 @@ describe('Electron-managed runtime integration', () => {
 
         await RuntimeSetup.administrator(current.client);
         await current.runtime.close();
-        const recovery = await fixture.start(current.directory, { recovery: true });
+        const recovery = await fixture.start(current.directory, { maintenance: true });
 
         await recovery.runtime.send({
             type: 'recover',
+            version: '0.1.0',
             dataDirectory: current.directory,
-            login: 'admin',
             password: 'recovery-password',
         });
         await recovery.runtime.close();

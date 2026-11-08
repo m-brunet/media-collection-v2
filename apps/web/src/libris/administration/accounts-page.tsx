@@ -12,6 +12,7 @@ import type { Feedback } from '../../shared/use-action';
 import { AccountStatusDialog } from './account-status-dialog';
 import { CreateAccountDialog } from './create-account-dialog';
 import { ResetPasswordDialog } from './reset-password-dialog';
+import { DataResetDialog } from './data-reset-dialog';
 
 // User management (administrator only): accounts with fixed roles, created with a temporary
 // password, and deactivated rather than deleted.
@@ -22,6 +23,7 @@ export function AccountsPage() {
     const [resetting, setResetting] = useState<AccountSummary | null>(null);
     const [changing, setChanging] = useState<AccountSummary | null>(null);
     const [result, setResult] = useState<Feedback | null>(null);
+    const [resettingData, setResettingData] = useState(false);
     const load = useAction();
     const { run } = load;
     const administrator = accounts?.find((account) => account.role === 'admin');
@@ -145,7 +147,22 @@ export function AccountsPage() {
                         <p className="field__hint">{t('accounts.lifecycleHint')}</p>
                     </Panel>
                 )}
+                {accounts && (
+                    <Panel label={t('dataReset.label')}>
+                        <p className="muted">{t('dataReset.intro')}</p>
+                        <div className="actions">
+                            <Button variant="danger" onClick={() => setResettingData(true)}>
+                                {t('dataReset.title')}
+                            </Button>
+                        </div>
+                    </Panel>
+                )}
             </div>
+            <DataResetDialog
+                open={resettingData}
+                onClose={() => setResettingData(false)}
+                onReset={() => window.location.replace('/')}
+            />
             <CreateAccountDialog
                 open={creating}
                 onClose={() => setCreating(false)}

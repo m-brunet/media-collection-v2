@@ -2,7 +2,7 @@
 
 The backend is an internal Electron component. The main process controls one utility process, which owns NestJS,
 listeners and SQLite. React uses HTTP for every business operation. IPC is limited to worker lifecycle and the
-separately launched, local administrator recovery dialog.
+local maintenance window (Admin recovery, backup and restore).
 
 ## Architecture and layout
 
@@ -44,9 +44,9 @@ apps/server/src/
   shared/                           # Actual shared pure contracts and technical capabilities
   infrastructure/
     adapters/driving/web/           # Public health controller
-    config/                         # Root module, bootstrap and recovery
+    config/                         # Root module, bootstrap, local maintenance and development data
 apps/web/src/                       # Browser features and HTTP client
-apps/desktop/src/                   # Electron lifecycle, worker, recovery preload
+apps/desktop/src/                   # Electron lifecycle, worker, maintenance window and preload
 packages/contracts/src/             # HTTP shapes only
 tools/architecture/                 # Resolver-based Oxlint plugin and CLI fixtures
 ```
@@ -99,7 +99,7 @@ retain the full source basename, such as `user.entity.spec.ts`; controller tests
 | Config modules/bootstrap | Dependencies needed for composition                                                             |
 | Web                      | Web and HTTP contracts                                                                          |
 | Contracts                | Contracts                                                                                       |
-| Desktop                  | Desktop/contracts and the server's bootstrap/recovery/development-data command entry points    |
+| Desktop                  | Desktop/contracts and the server's bootstrap/maintenance/development-data entry points         |
 
 Cross-feature collaboration uses explicit narrow inner contracts; a feature cannot import another feature's
 infrastructure. Root composition may wire features; shared adapters must not reach into feature implementations.
@@ -235,7 +235,7 @@ are included.
 Normal startup waits for utility-process readiness before loading the web app. Ports, database failures and worker
 failures produce retry/quit choices. Closing the window quits on all platforms. Shutdown stops listeners, Nest and
 SQLite before terminating the worker; a timeout handles an unresponsive process. A per-data-directory Electron profile
-provides the single-instance lock, shared by normal and recovery startup.
+provides the single-instance lock, shared by normal and maintenance startup.
 
 The worker resolves the saved HTTP port after SQLite initialization and reports the actual listening port to Electron.
 Electron loads that URL, while development tooling updates Vite's API proxy from the backend readiness message before
@@ -244,17 +244,30 @@ temporary `--http-port` override allows the administrator to reopen settings and
 read saved settings again. Internal test fixtures can bind ephemeral port `0`; desktop CLI/environment validation
 retains the production minimum.
 
-Recovery starts no network listeners. Only its local sandboxed window gets a CommonJS preload exposing one
-password-reset call, validated against the sending window/frame. The recovery utility process opens existing storage
-only, without migration/seeding. Normal renderers have no business IPC bridge. Context isolation, sandboxing and
-disabled Node integration are explicit.
+Local maintenance (Task 9) runs with no network listener: the menu **Maintenance → Open local maintenance…** stops the
+backend and replaces the Libris window with the maintenance window, and closing it starts the application again;
+`--maintenance` opens the same window without starting the application. Only that local sandboxed page gets a
+CommonJS preload (`window.maintenance`: status, recover, create, choose and restore a backup), each call validated
+against the sending window and frame. File paths come only from native dialogs in the main process. Its own utility
+process runs `LocalMaintenance` (root config), which migrates an existing database like a normal start, never creates
+one except by a restore, and opens and closes the database for each step so the file can be copied or replaced.
+Normal renderers have no business IPC bridge. Context isolation, sandboxing and disabled Node integration are explicit.
+
+A backup is a `.mcbackup` ZIP (`fflate`): `manifest.json` (format, application, version, creation time, counts and a
+SHA-256 per entry), `application.sqlite`, `covers/` and `tls/`. `session.key` and the Electron profile stay out. A
+restore checks the manifest, the version (exactly the running one) and the checksums, stages the files in the data
+directory, checks that the staged database has exactly the current migrations, a protected Admin and every cover it
+names, then moves the current files aside and the staged ones in, putting the current ones back on any error. A new
+`session.key` then ends every session. The Admin data reset (`POST /api/maintenance/data-reset`) deletes the library,
+the audit log, the other accounts and the saved preferences in one transaction (loans before receivers), keeps the HTTP
+and HTTPS settings, and records `maintenance.data-reset` as the only audit record left.
 
 Electron starts ready-dependent work from `app.whenReady().then(...)`, keeping its ESM entry evaluation free to
-complete. Sandboxed recovery preload uses CommonJS because sandboxed preloads cannot use ESM imports.
+complete. The sandboxed maintenance preload uses CommonJS because sandboxed preloads cannot use ESM imports.
 See [Electron's ESM guidance](https://www.electronjs.org/docs/latest/tutorial/esm)
 and [utility-process API](https://www.electronjs.org/docs/latest/api/utility-process).
 
-electron-builder packages the common `dist` tree, recovery assets and runtime dependencies. Native `.node` binaries are
+electron-builder packages the common `dist` tree, maintenance window assets and runtime dependencies. Native `.node` binaries are
 unpacked from ASAR; better-sqlite3 13 uses Node-API. TypeScript compilation uses its CLI, not a programmatic compiler
 API. Installed packages run without system Node. Verify native loading and relative imports by running the package
 outside the checkout, as the smoke script does.

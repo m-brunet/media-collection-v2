@@ -35,6 +35,11 @@ import { HealthController } from '../adapters/driving/web/health.controller.js';
 import { LibraryModules } from './library-modules.js';
 import { AppearanceModule } from '../../appearance/infrastructure/config/appearance.module.js';
 import { KyselyAppearanceRepository } from '../../appearance/infrastructure/adapters/driven/persistence/kysely-appearance.repository.js';
+import { MaintenanceModule } from '../../maintenance/infrastructure/config/maintenance.module.js';
+import { KyselyApplicationDataEraser } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-application-data-eraser.adapter.js';
+import { KyselyLibraryEraser } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-library-eraser.adapter.js';
+import { KyselyCoverFileCleanup } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-cover-file-cleanup.adapter.js';
+import { FileCoverStorage } from '../../books/infrastructure/adapters/driven/filesystem/file-cover-storage.adapter.js';
 import { SetupAccess } from '../../identity/infrastructure/adapters/driving/web/setup-access.service.js';
 
 export interface BackendOptions {
@@ -209,6 +214,19 @@ export class BackendRuntime {
                             new KyselyAppearanceRepository(database.connections, ids),
                             operations,
                         ),
+                        MaintenanceModule.register({
+                            passwords: IdentityModule.administratorPassword(users, passwords),
+                            eraser: new KyselyApplicationDataEraser(
+                                database.connections,
+                                new KyselyLibraryEraser(database.connections),
+                            ),
+                            covers: new KyselyCoverFileCleanup(
+                                database.connections,
+                                new FileCoverStorage(options.dataDirectory),
+                            ),
+                            operations,
+                            sessions,
+                        }),
                         ...LibraryModules.register({
                             database,
                             dataDirectory: options.dataDirectory,

@@ -61,8 +61,10 @@ void app
         });
         app.on('will-quit', () => unwatchFile(process.env.APP_TEST_COMMAND_FILE));
 
-        if (process.env.APP_TEST_RECOVERY === '1') {
-            process.stdout.write(JSON.stringify({ type: 'recovery-ready', requestId: 0 }) + '\n');
+        if (process.env.APP_TEST_MAINTENANCE === '1') {
+            process.stdout.write(
+                JSON.stringify({ type: 'maintenance-ready', requestId: 0 }) + '\n',
+            );
         } else {
             worker.postMessage({
                 type: 'start',

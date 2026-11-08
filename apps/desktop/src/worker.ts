@@ -1,6 +1,6 @@
 import type { BackendHandle } from '../../server/src/infrastructure/config/bootstrap.js';
 import { BackendRuntime } from '../../server/src/infrastructure/config/bootstrap.js';
-import { AdministratorRecovery } from '../../server/src/infrastructure/config/recovery.js';
+import { LocalMaintenance } from '../../server/src/infrastructure/config/maintenance.js';
 import { DevelopmentDataCommands } from '../../server/src/infrastructure/config/development-data.js';
 import type { WorkerRequest, WorkerResponse } from './protocol.js';
 
@@ -33,17 +33,42 @@ parent.on('message', (event) => {
                     httpsPort: backend.httpsPort,
                     httpsError: backend.httpsError,
                 });
-            } else if (message.type === 'recover') {
+            } else if (
+                message.type === 'maintenance-status' ||
+                message.type === 'recover' ||
+                message.type === 'backup' ||
+                message.type === 'inspect-backup' ||
+                message.type === 'restore-backup'
+            ) {
                 if (starting) {
-                    throw new Error('Recovery cannot run with the server active.');
+                    throw new Error('Maintenance cannot run with the server active.');
                 }
 
-                await AdministratorRecovery.run(
-                    message.dataDirectory,
-                    message.login,
-                    message.password,
-                );
-                send({ type: 'recovered' });
+                const maintenance = new LocalMaintenance(message.dataDirectory, message.version);
+
+                if (message.type === 'maintenance-status') {
+                    send({ type: 'maintenance-status', ...(await maintenance.status()) });
+                } else if (message.type === 'recover') {
+                    send({
+                        type: 'recovered',
+                        username: (await maintenance.recover(message.password)).username,
+                    });
+                } else if (message.type === 'backup') {
+                    send({
+                        type: 'backed-up',
+                        backup: await maintenance.createBackup(message.destination),
+                    });
+                } else if (message.type === 'inspect-backup') {
+                    send({
+                        type: 'backup-inspected',
+                        backup: await maintenance.inspectBackup(message.source),
+                    });
+                } else {
+                    send({
+                        type: 'restored',
+                        backup: await maintenance.restoreBackup(message.source),
+                    });
+                }
             } else if (message.type === 'dev-reset' || message.type === 'dev-import-v1') {
                 if (starting) {
                     throw new Error('Development data commands cannot run with the server active.');
@@ -64,9 +89,14 @@ parent.on('message', (event) => {
                 process.exit(0);
             }
         } catch (error) {
+            // Application failures carry a stable reason the maintenance window translates.
+            const failure = error as { reason?: string | null; details?: Record<string, unknown> };
+
             send({
                 type: 'failed',
                 message: error instanceof Error ? error.message : 'The backend operation failed.',
+                reason: failure?.reason ?? null,
+                details: failure?.details ?? null,
             });
         }
     });

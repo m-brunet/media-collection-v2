@@ -185,9 +185,17 @@ export class Database {
     private constructor(file: string) {
         const sqlite = new BetterSqlite3(file);
 
-        sqlite.pragma('foreign_keys = ON');
-        sqlite.pragma('journal_mode = WAL');
-        sqlite.pragma('busy_timeout = 5000');
+        try {
+            sqlite.pragma('foreign_keys = ON');
+            sqlite.pragma('journal_mode = WAL');
+            sqlite.pragma('busy_timeout = 5000');
+        } catch (error) {
+            // A file that is not a database must not stay locked.
+            sqlite.close();
+
+            throw error;
+        }
+
         this.connection = new Kysely<DatabaseSchema>({
             dialect: new SqliteDialect({ database: sqlite }),
         });
@@ -210,7 +218,11 @@ export class Database {
         }
     }
 
-    // Existing storage only, never migrated: used by local administrator recovery.
+    static exists(directory: string): boolean {
+        return existsSync(join(directory, 'application.sqlite'));
+    }
+
+    // Existing storage only, never migrated: used by database-boundary tests.
     static openExisting(directory: string): Database {
         const file = join(directory, 'application.sqlite');
 
@@ -219,6 +231,26 @@ export class Database {
         }
 
         return new Database(file);
+    }
+
+    // True when every migration of this version has run, and no other.
+    async isUpToDate(ids: IdGenerator): Promise<boolean> {
+        const migrations = await new Migrator({
+            db: this.connection,
+            provider: new DatabaseMigrations(ids),
+        }).getMigrations();
+
+        if (migrations.some((migration) => migration.executedAt === undefined)) {
+            return false;
+        }
+
+        const executed = await this.connection
+            .withTables<{ kysely_migration: { name: string } }>()
+            .selectFrom('kysely_migration')
+            .select((eb) => eb.fn.countAll<number>().as('count'))
+            .executeTakeFirstOrThrow();
+
+        return Number(executed.count) === migrations.length;
     }
 
     close(): Promise<void> {

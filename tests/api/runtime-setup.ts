@@ -22,7 +22,7 @@ export class RuntimeFixture {
     async start(directory?: string, options: RuntimeOptions = {}) {
         const data = directory ?? (await this.directory());
         const resolved =
-            options.main && !options.recovery && options.port === undefined
+            options.main && !options.maintenance && options.port === undefined
                 ? { ...options, port: await RuntimeSetup.availablePort() }
                 : options;
         const runtime = this.launch(data, resolved);
@@ -56,8 +56,8 @@ export class RuntimeFixture {
     async recover(current: { runtime: ElectronRuntime; directory: string }, password: string) {
         const result = await current.runtime.send({
             type: 'recover',
+            version: '0.1.0',
             dataDirectory: current.directory,
-            login: 'admin',
             password,
         });
         const restarted = await this.restart(current);

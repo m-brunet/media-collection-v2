@@ -1,12 +1,11 @@
-import type {
-    ErasedLibrary,
-    LibraryEraser,
-} from '../../../../application/ports/driven/library-eraser.interface.js';
 import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
 
-// Deletes the library tables' records in foreign-key order. Accounts (with their language and
-// appearance) and the server settings stay; sessions end through each account's token version.
-export class KyselyLibraryEraser implements LibraryEraser {
+export type ErasedLibrary = { books: number; authors: number; collections: number; loans: number };
+
+// Deletes the library tables' records and the audit log in foreign-key order, joining the
+// transaction in progress. Accounts and settings stay; every session ends through the accounts'
+// token versions. Shared by the Admin data reset and the development data reset.
+export class KyselyLibraryEraser {
     constructor(private readonly connections: DatabaseConnections) {}
 
     async erase(): Promise<ErasedLibrary> {

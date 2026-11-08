@@ -174,3 +174,20 @@ it('explains a refused change with its translated reason', async () => {
         'This account is already deactivated.',
     );
 });
+
+it('offers the application data reset in its own panel', async () => {
+    signedInAdministrator();
+
+    renderPage();
+
+    expect(await screen.findByText('Application data reset')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Reset application data' })).toBeInTheDocument();
+});
+it('opens the data reset confirmation', async () => {
+    signedInAdministrator();
+    renderPage();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Reset application data' }));
+
+    expect(screen.getByRole('dialog', { name: 'Reset application data' })).toBeInTheDocument();
+});

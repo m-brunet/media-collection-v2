@@ -13,6 +13,7 @@ list before starting a task: an open entry in the area a task touches is handled
 | KI-4 | Improvement | Libris has an application icon in the Windows taskbar                                 | Low      | Open   |
 | KI-5 | Bug         | Bookshelves count not vertically centred with the search field                         | Low      | Open   |
 | KI-6 | Improvement | Appearance offers seven new colour schemes; Mint, Emerald and Forest are removed        | Medium   | Open   |
+| KI-7 | Improvement | Interface text needs slightly wider letter spacing                                    | Low      | Open   |
 
 ## Open
 
@@ -141,6 +142,23 @@ list before starting a task: an open entry in the area a task touches is handled
   schemes are out of scope: Libris and Leaf are dark only.
 - **Severity:** medium (visible choice, touches every screen's colours). **Planned:** next fix pass, or Task 10 with
   the icon sets on the same Appearance page, whichever comes first.
+
+### KI-7 — Interface text needs slightly wider letter spacing
+
+- **Type:** Improvement.
+- **Reported:** 2026-11-08 by the user, first on the Libris sidebar (screenshot in French: Vue d’ensemble, Mes livres,
+  Paramètres du serveur…): "The letter spacing could be a tiny bit bigger." Widened to all interface text after
+  discussion the same day.
+- **Today:** the body text (`body` in `apps/web/src/shared/ui/base.css`, `--font-body` Inter at `--text-base`) sets
+  no `letter-spacing`, so menus, buttons, labels, fields and tables use the font's default (0), which is a little
+  tight at 13–14 px. Already spaced and unchanged by this fix: section labels and other `.eyebrow` text (`0.06em`) and
+  the elements in `components.css` with `0.02em`.
+- **Fix:** one token in `apps/web/src/shared/ui/tokens.css` (for example `--tracking-body: 0.01em`) applied to `body`,
+  so Libris and Leaf follow together. Headings (`--font-heading`, Space Grotesk), monospace text and the brand name
+  keep their current spacing (set it back to `normal` on headings if they inherit it). Check the places where text is
+  tight: the sidebar (long French labels such as "Paramètres du serveur"), buttons, table columns, the book form and
+  Leaf at phone width, in English and French, at 1280 × 720 and 1440 wide.
+- **Severity:** low (typography). **Planned:** next fix pass, or the next task that touches shared styles.
 
 ## Done
 

@@ -14,7 +14,7 @@ it('defaults to remotely accessible HTTP', () => {
         httpPortSource: undefined,
         dataDirectory: resolve('data'),
         dataDirectoryOverridden: false,
-        recoveryLogin: null,
+        localMaintenance: false,
         maintenance: null,
     });
 });
@@ -59,8 +59,8 @@ it('refuses both development data commands at once', () => {
 
     expect(operation).toThrow('either');
 });
-it('refuses a development data command combined with recovery', () => {
-    const args = ['--reset-admin', '--login', 'admin', '--dev-reset-data'];
+it('refuses a development data command combined with local maintenance', () => {
+    const args = ['--maintenance', '--dev-reset-data'];
 
     const operation = () => DesktopConfigurationParser.parse(args, {}, 'data');
 
@@ -79,22 +79,19 @@ it('gives CLI settings precedence over environment', () => {
         dataDirectory: resolve('custom'),
     });
 });
-it('selects the named recovery account', () => {
-    const args = ['--reset-admin', '--login', 'admin'];
+it('selects the local maintenance window', () => {
+    const args = ['--maintenance'];
 
     const result = DesktopConfigurationParser.parse(args, {}, 'data');
 
-    expect(result.recoveryLogin).toBe('admin');
+    expect(result.localMaintenance).toBe(true);
 });
-it('requires a login for administrator recovery', () => {
-    const args = ['--reset-admin'];
-    const environment = {};
-    const message = 'login';
-    const input = args;
+it('starts the application without the maintenance option', () => {
+    const args: string[] = [];
 
-    const operation = () => DesktopConfigurationParser.parse(input, environment, 'data');
+    const result = DesktopConfigurationParser.parse(args, {}, 'data');
 
-    expect(operation).toThrow(message);
+    expect(result.localMaintenance).toBe(false);
 });
 it('requires a value after the data directory option', () => {
     const args = ['--data-dir'];
