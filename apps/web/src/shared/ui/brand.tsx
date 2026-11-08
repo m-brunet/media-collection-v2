@@ -10,10 +10,23 @@ export function Brand({
     size?: 'medium' | 'large';
 }) {
     const { t } = useI18n();
+    const markSize = size === 'large' ? 30 : 24;
 
     return (
         <div className={'brand brand--' + size}>
-            <Icon name="brand" size={size === 'large' ? 30 : 24} className="brand__mark" />
+            {app === 'libris' ? (
+                // The official Libris icon, also the favicon and the desktop window icon. It keeps its
+                // Spring green whatever the colour scheme or icon set.
+                <img
+                    src="/libris.svg"
+                    alt=""
+                    width={markSize}
+                    height={markSize}
+                    className="brand__mark"
+                />
+            ) : (
+                <Icon name="brand" size={markSize} className="brand__mark" />
+            )}
             <div className="brand__text">
                 <span className="brand__name">
                     {t(app === 'libris' ? 'brand.libris' : 'brand.leaf')}
