@@ -38,6 +38,8 @@
         "@nestjs/common": "^12.1.2",
         "@nestjs/core": "^12.1.2",
         "@nestjs/platform-express": "^12.1.2",
+        "@xmcl/nat-api": "0.4.5",
+        "acme-client": "5.4.0",
         "better-sqlite3": "^13.0.3",
         "cookie-parser": "^1.4.7",
         "express": "^5.2.1",
