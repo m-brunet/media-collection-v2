@@ -156,7 +156,7 @@ Application ports
   The existing `TlsStore` gains a source (`manual` / `automatic`).
 
 Driven adapters
-- `NatApiRouterGateway` (UPnP + NAT-PMP library, see Step 2), `HttpPublicAddressProbe` (ipify, plain HTTPS, short
+- `NatApiRouterGateway` (`@xmcl/nat-api`, UPnP + NAT-PMP), `HttpPublicAddressProbe` (ipify, plain HTTPS, short
   timeout), `AcmeCertificateAuthority` (`acme-client`, Let's Encrypt production; staging for manual testing),
   `TlsAlpnChallenges` (the challenge certificates the HTTPS listener serves), `KyselyInternetAccessStore`
   (`server_settings` key `internet-access`), `NodeHttpsRuntime`.
@@ -197,11 +197,24 @@ and phone and what to report back; the next step starts from the results.
 - [x] **1. Documentation**: product scope, release expectations (automatic router rule, external 443, HTTPS only on
   the internet), configuration (automatic certificate storage), architecture (certificate issuance, live HTTPS
   reload, upkeep timer). Record the decisions.
-- [ ] **2. Library check (spike, no production code kept)**: `acme-client` with an `ip` identifier, the
+- [x] **2. Library check (spike, no production code kept)**: `acme-client` with an `ip` identifier, the
   `shortlived` profile and TLS-ALPN-01 against Let's Encrypt **staging** (manual run with port 443 forwarded on the
   user's router); the UPnP/NAT-PMP library (`@silentbot1/nat-api` or another maintained fork) against the user's
   router: discover, external address, map 443, unmap. Outcome written here; if a library lacks a feature, propose the
   alternative before Step 3.
+
+  **Outcome (2026-11-08, user's Freebox, public IPv4 `82.66.x.x`, Windows network profile Private):**
+  - `@xmcl/nat-api` 0.4.5 chosen (TypeScript, UPnP + NAT-PMP, updated 2026-08) over `@silentbot1/nat-api` (low
+    activity). UPnP gateway found at once; external address read; existing third-party rules listed.
+  - The Freebox **accepted a UPnP rule on external 443** (→ 34443) and removed it on request.
+  - `acme-client` 5.4.0 works unchanged: `createOrder` passes `{ type: 'ip' }` identifiers and `profile: 'shortlived'`
+    through; `createAlpnCertificate` and `createCsr({ altNames: [ip] })` put the IP in the SAN (no common name).
+  - Let's Encrypt **staging** offered `tls-alpn-01` and `http-01`; validation came from several vantage points with SNI
+    `204.118.66.82.in-addr.arpa` and ALPN `acme-tls/1` (RFC 8738 confirmed), valid in 6 s; certificate issued 13 s
+    after the order, SAN `IP Address:82.66.118.204`, valid 160 hours.
+  - Node's `ALPNCallback` is enough to answer `acme-tls/1`; the challenge certificate can be chosen by the reverse-DNS
+    server name in `SNICallback`.
+  - Allowing Node on **private** networks in the Windows Firewall prompt was enough (the home network is Private).
 - [ ] **3. Domain**: `InternetAccess`, `ConnectionClass`, `RenewalPolicy`, failure reasons; unit tests.
 - [ ] **4. Application**: ports, the five use cases with in-memory doubles; audit; unit tests for every rule above
   (classification stops, refused port, unreachable, address change, renewal timing, backoff, manual certificate
@@ -251,8 +264,6 @@ and phone and what to report back; the next step starts from the results.
 
 - Which French provider boxes accept a UPnP rule on external 443 (Livebox, Freebox, SFR Box, Bbox)? Answered as far
   as possible in Step 11; the manual screen covers the rest.
-- `acme-client` support for `ip` identifiers and ACME profiles is not confirmed by its changelog (TLS-ALPN-01 is,
-  since 5.3.0). Step 2 settles it.
 
 ## Sources
 
@@ -260,4 +271,4 @@ and phone and what to report back; the next step starts from the results.
 - [Help Net Security: Let's Encrypt rolls out 6-day and IP-based certificates](https://www.helpnetsecurity.com/2026/01/20/lets-encrypt-6-day-tls-certificates/)
 - RFC 8738 (ACME IP identifiers): TLS-ALPN-01 uses the reverse-DNS name of the IP; DNS-01 is not allowed for IPs.
 - [acme-client versions](https://socket.dev/npm/package/acme-client/versions) (TLS-ALPN-01 since 5.3.0)
-- [@silentbot1/nat-api](https://www.npmjs.com/package/@silentbot1/nat-api) (UPnP and NAT-PMP, low activity)
+- [@xmcl/nat-api](https://npmjs.com/package/@xmcl/nat-api) (UPnP and NAT-PMP, chosen in Step 2)
