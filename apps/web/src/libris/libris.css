@@ -366,7 +366,13 @@ body {
 /* Books: list */
 .book-toolbar {
     display: flex;
+    align-items: center;
     gap: var(--space-3);
+}
+
+/* A short count beside the search field (Bookshelves): one line, centred on the field. */
+.book-toolbar__count {
+    white-space: nowrap;
 }
 
 .book-toolbar__sort {
