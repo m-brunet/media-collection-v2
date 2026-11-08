@@ -86,8 +86,6 @@ export const fr = {
     'server.httpsStopped': 'HTTPS n’est pas actif.',
     'server.restartRequired':
         'Des paramètres enregistrés attendent un redémarrage. Fermez puis rouvrez l’application de bureau pour les appliquer.',
-    'server.internet':
-        'L’accès par Internet utilise la redirection de port de votre box et le pare-feu de l’ordinateur. HTTP reste disponible quand HTTPS est activé.',
     'server.httpTitle': 'HTTP / interface web',
     'server.httpIntro':
         'Les navigateurs utilisent ce port pour accéder à Libris et Leaf. HTTP écoute sur le port {running} ; le port enregistré est {saved}.',
@@ -116,6 +114,71 @@ export const fr = {
     'server.httpsSubmit': 'Enregistrer les paramètres HTTPS',
     'server.httpsSaved':
         'Paramètres enregistrés. Redémarrez l’application de bureau pour les appliquer.',
+    'server.advanced': 'Avancé : ports et certificat manuel',
+    'server.httpsManaged':
+        'L’accès Internet gère le certificat HTTPS. Désactivez l’accès Internet pour modifier ces paramètres.',
+    'internet.title': 'Accès Internet',
+    'internet.intro':
+        'Ouvrez Libris et Leaf de partout, par exemple depuis votre téléphone en magasin. Media Collection ouvre le port de votre box et obtient un certificat gratuit auprès de Let’s Encrypt, renouvelé automatiquement.',
+    'internet.setUp': 'Configurer l’accès Internet',
+    'internet.terms':
+        'Le certificat est fourni par Let’s Encrypt. La configuration vaut acceptation de l’accord d’abonné de Let’s Encrypt.',
+    'internet.termsLink': 'Lire l’accord',
+    'internet.stepRouter': 'Recherche de votre box',
+    'internet.stepPort': 'Ouverture du port',
+    'internet.stepCertificate': 'Obtention du certificat',
+    'internet.stepDone': 'Terminé',
+    'internet.stepRunning': 'En cours',
+    'internet.stepWaiting': 'En attente',
+    'internet.active': 'L’accès Internet est activé.',
+    'internet.address': 'Adresse',
+    'internet.qr': 'Scannez ce code avec votre téléphone pour ouvrir Leaf.',
+    'internet.qrAlt': 'QR code pour {address}',
+    'internet.validUntil': 'Certificat valable jusqu’au {date}. Il est renouvelé automatiquement.',
+    'internet.lastFailure':
+        'La dernière vérification a échoué : {reason} Le certificat actuel reste utilisé. Prochain essai : {date}.',
+    'internet.turnOff': 'Désactiver l’accès Internet',
+    'internet.turnOffTitle': 'Désactiver l’accès Internet ?',
+    'internet.turnOffBody':
+        'Les téléphones ne pourront plus joindre Libris et Leaf hors de chez vous. La règle de la box est supprimée. Vous pouvez la reconfigurer à tout moment.',
+    'internet.manualTitle': 'Ajoutez la règle dans votre box',
+    'internet.manualIntro':
+        'Dans les réglages de votre box, cherchez « Redirection de ports » (ou « NAT/PAT ») et ajoutez cette règle :',
+    'internet.manualProtocol': 'Protocole',
+    'internet.manualExternal': 'Port externe',
+    'internet.manualAddress': 'Adresse interne (cet ordinateur)',
+    'internet.manualInternal': 'Port interne',
+    'internet.manualUnknown': 'inconnue',
+    'internet.check': 'Vérifier à nouveau',
+    'internet.firewall':
+        'Si Windows demande d’autoriser Media Collection sur le réseau, choisissez Autoriser.',
+    'internet.replaceTitle': 'Remplacer le certificat enregistré ?',
+    'internet.replaceBody':
+        'Un certificat HTTPS est déjà enregistré. L’accès Internet le remplace par un certificat de Let’s Encrypt.',
+    'internet.replace': 'Remplacer et configurer',
+    'internet.failure.no-router':
+        'Votre box n’a pas répondu : la règle ne peut pas être ajoutée automatiquement.',
+    'internet.failure.port-refused':
+        'Votre box a refusé d’ouvrir le port 443. Il est peut-être déjà utilisé, par exemple par l’accès à distance de la box.',
+    'internet.failure.not-reachable':
+        'Let’s Encrypt n’a pas pu joindre cet ordinateur sur le port 443. Vérifiez la règle de la box et le pare-feu Windows.',
+    'internet.failure.cgnat':
+        'Votre fournisseur d’accès partage votre adresse publique avec d’autres clients (CGNAT) : cet ordinateur ne peut pas être joint depuis Internet. Demandez une adresse IPv4 complète (« full stack ») à votre fournisseur, puis réessayez.',
+    'internet.failure.double-nat':
+        'Votre routeur est branché derrière un autre routeur. Ouvrez aussi le port sur l’autre routeur, ou passez la box en mode bridge, puis réessayez.',
+    'internet.failure.public-address-unknown':
+        'L’adresse publique de votre connexion est introuvable. Vérifiez la connexion Internet, puis réessayez.',
+    'internet.failure.rate-limited':
+        'Let’s Encrypt a reçu trop de demandes pour cette adresse. Réessayez dans quelques heures.',
+    'internet.failure.authority-unavailable':
+        'Let’s Encrypt est injoignable. Vérifiez la connexion Internet, puis réessayez.',
+    'internet.failure.https-unavailable':
+        'HTTPS n’a pas pu démarrer : son port est peut-être utilisé par un autre programme. Choisissez un autre port HTTPS dans les paramètres avancés, puis réessayez.',
+    'internet.failure.setup-failed':
+        'La configuration s’est arrêtée de façon inattendue. Réessayez.',
+    'keepAwake.label': 'Garder cet ordinateur éveillé pendant que Media Collection fonctionne',
+    'keepAwake.hint':
+        'Leaf ne fonctionne que si cet ordinateur est allumé et éveillé. L’écran peut quand même s’éteindre.',
     'notFound.title': 'Page introuvable',
     'notFound.body': 'Cette page n’existe pas dans Libris.',
     'notFound.back': 'Retour à mes livres',
@@ -272,6 +335,11 @@ export const fr = {
     'reason.portsIdentical': 'HTTP et HTTPS doivent utiliser des ports différents.',
     'reason.certificateIncomplete':
         'Fournissez à la fois la chaîne de certificats et la clé privée.',
+    'reason.setupInProgress':
+        'L’accès Internet est déjà en cours de configuration. Attendez la fin.',
+    'reason.nothingToCheck': 'Il n’y a pas de règle de box à vérifier.',
+    'reason.internetAccessOn':
+        'Désactivez l’accès Internet avant de modifier les paramètres HTTPS.',
     'setup.title': 'Configurez votre bibliothèque',
     'setup.intro':
         'Créez le compte administrateur protégé. Terminez la configuration avant d’utiliser cette installation.',
