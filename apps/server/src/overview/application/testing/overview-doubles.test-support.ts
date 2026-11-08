@@ -7,14 +7,17 @@ import type {
 } from '../overview-views.js';
 import type { LibrarySummaryReader } from '../ports/driven/library-summary-reader.interface.js';
 
-function actor(role: Actor['role'], id: string, mustChangePassword = false): Actor {
-    return { id, username: id, role, mustChangePassword, language: null };
-}
+// Signed-in accounts as the use cases receive them.
+export class OverviewActors {
+    static readonly owner = OverviewActors.of('owner', 'camille');
+    static readonly otherOwner = OverviewActors.of('owner', 'sam');
+    static readonly guest = OverviewActors.of('guest', 'morgan');
+    static readonly temporaryOwner = OverviewActors.of('owner', 'kim', true);
 
-export const owner = actor('owner', 'camille');
-export const otherOwner = actor('owner', 'sam');
-export const guest = actor('guest', 'morgan');
-export const temporaryOwner = actor('owner', 'kim', true);
+    private static of(role: Actor['role'], id: string, mustChangePassword = false): Actor {
+        return { id, username: id, role, mustChangePassword, language: null };
+    }
+}
 
 type StoredBook = Omit<RecentBook, 'read'> & { addedAt: string; readBy: string[] };
 
