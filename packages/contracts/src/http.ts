@@ -579,6 +579,8 @@ export type ActivityEventDto =
               | 'book-updated'
               | 'book-marked-owned'
               | 'book-deleted'
+              | 'book-relocated'
+              | 'book-retagged'
               | 'book-organised'
               | 'book-cover-changed';
           title: string | null;

@@ -12,6 +12,8 @@ export class ActivitySentence {
         'book-updated': 'activity.bookUpdated',
         'book-marked-owned': 'activity.bookMarkedOwned',
         'book-deleted': 'activity.bookDeleted',
+        'book-relocated': 'activity.bookRelocated',
+        'book-retagged': 'activity.bookRetagged',
         'book-organised': 'activity.bookOrganised',
         'book-cover-changed': 'activity.bookCoverChanged',
         'books-lent': 'activity.booksLent',

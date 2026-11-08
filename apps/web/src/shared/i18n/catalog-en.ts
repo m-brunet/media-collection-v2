@@ -1166,6 +1166,8 @@ export const en = {
     'activity.bookUpdated': 'You updated {title}',
     'activity.bookMarkedOwned': 'You marked {title} as Owned',
     'activity.bookDeleted': 'You deleted {title}',
+    'activity.bookRelocated': 'You changed the location of {title}',
+    'activity.bookRetagged': 'You changed the tags of {title}',
     'activity.bookOrganised': 'You changed the location or tags of {title}',
     'activity.bookCoverChanged': 'You changed the cover of {title}',
     'activity.bookLent': 'You lent {title} to {receiver}',

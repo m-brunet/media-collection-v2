@@ -1214,6 +1214,8 @@ export const fr = {
     'activity.bookUpdated': 'Vous avez modifié {title}',
     'activity.bookMarkedOwned': 'Vous avez marqué {title} comme possédé',
     'activity.bookDeleted': 'Vous avez supprimé {title}',
+    'activity.bookRelocated': 'Vous avez modifié l’emplacement de {title}',
+    'activity.bookRetagged': 'Vous avez modifié les étiquettes de {title}',
     'activity.bookOrganised': 'Vous avez modifié l’emplacement ou les étiquettes de {title}',
     'activity.bookCoverChanged': 'Vous avez changé la couverture de {title}',
     'activity.bookLent': 'Vous avez prêté {title} à {receiver}',

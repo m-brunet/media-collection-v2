@@ -1,8 +1,10 @@
-import { fireEvent, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { ActivityEntryDto, ActivityPageDto } from '../../../../../packages/contracts/src/http';
 import { account, deviceLanguages, FakeApi } from '../../testing/fake-api.test-support';
+import type { IconName } from '../../shared/ui/icon';
+import { Icon } from '../../shared/ui/icon';
 import { renderRoute } from '../../testing/render-route.test-support';
 import { ActivityPage } from './activity-page';
 
@@ -37,6 +39,23 @@ function show() {
     return renderRoute('/activity', { '/activity': <ActivityPage /> });
 }
 
+// The class Lucide gives an icon, which names the drawing it shows.
+function menuIcon(name: IconName): string | null | undefined {
+    const { container, unmount } = render(<Icon name={name} />);
+    const drawing = container.querySelector('svg')?.getAttribute('class');
+
+    unmount();
+
+    return drawing;
+}
+
+function iconOf(item: HTMLElement): string | undefined {
+    return item
+        .querySelector('.activity-entry__icon')
+        ?.getAttribute('class')
+        ?.replace(' activity-entry__icon', '');
+}
+
 function entries() {
     return within(screen.getByRole('list', { name: 'Shared activity, newest first' })).getAllByRole(
         'listitem',
@@ -63,6 +82,25 @@ it('says what happened with the household You, whoever acted', async () => {
     expect(
         entries().map((item) => item.querySelector('.activity-entry__action')?.textContent),
     ).toEqual(['You added The Overstory', 'You lent 3 books to Sam Taylor']);
+});
+
+it('tells a location change from a tag change, each with the icon of its menu', async () => {
+    new FakeApi().signedIn(account()).on('GET /activity', () => ({
+        status: 200,
+        body: page([
+            entry('o1', { event: { kind: 'book-relocated', title: 'Dune' } }),
+            entry('o2', { event: { kind: 'book-retagged', title: 'Dune' } }),
+        ]),
+    }));
+
+    show();
+
+    await screen.findByText('You changed the location of Dune');
+    const [relocated, retagged] = entries();
+
+    expect(retagged).toHaveTextContent('You changed the tags of Dune');
+    expect(iconOf(relocated!)).toBe(menuIcon('bookshelves'));
+    expect(iconOf(retagged!)).toBe(menuIcon('tag'));
 });
 
 it('shows how long ago each change happened', async () => {
