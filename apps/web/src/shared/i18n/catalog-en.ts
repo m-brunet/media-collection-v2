@@ -284,6 +284,16 @@ export const en = {
     'accounts.reactivate': 'Reactivate',
     'accounts.lifecycleHint':
         'Deactivation signs the account out, keeps its private data and reserves its username.',
+    'dataReset.label': 'Application data reset',
+    'dataReset.intro':
+        'Erases the whole library and every other account. Your Admin username and password are kept.',
+    'dataReset.title': 'Reset application data',
+    'dataReset.body':
+        'Permanently erase books, covers, collections, bookcases, tags, receivers, loans, history, other users and saved preferences. Your current Admin username and password, the server settings and separately saved backups are kept. Everyone is signed out.',
+    'dataReset.password': 'Current Admin password',
+    'dataReset.passwordPlaceholder': 'Enter your current password',
+    'dataReset.understood': 'I understand this cannot be undone',
+    'dataReset.submit': 'Reset data and sign out',
     'accounts.createIntro': 'Choose Owner or Guest now. Roles cannot be changed later.',
     'accounts.rolePlaceholder': 'Choose Owner or Guest',
     'accounts.resetTitle': 'Reset password for {username}',
