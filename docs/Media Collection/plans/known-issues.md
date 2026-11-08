@@ -12,6 +12,7 @@ list before starting a task: an open entry in the area a task touches is handled
 | KI-3 | Improvement | Additional information uses the same numbered heading as the other book-form sections | Low      | Open   |
 | KI-4 | Improvement | Libris has an application icon in the Windows taskbar                                 | Low      | Open   |
 | KI-5 | Bug         | Bookshelves count not vertically centred with the search field                         | Low      | Open   |
+| KI-6 | Improvement | Appearance offers seven new colour schemes; Mint, Emerald and Forest are removed        | Medium   | Open   |
 
 ## Open
 
@@ -90,6 +91,62 @@ list before starting a task: an open entry in the area a task touches is handled
   keep the count from wrapping (`white-space: nowrap`). Component test not useful (layout); check it in the browser at
   1280 × 720 and 1440 wide, in English and French.
 - **Severity:** low (visual alignment). **Planned:** next fix pass, or the next task that touches the Bookshelves page.
+
+### KI-6 — Appearance offers seven new colour schemes; Mint, Emerald and Forest are removed
+
+- **Type:** Improvement.
+- **Reported:** 2026-11-08 by the user.
+- **Asked:** the Admin's Appearance page (Task 1b) offers these schemes, taken from the design file
+  `design/media-collection-v3.pen`:
+  - **Spring green**, kept and still the default;
+  - the **five dark schemes** of group 13 "Appearance collection — 10 non-green themes": Midnight blue, Velvet violet,
+    Ember, Rose noir, Graphite gold;
+  - the **dark purple** of group 14 "Contrasting hues": Aubergine × Saffron;
+  - the **red study** of group 15: one of its two variants (open question below).
+
+  **Mint, Emerald and Forest are removed.**
+- **Today:** a scheme only changes three accent colours (`--scheme-accent`, `--scheme-accent-background`,
+  `--scheme-accent-text` in `apps/web/src/shared/ui/tokens.css`); surfaces, borders and text are shared. The new
+  schemes also change the backgrounds, borders and text, so a scheme becomes a full palette. Names live in the
+  `ColorScheme` value object (`apps/server/src/appearance/domain/value-objects/color-scheme.value-object.ts`), the web
+  list (`apps/web/src/shared/appearance/color-scheme-document.util.ts`, `appearance-context.tsx`), the Appearance page
+  and the EN/FR catalogues.
+- **Colours read from the design** (page background, sidebar, panel, control, border, text, secondary text, accent,
+  accent background):
+
+  | Scheme | Background | Sidebar | Panel | Control | Border | Text | Secondary text | Accent | Accent background |
+  | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+  | Midnight blue | `#191F2C` | `#121721` | `#151B26` | `#252E3D` | `#3D4F6B` | `#F0F5FF` | `#ABBBD2` | `#8BB8FF` | `#10213B` |
+  | Velvet violet | `#201C28` | `#16131C` | `#191620` | `#2E2739` | `#514361` | `#F7F0FF` | `#BFB0CF` | `#C4A3FF` | `#27133F` |
+  | Ember | `#27201D` | `#1C1614` | `#1F1916` | `#372E28` | `#604A3D` | `#FFF3E9` | `#CDB7A7` | `#FFAD79` | `#361B0C` |
+  | Rose noir | `#261E24` | `#1A1419` | `#1F191F` | `#362C33` | `#5C4354` | `#FFF0F7` | `#CEAFBF` | `#F3A4C4` | `#371425` |
+  | Graphite gold | `#242424` | `#171717` | `#1D1D1D` | `#323232` | `#505050` | `#F7F5EE` | `#BCBAB2` | `#E4C56B` | `#2C240C` |
+  | Aubergine × Saffron | `#2C1C31` | `#201323` | `#251829` | `#3C2942` | `#614767` | `#FAF1FB` | `#CCB5CE` | `#F0CE69` | `#30260F` |
+  | Red study, related: Warm charcoal × Soft scarlet | `#272426` | `#1B191A` | `#211F20` | `#343032` | `#51484C` | `#FFF2F1` | `#D0B2B7` | `#FF9994` | `#3A1719` |
+  | Red study, contrasting: Midnight × Poppy | `#182637` | `#111D2C` | `#142131` | `#25364A` | `#41556C` | `#F2F6FC` | `#B2C0D2` | `#FF8D85` | `#381717` |
+
+  The design does not give every role (accent text on the accent background, focus ring, muted text, status
+  colours): derive them per scheme and check WCAG AA contrast for each, as Task 1b did for the green schemes.
+- **Fix:**
+  - **Server:** new scheme names in `ColorScheme`, the three removed names refused. Migration: an installation that
+    saved Mint, Emerald or Forest switches to Spring green (no error, no prompt).
+  - **Web:** one token block per scheme with all the colours above, applied to Libris and Leaf, including before
+    sign-in (as today). Hard-coded neutral colours in the CSS that should follow the scheme are moved to tokens.
+  - **Appearance page:** a preview swatch per scheme (background with its accent), names in EN/FR, Spring green
+    marked as the default.
+  - **Tests:** domain and use-case tests (new names, removed names refused, migration of a removed choice), API tests
+    for the setting, component tests for the Appearance page, a browser journey choosing a new scheme (Libris and
+    Leaf), and a contrast check of the text and accent pairs of every scheme.
+  - Update the design guidelines (colour schemes) and the Task 1b notes.
+- **Open questions:**
+  1. Group 13 has ten schemes, five dark and five light; the five dark ones are assumed. Libris and Leaf are dark
+     only, so the light ones would need a light interface first.
+  2. The red study has two variants: **Warm charcoal × Soft scarlet** (related hues) or **Midnight × Poppy**
+     (contrasting hues, navy surfaces close to Midnight blue). Which one? Warm charcoal × Soft scarlet is suggested,
+     since it is the more distinct of the two next to Midnight blue.
+  3. "Dark purple" is read as **Aubergine × Saffron** (group 14), since Velvet violet is already one of the five.
+- **Severity:** medium (visible choice, touches every screen's colours). **Planned:** next fix pass, or Task 10 with
+  the icon sets on the same Appearance page, whichever comes first.
 
 ## Done
 
