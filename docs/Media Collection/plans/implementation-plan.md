@@ -136,6 +136,12 @@ Owning docs: `../operations/release-expectations.md`, `../product/accounts.md`, 
 - Local Electron maintenance window (pre-login): Admin recovery, full backup create/restore (same version, replace, end sessions, reject invalid/other versions, preserve data on failure).
 - Authenticated Admin data reset with password confirmation.
 
+### Task 9.5 — Internet access and HTTPS setup
+Inserted at the user's request (2026-11-08). Owning docs: `../product/product-scope.md`, `../operations/release-expectations.md`, `../operations/configuration.md`, `../architecture/architecture.md`. Brief: [task-09-5-internet-access-https](task-09-5-internet-access-https.md).
+- One Admin action, Set up internet access, needing no technical knowledge: router port rule through UPnP/NAT-PMP (guided manual screen otherwise), CGNAT/double NAT detection, Let's Encrypt IP address certificate through TLS-ALPN-01 on external port 443, automatic renewal, QR code for the phone.
+- HTTPS only exposed to the internet; incoming firewall rule built into the Task 10 installer; optional keep-awake setting; manual PEM import kept as an advanced setting.
+- Dynamic DNS name (stable address), tunnels and an MC-run name service deferred.
+
 ### Task 10 — Release readiness
 Owning docs: `../operations/updates.md`, `../design/design-guidelines.md`.
 - GitHub Releases update checks, Windows integrated download/install with automatic backup, macOS/Linux backup-and-open-download-page, backup folder, failure handling.
@@ -145,7 +151,7 @@ Owning docs: `../operations/updates.md`, `../design/design-guidelines.md`.
 
 ## Dependencies
 
-0 → 1 → 2 → 3 → 4; 5 needs 2; 5.5 follows 5 and needs 2-3; 5.8 follows 5.5; 6 follows 5.8; 7 needs 3, 5.5 and 6; 8 needs 1-5.5; 9 needs all data tasks; 10 needs 9.
+0 → 1 → 2 → 3 → 4; 5 needs 2; 5.5 follows 5 and needs 2-3; 5.8 follows 5.5; 6 follows 5.8; 7 needs 3, 5.5 and 6; 8 needs 1-5.5; 9 needs all data tasks; 9.5 follows 9; 10 needs 9.5 (the release includes internet access, and the installer adds its firewall rule).
 
 ## Future development data commands (outside Task 5.5)
 
@@ -177,6 +183,7 @@ Implemented on 2026-11-06 as `npm run dev:reset-data` and `npm run dev:import-v1
 | 7 Leaf (mobile) | Done (2026-11-07), PR #3 merged | [task-07-leaf](task-07-leaf.md) | Shopping, mark Owned, scanning without HTTPS (live camera or barcode photo), own phone form and covers; credits listed in its plan; see its notes for later tasks |
 | 8 Overview and Activity | Done (2026-11-08), PR #4 merged | [task-08-overview-activity](task-08-overview-activity.md) | `/` opens Overview; Activity from the audit log, one entry per operation; Mark Owned audited as `book.marked-owned`; see its notes for later tasks |
 | 9 Host maintenance | Ready for review (2026-11-08), branch `task-09-host-maintenance`, pull request | [task-09-host-maintenance](task-09-host-maintenance.md) | Maintenance window from the desktop menu or `--maintenance`: Admin recovery (audited), `.mcbackup` backup and same-version restore; Admin data reset on the Accounts page; see its notes for later tasks |
+| 9.5 Internet access and HTTPS | Not planned (brief 2026-11-08) | [task-09-5-internet-access-https](task-09-5-internet-access-https.md) | Inserted at the user's request; brief records the analysis, open questions and deferred options |
 | 10 Release readiness | Not started | — | |
 
 Pre-implementation fixes done (2026-11-03): docs/design decisions recorded, foundation formatted with oxfmt, `whoami`/`icacls` resolved from System32, `npm run check` order fixed. Full check passes (41 files, 409 tests).
