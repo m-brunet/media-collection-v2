@@ -5,6 +5,12 @@ identifier, a type (**Bug** or **Improvement**), what was seen or asked, the cau
 it is planned. Done entries move to **Done** with their commit, then are deleted once the change is released. Read this
 list before starting a task: an open entry in the area a task touches is handled in that task.
 
+**Design reference:** the Doop canvas **`shiKEeCX2V`** (doop.design). It replaces the Pen file
+`design/media-collection-v3.pen` that older entries were written against: look up the same groups and frames by name on
+the canvas. Pages exported from the canvas (for example `design/Page 40 · Overview.html`) sit in the Git-ignored
+`design/` folder at the repository root; if the canvas or an export is missing, ask the user rather than inferring the
+design.
+
 | ID   | Type        | Title                                                                                 | Severity | Status |
 | ---- | ----------- | ------------------------------------------------------------------------------------- | -------- | ------ |
 | KI-1 | Bug         | The desktop window cannot be closed while the book form has unsaved changes           | Low      | Open   |
@@ -97,8 +103,9 @@ list before starting a task: an open entry in the area a task touches is handled
 
 - **Type:** Improvement.
 - **Reported:** 2026-11-08 by the user.
-- **Asked:** the Admin's Appearance page (Task 1b) offers these schemes, taken from the design file
-  `design/media-collection-v3.pen`:
+- **Asked:** the Admin's Appearance page (Task 1b) offers these schemes, taken from the design (Doop canvas
+  `shiKEeCX2V`; first read from the former Pen file `design/media-collection-v3.pen`, whose group numbers are kept
+  below):
   - **Spring green**, kept and still the default;
   - the **five dark schemes** of group 13 "Appearance collection — 10 non-green themes": Midnight blue, Velvet violet,
     Ember, Rose noir, Graphite gold;
@@ -138,7 +145,8 @@ list before starting a task: an open entry in the area a task touches is handled
     for the setting, component tests for the Appearance page, a browser journey choosing a new scheme (Libris and
     Leaf), and a contrast check of the text and accent pairs of every scheme.
   - Update the design guidelines (colour schemes) and the Task 1b notes.
-- **Source:** the design file as saved by the user on 2026-11-08 (groups 13 to 15 keep only these schemes). The light
+- **Source:** the design as saved by the user on 2026-11-08 (groups 13 to 15 keep only these schemes), now on the Doop
+  canvas `shiKEeCX2V`: find the groups by their names above and check the colours against the canvas before the fix. The light
   schemes are out of scope: Libris and Leaf are dark only.
 - **Severity:** medium (visible choice, touches every screen's colours). **Planned:** next fix pass, or Task 10 with
   the icon sets on the same Appearance page, whichever comes first.

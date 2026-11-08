@@ -8,7 +8,7 @@ compared later, after the user reviews their designs.
 ## Why
 
 The Libris Collections list and collection details pages work (Task 3) but do not follow the design. Reference:
-`design/media-collection-v3.pen`, frame **03 · Collections** (desktop: list, details unfinished, details Finished,
+the Doop canvas `shiKEeCX2V` (formerly the Pen file `design/media-collection-v3.pen`), frame **03 · Collections** (desktop: list, details unfinished, details Finished,
 empty). The exported artifact screens yUD6M, C68ok, zq1kt and yJXFw show the same layouts. As always, product documents
 win over drawn screens, and names, counts, covers and copy in the design are placeholders.
 
