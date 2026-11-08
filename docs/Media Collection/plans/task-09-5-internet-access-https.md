@@ -228,8 +228,13 @@ and phone and what to report back; the next step starts from the results.
   tests with a local TLS client (normal handshake, `acme-tls/1` handshake on a reverse-DNS name, swap without dropping
   the listener). Done: `NodeHttpsRuntime` also starts without any certificate (only the challenge answers); the
   upkeep timer moved to Step 8 with the module wiring. `acme-client` and `@xmcl/nat-api` added (exact versions).
-- [ ] **7. Third-party adapters**: router gateway, public address probe, ACME authority; contract tests against local
-  stand-ins (a fake UPnP/NAT-PMP responder or library-level double, Pebble is not used on Windows CI).
+- [x] **7. Third-party adapters**: router gateway, public address probe, ACME authority; contract tests against local
+  stand-ins (a fake UPnP/NAT-PMP responder or library-level double, Pebble is not used on Windows CI). Done:
+  `AcmeCertificateAuthority` tested against a scripted ACME session, the probe against a local server, the account
+  key file (`acme-account.key` in the data directory). **UPnP only**: the library's NAT-PMP client cannot read the
+  external address, so NAT-PMP routers get the manual screen; the router gateway is checked for real in Step 11.
+  UPnP rules use a 2-hour lease (renewed hourly), or a permanent rule when the router refuses leases. The local
+  address skips VPN ranges (Tailscale's `100.64/10`).
 - [ ] **8. HTTP API**: endpoints, contracts, Zod schemas; API end-to-end tests with stand-in router/authority through
   `RuntimeOptions` (like `lookupAddresses`): roles, setup success, each failure reason, check again, turn off, keep
   awake, manual certificate conflicts, audit records.
