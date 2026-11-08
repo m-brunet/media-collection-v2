@@ -100,10 +100,13 @@ demonstrated violations as mandatory findings:
 Explain evidence, practical consequence, and the smallest correction. Optional suggestions concern improvements
 beyond compliance; never relabel a demonstrated SOLID violation as optional advice.
 
-Apply the class preference in `AGENTS.md` to new or modified production behavior, including reusable helpers and
-utilities. Prefer focused classes with constructor-injected dependencies; pure, stateless helpers/utilities may use
-static methods. Helpers used by one class stay private methods. Preserve function forms for React functional
-components/hooks, API callbacks and NestJS factory providers, with reusable behavior owned by classes.
+Apply the class rules in `AGENTS.md` to new or modified production behavior. In the backend (`apps/server/src/`)
+object-oriented code is mandatory: a standalone function (`function` declaration or module-level arrow function) is
+a mandatory finding unless it is one of the listed exceptions (inline library/framework callbacks such as NestJS
+`useFactory` providers, NestJS decorator factories); the correction is a private method of the owning class or a
+focused class, with static methods for stateless utilities. In the web code, prefer focused classes for reusable
+behavior; React components, hooks and callbacks keep their function form, with reusable behavior owned by classes.
+Helpers used by one class stay private methods.
 
 Do not require interfaces, factories, inheritance, strategies or new shared abstractions for hypothetical future needs.
 A single implementation may still need a port to keep framework or persistence details outside a use case.

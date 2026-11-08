@@ -231,14 +231,31 @@ Prefer changes contained within the feature that owns the business behavior.
 
 ## Class Preference
 
-- Prefer classes over standalone functions for production behavior, including reusable helpers and utilities.
-  Helper and utility files should expose focused classes, using the existing `.helper.ts` and `.util.ts` suffixes.
+### Backend: object-oriented code is mandatory
+
+Backend code (`apps/server/src/`) is written in classes, as in C#. A standalone function, whether a `function`
+declaration or a module-level arrow function, is not allowed when a class can hold the behavior.
+
+- Behavior belongs to the class that owns it. A helper used by only one class is a private method of that class.
+- Shared behavior is a focused class: an instance class with constructor-injected dependencies, or, when it needs
+  neither state nor dependencies, a class of static methods (for example `NameKey.of(...)`, `ActorAuthorization`).
+  Utility and helper files expose that class, with the `.util.ts` and `.helper.ts` suffixes.
+- Module-level constants and type declarations are not functions and stay allowed.
+- The only exceptions, kept as small as possible and delegating any real behavior to a class:
+  - callbacks passed inline to a library or framework (for example `useFactory` providers in NestJS modules, array
+    callbacks, Kysely expression builders, Zod refinements);
+  - NestJS decorator factories (for example `Access(...)`), because decorators are functions by nature.
+- This applies to production code. Test code may keep small arrange helpers as functions inside a spec file; shared
+  test support should follow the same class style (for example `BookInputFixture.of(...)`, builders, `TestLibrary`).
+
+### Web
+
+- Prefer classes over standalone functions for reusable behavior, including helpers and utilities, with the same
+  `.helper.ts` / `.util.ts` suffixes and static methods for stateless utilities.
 - A helper used only by one class remains a private method on that class. Keep reusable classes with their owning
   feature and layer.
-- Inject dependencies through constructors. Pure, stateless helpers and utilities may use static methods when they
-  need neither instance state nor injected dependencies.
-- Keep function forms for React functional components/hooks, API callbacks, and NestJS factory providers. Reusable
-  business, helper, and utility behavior should still belong to classes when called through those functions.
+- Keep function forms for React functional components and hooks and for callbacks. Reusable business, helper, and
+  utility behavior should still belong to classes when called through those functions.
 
 ## Production File Naming
 
