@@ -16,7 +16,16 @@ body {
     font-family: var(--font-body);
     font-size: var(--text-base);
     line-height: var(--leading);
+    letter-spacing: var(--tracking-body);
     -webkit-font-smoothing: antialiased;
+}
+
+/* Browsers reset the spacing on form controls; they follow the body text instead. */
+button,
+input,
+select,
+textarea {
+    letter-spacing: inherit;
 }
 
 h1,
@@ -24,6 +33,7 @@ h2,
 h3 {
     margin: 0;
     font-family: var(--font-heading);
+    letter-spacing: normal;
     font-weight: 500;
     line-height: 1.2;
 }

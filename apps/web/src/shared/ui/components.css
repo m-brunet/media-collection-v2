@@ -24,6 +24,7 @@
 
 .brand__name {
     font-family: var(--font-heading);
+    letter-spacing: normal;
     font-size: var(--text-2xl);
     font-weight: 500;
 }
@@ -162,6 +163,7 @@
     min-height: 120px;
     resize: vertical;
     font-family: var(--font-mono);
+    letter-spacing: normal;
     font-size: var(--text-sm);
 }
 
@@ -332,6 +334,7 @@
 
 .state__title {
     font-family: var(--font-heading);
+    letter-spacing: normal;
     font-size: var(--text-xl);
 }
 
