@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { UuidGenerator } from '../../apps/server/src/shared/infrastructure/adapters/driven/runtime/uuid-generator.adapter.js';
 import { afterEach, describe, expect, it } from 'vitest';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, rm, unlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { sql } from 'kysely';
@@ -518,5 +518,44 @@ describe('SQLite adapters', () => {
             username: 'alice',
             passwordHash: 'new',
         });
+    });
+});
+
+describe('database checks for local maintenance', () => {
+    it('reports a migrated database as up to date', async () => {
+        const { database } = await open();
+
+        const result = await database.isUpToDate(new UuidGenerator());
+
+        expect(result).toBe(true);
+    });
+    it('reports a database missing migrations as not up to date', async () => {
+        const directory = await mkdtemp(join(tmpdir(), 'electron-sqlite-'));
+
+        paths.push(directory);
+        const sqlite = new BetterSqlite3(join(directory, 'application.sqlite'));
+
+        sqlite.exec('CREATE TABLE users (id TEXT)');
+        sqlite.close();
+        const database = Database.openExisting(directory);
+
+        databases.push(database);
+
+        const result = await database.isUpToDate(new UuidGenerator());
+
+        expect(result).toBe(false);
+    });
+    it('releases a file that is not a database', async () => {
+        const directory = await mkdtemp(join(tmpdir(), 'electron-sqlite-'));
+
+        paths.push(directory);
+        const file = join(directory, 'application.sqlite');
+
+        await writeFile(file, 'not a database');
+
+        const open = () => Database.openExisting(directory);
+
+        expect(open).toThrow();
+        await expect(unlink(file)).resolves.toBeUndefined();
     });
 });

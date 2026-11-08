@@ -36,7 +36,9 @@ parent.on('message', (event) => {
             } else if (
                 message.type === 'maintenance-status' ||
                 message.type === 'recover' ||
-                message.type === 'backup'
+                message.type === 'backup' ||
+                message.type === 'inspect-backup' ||
+                message.type === 'restore-backup'
             ) {
                 if (starting) {
                     throw new Error('Maintenance cannot run with the server active.');
@@ -51,10 +53,20 @@ parent.on('message', (event) => {
                         type: 'recovered',
                         username: (await maintenance.recover(message.password)).username,
                     });
-                } else {
+                } else if (message.type === 'backup') {
                     send({
                         type: 'backed-up',
                         backup: await maintenance.createBackup(message.destination),
+                    });
+                } else if (message.type === 'inspect-backup') {
+                    send({
+                        type: 'backup-inspected',
+                        backup: await maintenance.inspectBackup(message.source),
+                    });
+                } else {
+                    send({
+                        type: 'restored',
+                        backup: await maintenance.restoreBackup(message.source),
                     });
                 }
             } else if (message.type === 'dev-reset' || message.type === 'dev-import-v1') {

@@ -16,6 +16,12 @@ import { ZipBackupArchive } from '../../maintenance/infrastructure/adapters/driv
 import { Sha256Checksums } from '../../maintenance/infrastructure/adapters/driven/runtime/sha256-checksums.adapter.js';
 import { DatabaseSession } from '../../maintenance/infrastructure/adapters/driven/persistence/database-session.adapter.js';
 import { KyselyLibraryContents } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-library-contents.adapter.js';
+import { InspectBackup } from '../../maintenance/application/use-cases/inspect-backup.usecase.js';
+import { RestoreBackup } from '../../maintenance/application/use-cases/restore-backup.usecase.js';
+import { BackupReader } from '../../maintenance/application/services/backup-reader.service.js';
+import { RestoredDataCheck } from '../../maintenance/infrastructure/adapters/driven/persistence/restored-data-check.adapter.js';
+import { SessionSigningKey } from '../../identity/infrastructure/adapters/driven/filesystem/session-signing-key.adapter.js';
+import { SessionSigningKeyRotation } from '../../identity/infrastructure/adapters/driven/filesystem/session-signing-key-rotation.adapter.js';
 import { KyselyMaintenanceJournal } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-maintenance-journal.adapter.js';
 
 export interface MaintenanceStatus {
@@ -27,6 +33,7 @@ export interface MaintenanceStatus {
 export class LocalMaintenance {
     private readonly ids = new UuidGenerator();
     private readonly clock = new SystemClock();
+    private readonly storage = new PrivateStorage();
     private readonly session: DatabaseSession;
 
     constructor(
@@ -75,14 +82,39 @@ export class LocalMaintenance {
 
     createBackup(destination: string): Promise<BackupDescription> {
         return new CreateBackup(
-            new DataDirectoryFiles(this.dataDirectory),
+            this.files(),
             new KyselyLibraryContents(this.session),
-            new ZipBackupArchive(new PrivateStorage()),
+            new ZipBackupArchive(this.storage),
             new Sha256Checksums(),
             this.journal(),
             this.clock,
             this.version,
         ).execute(destination);
+    }
+
+    inspectBackup(source: string): Promise<BackupDescription> {
+        return new InspectBackup(this.backups()).execute(source);
+    }
+
+    restoreBackup(source: string): Promise<BackupDescription> {
+        return new RestoreBackup(
+            this.backups(),
+            this.files(),
+            new SessionSigningKeyRotation(new SessionSigningKey(this.storage), this.dataDirectory),
+            this.journal(),
+        ).execute(source);
+    }
+
+    private backups(): BackupReader {
+        return new BackupReader(
+            new ZipBackupArchive(this.storage),
+            new Sha256Checksums(),
+            this.version,
+        );
+    }
+
+    private files(): DataDirectoryFiles {
+        return new DataDirectoryFiles(this.dataDirectory, new RestoredDataCheck(this.ids));
     }
 
     private journal(): KyselyMaintenanceJournal {
