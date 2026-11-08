@@ -23,4 +23,4 @@ The copied foundation reads command-line options and environment variables for h
 
 SQLite is a local database and requires no database login credentials. The database path normally follows the application data directory. No configurable public/base URL is currently required; Electron discovers its local backend address from startup readiness information.
 
-Keep generated session signing keys and TLS private keys in their existing separate protected files, not in the sample configuration. Future external-service credentials require a separate storage decision. No `.env` loading is introduced by this decision.
+Keep generated session signing keys and TLS private keys in their existing separate protected files, not in the sample configuration. Automatically issued certificates (Task 9.5) and their Let's Encrypt account key use the same protected storage; they are never part of the configuration file. Future external-service credentials require a separate storage decision. No `.env` loading is introduced by this decision.

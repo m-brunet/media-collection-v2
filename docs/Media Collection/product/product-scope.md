@@ -22,8 +22,8 @@ Lending introduces an explicit exception for receiver names: a receiver is store
 - Electron desktop and desktop browser offer the same normal business functionality. Local maintenance actions are the explicit exception.
 - Administrator credential recovery and manual backup/restore are exclusive to local Electron maintenance on the library host, not browser/mobile features.
 - An Owner/Admin-only mobile web interface (Leaf) is served by the same installation for unfinished-collection shopping and scan-gated book creation; Guests have no mobile access. Libris (desktop) and Leaf (mobile) are separate web applications on the same host and port: Libris at `/`, Leaf at `/leaf/`.
-- Internet access to the installation is expected, with user-configured port forwarding anticipated.
-- The listening port must be available and between 1024 and 65535 inclusive, so ports 80 and 443 are not permitted. The default port is 34345.
+- Internet access to the installation is expected. The Admin sets it up with one action that needs no technical knowledge: the application asks the router for the forwarding rule (UPnP or NAT-PMP), gets a trusted certificate and renews it; manual router forwarding remains the fallback (decided 2026-11-08, Task 9.5). Only HTTPS is exposed to the internet, never plain HTTP.
+- The listening port must be available and between 1024 and 65535 inclusive, so ports 80 and 443 are not permitted. The default port is 34345. This rule is about the ports the application listens on: the router's **external** port 443 may be forwarded to the HTTPS listening port (decided 2026-11-08).
 - Core desktop management works offline; external lookup requires internet. Mobile shopping works while it can reach the host, with no separate offline mobile sync implied. Transport/security/deployment mechanisms remain technical-agent work.
 
 ## Initial feature scope

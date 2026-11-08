@@ -25,6 +25,7 @@ Created 2026-11-03. Working plan, kept with the documentation in the Obsidian va
 - Timestamps stored UTC, displayed in viewer's time zone and language; exact details include zone label.
 - Mobile existing Not Owned ISBN: a warning screen with Mark as Owned (changed 2026-11-07, Task 7), no form, no external lookup.
 - Leaf scanning works without HTTPS: live camera when the page allows it, otherwise a barcode photo read on the phone (2026-11-07).
+- Internet access (2026-11-08, Task 9.5): one Admin action opens the router port (UPnP/NAT-PMP) and gets a Let's Encrypt IP address certificate on external port 443; only HTTPS is exposed; manual PEM import stays advanced; dynamic DNS names deferred.
 - Markdown excluded from oxfmt. `npm run check` builds before lint.
 
 ## Testing strategy (applies to every task)
