@@ -22,6 +22,7 @@ import { AuthenticateSession } from '../../identity/application/use-cases/authen
 import { RenewSession } from '../../identity/application/use-cases/renew-session.usecase.js';
 import { AuditedOperation } from '../../shared/application/services/audited-operation.service.js';
 import { KyselyAuditTrail } from '../../shared/infrastructure/adapters/driven/persistence/kysely-audit-trail.adapter.js';
+import { KyselyInternetAccessRepository } from '../../server-settings/infrastructure/adapters/driven/persistence/kysely-internet-access.repository.js';
 import { FileTlsStore } from '../../server-settings/infrastructure/adapters/driven/persistence/file-tls-store.adapter.js';
 import { KyselyHttpSettingsRepository } from '../../server-settings/infrastructure/adapters/driven/persistence/kysely-http-settings.repository.js';
 import { HttpSettings } from '../../server-settings/domain/value-objects/http-settings.value-object.js';
@@ -209,6 +210,7 @@ export class BackendRuntime {
                             status,
                             httpSettings,
                             operations,
+                            new KyselyInternetAccessRepository(database.connections, ids),
                         ),
                         AppearanceModule.register(
                             new KyselyAppearanceRepository(database.connections, ids),

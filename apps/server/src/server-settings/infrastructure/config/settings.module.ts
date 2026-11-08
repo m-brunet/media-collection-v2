@@ -4,6 +4,7 @@ import { Module } from '@nestjs/common';
 import type { CertificateValidator } from '../../application/ports/driven/certificate-validator.interface.js';
 import type { TlsStore } from '../../application/ports/driven/tls-store.interface.js';
 import type { HttpSettingsStore } from '../../application/ports/driven/http-settings-store.interface.js';
+import type { InternetAccessStore } from '../../application/ports/driven/internet-access-store.interface.js';
 import { ReadHttpSettings } from '../../application/use-cases/read-http-settings.usecase.js';
 import { SaveHttpSettings } from '../../application/use-cases/save-http-settings.usecase.js';
 import { ReadTlsSettings } from '../../application/use-cases/read-tls-settings.usecase.js';
@@ -20,6 +21,7 @@ export const SERVER_SETTINGS_SAVE_TLS_SETTINGS = 'SERVER_SETTINGS_SAVE_TLS_SETTI
 export const SERVER_SETTINGS_READ_HTTP_SETTINGS = 'SERVER_SETTINGS_READ_HTTP_SETTINGS';
 export const SERVER_SETTINGS_SAVE_HTTP_SETTINGS = 'SERVER_SETTINGS_SAVE_HTTP_SETTINGS';
 export const SERVER_SETTINGS_AUDITED_OPERATION = 'SERVER_SETTINGS_AUDITED_OPERATION';
+export const SERVER_SETTINGS_INTERNET_ACCESS_STORE = 'SERVER_SETTINGS_INTERNET_ACCESS_STORE';
 
 @Module({})
 export class SettingsModule {
@@ -29,6 +31,7 @@ export class SettingsModule {
         status: RuntimeStatus,
         http: HttpSettingsStore,
         operations: AuditedOperation,
+        internetAccess: InternetAccessStore,
     ): DynamicModule {
         return {
             module: SettingsModule,
@@ -39,6 +42,7 @@ export class SettingsModule {
                 { provide: SERVER_SETTINGS_RUNTIME_STATUS, useValue: status },
                 { provide: SERVER_SETTINGS_HTTP_SETTINGS_STORE, useValue: http },
                 { provide: SERVER_SETTINGS_AUDITED_OPERATION, useValue: operations },
+                { provide: SERVER_SETTINGS_INTERNET_ACCESS_STORE, useValue: internetAccess },
                 {
                     provide: SERVER_SETTINGS_READ_TLS_SETTINGS,
                     inject: [SERVER_SETTINGS_TLS_STORE],
@@ -50,14 +54,16 @@ export class SettingsModule {
                         SERVER_SETTINGS_TLS_STORE,
                         SERVER_SETTINGS_CERTIFICATE_VALIDATOR,
                         SERVER_SETTINGS_HTTP_SETTINGS_STORE,
+                        SERVER_SETTINGS_INTERNET_ACCESS_STORE,
                         SERVER_SETTINGS_AUDITED_OPERATION,
                     ],
                     useFactory: (
                         store: TlsStore,
                         certificates: CertificateValidator,
                         http: HttpSettingsStore,
+                        internetAccess: InternetAccessStore,
                         operations: AuditedOperation,
-                    ) => new SaveTlsSettings(store, certificates, http, operations),
+                    ) => new SaveTlsSettings(store, certificates, http, internetAccess, operations),
                 },
                 {
                     provide: SERVER_SETTINGS_READ_HTTP_SETTINGS,
