@@ -1,11 +1,11 @@
 import { expect, it } from 'vitest';
-import { MemoryUsers, user } from '../testing/identity-doubles.test-support.js';
+import { IdentityDoubles, MemoryUsers } from '../testing/identity-doubles.test-support.js';
 import { ManagedAccountLoader } from './managed-account-loader.service.js';
 
 it('loads an account the administrator may manage', async () => {
     const users = new MemoryUsers();
 
-    await users.create(user({ id: 'guest', username: 'guest', role: 'guest' }));
+    await users.create(IdentityDoubles.user({ id: 'guest', username: 'guest', role: 'guest' }));
 
     const result = await new ManagedAccountLoader(users).load('guest');
 
@@ -21,7 +21,7 @@ it('reports a missing account', async () => {
 it('protects the first administrator', async () => {
     const users = new MemoryUsers();
 
-    await users.create(user({ role: 'admin' }));
+    await users.create(IdentityDoubles.user({ role: 'admin' }));
 
     const result = new ManagedAccountLoader(users).load('owner');
 

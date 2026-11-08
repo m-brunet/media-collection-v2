@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MemoryUsers, tokens, user } from '../testing/identity-doubles.test-support.js';
+import { IdentityDoubles, MemoryUsers, tokens } from '../testing/identity-doubles.test-support.js';
 import { AccountLoader } from '../services/account-loader.service.js';
 import { AuthenticateSession } from './authenticate-session.usecase.js';
 
@@ -8,7 +8,7 @@ describe('AuthenticateSession', () => {
         const restricted = false;
         const users = new MemoryUsers();
 
-        await users.create(user());
+        await users.create(IdentityDoubles.user());
         const subject = new AuthenticateSession(new AccountLoader(users), tokens);
         const token = JSON.stringify({ userId: 'owner', version: 0, restricted });
 
@@ -24,7 +24,7 @@ describe('AuthenticateSession', () => {
         const restricted = true;
         const users = new MemoryUsers();
 
-        await users.create(user());
+        await users.create(IdentityDoubles.user());
         const subject = new AuthenticateSession(new AccountLoader(users), tokens);
         const token = JSON.stringify({ userId: 'owner', version: 0, restricted });
 
@@ -39,7 +39,7 @@ describe('AuthenticateSession', () => {
     it('preserves mandatory setup even for an unrestricted token', async () => {
         const users = new MemoryUsers();
 
-        await users.create(user({ mustChangePassword: true }));
+        await users.create(IdentityDoubles.user({ mustChangePassword: true }));
         const subject = new AuthenticateSession(new AccountLoader(users), tokens);
         const token = JSON.stringify({ userId: 'owner', version: 0, restricted: false });
 
@@ -51,7 +51,7 @@ describe('AuthenticateSession', () => {
         const token = 'expired';
         const users = new MemoryUsers();
 
-        await users.create(user());
+        await users.create(IdentityDoubles.user());
         const subject = new AuthenticateSession(new AccountLoader(users), tokens);
 
         const result = subject.authenticate(token);
@@ -62,7 +62,7 @@ describe('AuthenticateSession', () => {
         const token = JSON.stringify({ userId: 'absent', version: 0, restricted: false });
         const users = new MemoryUsers();
 
-        await users.create(user());
+        await users.create(IdentityDoubles.user());
         const subject = new AuthenticateSession(new AccountLoader(users), tokens);
 
         const result = subject.authenticate(token);
@@ -73,7 +73,7 @@ describe('AuthenticateSession', () => {
         const token = JSON.stringify({ userId: 'owner', version: -1, restricted: false });
         const users = new MemoryUsers();
 
-        await users.create(user());
+        await users.create(IdentityDoubles.user());
         const subject = new AuthenticateSession(new AccountLoader(users), tokens);
 
         const result = subject.authenticate(token);

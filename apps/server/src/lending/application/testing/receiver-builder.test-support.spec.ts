@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { lending } from './lending-doubles.test-support.js';
+import { LendingDoubles } from './lending-doubles.test-support.js';
 import { ReceiverBuilder } from './receiver-builder.test-support.js';
 
 it('builds receivers with distinct default names', () => {
@@ -23,7 +23,7 @@ it('builds a receiver with the chosen name and identity', () => {
 });
 
 it('saves the receiver through the repository', async () => {
-    const current = lending();
+    const current = LendingDoubles.lending();
 
     const result = await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
 

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { guest, library, owner, saved } from '../testing/book-doubles.test-support.js';
+import { BookDoubles, guest, owner } from '../testing/book-doubles.test-support.js';
 import { MarkBookOwned } from './mark-book-owned.usecase.js';
 
-function subject(current: ReturnType<typeof library>) {
+function subject(current: ReturnType<typeof BookDoubles.library>) {
     return new MarkBookOwned(
         current.books,
         current.loader,
@@ -15,8 +15,8 @@ function subject(current: ReturnType<typeof library>) {
 
 describe('MarkBookOwned', () => {
     it('marks a Not Owned book of a collection Owned', async () => {
-        const current = library();
-        const book = await saved(current, {
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, {
             ownership: 'not-owned',
             collection: { collection: { name: 'Batman' }, volumeFrom: 12, volumeTo: 12 },
         });
@@ -28,8 +28,8 @@ describe('MarkBookOwned', () => {
     });
 
     it('marks a standalone Not Owned book Owned', async () => {
-        const current = library();
-        const book = await saved(current, { ownership: 'not-owned' });
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, { ownership: 'not-owned' });
 
         const result = await subject(current).execute(owner, book.id);
 
@@ -37,8 +37,8 @@ describe('MarkBookOwned', () => {
     });
 
     it('marks a Not Owned omnibus Owned', async () => {
-        const current = library();
-        const book = await saved(current, {
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, {
             ownership: 'not-owned',
             collection: { collection: { name: 'Batman' }, volumeFrom: 1, volumeTo: 3 },
         });
@@ -49,8 +49,8 @@ describe('MarkBookOwned', () => {
     });
 
     it('records the ownership change in the audit', async () => {
-        const current = library();
-        const book = await saved(current, { ownership: 'not-owned' });
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, { ownership: 'not-owned' });
 
         await subject(current).execute(owner, book.id);
 
@@ -65,8 +65,8 @@ describe('MarkBookOwned', () => {
     });
 
     it('refuses an Owned book and records the failed attempt', async () => {
-        const current = library();
-        const book = await saved(current, { ownership: 'owned' });
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, { ownership: 'owned' });
 
         const operation = subject(current).execute(owner, book.id);
 
@@ -78,8 +78,8 @@ describe('MarkBookOwned', () => {
     });
 
     it('refuses a Guest', async () => {
-        const current = library();
-        const book = await saved(current, { ownership: 'not-owned' });
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, { ownership: 'not-owned' });
 
         const operation = subject(current).execute(guest, book.id);
 
@@ -88,7 +88,7 @@ describe('MarkBookOwned', () => {
     });
 
     it('refuses an unknown book', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
         const operation = subject(current).execute(owner, 'unknown');
 

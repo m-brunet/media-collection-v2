@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { guest, input, library, owner, saved } from '../testing/book-doubles.test-support.js';
+import { BookDoubles, guest, owner } from '../testing/book-doubles.test-support.js';
 import { CreateBook } from './create-book.usecase.js';
 
-function subject(current = library()) {
+function subject(current = BookDoubles.library()) {
     return new CreateBook(
         current.books,
         current.builder,
@@ -22,9 +22,9 @@ function subject(current = library()) {
 
 describe('CreateBook', () => {
     it('saves an edition with its author', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
-        const result = await subject(current).execute(owner, input(), false);
+        const result = await subject(current).execute(owner, BookDoubles.input(), false);
 
         expect(result).toMatchObject({
             title: 'Piranesi',
@@ -37,43 +37,57 @@ describe('CreateBook', () => {
         expect(current.books.books.size).toBe(1);
     });
     it('converts an ISBN-10 and remembers the conversion', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
-        const result = await subject(current).execute(owner, input({ isbn: '0306406152' }), false);
+        const result = await subject(current).execute(
+            owner,
+            BookDoubles.input({ isbn: '0306406152' }),
+            false,
+        );
 
         expect(result).toMatchObject({ isbn: '9780306406157', isbnConvertedFromIsbn10: true });
     });
     it('refuses a second record of the same edition, even entered as ISBN-10', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
-        await saved(current, { isbn: '9780306406157' });
+        await BookDoubles.saved(current, { isbn: '9780306406157' });
 
-        const result = subject(current).execute(owner, input({ isbn: '0-306-40615-2' }), false);
+        const result = subject(current).execute(
+            owner,
+            BookDoubles.input({ isbn: '0-306-40615-2' }),
+            false,
+        );
 
         await expect(result).rejects.toMatchObject({ code: 'conflict', reason: 'isbn-taken' });
         expect(current.books.books.size).toBe(1);
     });
     it('reuses an author whose name differs only by case and accents', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
-        await saved(current, { authors: [{ name: 'Hervé Bazin' }], isbn: '9780306406157' });
+        await BookDoubles.saved(current, {
+            authors: [{ name: 'Hervé Bazin' }],
+            isbn: '9780306406157',
+        });
 
         await subject(current).execute(
             owner,
-            input({ authors: [{ name: ' herve BAZIN ' }] }),
+            BookDoubles.input({ authors: [{ name: ' herve BAZIN ' }] }),
             false,
         );
 
         expect(current.authors.authors.size).toBe(1);
     });
     it('asks before creating an author with a similar name', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
-        await saved(current, { authors: [{ name: 'Sam Taylor' }], isbn: '9780306406157' });
+        await BookDoubles.saved(current, {
+            authors: [{ name: 'Sam Taylor' }],
+            isbn: '9780306406157',
+        });
 
         const result = subject(current).execute(
             owner,
-            input({ authors: [{ name: 'Sam Tayler' }] }),
+            BookDoubles.input({ authors: [{ name: 'Sam Tayler' }] }),
             false,
         );
 
@@ -84,25 +98,28 @@ describe('CreateBook', () => {
         expect(current.books.books.size).toBe(1);
     });
     it('creates a distinct author once confirmed', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
-        await saved(current, { authors: [{ name: 'Sam Taylor' }], isbn: '9780306406157' });
+        await BookDoubles.saved(current, {
+            authors: [{ name: 'Sam Taylor' }],
+            isbn: '9780306406157',
+        });
 
         await subject(current).execute(
             owner,
-            input({ authors: [{ name: 'Sam Tayler', distinct: true }] }),
+            BookDoubles.input({ authors: [{ name: 'Sam Tayler', distinct: true }] }),
             false,
         );
 
         expect(current.authors.authors.size).toBe(2);
     });
     it('warns about a possible duplicate of a book without ISBN', async () => {
-        const current = library();
+        const current = BookDoubles.library();
         const noIsbn = { isbn: null, noIsbn: true };
 
-        await saved(current, noIsbn);
+        await BookDoubles.saved(current, noIsbn);
 
-        const result = subject(current).execute(owner, input(noIsbn), false);
+        const result = subject(current).execute(owner, BookDoubles.input(noIsbn), false);
 
         await expect(result).rejects.toMatchObject({
             reason: 'possible-duplicate',
@@ -110,27 +127,35 @@ describe('CreateBook', () => {
         });
     });
     it('saves a distinct book without ISBN once confirmed', async () => {
-        const current = library();
+        const current = BookDoubles.library();
         const noIsbn = { isbn: null, noIsbn: true };
 
-        await saved(current, noIsbn);
+        await BookDoubles.saved(current, noIsbn);
 
-        await subject(current).execute(owner, input({ ...noIsbn, confirmDistinct: true }), false);
+        await subject(current).execute(
+            owner,
+            BookDoubles.input({ ...noIsbn, confirmDistinct: true }),
+            false,
+        );
 
         expect(current.books.books.size).toBe(2);
     });
     it('records the creator reading status only for the creator', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
-        const result = await subject(current).execute(owner, input(), true);
+        const result = await subject(current).execute(owner, BookDoubles.input(), true);
 
         expect(result.personal).toEqual({ read: true, note: null });
         expect([...current.readings.statuses.keys()]).toEqual(['camille/' + result.id]);
     });
     it('records the creation for the audit and future Activity', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
-        const result = await subject(current).execute(owner, input({ price: '16,90' }), false);
+        const result = await subject(current).execute(
+            owner,
+            BookDoubles.input({ price: '16,90' }),
+            false,
+        );
 
         expect(current.trail.entries).toEqual([
             expect.objectContaining({
@@ -142,35 +167,39 @@ describe('CreateBook', () => {
         ]);
     });
     it('refuses a Guest without saving anything', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
-        const result = subject(current).execute(guest, input(), false);
+        const result = subject(current).execute(guest, BookDoubles.input(), false);
 
         await expect(result).rejects.toMatchObject({ reason: 'guest-read-only' });
         expect(current.books.books.size).toBe(0);
         expect(current.authors.authors.size).toBe(0);
     });
     it('rejects an invalid ISBN', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
-        const result = subject(current).execute(owner, input({ isbn: '123' }), false);
+        const result = subject(current).execute(owner, BookDoubles.input({ isbn: '123' }), false);
 
         await expect(result).rejects.toMatchObject({ reason: 'isbn-invalid' });
     });
     it('rejects a publication month without a year', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
-        const result = subject(current).execute(owner, input({ publicationMonth: 3 }), false);
+        const result = subject(current).execute(
+            owner,
+            BookDoubles.input({ publicationMonth: 3 }),
+            false,
+        );
 
         await expect(result).rejects.toMatchObject({ reason: 'publication-month-without-year' });
     });
     it('records the collection membership chosen in the form', async () => {
-        const current = library();
+        const current = BookDoubles.library();
         const membership = { collection: { name: 'Batman' }, volumeFrom: 1, volumeTo: 3 };
 
         const result = await subject(current).execute(
             owner,
-            input({ collection: membership }),
+            BookDoubles.input({ collection: membership }),
             false,
         );
 
@@ -186,8 +215,12 @@ describe('CreateBook', () => {
         });
     });
     it('deletes the planned books a purchased book replaces, with their covers', async () => {
-        const current = library();
-        const planned = await saved(current, { isbn: null, noIsbn: true, ownership: 'not-owned' });
+        const current = BookDoubles.library();
+        const planned = await BookDoubles.saved(current, {
+            isbn: null,
+            noIsbn: true,
+            ownership: 'not-owned',
+        });
         const file = await current.covers.store(new Uint8Array([1]), 'image/png');
         const stored = current.books.books.get(planned.id)!;
 
@@ -195,7 +228,7 @@ describe('CreateBook', () => {
 
         const result = await subject(current).execute(
             owner,
-            input({
+            BookDoubles.input({
                 collection: { collection: { name: 'Batman' }, volumeFrom: 1, volumeTo: 1 },
                 replacePlanned: [planned.id],
             }),
@@ -212,12 +245,16 @@ describe('CreateBook', () => {
         });
     });
     it('keeps the planned books when the purchased book cannot be saved', async () => {
-        const current = library();
-        const planned = await saved(current, { isbn: null, noIsbn: true, ownership: 'not-owned' });
+        const current = BookDoubles.library();
+        const planned = await BookDoubles.saved(current, {
+            isbn: null,
+            noIsbn: true,
+            ownership: 'not-owned',
+        });
 
         const result = subject(current).execute(
             owner,
-            input({ title: '', replacePlanned: [planned.id] }),
+            BookDoubles.input({ title: '', replacePlanned: [planned.id] }),
             false,
         );
 
@@ -225,7 +262,7 @@ describe('CreateBook', () => {
         expect(current.books.books.has(planned.id)).toBe(true);
     });
     it('records the collection it created in the same operation', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
         current.collections.changes = [
             {
@@ -239,7 +276,9 @@ describe('CreateBook', () => {
 
         await subject(current).execute(
             owner,
-            input({ collection: { collection: { name: 'Batman' }, volumeFrom: 1, volumeTo: 1 } }),
+            BookDoubles.input({
+                collection: { collection: { name: 'Batman' }, volumeFrom: 1, volumeTo: 1 },
+            }),
             false,
         );
 
@@ -249,11 +288,11 @@ describe('CreateBook', () => {
         ]);
     });
     it('keeps the book on the chosen shelf with its tags', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
         const result = await subject(current).execute(
             owner,
-            input({ shelfId: 'shelf-3', tags: [{ name: 'Fantasy' }] }),
+            BookDoubles.input({ shelfId: 'shelf-3', tags: [{ name: 'Fantasy' }] }),
             false,
         );
 
@@ -265,9 +304,13 @@ describe('CreateBook', () => {
         });
     });
     it('records the tags it created in the same operation', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
-        await subject(current).execute(owner, input({ tags: [{ name: 'Fantasy' }] }), false);
+        await subject(current).execute(
+            owner,
+            BookDoubles.input({ tags: [{ name: 'Fantasy' }] }),
+            false,
+        );
 
         expect(current.trail.entries).toEqual([
             expect.objectContaining({ operationId: 'operation-1', category: 'book.created' }),
@@ -275,9 +318,13 @@ describe('CreateBook', () => {
         ]);
     });
     it('saves nothing when the shelf does not exist', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
-        const result = subject(current).execute(owner, input({ shelfId: 'unknown' }), false);
+        const result = subject(current).execute(
+            owner,
+            BookDoubles.input({ shelfId: 'unknown' }),
+            false,
+        );
 
         await expect(result).rejects.toMatchObject({ reason: 'shelf-missing' });
         expect(current.trail.entries).toEqual([expect.objectContaining({ outcome: 'failed' })]);
@@ -288,11 +335,11 @@ describe('CreateBook titles', () => {
     const gunnm = { collection: { name: 'Gunnm' }, volumeFrom: 3, volumeTo: 3 };
 
     it('names a Manga without title after its collection and volume (example 1)', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
         const result = await subject(current).execute(
             owner,
-            input({ title: '', category: 'manga', collection: gunnm }),
+            BookDoubles.input({ title: '', category: 'manga', collection: gunnm }),
             false,
         );
 
@@ -300,11 +347,11 @@ describe('CreateBook titles', () => {
         expect(current.books.books.get(result.id)!.details.title).toBe('Gunnm Vol. 3');
     });
     it('names a Comics range with an en dash (example 1)', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
         const result = await subject(current).execute(
             owner,
-            input({
+            BookDoubles.input({
                 title: '',
                 category: 'comics',
                 collection: { collection: { name: 'Saga' }, volumeFrom: 1, volumeTo: 3 },
@@ -315,26 +362,26 @@ describe('CreateBook titles', () => {
         expect(result.title).toBe('Saga Vol. 1–3');
     });
     it('uses the spelling of the existing collection the typed name joined', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
         current.collections.names.set('gunnm', 'GUNNM');
 
         const result = await subject(current).execute(
             owner,
-            input({ title: '', category: 'manga', collection: gunnm }),
+            BookDoubles.input({ title: '', category: 'manga', collection: gunnm }),
             false,
         );
 
         expect(result.title).toBe('GUNNM Vol. 3');
     });
     it('names a book joining a collection chosen by its identity', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
         current.collections.names.set('gunnm-id', 'Gunnm');
 
         const result = await subject(current).execute(
             owner,
-            input({
+            BookDoubles.input({
                 title: '',
                 category: 'manga',
                 collection: { collection: { id: 'gunnm-id' }, volumeFrom: 9, volumeTo: 9 },
@@ -345,22 +392,22 @@ describe('CreateBook titles', () => {
         expect(result.title).toBe('Gunnm Vol. 9');
     });
     it('keeps a supplied tome title (example 2)', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
         const result = await subject(current).execute(
             owner,
-            input({ title: 'Rusty Angel', category: 'manga', collection: gunnm }),
+            BookDoubles.input({ title: 'Rusty Angel', category: 'manga', collection: gunnm }),
             false,
         );
 
         expect(result).toMatchObject({ title: 'Rusty Angel', titleGenerated: false });
     });
     it('records the generated title and its provenance', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
         await subject(current).execute(
             owner,
-            input({ title: '', category: 'manga', collection: gunnm }),
+            BookDoubles.input({ title: '', category: 'manga', collection: gunnm }),
             false,
         );
 

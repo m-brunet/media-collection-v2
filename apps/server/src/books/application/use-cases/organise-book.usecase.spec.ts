@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { guest, library, owner, saved } from '../testing/book-doubles.test-support.js';
+import { BookDoubles, guest, owner } from '../testing/book-doubles.test-support.js';
 import { OrganiseBook } from './organise-book.usecase.js';
 
-function subject(current: ReturnType<typeof library>) {
+function subject(current: ReturnType<typeof BookDoubles.library>) {
     return new OrganiseBook(current.loader, current.organiser, current.viewer, current.operations);
 }
 
 describe('OrganiseBook', () => {
     it('places the book on a shelf and shows it', async () => {
-        const current = library();
-        const book = await saved(current);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
 
         const result = await subject(current).execute(owner, book.id, { shelfId: 'shelf-3' });
 
@@ -21,8 +21,8 @@ describe('OrganiseBook', () => {
         });
     });
     it('tags the book, leaving its information unchanged', async () => {
-        const current = library();
-        const book = await saved(current);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
 
         const result = await subject(current).execute(owner, book.id, {
             tags: [{ name: 'Fantasy' }],
@@ -32,8 +32,8 @@ describe('OrganiseBook', () => {
         expect(result.updatedAt).toBe(book.updatedAt);
     });
     it('records the previous and new location and tags', async () => {
-        const current = library();
-        const book = await saved(current, { shelfId: 'top' });
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, { shelfId: 'top' });
 
         await subject(current).execute(owner, book.id, { shelfId: null });
 
@@ -45,8 +45,8 @@ describe('OrganiseBook', () => {
         });
     });
     it('records a tag it created in the same operation', async () => {
-        const current = library();
-        const book = await saved(current);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
 
         await subject(current).execute(owner, book.id, { tags: [{ name: 'Fantasy' }] });
 
@@ -56,8 +56,8 @@ describe('OrganiseBook', () => {
         ]);
     });
     it('refuses an unknown shelf and keeps the location', async () => {
-        const current = library();
-        const book = await saved(current, { shelfId: 'top' });
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, { shelfId: 'top' });
 
         const result = subject(current).execute(owner, book.id, { shelfId: 'unknown' });
 
@@ -65,15 +65,15 @@ describe('OrganiseBook', () => {
         expect(current.shelving.placed.get(book.id)).toBe('top');
     });
     it('reports an unknown book', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
         const result = subject(current).execute(owner, 'unknown', { shelfId: null });
 
         await expect(result).rejects.toMatchObject({ reason: 'book-missing' });
     });
     it('refuses a Guest', async () => {
-        const current = library();
-        const book = await saved(current);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
 
         const result = subject(current).execute(guest, book.id, { shelfId: 'top' });
 

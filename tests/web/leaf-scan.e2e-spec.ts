@@ -5,7 +5,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from
 import type { Page } from 'playwright';
 import sharp from 'sharp';
 import type { BookDto, NewBookDto } from '../../packages/contracts/src/http.js';
-import { administrator, RuntimeFixture } from '../api/runtime-setup.js';
+import { RuntimeFixture, RuntimeSetup } from '../api/runtime-setup.js';
 import { Client } from '../api/client.js';
 import { BookInputFixture } from '../api/fixtures/book-input.fixture.js';
 import { BarcodePictures } from './barcode-pictures.js';
@@ -41,7 +41,7 @@ beforeEach(async () => {
 
     base = started.client.base;
     admin = started.client;
-    await administrator(admin);
+    await RuntimeSetup.administrator(admin);
     await owner('camille');
     sources.bnf(ewilan, 'bnf-ewilan-1.xml').openLibrary(ewilan, {
         title: "La quête d'Ewilan",

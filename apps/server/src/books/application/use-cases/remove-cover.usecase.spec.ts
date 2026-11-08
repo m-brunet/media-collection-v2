@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { guest, library, owner, saved } from '../testing/book-doubles.test-support.js';
+import { BookDoubles, guest, owner } from '../testing/book-doubles.test-support.js';
 import { RemoveCover } from './remove-cover.usecase.js';
 
 async function withCover() {
-    const current = library();
-    const book = await saved(current);
+    const current = BookDoubles.library();
+    const book = await BookDoubles.saved(current);
     const file = await current.covers.store(new Uint8Array([1]), 'image/png');
 
     current.books.books.get(book.id)!.replaceCover(file, '2026-03-01T10:00:00.000Z');
@@ -12,7 +12,7 @@ async function withCover() {
     return { current, book };
 }
 
-function subject(current: ReturnType<typeof library>) {
+function subject(current: ReturnType<typeof BookDoubles.library>) {
     return new RemoveCover(
         current.books,
         current.covers,

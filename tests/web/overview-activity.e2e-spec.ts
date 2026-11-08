@@ -1,7 +1,7 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type { Page } from 'playwright';
 import type { BookDto, NewBookDto } from '../../packages/contracts/src/http.js';
-import { administrator, RuntimeFixture } from '../api/runtime-setup.js';
+import { RuntimeFixture, RuntimeSetup } from '../api/runtime-setup.js';
 import { Client } from '../api/client.js';
 import { BookInputFixture } from '../api/fixtures/book-input.fixture.js';
 import { BrowserFixture, capture, viewports } from './browser.js';
@@ -24,7 +24,7 @@ beforeEach(async () => {
 
     base = started.client.base;
     admin = started.client;
-    await administrator(admin);
+    await RuntimeSetup.administrator(admin);
     camille = await account('camille', 'owner');
     await account('morgan', 'guest');
 });

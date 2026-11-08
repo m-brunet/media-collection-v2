@@ -1,9 +1,9 @@
 import { expect, it } from 'vitest';
 import { ReadHttpSettings } from './read-http-settings.usecase.js';
-import { actor, setup } from '../testing/settings-doubles.test-support.js';
+import { actor, SettingsDoubles } from '../testing/settings-doubles.test-support.js';
 
 it('reads the saved HTTP preference for an administrator', async () => {
-    const { http } = setup(undefined, { port: 36000 });
+    const { http } = SettingsDoubles.setup(undefined, { port: 36000 });
     const subject = new ReadHttpSettings(http);
 
     const result = await subject.execute(actor);
@@ -12,7 +12,7 @@ it('reads the saved HTTP preference for an administrator', async () => {
 });
 
 it('rejects a non-administrator reading HTTP settings', async () => {
-    const { http } = setup();
+    const { http } = SettingsDoubles.setup();
     const subject = new ReadHttpSettings(http);
     const forbidden = { ...actor, role: 'owner' as const };
 
@@ -22,7 +22,7 @@ it('rejects a non-administrator reading HTTP settings', async () => {
 });
 
 it('rejects HTTP settings access before password setup', async () => {
-    const { http } = setup();
+    const { http } = SettingsDoubles.setup();
     const subject = new ReadHttpSettings(http);
     const forbidden = { ...actor, mustChangePassword: true };
 

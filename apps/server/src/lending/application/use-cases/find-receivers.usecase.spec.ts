@@ -1,10 +1,10 @@
 import { expect, it } from 'vitest';
 import { ReceiverBuilder } from '../testing/receiver-builder.test-support.js';
-import { guest, lending, owner } from '../testing/lending-doubles.test-support.js';
+import { guest, LendingDoubles, owner } from '../testing/lending-doubles.test-support.js';
 import { FindReceivers } from './find-receivers.usecase.js';
 
 it('finds receivers by part of their name, ignoring case and accents', async () => {
-    const current = lending();
+    const current = LendingDoubles.lending();
 
     const zoe = await new ReceiverBuilder().withName('Zoé Martin').buildAndSave(current);
 
@@ -16,7 +16,7 @@ it('finds receivers by part of their name, ignoring case and accents', async () 
 });
 
 it('suggests nothing for an empty search', async () => {
-    const current = lending();
+    const current = LendingDoubles.lending();
 
     await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
 
@@ -26,7 +26,7 @@ it('suggests nothing for an empty search', async () => {
 });
 
 it('suggests at most ten receivers, in name order', async () => {
-    const current = lending();
+    const current = LendingDoubles.lending();
 
     for (let index = 11; index >= 0; index--) {
         await new ReceiverBuilder()
@@ -51,7 +51,7 @@ it('suggests at most ten receivers, in name order', async () => {
 });
 
 it('lets a Guest look receivers up', async () => {
-    const current = lending();
+    const current = LendingDoubles.lending();
 
     await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
 

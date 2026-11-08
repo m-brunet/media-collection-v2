@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
-    auditedOperation,
+    AuditDoubles,
     MemoryAuditTrail,
 } from '../../../shared/application/testing/audit-doubles.test-support.js';
 import {
     clock,
+    IdentityDoubles,
     MemoryUsers,
     passwords,
     tokens,
-    user,
 } from '../testing/identity-doubles.test-support.js';
 import { CompleteSetup } from './complete-setup.usecase.js';
 
@@ -19,7 +19,7 @@ function subject(users = new MemoryUsers(), trail = new MemoryAuditTrail()) {
         tokens,
         { next: () => 'first' },
         clock,
-        auditedOperation(trail),
+        AuditDoubles.auditedOperation(trail),
     );
 }
 
@@ -74,7 +74,7 @@ describe('CompleteSetup', () => {
     it('refuses a second setup once an account exists', async () => {
         const users = new MemoryUsers();
 
-        await users.create(user());
+        await users.create(IdentityDoubles.user());
 
         const result = subject(users).execute({
             username: 'intruder',

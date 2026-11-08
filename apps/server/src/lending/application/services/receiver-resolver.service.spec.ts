@@ -1,9 +1,9 @@
 import { expect, it } from 'vitest';
 import { ReceiverBuilder } from '../testing/receiver-builder.test-support.js';
-import { lending } from '../testing/lending-doubles.test-support.js';
+import { LendingDoubles } from '../testing/lending-doubles.test-support.js';
 
 it('creates a receiver for a new name', async () => {
-    const current = lending();
+    const current = LendingDoubles.lending();
 
     const result = await current.resolver.resolve({ name: ' Sam Taylor ' });
 
@@ -17,7 +17,7 @@ it('creates a receiver for a new name', async () => {
 });
 
 it('reuses the receiver chosen by its identity', async () => {
-    const current = lending();
+    const current = LendingDoubles.lending();
     const sam = await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
 
     const result = await current.resolver.resolve({ id: sam.id });
@@ -26,7 +26,7 @@ it('reuses the receiver chosen by its identity', async () => {
 });
 
 it('reuses the receiver with an equivalent name', async () => {
-    const current = lending();
+    const current = LendingDoubles.lending();
     const sam = await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
 
     const result = await current.resolver.resolve({ name: 'SAM TAYLOR' });
@@ -35,7 +35,7 @@ it('reuses the receiver with an equivalent name', async () => {
 });
 
 it('names every similar receiver instead of creating one', async () => {
-    const current = lending();
+    const current = LendingDoubles.lending();
     const taylor = await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
     const tailor = await new ReceiverBuilder().withName('Sam Tailor').buildAndSave(current);
 
@@ -54,7 +54,7 @@ it('names every similar receiver instead of creating one', async () => {
 });
 
 it('creates a confirmed distinct receiver despite a similar name', async () => {
-    const current = lending();
+    const current = LendingDoubles.lending();
 
     await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
 
@@ -64,7 +64,7 @@ it('creates a confirmed distinct receiver despite a similar name', async () => {
 });
 
 it('refuses an unknown receiver identity', async () => {
-    const current = lending();
+    const current = LendingDoubles.lending();
 
     const result = current.resolver.resolve({ id: 'gone' });
 

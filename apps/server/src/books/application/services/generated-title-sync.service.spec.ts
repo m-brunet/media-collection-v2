@@ -1,12 +1,15 @@
 import { expect, it } from 'vitest';
-import { library } from '../testing/book-doubles.test-support.js';
+import { BookDoubles } from '../testing/book-doubles.test-support.js';
 import { Book } from '../../domain/entities/book.entity.js';
 import type { BookDetails } from '../../domain/entities/book.entity.js';
 
 const gunnm = { id: 'gunnm', name: 'Gunnm', volumeFrom: 3, volumeTo: 3 };
 
 // A saved no-ISBN Manga by one author, as a book save leaves it before its membership applies.
-async function stored(current: ReturnType<typeof library>, overrides: Partial<BookDetails> = {}) {
+async function stored(
+    current: ReturnType<typeof BookDoubles.library>,
+    overrides: Partial<BookDetails> = {},
+) {
     const book = new Book({
         id: 'book-' + current.books.books.size,
         details: {
@@ -35,7 +38,7 @@ async function stored(current: ReturnType<typeof library>, overrides: Partial<Bo
 }
 
 it('gives a generated title its final text from the collection the book joined', async () => {
-    const current = library();
+    const current = BookDoubles.library();
     const book = await stored(current);
 
     await current.titles.apply(book, gunnm, false);
@@ -47,7 +50,7 @@ it('gives a generated title its final text from the collection the book joined',
 });
 
 it('leaves a supplied title as it is', async () => {
-    const current = library();
+    const current = BookDoubles.library();
     const book = await stored(current, { title: 'The scrapyard', titleGenerated: false });
 
     await current.titles.apply(book, gunnm, false);
@@ -56,7 +59,7 @@ it('leaves a supplied title as it is', async () => {
 });
 
 it('leaves a book without collection as it is', async () => {
-    const current = library();
+    const current = BookDoubles.library();
     const book = await stored(current);
 
     await current.titles.apply(book, null, false);
@@ -65,7 +68,7 @@ it('leaves a book without collection as it is', async () => {
 });
 
 it('warns about a possible duplicate of the final title', async () => {
-    const current = library();
+    const current = BookDoubles.library();
 
     await stored(current, { title: 'Gunnm Vol. 3' });
     const book = await stored(current);
@@ -76,7 +79,7 @@ it('warns about a possible duplicate of the final title', async () => {
 });
 
 it('keeps a possible duplicate once the person confirmed it is another edition', async () => {
-    const current = library();
+    const current = BookDoubles.library();
 
     await stored(current, { title: 'Gunnm Vol. 3' });
     const book = await stored(current);

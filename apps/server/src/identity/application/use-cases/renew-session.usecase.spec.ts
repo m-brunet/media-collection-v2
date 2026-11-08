@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { MemoryUsers, tokens, user } from '../testing/identity-doubles.test-support.js';
+import { IdentityDoubles, MemoryUsers, tokens } from '../testing/identity-doubles.test-support.js';
 import { AccountLoader } from '../services/account-loader.service.js';
 import { RenewSession } from './renew-session.usecase.js';
 
 describe('RenewSession', () => {
     it('issues current account claims', async () => {
         const users = new MemoryUsers();
-        const account = user({ tokenVersion: 2 });
+        const account = IdentityDoubles.user({ tokenVersion: 2 });
 
         await users.create(account);
         const subject = new RenewSession(new AccountLoader(users), tokens);
@@ -19,9 +19,9 @@ describe('RenewSession', () => {
     it('refuses renewal from a stale authenticated actor', async () => {
         const users = new MemoryUsers();
 
-        await users.create(user({ tokenVersion: 2 }));
+        await users.create(IdentityDoubles.user({ tokenVersion: 2 }));
         const subject = new RenewSession(new AccountLoader(users), tokens);
-        const actor = { ...user().actor, sessionVersion: 1 };
+        const actor = { ...IdentityDoubles.user().actor, sessionVersion: 1 };
 
         const result = subject.renew(actor);
 
@@ -29,7 +29,7 @@ describe('RenewSession', () => {
     });
     it('issues current claims when the actor has no prior session version', async () => {
         const users = new MemoryUsers();
-        const account = user({ tokenVersion: 3 });
+        const account = IdentityDoubles.user({ tokenVersion: 3 });
 
         await users.create(account);
         const subject = new RenewSession(new AccountLoader(users), tokens);
@@ -40,7 +40,7 @@ describe('RenewSession', () => {
     });
     it('preserves password-change restrictions in renewed claims', async () => {
         const users = new MemoryUsers();
-        const account = user({ mustChangePassword: true, tokenVersion: 3 });
+        const account = IdentityDoubles.user({ mustChangePassword: true, tokenVersion: 3 });
 
         await users.create(account);
         const subject = new RenewSession(new AccountLoader(users), tokens);
@@ -53,7 +53,7 @@ describe('RenewSession', () => {
         const users = new MemoryUsers();
         const subject = new RenewSession(new AccountLoader(users), tokens);
 
-        const result = subject.renew(user().actor);
+        const result = subject.renew(IdentityDoubles.user().actor);
 
         await expect(result).rejects.toMatchObject({ code: 'unauthorized' });
     });

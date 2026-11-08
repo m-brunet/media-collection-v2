@@ -80,17 +80,19 @@ export const tokens: SessionTokens = {
 };
 export const clock = { now: () => new Date('2026-01-01T00:00:00Z') };
 
-export function user(input: Partial<UserState> = {}): User {
-    return new User({
-        id: 'owner',
-        username: 'owner',
-        role: 'admin',
-        passwordHash: 'hash:old-password',
-        mustChangePassword: false,
-        language: null,
-        tokenVersion: 0,
-        active: true,
-        createdAt: clock.now().toISOString(),
-        ...input,
-    });
+export class IdentityDoubles {
+    static user(input: Partial<UserState> = {}): User {
+        return new User({
+            id: 'owner',
+            username: 'owner',
+            role: 'admin',
+            passwordHash: 'hash:old-password',
+            mustChangePassword: false,
+            language: null,
+            tokenVersion: 0,
+            active: true,
+            createdAt: clock.now().toISOString(),
+            ...input,
+        });
+    }
 }

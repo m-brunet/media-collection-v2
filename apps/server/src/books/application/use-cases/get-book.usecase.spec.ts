@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { guest, library, otherOwner, owner, saved } from '../testing/book-doubles.test-support.js';
+import { BookDoubles, guest, otherOwner, owner } from '../testing/book-doubles.test-support.js';
 import { GetBook } from './get-book.usecase.js';
 
 describe('GetBook', () => {
     it('shows the shared information with the viewer reading status and note', async () => {
-        const current = library();
-        const book = await saved(current, {}, true);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, {}, true);
 
         await current.notes.save(owner.id, book.id, 'A favourite.', '2026-03-01T10:00:00.000Z');
 
@@ -17,8 +17,8 @@ describe('GetBook', () => {
         });
     });
     it('never shows another account its note or reading status', async () => {
-        const current = library();
-        const book = await saved(current, {}, true);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, {}, true);
 
         await current.notes.save(owner.id, book.id, 'Private.', '2026-03-01T10:00:00.000Z');
 
@@ -30,8 +30,8 @@ describe('GetBook', () => {
         expect(result.personal).toEqual({ read: false, note: null });
     });
     it('gives a Guest no personal reading information', async () => {
-        const current = library();
-        const book = await saved(current, {}, true);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, {}, true);
 
         const result = await new GetBook(current.loader, current.viewer).execute(guest, book.id);
 
@@ -39,7 +39,7 @@ describe('GetBook', () => {
         expect(result.title).toBe('Piranesi');
     });
     it('reports a missing book', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
         const result = new GetBook(current.loader, current.viewer).execute(owner, 'missing');
 

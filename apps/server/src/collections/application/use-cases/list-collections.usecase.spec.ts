@@ -2,14 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { BookFilter } from '../../../shared/application/book-filter.js';
 import {
     anyBook,
+    CollectionDoubles,
     guest,
-    member,
     owner,
-    shelf,
 } from '../testing/collection-doubles.test-support.js';
 import { ListCollections } from './list-collections.usecase.js';
 
-function subject(current: ReturnType<typeof shelf>) {
+function subject(current: ReturnType<typeof CollectionDoubles.shelf>) {
     return new ListCollections(
         current.collections,
         current.members,
@@ -22,11 +21,11 @@ const query = { search: '', direction: 'asc' as const, offset: 0, limit: 48, fil
 
 describe('ListCollections', () => {
     it('lists collections by name with whole-collection counts', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'b1', 'owned', 'Dune', 1);
-        await member(current, 'a1', 'owned', 'Batman', 1, 3);
-        await member(current, 'a12', 'not-owned', 'Batman', 12);
+        await CollectionDoubles.member(current, 'b1', 'owned', 'Dune', 1);
+        await CollectionDoubles.member(current, 'a1', 'owned', 'Batman', 1, 3);
+        await CollectionDoubles.member(current, 'a12', 'not-owned', 'Batman', 12);
 
         const result = await subject(current).execute(owner, query);
 
@@ -42,10 +41,10 @@ describe('ListCollections', () => {
     });
 
     it('orders collections from Z to A', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'b1', 'owned', 'Dune', 1);
-        await member(current, 'a1', 'owned', 'Batman', 1);
+        await CollectionDoubles.member(current, 'b1', 'owned', 'Dune', 1);
+        await CollectionDoubles.member(current, 'a1', 'owned', 'Batman', 1);
 
         const result = await subject(current).execute(owner, { ...query, direction: 'desc' });
 
@@ -53,10 +52,10 @@ describe('ListCollections', () => {
     });
 
     it('keeps only the collections a matching book belongs to', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'b1', 'owned', 'Dune', 1);
-        await member(current, 'a1', 'owned', 'Batman', 1);
+        await CollectionDoubles.member(current, 'b1', 'owned', 'Dune', 1);
+        await CollectionDoubles.member(current, 'a1', 'owned', 'Batman', 1);
         current.search.matches = ['collection-1'];
 
         const result = await subject(current).execute(owner, { ...query, search: 'arrakis' });
@@ -65,9 +64,9 @@ describe('ListCollections', () => {
     });
 
     it('finds nothing when no book matches', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'b1', 'owned', 'Dune', 1);
+        await CollectionDoubles.member(current, 'b1', 'owned', 'Dune', 1);
 
         const result = await subject(current).execute(owner, { ...query, search: 'nothing' });
 
@@ -75,10 +74,10 @@ describe('ListCollections', () => {
     });
 
     it('pages the collections', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'b1', 'owned', 'Dune', 1);
-        await member(current, 'a1', 'owned', 'Batman', 1);
+        await CollectionDoubles.member(current, 'b1', 'owned', 'Dune', 1);
+        await CollectionDoubles.member(current, 'a1', 'owned', 'Batman', 1);
 
         const result = await subject(current).execute(owner, { ...query, offset: 1, limit: 1 });
 
@@ -87,9 +86,9 @@ describe('ListCollections', () => {
     });
 
     it('searches the collections through their books with the filters', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'b1', 'owned', 'Dune', 1);
+        await CollectionDoubles.member(current, 'b1', 'owned', 'Dune', 1);
         current.search.matches = ['collection-1'];
         const filter = BookFilter.of({ ownerships: ['owned'] });
 
@@ -100,7 +99,7 @@ describe('ListCollections', () => {
     });
 
     it('searches without a reader for a Guest', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
         const filter = BookFilter.of({ categories: ['manga'] });
 
         await subject(current).execute(guest, { ...query, filter });
@@ -109,7 +108,7 @@ describe('ListCollections', () => {
     });
 
     it('refuses a reading filter for a Guest', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
         const filter = BookFilter.of({ reading: ['read'] });
 
         const result = subject(current).execute(guest, { ...query, filter });

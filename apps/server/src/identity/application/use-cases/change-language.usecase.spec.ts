@@ -1,22 +1,22 @@
 import {
-    auditedOperation,
+    AuditDoubles,
     MemoryAuditTrail,
 } from '../../../shared/application/testing/audit-doubles.test-support.js';
 import { describe, expect, it } from 'vitest';
-import { MemoryUsers, user } from '../testing/identity-doubles.test-support.js';
+import { IdentityDoubles, MemoryUsers } from '../testing/identity-doubles.test-support.js';
 import { AccountLoader } from '../services/account-loader.service.js';
 import { ChangeLanguage } from './change-language.usecase.js';
 
 describe('ChangeLanguage', () => {
     it('saves the chosen language for the signed-in account', async () => {
         const users = new MemoryUsers();
-        const account = user();
+        const account = IdentityDoubles.user();
 
         await users.create(account);
         const subject = new ChangeLanguage(
             users,
             new AccountLoader(users),
-            auditedOperation(new MemoryAuditTrail()),
+            AuditDoubles.auditedOperation(new MemoryAuditTrail()),
         );
 
         const result = await subject.execute(account.actor, 'fr');
@@ -26,14 +26,14 @@ describe('ChangeLanguage', () => {
     });
     it('does not change another account', async () => {
         const users = new MemoryUsers();
-        const account = user();
+        const account = IdentityDoubles.user();
 
         await users.create(account);
-        await users.create(user({ id: 'other', username: 'other' }));
+        await users.create(IdentityDoubles.user({ id: 'other', username: 'other' }));
         const subject = new ChangeLanguage(
             users,
             new AccountLoader(users),
-            auditedOperation(new MemoryAuditTrail()),
+            AuditDoubles.auditedOperation(new MemoryAuditTrail()),
         );
 
         await subject.execute(account.actor, 'fr');
@@ -42,13 +42,13 @@ describe('ChangeLanguage', () => {
     });
     it('keeps the restricted state of a temporary-password session', async () => {
         const users = new MemoryUsers();
-        const account = user();
+        const account = IdentityDoubles.user();
 
         await users.create(account);
         const subject = new ChangeLanguage(
             users,
             new AccountLoader(users),
-            auditedOperation(new MemoryAuditTrail()),
+            AuditDoubles.auditedOperation(new MemoryAuditTrail()),
         );
 
         const result = await subject.execute({ ...account.actor, mustChangePassword: true }, 'en');
@@ -57,13 +57,13 @@ describe('ChangeLanguage', () => {
     });
     it('does not end existing sessions', async () => {
         const users = new MemoryUsers();
-        const account = user();
+        const account = IdentityDoubles.user();
 
         await users.create(account);
         const subject = new ChangeLanguage(
             users,
             new AccountLoader(users),
-            auditedOperation(new MemoryAuditTrail()),
+            AuditDoubles.auditedOperation(new MemoryAuditTrail()),
         );
 
         await subject.execute(account.actor, 'fr');
@@ -75,10 +75,10 @@ describe('ChangeLanguage', () => {
         const subject = new ChangeLanguage(
             users,
             new AccountLoader(users),
-            auditedOperation(new MemoryAuditTrail()),
+            AuditDoubles.auditedOperation(new MemoryAuditTrail()),
         );
 
-        const result = subject.execute(user().actor, 'fr');
+        const result = subject.execute(IdentityDoubles.user().actor, 'fr');
 
         await expect(result).rejects.toMatchObject({ code: 'unauthorized' });
     });

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { CoverImage } from '../../domain/value-objects/cover-image.value-object.js';
-import { guest, library, owner, saved } from '../testing/book-doubles.test-support.js';
+import { BookDoubles, guest, owner } from '../testing/book-doubles.test-support.js';
 import { ReplaceCover } from './replace-cover.usecase.js';
 
 const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1]);
 
-function subject(current: ReturnType<typeof library>) {
+function subject(current: ReturnType<typeof BookDoubles.library>) {
     return new ReplaceCover(
         current.books,
         current.covers,
@@ -19,8 +19,8 @@ function subject(current: ReturnType<typeof library>) {
 
 describe('ReplaceCover', () => {
     it('stores the image and gives the book a cover', async () => {
-        const current = library();
-        const book = await saved(current);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
 
         const result = await subject(current).execute(owner, book.id, png);
 
@@ -28,8 +28,8 @@ describe('ReplaceCover', () => {
         expect(current.covers.files.size).toBe(1);
     });
     it('stores the cover without its shop padding', async () => {
-        const current = library();
-        const book = await saved(current);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
         const trimmed = CoverImage.from(new Uint8Array([0xff, 0xd8, 0xff, 9]));
 
         current.trimmer.result = trimmed;
@@ -43,8 +43,8 @@ describe('ReplaceCover', () => {
         });
     });
     it('records the change with the book title', async () => {
-        const current = library();
-        const book = await saved(current);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
 
         await subject(current).execute(owner, book.id, png);
 
@@ -56,8 +56,8 @@ describe('ReplaceCover', () => {
         });
     });
     it('removes the replaced image', async () => {
-        const current = library();
-        const book = await saved(current);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
 
         await subject(current).execute(owner, book.id, png);
 
@@ -66,8 +66,8 @@ describe('ReplaceCover', () => {
         expect([...current.covers.files.keys()]).toEqual(['cover-2']);
     });
     it('rejects a file that is not an image', async () => {
-        const current = library();
-        const book = await saved(current);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
 
         const result = subject(current).execute(owner, book.id, new Uint8Array([1, 2, 3]));
 
@@ -75,7 +75,7 @@ describe('ReplaceCover', () => {
         expect(current.covers.files.size).toBe(0);
     });
     it('keeps no stored image when the book does not exist', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
         const result = subject(current).execute(owner, 'missing', png);
 
@@ -83,8 +83,8 @@ describe('ReplaceCover', () => {
         expect(current.covers.files.size).toBe(0);
     });
     it('refuses a Guest', async () => {
-        const current = library();
-        const book = await saved(current);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
 
         const result = subject(current).execute(guest, book.id, png);
 

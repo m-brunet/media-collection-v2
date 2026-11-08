@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import { Failure } from '../../domain/exceptions/failure.js';
-import { auditedOperation, MemoryAuditTrail } from '../testing/audit-doubles.test-support.js';
+import { AuditDoubles, MemoryAuditTrail } from '../testing/audit-doubles.test-support.js';
 
 const context = () => ({
     category: 'account.created',
@@ -10,7 +10,7 @@ const context = () => ({
 });
 
 it('returns the result of a successful change', async () => {
-    const subject = auditedOperation(new MemoryAuditTrail());
+    const subject = AuditDoubles.auditedOperation(new MemoryAuditTrail());
 
     const result = await subject.run(context(), async () => ({
         result: 'created',
@@ -23,7 +23,7 @@ it('returns the result of a successful change', async () => {
 
 it('records a Successful entry with the before and after values', async () => {
     const trail = new MemoryAuditTrail();
-    const subject = auditedOperation(trail);
+    const subject = AuditDoubles.auditedOperation(trail);
 
     await subject.run(context(), async (current) => {
         current.subjectId = 'sam';
@@ -49,7 +49,7 @@ it('records a Successful entry with the before and after values', async () => {
 
 it('records the related changes under the same operation and actor', async () => {
     const trail = new MemoryAuditTrail();
-    const subject = auditedOperation(trail);
+    const subject = AuditDoubles.auditedOperation(trail);
 
     await subject.run(context(), async () => ({
         result: undefined,
@@ -81,7 +81,7 @@ it('records the related changes under the same operation and actor', async () =>
 });
 
 it('rethrows a failed change', async () => {
-    const subject = auditedOperation(new MemoryAuditTrail());
+    const subject = AuditDoubles.auditedOperation(new MemoryAuditTrail());
     const failure = new Failure('conflict', 'Taken', 'username-taken');
 
     const result = subject.run(context(), async () => {
@@ -93,7 +93,7 @@ it('rethrows a failed change', async () => {
 
 it('records a Failed entry without any after-state', async () => {
     const trail = new MemoryAuditTrail();
-    const subject = auditedOperation(trail);
+    const subject = AuditDoubles.auditedOperation(trail);
 
     await subject
         .run(context(), async () => {
@@ -113,7 +113,7 @@ it('records a Failed entry without any after-state', async () => {
 
 it('keeps the Failed entry while discarding everything recorded inside the failed change', async () => {
     const trail = new MemoryAuditTrail();
-    const subject = auditedOperation(trail);
+    const subject = AuditDoubles.auditedOperation(trail);
 
     await subject
         .run(context(), async () => {
@@ -140,7 +140,7 @@ it('keeps the Failed entry while discarding everything recorded inside the faile
 
 it('keeps the original error when the audit store is unavailable', async () => {
     const failure = new Failure('forbidden', 'No');
-    const subject = auditedOperation({
+    const subject = AuditDoubles.auditedOperation({
         entries: [],
         record: async () => {
             throw new Error('Audit store unavailable');
@@ -171,7 +171,7 @@ const lentBoth = async () => ({
 });
 
 it('returns the result of a successful batch', async () => {
-    const subject = auditedOperation(new MemoryAuditTrail());
+    const subject = AuditDoubles.auditedOperation(new MemoryAuditTrail());
 
     const result = await subject.runBatch(batch(), lentBoth);
 
@@ -180,7 +180,7 @@ it('returns the result of a successful batch', async () => {
 
 it('records one Successful entry per subject of a batch, sharing its operation', async () => {
     const trail = new MemoryAuditTrail();
-    const subject = auditedOperation(trail);
+    const subject = AuditDoubles.auditedOperation(trail);
 
     await subject.runBatch(batch(), lentBoth);
 
@@ -214,7 +214,7 @@ it('records one Successful entry per subject of a batch, sharing its operation',
 
 it('records the related changes of a batch under the same operation and actor', async () => {
     const trail = new MemoryAuditTrail();
-    const subject = auditedOperation(trail);
+    const subject = AuditDoubles.auditedOperation(trail);
 
     await subject.runBatch(batch(['dune']), async () => ({
         result: undefined,
@@ -245,7 +245,7 @@ it('records the related changes of a batch under the same operation and actor', 
 });
 
 it('rethrows a failed batch', async () => {
-    const subject = auditedOperation(new MemoryAuditTrail());
+    const subject = AuditDoubles.auditedOperation(new MemoryAuditTrail());
     const failure = new Failure('conflict', 'Lent', 'book-already-lent');
 
     const result = subject.runBatch(batch(), async () => {
@@ -257,7 +257,7 @@ it('rethrows a failed batch', async () => {
 
 it('records a Failed entry for every requested subject of a failed batch, sharing its operation', async () => {
     const trail = new MemoryAuditTrail();
-    const subject = auditedOperation(trail);
+    const subject = AuditDoubles.auditedOperation(trail);
 
     await subject
         .runBatch(batch(), async () => {
@@ -287,7 +287,7 @@ it('records a Failed entry for every requested subject of a failed batch, sharin
 
 it('keeps only the Failed entries of a batch that fails after recording', async () => {
     const trail = new MemoryAuditTrail();
-    const subject = auditedOperation(trail);
+    const subject = AuditDoubles.auditedOperation(trail);
 
     await subject
         .runBatch(batch(['dune']), async () => {
@@ -314,7 +314,7 @@ it('keeps only the Failed entries of a batch that fails after recording', async 
 
 it('records one Failed entry without a subject when a failed batch requested none', async () => {
     const trail = new MemoryAuditTrail();
-    const subject = auditedOperation(trail);
+    const subject = AuditDoubles.auditedOperation(trail);
 
     await subject
         .runBatch(batch([]), async () => {
@@ -333,7 +333,7 @@ it('records one Failed entry without a subject when a failed batch requested non
 
 it('keeps the original error of a batch when the audit store is unavailable', async () => {
     const failure = new Failure('conflict', 'Lent', 'book-already-lent');
-    const subject = auditedOperation({
+    const subject = AuditDoubles.auditedOperation({
         entries: [],
         record: async () => {
             throw new Error('Audit store unavailable');

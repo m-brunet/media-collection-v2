@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { guest, library, owner, saved } from '../testing/book-doubles.test-support.js';
+import { BookDoubles, guest, owner } from '../testing/book-doubles.test-support.js';
 import { CorrectAuthor } from './correct-author.usecase.js';
 
 describe('CorrectAuthor', () => {
     it('corrects the shared spelling on every linked book', async () => {
-        const current = library();
-        const book = await saved(current, { authors: [{ name: 'Susana Clarke' }] });
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, { authors: [{ name: 'Susana Clarke' }] });
         const authorId = book.authors[0]!.id;
 
         const result = await new CorrectAuthor(current.authors, current.operations).execute(
@@ -18,8 +18,8 @@ describe('CorrectAuthor', () => {
         expect((await current.catalog.authorsOf(book.id))[0]!.name).toBe('Susanna Clarke');
     });
     it('allows correcting only the letter case or accents of the same author', async () => {
-        const current = library();
-        const book = await saved(current, { authors: [{ name: 'herve bazin' }] });
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, { authors: [{ name: 'herve bazin' }] });
 
         const result = new CorrectAuthor(current.authors, current.operations).execute(
             owner,
@@ -30,10 +30,10 @@ describe('CorrectAuthor', () => {
         await expect(result).resolves.toMatchObject({ name: 'Hervé Bazin' });
     });
     it('refuses a name equivalent to another author', async () => {
-        const current = library();
-        const book = await saved(current, { authors: [{ name: 'Susana Clarke' }] });
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, { authors: [{ name: 'Susana Clarke' }] });
 
-        await saved(current, {
+        await BookDoubles.saved(current, {
             isbn: '9780306406157',
             authors: [{ name: 'Susanna Clarke', distinct: true }],
         });
@@ -47,8 +47,8 @@ describe('CorrectAuthor', () => {
         await expect(result).rejects.toMatchObject({ reason: 'author-name-taken' });
     });
     it('records the previous and corrected spelling', async () => {
-        const current = library();
-        const book = await saved(current, { authors: [{ name: 'Susana Clarke' }] });
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, { authors: [{ name: 'Susana Clarke' }] });
 
         await new CorrectAuthor(current.authors, current.operations).execute(
             owner,
@@ -63,8 +63,8 @@ describe('CorrectAuthor', () => {
         });
     });
     it('refuses a Guest', async () => {
-        const current = library();
-        const book = await saved(current);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
 
         const result = new CorrectAuthor(current.authors, current.operations).execute(
             guest,

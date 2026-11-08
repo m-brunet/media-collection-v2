@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { member, shelf } from '../testing/collection-doubles.test-support.js';
+import { CollectionDoubles } from '../testing/collection-doubles.test-support.js';
 
 describe('CollectionLoader', () => {
     it('loads a saved collection', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'one', 'owned', 'Batman', 1);
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
 
         const collection = await current.loader.load('collection-1');
 
@@ -13,7 +13,7 @@ describe('CollectionLoader', () => {
     });
 
     it('refuses an unknown collection', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
         const operation = current.loader.load('unknown');
 
