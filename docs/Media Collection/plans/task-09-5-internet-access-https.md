@@ -216,11 +216,13 @@ and phone and what to report back; the next step starts from the results.
     server name in `SNICallback`.
   - Allowing Node on **private** networks in the Windows Firewall prompt was enough (the home network is Private).
 - [x] **3. Domain**: `InternetAccess`, `ConnectionClass`, `RenewalPolicy`, failure reasons; unit tests.
-- [ ] **4. Application**: ports, the five use cases with in-memory doubles; audit; unit tests for every rule above
+- [x] **4. Application**: ports, the five use cases with in-memory doubles; audit; unit tests for every rule above
   (classification stops, refused port, unreachable, address change, renewal timing, backoff, manual certificate
   conflicts, turn off).
-- [ ] **5. Persistence and TLS store**: `internet-access` and `keep-awake` settings, TLS source; backup/reset tests
-  extended (kept by reset, in backups).
+- [ ] **5. Persistence and TLS store**: `internet-access` and `keep-awake` settings; `SaveTlsSettings` refuses any
+  change while internet access is not off (`internet-access-on`); backup/reset tests extended (kept by reset, in
+  backups). Decided in Step 4: no TLS `source` field; a certificate is automatic while internet access holds one, so
+  the TLS contract stays unchanged and the setup asks to confirm replacing any other saved certificate.
 - [ ] **6. HTTPS runtime**: live start and certificate swap, TLS-ALPN-01 responder through `SNICallback`, upkeep timer;
   tests with a local TLS client (normal handshake, `acme-tls/1` handshake on a reverse-DNS name, swap without dropping
   the listener).

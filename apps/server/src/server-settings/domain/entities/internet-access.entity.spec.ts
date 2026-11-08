@@ -252,3 +252,24 @@ it('keeps the current certificate while a new setup runs', () => {
 
     expect([access.phase, access.certificate?.address]).toEqual(['setting-up', '82.66.118.204']);
 });
+it('cannot be turned off while a setup runs', () => {
+    const access = settingUp();
+
+    const operation = () => access.turnOff();
+
+    expect(operation).toThrow('Wait for the internet access setup');
+});
+it('ends a setup cut short by a restart', () => {
+    const access = gettingCertificate();
+
+    access.interrupted(now);
+
+    expect([access.phase, access.snapshot.failure?.reason]).toEqual(['off', 'setup-failed']);
+});
+it('leaves active access untouched after a restart', () => {
+    const access = active();
+
+    access.interrupted(now);
+
+    expect(access.phase).toBe('active');
+});
