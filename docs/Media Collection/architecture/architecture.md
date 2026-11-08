@@ -129,6 +129,16 @@ The development data commands (development only) follow the same rule. `developm
 and `CoverFileCleanup`, which compares the books' cover references with the books `CoverStorage` (`list`, `remove`).
 It saves books through the books `ImportBook` use case, registered only for these commands (`developmentImport`).
 
+Two read-only features present the shared library without owning any table. `activity` (Task 8) turns the technical
+audit log into the shared Activity: the pure domain services `ActivityEligibility` (an allowlist of the shared
+categories), `ActivityProjection` (one operation becomes one entry, the main record chosen by category, the others
+listed as its consequences) and `ActivityTimeline` (a cover change joins the save of the same book by the same account
+made at most two minutes before) do the business work; the driven port `ActivityRecordReader` reads Successful records
+grouped by operation ID, with the acting account's current username and a book's current title, and pages by
+operation. Nothing in it writes the audit log, which stays with `AuditedOperation`. `overview` reads counters, the
+most recently added Owned books, bookcases and the viewer's own reading through `LibrarySummaryReader`; the use case
+`GetOverview` withholds every reading value from Guests.
+
 Generated titles cross the books/collections boundary the other way. `books` owns titles and their provenance
 (`BookDetails.titleGenerated`, the `GeneratedTitle` format `Name Vol. N` / `Name Vol. N–M`, the Manga/Comics eligibility and
 `title-required`); a blank title asks for generation. After a book save applies its membership, `GeneratedTitleSync`

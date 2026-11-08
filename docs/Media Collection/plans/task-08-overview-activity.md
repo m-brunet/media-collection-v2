@@ -1,6 +1,6 @@
 # Task 8 — Overview and Activity
 
-Status: **approved, in progress** (2026-11-08), branch `task-08-overview-activity`. Global plan:
+Status: **done** (2026-11-08), ready for review in a pull request, branch `task-08-overview-activity`. Global plan:
 [implementation plan](implementation-plan.md).
 
 ## Scope
@@ -120,7 +120,7 @@ Audit: one new category, `book.marked-owned`, written by Mark Owned (`MarkBookOw
 (user's choice, 2026-11-08: the category names the action). Older Mark Owned records keep `book.updated` and read
 "You updated…"; audit history is not rewritten. Reading the Overview or Activity is not audited.
 
-## Activity wording (proposal, see question 4)
+## Activity wording (approved, see answer 4)
 
 Names come from the record itself (title, name), so deleted books, tags and shelves still read correctly.
 
@@ -227,7 +227,7 @@ Browser journeys (Playwright, 1280 × 720, real app)
    **Reminder for the user after Task 8:** try both and decide whether to keep them.
 8. **`/` opens Overview: agreed.**
 
-## Open questions for the user
+## Questions asked (all answered above)
 
 1. **Eligible events.** Proposed list: all book changes except reading status and note (`book.created`, `.updated`, `.marked-owned`,
    `.deleted`, `.organised`, `.cover-changed`, `.retitled`), `author.corrected`, every `collection.*`, every
@@ -258,3 +258,51 @@ Browser journeys (Playwright, 1280 × 720, real app)
    the panel with actual bookcases (all, name order, scrolling in the panel if long) and show the viewer's own Read /
    Not read on recent books for Owners/Admin only. Alternative: counters, recently added and reading summary only.
 8. **Home page.** Proposed: `/` opens Overview (as the design's first navigation entry) instead of My books. Agree?
+
+## Step list
+
+1. [x] Mark Owned writes `book.marked-owned`
+2. [x] Activity domain (`ActivityEligibility`, `ActivityProjection`, `ActivityTimeline`); book title added to the
+   `book.organised` and `book.cover-changed` audit records
+3. [x] `GET /api/activity` (`ActivityRecordReader`, `ListActivity`)
+4. [x] `GET /api/overview` (`LibrarySummaryReader`, `GetOverview`)
+5. [x] Libris Overview page, `/` opens it
+6. [x] Libris Activity page
+7. [x] Browser journeys at 1280 × 720
+8. [x] Architecture review, `npm run check`, docs
+
+## Notes for later tasks
+
+- **Reminder for the user:** try the Overview's Bookcases & shelves panel and the Read / Not read line on recent
+  books, and decide whether to keep them (answer 7). Also try the page size of 20 (answer 5) and the cover folding
+  window of two minutes (answer 3).
+- **Endpoints added:** `GET /api/activity?before=` (every signed-in role; `before` is the previous page's `older`,
+  `<UTC time>_<operation ID>`, `400` otherwise) and `GET /api/overview` (every signed-in role; `reading: null` and
+  `read: null` on recent books for a Guest). Neither is audited.
+- **Audit changes:** Mark Owned (Leaf) now writes `book.marked-owned` instead of `book.updated`; older records keep
+  `book.updated` and read "You updated…". `book.organised` and `book.cover-changed` records now carry the book `title`;
+  for older records the Activity reader falls back to the book's current title, then to "a book".
+- **New audit categories must be chosen for Activity:** `ActivityEligibility` is an allowlist and
+  `ActivityProjection` describes each category; a category missing from either never appears. Task 9 (backup,
+  restore, data reset) must not appear unless decided; the data reset deletes the audit history, so Activity starts
+  empty after it.
+- **Grouping:** one entry per audit operation; the main record is chosen by a fixed category order (UUID audit IDs
+  have no insertion order), the other records are the "Also: …" line, `book.retitled` records are never listed.
+  Paging counts entries, not records, so a lending is never split. A cover change joins the save of the same book by
+  the same account at most two minutes before it (`ActivityTimeline.coverWindowMs`).
+- **Overview:** `/` opens Overview (it used to redirect to `/books`); browser tests sign in, wait for the Overview
+  heading and click My books where they need it; the desktop tests wait for the Overview heading. The bookcases panel lists every bookcase in name order without its
+  own scrolling (an inner scroll area would need keyboard access).
+- **V1 import:** writes no audit records, so imported books appear in the Overview but not in Activity.
+- **Web utilities:** `RelativeTime` (`shared/i18n/relative-time.util.ts`, browser wording, calendar days in the
+  viewer's time zone) and `DateTimeFormatter.exact` ("1 November 2026 · 13:42 (CET)"; French uses the browser's zone
+  label, for example "UTC+1"). Activity wording lives in `libris/activity/activity-sentence.util.ts`.
+- **Checks:** `npm run check` from PowerShell passes (256 files, 2275 tests); the first run found 9 desktop tests still
+  waiting for the My books heading after sign-in, fixed.
+- **Architecture review (step 8):** no mandatory finding: both features are read-only, their Kysely adapters read
+  other features' tables without writing them (allowed for read adapters), the eligibility and grouping rules are
+  pure domain services, each use case has its driving port and string token, and each controller has its API tests.
+  Fixed during the review: assertions on arranging requests and actions placed after Act in two browser journeys
+  (split into their own cases). Optional, not changed: `ActivityProjection.event` is a `switch` over categories (a
+  table of describers would read the same today); the Overview's Owned-only counting is a filter in the read adapter,
+  stated in the port contract.
