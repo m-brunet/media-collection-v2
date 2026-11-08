@@ -12,8 +12,8 @@ import type { ImportBookUseCase } from '../../books/application/ports/driving/im
 import type { FinishCollectionUseCase } from '../../collections/application/ports/driving/finish-collection-use-case.interface.js';
 import { ImportV1Library } from '../../development-data/application/use-cases/import-v1-library.usecase.js';
 import { ResetDevelopmentData } from '../../development-data/application/use-cases/reset-development-data.usecase.js';
-import { KyselyLibraryEraser } from '../../development-data/infrastructure/adapters/driven/persistence/kysely-library-eraser.adapter.js';
-import { KyselyCoverFileCleanup } from '../../development-data/infrastructure/adapters/driven/persistence/kysely-cover-file-cleanup.adapter.js';
+import { KyselyLibraryEraser } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-library-eraser.adapter.js';
+import { KyselyCoverFileCleanup } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-cover-file-cleanup.adapter.js';
 import { IdentityModule } from '../../identity/infrastructure/config/identity.module.js';
 import { KyselyUserRepository } from '../../identity/infrastructure/adapters/driven/persistence/kysely-user.repository.js';
 import { JsonV1Dump } from '../../development-data/infrastructure/adapters/driven/filesystem/json-v1-dump.adapter.js';
