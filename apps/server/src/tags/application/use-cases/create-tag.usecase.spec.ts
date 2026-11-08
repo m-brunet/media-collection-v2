@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { guest, labels, owner, tagged } from '../testing/tag-doubles.test-support.js';
+import { guest, owner, TagDoubles } from '../testing/tag-doubles.test-support.js';
 import { CreateTag } from './create-tag.usecase.js';
 
-function subject(current: ReturnType<typeof labels>) {
+function subject(current: ReturnType<typeof TagDoubles.labels>) {
     return new CreateTag(
         current.tags,
         current.naming,
@@ -15,14 +15,14 @@ function subject(current: ReturnType<typeof labels>) {
 
 describe('CreateTag', () => {
     it('creates an unused tag', async () => {
-        const current = labels();
+        const current = TagDoubles.labels();
 
         const result = await subject(current).execute(owner, ' To explore ');
 
         expect(result).toEqual({ id: 'tag-1', name: 'To explore', bookCount: 0 });
     });
     it('records the creation', async () => {
-        const current = labels();
+        const current = TagDoubles.labels();
 
         await subject(current).execute(owner, 'Fantasy');
 
@@ -35,16 +35,16 @@ describe('CreateTag', () => {
         ]);
     });
     it('refuses an equivalent existing name', async () => {
-        const current = labels();
+        const current = TagDoubles.labels();
 
-        await tagged(current, 'Fantasy');
+        await TagDoubles.tagged(current, 'Fantasy');
 
         const result = subject(current).execute(owner, 'FANTASY');
 
         await expect(result).rejects.toMatchObject({ reason: 'tag-name-taken' });
     });
     it('refuses a Guest', async () => {
-        const current = labels();
+        const current = TagDoubles.labels();
 
         const result = subject(current).execute(guest, 'Fantasy');
 

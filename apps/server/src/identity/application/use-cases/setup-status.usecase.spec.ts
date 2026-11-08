@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MemoryUsers, user } from '../testing/identity-doubles.test-support.js';
+import { IdentityDoubles, MemoryUsers } from '../testing/identity-doubles.test-support.js';
 import { SetupStatus } from './setup-status.usecase.js';
 
 describe('SetupStatus', () => {
@@ -13,7 +13,7 @@ describe('SetupStatus', () => {
     it('needs no setup once the administrator exists', async () => {
         const users = new MemoryUsers();
 
-        await users.create(user());
+        await users.create(IdentityDoubles.user());
 
         const result = await new SetupStatus(users).execute();
 

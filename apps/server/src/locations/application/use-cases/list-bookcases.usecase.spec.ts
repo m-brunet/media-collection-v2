@@ -1,19 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import {
-    furniture,
-    guest,
-    owner,
-    placed,
-    withShelf,
-} from '../testing/location-doubles.test-support.js';
+import { guest, LocationDoubles, owner } from '../testing/location-doubles.test-support.js';
 import { ListBookcases } from './list-bookcases.usecase.js';
 
 describe('ListBookcases', () => {
     it('lists bookcases with their shelves and book counts', async () => {
-        const current = furniture();
-        const { shelf } = await withShelf(current, 'Oak bookcase', 'Shelf 3');
+        const current = LocationDoubles.furniture();
+        const { shelf } = await LocationDoubles.withShelf(current, 'Oak bookcase', 'Shelf 3');
 
-        await placed(current, 'dune', shelf.id);
+        await LocationDoubles.placed(current, 'dune', shelf.id);
 
         const result = await new ListBookcases(current.overview).execute(guest);
 
@@ -34,7 +28,7 @@ describe('ListBookcases', () => {
         ]);
     });
     it('refuses an account that must replace its temporary password', async () => {
-        const current = furniture();
+        const current = LocationDoubles.furniture();
 
         const result = new ListBookcases(current.overview).execute({
             ...owner,

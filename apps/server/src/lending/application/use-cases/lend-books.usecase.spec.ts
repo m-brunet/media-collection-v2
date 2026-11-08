@@ -1,11 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { ReceiverBuilder } from '../testing/receiver-builder.test-support.js';
 import { LoanBuilder } from '../testing/loan-builder.test-support.js';
-import { administrator, guest, lending, owner } from '../testing/lending-doubles.test-support.js';
+import {
+    administrator,
+    guest,
+    LendingDoubles,
+    owner,
+} from '../testing/lending-doubles.test-support.js';
 import { Loan } from '../../domain/entities/loan.entity.js';
 import { LendBooks } from './lend-books.usecase.js';
 
-function subject(current: ReturnType<typeof lending>) {
+function subject(current: ReturnType<typeof LendingDoubles.lending>) {
     return new LendBooks(
         current.books,
         current.loans,
@@ -16,7 +21,7 @@ function subject(current: ReturnType<typeof lending>) {
     );
 }
 
-function shelf(current: ReturnType<typeof lending>) {
+function shelf(current: ReturnType<typeof LendingDoubles.lending>) {
     return {
         piranesi: current.books.add('piranesi', 'Piranesi'),
         dune: current.books.add('dune', 'Dune'),
@@ -27,7 +32,7 @@ function shelf(current: ReturnType<typeof lending>) {
 
 describe('LendBooks', () => {
     it('lends the starting book alone to a new receiver', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { piranesi } = shelf(current);
 
         const result = await subject(current).execute(owner, {
@@ -42,7 +47,7 @@ describe('LendBooks', () => {
         expect(current.loans.of(piranesi).map((loan) => loan.active)).toEqual([true]);
     });
     it('lends every selected book to the receiver', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { piranesi, dune, overstory } = shelf(current);
 
         const result = await subject(current).execute(owner, {
@@ -54,7 +59,7 @@ describe('LendBooks', () => {
         expect(current.loans.loans.size).toBe(3);
     });
     it('lends other books after the starting book was removed from the selection', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { dune } = shelf(current);
 
         const result = await subject(current).execute(owner, {
@@ -65,7 +70,7 @@ describe('LendBooks', () => {
         expect(result.loans.map((loan) => loan.bookId)).toEqual([dune]);
     });
     it('lets the administrator lend', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { piranesi } = shelf(current);
 
         const result = await subject(current).execute(administrator, {
@@ -76,7 +81,7 @@ describe('LendBooks', () => {
         expect(result.loans).toHaveLength(1);
     });
     it('reuses the existing receiver chosen by the person', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { piranesi } = shelf(current);
         const sam = await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
 
@@ -89,7 +94,7 @@ describe('LendBooks', () => {
         expect(current.receivers.receivers.size).toBe(1);
     });
     it('reuses the receiver with an equivalent name', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { piranesi } = shelf(current);
         const zoe = await new ReceiverBuilder().withName('Zoé Martin').buildAndSave(current);
 
@@ -102,7 +107,7 @@ describe('LendBooks', () => {
         expect(current.receivers.receivers.size).toBe(1);
     });
     it('asks before creating a receiver with a similar name, lending nothing', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { piranesi } = shelf(current);
         const sam = await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
 
@@ -120,7 +125,7 @@ describe('LendBooks', () => {
         expect(current.receivers.receivers.size).toBe(1);
     });
     it('creates a distinct receiver once the person confirms a similar name is someone else', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { piranesi } = shelf(current);
 
         await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
@@ -134,7 +139,7 @@ describe('LendBooks', () => {
         expect(current.receivers.receivers.size).toBe(2);
     });
     it('still reuses an identical name even when told it is someone else', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { piranesi } = shelf(current);
         const sam = await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
 
@@ -147,7 +152,7 @@ describe('LendBooks', () => {
         expect(current.receivers.receivers.size).toBe(1);
     });
     it('refuses a blank receiver name', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { piranesi } = shelf(current);
 
         const result = subject(current).execute(owner, {
@@ -158,7 +163,7 @@ describe('LendBooks', () => {
         await expect(result).rejects.toMatchObject({ reason: 'receiver-name-invalid' });
     });
     it('refuses a receiver that no longer exists', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { piranesi } = shelf(current);
 
         const result = subject(current).execute(owner, {
@@ -169,7 +174,7 @@ describe('LendBooks', () => {
         await expect(result).rejects.toMatchObject({ reason: 'receiver-missing' });
     });
     it('refuses an empty selection', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
 
         const result = subject(current).execute(owner, {
             receiver: { name: 'Sam Taylor' },
@@ -179,7 +184,7 @@ describe('LendBooks', () => {
         await expect(result).rejects.toMatchObject({ reason: 'selection-empty' });
     });
     it('refuses a book selected twice', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { dune } = shelf(current);
 
         const result = subject(current).execute(owner, {
@@ -190,7 +195,7 @@ describe('LendBooks', () => {
         await expect(result).rejects.toMatchObject({ reason: 'selection-duplicate' });
     });
     it('refuses a Not Owned book, lending none of the selection', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { piranesi, planned } = shelf(current);
 
         const result = subject(current).execute(owner, {
@@ -205,7 +210,7 @@ describe('LendBooks', () => {
         expect(current.loans.loans.size).toBe(0);
     });
     it('refuses a book already lent, lending none and creating no receiver', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { piranesi, dune } = shelf(current);
         const morgan = await new ReceiverBuilder().withName('Morgan').buildAndSave(current);
 
@@ -227,7 +232,7 @@ describe('LendBooks', () => {
         expect(current.receivers.receivers.size).toBe(1);
     });
     it('refuses a book that no longer exists', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { piranesi } = shelf(current);
 
         const result = subject(current).execute(owner, {
@@ -242,7 +247,7 @@ describe('LendBooks', () => {
         });
     });
     it('lends a returned book again as a new occurrence, keeping the first', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { dune } = shelf(current);
         const sam = await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
         const first = await new LoanBuilder()
@@ -261,7 +266,7 @@ describe('LendBooks', () => {
         ]);
     });
     it('refuses a Guest', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { piranesi } = shelf(current);
 
         const result = subject(current).execute(guest, {
@@ -277,7 +282,7 @@ describe('LendBooks', () => {
 
 describe('LendBooks audit', () => {
     it('records one entry per lent book under one operation', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { piranesi, dune } = shelf(current);
         const sam = await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
 
@@ -316,7 +321,7 @@ describe('LendBooks audit', () => {
         ]);
     });
     it('records a created receiver as part of the lending operation', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { piranesi } = shelf(current);
 
         await subject(current).execute(owner, {
@@ -333,7 +338,7 @@ describe('LendBooks audit', () => {
         });
     });
     it('records a Failed entry for every selected book of a refused lending', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { piranesi, planned } = shelf(current);
 
         await subject(current)

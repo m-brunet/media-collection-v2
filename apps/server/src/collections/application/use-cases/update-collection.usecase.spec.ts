@@ -1,14 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import {
-    guest,
-    markFinished,
-    member,
-    owner,
-    shelf,
-} from '../testing/collection-doubles.test-support.js';
+import { CollectionDoubles, guest, owner } from '../testing/collection-doubles.test-support.js';
 import { UpdateCollection } from './update-collection.usecase.js';
 
-function subject(current: ReturnType<typeof shelf>) {
+function subject(current: ReturnType<typeof CollectionDoubles.shelf>) {
     return new UpdateCollection(
         current.collections,
         current.members,
@@ -22,9 +16,9 @@ function subject(current: ReturnType<typeof shelf>) {
 
 describe('UpdateCollection', () => {
     it('renames the collection for every member book', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'one', 'owned', 'Batman', 1);
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
 
         const result = await subject(current).execute(owner, 'collection-1', {
             name: 'The Batman',
@@ -43,9 +37,9 @@ describe('UpdateCollection', () => {
     });
 
     it('accepts a new spelling of the same name', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'one', 'owned', 'Batman', 1);
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
 
         const result = await subject(current).execute(owner, 'collection-1', { name: 'BATMAN' });
 
@@ -53,10 +47,10 @@ describe('UpdateCollection', () => {
     });
 
     it('refuses the name of another collection', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'one', 'owned', 'Batman', 1);
-        await member(current, 'two', 'owned', 'Superman', 1);
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
+        await CollectionDoubles.member(current, 'two', 'owned', 'Superman', 1);
 
         const operation = subject(current).execute(owner, 'collection-2', { name: 'batman' });
 
@@ -64,10 +58,10 @@ describe('UpdateCollection', () => {
     });
 
     it('includes volume 0 and reopens a Finished collection missing it', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'one', 'owned', 'Batman', 1);
-        await markFinished(current, 'collection-1');
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
+        await CollectionDoubles.markFinished(current, 'collection-1');
 
         const result = await subject(current).execute(owner, 'collection-1', {
             includesVolumeZero: true,
@@ -81,9 +75,9 @@ describe('UpdateCollection', () => {
     });
 
     it('refuses to stop including volume 0 while a book covers it', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'zero', 'owned', 'Batman', 0);
+        await CollectionDoubles.member(current, 'zero', 'owned', 'Batman', 0);
 
         const operation = subject(current).execute(owner, 'collection-1', {
             includesVolumeZero: false,
@@ -93,9 +87,9 @@ describe('UpdateCollection', () => {
     });
 
     it('refuses a Guest', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'one', 'owned', 'Batman', 1);
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
 
         const operation = subject(current).execute(guest, 'collection-1', { name: 'Other' });
 
@@ -105,10 +99,10 @@ describe('UpdateCollection', () => {
 
 describe('UpdateCollection titles', () => {
     it('regenerates the generated titles of its books with the new name (example 3)', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'one', 'owned', 'Gunnm', 1);
-        await member(current, 'two', 'owned', 'Gunnm', 2, 3);
+        await CollectionDoubles.member(current, 'one', 'owned', 'Gunnm', 1);
+        await CollectionDoubles.member(current, 'two', 'owned', 'Gunnm', 2, 3);
 
         await subject(current).execute(owner, 'collection-1', { name: 'Battle Angel Alita' });
 
@@ -123,9 +117,9 @@ describe('UpdateCollection titles', () => {
         ]);
     });
     it('records the title changes with the rename', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'one', 'owned', 'Gunnm', 1);
+        await CollectionDoubles.member(current, 'one', 'owned', 'Gunnm', 1);
 
         await subject(current).execute(owner, 'collection-1', { name: 'Battle Angel Alita' });
 
@@ -135,9 +129,9 @@ describe('UpdateCollection titles', () => {
         ]);
     });
     it('leaves titles alone when the name does not change', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'one', 'owned', 'Gunnm', 0);
+        await CollectionDoubles.member(current, 'one', 'owned', 'Gunnm', 0);
 
         await subject(current).execute(owner, 'collection-1', { includesVolumeZero: true });
 

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { member, shelf } from '../testing/collection-doubles.test-support.js';
+import { CollectionDoubles } from '../testing/collection-doubles.test-support.js';
 
 async function batman() {
-    const current = shelf();
+    const current = CollectionDoubles.shelf();
 
-    await member(current, 'five', 'owned', 'Batman', 5);
-    await member(current, 'ten', 'not-owned', 'Batman', 10);
+    await CollectionDoubles.member(current, 'five', 'owned', 'Batman', 5);
+    await CollectionDoubles.member(current, 'ten', 'not-owned', 'Batman', 10);
     const collection = (await current.collections.findById('collection-1'))!;
     const records = await current.members.ofCollections(['collection-1']);
 
@@ -35,17 +35,17 @@ describe('CollectionViewer', () => {
     });
 
     it('previews the covers of owned books first, in coverage order, then the others', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
         const covered = (id: string, ownership: 'owned' | 'not-owned') =>
             current.members.saveBook(id, ownership, 'Batman ' + id, {
                 hasCover: true,
                 updatedAt: '2026-02-0' + id.length + 'T00:00:00.000Z',
             });
 
-        await member(current, 'one', 'not-owned', 'Batman', 1);
-        await member(current, 'two', 'owned', 'Batman', 2);
-        await member(current, 'three', 'owned', 'Batman', 3);
-        await member(current, 'four', 'owned', 'Batman', 4);
+        await CollectionDoubles.member(current, 'one', 'not-owned', 'Batman', 1);
+        await CollectionDoubles.member(current, 'two', 'owned', 'Batman', 2);
+        await CollectionDoubles.member(current, 'three', 'owned', 'Batman', 3);
+        await CollectionDoubles.member(current, 'four', 'owned', 'Batman', 4);
         covered('one', 'not-owned');
         covered('three', 'owned');
         covered('four', 'owned');

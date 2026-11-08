@@ -9,11 +9,11 @@ import { LocationViewer } from '../services/location-viewer.service.js';
 import { Bookcase } from '../../domain/entities/bookcase.entity.js';
 import { Shelf } from '../../domain/entities/shelf.entity.js';
 import {
-    auditedOperation,
+    AuditDoubles,
     MemoryAuditTrail,
 } from '../../../shared/application/testing/audit-doubles.test-support.js';
-import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
+import { TestActors } from '../../../shared/application/testing/test-actors.test-support.js';
 
 export class MemoryBookcases implements BookcaseRepository {
     readonly bookcases = new Map<string, Bookcase>();
@@ -133,78 +133,81 @@ export class MemoryBookShelves implements BookShelfStore {
     }
 }
 
-// Locations with all doubles and services wired as in production.
-export function furniture() {
-    const store = new MemoryBookShelves();
-    const shelves = new MemoryShelves(store);
-    const bookcases = new MemoryBookcases(shelves);
-    const trail = new MemoryAuditTrail();
-    const loader = new LocationLoader(bookcases, shelves);
-    let counter = 0;
+export class LocationDoubles {
+    // Locations with all doubles and services wired as in production.
+    static furniture() {
+        const store = new MemoryBookShelves();
+        const shelves = new MemoryShelves(store);
+        const bookcases = new MemoryBookcases(shelves);
+        const trail = new MemoryAuditTrail();
+        const loader = new LocationLoader(bookcases, shelves);
+        let counter = 0;
 
-    return {
-        bookcases,
-        shelves,
-        store,
-        trail,
-        loader,
-        ids: { next: () => 'location-' + ++counter },
-        clock: { now: () => new Date('2026-03-01T10:00:00Z') },
-        naming: new LocationNaming(bookcases, shelves),
-        overview: new LocationOverview(bookcases, shelves, store, new LocationViewer()),
-        operations: auditedOperation(trail),
-        assignment: new BookShelfAssignment(store, loader),
-    };
+        return {
+            bookcases,
+            shelves,
+            store,
+            trail,
+            loader,
+            ids: { next: () => 'location-' + ++counter },
+            clock: { now: () => new Date('2026-03-01T10:00:00Z') },
+            naming: new LocationNaming(bookcases, shelves),
+            overview: new LocationOverview(bookcases, shelves, store, new LocationViewer()),
+            operations: AuditDoubles.auditedOperation(trail),
+            assignment: new BookShelfAssignment(store, loader),
+        };
+    }
+
+    // Saves a bookcase (reused when it exists) with an optional shelf, for arranging scenarios.
+    static async withShelf(
+        current: ReturnType<typeof LocationDoubles.furniture>,
+        bookcaseName: string,
+        shelfName: string | null,
+    ) {
+        const existing = [...current.bookcases.bookcases.values()].find(
+            (value) => value.snapshot.name === bookcaseName,
+        );
+        const bookcase =
+            existing ??
+            new Bookcase({
+                id: current.ids.next(),
+                name: bookcaseName,
+                createdAt: at,
+                updatedAt: at,
+            });
+
+        if (!existing) {
+            await current.bookcases.create(bookcase);
+        }
+
+        const shelf = shelfName
+            ? new Shelf({
+                  id: current.ids.next(),
+                  bookcaseId: bookcase.id,
+                  name: shelfName,
+                  createdAt: at,
+                  updatedAt: at,
+              })
+            : null;
+
+        if (shelf) {
+            await current.shelves.create(shelf);
+        }
+
+        return { bookcase, shelf: shelf! };
+    }
+
+    // Keeps a book on a shelf, for arranging scenarios.
+    static async placed(
+        current: ReturnType<typeof LocationDoubles.furniture>,
+        bookId: string,
+        shelfId: string,
+    ) {
+        await current.store.place(bookId, shelfId);
+    }
 }
 
 const at = '2026-01-01T00:00:00.000Z';
 
-// Saves a bookcase (reused when it exists) with an optional shelf, for arranging scenarios.
-export async function withShelf(
-    current: ReturnType<typeof furniture>,
-    bookcaseName: string,
-    shelfName: string | null,
-) {
-    const existing = [...current.bookcases.bookcases.values()].find(
-        (value) => value.snapshot.name === bookcaseName,
-    );
-    const bookcase =
-        existing ??
-        new Bookcase({ id: current.ids.next(), name: bookcaseName, createdAt: at, updatedAt: at });
-
-    if (!existing) {
-        await current.bookcases.create(bookcase);
-    }
-
-    const shelf = shelfName
-        ? new Shelf({
-              id: current.ids.next(),
-              bookcaseId: bookcase.id,
-              name: shelfName,
-              createdAt: at,
-              updatedAt: at,
-          })
-        : null;
-
-    if (shelf) {
-        await current.shelves.create(shelf);
-    }
-
-    return { bookcase, shelf: shelf! };
-}
-
-// Keeps a book on a shelf, for arranging scenarios.
-export async function placed(
-    current: ReturnType<typeof furniture>,
-    bookId: string,
-    shelfId: string,
-) {
-    await current.store.place(bookId, shelfId);
-}
-
-function actor(role: Actor['role'], id: string): Actor {
-    return { id, username: id, role, mustChangePassword: false, language: null };
-}
-
-export const owner = actor('owner', 'camille');
-export const guest = actor('guest', 'morgan');
+export const owner = TestActors.of('owner', 'camille');
+export const guest = TestActors.of('guest', 'morgan');

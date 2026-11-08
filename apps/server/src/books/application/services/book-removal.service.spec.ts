@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { library, saved } from '../testing/book-doubles.test-support.js';
+import { BookDoubles } from '../testing/book-doubles.test-support.js';
 
 describe('BookRemoval', () => {
     it('removes the book, its membership and its now unused authors', async () => {
-        const current = library();
-        const book = await saved(current, {
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, {
             collection: { collection: { name: 'Batman' }, volumeFrom: 1, volumeTo: 1 },
         });
 
@@ -17,7 +17,7 @@ describe('BookRemoval', () => {
     });
 
     it('refuses a book that does not exist', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
         const operation = current.removal.remove('unknown');
 
@@ -25,8 +25,8 @@ describe('BookRemoval', () => {
     });
 
     it('reports the collection change the removal caused', async () => {
-        const current = library();
-        const book = await saved(current, {
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, {
             collection: { collection: { name: 'Batman' }, volumeFrom: 1, volumeTo: 1 },
         });
 
@@ -50,8 +50,8 @@ describe('BookRemoval', () => {
 
 describe('BookRemoval with loans', () => {
     it('keeps the title and ISBN of the removed book for its completed loans', async () => {
-        const current = library();
-        const book = await saved(current);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
 
         await current.removal.remove(book.id);
 
@@ -60,16 +60,16 @@ describe('BookRemoval with loans', () => {
         ]);
     });
     it('keeps no ISBN for a removed book without one', async () => {
-        const current = library();
-        const book = await saved(current, { isbn: null, noIsbn: true });
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, { isbn: null, noIsbn: true });
 
         await current.removal.remove(book.id);
 
         expect(current.loans.retained).toEqual([{ id: book.id, title: 'Piranesi', isbn: null }]);
     });
     it('refuses a lent book, removing nothing', async () => {
-        const current = library();
-        const book = await saved(current);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
 
         current.loans.lend(book.id);
 

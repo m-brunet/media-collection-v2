@@ -1,6 +1,6 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type { Page } from 'playwright';
-import { administrator, RuntimeFixture } from '../api/runtime-setup.js';
+import { RuntimeFixture, RuntimeSetup } from '../api/runtime-setup.js';
 import type { Client } from '../api/client.js';
 import { BrowserFixture, capture, viewports } from './browser.js';
 
@@ -36,7 +36,7 @@ async function signIn(page: Page, username: string, password: string) {
 
 // An installation whose administrator exists, with one Owner and one Guest account.
 async function household() {
-    await administrator(api);
+    await RuntimeSetup.administrator(api);
     await api.call('/users', 'POST', {
         username: 'camille',
         password: 'temporary-1',

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { furniture, withShelf } from '../testing/location-doubles.test-support.js';
+import { LocationDoubles } from '../testing/location-doubles.test-support.js';
 
 describe('LocationNaming', () => {
     it('refuses an equivalent bookcase name', async () => {
-        const current = furniture();
+        const current = LocationDoubles.furniture();
 
-        await withShelf(current, 'Oak bookcase', 'Top');
+        await LocationDoubles.withShelf(current, 'Oak bookcase', 'Top');
 
         const result = current.naming.ensureBookcaseAvailable(' OAK Bookcase', null);
 
@@ -15,16 +15,16 @@ describe('LocationNaming', () => {
         });
     });
     it('accepts the current name of the bookcase being renamed', async () => {
-        const current = furniture();
-        const { bookcase } = await withShelf(current, 'Oak', 'Top');
+        const current = LocationDoubles.furniture();
+        const { bookcase } = await LocationDoubles.withShelf(current, 'Oak', 'Top');
 
         const result = current.naming.ensureBookcaseAvailable('oak', bookcase.id);
 
         await expect(result).resolves.toBeUndefined();
     });
     it('refuses an equivalent shelf name in the same bookcase', async () => {
-        const current = furniture();
-        const { bookcase } = await withShelf(current, 'Oak', 'Top');
+        const current = LocationDoubles.furniture();
+        const { bookcase } = await LocationDoubles.withShelf(current, 'Oak', 'Top');
 
         const result = current.naming.ensureShelfAvailable(bookcase.id, 'top', null);
 
@@ -34,10 +34,10 @@ describe('LocationNaming', () => {
         });
     });
     it('accepts the same shelf name in another bookcase', async () => {
-        const current = furniture();
+        const current = LocationDoubles.furniture();
 
-        await withShelf(current, 'Oak', 'Top');
-        const { bookcase } = await withShelf(current, 'Study', 'Bottom');
+        await LocationDoubles.withShelf(current, 'Oak', 'Top');
+        const { bookcase } = await LocationDoubles.withShelf(current, 'Study', 'Bottom');
 
         const result = current.naming.ensureShelfAvailable(bookcase.id, 'Top', null);
 

@@ -1,9 +1,9 @@
 import { expect, it } from 'vitest';
 import { ReadTlsSettings } from './read-tls-settings.usecase.js';
-import { actor, setup } from '../testing/settings-doubles.test-support.js';
+import { actor, SettingsDoubles } from '../testing/settings-doubles.test-support.js';
 
 it('reads configured settings', async () => {
-    const { store } = setup();
+    const { store } = SettingsDoubles.setup();
     const subject = new ReadTlsSettings(store);
 
     const result = await subject.execute(actor);
@@ -12,7 +12,7 @@ it('reads configured settings', async () => {
 });
 it('rejects a non-administrator', () => {
     const forbidden = { ...actor, role: 'owner' as const };
-    const { store } = setup();
+    const { store } = SettingsDoubles.setup();
     const subject = new ReadTlsSettings(store);
 
     const operation = () => subject.execute(forbidden);
@@ -21,7 +21,7 @@ it('rejects a non-administrator', () => {
 });
 it('rejects incomplete password setup', () => {
     const forbidden = { ...actor, mustChangePassword: true };
-    const { store } = setup();
+    const { store } = SettingsDoubles.setup();
     const subject = new ReadTlsSettings(store);
 
     const operation = () => subject.execute(forbidden);

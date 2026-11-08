@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { guest, member, owner, shelf } from '../testing/collection-doubles.test-support.js';
+import { CollectionDoubles, guest, owner } from '../testing/collection-doubles.test-support.js';
 import { FinishCollection } from './finish-collection.usecase.js';
 
-function subject(current: ReturnType<typeof shelf>) {
+function subject(current: ReturnType<typeof CollectionDoubles.shelf>) {
     return new FinishCollection(
         current.collections,
         current.members,
@@ -15,9 +15,9 @@ function subject(current: ReturnType<typeof shelf>) {
 
 describe('FinishCollection', () => {
     it('marks a collection Finished when every expected volume is Owned', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'omnibus', 'owned', 'Batman', 1, 3);
+        await CollectionDoubles.member(current, 'omnibus', 'owned', 'Batman', 1, 3);
 
         const result = await subject(current).execute(owner, 'collection-1');
 
@@ -30,10 +30,10 @@ describe('FinishCollection', () => {
     });
 
     it('refuses while a volume is missing', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'one', 'owned', 'Batman', 1);
-        await member(current, 'three', 'owned', 'Batman', 3);
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
+        await CollectionDoubles.member(current, 'three', 'owned', 'Batman', 3);
 
         const operation = subject(current).execute(owner, 'collection-1');
 
@@ -42,9 +42,9 @@ describe('FinishCollection', () => {
     });
 
     it('refuses a Guest', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'one', 'owned', 'Batman', 1);
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
 
         const operation = subject(current).execute(guest, 'collection-1');
 

@@ -1,7 +1,7 @@
 ﻿import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { setTimeout as delay } from 'node:timers/promises';
 import { Client } from '../api/client.js';
-import { availablePort, RuntimeFixture } from '../api/runtime-setup.js';
+import { RuntimeFixture, RuntimeSetup } from '../api/runtime-setup.js';
 import type { ServerStatus } from '../../packages/contracts/src/http.js';
 import type { ElectronRuntime } from '../api/runtime.js';
 
@@ -78,7 +78,7 @@ async function submitRecovery(runtime: ElectronRuntime) {
 describe('desktop lifecycle and renderer', () => {
     it('saves the external HTTP port from the actual Server settings screen', async () => {
         const current = await readyDesktop();
-        const port = await availablePort();
+        const port = await RuntimeSetup.availablePort();
         const client = new Client(current.client.base);
 
         await client.login('admin', 'desktop-new-password');
@@ -114,7 +114,7 @@ describe('desktop lifecycle and renderer', () => {
         const client = new Client(current.client.base);
 
         await client.login('admin', 'desktop-new-password');
-        const port = await availablePort();
+        const port = await RuntimeSetup.availablePort();
 
         await client.call('/server-settings/http', 'PUT', { port });
 

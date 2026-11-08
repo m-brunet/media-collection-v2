@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { guest, labelled, labels, tagged } from '../testing/tag-doubles.test-support.js';
+import { guest, TagDoubles } from '../testing/tag-doubles.test-support.js';
 import { ListTags } from './list-tags.usecase.js';
 
 describe('ListTags', () => {
     it('lists tags by name with their book counts, unused ones included', async () => {
-        const current = labels();
-        const fantasy = await tagged(current, 'Fantasy');
+        const current = TagDoubles.labels();
+        const fantasy = await TagDoubles.tagged(current, 'Fantasy');
 
-        await tagged(current, 'Adventure');
-        await labelled(current, 'dune', fantasy);
+        await TagDoubles.tagged(current, 'Adventure');
+        await TagDoubles.labelled(current, 'dune', fantasy);
 
         const result = await new ListTags(current.tags, current.store, current.viewer).execute(
             guest,
@@ -21,10 +21,10 @@ describe('ListTags', () => {
         ]);
     });
     it('keeps the tags whose name contains the search, ignoring case and accents', async () => {
-        const current = labels();
+        const current = TagDoubles.labels();
 
-        await tagged(current, 'Médiéval');
-        await tagged(current, 'Fantasy');
+        await TagDoubles.tagged(current, 'Médiéval');
+        await TagDoubles.tagged(current, 'Fantasy');
 
         const result = await new ListTags(current.tags, current.store, current.viewer).execute(
             guest,

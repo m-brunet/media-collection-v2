@@ -12,34 +12,36 @@ export const actor = {
     language: null,
 };
 
-export function setup(
-    initial: TlsSettingsState = { enabled: false, port: 3443, hasCertificate: false },
-    initialHttp: HttpSettingsState = { port: 34345 },
-) {
-    let settings = { ...initial };
-    let validations = 0;
-    let httpSettings = { ...initialHttp };
-    const http: HttpSettingsStore = {
-        read: async () => new HttpSettings(httpSettings.port),
-        save: async (value) => {
-            httpSettings = value.snapshot();
-        },
-    };
-    const store: TlsStore = {
-        read: async () => ({ ...settings }),
-        save: async (value) => {
-            settings = value.snapshot();
-        },
-    };
-    const validator = {
-        validate: (chain: string, key: string) => {
-            validations++;
+export class SettingsDoubles {
+    static setup(
+        initial: TlsSettingsState = { enabled: false, port: 3443, hasCertificate: false },
+        initialHttp: HttpSettingsState = { port: 34345 },
+    ) {
+        let settings = { ...initial };
+        let validations = 0;
+        let httpSettings = { ...initialHttp };
+        const http: HttpSettingsStore = {
+            read: async () => new HttpSettings(httpSettings.port),
+            save: async (value) => {
+                httpSettings = value.snapshot();
+            },
+        };
+        const store: TlsStore = {
+            read: async () => ({ ...settings }),
+            save: async (value) => {
+                settings = value.snapshot();
+            },
+        };
+        const validator = {
+            validate: (chain: string, key: string) => {
+                validations++;
 
-            if (chain !== 'certificate' || key !== 'private') {
-                throw new Error('Invalid pair');
-            }
-        },
-    };
+                if (chain !== 'certificate' || key !== 'private') {
+                    throw new Error('Invalid pair');
+                }
+            },
+        };
 
-    return { store, http, validator, validations: () => validations };
+        return { store, http, validator, validations: () => validations };
+    }
 }

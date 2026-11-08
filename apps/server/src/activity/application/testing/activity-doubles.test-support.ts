@@ -1,4 +1,4 @@
-import type { Actor } from '../../../shared/domain/actor.helper.js';
+import { TestActors } from '../../../shared/application/testing/test-actors.test-support.js';
 import type {
     ActivityOperation,
     ActivityRecord,
@@ -8,14 +8,10 @@ import type { ActivityRecordReader } from '../ports/driven/activity-record-reade
 
 // Signed-in accounts as the use cases receive them.
 export class ActivityActors {
-    static readonly owner = ActivityActors.of('owner', 'camille');
-    static readonly guest = ActivityActors.of('guest', 'morgan');
-    static readonly administrator = ActivityActors.of('admin', 'alex');
-    static readonly temporaryOwner = ActivityActors.of('owner', 'sam', true);
-
-    private static of(role: Actor['role'], id: string, mustChangePassword = false): Actor {
-        return { id, username: id, role, mustChangePassword, language: null };
-    }
+    static readonly owner = TestActors.of('owner', 'camille');
+    static readonly guest = TestActors.of('guest', 'morgan');
+    static readonly administrator = TestActors.of('admin', 'alex');
+    static readonly temporaryOwner = TestActors.of('owner', 'sam', true);
 }
 
 // Audit operations held in memory with the reader's contract: only the asked categories, newest

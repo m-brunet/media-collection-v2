@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { guest, library, owner, saved } from '../testing/book-doubles.test-support.js';
+import { BookDoubles, guest, owner } from '../testing/book-doubles.test-support.js';
 import { DeleteBook } from './delete-book.usecase.js';
 
-function subject(current: ReturnType<typeof library>) {
+function subject(current: ReturnType<typeof BookDoubles.library>) {
     return new DeleteBook(
         current.removal,
         current.collections,
@@ -14,8 +14,8 @@ function subject(current: ReturnType<typeof library>) {
 
 describe('DeleteBook', () => {
     it('deletes the book and its now unused author', async () => {
-        const current = library();
-        const book = await saved(current);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
 
         await subject(current).execute(owner, book.id);
 
@@ -23,8 +23,8 @@ describe('DeleteBook', () => {
         expect(current.authors.authors.size).toBe(0);
     });
     it('removes the cover file', async () => {
-        const current = library();
-        const book = await saved(current);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
         const file = await current.covers.store(new Uint8Array([1]), 'image/png');
         const stored = current.books.books.get(book.id)!;
 
@@ -35,8 +35,8 @@ describe('DeleteBook', () => {
         expect(current.covers.files.size).toBe(0);
     });
     it('records the deleted information', async () => {
-        const current = library();
-        const book = await saved(current);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
 
         await subject(current).execute(owner, book.id);
 
@@ -47,8 +47,8 @@ describe('DeleteBook', () => {
         });
     });
     it('refuses a Guest and keeps the book', async () => {
-        const current = library();
-        const book = await saved(current);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
 
         const result = subject(current).execute(guest, book.id);
 
@@ -56,8 +56,8 @@ describe('DeleteBook', () => {
         expect(current.books.books.size).toBe(1);
     });
     it('ends the collection membership of the deleted book', async () => {
-        const current = library();
-        const book = await saved(current, {
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, {
             collection: { collection: { name: 'Batman' }, volumeFrom: 1, volumeTo: 1 },
         });
 
@@ -70,8 +70,8 @@ describe('DeleteBook', () => {
         });
     });
     it('records the collection change in the same operation', async () => {
-        const current = library();
-        const book = await saved(current, {
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, {
             collection: { collection: { name: 'Batman' }, volumeFrom: 1, volumeTo: 1 },
         });
 
@@ -97,8 +97,11 @@ describe('DeleteBook', () => {
         ]);
     });
     it('records where the deleted book was kept and its tags', async () => {
-        const current = library();
-        const book = await saved(current, { shelfId: 'top', tags: [{ name: 'Fantasy' }] });
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, {
+            shelfId: 'top',
+            tags: [{ name: 'Fantasy' }],
+        });
 
         await subject(current).execute(owner, book.id);
 
@@ -111,8 +114,8 @@ describe('DeleteBook', () => {
 
 describe('DeleteBook with loans', () => {
     it('refuses to delete a lent book and keeps it', async () => {
-        const current = library();
-        const book = await saved(current);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
 
         current.loans.lend(book.id, 'Sam Taylor');
 
@@ -126,8 +129,8 @@ describe('DeleteBook with loans', () => {
         expect(current.books.books.has(book.id)).toBe(true);
     });
     it('records the refused deletion of a lent book as Failed', async () => {
-        const current = library();
-        const book = await saved(current);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
 
         current.loans.lend(book.id);
 

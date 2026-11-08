@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { ReceiverBuilder } from '../testing/receiver-builder.test-support.js';
 import { LoanBuilder } from '../testing/loan-builder.test-support.js';
-import { guest, lending, owner } from '../testing/lending-doubles.test-support.js';
+import { guest, LendingDoubles, owner } from '../testing/lending-doubles.test-support.js';
 import { Loan } from '../../domain/entities/loan.entity.js';
 import { RecordReturns } from './record-returns.usecase.js';
 
-function subject(current: ReturnType<typeof lending>) {
+function subject(current: ReturnType<typeof LendingDoubles.lending>) {
     return new RecordReturns(current.loans, current.receivers, current.clock, current.operations);
 }
 
 // Sam has three books from two lending occasions; Morgan has one.
-async function onLoan(current: ReturnType<typeof lending>) {
+async function onLoan(current: ReturnType<typeof LendingDoubles.lending>) {
     const sam = await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
     const morgan = await new ReceiverBuilder().withName('Morgan').buildAndSave(current);
     const piranesi = await new LoanBuilder()
@@ -34,7 +34,7 @@ async function onLoan(current: ReturnType<typeof lending>) {
     return { sam, morgan, piranesi, dune, overstory, sweetgrass };
 }
 
-function statuses(current: ReturnType<typeof lending>) {
+function statuses(current: ReturnType<typeof LendingDoubles.lending>) {
     return Object.fromEntries(
         [...current.loans.loans.values()].map((loan) => [
             loan.snapshot.bookId,
@@ -45,7 +45,7 @@ function statuses(current: ReturnType<typeof lending>) {
 
 describe('RecordReturns', () => {
     it('returns one book and leaves the others lent', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { dune } = await onLoan(current);
 
         await subject(current).execute(owner, [dune.id]);
@@ -58,7 +58,7 @@ describe('RecordReturns', () => {
         });
     });
     it('returns books of the receiver lent on separate occasions together', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { piranesi, dune, overstory } = await onLoan(current);
 
         await subject(current).execute(owner, [piranesi.id, dune.id, overstory.id]);
@@ -70,7 +70,7 @@ describe('RecordReturns', () => {
         });
     });
     it('reports the receiver and the returned books', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { sam, dune, overstory } = await onLoan(current);
 
         const result = await subject(current).execute(owner, [dune.id, overstory.id]);
@@ -88,7 +88,7 @@ describe('RecordReturns', () => {
         });
     });
     it('refuses loans of different receivers, returning none', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { dune, sweetgrass } = await onLoan(current);
 
         const result = subject(current).execute(owner, [dune.id, sweetgrass.id]);
@@ -97,7 +97,7 @@ describe('RecordReturns', () => {
         expect(statuses(current)).toMatchObject({ dune: 'lent', sweetgrass: 'lent' });
     });
     it('refuses a loan already returned by someone else, returning none of the selection', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { dune, overstory } = await onLoan(current);
 
         Loan.returnTogether([dune], '2026-10-29T09:00:00.000Z');
@@ -113,7 +113,7 @@ describe('RecordReturns', () => {
         expect(statuses(current)).toMatchObject({ overstory: 'lent' });
     });
     it('refuses a loan that does not exist', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { dune } = await onLoan(current);
 
         const result = subject(current).execute(owner, [dune.id, 'gone']);
@@ -125,14 +125,14 @@ describe('RecordReturns', () => {
         });
     });
     it('refuses an empty selection', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
 
         const result = subject(current).execute(owner, []);
 
         await expect(result).rejects.toMatchObject({ reason: 'selection-empty' });
     });
     it('refuses a loan selected twice', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { dune } = await onLoan(current);
 
         const result = subject(current).execute(owner, [dune.id, dune.id]);
@@ -140,7 +140,7 @@ describe('RecordReturns', () => {
         await expect(result).rejects.toMatchObject({ reason: 'selection-duplicate' });
     });
     it('refuses a Guest', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { dune } = await onLoan(current);
 
         const result = subject(current).execute(guest, [dune.id]);
@@ -152,7 +152,7 @@ describe('RecordReturns', () => {
 
 describe('RecordReturns audit', () => {
     it('records one entry per returned loan under one operation, with before and after', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { sam, dune, overstory } = await onLoan(current);
 
         await subject(current).execute(owner, [dune.id, overstory.id]);
@@ -181,7 +181,7 @@ describe('RecordReturns audit', () => {
         ]);
     });
     it('records a Failed entry for every selected loan of a refused return', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const { dune, sweetgrass } = await onLoan(current);
 
         await subject(current)
