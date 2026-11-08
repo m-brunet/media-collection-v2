@@ -32,7 +32,7 @@ export function BookAdditionalFields({
 
     return (
         <section className="panel">
-            <h2 className="book-form__toggle-heading">
+            <h2 className="eyebrow book-form__toggle-heading">
                 <button
                     type="button"
                     className="book-form__toggle"
@@ -40,7 +40,7 @@ export function BookAdditionalFields({
                     aria-controls={id}
                     onClick={onToggle}
                 >
-                    <Icon name={expanded ? 'collapse' : 'expand'} />
+                    <Icon name={expanded ? 'collapse' : 'expand'} size={12} />
                     {t('form.additional')}
                 </button>
             </h2>

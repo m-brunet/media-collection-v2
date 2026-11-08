@@ -534,8 +534,7 @@ body {
 }
 
 .book-form__toggle-heading {
-    font-size: var(--text-xl);
-    font-weight: 500;
+    font-weight: 400;
 }
 
 .book-form__toggle {
@@ -545,8 +544,10 @@ body {
     padding: 0;
     border: 0;
     background: none;
-    color: var(--color-text);
+    color: inherit;
     font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
     cursor: pointer;
 }
 

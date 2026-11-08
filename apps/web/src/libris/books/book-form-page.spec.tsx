@@ -42,10 +42,9 @@ it('opens with additional information collapsed and the cover control visible', 
 
     addPage();
 
-    expect(await screen.findByRole('button', { name: 'Additional information' })).toHaveAttribute(
-        'aria-expanded',
-        'false',
-    );
+    expect(
+        await screen.findByRole('button', { name: '03 / Additional information' }),
+    ).toHaveAttribute('aria-expanded', 'false');
     expect(screen.getByLabelText('Publisher')).not.toBeVisible();
     expect(screen.getByRole('button', { name: 'Choose cover' })).toBeInTheDocument();
     expect(screen.getByText('No cover selected')).toBeInTheDocument();
@@ -286,7 +285,9 @@ it('shows an existing note directly when additional information is opened', asyn
 
     editPage();
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Additional information' }));
+    await userEvent.click(
+        await screen.findByRole('button', { name: '03 / Additional information' }),
+    );
 
     expect(screen.getByLabelText(/Personal note/)).toHaveValue('Mine.');
     expect(screen.queryByRole('button', { name: 'Add a personal note' })).not.toBeInTheDocument();
