@@ -6,14 +6,17 @@ import type {
 import type { ActivityOperationQuery } from '../ports/driven/activity-operation-query.interface.js';
 import type { ActivityRecordReader } from '../ports/driven/activity-record-reader.interface.js';
 
-function actor(role: Actor['role'], id: string, mustChangePassword = false): Actor {
-    return { id, username: id, role, mustChangePassword, language: null };
-}
+// Signed-in accounts as the use cases receive them.
+export class ActivityActors {
+    static readonly owner = ActivityActors.of('owner', 'camille');
+    static readonly guest = ActivityActors.of('guest', 'morgan');
+    static readonly administrator = ActivityActors.of('admin', 'alex');
+    static readonly temporaryOwner = ActivityActors.of('owner', 'sam', true);
 
-export const owner = actor('owner', 'camille');
-export const guest = actor('guest', 'morgan');
-export const administrator = actor('admin', 'alex');
-export const temporaryOwner = actor('owner', 'sam', true);
+    private static of(role: Actor['role'], id: string, mustChangePassword = false): Actor {
+        return { id, username: id, role, mustChangePassword, language: null };
+    }
+}
 
 // Audit operations held in memory with the reader's contract: only the asked categories, newest
 // first by time then ID, older than the cursor, at most `limit`.
@@ -45,34 +48,39 @@ export class InMemoryActivityRecords implements ActivityRecordReader {
     }
 }
 
-// An operation of one record, `minutes` after 10:00 on 1 November 2026 (UTC).
-export function operationAt(
-    minutes: number,
-    category: string,
-    after: Record<string, unknown>,
-    overrides: Partial<ActivityOperation> = {},
-): ActivityOperation {
-    const record: ActivityRecord = {
-        category,
-        subjectId: 'subject-' + minutes,
-        before: null,
-        after,
-        currentTitle: null,
-    };
+// Audit operations for Activity tests, at fixed times on 1 November 2026 (UTC).
+export class ActivityOperations {
+    // An operation of one record, `minutes` after 10:00.
+    static at(
+        minutes: number,
+        category: string,
+        after: Record<string, unknown>,
+        overrides: Partial<ActivityOperation> = {},
+    ): ActivityOperation {
+        const record: ActivityRecord = {
+            category,
+            subjectId: 'subject-' + minutes,
+            before: null,
+            after,
+            currentTitle: null,
+        };
 
-    return {
-        id: 'operation-' + String(minutes).padStart(4, '0'),
-        occurredAt: new Date(Date.UTC(2026, 10, 1, 10, minutes)).toISOString(),
-        actorId: 'user-alex',
-        actor: 'Alex',
-        records: [record],
-        ...overrides,
-    };
-}
+        return {
+            id: 'operation-' + String(minutes).padStart(4, '0'),
+            occurredAt: new Date(Date.UTC(2026, 10, 1, 10, minutes)).toISOString(),
+            actorId: 'user-alex',
+            actor: 'Alex',
+            records: [record],
+            ...overrides,
+        };
+    }
 
-// `count` book creations, one per minute from `from`, the newest last.
-export function additions(count: number, from = 0): ActivityOperation[] {
-    return Array.from({ length: count }, (_, index) =>
-        operationAt(from + index, 'book.created', { title: 'Book ' + (from + index) }),
-    );
+    // `count` book creations, one per minute from `from`, the newest last.
+    static additions(count: number, from = 0): ActivityOperation[] {
+        return Array.from({ length: count }, (_, index) =>
+            ActivityOperations.at(from + index, 'book.created', {
+                title: 'Book ' + (from + index),
+            }),
+        );
+    }
 }
