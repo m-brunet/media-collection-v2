@@ -74,7 +74,7 @@ it('shows how long ago each change happened', async () => {
     show();
 
     expect(await screen.findByText('12 minutes ago', { selector: 'time' })).toBeInTheDocument();
-    expect(screen.getByText('just now', { selector: 'time' })).toBeInTheDocument();
+    expect(screen.getByText('Just now', { selector: 'time' })).toBeInTheDocument();
 });
 
 it('shows the changes an operation caused under it', async () => {
@@ -243,5 +243,5 @@ it('speaks French', async () => {
     show();
 
     expect(await screen.findByText('Vous avez ajouté The Overstory')).toBeInTheDocument();
-    expect(screen.getByText('il y a 12 minutes', { selector: 'time' })).toBeInTheDocument();
+    expect(screen.getByText('Il y a 12 minutes', { selector: 'time' })).toBeInTheDocument();
 });
