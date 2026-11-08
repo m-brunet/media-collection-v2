@@ -1,6 +1,6 @@
 import type { UtilityProcess } from 'electron';
 import { utilityProcess } from 'electron';
-import type { WorkerRequest, WorkerResponse } from './protocol.js';
+import type { WorkerNotice, WorkerRequest, WorkerResponse } from './protocol.js';
 
 export class WorkerFailure extends Error {
     constructor(
@@ -17,6 +17,7 @@ export class BackendProcess {
     private exited = false;
     private readonly waiters = new Set<(message: WorkerResponse) => void>();
     private readonly exitListeners = new Set<() => void>();
+    private readonly noticeListeners = new Set<(notice: WorkerNotice) => void>();
 
     constructor(workerPath: string) {
         this.process = utilityProcess.fork(workerPath, [], {
@@ -25,9 +26,18 @@ export class BackendProcess {
         });
         this.process.stdout?.on('data', (chunk) => process.stdout.write(chunk));
         this.process.stderr?.on('data', (chunk) => process.stderr.write(chunk));
-        this.process.on('message', (message) => {
+        this.process.on('message', (message: WorkerResponse | WorkerNotice) => {
+            // Notices are not answers: they must never settle a pending request.
+            if (message.type === 'keep-awake') {
+                for (const listener of this.noticeListeners) {
+                    listener(message);
+                }
+
+                return;
+            }
+
             for (const waiter of this.waiters) {
-                waiter(message as WorkerResponse);
+                waiter(message);
             }
         });
         this.process.on('exit', () => {
@@ -45,6 +55,10 @@ export class BackendProcess {
 
     onExit(listener: () => void): void {
         this.exitListeners.add(listener);
+    }
+
+    onNotice(listener: (notice: WorkerNotice) => void): void {
+        this.noticeListeners.add(listener);
     }
 
     // Long development data commands (downloading covers) allow more than the default 30 seconds.

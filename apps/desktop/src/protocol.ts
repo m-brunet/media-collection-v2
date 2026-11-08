@@ -25,6 +25,8 @@ export type WorkerRequest =
     | { type: 'dev-reset'; dataDirectory: string }
     | { type: 'dev-import-v1'; dataDirectory: string; source: string }
     | { type: 'stop' };
+// Sent by the worker on its own, outside any request: the main process applies it.
+export type WorkerNotice = { type: 'keep-awake'; enabled: boolean };
 export type WorkerResponse =
     | { type: 'ready'; httpPort: number; httpsPort: number | null; httpsError: string | null }
     | { type: 'maintenance-status'; administrator: string | null; hasData: boolean }

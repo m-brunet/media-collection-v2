@@ -1,4 +1,4 @@
-import { app, dialog, Menu } from 'electron';
+import { app, dialog, Menu, powerSaveBlocker } from 'electron';
 import { fileURLToPath } from 'node:url';
 import { mkdirSync, readFileSync, unwatchFile, watchFile } from 'node:fs';
 import { join } from 'node:path';
@@ -40,6 +40,23 @@ dialog.showOpenDialog = async () => {
 
     return { canceled: filePath === undefined, filePaths: filePath ? [filePath] : [] };
 };
+
+// Records the sleep blockers the application holds, so tests can read them through `keep-awake`
+// without the test computer's power settings changing.
+const blockers = new Map();
+let nextBlocker = 1;
+
+powerSaveBlocker.start = (type) => {
+    const id = nextBlocker++;
+
+    blockers.set(id, type);
+
+    return id;
+};
+powerSaveBlocker.stop = (id) => {
+    blockers.delete(id);
+};
+powerSaveBlocker.isStarted = (id) => blockers.has(id);
 
 let requestId = 0;
 let window;
@@ -98,6 +115,8 @@ watchFile(process.env.APP_TEST_COMMAND_FILE, { interval: 20 }, async () => {
                 type: 'window',
                 value: { url: window?.isDestroyed() ? null : window?.webContents.getURL() },
             });
+        } else if (request.type === 'keep-awake') {
+            send({ type: 'keep-awake', value: [...blockers.values()] });
         } else if (request.type === 'close-window') {
             window.close();
             send({ type: 'closed' });
