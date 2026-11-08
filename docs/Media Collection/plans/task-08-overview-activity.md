@@ -224,7 +224,7 @@ Browser journeys (Playwright, 1280 × 720, real app)
 5. **Page size: 20 entries**, agreed for now; the user will try it and see.
 6. **Relative time: agreed** as proposed.
 7. **Overview extras: keep both** (Bookcases & shelves panel; Read / Not read on recent books for Owners/Admin).
-   **Reminder for the user after Task 8:** try both and decide whether to keep them.
+   Tried by the user after Task 8: both kept.
 8. **`/` opens Overview: agreed.**
 
 ## Questions asked (all answered above)
@@ -273,9 +273,11 @@ Browser journeys (Playwright, 1280 × 720, real app)
 
 ## Notes for later tasks
 
-- **Reminder for the user:** try the Overview's Bookcases & shelves panel and the Read / Not read line on recent
-  books, and decide whether to keep them (answer 7). Also try the page size of 20 (answer 5) and the cover folding
-  window of two minutes (answer 3).
+- **Kept after trying (user, 2026-11-08):** the Overview's Bookcases & shelves panel, the Read / Not read line on
+  recent books, the page size of 20 and the two-minute cover folding.
+- **Names in audit records (discussed 2026-11-08, not changed):** every deletion record already keeps the name of
+  what was deleted (book title, tag, collection, bookcase, shelf), so Activity can always name it. A single shared
+  label field on every audit record was considered and left aside.
 - **Endpoints added:** `GET /api/activity?before=` (every signed-in role; `before` is the previous page's `older`,
   `<UTC time>_<operation ID>`, `400` otherwise) and `GET /api/overview` (every signed-in role; `reading: null` and
   `read: null` on recent books for a Guest). Neither is audited.
