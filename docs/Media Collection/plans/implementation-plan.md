@@ -185,7 +185,7 @@ Implemented on 2026-11-06 as `npm run dev:reset-data` and `npm run dev:import-v1
 | 7 Leaf (mobile) | Done (2026-11-07), PR #3 merged | [task-07-leaf](task-07-leaf.md) | Shopping, mark Owned, scanning without HTTPS (live camera or barcode photo), own phone form and covers; credits listed in its plan; see its notes for later tasks |
 | 8 Overview and Activity | Done (2026-11-08), PR #4 merged | [task-08-overview-activity](task-08-overview-activity.md) | `/` opens Overview; Activity from the audit log, one entry per operation; Mark Owned audited as `book.marked-owned`; see its notes for later tasks |
 | 9 Host maintenance | Done (2026-11-08), PR #5 merged | [task-09-host-maintenance](task-09-host-maintenance.md) | Maintenance window from the desktop menu or `--maintenance`: Admin recovery (audited), `.mcbackup` backup and same-version restore; Admin data reset on the Accounts page; see its notes for later tasks |
-| 9.5 Internet access and HTTPS | Not planned (brief 2026-11-08) | [task-09-5-internet-access-https](task-09-5-internet-access-https.md) | Inserted at the user's request; brief records the analysis, open questions and deferred options |
+| 9.5 Internet access and HTTPS | In progress (plan approved 2026-11-08); branch `task-09-5-internet-access-https` | [task-09-5-internet-access-https](task-09-5-internet-access-https.md) | Inserted at the user's request; brief records the analysis, open questions and deferred options |
 | 10 Release readiness | Not started | — | |
 
 Pre-implementation fixes done (2026-11-03): docs/design decisions recorded, foundation formatted with oxfmt, `whoami`/`icacls` resolved from System32, `npm run check` order fixed. Full check passes (41 files, 409 tests).
