@@ -305,7 +305,7 @@ Browser journeys (Playwright, 1280 × 720, real app)
   viewer's time zone, first letter in capitals: "Yesterday", "Il y a 2 jours", user's request 2026-11-08) and
   `DateTimeFormatter.exact` ("1 November 2026 · 13:42 (CET)"; French uses the browser's zone
   label, for example "UTC+1"). Activity wording lives in `libris/activity/activity-sentence.util.ts`.
-- **Checks:** `npm run check` from PowerShell passes (256 files, 2275 tests); the first run found 9 desktop tests still
+- **Checks:** `npm run check` from PowerShell passes (257 files, 2285 tests); the first run found 9 desktop tests still
   waiting for the My books heading after sign-in, fixed.
 - **Architecture review (step 8):** no mandatory finding: both features are read-only, their Kysely adapters read
   other features' tables without writing them (allowed for read adapters), the eligibility and grouping rules are
