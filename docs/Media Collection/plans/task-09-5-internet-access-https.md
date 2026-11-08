@@ -194,7 +194,7 @@ Each step: tests, `npm run check`, architecture review skill on the changes, com
 Steps 2 and 11 are manual tests with the user. Work pauses there with a short checklist of what to do on the router
 and phone and what to report back; the next step starts from the results.
 
-- [ ] **1. Documentation**: product scope, release expectations (automatic router rule, external 443, HTTPS only on
+- [x] **1. Documentation**: product scope, release expectations (automatic router rule, external 443, HTTPS only on
   the internet), configuration (automatic certificate storage), architecture (certificate issuance, live HTTPS
   reload, upkeep timer). Record the decisions.
 - [ ] **2. Library check (spike, no production code kept)**: `acme-client` with an `ip` identifier, the
