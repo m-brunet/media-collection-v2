@@ -21,7 +21,7 @@ async function backedUpLibrary() {
     const session = source.client.cookies.get('app_auth');
 
     await source.runtime.close();
-    const maintenance = await fixture.start(source.directory, { recovery: true });
+    const maintenance = await fixture.start(source.directory, { maintenance: true });
     const backup = join(await fixture.directory(), 'library.mcbackup');
 
     await maintenance.runtime.send({
@@ -52,7 +52,7 @@ async function otherInstallation() {
 }
 
 async function restore(directory: string, backup: string) {
-    const maintenance = await fixture.start(directory, { recovery: true });
+    const maintenance = await fixture.start(directory, { maintenance: true });
     const response = await maintenance.runtime.send({
         type: 'restore-backup',
         dataDirectory: directory,
@@ -137,7 +137,7 @@ describe('local backup and restore through the Electron worker', () => {
     it('rejects a backup of another version', async () => {
         const { backup } = await backedUpLibrary();
         const target = await otherInstallation();
-        const maintenance = await fixture.start(target.directory, { recovery: true });
+        const maintenance = await fixture.start(target.directory, { maintenance: true });
 
         const result = maintenance.runtime.send({
             type: 'restore-backup',

@@ -19,7 +19,7 @@ interface RuntimeMessage {
 const electron = createRequire(import.meta.url)('electron') as string;
 
 export interface RuntimeOptions {
-    recovery?: boolean;
+    maintenance?: boolean;
     fakeClock?: boolean;
     port?: number | null;
     main?: boolean;
@@ -52,7 +52,7 @@ export class ElectronRuntime {
             APP_TEST_DATA: dataDirectory,
             APP_TEST_COMMAND_FILE: join(dataDirectory, 'test-command.json'),
             APP_TEST_PORT: options.port === null ? undefined : String(options.port ?? 0),
-            APP_TEST_RECOVERY: options.recovery ? '1' : '0',
+            APP_TEST_MAINTENANCE: options.maintenance ? '1' : '0',
             APP_TEST_FAKE_CLOCK: options.fakeClock ? '1' : '0',
             APP_TEST_LOOKUP_ADDRESSES: options.lookupAddresses
                 ? JSON.stringify(options.lookupAddresses)
@@ -82,7 +82,7 @@ export class ElectronRuntime {
                           : ['--http-port', String(options.port)]),
                       '--host',
                       '0.0.0.0',
-                      ...(options.recovery ? ['--reset-admin', '--login', 'admin'] : []),
+                      ...(options.maintenance ? ['--maintenance'] : []),
                   ]
                 : [fileURLToPath(new URL('../runtime/harness.mjs', import.meta.url))],
             { env: environment, stdio: 'pipe' },

@@ -1,11 +1,46 @@
-import { app } from 'electron';
+import { app, dialog, Menu } from 'electron';
 import { fileURLToPath } from 'node:url';
-import { readFileSync, unwatchFile, watchFile } from 'node:fs';
+import { mkdirSync, readFileSync, unwatchFile, watchFile } from 'node:fs';
+import { join } from 'node:path';
 
 // Desktop UI assertions use English text, whatever the language of the test computer.
 app.commandLine.appendSwitch('lang', 'en-GB');
 // Match the app directory used by `electron .`; the test entry itself lives below tests/.
 app.getAppPath = () => fileURLToPath(new URL('../../', import.meta.url));
+// `electron .` reports the package version; this harness entry would report Electron's own.
+const { version } = JSON.parse(
+    readFileSync(new URL('../../package.json', import.meta.url), 'utf8'),
+);
+
+app.getVersion = () => version;
+
+// Native dialogs cannot be clicked in hidden test windows: confirmations are accepted, and file
+// dialogs answer with the paths the test queued through `answer-dialogs`.
+const documents = join(process.env.APP_TEST_DATA, 'test-documents');
+
+mkdirSync(documents, { recursive: true });
+app.setPath('documents', documents);
+const answers = { save: [], open: [] };
+
+dialog.showMessageBox = async () => ({ response: 0, checkboxChecked: false });
+process.on('uncaughtException', (error) => {
+    process.stderr.write('Uncaught main process error: ' + (error?.stack ?? error) + '\n');
+    app.exit(1);
+});
+dialog.showErrorBox = (title, content) => {
+    process.stderr.write(title + ': ' + content + '\n');
+};
+dialog.showSaveDialog = async () => {
+    const filePath = answers.save.shift();
+
+    return { canceled: filePath === undefined, filePath };
+};
+dialog.showOpenDialog = async () => {
+    const filePath = answers.open.shift();
+
+    return { canceled: filePath === undefined, filePaths: filePath ? [filePath] : [] };
+};
+
 let requestId = 0;
 let window;
 const send = (message) => process.stdout.write(JSON.stringify({ ...message, requestId }) + '\n');
@@ -23,7 +58,7 @@ app.on('browser-window-created', (_event, created) => {
                 nodeIntegration: preferences.nodeIntegration,
                 sandbox: preferences.sandbox,
                 contextIsolation: preferences.contextIsolation,
-                recovery: url.protocol === 'file:',
+                maintenance: url.protocol === 'file:',
                 minimumSize: created.getMinimumSize(),
                 applicationName: app.getName(),
             },
@@ -51,12 +86,23 @@ watchFile(process.env.APP_TEST_COMMAND_FILE, { interval: 20 }, async () => {
                 type: 'evaluated',
                 value: await window.webContents.executeJavaScript(request.expression),
             });
+        } else if (request.type === 'answer-dialogs') {
+            answers.save.push(...(request.save ?? []));
+            answers.open.push(...(request.open ?? []));
+            send({ type: 'answered' });
+        } else if (request.type === 'menu') {
+            Menu.getApplicationMenu().getMenuItemById(request.id).click();
+            send({ type: 'clicked' });
+        } else if (request.type === 'window') {
+            send({
+                type: 'window',
+                value: { url: window?.isDestroyed() ? null : window?.webContents.getURL() },
+            });
+        } else if (request.type === 'close-window') {
+            window.close();
+            send({ type: 'closed' });
         } else if (request.type === 'stop') {
-            if (window) {
-                window.close();
-            } else {
-                app.quit();
-            }
+            app.quit();
         }
     } catch (error) {
         send({ type: 'failed', message: error.message });

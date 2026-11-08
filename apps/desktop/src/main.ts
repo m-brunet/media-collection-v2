@@ -1,12 +1,13 @@
-import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, dialog, Menu, shell } from 'electron';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { existsSync, mkdirSync } from 'node:fs';
+import { mkdirSync } from 'node:fs';
 import type { DevelopmentMaintenance } from './configuration.util.js';
 import { DesktopConfigurationParser } from './configuration.util.js';
 import { DevelopmentDataGuard } from './development-data-guard.util.js';
 import { BackendProcess } from './backend-process.adapter.js';
 import { SetupRequestSigner } from './setup-request-signer.adapter.js';
+import { MaintenanceWindow } from './maintenance-window.adapter.js';
 
 // Automated tests run the real windows without putting them on screen.
 const hiddenWindows = process.env.APP_HIDDEN_WINDOWS === '1';
@@ -18,6 +19,8 @@ let quitting = false;
 let shutdownComplete = false;
 let window: BrowserWindow | undefined;
 let restarting = false;
+// The server is stopped while the local maintenance window is open.
+let maintaining = false;
 const setupSigner = new SetupRequestSigner();
 // Development data commands run from a terminal: they report there instead of in dialogs.
 const commandLine = process.argv.some(
@@ -33,10 +36,6 @@ const startupOptions = (() => {
             process.env,
             defaultData,
         );
-
-        if (options.recoveryLogin && !existsSync(options.dataDirectory)) {
-            throw new Error('Recovery requires an existing data directory.');
-        }
 
         // Before anything is created in the data directory.
         if (options.maintenance) {
@@ -72,7 +71,7 @@ if (!startupOptions) {
 } else if (!app.requestSingleInstanceLock()) {
     // The lock follows the data directory's profile: only an instance using the same data blocks this one.
     console.error(
-        'The application is already running with this data directory. Close it before using recovery or development data commands.',
+        'The application is already running with this data directory. Close it before using local maintenance or development data commands.',
     );
     app.exit(1);
 } else if (startupOptions.maintenance) {
@@ -87,7 +86,7 @@ if (!startupOptions) {
         }
     });
     app.on('window-all-closed', () => {
-        if (!restarting) {
+        if (!restarting && !maintaining) {
             app.quit();
         }
     });
@@ -118,12 +117,18 @@ if (!startupOptions) {
         try {
             const options = startupOptions;
 
-            if (options.recoveryLogin) {
-                await recovery(options.dataDirectory);
+            if (options.localMaintenance) {
+                await maintenanceWindow(options.dataDirectory).open();
+                app.quit();
             } else {
+                Menu.setApplicationMenu(applicationMenu(options));
                 await launch(options);
             }
         } catch (error) {
+            if (quitting) {
+                return;
+            }
+
             dialog.showErrorBox(
                 'Application could not start',
                 error instanceof Error ? error.message : 'Unknown startup error.',
@@ -199,7 +204,7 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
 
             console.log('Application ready on HTTP port ' + ready.httpPort);
             backend.onExit(() => {
-                if (quitting) {
+                if (quitting || maintaining) {
                     return;
                 }
 
@@ -278,60 +283,74 @@ async function maintain(dataDirectory: string, maintenance: DevelopmentMaintenan
     app.exit(code);
 }
 
-async function recovery(dataDirectory: string): Promise<void> {
-    backend = new BackendProcess(join(directory, 'worker.js'));
-    window = new BrowserWindow({
-        width: 520,
-        height: 500,
-        resizable: false,
-        backgroundColor: '#1d2022',
-        show: !hiddenWindows,
-        webPreferences: {
-            backgroundThrottling: !hiddenWindows,
-            preload: join(directory, 'recovery-preload.cjs'),
-            contextIsolation: true,
-            sandbox: true,
-            nodeIntegration: false,
+function maintenanceWindow(dataDirectory: string): MaintenanceWindow {
+    return new MaintenanceWindow({
+        dataDirectory,
+        workerPath: join(directory, 'worker.js'),
+        preloadPath: join(directory, 'maintenance-preload.cjs'),
+        pagePath: join(app.getAppPath(), 'apps/desktop/assets/maintenance.html'),
+        hidden: hiddenWindows,
+    });
+}
+
+function applicationMenu(options: ReturnType<typeof DesktopConfigurationParser.parse>): Menu {
+    return Menu.buildFromTemplate([
+        ...(process.platform === 'darwin' ? [{ role: 'appMenu' as const }] : []),
+        { role: 'fileMenu' },
+        { role: 'editMenu' },
+        { role: 'viewMenu' },
+        {
+            label: 'Maintenance',
+            submenu: [
+                {
+                    id: 'local-maintenance',
+                    label: 'Open local maintenance…',
+                    click: () => void openMaintenance(options),
+                },
+            ],
         },
+        { role: 'windowMenu' },
+    ]);
+}
+
+// Stops the server and replaces the Libris window with the maintenance window, then starts the
+// application again once maintenance is closed.
+async function openMaintenance(
+    options: ReturnType<typeof DesktopConfigurationParser.parse>,
+): Promise<void> {
+    if (maintaining || quitting) {
+        return;
+    }
+
+    const answer = await dialog.showMessageBox({
+        type: 'warning',
+        title: 'Local maintenance',
+        message: 'Open local maintenance?',
+        detail: 'The server stops while maintenance is open: browsers and phones lose access until you close it. Unsaved changes in this window are lost.',
+        buttons: ['Stop the server and open maintenance', 'Cancel'],
+        defaultId: 1,
+        cancelId: 1,
     });
-    window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
-    window.webContents.on('will-navigate', (event) => event.preventDefault());
-    let resetting = false;
 
-    ipcMain.handle('administrator-recovery:reset', async (event, password: unknown) => {
-        if (
-            event.sender !== window?.webContents ||
-            event.senderFrame !== window.webContents.mainFrame ||
-            typeof password !== 'string' ||
-            resetting
-        ) {
-            return { success: false, message: 'Invalid recovery request.' };
+    if (answer.response !== 0 || maintaining || quitting) {
+        return;
+    }
+
+    maintaining = true;
+
+    try {
+        await backend?.close();
+        backend = undefined;
+        const libris = window;
+        const closed = maintenanceWindow(options.dataDirectory).open();
+
+        libris?.destroy();
+        await closed;
+
+        if (!quitting) {
+            await launch(options);
         }
-
-        resetting = true;
-
-        try {
-            await backend!.request({
-                type: 'recover',
-                dataDirectory,
-                version: app.getVersion(),
-                password,
-            });
-
-            return {
-                success: true,
-                message:
-                    'Password reset. Close this window, start the application normally, and sign in with the new temporary password.',
-            };
-        } catch (error) {
-            return {
-                success: false,
-                message: error instanceof Error ? error.message : 'Recovery failed.',
-            };
-        } finally {
-            resetting = false;
-        }
-    });
-    window.once('closed', () => ipcMain.removeHandler('administrator-recovery:reset'));
-    await window.loadFile(join(app.getAppPath(), 'apps/desktop/assets/recovery.html'));
+    } finally {
+        maintaining = false;
+    }
 }

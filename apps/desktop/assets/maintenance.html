@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta
+            content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'"
+            http-equiv="Content-Security-Policy"
+        />
+        <meta content="width=device-width, initial-scale=1" name="viewport" />
+        <title>Media Collection · Local maintenance</title>
+        <link href="maintenance.css" rel="stylesheet" />
+    </head>
+    <body>
+        <header class="brand">
+            <svg
+                aria-hidden="true"
+                class="brand__mark"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.75"
+                viewBox="0 0 24 24"
+                width="24"
+            >
+                <path d="m16 6 4 14" />
+                <path d="M12 6v14" />
+                <path d="M8 8v12" />
+                <path d="M4 4v16" />
+            </svg>
+            <div>
+                <p class="brand__name">Media Collection</p>
+                <p class="eyebrow" data-text="eyebrow"></p>
+            </div>
+            <select aria-label="Language" class="brand__language" id="language">
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+            </select>
+        </header>
+        <main>
+            <h1 data-text="title"></h1>
+            <p class="muted" data-text="intro"></p>
+
+            <section aria-labelledby="recovery-heading" id="recovery">
+                <h2 data-text="recoveryTitle" id="recovery-heading"></h2>
+                <p class="muted" id="recovery-account"></p>
+                <form hidden id="recovery-form">
+                    <label data-text="newPassword" for="password"></label>
+                    <input
+                        autocomplete="new-password"
+                        id="password"
+                        maxlength="128"
+                        minlength="8"
+                        required
+                        type="password"
+                    />
+                    <p class="hint" data-text="passwordHint"></p>
+                    <label data-text="repeatPassword" for="confirmation"></label>
+                    <input autocomplete="new-password" id="confirmation" required type="password" />
+                    <button data-text="recoverButton" type="submit"></button>
+                </form>
+                <p class="result" id="recovery-result" role="status"></p>
+            </section>
+
+            <section aria-labelledby="backup-heading" id="backup">
+                <h2 data-text="backupTitle" id="backup-heading"></h2>
+                <p class="muted" data-text="backupIntro"></p>
+                <p class="warning" data-text="backupPrivate"></p>
+                <button data-text="backupButton" id="create-backup" type="button"></button>
+                <p class="result" id="backup-result" role="status"></p>
+            </section>
+
+            <section aria-labelledby="restore-heading" id="restore">
+                <h2 data-text="restoreTitle" id="restore-heading"></h2>
+                <p class="muted" data-text="restoreIntro"></p>
+                <button
+                    class="button--secondary"
+                    data-text="chooseButton"
+                    id="choose-backup"
+                    type="button"
+                ></button>
+                <div hidden id="restore-choice">
+                    <dl class="summary">
+                        <dt data-text="summaryFile"></dt>
+                        <dd id="summary-file"></dd>
+                        <dt data-text="summaryDate"></dt>
+                        <dd id="summary-date"></dd>
+                        <dt data-text="summaryVersion"></dt>
+                        <dd id="summary-version"></dd>
+                        <dt data-text="summaryBooks"></dt>
+                        <dd id="summary-books"></dd>
+                        <dt data-text="summaryAccounts"></dt>
+                        <dd id="summary-accounts"></dd>
+                    </dl>
+                    <label class="checkbox">
+                        <input id="restore-confirm" type="checkbox" />
+                        <span data-text="restoreConfirm"></span>
+                    </label>
+                    <button
+                        data-text="restoreButton"
+                        disabled
+                        id="restore-backup"
+                        type="button"
+                    ></button>
+                </div>
+                <p class="result" id="restore-result" role="status"></p>
+            </section>
+        </main>
+        <script src="maintenance.js"></script>
+    </body>
+</html>

@@ -27,11 +27,16 @@ export type WorkerRequest =
     | { type: 'stop' };
 export type WorkerResponse =
     | { type: 'ready'; httpPort: number; httpsPort: number | null; httpsError: string | null }
-    | { type: 'maintenance-status'; administrator: string | null }
+    | { type: 'maintenance-status'; administrator: string | null; hasData: boolean }
     | { type: 'recovered'; username: string }
     | { type: 'backed-up'; backup: BackupSummary }
     | { type: 'backup-inspected'; backup: BackupSummary }
     | { type: 'restored'; backup: BackupSummary }
     | { type: 'maintained'; report: string[] }
     | { type: 'stopped' }
-    | { type: 'failed'; message: string };
+    | {
+          type: 'failed';
+          message: string;
+          reason?: string | null;
+          details?: Record<string, unknown> | null;
+      };

@@ -7,7 +7,8 @@ export interface DesktopConfiguration {
     dataDirectory: string;
     // True when --data-dir or APP_DATA_DIR chose the data directory instead of the default.
     dataDirectoryOverridden: boolean;
-    recoveryLogin: string | null;
+    // True with --maintenance: open the local maintenance window instead of the application.
+    localMaintenance: boolean;
     // A development-only data command to run instead of starting the application.
     maintenance: DevelopmentMaintenance | null;
 }
@@ -20,17 +21,11 @@ export class DesktopConfigurationParser {
         environment: Record<string, string | undefined>,
         defaultDataDirectory: string,
     ): DesktopConfiguration {
-        const recovery = args.includes('--reset-admin');
-        const recoveryLogin = this.value(args, '--login') ?? null;
-
-        if (recovery && !recoveryLogin) {
-            throw new Error('Use --reset-admin --login <administrator username>.');
-        }
-
+        const localMaintenance = args.includes('--maintenance');
         const maintenance = this.maintenance(args);
 
-        if (maintenance && recovery) {
-            throw new Error('Run administrator recovery and development data commands separately.');
+        if (maintenance && localMaintenance) {
+            throw new Error('Run local maintenance and development data commands separately.');
         }
 
         const chosenDirectory = this.value(args, '--data-dir') ?? environment.APP_DATA_DIR;
@@ -53,7 +48,7 @@ export class DesktopConfigurationParser {
                       : undefined,
             dataDirectory: resolve(chosenDirectory ?? defaultDataDirectory),
             dataDirectoryOverridden: chosenDirectory !== undefined,
-            recoveryLogin: recovery ? recoveryLogin : null,
+            localMaintenance,
             maintenance,
         };
     }

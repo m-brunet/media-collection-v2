@@ -19,14 +19,14 @@ describe('local maintenance status', () => {
 
         const status = await new LocalMaintenance(directory, '0.1.0').status();
 
-        expect(status.administrator).toBe('admin');
+        expect(status).toEqual({ administrator: 'admin', hasData: true });
     });
     it('reports a new installation without creating its database', async () => {
         const directory = await directories.empty('maintenance-');
 
         const status = await new LocalMaintenance(directory, '0.1.0').status();
 
-        expect(status.administrator).toBeNull();
+        expect(status).toEqual({ administrator: null, hasData: false });
         expect(existsSync(join(directory, 'application.sqlite'))).toBe(false);
     });
 });
