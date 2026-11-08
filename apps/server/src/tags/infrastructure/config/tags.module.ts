@@ -1,5 +1,6 @@
 import type { DynamicModule, Provider } from '@nestjs/common';
 import { Module } from '@nestjs/common';
+import { ValueProviders } from '../../../shared/infrastructure/config/value-providers.helper.js';
 import type { BookTagReader } from '../../../books/application/ports/driven/book-tag-reader.interface.js';
 import type { TagAssignment } from '../../../books/application/ports/driven/tag-assignment.interface.js';
 import type { BookTagStore } from '../../application/ports/driven/book-tag-store.interface.js';
@@ -36,14 +37,6 @@ const token = {
     naming: 'TAGS_NAMING',
     viewer: 'TAGS_VIEWER',
 } as const;
-
-function dependencyProviders(dependencies: TagsDependencies): Provider[] {
-    return (Object.keys(dependencies) as (keyof TagsDependencies)[]).map((name) => ({
-        provide: token[name],
-        useValue: dependencies[name],
-    }));
-}
-
 const serviceProviders: Provider[] = [
     {
         provide: token.loader,
@@ -116,7 +109,7 @@ export class TagsModule {
             module: TagsModule,
             controllers: [TagsController],
             providers: [
-                ...dependencyProviders(dependencies),
+                ...ValueProviders.of(dependencies, token),
                 ...serviceProviders,
                 ...useCaseProviders,
             ],

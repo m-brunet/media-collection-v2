@@ -3,7 +3,12 @@ import { bookFilterQuery } from '../../../../../shared/infrastructure/adapters/d
 import { idSchema } from '../../../../../shared/infrastructure/adapters/driving/web/id-schema.js';
 
 // Request shapes only; the books domain checks the actual rules and explains refusals.
-const text = (max: number) => z.string().max(max).nullable();
+// Reusable parts of the book request shapes.
+class BookFields {
+    static text(max: number) {
+        return z.string().max(max).nullable();
+    }
+}
 const author = z.union([
     z.strictObject({ id: idSchema }),
     z.strictObject({ name: z.string().max(400), distinct: z.boolean().optional() }),
@@ -26,17 +31,17 @@ const tags = z.array(tag).max(100);
 
 export const bookInputSchema = z.strictObject({
     title: z.string().max(1000),
-    isbn: text(40),
+    isbn: BookFields.text(40),
     noIsbn: z.boolean(),
     authors: z.array(author).max(30),
     category: z.enum(['books', 'manga', 'comics']),
     ownership: z.enum(['owned', 'not-owned']),
-    publisher: text(1000),
+    publisher: BookFields.text(1000),
     publicationYear: z.number().int().nullable(),
     publicationMonth: z.number().int().nullable(),
-    summary: text(20000),
+    summary: BookFields.text(20000),
     pageCount: z.number().int().nullable(),
-    price: text(40),
+    price: BookFields.text(40),
     confirmDistinct: z.boolean().optional(),
     collection: membership.nullable(),
     replacePlanned: z.array(idSchema).max(100).optional(),

@@ -1,5 +1,6 @@
 import type { DynamicModule, Provider } from '@nestjs/common';
 import { Module } from '@nestjs/common';
+import { ValueProviders } from '../../../shared/infrastructure/config/value-providers.helper.js';
 import type { BookCollectionReader } from '../../../books/application/ports/driven/book-collection-reader.interface.js';
 import type { CollectionMembership } from '../../../books/application/ports/driven/collection-membership.interface.js';
 import type { CollectionBookSearch } from '../../application/ports/driven/collection-book-search.interface.js';
@@ -45,14 +46,6 @@ const token = {
     loader: 'COLLECTIONS_LOADER',
     viewer: 'COLLECTIONS_VIEWER',
 } as const;
-
-function dependencyProviders(dependencies: CollectionsDependencies): Provider[] {
-    return (Object.keys(dependencies) as (keyof CollectionsDependencies)[]).map((name) => ({
-        provide: token[name],
-        useValue: dependencies[name],
-    }));
-}
-
 const serviceProviders: Provider[] = [
     {
         provide: token.loader,
@@ -80,19 +73,22 @@ type ChangeUseCase = new (
     operations: AuditedOperation,
 ) => unknown;
 
-function changeProvider(provide: string, useCase: ChangeUseCase): Provider {
-    return {
-        provide,
-        inject: changeDependencies,
-        useFactory: (
-            collections: CollectionRepository,
-            members: CollectionMemberStore,
-            loader: CollectionLoader,
-            viewer: CollectionViewer,
-            clock: Clock,
-            operations: AuditedOperation,
-        ) => new useCase(collections, members, loader, viewer, clock, operations),
-    };
+// A finish or reopen use case, both built from the same collection services.
+class ChangeProvider {
+    static of(provide: string, useCase: ChangeUseCase): Provider {
+        return {
+            provide,
+            inject: changeDependencies,
+            useFactory: (
+                collections: CollectionRepository,
+                members: CollectionMemberStore,
+                loader: CollectionLoader,
+                viewer: CollectionViewer,
+                clock: Clock,
+                operations: AuditedOperation,
+            ) => new useCase(collections, members, loader, viewer, clock, operations),
+        };
+    }
 }
 
 const useCaseProviders: Provider[] = [
@@ -159,8 +155,8 @@ const useCaseProviders: Provider[] = [
             operations: AuditedOperation,
         ) => new UpdateCollection(collections, members, loader, viewer, titles, clock, operations),
     },
-    changeProvider('COLLECTIONS_FINISH', FinishCollection),
-    changeProvider('COLLECTIONS_REOPEN', ReopenCollection),
+    ChangeProvider.of('COLLECTIONS_FINISH', FinishCollection),
+    ChangeProvider.of('COLLECTIONS_REOPEN', ReopenCollection),
     {
         provide: 'COLLECTIONS_DELETE',
         inject: [token.collections, token.members, token.loader, token.titles, token.operations],
@@ -181,7 +177,7 @@ export class CollectionsModule {
             module: CollectionsModule,
             controllers: [CollectionsController],
             providers: [
-                ...dependencyProviders(dependencies),
+                ...ValueProviders.of(dependencies, token),
                 ...serviceProviders,
                 ...useCaseProviders,
             ],

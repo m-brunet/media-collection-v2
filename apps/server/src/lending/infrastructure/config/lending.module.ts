@@ -1,5 +1,6 @@
 import type { DynamicModule, Provider } from '@nestjs/common';
 import { Module } from '@nestjs/common';
+import { ValueProviders } from '../../../shared/infrastructure/config/value-providers.helper.js';
 import type { BookLoanReader } from '../../../books/application/ports/driven/book-loan-reader.interface.js';
 import type { LoanHistory } from '../../../books/application/ports/driven/loan-history.interface.js';
 import type { ActiveLoans } from '../../application/ports/driven/active-loans.interface.js';
@@ -40,14 +41,6 @@ const token = {
     operations: 'LENDING_AUDITED_OPERATION',
     resolver: 'LENDING_RECEIVER_RESOLVER',
 } as const;
-
-function dependencyProviders(dependencies: LendingDependencies): Provider[] {
-    return (Object.keys(dependencies) as (keyof LendingDependencies)[]).map((name) => ({
-        provide: token[name],
-        useValue: dependencies[name],
-    }));
-}
-
 const serviceProviders: Provider[] = [
     {
         provide: token.resolver,
@@ -105,7 +98,7 @@ export class LendingModule {
             module: LendingModule,
             controllers: [LoansController, ReceiversController],
             providers: [
-                ...dependencyProviders(dependencies),
+                ...ValueProviders.of(dependencies, token),
                 ...serviceProviders,
                 ...useCaseProviders,
             ],
