@@ -1,4 +1,13 @@
 import { KyselyInternetAccessRepository } from '../../../apps/server/src/server-settings/infrastructure/adapters/driven/persistence/kysely-internet-access.repository.js';
+import {
+    AwaitableBackground,
+    FakeAuthority,
+    FakeHttpsRuntime,
+    FakeProbe,
+    FakeRouter,
+    FixedLocalAddress,
+    MemoryKeepAwake,
+} from '../../../apps/server/src/server-settings/application/testing/internet-access-doubles.test-support.js';
 import { HttpApplicationModule } from '../../../apps/server/src/infrastructure/config/http-application.module.js';
 import 'reflect-metadata';
 import { Test } from '@nestjs/testing';
@@ -116,6 +125,16 @@ export class TestApp {
             const members = new KyselyCollectionMemberStore(database.connections);
             const loans = new KyselyLoanRepository(database.connections);
             const receivers = new KyselyReceiverRepository(database.connections);
+            const clock = { now: () => new Date(this.now) };
+            const internetAccess = {
+                store: new KyselyInternetAccessRepository(database.connections, ids),
+                router: new FakeRouter(),
+                authority: new FakeAuthority(clock),
+                probe: new FakeProbe(),
+                https: new FakeHttpsRuntime(),
+                background: new AwaitableBackground(),
+                keepAwake: new MemoryKeepAwake(),
+            };
 
             this.context = {
                 users,
@@ -127,6 +146,7 @@ export class TestApp {
                 audit: new AuditLogProbe(database),
                 library: new LibraryProbe(database),
                 lending: { loans, receivers },
+                internetAccess,
                 builders: new TestLibrary({
                     books: books.books,
                     authors: books.authors,
@@ -134,7 +154,6 @@ export class TestApp {
                     receivers,
                 }),
             };
-            const clock = { now: () => new Date(this.now) };
             const membership = CollectionsModule.membership(collections, members, ids, clock);
             const bookcases = new KyselyBookcaseRepository(database.connections);
             const shelves = new KyselyShelfRepository(database.connections);
@@ -183,14 +202,23 @@ export class TestApp {
                         operations,
                         new SetupAccess('test-setup-token'),
                     ),
-                    SettingsModule.register(
+                    SettingsModule.register({
                         tls,
-                        new PemCertificateValidator(),
+                        certificates: new PemCertificateValidator(),
                         status,
                         http,
                         operations,
-                        new KyselyInternetAccessRepository(database.connections, ids),
-                    ),
+                        internetAccess: internetAccess.store,
+                        router: internetAccess.router,
+                        probe: internetAccess.probe,
+                        authority: internetAccess.authority,
+                        https: internetAccess.https,
+                        local: new FixedLocalAddress(),
+                        background: internetAccess.background,
+                        keepAwake: internetAccess.keepAwake,
+                        keepAwakeRuntime: internetAccess.keepAwake,
+                        clock,
+                    }),
                     AppearanceModule.register(appearance, operations),
                     BooksModule.register({
                         ...books,

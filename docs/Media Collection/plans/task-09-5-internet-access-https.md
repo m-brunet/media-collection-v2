@@ -235,9 +235,13 @@ and phone and what to report back; the next step starts from the results.
   external address, so NAT-PMP routers get the manual screen; the router gateway is checked for real in Step 11.
   UPnP rules use a 2-hour lease (renewed hourly), or a permanent rule when the router refuses leases. The local
   address skips VPN ranges (Tailscale's `100.64/10`).
-- [ ] **8. HTTP API**: endpoints, contracts, Zod schemas; API end-to-end tests with stand-in router/authority through
+- [x] **8. HTTP API**: endpoints, contracts, Zod schemas; API end-to-end tests with stand-in router/authority through
   `RuntimeOptions` (like `lookupAddresses`): roles, setup success, each failure reason, check again, turn off, keep
   awake, manual certificate conflicts, audit records.
+  Done: the state is part of `GET /api/server-settings` (`internetAccess`, `keepAwake`), polled by the page; no
+  separate GET. Actions: `POST /internet-access` (202), `POST /internet-access/check` (202), `DELETE /internet-access`,
+  `PUT /keep-awake`. `SettingsModule.register` takes one adapters object. The hourly upkeep is a driving adapter
+  (`InternetAccessUpkeep`, Nest lifecycle). A live certificate install does not mark a restart as required.
 - [ ] **9. Libris UI**: Internet access panel, QR code, manual screen, keep-awake switch, Advanced section; EN/FR;
   component tests and Playwright (desktop viewports) with the stand-ins.
 - [ ] **10. Desktop keep awake**: worker message and `powerSaveBlocker` in the main process; desktop e2e check.

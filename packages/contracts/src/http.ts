@@ -39,11 +39,46 @@ export interface TlsConfiguration {
     hasCertificate: boolean;
 }
 
+export type InternetAccessFailureReason =
+    | 'no-router'
+    | 'cgnat'
+    | 'double-nat'
+    | 'port-refused'
+    | 'not-reachable'
+    | 'public-address-unknown'
+    | 'rate-limited'
+    | 'authority-unavailable'
+    | 'https-unavailable'
+    | 'setup-failed';
+
+// Automatic internet access: the router rule, the public address and its certificate.
+export interface InternetAccessStatus {
+    phase: 'off' | 'setting-up' | 'waiting-for-port' | 'active';
+    step: 'router' | 'port' | 'certificate' | null;
+    mapping: 'upnp' | 'nat-pmp' | 'manual' | null;
+    publicAddress: string | null;
+    certificate: { address: string; issuedAt: string; expiresAt: string } | null;
+    failure: { reason: InternetAccessFailureReason; at: string } | null;
+    failedAttempts: number;
+    nextAttemptAt: string | null;
+    // The address phones open, once the certificate is in use.
+    origin: string | null;
+    // What to enter in the router when it cannot be configured automatically.
+    manualRule: {
+        localAddress: string | null;
+        internalPort: number;
+        externalPort: number;
+        protocol: 'TCP';
+    } | null;
+}
+
 export interface ServerStatus {
     configured: {
         http: { port: number };
         tls: TlsConfiguration;
     };
+    internetAccess: InternetAccessStatus;
+    keepAwake: boolean;
     running: {
         httpPort: number;
         httpsPort: number | null;

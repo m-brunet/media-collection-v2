@@ -30,6 +30,17 @@ import { TlsSettings } from '../../server-settings/domain/value-objects/tls-sett
 import { PemCertificateValidator } from '../../server-settings/infrastructure/adapters/driven/security/pem-certificate-validator.adapter.js';
 import { TlsAlpnChallenges } from '../../server-settings/infrastructure/adapters/driven/security/tls-alpn-challenges.adapter.js';
 import { NodeHttpsRuntime } from '../../server-settings/infrastructure/adapters/driven/runtime/node-https-runtime.adapter.js';
+import { KyselyKeepAwakeRepository } from '../../server-settings/infrastructure/adapters/driven/persistence/kysely-keep-awake.repository.js';
+import { UpnpRouterGateway } from '../../server-settings/infrastructure/adapters/driven/third-party/upnp-router-gateway.adapter.js';
+import { HttpPublicAddressProbe } from '../../server-settings/infrastructure/adapters/driven/third-party/http-public-address-probe.adapter.js';
+import { AcmeCertificateAuthority } from '../../server-settings/infrastructure/adapters/driven/third-party/acme-certificate-authority.adapter.js';
+import { AcmeConnector } from '../../server-settings/infrastructure/adapters/driven/third-party/acme-session.adapter.js';
+import { AcmeAccountKey } from '../../server-settings/infrastructure/adapters/driven/filesystem/acme-account-key.adapter.js';
+import { NetworkLocalAddress } from '../../server-settings/infrastructure/adapters/driven/runtime/network-local-address.adapter.js';
+import { DetachedBackgroundTasks } from '../../server-settings/infrastructure/adapters/driven/runtime/detached-background-tasks.adapter.js';
+import type { RouterGateway } from '../../server-settings/application/ports/driven/router-gateway.interface.js';
+import type { CertificateAuthority } from '../../server-settings/application/ports/driven/certificate-authority.interface.js';
+import type { PublicAddressProbe } from '../../server-settings/application/ports/driven/public-address-probe.interface.js';
 import { IdentityModule } from '../../identity/infrastructure/config/identity.module.js';
 import { SettingsModule } from '../../server-settings/infrastructure/config/settings.module.js';
 import { HttpSessions } from '../../shared/infrastructure/adapters/driving/web/http-sessions.service.js';
@@ -57,6 +68,14 @@ export interface BackendOptions {
     lookupAddresses?: LookupAddresses;
     // Per-launch secret that the Electron window attaches to first-launch setup requests.
     setupToken?: string;
+    // Test-only: stand-ins for the router, Let's Encrypt and the public address service.
+    internetAccess?: {
+        router: RouterGateway;
+        authority: CertificateAuthority;
+        probe: PublicAddressProbe;
+    };
+    // Called at startup and on each change of the keep-awake setting (the desktop host applies it).
+    onKeepAwake?: (enabled: boolean) => void;
 }
 
 export interface BackendHandle {
@@ -178,7 +197,7 @@ export class BackendRuntime {
                     running: {
                         httpPort,
                         httpsPort: https?.port ?? null,
-                        httpsError,
+                        httpsError: https?.port ? null : httpsError,
                         addresses: this.addresses(options.host, httpPort),
                         httpPortOverride: options.httpPortSource
                             ? { port: requestedHttpPort, source: options.httpPortSource }
@@ -190,11 +209,18 @@ export class BackendRuntime {
                 }),
             };
             const application = HttpApplication.create(sessions, options);
-            const runtime = new NodeHttpsRuntime(
-                application,
-                options.host,
-                new TlsAlpnChallenges(),
-            );
+            const challenges = new TlsAlpnChallenges();
+            const runtime = new NodeHttpsRuntime(application, options.host, challenges);
+            const keepAwake = new KyselyKeepAwakeRepository(database.connections, ids);
+            const internetAccess = options.internetAccess ?? {
+                router: new UpnpRouterGateway(),
+                authority: new AcmeCertificateAuthority(
+                    new AcmeConnector(),
+                    new AcmeAccountKey(options.dataDirectory, storage),
+                    challenges,
+                ),
+                probe: new HttpPublicAddressProbe(),
+            };
 
             https = runtime;
 
@@ -212,14 +238,36 @@ export class BackendRuntime {
                             operations,
                             new SetupAccess(options.setupToken ?? null),
                         ),
-                        SettingsModule.register(
+                        SettingsModule.register({
                             tls,
-                            new PemCertificateValidator(),
+                            certificates: new PemCertificateValidator(),
                             status,
-                            httpSettings,
+                            http: httpSettings,
                             operations,
-                            new KyselyInternetAccessRepository(database.connections, ids),
-                        ),
+                            internetAccess: new KyselyInternetAccessRepository(
+                                database.connections,
+                                ids,
+                            ),
+                            ...internetAccess,
+                            // A certificate installed live is no reason to restart.
+                            https: {
+                                ensureRunning: (port) => runtime.ensureRunning(port),
+                                install: async (port, certificate) => {
+                                    const installed = await runtime.install(port, certificate);
+
+                                    startedRevision = await tls.revision();
+
+                                    return installed;
+                                },
+                            },
+                            local: new NetworkLocalAddress(),
+                            background: new DetachedBackgroundTasks(),
+                            keepAwake,
+                            keepAwakeRuntime: {
+                                apply: (enabled) => options.onKeepAwake?.(enabled),
+                            },
+                            clock,
+                        }),
                         AppearanceModule.register(
                             new KyselyAppearanceRepository(database.connections, ids),
                             operations,
@@ -253,6 +301,7 @@ export class BackendRuntime {
             );
             HttpApplicationModule.configure(nest, authentication, renewal, sessions);
             await nest.init();
+            options.onKeepAwake?.(await keepAwake.read());
             http = createHttpServer(application);
 
             try {
