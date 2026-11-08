@@ -209,8 +209,11 @@ describe('Activity', () => {
         const details = page.getByRole('tooltip');
 
         await details.waitFor();
-        expect(await details.textContent()).toMatch(
-            / · \d{2}:\d{2} \(.+\) · Performed by camille$/,
+        expect(await details.locator('.activity-time__moment').textContent()).toMatch(
+            / · \d{2}:\d{2} \(.+\)$/,
+        );
+        expect(await details.locator('.activity-time__actor').textContent()).toBe(
+            'Performed by camille',
         );
     });
 
@@ -226,7 +229,9 @@ describe('Activity', () => {
 
         await page.locator('.activity-time__relative').first().hover();
 
-        expect(await page.getByRole('tooltip').textContent()).toMatch(/Performed by camille-r$/);
+        expect(await page.getByRole('tooltip').locator('.activity-time__actor').textContent()).toBe(
+            'Performed by camille-r',
+        );
     });
 
     it('leaves out personal reading changes', async () => {

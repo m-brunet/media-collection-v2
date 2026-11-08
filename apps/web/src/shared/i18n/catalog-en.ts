@@ -988,7 +988,7 @@ export const en = {
     'activity.olderFailed': 'Older activity could not be loaded.',
     'activity.listLabel': 'Shared activity, newest first',
     'activity.justNow': 'just now',
-    'activity.details': '{moment} · Performed by {actor}',
+    'activity.performedBy': 'Performed by {actor}',
     'activity.aBook': 'a book',
     'activity.bookAdded': 'You added {title}',
     'activity.bookUpdated': 'You updated {title}',

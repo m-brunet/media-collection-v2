@@ -1027,7 +1027,7 @@ export const fr = {
     'activity.olderFailed': 'L’activité plus ancienne n’a pas pu être chargée.',
     'activity.listLabel': 'Activité partagée, la plus récente d’abord',
     'activity.justNow': 'à l’instant',
-    'activity.details': '{moment} · Effectué par {actor}',
+    'activity.performedBy': 'Effectué par {actor}',
     'activity.aBook': 'un livre',
     'activity.bookAdded': 'Vous avez ajouté {title}',
     'activity.bookUpdated': 'Vous avez modifié {title}',

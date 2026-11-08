@@ -73,8 +73,8 @@ it('shows how long ago each change happened', async () => {
 
     show();
 
-    expect(await screen.findByText('12 minutes ago')).toBeInTheDocument();
-    expect(screen.getByText('just now')).toBeInTheDocument();
+    expect(await screen.findByText('12 minutes ago', { selector: 'time' })).toBeInTheDocument();
+    expect(screen.getByText('just now', { selector: 'time' })).toBeInTheDocument();
 });
 
 it('shows the changes an operation caused under it', async () => {
@@ -107,7 +107,8 @@ it('shows the exact time and the acting account on hover', async () => {
     const details = screen.getByRole('tooltip');
 
     expect(details).toBeVisible();
-    expect(details).toHaveTextContent(/^1 November 2026 · \d{2}:42 \(.+\) · Performed by camille$/);
+    expect(within(details).getByText(/^1 November 2026 · \d{2}:42 \(.+\)$/)).toBeVisible();
+    expect(within(details).getByText('Performed by camille')).toBeVisible();
 });
 
 it('shows the exact details on keyboard focus', async () => {
@@ -116,13 +117,15 @@ it('shows the exact details on keyboard focus', async () => {
         body: page([entry('o1', { actor: 'camille' })]),
     }));
     show();
-    await screen.findByText('12 minutes ago');
+    await screen.findByText('12 minutes ago', { selector: 'time' });
 
     await userEvent.tab();
 
-    expect(screen.getByText('12 minutes ago')).toHaveFocus();
+    expect(screen.getByText('12 minutes ago', { selector: 'time' })).toHaveFocus();
     expect(screen.getByRole('tooltip')).toBeVisible();
-    expect(screen.getByText('12 minutes ago')).toHaveAccessibleDescription(/Performed by camille$/);
+    expect(screen.getByText('12 minutes ago', { selector: 'time' })).toHaveAccessibleDescription(
+        /Performed by camille$/,
+    );
 });
 
 it('hides the exact details with Escape', async () => {
@@ -131,7 +134,7 @@ it('hides the exact details with Escape', async () => {
         body: page([entry('o1')]),
     }));
     show();
-    await screen.findByText('12 minutes ago');
+    await screen.findByText('12 minutes ago', { selector: 'time' });
     await userEvent.tab();
 
     await userEvent.keyboard('{Escape}');
@@ -145,7 +148,7 @@ it('hides the exact details when the pointer leaves', async () => {
         body: page([entry('o1')]),
     }));
     show();
-    const time = await screen.findByText('12 minutes ago');
+    const time = await screen.findByText('12 minutes ago', { selector: 'time' });
 
     fireEvent.mouseEnter(time.parentElement!);
 
@@ -240,5 +243,5 @@ it('speaks French', async () => {
     show();
 
     expect(await screen.findByText('Vous avez ajouté The Overstory')).toBeInTheDocument();
-    expect(screen.getByText('il y a 12 minutes')).toBeInTheDocument();
+    expect(screen.getByText('il y a 12 minutes', { selector: 'time' })).toBeInTheDocument();
 });

@@ -5,6 +5,8 @@ import { ApiErrorMessage } from '../../shared/api-error-message.util';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { RelativeTime } from '../../shared/i18n/relative-time.util';
 import { Button } from '../../shared/ui/button';
+import type { IconName } from '../../shared/ui/icon';
+import { Icon } from '../../shared/ui/icon';
 import { PageHeader } from '../../shared/ui/layout';
 import { Notice } from '../../shared/ui/notice';
 import { EmptyState, LoadingState } from '../../shared/ui/states';
@@ -23,6 +25,37 @@ function useNow(): Date {
     return now;
 }
 
+// The icon of each kind of change, by what it concerns (book, loan, collection, location, tag).
+const icons: Record<ActivityEntryDto['event']['kind'], IconName> = {
+    'book-added': 'book-add',
+    'book-updated': 'books',
+    'book-marked-owned': 'books',
+    'book-deleted': 'books',
+    'book-organised': 'books',
+    'book-cover-changed': 'books',
+    'author-corrected': 'books',
+    'books-lent': 'lend',
+    'books-returned': 'lend-return',
+    'receiver-created': 'lend',
+    'collection-created': 'collections',
+    'collection-updated': 'collections',
+    'collection-renamed': 'collections',
+    'collection-finished': 'collections',
+    'collection-reopened': 'collections',
+    'collection-deleted': 'collections',
+    'collection-removed': 'collections',
+    'bookcase-created': 'bookshelves',
+    'bookcase-renamed': 'bookshelves',
+    'bookcase-deleted': 'bookshelves',
+    'shelf-created': 'bookshelves',
+    'shelf-renamed': 'bookshelves',
+    'shelf-moved': 'bookshelves',
+    'shelf-deleted': 'bookshelves',
+    'tag-created': 'tag',
+    'tag-renamed': 'tag',
+    'tag-deleted': 'tag',
+};
+
 // The relative time of an entry. Hovering it or giving it keyboard focus shows the exact date,
 // time, time zone and acting account; Escape hides it again.
 function EntryTime({ entry, relative }: { entry: ActivityEntryDto; relative: string }) {
@@ -31,8 +64,6 @@ function EntryTime({ entry, relative }: { entry: ActivityEntryDto; relative: str
     const [hovered, setHovered] = useState(false);
     const [focused, setFocused] = useState(false);
     const [dismissed, setDismissed] = useState(false);
-    const moment = dates.exact(entry.occurredAt);
-    const details = entry.actor ? t('activity.details', { moment, actor: entry.actor }) : moment;
     const open = (hovered || focused) && !dismissed;
 
     return (
@@ -63,7 +94,13 @@ function EntryTime({ entry, relative }: { entry: ActivityEntryDto; relative: str
                 {relative}
             </time>
             <span role="tooltip" id={id} className="activity-time__details" hidden={!open}>
-                {details}
+                <span className="activity-time__label">{relative}</span>
+                <span className="activity-time__moment">{dates.exact(entry.occurredAt)}</span>
+                {entry.actor && (
+                    <span className="activity-time__actor">
+                        {t('activity.performedBy', { actor: entry.actor })}
+                    </span>
+                )}
             </span>
         </span>
     );
@@ -149,16 +186,21 @@ export function ActivityPage() {
 
                             return (
                                 <li key={entry.id} className="activity-entry">
+                                    <Icon
+                                        name={icons[entry.event.kind]}
+                                        size={20}
+                                        className="activity-entry__icon"
+                                    />
                                     <div className="activity-entry__text">
                                         <p className="activity-entry__action">
                                             {ActivitySentence.main(entry.event, t)}
                                         </p>
                                         {also && <p className="activity-entry__also">{also}</p>}
+                                        <EntryTime
+                                            entry={entry}
+                                            relative={relative.of(entry.occurredAt, now)}
+                                        />
                                     </div>
-                                    <EntryTime
-                                        entry={entry}
-                                        relative={relative.of(entry.occurredAt, now)}
-                                    />
                                 </li>
                             );
                         })}

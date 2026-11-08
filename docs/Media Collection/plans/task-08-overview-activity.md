@@ -293,6 +293,11 @@ Browser journeys (Playwright, 1280 × 720, real app)
 - **Overview:** `/` opens Overview (it used to redirect to `/books`); browser tests sign in, wait for the Overview
   heading and click My books where they need it; the desktop tests wait for the Overview heading. The bookcases panel lists every bookcase in name order without its
   own scrolling (an inner scroll area would need keyboard access).
+- **Activity layout (redone at the user's request, 2026-11-08)** from the design file `design/media-collection-v3.pen`
+  (screen `E5DS9p`): a full-width feed; each entry has a category icon (Lucide stand-ins for the hand-inked set:
+  book added, book, lending, return, collection, bookcase/shelf, tag), the action at 16 px and the relative time under
+  it; the hover/focus card (340 px) shows the relative time as a small green mono label, then the exact date and
+  "Performed by …". The "Also: …" line sits between the action and the time.
 - **V1 import:** writes no audit records, so imported books appear in the Overview but not in Activity.
 - **Web utilities:** `RelativeTime` (`shared/i18n/relative-time.util.ts`, browser wording, calendar days in the
   viewer's time zone) and `DateTimeFormatter.exact` ("1 November 2026 · 13:42 (CET)"; French uses the browser's zone
