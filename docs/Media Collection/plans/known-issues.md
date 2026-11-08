@@ -101,8 +101,8 @@ list before starting a task: an open entry in the area a task touches is handled
   - **Spring green**, kept and still the default;
   - the **five dark schemes** of group 13 "Appearance collection — 10 non-green themes": Midnight blue, Velvet violet,
     Ember, Rose noir, Graphite gold;
-  - the **dark purple** of group 14 "Contrasting hues": Aubergine × Saffron;
-  - the **red study** of group 15: one of its two variants (open question below).
+  - group 14 "Dark Purple": **Slate × Orchid**;
+  - group 15 "Red study": **Warm charcoal × Soft scarlet**.
 
   **Mint, Emerald and Forest are removed.**
 - **Today:** a scheme only changes three accent colours (`--scheme-accent`, `--scheme-accent-background`,
@@ -121,9 +121,8 @@ list before starting a task: an open entry in the area a task touches is handled
   | Ember | `#27201D` | `#1C1614` | `#1F1916` | `#372E28` | `#604A3D` | `#FFF3E9` | `#CDB7A7` | `#FFAD79` | `#361B0C` |
   | Rose noir | `#261E24` | `#1A1419` | `#1F191F` | `#362C33` | `#5C4354` | `#FFF0F7` | `#CEAFBF` | `#F3A4C4` | `#371425` |
   | Graphite gold | `#242424` | `#171717` | `#1D1D1D` | `#323232` | `#505050` | `#F7F5EE` | `#BCBAB2` | `#E4C56B` | `#2C240C` |
-  | Aubergine × Saffron | `#2C1C31` | `#201323` | `#251829` | `#3C2942` | `#614767` | `#FAF1FB` | `#CCB5CE` | `#F0CE69` | `#30260F` |
-  | Red study, related: Warm charcoal × Soft scarlet | `#272426` | `#1B191A` | `#211F20` | `#343032` | `#51484C` | `#FFF2F1` | `#D0B2B7` | `#FF9994` | `#3A1719` |
-  | Red study, contrasting: Midnight × Poppy | `#182637` | `#111D2C` | `#142131` | `#25364A` | `#41556C` | `#F2F6FC` | `#B2C0D2` | `#FF8D85` | `#381717` |
+  | Slate × Orchid | `#252B32` | `#191F26` | `#20262D` | `#343D47` | `#4D5C6A` | `#F3F6FA` | `#B6C1CD` | `#D7ACFF` | `#301B40` |
+  | Warm charcoal × Soft scarlet | `#272426` | `#1B191A` | `#211F20` | `#343032` | `#51484C` | `#FFF2F1` | `#D0B2B7` | `#FF9994` | `#3A1719` |
 
   The design does not give every role (accent text on the accent background, focus ring, muted text, status
   colours): derive them per scheme and check WCAG AA contrast for each, as Task 1b did for the green schemes.
@@ -138,13 +137,8 @@ list before starting a task: an open entry in the area a task touches is handled
     for the setting, component tests for the Appearance page, a browser journey choosing a new scheme (Libris and
     Leaf), and a contrast check of the text and accent pairs of every scheme.
   - Update the design guidelines (colour schemes) and the Task 1b notes.
-- **Open questions:**
-  1. Group 13 has ten schemes, five dark and five light; the five dark ones are assumed. Libris and Leaf are dark
-     only, so the light ones would need a light interface first.
-  2. The red study has two variants: **Warm charcoal × Soft scarlet** (related hues) or **Midnight × Poppy**
-     (contrasting hues, navy surfaces close to Midnight blue). Which one? Warm charcoal × Soft scarlet is suggested,
-     since it is the more distinct of the two next to Midnight blue.
-  3. "Dark purple" is read as **Aubergine × Saffron** (group 14), since Velvet violet is already one of the five.
+- **Source:** the design file as saved by the user on 2026-11-08 (groups 13 to 15 keep only these schemes). The light
+  schemes are out of scope: Libris and Leaf are dark only.
 - **Severity:** medium (visible choice, touches every screen's colours). **Planned:** next fix pass, or Task 10 with
   the icon sets on the same Appearance page, whichever comes first.
 
