@@ -20,6 +20,7 @@ interface MaintenanceWindowOptions {
     workerPath: string;
     preloadPath: string;
     pagePath: string;
+    iconPath: string;
     hidden: boolean;
 }
 
@@ -50,6 +51,7 @@ export class MaintenanceWindow {
             minWidth: 560,
             minHeight: 600,
             title: 'Media Collection · Local maintenance',
+            icon: this.options.iconPath,
             backgroundColor: '#1d2022',
             show: !this.options.hidden,
             webPreferences: {
