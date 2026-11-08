@@ -161,7 +161,7 @@ export const en = {
     'internet.failure.public-address-unknown':
         'The public address of your connection could not be found. Check the internet connection, then try again.',
     'internet.failure.rate-limited':
-        'Let’s Encrypt received too many requests for this address. Try again in a few hours.',
+        'Let’s Encrypt has reached its limit of certificates for this address. Try again later: the wait can last from a few hours to a few days.',
     'internet.failure.authority-unavailable':
         'Let’s Encrypt could not be reached. Check the internet connection, then try again.',
     'internet.failure.https-unavailable':
