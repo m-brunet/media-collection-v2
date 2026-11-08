@@ -1,12 +1,12 @@
 // Says how long ago a UTC moment was, in the viewer's language and time zone, with the browser's
-// own wording ("12 minutes ago", "yesterday", "il y a 2 semaines"). Under a minute it gives
-// `justNow`. Past the same calendar day it counts calendar days in the viewer's time zone, so
-// something done at 23:00 is "yesterday" the next morning, not "9 hours ago".
+// own wording, starting with a capital ("12 minutes ago", "Yesterday", "Il y a 2 semaines").
+// Under a minute it gives `justNow`. Past the same calendar day it counts calendar days in the
+// viewer's time zone, so something done at 23:00 is "Yesterday" the next morning, not "9 hours ago".
 export class RelativeTime {
     private readonly words: Intl.RelativeTimeFormat;
 
     constructor(
-        locale: string,
+        private readonly locale: string,
         private readonly justNow: string,
         private readonly timeZone?: string,
     ) {
@@ -14,7 +14,12 @@ export class RelativeTime {
     }
 
     of(value: string | Date, now: Date): string {
-        const then = new Date(value);
+        const phrase = this.phrase(new Date(value), now);
+
+        return phrase.charAt(0).toLocaleUpperCase(this.locale) + phrase.slice(1);
+    }
+
+    private phrase(then: Date, now: Date): string {
         const seconds = Math.max(0, (now.getTime() - then.getTime()) / 1000);
         const minutes = Math.floor(seconds / 60);
         const days = this.calendarDays(then, now);

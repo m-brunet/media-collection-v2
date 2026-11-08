@@ -300,7 +300,8 @@ Browser journeys (Playwright, 1280 × 720, real app)
   "Performed by …". The "Also: …" line sits between the action and the time.
 - **V1 import:** writes no audit records, so imported books appear in the Overview but not in Activity.
 - **Web utilities:** `RelativeTime` (`shared/i18n/relative-time.util.ts`, browser wording, calendar days in the
-  viewer's time zone) and `DateTimeFormatter.exact` ("1 November 2026 · 13:42 (CET)"; French uses the browser's zone
+  viewer's time zone, first letter in capitals: "Yesterday", "Il y a 2 jours", user's request 2026-11-08) and
+  `DateTimeFormatter.exact` ("1 November 2026 · 13:42 (CET)"; French uses the browser's zone
   label, for example "UTC+1"). Activity wording lives in `libris/activity/activity-sentence.util.ts`.
 - **Checks:** `npm run check` from PowerShell passes (256 files, 2275 tests); the first run found 9 desktop tests still
   waiting for the My books heading after sign-in, fixed.

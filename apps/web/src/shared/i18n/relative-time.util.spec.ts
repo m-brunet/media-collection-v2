@@ -6,12 +6,12 @@ const english = new RelativeTime('en-GB', 'just now', 'Europe/Paris');
 const french = new RelativeTime('fr-FR', 'à l’instant', 'Europe/Paris');
 
 describe('RelativeTime', () => {
-    it('says just now under a minute', () => {
+    it('says Just now under a minute', () => {
         const moment = '2026-11-07T07:59:30.000Z';
 
         const text = english.of(moment, now);
 
-        expect(text).toBe('just now');
+        expect(text).toBe('Just now');
     });
     it('counts minutes under an hour', () => {
         const moment = '2026-11-07T07:48:00.000Z';
@@ -32,7 +32,7 @@ describe('RelativeTime', () => {
 
         const text = english.of(moment, now);
 
-        expect(text).toBe('yesterday');
+        expect(text).toBe('Yesterday');
     });
     it('counts days up to six days', () => {
         const moment = '2026-11-01T10:00:00.000Z';
@@ -46,7 +46,7 @@ describe('RelativeTime', () => {
 
         const text = english.of(moment, now);
 
-        expect(text).toBe('last week');
+        expect(text).toBe('Last week');
     });
     it('counts weeks up to four weeks', () => {
         const moment = '2026-10-10T10:00:00.000Z';
@@ -60,7 +60,7 @@ describe('RelativeTime', () => {
 
         const text = english.of(moment, now);
 
-        expect(text).toBe('last month');
+        expect(text).toBe('Last month');
     });
     it('counts months under a year', () => {
         const moment = '2026-05-01T10:00:00.000Z';
@@ -74,7 +74,7 @@ describe('RelativeTime', () => {
 
         const text = english.of(moment, now);
 
-        expect(text).toBe('last year');
+        expect(text).toBe('Last year');
     });
     it('counts years', () => {
         const moment = '2023-06-01T10:00:00.000Z';
@@ -88,34 +88,41 @@ describe('RelativeTime', () => {
 
         const text = french.of(moment, now);
 
-        expect(text).toBe('il y a 12 minutes');
+        expect(text).toBe('Il y a 12 minutes');
     });
     it('speaks French for yesterday', () => {
         const moment = '2026-11-06T22:00:00.000Z';
 
         const text = french.of(moment, now);
 
-        expect(text).toBe('hier');
+        expect(text).toBe('Hier');
     });
     it('speaks French weeks', () => {
         const moment = '2026-10-17T10:00:00.000Z';
 
         const text = french.of(moment, now);
 
-        expect(text).toBe('il y a 3 semaines');
+        expect(text).toBe('Il y a 3 semaines');
     });
     it('speaks French for last year', () => {
         const moment = '2025-11-01T10:00:00.000Z';
 
         const text = french.of(moment, now);
 
-        expect(text).toBe('l’année dernière');
+        expect(text).toBe('L’année dernière');
     });
     it('gives the French just now', () => {
         const moment = '2026-11-07T08:00:00.000Z';
 
         const text = french.of(moment, now);
 
-        expect(text).toBe('à l’instant');
+        expect(text).toBe('À l’instant');
+    });
+    it('starts the French wording with a capital', () => {
+        const moment = '2026-11-05T10:00:00.000Z';
+
+        const text = french.of(moment, now);
+
+        expect(text).toBe('Avant-hier');
     });
 });
