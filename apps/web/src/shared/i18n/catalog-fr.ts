@@ -169,7 +169,7 @@ export const fr = {
     'internet.failure.public-address-unknown':
         'L’adresse publique de votre connexion est introuvable. Vérifiez la connexion Internet, puis réessayez.',
     'internet.failure.rate-limited':
-        'Let’s Encrypt a reçu trop de demandes pour cette adresse. Réessayez dans quelques heures.',
+        'Let’s Encrypt a atteint sa limite de certificats pour cette adresse. Réessayez plus tard : l’attente peut aller de quelques heures à quelques jours.',
     'internet.failure.authority-unavailable':
         'Let’s Encrypt est injoignable. Vérifiez la connexion Internet, puis réessayez.',
     'internet.failure.https-unavailable':

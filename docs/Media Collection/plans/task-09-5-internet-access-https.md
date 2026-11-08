@@ -262,6 +262,12 @@ and phone and what to report back; the next step starts from the results.
   off, and on again from startup.
 - [ ] **11. Real-world check (with the user)**: on the user's router and phone (mobile data, not Wi-Fi): setup,
   QR code, Leaf scanning over HTTPS, turn off. Results and router behaviour noted here.
+  First run (2026-11-08): router search and port opening worked on the Freebox (UPnP rule 443 → 3443 accepted,
+  public 443 reachable), but the certificate step stayed "in progress": Let's Encrypt answered 429 (5 certificates
+  already issued for the address in 168 h, the Step 9 incident used the whole week's quota; retry after
+  2026-11-09 22:30 UTC) and acme-client silently waited out the Retry-After. Fixed: no acme-client retries (the
+  upkeep retries on its own), 30 s request timeout, tests against a local Let's Encrypt stand-in; the rate-limit
+  message no longer promises "a few hours".
 - [ ] **12. Wrap-up**: implementation plan status, credits list for Task 10 (ACME client, NAT library, QR code
   library), push, pull request.
 

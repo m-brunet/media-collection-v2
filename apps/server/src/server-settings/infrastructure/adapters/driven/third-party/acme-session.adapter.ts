@@ -17,9 +17,20 @@ export type AcmeSession = Pick<
 export class AcmeConnector {
     static readonly letsEncrypt = acme.directory.letsencrypt.production;
 
-    constructor(private readonly directoryUrl: string = AcmeConnector.letsEncrypt) {}
+    constructor(
+        private readonly directoryUrl: string = AcmeConnector.letsEncrypt,
+        private readonly requestTimeoutMs = 30_000,
+    ) {}
 
     open(accountKey: Buffer): AcmeSession {
+        // acme-client otherwise waits out Let's Encrypt's Retry-After in silence: a rate limit
+        // would leave the setup "in progress" for days. Failures must come back at once; the
+        // upkeep retries with its own growing delays. The settings are shared by every client.
+        (
+            acme.axios.defaults as unknown as { acmeSettings: { retryMaxAttempts: number } }
+        ).acmeSettings.retryMaxAttempts = 0;
+        acme.axios.defaults.timeout = this.requestTimeoutMs;
+
         return new acme.Client({ directoryUrl: this.directoryUrl, accountKey });
     }
 }
