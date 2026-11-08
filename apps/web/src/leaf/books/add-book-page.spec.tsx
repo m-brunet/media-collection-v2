@@ -71,7 +71,7 @@ it('keeps the same three sections, additional information folded without its val
 
     expect(await screen.findByRole('group', { name: '01 / Main information' })).toBeVisible();
     expect(screen.getByRole('group', { name: '02 / Location & tags · Optional' })).toBeVisible();
-    expect(screen.getByText('Additional information').closest('details')).not.toHaveAttribute(
+    expect(screen.getByText('03 / Additional information').closest('details')).not.toHaveAttribute(
         'open',
     );
 });
