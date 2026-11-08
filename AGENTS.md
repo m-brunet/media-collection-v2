@@ -245,8 +245,10 @@ declaration or a module-level arrow function, is not allowed when a class can ho
   - callbacks passed inline to a library or framework (for example `useFactory` providers in NestJS modules, array
     callbacks, Kysely expression builders, Zod refinements);
   - NestJS decorator factories (for example `Access(...)`), because decorators are functions by nature.
-- This applies to production code. Test code may keep small arrange helpers as functions inside a spec file; shared
-  test support should follow the same class style (for example `BookInputFixture.of(...)`, builders, `TestLibrary`).
+- This applies to production code and to shared test support (`*.test-support.ts`, `tests/api`), for example
+  `BookInputFixture.of(...)`, `TestActors.of(...)`, builders, `TestLibrary`. A spec file may keep small arrange helpers
+  as local functions.
+- Enforced by the `architecture/backend-classes` lint rule (`apps/server/src` and `tests/api`, spec files excluded).
 
 ### Web
 

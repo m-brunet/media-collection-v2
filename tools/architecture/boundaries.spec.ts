@@ -107,7 +107,7 @@ describe('architecture enforcement through the real Oxlint CLI', () => {
     it('accepts valid dependency in apps/server/src/notes/application/use-cases/nested/create.usecase.ts', () => {
         const path = 'apps/server/src/notes/application/use-cases/nested/create.usecase.ts';
         const source =
-            'import { Note } from "../../../domain/entities/note.entity.js"; export const create = () => new Note();';
+            'import { Note } from "../../../domain/entities/note.entity.js"; export const note = new Note();';
         const input = { path, source };
 
         const result = lint(input.path, input.source);
@@ -764,6 +764,70 @@ describe('target hexagonal adapter boundaries', () => {
 });
 
 describe('persistence SQL boundary', () => {
+    it('rejects a standalone function in backend source', () => {
+        const path = 'apps/server/src/notes/application/services/note-format.service.ts';
+        const source =
+            'export function format(text: string): string {\n    return text.trim();\n}\n';
+
+        const result = lint(path, source);
+
+        expect(result.status).not.toBe(0);
+        expect(result.stdout + result.stderr).toContain('architecture(backend-classes)');
+    });
+    it('rejects a module-level arrow function in backend source', () => {
+        const path = 'apps/server/src/notes/infrastructure/adapters/driving/web/note-schemas.ts';
+        const source = 'const text = (max: number) => max;\nexport const limit = text(4);\n';
+
+        const result = lint(path, source);
+
+        expect(result.status).not.toBe(0);
+        expect(result.stdout + result.stderr).toContain('architecture(backend-classes)');
+    });
+    it('rejects a standalone function in shared API test support', () => {
+        const path = 'tests/api/setup/ports.ts';
+        const source = 'export function port(): number {\n    return 0;\n}\n';
+
+        const result = lint(path, source);
+
+        expect(result.status).not.toBe(0);
+        expect(result.stdout + result.stderr).toContain('architecture(backend-classes)');
+    });
+    it('accepts static methods of a backend class', () => {
+        const path = 'apps/server/src/notes/application/services/note-format.service.ts';
+        const source =
+            'export class NoteFormat {\n    static trimmed(text: string): string {\n        return text.trim();\n    }\n}\n';
+
+        const result = lint(path, source);
+
+        expect(result.stdout + result.stderr).not.toContain('architecture(backend-classes)');
+    });
+    it('accepts a NestJS decorator factory', () => {
+        const path = 'apps/server/src/notes/infrastructure/adapters/driving/web/note-access.ts';
+        const source =
+            'import { SetMetadata } from "@nestjs/common";\nexport const Owner = (role: string) => SetMetadata("role", role);\n';
+
+        const result = lint(path, source);
+
+        expect(result.stdout + result.stderr).not.toContain('architecture(backend-classes)');
+    });
+    it('accepts small helpers inside a backend test file', () => {
+        const path = 'apps/server/src/notes/application/create.spec.ts';
+        const source =
+            'function note(): string {\n    return "note";\n}\nexport const value = note();\n';
+
+        const result = lint(path, source);
+
+        expect(result.stdout + result.stderr).not.toContain('architecture(backend-classes)');
+    });
+    it('does not apply the backend class rule to web code', () => {
+        const path = 'apps/web/src/features/notes/format.ts';
+        const source =
+            'export function format(text: string): string {\n    return text.trim();\n}\n';
+
+        const result = lint(path, source);
+
+        expect(result.stdout + result.stderr).not.toContain('architecture(backend-classes)');
+    });
     it('rejects aliased raw SQL imports in runtime adapters', () => {
         const path =
             'apps/server/src/notes/infrastructure/adapters/driven/persistence/raw.adapter.ts';
