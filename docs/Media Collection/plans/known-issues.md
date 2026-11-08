@@ -11,6 +11,7 @@ list before starting a task: an open entry in the area a task touches is handled
 | KI-2 | Improvement | Libris sessions last 24 hours instead of one idle hour                                | Medium   | Open   |
 | KI-3 | Improvement | Additional information uses the same numbered heading as the other book-form sections | Low      | Open   |
 | KI-4 | Improvement | Libris has an application icon in the Windows taskbar                                 | Low      | Open   |
+| KI-5 | Bug         | Bookshelves count not vertically centred with the search field                         | Low      | Open   |
 
 ## Open
 
@@ -74,6 +75,21 @@ list before starting a task: an open entry in the area a task touches is handled
   should use the same mark as their favicon (Libris and Leaf).
 - **Severity:** low (appearance). **Planned:** next fix pass, or Task 10 (packaging and installer), whichever comes
   first; the installer icon should use the same files.
+
+### KI-5 — Bookshelves count not vertically centred with the search field
+
+- **Type:** Bug.
+- **Reported:** 2026-11-08 by the user, on the Libris Bookshelves page (French: "1 bibliothèque · 2 étagères").
+- **Seen:** the count of bookcases and shelves on the right of the search field sits at the top of the row instead of
+  being centred on the 44 px search field.
+- **Cause:** the page reuses the `.book-toolbar` row (`apps/web/src/libris/libris.css`), a flex row without
+  `align-items`, so the count (`<span className="muted">` in `apps/web/src/libris/locations/bookshelves-page.tsx`)
+  stretches to the field's height and its text stays at the top.
+- **Fix:** centre the items of that row (`align-items: center` on `.book-toolbar`, or on a Bookshelves-specific
+  modifier). Check that My books and Collections, which use the same row with a sort selector, still look right, and
+  keep the count from wrapping (`white-space: nowrap`). Component test not useful (layout); check it in the browser at
+  1280 × 720 and 1440 wide, in English and French.
+- **Severity:** low (visual alignment). **Planned:** next fix pass, or the next task that touches the Bookshelves page.
 
 ## Done
 
