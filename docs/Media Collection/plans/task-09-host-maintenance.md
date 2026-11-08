@@ -1,6 +1,6 @@
 # Task 9 — Host maintenance and data safety
 
-Status: plan written 2026-11-08, questions answered, waiting for the user's approval. Branch `task-09-host-maintenance`.
+Status: ready for review (2026-11-08), branch `task-09-host-maintenance`, pull request. Plan approved 2026-11-08. Branch `task-09-host-maintenance`.
 
 Owning docs: [release expectations](../operations/release-expectations.md) (backup and restore, Admin data reset,
 acceptance examples 3 to 8), [accounts](../product/accounts.md) (local recovery, data reset, examples 11 and 12),
@@ -150,18 +150,18 @@ New feature `apps/server/src/maintenance/`:
 ## Steps (one commit each)
 
 1. [x] Status table and Task 8 checks line.
-2. [ ] Recovery rebuilt: migrated open, protected Admin lookup, `account.recovered` audit; unit and adapter tests.
-3. [ ] Backup: manifest, archive adapter, `CreateBackup`, worker message; unit and adapter tests (temporary
+2. [x] Recovery rebuilt: migrated open, protected Admin lookup, `account.recovered` audit; unit and adapter tests.
+3. [x] Backup: manifest, archive adapter, `CreateBackup`, worker message; unit and adapter tests (temporary
    directories).
-4. [ ] Restore: inspection, validation, swap and roll back, session key rotation, audit; unit and adapter tests
+4. [x] Restore: inspection, validation, swap and roll back, session key rotation, audit; unit and adapter tests
    (invalid file, other version, damaged checksum, missing cover, failure during the swap keeps the data).
-5. [ ] Maintenance window: menu, launch option, page EN/FR, bridge, dialogs, restart after closing; Electron desktop
+5. [x] Maintenance window: menu, launch option, page EN/FR, bridge, dialogs, restart after closing; Electron desktop
    tests.
-6. [ ] Data reset backend: eraser moved and extended, `ResetApplicationData`, endpoint; unit and API tests (Admin
+6. [x] Data reset backend: eraser moved and extended, `ResetApplicationData`, endpoint; unit and API tests (Admin
    success, Owner and Guest refused, signed out, wrong password, CSRF, sessions ended, colour scheme back to Spring
    green, backups untouched, dev reset still passes).
-7. [ ] Data reset in Libris: panel and dialog, EN/FR, component tests, Playwright journey.
-8. [ ] Docs (README, architecture, owning docs' implementation references), architecture review, `npm run check`,
+7. [x] Data reset in Libris: panel and dialog, EN/FR, component tests, Playwright journey.
+8. [x] Docs (README, architecture, owning docs' implementation references), architecture review, `npm run check`,
    Status table, notes for Task 10, push and pull request.
 
 ## Test list mapped to acceptance examples
@@ -195,4 +195,37 @@ New feature `apps/server/src/maintenance/`:
 
 ## Notes for later tasks
 
-(filled in at the end of the task)
+- **Opening maintenance:** desktop menu **Maintenance → Open local maintenance…** (confirmation, the backend stops,
+  the Libris window is replaced, closing the maintenance window starts the application again, still signed in unless a
+  restore ended the sessions) or `--maintenance` (`npm run maintenance`), which replaces `--reset-admin --login`.
+  Task 10 adds the update controls to this window; `MaintenanceWindow` (`apps/desktop/src/maintenance-window.adapter.ts`)
+  owns the page, its worker, the native dialogs and the IPC handlers.
+- **Backups for Task 10:** `LocalMaintenance.createBackup(destination)` (root config) and the worker message `backup`
+  make the full backup; default folder `Documents/Media Collection backups`, file name
+  `Media Collection backup YYYY-MM-DD HH-mm-ss.mcbackup` (`BackupFileName`). Restore accepts only the exact running
+  version (`app.getVersion()`, the package version).
+- **Restore safety:** staged in `<data>/.restore-<uuid>`, current data moved to `<data>/.previous-<uuid>` and put back
+  on any error; the staged database must have exactly the current migrations (`Database.isUpToDate`), a protected Admin
+  and every cover it names. A new `session.key` ends every session, including sessions signed before the backup was
+  made. `Database` now closes a file that is not a database instead of leaving it locked.
+- **Data reset:** `POST /api/maintenance/data-reset` (`{ password }`, protected Admin only, `403` for Owner and Guest,
+  `400 password-incorrect`), on the Accounts page (design `iX066`). It keeps the Admin (username, password, language),
+  the HTTP and HTTPS settings and certificate files, and backups; it deletes the library, the audit log, other
+  accounts and the saved preferences listed in `KyselyApplicationDataEraser.preferences` (only `appearance` today:
+  **Task 10 adds the icon set there**). The page reloads `/` afterwards, so the sign-in page shows Spring green.
+- **Audit:** `account.recovered` (actor null, subject the Admin), `maintenance.backup-created` (current data, after
+  the copy), `maintenance.backup-restored` (restored data; a Failed record stays in the current data),
+  `maintenance.data-reset` (the only record left). None is in `ActivityEligibility`.
+- **Shared erasers:** `KyselyLibraryEraser` and `KyselyCoverFileCleanup` moved from `development-data` to `maintenance`;
+  the development reset is composed with them.
+- **Tests:** desktop tests use the harness's queued dialog answers (`answer-dialogs`), `menu`, `window` and
+  `close-window` commands; the harness also logs error boxes and uncaught main-process errors instead of showing them
+  (they once appeared on the user's screen during a run). The test option `recovery` became `maintenance`.
+- **Checks:** `npm run check` from PowerShell passes (274 files, 2424 tests).
+- **Architecture review (step 8):** one mandatory finding, fixed: data-reset API cases sent a second request after
+  Act (sign-out, other-device session, password kept); they now observe the cookie clearing, the token version and
+  the stored password hash, and the browser journey covers signing in again. Optional, not changed: the worker's
+  message dispatch is an `if` chain (one more branch per maintenance action); `KyselyApplicationDataEraser` deletes
+  rows of the identity and appearance tables, which is the nature of a whole-installation reset and stays behind the
+  maintenance port; `LocalMaintenance` refuses recovery and backup before opening a missing database so it never
+  creates one.
