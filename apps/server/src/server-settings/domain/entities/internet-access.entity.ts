@@ -15,7 +15,9 @@ export type InternetAccessFailureReason =
     | 'not-reachable'
     | 'public-address-unknown'
     | 'rate-limited'
-    | 'authority-unavailable';
+    | 'authority-unavailable'
+    | 'https-unavailable'
+    | 'setup-failed';
 
 export interface InternetAccessState {
     phase: InternetAccessPhase;
@@ -32,6 +34,8 @@ export interface InternetAccessState {
 // phones reach the installation over HTTPS. A setup runs in steps; once active, the upkeep keeps
 // the certificate valid for the current public address.
 export class InternetAccess {
+    // The router's port that phones reach; Let's Encrypt only checks an IP address on 443.
+    static readonly externalPort = 443;
     private state: InternetAccessState;
 
     constructor(state: InternetAccessState) {
@@ -231,7 +235,22 @@ export class InternetAccess {
     }
 
     turnOff(): void {
+        if (this.state.phase === 'setting-up') {
+            throw new Failure(
+                'conflict',
+                'Wait for the internet access setup to finish.',
+                'setup-in-progress',
+            );
+        }
+
         this.state = InternetAccess.off().state;
+    }
+
+    // A setup cut short by a restart cannot resume.
+    interrupted(now: Date): void {
+        if (this.state.phase === 'setting-up') {
+            this.stop('setup-failed', now);
+        }
     }
 
     private requireSettingUp(): void {
