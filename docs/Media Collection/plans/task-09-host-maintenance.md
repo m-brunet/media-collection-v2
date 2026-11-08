@@ -1,6 +1,6 @@
 # Task 9 — Host maintenance and data safety
 
-Status: ready for review (2026-11-08), branch `task-09-host-maintenance`, pull request. Plan approved 2026-11-08. Branch `task-09-host-maintenance`.
+Status: done (2026-11-08), PR #5 merged. Plan approved 2026-11-08. Branch `task-09-host-maintenance`.
 
 Owning docs: [release expectations](../operations/release-expectations.md) (backup and restore, Admin data reset,
 acceptance examples 3 to 8), [accounts](../product/accounts.md) (local recovery, data reset, examples 11 and 12),
