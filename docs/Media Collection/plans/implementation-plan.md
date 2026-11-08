@@ -147,7 +147,9 @@ Owning docs: `../operations/updates.md`, `../design/design-guidelines.md`.
 - GitHub Releases update checks, Windows integrated download/install with automatic backup, macOS/Linux backup-and-open-download-page, backup folder, failure handling.
 - Packaging/installer naming; icon set switching (Admin setting) and credits/licences page (include the lookup
   sources and image libraries listed in [Task 6 · Credits](task-06-assisted-entry.md#credits-for-the-future-credits-page)
-  and the barcode libraries in [Task 7 · Credits](task-07-leaf.md#credits-for-the-future-credits-page)).
+  and the barcode libraries in [Task 7 · Credits](task-07-leaf.md#credits-for-the-future-credits-page), and the
+  Libris icon: Streamline Freehand, CC BY 4.0, see `apps/desktop/assets/icons/CREDITS.md`); the installer uses the
+  Libris icon files in `apps/desktop/assets/icons`.
 
 ## Dependencies
 

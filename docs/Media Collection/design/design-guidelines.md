@@ -52,6 +52,8 @@ The minimum supported desktop size is 1280 x 720. The Electron window cannot be 
 
 ## Icons
 
+**Libris icon.** The official Libris icon is the library brand mark of set 02 "Hand-inked editorial sketches" (Streamline Freehand, CC BY 4.0), always drawn in the Spring green accent `#79d670`: it is the desktop window and taskbar icon, the mark next to the "Libris" title and the favicon of the browser version, and it does not change with the colour scheme or the chosen icon set. Source: `apps/web/public/libris.svg`; desktop icon files and their credits in `apps/desktop/assets/icons`. Leaf's mark and favicon are not decided yet.
+
 Lucide is the default icon set. The Admin can choose the installation's icon set in application settings; the choice applies to every account and to both Libris and Leaf. It is a saved application preference: it is included in backups and returns to Lucide after an Admin data reset.
 
 Available sets come from the artifact's icon library (`design/artifact/icons/`):
