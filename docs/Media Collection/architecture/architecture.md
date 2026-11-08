@@ -207,8 +207,8 @@ every SQL read and write; a foreign ID returns 404, including for administrators
 
 JWTs live in HttpOnly SameSite cookies, with different names for HTTP and HTTPS. Only HTTPS cookies use Secure. The key
 is persisted in the data directory. Signing keys and TLS material have owner-only POSIX permissions or protected Windows
-ACLs allowing the current account, SYSTEM and administrators. Tokens expire after an idle hour; authenticated actions
-renew them. Passive requests marked `X-App-Activity: passive` and public health calls do not renew them. The browser has
+ACLs allowing the current account, SYSTEM and administrators. Tokens and their cookie expire after 24 idle hours (one
+lifetime, `SessionLifetime` in `shared/domain`); authenticated actions renew them. Passive requests marked `X-App-Activity: passive` and public health calls do not renew them. The browser has
 no refresh token or refresh timer. A persisted token version invalidates old sessions after password changes/recovery.
 Repository writes compare the previously read version, and renewal checks the authenticated version, protecting against
 concurrent stale credential requests.
