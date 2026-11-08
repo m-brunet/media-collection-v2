@@ -2,6 +2,7 @@ import { jwtVerify, SignJWT } from 'jose';
 import type { SessionClaims } from '../../../../application/session-claims.js';
 import type { SessionTokens } from '../../../../application/ports/driven/session-tokens.interface.js';
 import type { Clock } from '../../../../../shared/application/ports/driven/clock.interface.js';
+import { SessionLifetime } from '../../../../../shared/domain/session-lifetime.helper.js';
 
 export class JwtSessionTokens implements SessionTokens {
     constructor(
@@ -18,7 +19,7 @@ export class JwtSessionTokens implements SessionTokens {
             .setIssuer('media-collection')
             .setAudience('media-collection-web')
             .setIssuedAt(now)
-            .setExpirationTime(now + 3600)
+            .setExpirationTime(now + SessionLifetime.seconds)
             .sign(this.key);
     }
 
