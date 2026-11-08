@@ -1,6 +1,6 @@
 import type { BackendHandle } from '../../server/src/infrastructure/config/bootstrap.js';
-import { startBackend } from '../../server/src/infrastructure/config/bootstrap.js';
-import { recoverAdministrator } from '../../server/src/infrastructure/config/recovery.js';
+import { BackendRuntime } from '../../server/src/infrastructure/config/bootstrap.js';
+import { AdministratorRecovery } from '../../server/src/infrastructure/config/recovery.js';
 import { DevelopmentDataCommands } from '../../server/src/infrastructure/config/development-data.js';
 import type { WorkerRequest, WorkerResponse } from './protocol.js';
 
@@ -26,7 +26,7 @@ parent.on('message', (event) => {
                 }
 
                 starting = true;
-                backend = await startBackend(message);
+                backend = await new BackendRuntime().start(message);
                 send({
                     type: 'ready',
                     httpPort: backend.httpPort,
@@ -38,7 +38,11 @@ parent.on('message', (event) => {
                     throw new Error('Recovery cannot run with the server active.');
                 }
 
-                await recoverAdministrator(message.dataDirectory, message.login, message.password);
+                await AdministratorRecovery.run(
+                    message.dataDirectory,
+                    message.login,
+                    message.password,
+                );
                 send({ type: 'recovered' });
             } else if (message.type === 'dev-reset' || message.type === 'dev-import-v1') {
                 if (starting) {

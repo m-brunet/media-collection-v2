@@ -664,7 +664,7 @@ describe('target hexagonal adapter boundaries', () => {
     it('accepts desktop lifecycle access to root bootstrap', () => {
         const path = 'apps/desktop/src/backend.ts';
         const source =
-            'export { startBackend } from "../../server/src/infrastructure/config/bootstrap.js";';
+            'export { BackendRuntime } from "../../server/src/infrastructure/config/bootstrap.js";';
 
         const result = lint(path, source);
 
