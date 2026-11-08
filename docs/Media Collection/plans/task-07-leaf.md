@@ -1,6 +1,6 @@
 # Task 7 — Leaf (mobile)
 
-Status: **done** (2026-11-07) on branch `task-07-leaf`, ready for review in a pull request. Global plan: [implementation plan](implementation-plan.md).
+Status: **done** (2026-11-07), merged with PR #3. Global plan: [implementation plan](implementation-plan.md).
 
 ## Scope
 
@@ -250,7 +250,6 @@ Desktop regression: existing Libris component tests and browser journeys pass un
 - **Scanning without HTTPS:** live camera only on a secure page (HTTPS or the computer itself); otherwise Scan a book
   opens the camera app through `<input type="file" accept="image/*" capture="environment">`, and the photo is read on
   the phone and dropped. A refused/missing camera offers Retry (which switches to the photo) or Back to home.
-  Untested on real phones so far: worth a try on Android and iPhone over plain HTTP.
 - **Barcode reader:** `BarcodeReader` port (`leaf/scan/barcode-reader-context.ts`), production adapter
   `ZxingBarcodeReader`: the browser's own `BarcodeDetector` when it reads EAN-13, otherwise the `barcode-detector`
   ponyfill with the bundled `zxing_reader.wasm` (~950 kB, loaded only when scanning, served by the app). The Content

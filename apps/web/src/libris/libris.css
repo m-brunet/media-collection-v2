@@ -1554,3 +1554,204 @@ body {
     gap: var(--space-2);
     margin-top: var(--space-2);
 }
+
+/* Overview */
+.overview {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+    gap: var(--space-6);
+    align-items: start;
+}
+
+.overview-counters {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: var(--space-6);
+    margin: 0;
+}
+
+.overview-counter {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column-reverse;
+    gap: var(--space-2);
+    padding: var(--space-2) 0 var(--space-5);
+    border-bottom: var(--border);
+}
+
+.overview-counter__value {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: var(--text-3xl);
+    font-weight: 600;
+    line-height: 1.1;
+}
+
+.overview-counter__label {
+    color: var(--color-text-secondary);
+}
+
+.overview-panel__heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+}
+
+.overview-books {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.overview-book {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    color: inherit;
+    text-decoration: none;
+}
+
+.overview-book .book-cover {
+    width: 100%;
+    margin-bottom: var(--space-2);
+}
+
+.overview-book__title {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.overview-book:hover .overview-book__title {
+    color: var(--color-accent-strong);
+}
+
+.overview-book:focus-visible {
+    outline: none;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--focus-ring);
+}
+
+.overview-book__status {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+}
+
+.overview-side {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+.overview-reading__counts {
+    font-family: var(--font-heading);
+    font-size: var(--text-xl);
+}
+
+.overview-bookcases {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* Activity (design E5DS9p: full-width feed, icon, action over its relative time) */
+.activity {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-6);
+}
+
+.activity-list {
+    align-self: stretch;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.activity-entry {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 21px 0;
+    border-bottom: var(--border);
+}
+
+.activity-entry__icon {
+    flex-shrink: 0;
+    color: var(--color-accent);
+}
+
+.activity-entry__text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    min-width: 0;
+}
+
+.activity-entry__action {
+    font-size: 16px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.activity-entry__also {
+    font-size: var(--text-md);
+    color: var(--color-text-secondary);
+}
+
+.activity-time {
+    position: relative;
+}
+
+.activity-time__relative {
+    font-size: var(--text-sm);
+    line-height: 1.4;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+    cursor: default;
+    border-radius: var(--radius-sm);
+}
+
+.activity-time__relative:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
+
+.activity-time__details {
+    position: absolute;
+    top: calc(100% + var(--space-2));
+    left: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 340px;
+    padding: var(--space-4);
+    border: var(--border);
+    border-radius: 7px;
+    background: var(--color-panel);
+    color: var(--color-text);
+    font-size: var(--text-md);
+    line-height: 1.4;
+    box-shadow: 0 8px 24px rgb(0 0 0 / 35%);
+}
+
+.activity-time__details[hidden] {
+    display: none;
+}
+
+.activity-time__label {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-accent);
+    text-transform: uppercase;
+}

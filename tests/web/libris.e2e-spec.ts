@@ -1,6 +1,6 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type { Page } from 'playwright';
-import { administrator, RuntimeFixture } from '../api/runtime-setup.js';
+import { RuntimeFixture, RuntimeSetup } from '../api/runtime-setup.js';
 import type { Client } from '../api/client.js';
 import { BrowserFixture, capture, viewports } from './browser.js';
 
@@ -36,7 +36,7 @@ async function signIn(page: Page, username: string, password: string) {
 
 // An installation whose administrator exists, with one Owner and one Guest account.
 async function household() {
-    await administrator(api);
+    await RuntimeSetup.administrator(api);
     await api.call('/users', 'POST', {
         username: 'camille',
         password: 'temporary-1',
@@ -54,7 +54,7 @@ async function replaceTemporaryPassword(page: Page, current: string, next: strin
     await page.getByLabel(/^New password/).fill(next);
     await page.getByLabel(/^Confirm new password/).fill(next);
     await page.getByRole('button', { name: 'Save password and continue' }).click();
-    await page.getByRole('heading', { name: 'My books' }).waitFor();
+    await page.getByRole('heading', { name: 'Overview' }).waitFor();
 }
 
 describe('Libris first launch', () => {
@@ -82,12 +82,12 @@ describe('Libris first launch', () => {
 
         await page.getByRole('button', { name: 'Create administrator' }).click();
 
-        await page.getByRole('heading', { name: 'My books' }).waitFor();
+        await page.getByRole('heading', { name: 'Overview' }).waitFor();
         expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
             viewports.minimumDesktop.width,
         );
         expect(await page.getByRole('link', { name: 'Accounts' }).isVisible()).toBe(true);
-        await capture(page, 'libris-books-admin-1280');
+        await capture(page, 'libris-overview-admin-1280');
     });
 
     it('keeps setup out of reach of a browser, even on the same computer', async () => {
@@ -197,14 +197,14 @@ describe('Libris accounts', () => {
         const first = await browser.page(base);
 
         await signIn(first, 'admin', 'administrator-new-password');
-        await first.getByRole('heading', { name: 'My books' }).waitFor();
+        await first.getByRole('heading', { name: 'Overview' }).waitFor();
         await first.getByRole('button', { name: 'Français' }).first().click();
-        await first.getByRole('heading', { name: 'Mes livres' }).waitFor();
+        await first.getByRole('heading', { name: 'Vue d’ensemble' }).waitFor();
         const second = await browser.page(base, { locale: 'en-GB' });
 
         await signIn(second, 'admin', 'administrator-new-password');
 
-        await second.getByRole('heading', { name: 'Mes livres' }).waitFor();
+        await second.getByRole('heading', { name: 'Vue d’ensemble' }).waitFor();
         expect(await second.locator('html').getAttribute('lang')).toBe('fr');
     });
 
@@ -212,7 +212,7 @@ describe('Libris accounts', () => {
         const page = await browser.page(base, { viewport: viewports.referenceDesktop });
 
         await signIn(page, 'admin', 'administrator-new-password');
-        await page.getByRole('heading', { name: 'My books' }).waitFor();
+        await page.getByRole('heading', { name: 'Overview' }).waitFor();
 
         await page.goto('/admin/server');
 

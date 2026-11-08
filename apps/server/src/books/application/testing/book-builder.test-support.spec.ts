@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BookBuilder } from './book-builder.test-support.js';
-import { library } from './book-doubles.test-support.js';
+import { BookDoubles } from './book-doubles.test-support.js';
 
 describe('BookBuilder.build', () => {
     it('builds an Owned Books record without ISBN by default', () => {
@@ -63,7 +63,7 @@ describe('BookBuilder.build', () => {
 
 describe('BookBuilder.buildAndSave', () => {
     it('saves the book with its authors', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
         const result = await new BookBuilder()
             .withTitle('Good Omens')
@@ -76,7 +76,7 @@ describe('BookBuilder.buildAndSave', () => {
         ).toEqual(['Neil Gaiman', 'Terry Pratchett']);
     });
     it('reuses a saved author with an equivalent name', async () => {
-        const current = library();
+        const current = BookDoubles.library();
         const first = await new BookBuilder().withAuthors('Susanna Clarke').buildAndSave(current);
 
         const result = await new BookBuilder().withAuthors('susanna CLARKE').buildAndSave(current);

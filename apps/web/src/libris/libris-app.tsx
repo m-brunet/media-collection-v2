@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useState } from 'react';
-import { createBrowserRouter, Link, Navigate, Route, RouterProvider, Routes } from 'react-router';
+import { createBrowserRouter, Link, Route, RouterProvider, Routes } from 'react-router';
 import { useI18n } from '../shared/i18n/i18n-context';
 import { AppearanceProvider } from '../shared/appearance/appearance-context';
 import { SessionProvider, useSession } from '../shared/session/session-context';
@@ -22,6 +22,8 @@ import { CollectionsPage } from './collections/collections-page';
 import { FiltersPage } from './filters/filters-page';
 import { BookshelvesPage } from './locations/bookshelves-page';
 import { TagsPage } from './tags/tags-page';
+import { OverviewPage } from './overview/overview-page';
+import { ActivityPage } from './activity/activity-page';
 import { LendPage } from './lending/lend-page';
 import { LoansPage } from './lending/loans-page';
 import { ReturnPage } from './lending/return-page';
@@ -89,7 +91,8 @@ function LibrisRoutes() {
     return (
         <AppShell>
             <Routes>
-                <Route path="/" element={<Navigate to="/books" replace />} />
+                <Route path="/" element={<OverviewPage />} />
+                <Route path="/activity" element={<ActivityPage />} />
                 <Route path="/books" element={<MyBooksPage />} />
                 <Route path="/books/filters" element={<FiltersPage listing="books" />} />
                 <Route

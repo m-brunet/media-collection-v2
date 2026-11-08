@@ -1,5 +1,6 @@
 import type { DynamicModule, Provider } from '@nestjs/common';
 import { Module } from '@nestjs/common';
+import { ValueProviders } from '../../../shared/infrastructure/config/value-providers.helper.js';
 import type { AuthorRepository } from '../../application/ports/driven/author-repository.interface.js';
 import type { BookCatalog } from '../../application/ports/driven/book-catalog.interface.js';
 import type { BookCollectionReader } from '../../application/ports/driven/book-collection-reader.interface.js';
@@ -139,14 +140,6 @@ const token = {
     lookupCovers: 'BOOKS_LOOKUP_COVERS',
     lookupChains: 'BOOKS_LOOKUP_CHAINS',
 } as const;
-
-function dependencyProviders(dependencies: BooksDependencies): Provider[] {
-    return (Object.keys(dependencies) as (keyof BooksDependencies)[]).map((name) => ({
-        provide: token[name],
-        useValue: dependencies[name],
-    }));
-}
-
 const serviceProviders: Provider[] = [
     {
         provide: token.lookupCovers,
@@ -580,7 +573,7 @@ export class BooksModule {
                 LookupsController,
             ],
             providers: [
-                ...dependencyProviders(dependencies),
+                ...ValueProviders.of(dependencies, token),
                 ...serviceProviders,
                 ...useCaseProviders,
                 ...(options.developmentImport ? developmentProviders : []),

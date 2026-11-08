@@ -17,11 +17,11 @@ import { CollectionViewer } from '../services/collection-viewer.service.js';
 import { BookCollectionMembership } from '../services/book-collection-membership.service.js';
 import { Collection } from '../../domain/entities/collection.entity.js';
 import {
-    auditedOperation,
+    AuditDoubles,
     MemoryAuditTrail,
 } from '../../../shared/application/testing/audit-doubles.test-support.js';
-import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
+import { TestActors } from '../../../shared/application/testing/test-actors.test-support.js';
 
 export class MemoryCollections implements CollectionRepository {
     readonly collections = new Map<string, Collection>();
@@ -197,62 +197,70 @@ export class RecordedMemberTitles implements MemberTitles {
     }
 }
 
-export function shelf() {
-    const collections = new MemoryCollections();
-    const members = new MemoryMembers();
-    const trail = new MemoryAuditTrail();
-    const loader = new CollectionLoader(collections);
-    const upkeep = new CollectionUpkeep(collections, members);
-    let counter = 0;
-    const ids = { next: () => 'collection-' + ++counter };
-    const clock = { now: () => new Date('2026-03-01T10:00:00Z') };
+export class CollectionDoubles {
+    static shelf() {
+        const collections = new MemoryCollections();
+        const members = new MemoryMembers();
+        const trail = new MemoryAuditTrail();
+        const loader = new CollectionLoader(collections);
+        const upkeep = new CollectionUpkeep(collections, members);
+        let counter = 0;
+        const ids = { next: () => 'collection-' + ++counter };
+        const clock = { now: () => new Date('2026-03-01T10:00:00Z') };
 
-    return {
-        collections,
-        members,
-        trail,
-        loader,
-        upkeep,
-        ids,
-        clock,
-        search: new FixedBookSearch(),
-        titles: new RecordedMemberTitles(),
-        viewer: new CollectionViewer(),
-        operations: auditedOperation(trail),
-        membership: new BookCollectionMembership(collections, members, loader, upkeep, ids, clock),
-    };
+        return {
+            collections,
+            members,
+            trail,
+            loader,
+            upkeep,
+            ids,
+            clock,
+            search: new FixedBookSearch(),
+            titles: new RecordedMemberTitles(),
+            viewer: new CollectionViewer(),
+            operations: AuditDoubles.auditedOperation(trail),
+            membership: new BookCollectionMembership(
+                collections,
+                members,
+                loader,
+                upkeep,
+                ids,
+                clock,
+            ),
+        };
+    }
+
+    // Saves a book as a member, through the membership rules, for arranging later scenarios.
+    static async member(
+        current: ReturnType<typeof CollectionDoubles.shelf>,
+        bookId: string,
+        ownership: MemberRecord['ownership'],
+        collection: string,
+        volumeFrom: number,
+        volumeTo = volumeFrom,
+    ) {
+        current.members.saveBook(bookId, ownership);
+
+        return current.membership.assign(
+            { id: bookId, ownership },
+            { collection: { name: collection }, volumeFrom, volumeTo, enableVolumeZero: true },
+            [],
+        );
+    }
+
+    // Marks a complete collection Finished, as a person would.
+    static async markFinished(
+        current: ReturnType<typeof CollectionDoubles.shelf>,
+        collectionId: string,
+    ) {
+        const collection = (await current.collections.findById(collectionId))!;
+        const records = await current.members.ofCollections([collectionId]);
+
+        collection.finish(MemberCoverage.of(records), '2026-01-01T00:00:00.000Z');
+        await current.collections.save(collection);
+    }
 }
 
-// Saves a book as a member, through the membership rules, for arranging later scenarios.
-export async function member(
-    current: ReturnType<typeof shelf>,
-    bookId: string,
-    ownership: MemberRecord['ownership'],
-    collection: string,
-    volumeFrom: number,
-    volumeTo = volumeFrom,
-) {
-    current.members.saveBook(bookId, ownership);
-
-    return current.membership.assign(
-        { id: bookId, ownership },
-        { collection: { name: collection }, volumeFrom, volumeTo, enableVolumeZero: true },
-        [],
-    );
-}
-
-// Marks a complete collection Finished, as a person would.
-export async function markFinished(current: ReturnType<typeof shelf>, collectionId: string) {
-    const collection = (await current.collections.findById(collectionId))!;
-    const records = await current.members.ofCollections([collectionId]);
-
-    collection.finish(MemberCoverage.of(records), '2026-01-01T00:00:00.000Z');
-    await current.collections.save(collection);
-}
-
-function actor(role: Actor['role'], id: string): Actor {
-    return { id, username: id, role, mustChangePassword: false, language: null };
-}
-
-export const owner = actor('owner', 'camille');
-export const guest = actor('guest', 'morgan');
+export const owner = TestActors.of('owner', 'camille');
+export const guest = TestActors.of('guest', 'morgan');

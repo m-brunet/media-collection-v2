@@ -6,12 +6,11 @@ import type { SourceReply } from '../ports/driven/lookup-source.interface.js';
 import { SourceBudget } from '../services/source-budget.service.js';
 import { SourceLink } from '../services/source-chain.service.js';
 import {
+    BookDoubles,
     guest,
-    library,
     ManualClock,
     MemoryCoverRegistry,
     owner,
-    saved,
     ScriptedSource,
 } from '../testing/book-doubles.test-support.js';
 import { LookUpBook } from './look-up-book.usecase.js';
@@ -39,8 +38,8 @@ const cover: CoverOffer = {
 
 describe('LookUpBook', () => {
     it('opens an ISBN already in the library without asking any source (example 11)', async () => {
-        const current = library();
-        const book = await saved(current);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
         const bnf = new ScriptedSource('bnf', answer({ title: 'Piranesi' }));
 
         const result = await new LookUpBook(
@@ -57,10 +56,12 @@ describe('LookUpBook', () => {
     it('asks the sources with the ISBN-13 of an ISBN-10', async () => {
         const bnf = new ScriptedSource<LookupAnswer>('bnf', { kind: 'none' });
 
-        await new LookUpBook(library().books, chain(bnf), null, new MemoryCoverRegistry()).execute(
-            owner,
-            '2253164690',
-        );
+        await new LookUpBook(
+            BookDoubles.library().books,
+            chain(bnf),
+            null,
+            new MemoryCoverRegistry(),
+        ).execute(owner, '2253164690');
 
         expect(bnf.asked).toEqual(['9782253164692']);
     });
@@ -77,7 +78,7 @@ describe('LookUpBook', () => {
         });
 
         const result = await new LookUpBook(
-            library().books,
+            BookDoubles.library().books,
             chain(bnf, openLibrary),
             chain(covers),
             new MemoryCoverRegistry(),
@@ -103,7 +104,7 @@ describe('LookUpBook', () => {
         const bnf = new ScriptedSource<LookupAnswer>('bnf', { kind: 'none' });
 
         const result = await new LookUpBook(
-            library().books,
+            BookDoubles.library().books,
             chain(bnf),
             null,
             new MemoryCoverRegistry(),
@@ -121,7 +122,7 @@ describe('LookUpBook', () => {
         });
 
         const result = await new LookUpBook(
-            library().books,
+            BookDoubles.library().books,
             chain(bnf, openLibrary),
             chain(covers),
             new MemoryCoverRegistry(),
@@ -138,7 +139,12 @@ describe('LookUpBook', () => {
     });
 
     it('rejects an invalid ISBN', async () => {
-        const lookup = new LookUpBook(library().books, null, null, new MemoryCoverRegistry());
+        const lookup = new LookUpBook(
+            BookDoubles.library().books,
+            null,
+            null,
+            new MemoryCoverRegistry(),
+        );
 
         const result = lookup.execute(owner, '9782253164691');
 
@@ -149,7 +155,7 @@ describe('LookUpBook', () => {
         const bnf = new ScriptedSource('bnf', answer({ title: 'Piranesi' }));
 
         const result = new LookUpBook(
-            library().books,
+            BookDoubles.library().books,
             chain(bnf),
             null,
             new MemoryCoverRegistry(),

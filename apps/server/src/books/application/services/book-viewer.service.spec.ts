@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { guest, library, otherOwner, owner, saved } from '../testing/book-doubles.test-support.js';
+import { BookDoubles, guest, otherOwner, owner } from '../testing/book-doubles.test-support.js';
 
 describe('BookViewer', () => {
     it('shows the shared information', async () => {
-        const current = library();
-        const book = await saved(current, { price: '9.99' });
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, { price: '9.99' });
 
         const result = await current.viewer.view(await current.loader.load(book.id), owner);
 
@@ -16,8 +16,8 @@ describe('BookViewer', () => {
         });
     });
     it('shows the viewer own reading status and note', async () => {
-        const current = library();
-        const book = await saved(current, {}, true);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, {}, true);
 
         await current.notes.save(owner.id, book.id, 'Mine.', '2026-03-01T10:00:00.000Z');
 
@@ -29,8 +29,8 @@ describe('BookViewer', () => {
         });
     });
     it('hides another account reading status and note', async () => {
-        const current = library();
-        const book = await saved(current, {}, true);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, {}, true);
 
         await current.notes.save(owner.id, book.id, 'Mine.', '2026-03-01T10:00:00.000Z');
 
@@ -39,16 +39,16 @@ describe('BookViewer', () => {
         expect(result.personal).toEqual({ read: false, note: null });
     });
     it('gives a Guest no personal information', async () => {
-        const current = library();
-        const book = await saved(current);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
 
         const result = await current.viewer.view(await current.loader.load(book.id), guest);
 
         expect(result.personal).toBeNull();
     });
     it('shows the collection the book belongs to', async () => {
-        const current = library();
-        const book = await saved(current, {
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, {
             collection: { collection: { name: 'Batman' }, volumeFrom: 1, volumeTo: 3 },
         });
 
@@ -62,8 +62,11 @@ describe('BookViewer', () => {
         });
     });
     it('shows where the book is kept and its tags', async () => {
-        const current = library();
-        const book = await saved(current, { shelfId: 'shelf-3', tags: [{ name: 'Fantasy' }] });
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, {
+            shelfId: 'shelf-3',
+            tags: [{ name: 'Fantasy' }],
+        });
 
         const result = await current.viewer.view(await current.loader.load(book.id), guest);
 
@@ -79,8 +82,8 @@ describe('BookViewer', () => {
 
 describe('BookViewer with loans', () => {
     it('shows who has a lent book and since when', async () => {
-        const current = library();
-        const book = await saved(current);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
         const loan = current.loans.lend(book.id, 'Sam Taylor');
 
         const result = await current.viewer.view(await current.loader.load(book.id), guest);
@@ -88,8 +91,8 @@ describe('BookViewer with loans', () => {
         expect(result.loan).toEqual(loan);
     });
     it('shows no loan for a book that is not lent', async () => {
-        const current = library();
-        const book = await saved(current);
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
 
         const result = await current.viewer.view(await current.loader.load(book.id), owner);
 

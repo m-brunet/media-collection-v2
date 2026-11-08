@@ -1,6 +1,6 @@
 import { afterAll, afterEach, beforeAll, beforeEach, expect, it } from 'vitest';
 import type { Page } from 'playwright';
-import { administrator, RuntimeFixture } from '../api/runtime-setup.js';
+import { RuntimeFixture, RuntimeSetup } from '../api/runtime-setup.js';
 import { BrowserFixture, capture, viewports } from './browser.js';
 
 const browser = new BrowserFixture();
@@ -18,7 +18,7 @@ beforeEach(async () => {
     const started = await runtime.start();
 
     base = started.client.base;
-    await administrator(started.client);
+    await RuntimeSetup.administrator(started.client);
 });
 afterEach(async () => {
     await browser.closeContexts();

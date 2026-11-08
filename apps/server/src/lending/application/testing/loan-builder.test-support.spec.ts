@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { lending } from './lending-doubles.test-support.js';
+import { LendingDoubles } from './lending-doubles.test-support.js';
 import { LoanBuilder } from './loan-builder.test-support.js';
 import { ReceiverBuilder } from './receiver-builder.test-support.js';
 
@@ -42,7 +42,7 @@ describe('LoanBuilder.build', () => {
 
 describe('LoanBuilder.buildAndSave', () => {
     it('saves the loan of the given book to the given receiver', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
         const sam = await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
 
         const result = await new LoanBuilder().of({ id: 'dune' }).to(sam.id).buildAndSave(current);
@@ -51,14 +51,14 @@ describe('LoanBuilder.buildAndSave', () => {
         expect(result.snapshot.receiverId).toBe(sam.id);
     });
     it('creates a receiver when none was given', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
 
         const result = await new LoanBuilder().of({ id: 'dune' }).buildAndSave(current);
 
         expect(await current.receivers.findById(result.snapshot.receiverId)).not.toBeNull();
     });
     it('refuses to save a loan without its book', async () => {
-        const current = lending();
+        const current = LendingDoubles.lending();
 
         const result = new LoanBuilder().buildAndSave(current);
 

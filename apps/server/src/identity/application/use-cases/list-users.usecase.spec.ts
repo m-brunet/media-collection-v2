@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { MemoryUsers, user } from '../testing/identity-doubles.test-support.js';
+import { IdentityDoubles, MemoryUsers } from '../testing/identity-doubles.test-support.js';
 import { ListUsers } from './list-users.usecase.js';
 
 describe('ListUsers', () => {
     it('lists safe account views for a ready administrator', async () => {
         const users = new MemoryUsers();
-        const account = user();
+        const account = IdentityDoubles.user();
 
         await users.create(account);
         const subject = new ListUsers(users);
@@ -19,7 +19,7 @@ describe('ListUsers', () => {
         const input = { role: 'owner' as const };
         const users = new MemoryUsers();
         const subject = new ListUsers(users);
-        const actor = user(input).actor;
+        const actor = IdentityDoubles.user(input).actor;
 
         const result = subject.execute(actor);
 
@@ -29,7 +29,7 @@ describe('ListUsers', () => {
         const input = { mustChangePassword: true };
         const users = new MemoryUsers();
         const subject = new ListUsers(users);
-        const actor = user(input).actor;
+        const actor = IdentityDoubles.user(input).actor;
 
         const result = subject.execute(actor);
 

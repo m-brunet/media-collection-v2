@@ -1,24 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import {
-    guest,
-    markFinished,
-    member,
-    owner,
-    shelf,
-} from '../testing/collection-doubles.test-support.js';
+import { CollectionDoubles, guest, owner } from '../testing/collection-doubles.test-support.js';
 import { ListShoppingCollections } from './list-shopping-collections.usecase.js';
 
-function subject(current: ReturnType<typeof shelf>) {
+function subject(current: ReturnType<typeof CollectionDoubles.shelf>) {
     return new ListShoppingCollections(current.collections, current.members, current.viewer);
 }
 
 describe('ListShoppingCollections', () => {
     it('lists unfinished collections by name with their counts', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'tintin-8', 'owned', 'Tintin', 8);
-        await member(current, 'batman-4', 'owned', 'Batman', 4);
-        await member(current, 'batman-12', 'not-owned', 'Batman', 12);
+        await CollectionDoubles.member(current, 'tintin-8', 'owned', 'Tintin', 8);
+        await CollectionDoubles.member(current, 'batman-4', 'owned', 'Batman', 4);
+        await CollectionDoubles.member(current, 'batman-12', 'not-owned', 'Batman', 12);
 
         const result = await subject(current).execute(owner);
 
@@ -43,9 +37,9 @@ describe('ListShoppingCollections', () => {
     });
 
     it('keeps an unfinished collection without known gaps', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'one', 'owned', 'The Hunger Games', 1);
+        await CollectionDoubles.member(current, 'one', 'owned', 'The Hunger Games', 1);
 
         const result = await subject(current).execute(owner);
 
@@ -53,10 +47,10 @@ describe('ListShoppingCollections', () => {
     });
 
     it('hides Finished collections', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'one', 'owned', 'Dune', 1);
-        await markFinished(current, 'collection-1');
+        await CollectionDoubles.member(current, 'one', 'owned', 'Dune', 1);
+        await CollectionDoubles.markFinished(current, 'collection-1');
 
         const result = await subject(current).execute(owner);
 
@@ -64,7 +58,7 @@ describe('ListShoppingCollections', () => {
     });
 
     it('refuses a Guest', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
         const operation = subject(current).execute(guest);
 

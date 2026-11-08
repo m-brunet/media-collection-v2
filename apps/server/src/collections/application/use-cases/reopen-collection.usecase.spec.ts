@@ -1,14 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import {
-    guest,
-    markFinished,
-    member,
-    owner,
-    shelf,
-} from '../testing/collection-doubles.test-support.js';
+import { CollectionDoubles, guest, owner } from '../testing/collection-doubles.test-support.js';
 import { ReopenCollection } from './reopen-collection.usecase.js';
 
-function subject(current: ReturnType<typeof shelf>) {
+function subject(current: ReturnType<typeof CollectionDoubles.shelf>) {
     return new ReopenCollection(
         current.collections,
         current.members,
@@ -21,10 +15,10 @@ function subject(current: ReturnType<typeof shelf>) {
 
 describe('ReopenCollection', () => {
     it('reopens a Finished collection without any gap', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'one', 'owned', 'Batman', 1);
-        await markFinished(current, 'collection-1');
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
+        await CollectionDoubles.markFinished(current, 'collection-1');
 
         const result = await subject(current).execute(owner, 'collection-1');
 
@@ -37,10 +31,10 @@ describe('ReopenCollection', () => {
     });
 
     it('refuses a Guest', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'one', 'owned', 'Batman', 1);
-        await markFinished(current, 'collection-1');
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
+        await CollectionDoubles.markFinished(current, 'collection-1');
 
         const operation = subject(current).execute(guest, 'collection-1');
 

@@ -7,7 +7,7 @@ import { networkInterfaces } from 'node:os';
 import BetterSqlite3 from 'better-sqlite3';
 import type { Account, ServerStatus } from '../../packages/contracts/src/http.js';
 import { Client } from './client.js';
-import { administrator, availablePort, RuntimeFixture, tlsConfiguration } from './runtime-setup.js';
+import { RuntimeFixture, RuntimeSetup } from './runtime-setup.js';
 
 let fixture: RuntimeFixture;
 let occupied: Server | undefined;
@@ -31,8 +31,8 @@ describe('Electron-managed runtime integration', () => {
     it('keeps serving the old HTTP port after saving a new preference', async () => {
         const current = await fixture.start();
 
-        await administrator(current.client);
-        const port = await availablePort();
+        await RuntimeSetup.administrator(current.client);
+        const port = await RuntimeSetup.availablePort();
 
         const response = await current.client.call<ServerStatus>('/server-settings/http', 'PUT', {
             port,
@@ -49,8 +49,8 @@ describe('Electron-managed runtime integration', () => {
     it('serves frontend pages and API on the saved HTTP port after restart', async () => {
         const current = await fixture.start();
 
-        await administrator(current.client);
-        const port = await availablePort();
+        await RuntimeSetup.administrator(current.client);
+        const port = await RuntimeSetup.availablePort();
 
         await current.client.call('/server-settings/http', 'PUT', { port });
 
@@ -68,8 +68,8 @@ describe('Electron-managed runtime integration', () => {
     it('reports active addresses and cleared pending state after applying the saved port', async () => {
         const current = await fixture.start();
 
-        await administrator(current.client);
-        const port = await availablePort();
+        await RuntimeSetup.administrator(current.client);
+        const port = await RuntimeSetup.availablePort();
 
         await current.client.call('/server-settings/http', 'PUT', { port });
         const restarted = await fixture.restart(current, { port: null });
@@ -88,7 +88,7 @@ describe('Electron-managed runtime integration', () => {
     it('reports the saved HTTP port and failure code when it is occupied', async () => {
         const current = await fixture.start();
 
-        await administrator(current.client);
+        await RuntimeSetup.administrator(current.client);
         occupied = createServer();
         await new Promise<void>((resolve) => occupied!.listen(0, '0.0.0.0', resolve));
         const port = (occupied.address() as { port: number }).port;
@@ -105,14 +105,14 @@ describe('Electron-managed runtime integration', () => {
     it('uses a temporary desktop override to recover an unavailable saved HTTP port', async () => {
         const current = await fixture.start();
 
-        await administrator(current.client);
+        await RuntimeSetup.administrator(current.client);
         occupied = createServer();
         await new Promise<void>((resolve) => occupied!.listen(0, '0.0.0.0', resolve));
         const unavailablePort = (occupied.address() as { port: number }).port;
 
         await current.client.call('/server-settings/http', 'PUT', { port: unavailablePort });
-        const overridePort = await availablePort();
-        const correctedPort = await availablePort();
+        const overridePort = await RuntimeSetup.availablePort();
+        const correctedPort = await RuntimeSetup.availablePort();
         const recovery = await fixture.restart(current, { main: true, port: overridePort });
 
         await recovery.client.login('admin', 'administrator-new-password');
@@ -127,10 +127,10 @@ describe('Electron-managed runtime integration', () => {
     it('shows a CLI port override without replacing the stored preference', async () => {
         const current = await fixture.start();
 
-        await administrator(current.client);
-        const savedPort = await availablePort();
-        const cliPort = await availablePort();
-        const environmentPort = await availablePort();
+        await RuntimeSetup.administrator(current.client);
+        const savedPort = await RuntimeSetup.availablePort();
+        const cliPort = await RuntimeSetup.availablePort();
+        const environmentPort = await RuntimeSetup.availablePort();
 
         await current.client.call('/server-settings/http', 'PUT', { port: savedPort });
         const restarted = await fixture.restart(current, {
@@ -155,9 +155,9 @@ describe('Electron-managed runtime integration', () => {
     it('uses an environment port override when the desktop has no CLI port', async () => {
         const current = await fixture.start();
 
-        await administrator(current.client);
-        const savedPort = await availablePort();
-        const environmentPort = await availablePort();
+        await RuntimeSetup.administrator(current.client);
+        const savedPort = await RuntimeSetup.availablePort();
+        const environmentPort = await RuntimeSetup.availablePort();
 
         await current.client.call('/server-settings/http', 'PUT', { port: savedPort });
         const restarted = await fixture.restart(current, {
@@ -181,8 +181,8 @@ describe('Electron-managed runtime integration', () => {
     it('keeps HTTP available and shows a legacy privileged HTTPS port for correction', async () => {
         const current = await fixture.start();
 
-        await administrator(current.client);
-        await tlsConfiguration(current.client);
+        await RuntimeSetup.administrator(current.client);
+        await RuntimeSetup.tlsConfiguration(current.client);
         await current.runtime.close();
         const database = new BetterSqlite3(join(current.directory, 'application.sqlite'));
         const row = database
@@ -210,7 +210,7 @@ describe('Electron-managed runtime integration', () => {
     it('preserves saved account preferences and sessions across restart', async () => {
         const current = await fixture.start();
 
-        await administrator(current.client);
+        await RuntimeSetup.administrator(current.client);
         await current.client.call('/account/language', 'PATCH', { language: 'fr' });
         const token = current.client.cookies.get('app_auth')!;
 
@@ -226,8 +226,8 @@ describe('Electron-managed runtime integration', () => {
     it('starts HTTP and HTTPS together from saved configuration', async () => {
         const current = await fixture.start();
 
-        await administrator(current.client);
-        const httpsPort = await tlsConfiguration(current.client);
+        await RuntimeSetup.administrator(current.client);
+        const httpsPort = await RuntimeSetup.tlsConfiguration(current.client);
 
         const restarted = await fixture.restart(current);
         const http = await restarted.client.call('/health');
@@ -241,8 +241,8 @@ describe('Electron-managed runtime integration', () => {
     it('uses secure cookies for HTTPS login without HSTS', async () => {
         const current = await fixture.start();
 
-        await administrator(current.client);
-        const port = await tlsConfiguration(current.client);
+        await RuntimeSetup.administrator(current.client);
+        const port = await RuntimeSetup.tlsConfiguration(current.client);
 
         await fixture.restart(current);
         const client = new Client('https://127.0.0.1:' + port);
@@ -261,8 +261,8 @@ describe('Electron-managed runtime integration', () => {
     it('shares the same database across HTTP and HTTPS listeners', async () => {
         const current = await fixture.start();
 
-        await administrator(current.client);
-        const port = await tlsConfiguration(current.client);
+        await RuntimeSetup.administrator(current.client);
+        const port = await RuntimeSetup.tlsConfiguration(current.client);
         const restarted = await fixture.restart(current);
         const secure = new Client('https://127.0.0.1:' + port);
 
@@ -279,8 +279,8 @@ describe('Electron-managed runtime integration', () => {
     it('preserves HTTP availability when saved TLS material is broken', async () => {
         const current = await fixture.start();
 
-        await administrator(current.client);
-        await tlsConfiguration(current.client);
+        await RuntimeSetup.administrator(current.client);
+        await RuntimeSetup.tlsConfiguration(current.client);
         const token = current.client.cookies.get('app_auth')!;
 
         await current.runtime.close();
@@ -337,7 +337,7 @@ describe('Electron-managed runtime integration', () => {
     it('invalidates existing sessions after offline recovery', async () => {
         const current = await fixture.start();
 
-        await administrator(current.client);
+        await RuntimeSetup.administrator(current.client);
         const token = current.client.cookies.get('app_auth')!;
 
         await current.runtime.close();
@@ -358,7 +358,7 @@ describe('Electron-managed runtime integration', () => {
         const mustChangePassword = true;
         const current = await fixture.start();
 
-        await administrator(current.client);
+        await RuntimeSetup.administrator(current.client);
         await current.runtime.close();
         const recovery = await fixture.start(current.directory, { recovery: true });
 
@@ -385,7 +385,7 @@ describe('Electron-managed runtime integration', () => {
         const mustChangePassword = undefined;
         const current = await fixture.start();
 
-        await administrator(current.client);
+        await RuntimeSetup.administrator(current.client);
         await current.runtime.close();
         const recovery = await fixture.start(current.directory, { recovery: true });
 
@@ -415,7 +415,7 @@ describe('Electron-managed runtime integration', () => {
         const current = await fixture.start();
         const client = new Client('http://' + lan!.address + ':' + current.ready.httpPort);
 
-        await administrator(current.client);
+        await RuntimeSetup.administrator(current.client);
         await client.prepare();
         const input = { username: 'admin', password: 'administrator-new-password' };
 

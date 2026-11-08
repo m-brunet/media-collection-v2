@@ -408,7 +408,7 @@ describe('POST /api/books/:id/owned', () => {
 
         expect(await app.dependencies.audit.entries()).toContainEqual(
             expect.objectContaining({
-                category: 'book.updated',
+                category: 'book.marked-owned',
                 outcome: 'successful',
                 actorId: owner.id,
                 subjectId: planned.id,
@@ -915,7 +915,7 @@ describe('PATCH /api/books/:id/organisation', () => {
             expect.objectContaining({
                 category: 'book.organised',
                 subjectId: book.id,
-                before: { location: null, tags: [] },
+                before: { title: book.title, location: null, tags: [] },
             }),
         );
     });

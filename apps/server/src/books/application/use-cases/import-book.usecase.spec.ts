@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { CoverImage } from '../../domain/value-objects/cover-image.value-object.js';
 import type { ImportedBook } from '../ports/driving/import-book-use-case.interface.js';
-import { administrator, guest, library, saved } from '../testing/book-doubles.test-support.js';
+import { administrator, BookDoubles, guest } from '../testing/book-doubles.test-support.js';
 import { ImportBook } from './import-book.usecase.js';
 
 const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1]);
 const gif = new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 1]);
 
-function subject(current = library()) {
+function subject(current = BookDoubles.library()) {
     return new ImportBook(
         current.books,
         current.builder,
@@ -43,7 +43,7 @@ function imported(overrides: Partial<ImportedBook> = {}): ImportedBook {
 
 describe('ImportBook', () => {
     it('keeps the original creation date and is updated now', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
         const result = await subject(current).execute(administrator, imported());
 
@@ -57,7 +57,7 @@ describe('ImportBook', () => {
         expect(book.details.price?.cents).toBe(990);
     });
     it('records the import as a creation by the importing account, now', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
         const result = await subject(current).execute(administrator, imported());
 
@@ -73,16 +73,19 @@ describe('ImportBook', () => {
         ]);
     });
     it('keeps a similar author name as another author', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
-        await saved(current, { authors: [{ name: 'Raymond E. Feist' }], isbn: '9780306406157' });
+        await BookDoubles.saved(current, {
+            authors: [{ name: 'Raymond E. Feist' }],
+            isbn: '9780306406157',
+        });
 
         await subject(current).execute(administrator, imported({ authors: ['Raymond E. Fiest'] }));
 
         expect(current.authors.authors.size).toBe(2);
     });
     it('joins the collection with its single volume and generates a missing title', async () => {
-        const current = library();
+        const current = BookDoubles.library();
         const book = imported({
             title: '',
             category: 'manga',
@@ -102,7 +105,7 @@ describe('ImportBook', () => {
         });
     });
     it('gives an untitled Book in a collection its collection title, as supplied', async () => {
-        const current = library();
+        const current = BookDoubles.library();
         const book = imported({ title: '', collection: { name: 'Gunnm', volume: 3 } });
 
         const result = await subject(current).execute(administrator, book);
@@ -114,7 +117,7 @@ describe('ImportBook', () => {
         });
     });
     it('refuses a missing title for a book outside a collection', async () => {
-        const current = library();
+        const current = BookDoubles.library();
         const book = imported({ title: '' });
 
         const result = subject(current).execute(administrator, book);
@@ -123,14 +126,14 @@ describe('ImportBook', () => {
         expect(current.books.books.size).toBe(0);
     });
     it('sets the importing account as having read the book', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
         const result = await subject(current).execute(administrator, imported({ read: true }));
 
         expect(await current.readings.isRead('alex', result.bookId)).toBe(true);
     });
     it('stores a usable cover', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
         const result = await subject(current).execute(administrator, imported({ cover: png }));
 
@@ -139,7 +142,7 @@ describe('ImportBook', () => {
         expect(current.covers.files.get('cover-1')?.mediaType).toBe('image/png');
     });
     it('stores an imported cover without its shop padding', async () => {
-        const current = library();
+        const current = BookDoubles.library();
         const trimmed = CoverImage.from(new Uint8Array([0xff, 0xd8, 0xff, 9]));
 
         current.trimmer.result = trimmed;
@@ -150,7 +153,7 @@ describe('ImportBook', () => {
         expect(current.covers.files.get('cover-1')?.bytes).toEqual(trimmed.bytes);
     });
     it('leaves out a cover that is not a JPEG, PNG or WebP image', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
         const result = await subject(current).execute(administrator, imported({ cover: gif }));
 
@@ -159,9 +162,9 @@ describe('ImportBook', () => {
         expect(current.covers.files.size).toBe(0);
     });
     it('removes the stored cover when the book cannot be saved', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
-        await saved(current, { isbn: '9782811211554' });
+        await BookDoubles.saved(current, { isbn: '9782811211554' });
 
         const result = subject(current).execute(administrator, imported({ cover: png }));
 
@@ -169,7 +172,7 @@ describe('ImportBook', () => {
         expect(current.covers.files.size).toBe(0);
     });
     it('refuses a creation date in the future', async () => {
-        const current = library();
+        const current = BookDoubles.library();
         const book = imported({ createdAt: '2027-01-01T00:00:00.000Z' });
 
         const result = subject(current).execute(administrator, book);
@@ -178,7 +181,7 @@ describe('ImportBook', () => {
         expect(current.books.books.size).toBe(0);
     });
     it('refuses a Guest', async () => {
-        const current = library();
+        const current = BookDoubles.library();
 
         const result = subject(current).execute(guest, imported());
 

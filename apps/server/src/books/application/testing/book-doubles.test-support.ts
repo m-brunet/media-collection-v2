@@ -48,15 +48,15 @@ import { Author } from '../../domain/entities/author.entity.js';
 import { Book } from '../../domain/entities/book.entity.js';
 import type { CoverMediaType } from '../../domain/value-objects/cover-image.value-object.js';
 import {
-    auditedOperation,
+    AuditDoubles,
     MemoryAuditTrail,
 } from '../../../shared/application/testing/audit-doubles.test-support.js';
 import type { RelatedChange } from '../../../shared/application/ports/driven/audit-entry.interface.js';
-import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { BookFilter } from '../../../shared/application/book-filter.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { NameKey } from '../../../shared/domain/name-key.helper.js';
 import { CreateBook } from '../use-cases/create-book.usecase.js';
+import { TestActors } from '../../../shared/application/testing/test-actors.test-support.js';
 
 export class MemoryBooks implements BookRepository {
     readonly books = new Map<string, Book>();
@@ -529,109 +529,107 @@ export class MemoryMembership implements CollectionMembership, BookCollectionRea
     }
 }
 
-// A library with all doubles and services wired as in production.
-export function library() {
-    const books = new MemoryBooks();
-    const authors = new MemoryAuthors(books);
-    const readings = new MemoryReadings();
-    const notes = new MemoryNotes();
-    const covers = new MemoryCovers();
-    const trimmer = new MemoryTrimmer();
-    const trail = new MemoryAuditTrail();
-    const catalog = new MemoryCatalog(books, authors);
-    const collections = new MemoryMembership();
-    const shelving = new MemoryShelving();
-    const tagging = new MemoryTagging();
-    const loans = new MemoryLoans();
-    const guard = new LentBookGuard(loans);
-    const organisation = new BookOrganisationReader(shelving, tagging);
-    const organiser = new BookOrganiser(shelving, tagging, organisation);
-    const loader = new BookLoader(books);
-    let counter = 0;
-    const ids = { next: () => 'id-' + ++counter };
-    const clock = { now: () => new Date('2026-03-01T10:00:00Z') };
-    const identity = new BookIdentityCheck(books, authors);
+export class BookDoubles {
+    // A library with all doubles and services wired as in production.
+    static library() {
+        const books = new MemoryBooks();
+        const authors = new MemoryAuthors(books);
+        const readings = new MemoryReadings();
+        const notes = new MemoryNotes();
+        const covers = new MemoryCovers();
+        const trimmer = new MemoryTrimmer();
+        const trail = new MemoryAuditTrail();
+        const catalog = new MemoryCatalog(books, authors);
+        const collections = new MemoryMembership();
+        const shelving = new MemoryShelving();
+        const tagging = new MemoryTagging();
+        const loans = new MemoryLoans();
+        const guard = new LentBookGuard(loans);
+        const organisation = new BookOrganisationReader(shelving, tagging);
+        const organiser = new BookOrganiser(shelving, tagging, organisation);
+        const loader = new BookLoader(books);
+        let counter = 0;
+        const ids = { next: () => 'id-' + ++counter };
+        const clock = { now: () => new Date('2026-03-01T10:00:00Z') };
+        const identity = new BookIdentityCheck(books, authors);
 
-    return {
-        books,
-        authors,
-        readings,
-        notes,
-        covers,
-        trimmer,
-        trail,
-        catalog,
-        collections,
-        shelving,
-        tagging,
-        loans,
-        guard,
-        organisation,
-        organiser,
-        ids,
-        clock,
-        operations: auditedOperation(trail),
-        builder: new BookDetailsBuilder(new AuthorResolver(authors, ids, clock)),
-        identity,
-        titles: new GeneratedTitleSync(books, identity, clock),
-        loader,
-        removal: new BookRemoval(books, authors, collections, loader, guard, loans),
-        viewer: new BookViewer(catalog, readings, notes, collections, organisation, loans),
-    };
-}
+        return {
+            books,
+            authors,
+            readings,
+            notes,
+            covers,
+            trimmer,
+            trail,
+            catalog,
+            collections,
+            shelving,
+            tagging,
+            loans,
+            guard,
+            organisation,
+            organiser,
+            ids,
+            clock,
+            operations: AuditDoubles.auditedOperation(trail),
+            builder: new BookDetailsBuilder(new AuthorResolver(authors, ids, clock)),
+            identity,
+            titles: new GeneratedTitleSync(books, identity, clock),
+            loader,
+            removal: new BookRemoval(books, authors, collections, loader, guard, loans),
+            viewer: new BookViewer(catalog, readings, notes, collections, organisation, loans),
+        };
+    }
 
-export function input(overrides: Partial<BookInput> = {}): BookInput {
-    return {
-        title: 'Piranesi',
-        isbn: '9781635575637',
-        noIsbn: false,
-        authors: [{ name: 'Susanna Clarke' }],
-        category: 'books',
-        ownership: 'owned',
-        publisher: null,
-        publicationYear: null,
-        publicationMonth: null,
-        summary: null,
-        pageCount: null,
-        price: null,
-        collection: null,
-        shelfId: null,
-        tags: [],
-        ...overrides,
-    };
+    static input(overrides: Partial<BookInput> = {}): BookInput {
+        return {
+            title: 'Piranesi',
+            isbn: '9781635575637',
+            noIsbn: false,
+            authors: [{ name: 'Susanna Clarke' }],
+            category: 'books',
+            ownership: 'owned',
+            publisher: null,
+            publicationYear: null,
+            publicationMonth: null,
+            summary: null,
+            pageCount: null,
+            price: null,
+            collection: null,
+            shelfId: null,
+            tags: [],
+            ...overrides,
+        };
+    }
+
+    // Saves a book through the real use case, as an Owner, for arranging later scenarios.
+    static async saved(
+        current: ReturnType<typeof BookDoubles.library>,
+        overrides: Partial<BookInput> = {},
+        read = false,
+    ) {
+        return new CreateBook(
+            current.books,
+            current.builder,
+            current.identity,
+            current.titles,
+            current.collections,
+            current.removal,
+            current.organiser,
+            current.readings,
+            current.covers,
+            current.viewer,
+            current.ids,
+            current.clock,
+            current.operations,
+        ).execute(owner, BookDoubles.input(overrides), read);
+    }
 }
 
 // A filter that keeps every book.
 export const anyBook = BookFilter.of();
 
-function actor(role: Actor['role'], id: string): Actor {
-    return { id, username: id, role, mustChangePassword: false, language: null };
-}
-
-export const owner = actor('owner', 'camille');
-export const otherOwner = actor('owner', 'sam');
-export const guest = actor('guest', 'morgan');
-export const administrator = actor('admin', 'alex');
-
-// Saves a book through the real use case, as an Owner, for arranging later scenarios.
-export async function saved(
-    current: ReturnType<typeof library>,
-    overrides: Partial<BookInput> = {},
-    read = false,
-) {
-    return new CreateBook(
-        current.books,
-        current.builder,
-        current.identity,
-        current.titles,
-        current.collections,
-        current.removal,
-        current.organiser,
-        current.readings,
-        current.covers,
-        current.viewer,
-        current.ids,
-        current.clock,
-        current.operations,
-    ).execute(owner, input(overrides), read);
-}
+export const owner = TestActors.of('owner', 'camille');
+export const otherOwner = TestActors.of('owner', 'sam');
+export const guest = TestActors.of('guest', 'morgan');
+export const administrator = TestActors.of('admin', 'alex');

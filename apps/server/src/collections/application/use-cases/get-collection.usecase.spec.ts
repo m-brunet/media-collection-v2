@@ -1,18 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { member, shelf } from '../testing/collection-doubles.test-support.js';
+import { CollectionDoubles } from '../testing/collection-doubles.test-support.js';
 import { GetCollection } from './get-collection.usecase.js';
 
-function subject(current: ReturnType<typeof shelf>) {
+function subject(current: ReturnType<typeof CollectionDoubles.shelf>) {
     return new GetCollection(current.loader, current.members, current.viewer);
 }
 
 describe('GetCollection', () => {
     it('groups editions under their volumes with inferred gaps', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'year-one', 'owned', 'Batman', 1);
-        await member(current, 'omnibus', 'owned', 'Batman', 1, 3);
-        await member(current, 'twelve', 'not-owned', 'Batman', 12);
+        await CollectionDoubles.member(current, 'year-one', 'owned', 'Batman', 1);
+        await CollectionDoubles.member(current, 'omnibus', 'owned', 'Batman', 1, 3);
+        await CollectionDoubles.member(current, 'twelve', 'not-owned', 'Batman', 12);
 
         const result = await subject(current).execute('collection-1');
 
@@ -42,13 +42,13 @@ describe('GetCollection', () => {
     });
 
     it('counts five editions as four Owned volumes of five', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'one', 'owned', 'Batman', 1);
-        await member(current, 'two', 'owned', 'Batman', 2);
-        await member(current, 'paperback', 'owned', 'Batman', 3);
-        await member(current, 'hardcover', 'owned', 'Batman', 3);
-        await member(current, 'five', 'owned', 'Batman', 5);
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
+        await CollectionDoubles.member(current, 'two', 'owned', 'Batman', 2);
+        await CollectionDoubles.member(current, 'paperback', 'owned', 'Batman', 3);
+        await CollectionDoubles.member(current, 'hardcover', 'owned', 'Batman', 3);
+        await CollectionDoubles.member(current, 'five', 'owned', 'Batman', 5);
 
         const result = await subject(current).execute('collection-1');
 
@@ -61,7 +61,7 @@ describe('GetCollection', () => {
     });
 
     it('refuses an unknown collection', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
         const operation = subject(current).execute('unknown');
 

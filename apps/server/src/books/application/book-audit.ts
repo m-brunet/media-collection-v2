@@ -11,6 +11,8 @@ export const BookAudit = {
     updated: 'book.updated',
     deleted: 'book.deleted',
     organised: 'book.organised',
+    // A Not Owned book marked Owned, nothing else changed (Leaf's Mark Owned).
+    markedOwned: 'book.marked-owned',
     // A title changed by a collection-wide operation (rename or deletion of its collection).
     retitled: 'book.retitled',
     coverChanged: 'book.cover-changed',

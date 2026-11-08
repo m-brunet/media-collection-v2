@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { markFinished, member, shelf } from '../testing/collection-doubles.test-support.js';
+import { CollectionDoubles } from '../testing/collection-doubles.test-support.js';
 
 const now = '2026-03-01T10:00:00.000Z';
 
 describe('CollectionUpkeep', () => {
     it('removes a collection without books', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'one', 'owned', 'Batman', 1);
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
         await current.members.remove('one');
 
         const outcome = await current.upkeep.tidy('collection-1', now);
@@ -23,11 +23,11 @@ describe('CollectionUpkeep', () => {
     });
 
     it('reopens a Finished collection left with a missing volume', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'one', 'owned', 'Batman', 1);
-        await member(current, 'two', 'owned', 'Batman', 2);
-        await markFinished(current, 'collection-1');
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
+        await CollectionDoubles.member(current, 'two', 'owned', 'Batman', 2);
+        await CollectionDoubles.markFinished(current, 'collection-1');
         await current.members.remove('one');
 
         const outcome = await current.upkeep.tidy('collection-1', now);
@@ -41,11 +41,11 @@ describe('CollectionUpkeep', () => {
     });
 
     it('keeps a Finished collection whose highest volume was removed', async () => {
-        const current = shelf();
+        const current = CollectionDoubles.shelf();
 
-        await member(current, 'one', 'owned', 'Batman', 1);
-        await member(current, 'two', 'owned', 'Batman', 2);
-        await markFinished(current, 'collection-1');
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
+        await CollectionDoubles.member(current, 'two', 'owned', 'Batman', 2);
+        await CollectionDoubles.markFinished(current, 'collection-1');
         await current.members.remove('two');
 
         const outcome = await current.upkeep.tidy('collection-1', now);

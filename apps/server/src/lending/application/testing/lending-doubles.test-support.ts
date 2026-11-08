@@ -8,11 +8,11 @@ import type { LoanBook } from './loan-builder.test-support.js';
 import { Loan, type LendableBook } from '../../domain/entities/loan.entity.js';
 import { Receiver } from '../../domain/entities/receiver.entity.js';
 import {
-    auditedOperation,
+    AuditDoubles,
     MemoryAuditTrail,
 } from '../../../shared/application/testing/audit-doubles.test-support.js';
-import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
+import { TestActors } from '../../../shared/application/testing/test-actors.test-support.js';
 
 export class MemoryReceivers implements ReceiverRepository {
     readonly receivers = new Map<string, Receiver>();
@@ -154,33 +154,31 @@ export class ActiveLoansStub implements ActiveLoans {
     }
 }
 
-// Lending with all doubles and services wired as in production.
-export function lending() {
-    const receivers = new MemoryReceivers();
-    const loans = new MemoryLoanStore();
-    const books = new MemoryLendableBooks(loans, receivers);
-    const trail = new MemoryAuditTrail();
-    let counter = 0;
-    const ids = { next: () => 'id-' + ++counter };
-    const clock = { now: () => new Date('2026-10-30T09:00:00Z') };
+export class LendingDoubles {
+    // Lending with all doubles and services wired as in production.
+    static lending() {
+        const receivers = new MemoryReceivers();
+        const loans = new MemoryLoanStore();
+        const books = new MemoryLendableBooks(loans, receivers);
+        const trail = new MemoryAuditTrail();
+        let counter = 0;
+        const ids = { next: () => 'id-' + ++counter };
+        const clock = { now: () => new Date('2026-10-30T09:00:00Z') };
 
-    return {
-        receivers,
-        loans,
-        books,
-        trail,
-        ids,
-        clock,
-        operations: auditedOperation(trail),
-        resolver: new ReceiverResolver(receivers, ids, clock),
-        active: new ActiveLoansStub(),
-    };
+        return {
+            receivers,
+            loans,
+            books,
+            trail,
+            ids,
+            clock,
+            operations: AuditDoubles.auditedOperation(trail),
+            resolver: new ReceiverResolver(receivers, ids, clock),
+            active: new ActiveLoansStub(),
+        };
+    }
 }
 
-function actor(role: Actor['role'], id: string): Actor {
-    return { id, username: id, role, mustChangePassword: false, language: null };
-}
-
-export const owner = actor('owner', 'camille');
-export const administrator = actor('admin', 'alex');
-export const guest = actor('guest', 'morgan');
+export const owner = TestActors.of('owner', 'camille');
+export const administrator = TestActors.of('admin', 'alex');
+export const guest = TestActors.of('guest', 'morgan');

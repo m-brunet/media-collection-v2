@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { household } from '../testing/account-lifecycle.test-support.js';
+import { AccountLifecycle } from '../testing/account-lifecycle.test-support.js';
 import { ManagedAccountLoader } from '../services/managed-account-loader.service.js';
 import { DeactivateAccount } from './deactivate-account.usecase.js';
 
 describe('DeactivateAccount', () => {
     it('deactivates an Owner and keeps the account record', async () => {
-        const { users, operations, admin } = await household();
+        const { users, operations, admin } = await AccountLifecycle.household();
         const subject = new DeactivateAccount(users, new ManagedAccountLoader(users), operations);
 
         const result = await subject.execute(admin, 'owner');
@@ -14,7 +14,7 @@ describe('DeactivateAccount', () => {
         expect((await users.findById('owner'))!.isActive).toBe(false);
     });
     it('ends the existing sessions of the deactivated account', async () => {
-        const { users, operations, admin } = await household();
+        const { users, operations, admin } = await AccountLifecycle.household();
         const subject = new DeactivateAccount(users, new ManagedAccountLoader(users), operations);
 
         await subject.execute(admin, 'guest');
@@ -22,7 +22,7 @@ describe('DeactivateAccount', () => {
         expect((await users.findById('guest'))!.snapshot.tokenVersion).toBe(1);
     });
     it('keeps the username reserved', async () => {
-        const { users, operations, admin } = await household();
+        const { users, operations, admin } = await AccountLifecycle.household();
         const subject = new DeactivateAccount(users, new ManagedAccountLoader(users), operations);
 
         await subject.execute(admin, 'guest');
@@ -30,7 +30,7 @@ describe('DeactivateAccount', () => {
         expect((await users.findByUsername('morgan'))!.actor.id).toBe('guest');
     });
     it('records the deactivation with before and after states', async () => {
-        const { users, trail, operations, admin } = await household();
+        const { users, trail, operations, admin } = await AccountLifecycle.household();
         const subject = new DeactivateAccount(users, new ManagedAccountLoader(users), operations);
 
         await subject.execute(admin, 'owner');
@@ -47,7 +47,7 @@ describe('DeactivateAccount', () => {
         ]);
     });
     it('refuses to deactivate the protected administrator', async () => {
-        const { users, operations, admin } = await household();
+        const { users, operations, admin } = await AccountLifecycle.household();
         const subject = new DeactivateAccount(users, new ManagedAccountLoader(users), operations);
 
         const result = subject.execute(admin, 'admin');
@@ -56,7 +56,7 @@ describe('DeactivateAccount', () => {
         expect((await users.findById('admin'))!.isActive).toBe(true);
     });
     it('refuses an Owner deactivating another account', async () => {
-        const { users, operations } = await household();
+        const { users, operations } = await AccountLifecycle.household();
         const subject = new DeactivateAccount(users, new ManagedAccountLoader(users), operations);
         const owner = (await users.findById('owner'))!.actor;
 
@@ -66,7 +66,7 @@ describe('DeactivateAccount', () => {
         expect((await users.findById('guest'))!.isActive).toBe(true);
     });
     it('reports an unknown account', async () => {
-        const { users, operations, admin } = await household();
+        const { users, operations, admin } = await AccountLifecycle.household();
         const subject = new DeactivateAccount(users, new ManagedAccountLoader(users), operations);
 
         const result = subject.execute(admin, 'missing');
@@ -77,7 +77,7 @@ describe('DeactivateAccount', () => {
         });
     });
     it('records a refused deactivation as Failed', async () => {
-        const { users, trail, operations, admin } = await household();
+        const { users, trail, operations, admin } = await AccountLifecycle.household();
         const subject = new DeactivateAccount(users, new ManagedAccountLoader(users), operations);
 
         await subject.execute(admin, 'admin').catch(() => undefined);

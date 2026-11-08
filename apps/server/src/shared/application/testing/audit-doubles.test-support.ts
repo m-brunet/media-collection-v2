@@ -32,13 +32,15 @@ export class MemoryAuditTrail implements AuditTrail, TransactionRunner {
     }
 }
 
-export function auditedOperation(trail: MemoryAuditTrail): AuditedOperation {
-    let counter = 0;
+export class AuditDoubles {
+    static auditedOperation(trail: MemoryAuditTrail): AuditedOperation {
+        let counter = 0;
 
-    return new AuditedOperation(
-        trail,
-        trail,
-        { now: () => new Date('2026-01-01T00:00:00Z') },
-        { next: () => 'operation-' + ++counter },
-    );
+        return new AuditedOperation(
+            trail,
+            trail,
+            { now: () => new Date('2026-01-01T00:00:00Z') },
+            { next: () => 'operation-' + ++counter },
+        );
+    }
 }

@@ -3,20 +3,19 @@ import { KyselyUserRepository } from '../../identity/infrastructure/adapters/dri
 import { ScryptPasswordHasher } from '../../identity/infrastructure/adapters/driven/security/scrypt-password-hasher.adapter.js';
 import { RecoverAdministrator } from '../../identity/application/use-cases/recover-administrator.usecase.js';
 
-// Existing storage only. This entry never migrates, seeds users, or creates listeners.
-export async function recoverAdministrator(
-    dataDirectory: string,
-    login: string,
-    password: string,
-): Promise<void> {
-    const database = Database.openExisting(dataDirectory);
+// Local administrator recovery, run by the desktop on existing storage only. It never migrates,
+// seeds users, or creates listeners.
+export class AdministratorRecovery {
+    static async run(dataDirectory: string, login: string, password: string): Promise<void> {
+        const database = Database.openExisting(dataDirectory);
 
-    try {
-        await new RecoverAdministrator(
-            new KyselyUserRepository(database.connections),
-            new ScryptPasswordHasher(),
-        ).execute(login, password);
-    } finally {
-        await database.close();
+        try {
+            await new RecoverAdministrator(
+                new KyselyUserRepository(database.connections),
+                new ScryptPasswordHasher(),
+            ).execute(login, password);
+        } finally {
+            await database.close();
+        }
     }
 }
