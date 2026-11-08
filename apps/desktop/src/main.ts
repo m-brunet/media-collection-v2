@@ -12,6 +12,12 @@ import { MaintenanceWindow } from './maintenance-window.adapter.js';
 // Automated tests run the real windows without putting them on screen.
 const hiddenWindows = process.env.APP_HIDDEN_WINDOWS === '1';
 const directory = dirname(fileURLToPath(import.meta.url));
+// The Libris icon (apps/desktop/assets/icons) for every window: Windows reads the .ico, Linux the PNG.
+const windowIcon = join(
+    app.getAppPath(),
+    'apps/desktop/assets/icons',
+    process.platform === 'win32' ? 'libris.ico' : 'libris.png',
+);
 
 app.setName('Media Collection');
 let backend: BackendProcess | undefined;
@@ -173,6 +179,7 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
                 backgroundColor: '#252729',
                 minWidth: 1280,
                 minHeight: 720,
+                icon: windowIcon,
                 show: false,
                 webPreferences: {
                     contextIsolation: true,
@@ -289,6 +296,7 @@ function maintenanceWindow(dataDirectory: string): MaintenanceWindow {
         workerPath: join(directory, 'worker.js'),
         preloadPath: join(directory, 'maintenance-preload.cjs'),
         pagePath: join(app.getAppPath(), 'apps/desktop/assets/maintenance.html'),
+        iconPath: windowIcon,
         hidden: hiddenWindows,
     });
 }

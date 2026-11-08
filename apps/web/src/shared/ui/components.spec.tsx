@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { expect, it, vi } from 'vitest';
 import { I18nProvider } from '../i18n/i18n-context';
+import { Brand } from './brand';
 import { Button } from './button';
 import { Dialog } from './dialog';
 import { Notice } from './notice';
@@ -68,4 +69,19 @@ it('closes a dialog from its close button', async () => {
     await userEvent.click(screen.getByRole('button', { name: 'Fermer' }));
 
     expect(close).toHaveBeenCalledOnce();
+});
+
+it('shows the official Libris icon next to the Libris name, and Leaf keeps its own mark', () => {
+    const { container } = render(
+        <I18nProvider language="en">
+            <Brand app="libris" size="large" />
+            <Brand app="leaf" />
+        </I18nProvider>,
+    );
+    const [libris, leaf] = container.querySelectorAll('.brand__mark');
+
+    expect(libris).toHaveAttribute('src', '/libris.svg');
+    expect(libris).toHaveAttribute('width', '30');
+    expect(libris).toHaveAttribute('alt', '');
+    expect(leaf?.tagName.toLowerCase()).toBe('svg');
 });

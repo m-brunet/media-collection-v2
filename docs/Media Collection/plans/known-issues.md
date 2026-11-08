@@ -75,12 +75,23 @@ design.
 - **Today:** no application icon is defined, in the specs or in the code: the desktop windows
   (`apps/desktop/src/main.ts`, `new BrowserWindow`) set no `icon`, so Windows shows the default Electron icon in the
   taskbar.
-- **Fix:** until the specs define one, use the mark shown next to the "Libris" title (`Brand`,
-  `apps/web/src/shared/ui/brand.tsx`: the Lucide `Library` icon) drawn in the green accent colour (`--color-accent`,
-  default scheme `#79d670`). Generate the icon files from the Lucide SVG (a Windows `.ico` with the usual sizes, and PNGs
-  for the other systems), keep them in `apps/desktop/assets`, and pass them to every `BrowserWindow` (and the tray, if
-  there is one). Lucide is ISC-licensed: add it to the credits page planned in Task 10. Check whether the web pages
-  should use the same mark as their favicon (Libris and Leaf).
+- **Decided (2026-11-08, user):** the library brand mark of the icon set **"02 · Hand-inked editorial sketches"**
+  becomes the **official Libris icon**, everywhere Libris shows its mark: the taskbar and window icon of the desktop
+  app, the mark next to the "Libris" title (`Brand`, `apps/web/src/shared/ui/brand.tsx`, Lucide `Library` today) and
+  the favicon of the browser version. It is always drawn in the **Spring green** accent `#79d670`
+  (`--scheme-accent` of `[data-color-scheme='spring-green']`, `apps/web/src/shared/ui/tokens.css`), whatever colour
+  scheme or icon set is chosen. Leaf keeps its current mark and has no favicon yet: to be decided later.
+- **Fix:** take `design/artifact/icons/02-hand-inked-editorial/library-brand.svg` (Git-ignored `design/` folder;
+  Streamline Freehand icon `06-hand-inked/01` in `SOURCES-AND-LICENSES.json`), recolour it from its set ink `#86D39A`
+  to `#79d670` and keep it as `apps/web/public/libris.svg`: the Libris page links it as its favicon and `Brand` shows it
+  for Libris. Generate the desktop icon files from it (a Windows `.ico` with the usual sizes and a 512 px PNG for the
+  other systems) into `apps/desktop/assets/icons` and pass them to every `BrowserWindow` (and the tray, if there is
+  one). If `design/` is missing, ask the user for the file rather than redrawing it.
+- **Licence:** the mark is "Freehand free icons" by Streamline (https://www.streamlinehq.com,
+  https://github.com/webalys-hq/streamline-vectors), CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/),
+  recoloured and resized; it no longer comes from Lucide. Attribution is required: add it, with the licence link and the
+  note that it was modified, to the credits page planned in Task 10 (wording in `design/artifact/icons/CREDITS.md`), and
+  keep a `CREDITS.md` with the same attribution next to the icon files.
 - **Severity:** low (appearance). **Planned:** next fix pass, or Task 10 (packaging and installer), whichever comes
   first; the installer icon should use the same files.
 
