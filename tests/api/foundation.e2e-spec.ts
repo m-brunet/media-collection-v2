@@ -324,13 +324,12 @@ describe('Electron-managed runtime integration', () => {
         const command = {
             type: 'recover',
             dataDirectory: recovery.directory,
-            login: 'admin',
             password: 'recovery-password',
         };
 
         const result = recovery.runtime.send(command);
 
-        await expect(result).rejects.toThrow('No existing');
+        await expect(result).rejects.toThrow('There is no administrator account yet.');
         await expect(readFile(join(recovery.directory, 'application.sqlite'))).rejects.toThrow();
     });
 
@@ -365,7 +364,6 @@ describe('Electron-managed runtime integration', () => {
         await recovery.runtime.send({
             type: 'recover',
             dataDirectory: current.directory,
-            login: 'admin',
             password: 'recovery-password',
         });
         await recovery.runtime.close();
@@ -392,7 +390,6 @@ describe('Electron-managed runtime integration', () => {
         await recovery.runtime.send({
             type: 'recover',
             dataDirectory: current.directory,
-            login: 'admin',
             password: 'recovery-password',
         });
         await recovery.runtime.close();

@@ -210,7 +210,11 @@ export class Database {
         }
     }
 
-    // Existing storage only, never migrated: used by local administrator recovery.
+    static exists(directory: string): boolean {
+        return existsSync(join(directory, 'application.sqlite'));
+    }
+
+    // Existing storage only, never migrated: used by database-boundary tests.
     static openExisting(directory: string): Database {
         const file = join(directory, 'application.sqlite');
 

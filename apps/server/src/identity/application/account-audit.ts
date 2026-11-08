@@ -11,4 +11,5 @@ export const AccountAudit = {
     passwordChanged: 'account.password-changed',
     languageChanged: 'account.language-changed',
     signedIn: 'authentication.signed-in',
+    recovered: 'account.recovered',
 } as const;

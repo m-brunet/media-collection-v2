@@ -1,3 +1,3 @@
 export interface RecoverAdministratorUseCase {
-    execute(username: string, password: string): Promise<void>;
+    execute(password: string): Promise<{ username: string }>;
 }

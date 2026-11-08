@@ -1,6 +1,6 @@
 import type { BackendHandle } from '../../server/src/infrastructure/config/bootstrap.js';
 import { BackendRuntime } from '../../server/src/infrastructure/config/bootstrap.js';
-import { AdministratorRecovery } from '../../server/src/infrastructure/config/recovery.js';
+import { LocalMaintenance } from '../../server/src/infrastructure/config/maintenance.js';
 import { DevelopmentDataCommands } from '../../server/src/infrastructure/config/development-data.js';
 import type { WorkerRequest, WorkerResponse } from './protocol.js';
 
@@ -38,12 +38,19 @@ parent.on('message', (event) => {
                     throw new Error('Recovery cannot run with the server active.');
                 }
 
-                await AdministratorRecovery.run(
-                    message.dataDirectory,
-                    message.login,
+                const recovered = await new LocalMaintenance(message.dataDirectory).recover(
                     message.password,
                 );
-                send({ type: 'recovered' });
+
+                send({ type: 'recovered', username: recovered.username });
+            } else if (message.type === 'maintenance-status') {
+                if (starting) {
+                    throw new Error('Maintenance cannot run with the server active.');
+                }
+
+                const status = await new LocalMaintenance(message.dataDirectory).status();
+
+                send({ type: 'maintenance-status', ...status });
             } else if (message.type === 'dev-reset' || message.type === 'dev-import-v1') {
                 if (starting) {
                     throw new Error('Development data commands cannot run with the server active.');

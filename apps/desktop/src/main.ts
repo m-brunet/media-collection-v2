@@ -119,7 +119,7 @@ if (!startupOptions) {
             const options = startupOptions;
 
             if (options.recoveryLogin) {
-                await recovery(options.dataDirectory, options.recoveryLogin);
+                await recovery(options.dataDirectory);
             } else {
                 await launch(options);
             }
@@ -278,7 +278,7 @@ async function maintain(dataDirectory: string, maintenance: DevelopmentMaintenan
     app.exit(code);
 }
 
-async function recovery(dataDirectory: string, login: string): Promise<void> {
+async function recovery(dataDirectory: string): Promise<void> {
     backend = new BackendProcess(join(directory, 'worker.js'));
     window = new BrowserWindow({
         width: 520,
@@ -311,7 +311,7 @@ async function recovery(dataDirectory: string, login: string): Promise<void> {
         resetting = true;
 
         try {
-            await backend!.request({ type: 'recover', dataDirectory, login, password });
+            await backend!.request({ type: 'recover', dataDirectory, password });
 
             return {
                 success: true,
