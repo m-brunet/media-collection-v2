@@ -1,15 +1,30 @@
 import { existsSync } from 'node:fs';
-import { readFile, readdir } from 'node:fs/promises';
-import { join } from 'node:path';
+import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+import { randomUUID } from 'node:crypto';
 import type { ApplicationDataFiles } from '../../../../application/ports/driven/application-data-files.interface.js';
 import type { DataFile } from '../../../../application/data-file.js';
 import { BackupManifest } from '../../../../domain/value-objects/backup-manifest.value-object.js';
+import type { RestoredDataCheck } from '../persistence/restored-data-check.adapter.js';
+import { FileMoves } from './file-moves.adapter.js';
 
 // The backed-up part of the data directory: `application.sqlite`, `covers/` and `tls/`. The
 // session key and the Electron profile belong to this computer and stay out. The database must
 // be closed while its file is read or replaced.
 export class DataDirectoryFiles implements ApplicationDataFiles {
-    constructor(private readonly directory: string) {}
+    private static readonly replaced = [
+        'application.sqlite',
+        'application.sqlite-wal',
+        'application.sqlite-shm',
+        'covers',
+        'tls',
+    ];
+
+    constructor(
+        private readonly directory: string,
+        private readonly check: RestoredDataCheck,
+        private readonly moves = new FileMoves(),
+    ) {}
 
     async exists(): Promise<boolean> {
         return existsSync(join(this.directory, BackupManifest.databasePath));
@@ -30,8 +45,62 @@ export class DataDirectoryFiles implements ApplicationDataFiles {
         return files;
     }
 
-    async replace(): Promise<void> {
-        throw new Error('Restoring is not available yet.');
+    async replace(files: readonly DataFile[]): Promise<void> {
+        await mkdir(this.directory, { recursive: true });
+        const staging = join(this.directory, '.restore-' + randomUUID());
+        const previous = join(this.directory, '.previous-' + randomUUID());
+
+        try {
+            await this.stage(staging, files);
+            await this.check.check(staging);
+            await this.swap(staging, previous);
+        } finally {
+            await rm(staging, { recursive: true, force: true });
+        }
+
+        await rm(previous, { recursive: true, force: true });
+    }
+
+    private async stage(staging: string, files: readonly DataFile[]): Promise<void> {
+        for (const file of files) {
+            const target = join(staging, ...file.path.split('/'));
+
+            await mkdir(dirname(target), { recursive: true });
+            await writeFile(target, file.bytes);
+        }
+    }
+
+    // Moves the current data aside, then the staged data in; any error puts the current data back.
+    private async swap(staging: string, previous: string): Promise<void> {
+        await mkdir(previous);
+        const moved: string[] = [];
+
+        try {
+            for (const name of DataDirectoryFiles.replaced) {
+                if (existsSync(join(this.directory, name))) {
+                    await this.moves.move(join(this.directory, name), join(previous, name));
+                    moved.push(name);
+                }
+            }
+
+            for (const name of DataDirectoryFiles.replaced) {
+                if (existsSync(join(staging, name))) {
+                    await this.moves.move(join(staging, name), join(this.directory, name));
+                }
+            }
+        } catch (error) {
+            for (const name of DataDirectoryFiles.replaced) {
+                await rm(join(this.directory, name), { recursive: true, force: true });
+            }
+
+            for (const name of moved) {
+                await this.moves.move(join(previous, name), join(this.directory, name));
+            }
+
+            await rm(previous, { recursive: true, force: true });
+
+            throw error;
+        }
     }
 
     private async list(folder: string, nested = false): Promise<string[]> {
