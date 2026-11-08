@@ -16,7 +16,8 @@ afterEach(async () => {
     await directories.cleanup();
 });
 
-// The populated directory, plus an Owner, the HTTP port and a colour scheme.
+// The populated directory, plus an Owner, the HTTP port, internet access, keep awake and a
+// colour scheme.
 async function installation() {
     const directory = await directories.populated('reset-');
     const database = await Database.open(directory, new UuidGenerator());
@@ -40,6 +41,8 @@ async function installation() {
         .values([
             { id: randomUUID(), name: 'http', value: '{"port":36000}' },
             { id: randomUUID(), name: 'appearance', value: '{"colorScheme":"forest"}' },
+            { id: randomUUID(), name: 'internet-access', value: '{"phase":"off"}' },
+            { id: randomUUID(), name: 'keep-awake', value: '{"enabled":true}' },
         ])
         .execute();
     const admin = await database.connection
@@ -74,7 +77,7 @@ describe('application data eraser', () => {
         await database.close();
         expect(users).toEqual([{ username: 'admin', token_version: 2 }]);
     });
-    it('keeps the HTTP setting and removes the colour scheme', async () => {
+    it('keeps the host settings and removes the colour scheme', async () => {
         const { database, adminId } = await installation();
 
         await erase(database, adminId);
@@ -86,7 +89,12 @@ describe('application data eraser', () => {
             .execute();
 
         await database.close();
-        expect(settings.map((setting) => setting.name)).toEqual(['http', 'test.setting']);
+        expect(settings.map((setting) => setting.name)).toEqual([
+            'http',
+            'internet-access',
+            'keep-awake',
+            'test.setting',
+        ]);
     });
     it('empties the library and the audit log', async () => {
         const { directory, database, adminId } = await installation();

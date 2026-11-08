@@ -1,3 +1,4 @@
+import { KyselyInternetAccessRepository } from '../../../apps/server/src/server-settings/infrastructure/adapters/driven/persistence/kysely-internet-access.repository.js';
 import { HttpApplicationModule } from '../../../apps/server/src/infrastructure/config/http-application.module.js';
 import 'reflect-metadata';
 import { Test } from '@nestjs/testing';
@@ -188,6 +189,7 @@ export class TestApp {
                         status,
                         http,
                         operations,
+                        new KyselyInternetAccessRepository(database.connections, ids),
                     ),
                     AppearanceModule.register(appearance, operations),
                     BooksModule.register({
