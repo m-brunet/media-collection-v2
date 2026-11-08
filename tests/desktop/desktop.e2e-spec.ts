@@ -66,6 +66,22 @@ async function readyDesktop() {
     return current;
 }
 
+// Opens Add a book and types a title, as a person would: the form now has unsaved changes and
+// blocks closing through `beforeunload` (which needs a user gesture on the page).
+async function editUnsavedBook(runtime: ElectronRuntime) {
+    await evaluate(
+        runtime,
+        "Array.from(document.querySelectorAll('button')).find(button => button.textContent === 'Add a book').click();true",
+    );
+    await waitFor(runtime, "document.querySelector('h1')?.textContent === 'Add a book'");
+    await runtime.send({
+        type: 'evaluate',
+        userGesture: true,
+        expression:
+            "const label = Array.from(document.querySelectorAll('label')).find(item => item.textContent.startsWith('Title'));const field = document.getElementById(label.htmlFor);Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(field, 'Unsaved book');field.dispatchEvent(new Event('input', { bubbles: true }));true",
+    });
+}
+
 describe('desktop lifecycle and renderer', () => {
     it('saves the external HTTP port from the actual Server settings screen', async () => {
         const current = await readyDesktop();
@@ -234,6 +250,47 @@ describe('desktop lifecycle and renderer', () => {
         await expect(duplicate.ready).rejects.toThrow('already running');
         expect(await duplicate.exited).toBe(1);
         expect((await client.call('/health')).status).toBe(200);
+    });
+
+    it('closes the window with unsaved book changes once Leave without saving is chosen', async () => {
+        const current = await readyDesktop();
+
+        await editUnsavedBook(current.runtime);
+
+        await current.runtime.send({ type: 'close-window' });
+        const code = await Promise.race([current.runtime.exited, delay(10_000, 'still open')]);
+
+        expect(code).toBe(0);
+    });
+
+    it('quits and stops HTTP with unsaved book changes once Leave without saving is chosen', async () => {
+        const current = await readyDesktop();
+        const client = new Client('http://127.0.0.1:' + current.ready.httpPort);
+
+        await editUnsavedBook(current.runtime);
+
+        await current.runtime.send({ type: 'quit' });
+        const code = await Promise.race([current.runtime.exited, delay(10_000, 'still open')]);
+
+        expect(code).toBe(0);
+        await expect(client.call('/health')).rejects.toThrow();
+    });
+
+    it('keeps the window and HTTP running when Stay is chosen on quit with unsaved book changes', async () => {
+        const current = await readyDesktop();
+        const client = new Client('http://127.0.0.1:' + current.ready.httpPort);
+
+        await editUnsavedBook(current.runtime);
+        await current.runtime.send({ type: 'answer-dialogs', message: [1] });
+
+        await current.runtime.send({ type: 'quit' });
+        const code = await Promise.race([current.runtime.exited, delay(3_000, 'still open')]);
+
+        expect(code).toBe('still open');
+        expect((await client.call('/health')).status).toBe(200);
+        expect(await evaluate(current.runtime, "document.querySelector('h1')?.textContent")).toBe(
+            'Add a book',
+        );
     });
 
     it('stops HTTP when the desktop shuts down', async () => {

@@ -109,6 +109,15 @@ if (!startupOptions) {
             return;
         }
 
+        // Close the Libris window first: a page with unsaved changes can still keep it open
+        // (Stay), and then the server must keep running. Once it is closed, `window-all-closed`
+        // quits again and the shutdown continues below.
+        if (window && !window.isDestroyed()) {
+            window.close();
+
+            return;
+        }
+
         quitting = true;
         void (async () => {
             try {
@@ -209,6 +218,23 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
                 }
             });
             window.webContents.on('will-attach-webview', (event) => event.preventDefault());
+            // A page with unsaved changes (the book form) blocks closing through `beforeunload`;
+            // Electron shows no prompt of its own, so ask here. The answer must be synchronous.
+            window.webContents.on('will-prevent-unload', (event) => {
+                const choice = dialog.showMessageBoxSync(window!, {
+                    type: 'question',
+                    title: 'Unsaved changes',
+                    message: 'Leave without saving?',
+                    detail: 'The changes you made on this page will be lost.',
+                    buttons: ['Leave without saving', 'Stay'],
+                    defaultId: 1,
+                    cancelId: 1,
+                });
+
+                if (choice === 0) {
+                    event.preventDefault();
+                }
+            });
             await window.loadURL(url);
 
             if (!hiddenWindows) {
