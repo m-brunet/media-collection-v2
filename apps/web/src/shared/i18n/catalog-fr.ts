@@ -300,6 +300,16 @@ export const fr = {
     'accounts.reactivate': 'Réactiver',
     'accounts.lifecycleHint':
         'La désactivation déconnecte le compte, conserve ses données privées et réserve son nom d’utilisateur.',
+    'dataReset.label': 'Réinitialisation des données',
+    'dataReset.intro':
+        'Efface toute la bibliothèque et tous les autres comptes. Votre nom d’utilisateur et votre mot de passe Admin sont conservés.',
+    'dataReset.title': 'Réinitialiser les données',
+    'dataReset.body':
+        'Efface définitivement les livres, couvertures, collections, bibliothèques, étiquettes, emprunteurs, prêts, l’historique, les autres comptes et les préférences enregistrées. Votre nom d’utilisateur et votre mot de passe Admin actuels, les réglages du serveur et les sauvegardes enregistrées à part sont conservés. Tout le monde est déconnecté.',
+    'dataReset.password': 'Mot de passe Admin actuel',
+    'dataReset.passwordPlaceholder': 'Saisissez votre mot de passe actuel',
+    'dataReset.understood': 'Je comprends que cette action est irréversible',
+    'dataReset.submit': 'Réinitialiser et se déconnecter',
     'accounts.createIntro':
         'Choisissez Propriétaire ou Invité maintenant. Le rôle ne pourra plus être modifié.',
     'accounts.rolePlaceholder': 'Choisissez Propriétaire ou Invité',
