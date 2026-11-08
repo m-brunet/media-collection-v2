@@ -215,7 +215,7 @@ and phone and what to report back; the next step starts from the results.
   - Node's `ALPNCallback` is enough to answer `acme-tls/1`; the challenge certificate can be chosen by the reverse-DNS
     server name in `SNICallback`.
   - Allowing Node on **private** networks in the Windows Firewall prompt was enough (the home network is Private).
-- [ ] **3. Domain**: `InternetAccess`, `ConnectionClass`, `RenewalPolicy`, failure reasons; unit tests.
+- [x] **3. Domain**: `InternetAccess`, `ConnectionClass`, `RenewalPolicy`, failure reasons; unit tests.
 - [ ] **4. Application**: ports, the five use cases with in-memory doubles; audit; unit tests for every rule above
   (classification stops, refused port, unreachable, address change, renewal timing, backoff, manual certificate
   conflicts, turn off).
