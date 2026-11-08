@@ -54,6 +54,10 @@ import { KyselyPersonalNoteRepository } from '../../../apps/server/src/books/inf
 import { FileCoverStorage } from '../../../apps/server/src/books/infrastructure/adapters/driven/filesystem/file-cover-storage.adapter.js';
 import { ActivityModule } from '../../../apps/server/src/activity/infrastructure/config/activity.module.js';
 import { KyselyActivityRecordReader } from '../../../apps/server/src/activity/infrastructure/adapters/driven/persistence/kysely-activity-record-reader.adapter.js';
+import { MaintenanceModule } from '../../../apps/server/src/maintenance/infrastructure/config/maintenance.module.js';
+import { KyselyApplicationDataEraser } from '../../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/kysely-application-data-eraser.adapter.js';
+import { KyselyLibraryEraser } from '../../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/kysely-library-eraser.adapter.js';
+import { KyselyCoverFileCleanup } from '../../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/kysely-cover-file-cleanup.adapter.js';
 import { OverviewModule } from '../../../apps/server/src/overview/infrastructure/config/overview.module.js';
 import { KyselyLibrarySummaryReader } from '../../../apps/server/src/overview/infrastructure/adapters/driven/persistence/kysely-library-summary-reader.adapter.js';
 import { DatabaseManager } from './database-manager.js';
@@ -231,6 +235,19 @@ export class TestApp {
                     }),
                     OverviewModule.register({
                         summary: new KyselyLibrarySummaryReader(database.connections),
+                    }),
+                    MaintenanceModule.register({
+                        passwords: IdentityModule.administratorPassword(users, passwords),
+                        eraser: new KyselyApplicationDataEraser(
+                            database.connections,
+                            new KyselyLibraryEraser(database.connections),
+                        ),
+                        covers: new KyselyCoverFileCleanup(
+                            database.connections,
+                            new FileCoverStorage(directory),
+                        ),
+                        operations,
+                        sessions,
                     }),
                 ],
                 controllers: [HealthController],

@@ -12,6 +12,8 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import { ManagedAccountLoader } from '../../application/services/managed-account-loader.service.js';
 import { LibraryAdministratorLookup } from '../../application/services/library-administrator-lookup.service.js';
 import type { UserReader } from '../../application/ports/driven/user-reader.interface.js';
+import type { AdministratorPasswordCheck } from '../../../maintenance/application/ports/driven/administrator-password-check.interface.js';
+import { AdministratorPasswordConfirmation } from '../../application/services/administrator-password-confirmation.service.js';
 import type { LibraryAdministrator } from '../../../development-data/application/ports/driven/library-administrator.interface.js';
 import { CompleteSetup } from '../../application/use-cases/complete-setup.usecase.js';
 import { DeactivateAccount } from '../../application/use-cases/deactivate-account.usecase.js';
@@ -244,6 +246,14 @@ export class IdentityModule {
                 { provide: LoginLimiter, useFactory: () => new LoginLimiter() },
             ],
         };
+    }
+
+    // The Admin password check of the application data reset (wired at the root).
+    static administratorPassword(
+        users: UserReader,
+        passwords: PasswordHasher,
+    ): AdministratorPasswordCheck {
+        return new AdministratorPasswordConfirmation(users, passwords);
     }
 
     // The protected administrator, for the development V1 import (wired at the root).

@@ -4,6 +4,9 @@ import type { Checksums } from '../ports/driven/checksums.interface.js';
 import type { LibraryContentsReader } from '../ports/driven/library-contents-reader.interface.js';
 import type { MaintenanceJournal } from '../ports/driven/maintenance-journal.interface.js';
 import type { SessionKeyRotation } from '../ports/driven/session-key-rotation.interface.js';
+import type { AdministratorPasswordCheck } from '../ports/driven/administrator-password-check.interface.js';
+import type { ApplicationDataEraser } from '../ports/driven/application-data-eraser.interface.js';
+import type { CoverFileCleanup } from '../ports/driven/cover-file-cleanup.interface.js';
 import type {
     BackupContents,
     BackupManifestState,
@@ -98,6 +101,41 @@ export class CountingSessionKeyRotation implements SessionKeyRotation {
 
     async rotate(): Promise<void> {
         this.rotations++;
+    }
+}
+
+export class FixedPasswordCheck implements AdministratorPasswordCheck {
+    constructor(private readonly password: string) {}
+
+    async confirm(_accountId: string, password: string): Promise<void> {
+        if (password !== this.password) {
+            throw new Failure(
+                'invalid_input',
+                'The current password is incorrect.',
+                'password-incorrect',
+            );
+        }
+    }
+}
+
+// The application data as account IDs and cover files; erasing keeps one account.
+export class MemoryApplicationData implements ApplicationDataEraser, CoverFileCleanup {
+    accounts = ['admin', 'owner', 'guest'];
+    covers = ['cover.jpg'];
+    referencedCovers: string[] = [];
+    preferences: Record<string, string> = { appearance: 'Mint' };
+
+    async erase(keptAccountId: string): Promise<void> {
+        this.accounts = this.accounts.filter((account) => account === keptAccountId);
+        this.preferences = {};
+    }
+
+    async removeUnreferenced(): Promise<number> {
+        const removed = this.covers.filter((cover) => !this.referencedCovers.includes(cover));
+
+        this.covers = this.covers.filter((cover) => this.referencedCovers.includes(cover));
+
+        return removed.length;
     }
 }
 
