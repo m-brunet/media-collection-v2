@@ -2,6 +2,16 @@ import type { UtilityProcess } from 'electron';
 import { utilityProcess } from 'electron';
 import type { WorkerRequest, WorkerResponse } from './protocol.js';
 
+export class WorkerFailure extends Error {
+    constructor(
+        message: string,
+        readonly reason: string | null,
+        readonly details: Record<string, unknown> | null,
+    ) {
+        super(message);
+    }
+}
+
 export class BackendProcess {
     private readonly process: UtilityProcess;
     private exited = false;
@@ -55,7 +65,13 @@ export class BackendProcess {
                 this.waiters.delete(receive);
 
                 if (response.type === 'failed') {
-                    reject(new Error(response.message));
+                    reject(
+                        new WorkerFailure(
+                            response.message,
+                            response.reason ?? null,
+                            response.details ?? null,
+                        ),
+                    );
                 } else {
                     resolve(response);
                 }

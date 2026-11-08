@@ -1,4 +1,4 @@
-/* Local recovery window. Mirrors the Libris design values (apps/web/src/shared/ui/tokens.css) in the
+/* Local maintenance window. Mirrors the Libris design values (apps/web/src/shared/ui/tokens.css) in the
    default Spring green scheme (no server is running here to read the chosen scheme);
    this page loads from disk without the web build, so the values are repeated here. */
 @font-face {
@@ -94,7 +94,7 @@ label {
     color: #a9b5ac;
 }
 
-input {
+input[type='password'] {
     width: 100%;
     min-height: 40px;
     padding: 8px 12px;
@@ -141,10 +141,88 @@ button:focus-visible {
         0 0 0 4px #bdebb8;
 }
 
-#result:not(:empty) {
+select {
+    min-height: 32px;
+    padding: 4px 8px;
+    border: 1px solid #3c4042;
+    border-radius: 4px;
+    background: #303336;
+    color: #f2f5f2;
+    font: inherit;
+    font-size: 13px;
+}
+
+.brand__language {
+    margin-left: auto;
+}
+
+section {
+    padding: 20px 0;
+    border-top: 1px solid #3c4042;
+}
+
+h2 {
+    margin: 0 0 6px;
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+}
+
+.warning {
+    margin-top: 8px;
+    color: #f2c879;
+}
+
+.checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    color: #f2f5f2;
+}
+
+.checkbox input {
+    width: 18px;
+    min-height: 18px;
+    accent-color: #79d670;
+}
+
+.button--secondary {
+    background: transparent;
+    color: #79d670;
+}
+
+.button--secondary:hover:not(:disabled) {
+    background: #2c3a2e;
+}
+
+.summary {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 4px 16px;
+    margin: 14px 0 0;
+    padding: 12px 16px;
+    border: 1px solid #3c4042;
+    border-radius: 4px;
+    background: #252729;
+}
+
+.summary dt {
+    color: #a9b5ac;
+}
+
+.summary dd {
+    margin: 0;
+}
+
+.result:not(:empty) {
     margin-top: 16px;
     padding: 12px 16px;
     border: 1px solid #3c4042;
     border-radius: 4px;
     background: #252729;
+}
+
+[hidden] {
+    display: none !important;
 }

@@ -6,8 +6,10 @@ import type { PrivateStorage } from '../../../../../shared/infrastructure/adapte
 export class SessionSigningKey {
     constructor(private readonly storage: PrivateStorage) {}
 
+    private static readonly fileName = 'session.key';
+
     load(directory: string): Buffer {
-        const file = join(directory, 'session.key');
+        const file = join(directory, SessionSigningKey.fileName);
 
         try {
             writeFileSync(file, randomBytes(32), { flag: 'wx', mode: 0o600 });
@@ -25,5 +27,13 @@ export class SessionSigningKey {
         }
 
         return key;
+    }
+
+    // A new key: every session signed with the previous one ends.
+    rotate(directory: string): void {
+        const file = join(directory, SessionSigningKey.fileName);
+
+        writeFileSync(file, randomBytes(32), { mode: 0o600 });
+        this.storage.restrict(file);
     }
 }

@@ -2,25 +2,53 @@ import type { RecoverAdministratorUseCase } from '../ports/driving/recover-admin
 import { User } from '../../domain/entities/user.entity.js';
 import type { PasswordHasher } from '../ports/driven/password-hasher.interface.js';
 import type { UserRepository } from '../ports/driven/user-repository.interface.js';
+import type { AuditedOperation } from '../../../shared/application/services/audited-operation.service.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
+import { AccountAudit } from '../account-audit.js';
 
+// Run from local host maintenance, where no account acts: the audit actor stays null.
 export class RecoverAdministrator implements RecoverAdministratorUseCase {
     constructor(
         private readonly users: UserRepository,
         private readonly passwords: PasswordHasher,
+        private readonly operations: AuditedOperation,
     ) {}
 
-    async execute(username: string, password: string): Promise<void> {
-        User.validatePassword(password);
-        const user = await this.users.findByUsername(User.username(username));
+    async execute(password: string): Promise<{ username: string }> {
+        return this.operations.run(
+            {
+                category: AccountAudit.recovered,
+                actorId: null,
+                subjectType: AccountAudit.subject,
+                subjectId: null,
+            },
+            async (context) => {
+                const user = (await this.users.list()).find(
+                    (candidate) => candidate.isProtectedAdministrator,
+                );
 
-        if (!user || user.actor.role !== 'admin') {
-            throw new Failure('not_found', 'That administrator account does not exist.');
-        }
+                if (!user) {
+                    throw new Failure(
+                        'not_found',
+                        'There is no administrator account yet.',
+                        'administrator-missing',
+                    );
+                }
 
-        const expectedVersion = user.snapshot.tokenVersion;
+                context.subjectId = user.actor.id;
+                User.validatePassword(password);
+                const before = user.summary;
+                const expectedVersion = user.snapshot.tokenVersion;
 
-        user.replacePassword(await this.passwords.hash(password), true);
-        await this.users.save(user, expectedVersion);
+                user.replacePassword(await this.passwords.hash(password), true);
+                await this.users.save(user, expectedVersion);
+
+                return {
+                    result: { username: user.actor.username },
+                    before: { ...before },
+                    after: { ...user.summary },
+                };
+            },
+        );
     }
 }

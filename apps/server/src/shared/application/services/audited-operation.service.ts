@@ -152,10 +152,7 @@ export class AuditedOperation {
         contexts: readonly AuditContext[],
         error: unknown,
     ): Promise<void> {
-        const failure =
-            error instanceof Failure
-                ? error.code + (error.reason ? ':' + error.reason : '')
-                : 'error';
+        const failure = Failure.auditCode(error);
 
         try {
             for (const context of contexts) {

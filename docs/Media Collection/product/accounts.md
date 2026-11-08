@@ -69,4 +69,5 @@ Task 6 covers setup/login/temporary-password/self-settings/user-management/recov
 
 ## Implementation references
 
-[task-01-access-accountability](../plans/task-01-access-accountability.md). See the [global implementation plan](../plans/implementation-plan.md) for status and resume instructions.
+[task-01-access-accountability](../plans/task-01-access-accountability.md); local recovery, backup, restore and the
+data reset: [task-09-host-maintenance](../plans/task-09-host-maintenance.md). See the [global implementation plan](../plans/implementation-plan.md) for status and resume instructions.
