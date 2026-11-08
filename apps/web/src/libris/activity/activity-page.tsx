@@ -31,6 +31,8 @@ const icons: Record<ActivityEntryDto['event']['kind'], IconName> = {
     'book-updated': 'books',
     'book-marked-owned': 'books',
     'book-deleted': 'books',
+    'book-relocated': 'bookshelves',
+    'book-retagged': 'tag',
     'book-organised': 'books',
     'book-cover-changed': 'books',
     'author-corrected': 'books',

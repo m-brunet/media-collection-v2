@@ -1,6 +1,8 @@
 import type {
     ActivityPageDto,
+    BookcaseDto,
     BookDto,
+    ShelfDto,
     TagDto,
 } from '../../../../../../../../packages/contracts/src/http.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -63,6 +65,29 @@ describe('GET /api/activity', () => {
             also: [{ kind: 'receiver-created', name: 'Sam' }],
         });
         expect(response.body.entries).toHaveLength(3);
+    });
+    it('tells a book placed on a shelf from a book given other tags', async () => {
+        const dune = await book('Dune', '9780441172719');
+        const bookcase = await arrange<BookcaseDto>('/bookcases', 'POST', { name: 'Oak' });
+        const shelf = await arrange<ShelfDto>('/bookcases/' + bookcase.id + '/shelves', 'POST', {
+            name: 'Top',
+        });
+
+        await arrange('/books/' + dune.id + '/organisation', 'PATCH', { shelfId: shelf.id });
+        await arrange('/books/' + dune.id + '/organisation', 'PATCH', {
+            tags: [{ name: 'Fantasy' }],
+        });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<ActivityPageDto>('/activity');
+
+        expect(response.body.entries.slice(0, 2)).toMatchObject([
+            {
+                event: { kind: 'book-retagged', title: 'Dune' },
+                also: [{ kind: 'tag-created', name: 'Fantasy' }],
+            },
+            { event: { kind: 'book-relocated', title: 'Dune' }, also: [] },
+        ]);
     });
     it('lists entries newest first with their time', async () => {
         await tag('Fantasy');
