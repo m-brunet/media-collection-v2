@@ -64,4 +64,6 @@ volume up to it is present and Owned and none goes beyond, otherwise it stays un
   `User` rules); `BOOKS_IMPORT` is registered only for the development commands (`developmentImport` option of
   `LibraryModules`/`BooksModule`), not in the HTTP backend; the downloads adapter fetches all covers, 8 at a time
   (`CoverDownloads.fetchAll`), so the import use case only asks for them.
-
+- Task 9 (2026-11-08): the library eraser and the cover cleanup moved to the `maintenance` feature
+  (`KyselyLibraryEraser`, `KyselyCoverFileCleanup`), shared with the Admin data reset; `npm run dev:reset-data` is
+  composed with them, so both resets delete the same library tables.
