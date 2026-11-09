@@ -32,6 +32,7 @@ import { DomainNameCheck } from '../services/domain-name-check.service.js';
 import { HttpInternetAccessClosing } from '../services/http-internet-access-closing.service.js';
 import { HttpPortForwarding } from '../services/http-port-forwarding.service.js';
 import { InternetAccessSetup } from '../services/internet-access-setup.service.js';
+import { RouterRules } from '../services/router-rules.service.js';
 
 export const publicAddress = '82.66.118.204';
 
@@ -268,11 +269,11 @@ export class InternetAccessDoubles {
         const names = new MemoryDomainNameStore();
         const httpStore = new MemoryHttpInternetAccessStore();
         const httpListener = new FixedHttpListener();
-        const forwarding = new HttpPortForwarding(router, probe, httpListener, clock);
+        const rules = new RouterRules(router, probe);
+        const forwarding = new HttpPortForwarding(rules, httpListener, clock);
         const setup = new InternetAccessSetup(
             store,
-            router,
-            probe,
+            rules,
             authority,
             https,
             tlsStore,
@@ -287,6 +288,7 @@ export class InternetAccessDoubles {
             store,
             router,
             probe,
+            rules,
             authority,
             https,
             tls: tlsStore,

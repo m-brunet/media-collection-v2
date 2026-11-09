@@ -10,8 +10,7 @@ const halfLife = new Date('2026-11-11T18:00:00.000Z');
 function subjectFor(doubles: ReturnType<typeof InternetAccessDoubles.setup>) {
     return new MaintainInternetAccess(
         doubles.store,
-        doubles.router,
-        doubles.probe,
+        doubles.rules,
         doubles.tls,
         doubles.setup,
         doubles.domains,

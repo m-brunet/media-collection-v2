@@ -4,7 +4,6 @@ import {
     MemoryAuditTrail,
 } from '../../../shared/application/testing/audit-doubles.test-support.js';
 import { TestActors } from '../../../shared/application/testing/test-actors.test-support.js';
-import { PublicAddressLookup } from '../services/public-address-lookup.service.js';
 import {
     InternetAccessDoubles,
     publicAddress,
@@ -25,7 +24,7 @@ function subjectFor(
     return new SaveDomainName(
         doubles.names,
         doubles.store,
-        new PublicAddressLookup(doubles.router, doubles.probe),
+        doubles.rules,
         doubles.domains,
         doubles.setup,
         doubles.background,

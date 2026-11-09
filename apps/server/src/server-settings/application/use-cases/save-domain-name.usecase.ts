@@ -9,7 +9,7 @@ import type { InternetAccessReader } from '../ports/driven/internet-access-reade
 import type { SaveDomainNameUseCase } from '../ports/driving/save-domain-name-use-case.interface.js';
 import type { DomainNameCheck } from '../services/domain-name-check.service.js';
 import type { InternetAccessSetup } from '../services/internet-access-setup.service.js';
-import type { PublicAddressLookup } from '../services/public-address-lookup.service.js';
+import type { RouterRules } from '../services/router-rules.service.js';
 import { SettingsAudit } from '../settings-audit.js';
 
 // Saves the Admin's domain name once it points to this connection, so the internet addresses never
@@ -19,7 +19,7 @@ export class SaveDomainName implements SaveDomainNameUseCase {
     constructor(
         private readonly store: DomainNameStore,
         private readonly https: InternetAccessReader,
-        private readonly lookup: PublicAddressLookup,
+        private readonly rules: RouterRules,
         private readonly check: DomainNameCheck,
         private readonly setup: InternetAccessSetup,
         private readonly background: BackgroundTasks,
@@ -62,7 +62,7 @@ export class SaveDomainName implements SaveDomainNameUseCase {
     }
 
     private async requirePointsHere(name: string): Promise<void> {
-        const address = await this.lookup.current();
+        const address = await this.rules.publicAddress();
 
         if (!address) {
             throw new Failure(
