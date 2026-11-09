@@ -232,6 +232,38 @@ it('clears the failure after a successful upkeep', () => {
 
     expect([access.snapshot.failure, access.snapshot.failedAttempts]).toEqual([null, 0]);
 });
+it('shows a router rule failure without waiting longer', () => {
+    const access = active();
+
+    access.ruleFailed('no-router', now);
+
+    expect([
+        access.snapshot.failure?.reason,
+        access.snapshot.failedAttempts,
+        access.upkeepDue(now),
+    ]).toEqual(['no-router', 0, true]);
+});
+it('clears a router rule failure once the rule is kept', () => {
+    const access = active();
+
+    access.ruleFailed('port-refused', now);
+
+    access.ruleKept();
+
+    expect(access.snapshot.failure).toBeNull();
+});
+it('keeps a certificate failure and its waiting time when the rule is kept', () => {
+    const access = active();
+
+    access.upkeepFailed('authority-unavailable', now);
+
+    access.ruleKept();
+
+    expect([access.snapshot.failure?.reason, access.snapshot.nextAttemptAt]).toEqual([
+        'authority-unavailable',
+        '2026-11-08T11:00:00.000Z',
+    ]);
+});
 it('runs no upkeep while off', () => {
     const access = InternetAccess.off();
 

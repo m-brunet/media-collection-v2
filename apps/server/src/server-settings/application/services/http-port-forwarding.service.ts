@@ -2,7 +2,7 @@ import type { Clock } from '../../../shared/application/ports/driven/clock.inter
 import { HttpInternetAccess } from '../../domain/entities/http-internet-access.entity.js';
 import type { HttpListener } from '../ports/driven/http-listener.interface.js';
 import type { PortRule } from '../ports/driven/port-rule.interface.js';
-import type { RouterRules } from './router-rules.service.js';
+import type { RouterRules, RuleUpkeep } from './router-rules.service.js';
 
 // The router rule of HTTP from the internet: the HTTP port, from outside to this computer. Opening,
 // closing and the upkeep change the entity; the caller saves it.
@@ -51,17 +51,14 @@ export class HttpPortForwarding {
         access.close(byHttps);
     }
 
-    async refresh(access: HttpInternetAccess): Promise<void> {
-        if (access.phase !== 'open') {
-            return;
-        }
-
+    // The upkeep of an open access: what happened to the rule.
+    async refresh(access: HttpInternetAccess): Promise<RuleUpkeep> {
         const kept = await this.rules.keep(this.rule(), !access.automatic);
 
         if (kept.outcome === 'failed') {
             access.upkeepFailed(kept.reason, this.clock.now());
 
-            return;
+            return kept;
         }
 
         if (kept.address !== access.publicAddress) {
@@ -69,6 +66,8 @@ export class HttpPortForwarding {
         }
 
         access.upkeepSucceeded();
+
+        return kept;
     }
 
     // The external port is the running HTTP port itself (1024-65535).

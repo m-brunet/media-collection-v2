@@ -1,4 +1,4 @@
-import type { InternetAccessFailureReason } from '../../domain/entities/internet-access.entity.js';
+import type { RouterRuleFailureReason } from '../../domain/entities/internet-access.entity.js';
 import { ConnectionClass } from '../../domain/value-objects/connection-class.value-object.js';
 import type { PortRule } from '../ports/driven/port-rule.interface.js';
 import type { PublicAddressProbe } from '../ports/driven/public-address-probe.interface.js';
@@ -14,10 +14,7 @@ export type RuleUpkeep =
     | { outcome: 'serving'; address: string }
     | {
           outcome: 'failed';
-          reason: Extract<
-              InternetAccessFailureReason,
-              'no-router' | 'public-address-unknown' | 'port-refused' | 'cgnat' | 'double-nat'
-          >;
+          reason: RouterRuleFailureReason;
       };
 
 // The home router and its port rules, with the public "what is my IP" service when no router

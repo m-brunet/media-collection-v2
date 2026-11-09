@@ -4,14 +4,18 @@ import type { InternetAccessFailureReason } from '../../domain/entities/internet
 import type { DomainNameReader } from '../ports/driven/domain-name-reader.interface.js';
 import type { InternetAccessStore } from '../ports/driven/internet-access-store.interface.js';
 import type { TlsSettingsReader } from '../ports/driven/tls-settings-reader.interface.js';
-import type { MaintainInternetAccessUseCase } from '../ports/driving/maintain-internet-access-use-case.interface.js';
+import type {
+    MaintainInternetAccessUseCase,
+    RuleUpkeepOutcome,
+} from '../ports/driving/maintain-internet-access-use-case.interface.js';
 import type { DomainNameCheck } from '../services/domain-name-check.service.js';
 import type { InternetAccessSetup } from '../services/internet-access-setup.service.js';
 import type { RouterRules } from '../services/router-rules.service.js';
 
-// The hourly upkeep: recreate the router rule, follow a changed public address, check that the
-// domain name still points to it, and renew the certificate. A failure keeps the current
-// certificate and waits longer before the next try.
+// The upkeep: keep the router rule and follow a changed public address on every run, then check
+// that the domain name still points to it and renew the certificate. A certificate or domain name
+// failure keeps the current certificate and waits longer before that work runs again; the router
+// rule never waits, as it lapses at the end of its lease.
 export class MaintainInternetAccess implements MaintainInternetAccessUseCase {
     constructor(
         private readonly store: InternetAccessStore,
@@ -23,7 +27,7 @@ export class MaintainInternetAccess implements MaintainInternetAccessUseCase {
         private readonly clock: Clock,
     ) {}
 
-    async execute(): Promise<void> {
+    async execute(): Promise<RuleUpkeepOutcome> {
         const access = await this.store.read();
         const now = this.clock.now();
 
@@ -31,25 +35,25 @@ export class MaintainInternetAccess implements MaintainInternetAccessUseCase {
             access.interrupted(now);
             await this.store.save(access);
 
-            return;
+            return { rule: 'none' };
         }
 
-        if (!access.upkeepDue(now)) {
-            return;
+        if (access.phase !== 'active') {
+            return { rule: 'none' };
         }
 
-        const reason = await this.upkeep(access).catch(() => 'setup-failed' as const);
+        const outcome = await this.upkeep(access, now).catch((): RuleUpkeepOutcome => {
+            access.upkeepFailed('setup-failed', now);
 
-        if (reason) {
-            access.upkeepFailed(reason, now);
-        } else {
-            access.upkeepSucceeded();
-        }
+            return { rule: 'failed', reason: 'setup-failed' };
+        });
 
         await this.store.save(access);
+
+        return outcome;
     }
 
-    private async upkeep(access: InternetAccess): Promise<InternetAccessFailureReason | null> {
+    private async upkeep(access: InternetAccess, now: Date): Promise<RuleUpkeepOutcome> {
         const { port } = await this.tls.read();
         const kept = await this.rules.keep(
             { externalPort: InternetAccess.externalPort, internalPort: port },
@@ -57,13 +61,39 @@ export class MaintainInternetAccess implements MaintainInternetAccessUseCase {
         );
 
         if (kept.outcome === 'failed') {
-            return kept.reason;
+            access.ruleFailed(kept.reason, now);
+
+            return { rule: 'failed', reason: kept.reason };
         }
+
+        access.ruleKept();
 
         if (kept.address !== access.publicAddress) {
             access.addressChanged(kept.address);
         }
 
+        if (access.upkeepDue(now)) {
+            const reason = await this.certificateUpkeep(access).catch(
+                () => 'setup-failed' as const,
+            );
+
+            if (reason) {
+                access.upkeepFailed(reason, now);
+            } else {
+                access.upkeepSucceeded();
+            }
+        }
+
+        return {
+            rule: 'kept',
+            address: kept.address,
+            problem: access.snapshot.failure?.reason ?? null,
+        };
+    }
+
+    private async certificateUpkeep(
+        access: InternetAccess,
+    ): Promise<InternetAccessFailureReason | null> {
         const saved = await this.names.read();
 
         if (saved !== access.domain) {
