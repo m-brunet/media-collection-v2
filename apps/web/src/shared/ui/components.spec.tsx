@@ -88,3 +88,16 @@ it('shows the fixed Libris and Leaf marks, drawn in the text colour', () => {
     expect(libris?.querySelector('[fill="currentColor"]')).not.toBeNull();
     expect(leaf?.querySelector('[stroke="currentColor"]')).not.toBeNull();
 });
+
+it('shows the situation icon of a notice instead of its tone icon', () => {
+    const { container } = render(
+        <Notice tone="error" icon="camera-unavailable">
+            The camera cannot be used.
+        </Notice>,
+    );
+
+    expect([
+        container.querySelector('svg.lucide-camera-off'),
+        container.querySelector('svg.lucide-circle-alert'),
+    ]).toEqual([expect.anything(), null]);
+});
