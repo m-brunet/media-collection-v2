@@ -24,7 +24,7 @@ design.
 | KI-9 | Improvement | Internet access: no automatic Let's Encrypt retries, estimated attempts left           | Medium   | Open   |
 | KI-10 | Improvement | Internet access: renew certificates through ARI so renewals escape Let's Encrypt limits | Medium | Open |
 | KI-11 | Improvement | Server settings: QR code for each address, opening Leaf, with the Libris logo | Medium | Done |
-| KI-12 | Improvement | The QR code of the HTTPS internet address also signs the phone in to Leaf | Medium | Open |
+| KI-12 | Improvement | The address QR codes also sign the phone in to Leaf (not the HTTP internet address) | Medium | Open |
 
 ## Open
 
@@ -211,7 +211,7 @@ design.
   Check against Let's Encrypt's staging server first.
 - **Severity:** medium (removes the main risk of the weekly limit). **Planned:** next fix pass, together with KI-9.
 
-### KI-12 — The QR code of the HTTPS internet address also signs the phone in to Leaf
+### KI-12 — The address QR codes also sign the phone in to Leaf (not the HTTP internet address)
 
 - **Type:** Improvement.
 - **Reported:** 2026-11-09 by the user, during Task 9.6.
@@ -219,36 +219,47 @@ design.
   typing the password on the phone.
 - **Decisions (2026-11-09):**
   - **No new button:** it is the existing QR code of the addresses list (Server settings, KI-11, Task 9.6).
-  - **HTTPS only:** only the QR code of the HTTPS internet address (`https://<domain or public IP>`), while HTTPS from
-    the internet is on, carries the sign-in. Over HTTP the code and the session would travel unencrypted; the HTTP and
-    local addresses keep a plain QR code (the phone signs in with the password, as today).
+  - **Which addresses:** every address with a QR code signs the phone in, whatever the HTTPS state, **except the HTTP
+    internet address** (`http://<domain or public IP>:<port>`), which keeps a plain QR code (the phone signs in with
+    the password). Why:
+    - HTTPS internet address: encrypted.
+    - Local network addresses (`http://192.168.x.x`): only the home network carries the code; signing in there with
+      the password already sends it unencrypted today, so a single-use 2-minute code adds no exposure.
+    - Tailscale addresses (`http://100.x.x.x`): Tailscale encrypts the traffic between devices (WireGuard).
+    - HTTP internet address: crosses public networks (shop Wi-Fi, mobile carrier) unencrypted, so excluded.
+    - Loopback: no QR code already.
+  - **Validity:** 2 minutes, single use (confirmed).
+  - **Owners too:** an Owner can also show such a QR code, signing the phone in as the Owner (confirmed "for now").
   - **The phone session is a normal sign-in:** same account and rights as signing in with the password on the phone,
     same lifetime (one idle hour today, 24 hours with KI-2), ended like any session by a password change, a
     deactivation or the Admin recovery. No "Leaf only" limit and no device list.
-- **Today:** the addresses list is in Server settings, so only the Admin sees it; the QR code holds
+- **Today:** the addresses list is in Server settings, so only the Admin sees it (Owners have no way to show a QR
+  code yet); the QR code holds
   `<address>/leaf/` (`apps/web/src/libris/administration/addresses-panel.tsx`). Sessions: HttpOnly cookies with a
   token version (`architecture.md`, security section).
 - **Fix:**
-  - **Pairing code:** when the Admin shows the QR code of the HTTPS address, Libris asks the server for a one-time
+  - **Pairing code:** when the user shows the QR code of an eligible address, Libris asks the server for a one-time
     code: random (32 bytes, base64url), only its hash stored with the account and an expiry of 2 minutes, usable once;
     showing the code again replaces the previous one. Feature `identity`: use cases "create a pairing code" (signed-in
     Owner/Admin) and "redeem a pairing code", a store (SQLite table with UUID id, hashed code, account, expiry, used
     at), audit categories for both.
-  - **QR value:** `https://<address>/leaf/#pair=<code>`. The code is after `#`, so the browser never sends it in a
-    request: it stays out of server logs and `Referer` headers.
+  - **QR value:** `<address>/leaf/#pair=<code>`. The code is after `#`, so the browser never sends it in a request:
+    it stays out of server logs and `Referer` headers. The server decides which addresses are eligible (it knows the
+    HTTP internet address), so the rule is not left to the browser.
   - **Leaf:** on start, reads `#pair=`, removes it from the address bar at once (`history.replaceState`), and sends it
     once to a pre-login endpoint (for example `POST /api/sessions/pair`, CSRF like the login). The server checks the
     code (exists, not expired, not used, account active, Owner or Admin, no temporary password to change), marks it
     used, and opens the session exactly like a login (cookie, token version). Expired or used: Leaf shows its sign-in
     screen with "This QR code has expired. Show it again on the computer." Rate-limited like the login.
-  - **Libris:** under the QR code of the HTTPS address, "This code signs a phone in as <username>. It works once, for
-    2 minutes." and a new code when it expires while shown.
+  - **Libris:** under the QR code of an eligible address, "This code signs a phone in as <username>. It works once,
+    for 2 minutes." and a new code when it expires while shown. Under the HTTP internet address, nothing changes.
+  - **Owners:** the addresses list (with its QR codes, without the server settings) is also shown to Owners, at a place
+    to choose with the user when the fix is planned (for example their account page).
   - **Tests:** domain/application rules (expiry, single use, inactive account, temporary password, Guest), the
     redeem endpoint (success sets the session cookie, each refusal, rate limit, audit), Libris (the QR value has
-    `#pair=` only for the HTTPS internet address), a browser journey (scan value opened in a new context lands signed
+    `#pair=` for local, Tailscale and HTTPS addresses, never for the HTTP internet address), a browser journey (scan value opened in a new context lands signed
     in on Leaf; second use refused). No test reaches Let's Encrypt (Task 9.6 testing rule).
-- **Open questions for the fix:** 2 minutes of validity; whether an Owner also needs a way to show such a QR code
-  (today only the Admin sees the addresses list).
+- **Open question for the fix:** where Owners see the addresses list and its QR codes.
 - **Severity:** medium (sign-in on the phone at every session today). **Planned:** next version, after the 2.0.0
   release.
 
