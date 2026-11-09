@@ -1933,6 +1933,11 @@ body {
     font-size: var(--text-lg);
 }
 
+/* Every action of the Internet access panel sits on the right. */
+.internet-access .actions {
+    justify-content: flex-end;
+}
+
 .internet-access__section,
 .internet-access__domain {
     display: grid;

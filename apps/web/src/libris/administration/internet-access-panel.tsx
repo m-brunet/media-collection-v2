@@ -198,6 +198,14 @@ function HttpsInternetSection({
             )}
             {status.phase === 'off' && failure && <Notice tone="error">{failure}</Notice>}
             {action.feedback && <Notice tone={action.feedback.tone}>{action.feedback.text}</Notice>}
+            {status.phase === 'off' && (
+                <p className="muted">
+                    {t('internet.terms')}{' '}
+                    <a href={termsAddress} target="_blank" rel="noreferrer">
+                        {t('internet.termsLink')}
+                    </a>
+                </p>
+            )}
             <div className="actions">
                 {status.phase === 'off' && (
                     <Button variant="primary" busy={action.busy} onClick={start}>
@@ -215,14 +223,6 @@ function HttpsInternetSection({
                     </Button>
                 )}
             </div>
-            {status.phase === 'off' && (
-                <p className="muted">
-                    {t('internet.terms')}{' '}
-                    <a href={termsAddress} target="_blank" rel="noreferrer">
-                        {t('internet.termsLink')}
-                    </a>
-                </p>
-            )}
             <ConfirmDialog
                 open={replacing}
                 title={t('internet.replaceTitle')}
