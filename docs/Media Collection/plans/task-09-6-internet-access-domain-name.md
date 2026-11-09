@@ -104,13 +104,15 @@ Libris
 Each step: tests, the relevant checks, architecture review skill on the changes, commit, tick below.
 
 - [x] **1. Documentation and plan**: owning docs and this plan.
-- [ ] **2. Domain**: `DomainName`, `InternetAccess`, `RenewalPolicy`; unit tests.
-- [ ] **3. Application**: resolver port, `DomainNameCheck`, setup, upkeep, set-up use case; unit tests.
-- [ ] **4. Infrastructure and HTTP**: DNS resolver, ACME identifiers and profile, challenge name, controller,
+- [x] **2. Domain**: `DomainName`, `InternetAccess`, `RenewalPolicy`; unit tests.
+- [x] **3. Application**: resolver port, `DomainNameCheck`, setup, upkeep, set-up use case; unit tests.
+- [x] **4. Infrastructure and HTTP**: DNS resolver, ACME identifiers and profile, challenge name, controller,
   contracts, stand-ins; adapter and API tests.
-- [ ] **5. Libris**: domain field, messages, EN/FR; component and browser tests.
+- [x] **5. Libris**: domain field, messages, EN/FR; component and browser tests.
 - [ ] **6. Wrap-up**: full check, implementation plan status, push, pull request. The real-world check (Freebox,
   OVH name, phone on mobile data) is for the user.
+  Done so far (2026-11-09): `npm run check` passes (304 files, 2698 tests); architecture review of the changes found
+  no mandatory violation. Push and pull request wait for the user's go-ahead.
 
 ## Known limits
 
