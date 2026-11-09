@@ -9,6 +9,7 @@ import type { DomainNameResolver } from '../../application/ports/driven/domain-n
 import type { DomainNameStore } from '../../application/ports/driven/domain-name-store.interface.js';
 import type { HttpSettingsStore } from '../../application/ports/driven/http-settings-store.interface.js';
 import type { HttpsRuntime } from '../../application/ports/driven/https-runtime.interface.js';
+import type { HttpInternetAccessStore } from '../../application/ports/driven/http-internet-access-store.interface.js';
 import type { InternetAccessStore } from '../../application/ports/driven/internet-access-store.interface.js';
 import type { KeepAwakeRuntime } from '../../application/ports/driven/keep-awake-runtime.interface.js';
 import type { KeepAwakeStore } from '../../application/ports/driven/keep-awake-store.interface.js';
@@ -17,10 +18,16 @@ import type { PublicAddressProbe } from '../../application/ports/driven/public-a
 import type { RouterGateway } from '../../application/ports/driven/router-gateway.interface.js';
 import type { TlsStore } from '../../application/ports/driven/tls-store.interface.js';
 import type { MaintainInternetAccessUseCase } from '../../application/ports/driving/maintain-internet-access-use-case.interface.js';
+import type { MaintainHttpInternetAccessUseCase } from '../../application/ports/driving/maintain-http-internet-access-use-case.interface.js';
 import { DomainNameCheck } from '../../application/services/domain-name-check.service.js';
+import { HttpPortForwarding } from '../../application/services/http-port-forwarding.service.js';
 import { InternetAccessSetup } from '../../application/services/internet-access-setup.service.js';
 import { PublicAddressLookup } from '../../application/services/public-address-lookup.service.js';
 import { CheckInternetAccess } from '../../application/use-cases/check-internet-access.usecase.js';
+import { CloseHttpInternetAccess } from '../../application/use-cases/close-http-internet-access.usecase.js';
+import { MaintainHttpInternetAccess } from '../../application/use-cases/maintain-http-internet-access.usecase.js';
+import { OpenHttpInternetAccess } from '../../application/use-cases/open-http-internet-access.usecase.js';
+import { ReadHttpInternetAccess } from '../../application/use-cases/read-http-internet-access.usecase.js';
 import { MaintainInternetAccess } from '../../application/use-cases/maintain-internet-access.usecase.js';
 import { ReadDomainName } from '../../application/use-cases/read-domain-name.usecase.js';
 import { ReadHttpSettings } from '../../application/use-cases/read-http-settings.usecase.js';
@@ -36,6 +43,7 @@ import { TurnOffInternetAccess } from '../../application/use-cases/turn-off-inte
 import { RenewalPolicy } from '../../domain/services/renewal-policy.service.js';
 import { InternetAccessUpkeep } from '../adapters/driving/schedule/internet-access-upkeep.adapter.js';
 import { DomainNameController } from '../adapters/driving/web/domain-name.controller.js';
+import { HttpInternetAccessController } from '../adapters/driving/web/http-internet-access.controller.js';
 import { InternetAccessController } from '../adapters/driving/web/internet-access.controller.js';
 import { KeepAwakeController } from '../adapters/driving/web/keep-awake.controller.js';
 import type { RuntimeStatus } from '../adapters/driving/web/settings.controller.js';
@@ -62,6 +70,14 @@ export const SERVER_SETTINGS_READ_KEEP_AWAKE = 'SERVER_SETTINGS_READ_KEEP_AWAKE'
 export const SERVER_SETTINGS_SAVE_KEEP_AWAKE = 'SERVER_SETTINGS_SAVE_KEEP_AWAKE';
 export const SERVER_SETTINGS_READ_DOMAIN_NAME = 'SERVER_SETTINGS_READ_DOMAIN_NAME';
 export const SERVER_SETTINGS_SAVE_DOMAIN_NAME = 'SERVER_SETTINGS_SAVE_DOMAIN_NAME';
+export const SERVER_SETTINGS_OPEN_HTTP_INTERNET_ACCESS =
+    'SERVER_SETTINGS_OPEN_HTTP_INTERNET_ACCESS';
+export const SERVER_SETTINGS_CLOSE_HTTP_INTERNET_ACCESS =
+    'SERVER_SETTINGS_CLOSE_HTTP_INTERNET_ACCESS';
+export const SERVER_SETTINGS_READ_HTTP_INTERNET_ACCESS =
+    'SERVER_SETTINGS_READ_HTTP_INTERNET_ACCESS';
+export const SERVER_SETTINGS_MAINTAIN_HTTP_INTERNET_ACCESS =
+    'SERVER_SETTINGS_MAINTAIN_HTTP_INTERNET_ACCESS';
 
 // The driven adapters the server settings feature needs; root composition supplies them.
 export interface SettingsAdapters {
@@ -72,6 +88,7 @@ export interface SettingsAdapters {
     operations: AuditedOperation;
     internetAccess: InternetAccessStore;
     domainName: DomainNameStore;
+    httpInternetAccess: HttpInternetAccessStore;
     router: RouterGateway;
     probe: PublicAddressProbe;
     resolver: DomainNameResolver;
@@ -95,6 +112,7 @@ export class SettingsModule {
             operations,
             internetAccess,
             domainName,
+            httpInternetAccess,
             router,
             probe,
             resolver,
@@ -108,6 +126,7 @@ export class SettingsModule {
         } = adapters;
         const domains = new DomainNameCheck(resolver);
         const lookup = new PublicAddressLookup(router, probe);
+        const forwarding = new HttpPortForwarding(router, probe, http, clock);
 
         return {
             module: SettingsModule,
@@ -115,6 +134,7 @@ export class SettingsModule {
                 SettingsController,
                 InternetAccessController,
                 DomainNameController,
+                HttpInternetAccessController,
                 KeepAwakeController,
             ],
             providers: [
@@ -139,7 +159,8 @@ export class SettingsModule {
                 },
                 {
                     provide: SERVER_SETTINGS_SAVE_HTTP_SETTINGS,
-                    useFactory: () => new SaveHttpSettings(http, tls, operations),
+                    useFactory: () =>
+                        new SaveHttpSettings(http, tls, httpInternetAccess, operations),
                 },
                 {
                     provide: SERVER_SETTINGS_INTERNET_ACCESS_SETUP,
@@ -153,6 +174,8 @@ export class SettingsModule {
                             tls,
                             domains,
                             domainName,
+                            httpInternetAccess,
+                            forwarding,
                             clock,
                         ),
                 },
@@ -200,10 +223,44 @@ export class SettingsModule {
                         ),
                 },
                 {
+                    provide: SERVER_SETTINGS_OPEN_HTTP_INTERNET_ACCESS,
+                    useFactory: () =>
+                        new OpenHttpInternetAccess(
+                            httpInternetAccess,
+                            internetAccess,
+                            forwarding,
+                            operations,
+                        ),
+                },
+                {
+                    provide: SERVER_SETTINGS_CLOSE_HTTP_INTERNET_ACCESS,
+                    useFactory: () =>
+                        new CloseHttpInternetAccess(httpInternetAccess, forwarding, operations),
+                },
+                {
+                    provide: SERVER_SETTINGS_READ_HTTP_INTERNET_ACCESS,
+                    useFactory: () =>
+                        new ReadHttpInternetAccess(httpInternetAccess, domainName, http, local),
+                },
+                {
+                    provide: SERVER_SETTINGS_MAINTAIN_HTTP_INTERNET_ACCESS,
+                    useFactory: () =>
+                        new MaintainHttpInternetAccess(httpInternetAccess, forwarding, clock),
+                },
+                {
                     provide: SERVER_SETTINGS_INTERNET_ACCESS_UPKEEP,
-                    inject: [SERVER_SETTINGS_MAINTAIN_INTERNET_ACCESS],
-                    useFactory: (maintain: MaintainInternetAccessUseCase) =>
-                        new InternetAccessUpkeep(maintain, RenewalPolicy.upkeepInterval),
+                    inject: [
+                        SERVER_SETTINGS_MAINTAIN_INTERNET_ACCESS,
+                        SERVER_SETTINGS_MAINTAIN_HTTP_INTERNET_ACCESS,
+                    ],
+                    useFactory: (
+                        maintainHttps: MaintainInternetAccessUseCase,
+                        maintainHttp: MaintainHttpInternetAccessUseCase,
+                    ) =>
+                        new InternetAccessUpkeep(
+                            [maintainHttps, maintainHttp],
+                            RenewalPolicy.upkeepInterval,
+                        ),
                 },
                 {
                     provide: SERVER_SETTINGS_READ_DOMAIN_NAME,

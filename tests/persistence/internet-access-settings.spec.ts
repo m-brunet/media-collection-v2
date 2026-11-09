@@ -5,6 +5,8 @@ import { UuidGenerator } from '../../apps/server/src/shared/infrastructure/adapt
 import { KyselyInternetAccessRepository } from '../../apps/server/src/server-settings/infrastructure/adapters/driven/persistence/kysely-internet-access.repository.js';
 import { KyselyDomainNameRepository } from '../../apps/server/src/server-settings/infrastructure/adapters/driven/persistence/kysely-domain-name.repository.js';
 import { DomainName } from '../../apps/server/src/server-settings/domain/value-objects/domain-name.value-object.js';
+import { KyselyHttpInternetAccessRepository } from '../../apps/server/src/server-settings/infrastructure/adapters/driven/persistence/kysely-http-internet-access.repository.js';
+import { HttpInternetAccess } from '../../apps/server/src/server-settings/domain/entities/http-internet-access.entity.js';
 import { KyselyKeepAwakeRepository } from '../../apps/server/src/server-settings/infrastructure/adapters/driven/persistence/kysely-keep-awake.repository.js';
 import { InternetAccess } from '../../apps/server/src/server-settings/domain/entities/internet-access.entity.js';
 import { DataDirectories } from './data-directories.test-support.js';
@@ -226,4 +228,52 @@ it('rejects a saved domain name setting without a name', async () => {
     const result = repository.read();
 
     await expect(result).rejects.toThrow('must hold a name or null');
+});
+it('reads HTTP internet access as off when nothing was saved', async () => {
+    const { database } = await open();
+    const repository = new KyselyHttpInternetAccessRepository(
+        database.connections,
+        new UuidGenerator(),
+    );
+
+    const access = await repository.read();
+
+    expect(access.snapshot).toEqual(HttpInternetAccess.off().snapshot);
+});
+it('keeps open HTTP internet access across a restart', async () => {
+    const first = await open();
+    const access = HttpInternetAccess.off();
+
+    access.opened('upnp', '82.66.118.204');
+    await new KyselyHttpInternetAccessRepository(
+        first.database.connections,
+        new UuidGenerator(),
+    ).save(access);
+    await first.database.close();
+    databases.splice(0);
+    const { database } = await open(first.path);
+    const repository = new KyselyHttpInternetAccessRepository(
+        database.connections,
+        new UuidGenerator(),
+    );
+
+    const read = await repository.read();
+
+    expect(read.snapshot).toEqual(access.snapshot);
+});
+it('rejects saved HTTP internet access with an unknown phase', async () => {
+    const { database } = await open();
+
+    await database.connection
+        .insertInto('server_settings')
+        .values({ id: randomUUID(), name: 'http-internet-access', value: '{"phase":"ajar"}' })
+        .execute();
+    const repository = new KyselyHttpInternetAccessRepository(
+        database.connections,
+        new UuidGenerator(),
+    );
+
+    const result = repository.read();
+
+    await expect(result).rejects.toThrow('known phase');
 });

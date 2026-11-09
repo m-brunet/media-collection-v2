@@ -31,6 +31,7 @@ import { PemCertificateValidator } from '../../server-settings/infrastructure/ad
 import { TlsAlpnChallenges } from '../../server-settings/infrastructure/adapters/driven/security/tls-alpn-challenges.adapter.js';
 import { NodeHttpsRuntime } from '../../server-settings/infrastructure/adapters/driven/runtime/node-https-runtime.adapter.js';
 import { KyselyDomainNameRepository } from '../../server-settings/infrastructure/adapters/driven/persistence/kysely-domain-name.repository.js';
+import { KyselyHttpInternetAccessRepository } from '../../server-settings/infrastructure/adapters/driven/persistence/kysely-http-internet-access.repository.js';
 import { KyselyKeepAwakeRepository } from '../../server-settings/infrastructure/adapters/driven/persistence/kysely-keep-awake.repository.js';
 import { UpnpRouterGateway } from '../../server-settings/infrastructure/adapters/driven/third-party/upnp-router-gateway.adapter.js';
 import { HttpPublicAddressProbe } from '../../server-settings/infrastructure/adapters/driven/third-party/http-public-address-probe.adapter.js';
@@ -250,6 +251,10 @@ export class BackendRuntime {
                             http: httpSettings,
                             operations,
                             domainName: new KyselyDomainNameRepository(database.connections, ids),
+                            httpInternetAccess: new KyselyHttpInternetAccessRepository(
+                                database.connections,
+                                ids,
+                            ),
                             internetAccess: new KyselyInternetAccessRepository(
                                 database.connections,
                                 ids,

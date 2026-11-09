@@ -1,4 +1,5 @@
 import { expect, it } from 'vitest';
+import { HttpInternetAccess } from '../../domain/entities/http-internet-access.entity.js';
 import { InternetAccess } from '../../domain/entities/internet-access.entity.js';
 import {
     InternetAccessDoubles,
@@ -224,4 +225,38 @@ it('stops when the domain name has no address', async () => {
         'off',
         'domain-unresolved',
     ]);
+});
+
+it('closes HTTP to the internet once HTTPS works', async () => {
+    const doubles = startedDoubles();
+
+    await doubles.http.save(new HttpInternetAccess(InternetAccessDoubles.httpOpen()));
+
+    await doubles.setup.run();
+
+    expect([
+        doubles.http.current.phase,
+        doubles.http.current.closedByHttps,
+        doubles.router.closed,
+    ]).toEqual(['off', true, [{ externalPort: 34345, internalPort: 34345 }]]);
+});
+it('keeps HTTP open while HTTPS waits for a manual router rule', async () => {
+    const doubles = startedDoubles();
+
+    await doubles.http.save(new HttpInternetAccess(InternetAccessDoubles.httpOpen()));
+    doubles.router.accepts = false;
+
+    await doubles.setup.run();
+
+    expect(doubles.http.current.phase).toBe('open');
+});
+it('keeps HTTP open when the certificate cannot be issued', async () => {
+    const doubles = startedDoubles();
+
+    await doubles.http.save(new HttpInternetAccess(InternetAccessDoubles.httpOpen()));
+    doubles.authority.refusal = 'rate-limited';
+
+    await doubles.setup.run();
+
+    expect(doubles.http.current.phase).toBe('open');
 });

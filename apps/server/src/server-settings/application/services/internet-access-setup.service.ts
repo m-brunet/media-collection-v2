@@ -4,15 +4,18 @@ import type { InternetAccessFailureReason } from '../../domain/entities/internet
 import { TlsSettings } from '../../domain/value-objects/tls-settings.value-object.js';
 import type { CertificateAuthority } from '../ports/driven/certificate-authority.interface.js';
 import type { DomainNameReader } from '../ports/driven/domain-name-reader.interface.js';
+import type { HttpInternetAccessStore } from '../ports/driven/http-internet-access-store.interface.js';
 import type { HttpsRuntime } from '../ports/driven/https-runtime.interface.js';
 import type { InternetAccessStore } from '../ports/driven/internet-access-store.interface.js';
 import type { PublicAddressProbe } from '../ports/driven/public-address-probe.interface.js';
 import type { RouterGateway } from '../ports/driven/router-gateway.interface.js';
 import type { TlsStore } from '../ports/driven/tls-store.interface.js';
 import type { DomainNameCheck } from './domain-name-check.service.js';
+import type { HttpPortForwarding } from './http-port-forwarding.service.js';
 
 // The steps of an internet access setup, run after the Admin's request has answered: find the
-// router, open the port, get the certificate. Each step is saved so the page can follow it.
+// router, open the port, get the certificate. Each step is saved so the page can follow it. Once
+// HTTPS works, HTTP from the internet is closed.
 export class InternetAccessSetup {
     private active = 0;
 
@@ -25,6 +28,8 @@ export class InternetAccessSetup {
         private readonly tls: TlsStore,
         private readonly domains: DomainNameCheck,
         private readonly names: DomainNameReader,
+        private readonly http: HttpInternetAccessStore,
+        private readonly forwarding: HttpPortForwarding,
         private readonly clock: Clock,
     ) {}
 
@@ -169,6 +174,21 @@ export class InternetAccessSetup {
             access.certificateRefused(reason, now);
         } else if (reason) {
             access.stop(reason, now);
+        } else {
+            await this.closeHttp();
         }
+    }
+
+    // HTTPS works: plain HTTP no longer needs to be open. A failure to remove the router rule does
+    // not undo the HTTPS setup.
+    private async closeHttp(): Promise<void> {
+        const http = await this.http.read();
+
+        if (http.phase !== 'open') {
+            return;
+        }
+
+        await this.forwarding.close(http, true).catch(() => http.close(true));
+        await this.http.save(http);
     }
 }
