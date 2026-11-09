@@ -1,129 +1,148 @@
-# Task 9.6 — Internet access with a domain name
+# Task 9.6 — Domain name and HTTP internet access
 
 Status: in progress (2026-11-09). Branch `task-09-6-internet-access-domain-name` from `master`, one commit per step,
 pull request at the end. Global plan: [implementation plan](implementation-plan.md). Follows
 [Task 9.5](task-09-5-internet-access-https.md).
 
 Owning docs: [product scope](../product/product-scope.md), [release expectations](../operations/release-expectations.md),
-[architecture](../architecture/architecture.md) (updated in Step 1).
+[architecture](../architecture/architecture.md).
 
 ## Goal
 
-With Task 9.5, the phone's address is the home's public IP address. Many providers change it, and the Leaf bookmark and
-QR code then break. An Admin who owns a domain name, already kept on the home connection by the router's dynamic DNS
-(for example a Freebox with an OVH domain), can enter it once. The certificate then covers the name, the address and QR
-code use `https://<domain>`, and nothing changes when the public IP changes.
+With Task 9.5, the phone's address is the home's public IP address, and only HTTPS can be opened to the internet. Two
+needs came out of the first real test:
+
+1. An Admin who owns a domain name, kept on the home connection by the router's dynamic DNS (for example a Freebox with
+   an OVH domain), wants every internet address to use it, so bookmarks and QR codes survive IP changes.
+2. When HTTPS cannot be set up (or until it is), Libris and Leaf must still be reachable from outside over HTTP. Like
+   Foundry VTT, the Admin chooses it knowing it is not encrypted.
 
 ## Scope
 
 In:
 
-- An optional **Domain name** field in the Internet access panel, sent with **Set up internet access**.
-- A DNS check before each certificate request and on each upkeep run: the name must point to the public address.
-- A Let's Encrypt certificate for the name: `dns` identifier, **`classic` profile** (90 days today), proven with
-  TLS-ALPN-01 on external port 443 like the IP certificate.
-- Renewal at **two thirds** of the lifetime for a name (day 60 of a 90-day certificate), unchanged (half) for an IP.
-- The address, QR code and audit records use the name.
-- EN/FR strings, tests at every level, documentation.
+- **Domain name** setting, saved on its own (top of the Internet access panel). Saving checks the format, then that
+  the name points to this connection's public address; otherwise the name is refused and nothing changes.
+- **HTTP from the internet**: one action opens a router rule external HTTP port → this computer's HTTP port (UPnP,
+  manual values otherwise), with a clear "not encrypted" warning; one action closes it.
+- **HTTPS from the internet**: Task 9.5's setup, now using the saved domain name: certificate for the name (`dns`
+  identifier, `classic` profile, renewed at two thirds of its lifetime), proven with TLS-ALPN-01 on external 443.
+- When an HTTPS setup succeeds, HTTP from the internet closes; while HTTPS is on, HTTP cannot be opened.
+- Internet addresses (`http://<name>:<http port>`, `https://<name>`, with the public IP when there is no name) in the
+  Internet access panel and in the addresses panel with their QR codes.
+- Hourly upkeep for both router rules; domain name checks; EN/FR; tests at every level; documentation.
 
-Out: DNS-01 and DNS provider APIs (OVH or others), editing DNS records, several names or subdomains per installation,
-other applications sharing the name, IPv6, HTTP-01.
+Out: DNS-01 and DNS provider APIs, editing DNS records, several names per installation, other applications sharing the
+name, IPv6, HTTP-01, HTTP→HTTPS redirects, an external HTTP port different from the HTTP port.
 
 ## Decisions (2026-11-09)
 
-- "Just a domain name": no DNS provider account or API token. The router (or the Admin) keeps the name on the public IP.
-- A name means the `classic` profile, renewed about every 60 days (two thirds of the lifetime, so it follows Let's
-  Encrypt's announced shorter lifetimes without a change). Without a name, Task 9.5 is unchanged.
-- The proof stays TLS-ALPN-01 on external port 443: the router rule, the manual screen and the HTTPS listener stay as
-  they are.
+- "Just a domain name": no DNS provider account or API token; the router (or the Admin) keeps the name on the public IP.
+- The domain name is its own setting, saved and checked on its own, used by HTTP and HTTPS addresses alike.
+- Saving refuses a name that does not point to this connection (or when the public address cannot be found), so the
+  addresses never switch to a name that does not work.
+- **HTTP may be opened to the internet** at the Admin's explicit request, with a warning. This reverses Task 9.5's
+  "only HTTPS is exposed" rule: HTTPS stays the recommended way, HTTP is the fallback when HTTPS does not work.
+- The external HTTP port is the HTTP port itself (1024-65535 already). No port 80.
+- HTTPS working closes HTTP: a successful HTTPS setup removes the HTTP rule and says why; HTTP cannot be opened while
+  HTTPS is on; turning HTTPS off does not reopen HTTP.
+- A name means the `classic` certificate profile, renewed about every 60 days (two thirds of the lifetime). Without a
+  name, Task 9.5's IP certificate is unchanged.
 
 ## Rules
 
 Domain name
-- Optional. Empty means no name (Task 9.5 behaviour).
-- Normalised: trimmed, lower case, one trailing dot removed. Accepted: 2 to 127 labels of letters, digits and inner
-  hyphens (1-63 characters each, punycode `xn--` allowed), 253 characters at most, a last label that is not only digits
-  (so an IP address is refused). A scheme, port, path, space or `*` is refused: `invalid_input`,
-  reason `domain-name-invalid`.
-- Entered with the setup. It is kept when the setup stops or internet access is turned off, so the field shows it again.
-  To change the name while internet access is on: turn off, then set up again.
+- Optional. Normalised: trimmed, lower case, one trailing dot removed. Accepted: labels of letters, digits and inner
+  hyphens (1-63 characters, punycode allowed), at least two labels, 253 characters at most, a last label that is not
+  only digits. Otherwise `invalid_input`, `domain-name-invalid`.
+- Saving a name: the public address comes from the router (UPnP), else from the public service. Then the name's IPv4
+  addresses (A records) must include it. Refusals (`invalid_input`): `domain-unresolved` (no address),
+  `domain-mismatch` (points elsewhere; the message gives the public address), `public-address-unknown`.
+- Saving an empty name removes it. Admin only; audited `server-settings.domain-name-changed`.
+- While HTTPS is on, a changed or removed name gets a new certificate in the background (failure shown like an upkeep
+  failure; the current certificate stays). Otherwise the next HTTPS upkeep or setup uses it.
 
-Setup (with a name)
-- The router and port steps are unchanged.
-- The certificate step first looks up the name's IPv4 addresses (A records):
-  - no address or the lookup fails → the setup stops with `domain-unresolved`;
-  - the public address is not among them → the setup stops with `domain-mismatch`.
-  The panel explains what to check (the dynamic DNS settings of the router) and shows the public address.
-- Then the certificate is requested for the name (`classic`), and the address shown is `https://<domain>`.
+HTTP from the internet
+- **Open**: refused while HTTPS is on (`conflict`, `https-active`). Finds the router; CGNAT or double NAT stops with the
+  same explanations as HTTPS. Opens TCP external HTTP port → local IP : HTTP port. A refusal, or no router, shows the
+  manual values (public address from the public service); the access then counts as open by hand.
+- **Close**: removes the router rule when the app created it.
+- Saving another HTTP port is refused while HTTP from the internet is open (`internet-access-on`).
+- Upkeep (same timer as HTTPS): recreate the rule, follow a new public address; failures are shown, not audited.
+- Audited `server-settings.http-internet-access-opened` / `-closed`.
 
-Upkeep (with a name)
-- Router rule and public address as in Task 9.5. A changed public address is recorded but needs no new certificate.
-- Every run checks the name: `domain-unresolved` or `domain-mismatch` is an upkeep failure (warning in the panel,
-  current certificate kept, growing retry delays). The name catching up after a few minutes clears it on the next run.
-- Renewal when two thirds of the lifetime has passed, or at once when the certificate does not cover the name.
+HTTPS from the internet (changes to Task 9.5)
+- The setup uses the saved name. The certificate step checks the name (`domain-unresolved`, `domain-mismatch` stop the
+  setup), then asks for a `classic` certificate for it.
+- On success (setup or Check again), HTTP from the internet is closed and marked "closed because HTTPS works".
+- Upkeep: a changed public address needs no new certificate with a name; the name is checked on every run (warning on
+  mismatch, certificate kept, growing delays); renewal at two thirds of the lifetime for a name, half for an IP.
 
-Unchanged: Admin only, audit categories (the before/after states now include `domain`), turn off, manual certificate
-rules, keep awake, data reset and backup.
+Addresses
+- HTTP: `http://<name or public IP>:<HTTP port>` while open. HTTPS: `https://<name or public IP>` while active (the
+  name the certificate covers). Both appear with a QR code in the Internet access panel and in the addresses panel.
+- Local addresses (`http://192.168.x.x:<port>`) are unchanged.
 
 ## Design
 
 Domain (`server-settings/domain/`)
-- `DomainName` value object: `DomainName.optional(value)` normalises and validates, null for blank.
-- `InternetAccess`: state gains `domain: string | null`; `start(domain)`; `stop` and `turnOff` keep the domain;
-  `certificateName` (domain, else public address) is what the certificate must cover (`activate`, `renewalDue`,
-  origin).
-- `RenewalPolicy.renewalDue(certificate, name, share, now)` with `addressShare = 1/2` and `domainShare = 2/3`.
-- `IssuedCertificateState.address` keeps its name (saved JSON and HTTP contract) and now means "the address or name it
-  covers".
-- Failure reasons gain `domain-unresolved` and `domain-mismatch`.
+- `DomainName` value object (validation).
+- `InternetAccess` (HTTPS): `domain` is the name the current setup or certificate uses; `start(domain)`,
+  `useDomain(domain)` while active; `certificateName`; renewal share by kind.
+- `HttpInternetAccess` entity: `off` / `open`, mapping (`upnp`, `nat-pmp`, `manual`), public address, last failure,
+  `closedByHttps`. Classifies the router's external address like `InternetAccess`.
 
 Application
-- Driven port `DomainNameResolver.addresses(name): Promise<string[]>` (IPv4, empty when unknown or on failure).
-- Application service `DomainNameCheck.problem(access)`: null without a name, otherwise one of the two reasons.
-  `InternetAccessSetup.renew` and `MaintainInternetAccess` use it.
-- `CertificateAuthority.issue(subject)` with `CertificateSubject = { kind: 'address' | 'domain'; name }`.
-- `SetUpInternetAccessUseCase` input gains `domain: string | null`.
+- Driven ports: `DomainNameResolver`, `DomainNameReader` / `DomainNameStore`, `HttpInternetAccessReader` /
+  `HttpInternetAccessStore`.
+- Services: `DomainNameCheck` (name vs address), `PublicAddressLookup` (router, else public service),
+  `HttpPortForwarding` (open, close, refresh the HTTP rule).
+- Use cases: `SaveDomainName`, `ReadDomainName`, `OpenHttpInternetAccess`, `CloseHttpInternetAccess`,
+  `ReadHttpInternetAccess`, `MaintainHttpInternetAccess`; `SetUpInternetAccess` reads the saved name;
+  `InternetAccessSetup` closes HTTP on success and follows a changed name; `SaveHttpSettings` refuses a port change
+  while HTTP is open.
 
 Infrastructure
-- `DnsDomainNameResolver` (`node:dns/promises` `resolve4`, the system's DNS servers).
-- `AcmeCertificateAuthority`: `ip` + `shortlived` or `dns` + `classic`; CSR for the name.
-- `TlsAlpnChallenges`: the challenge server name is the reverse-DNS form for an address and the name itself for a
-  domain.
-- HTTP: `POST /api/server-settings/internet-access` accepts `domain` (string or null, 253 characters at most);
-  `InternetAccessStatus` gains `domain`.
-- Test stand-ins (API fixture and browser worker) gain a resolver that answers the router's external address.
+- `DnsDomainNameResolver`; ACME `dns` + `classic`; challenge server name for a domain; Kysely repositories
+  (`domain-name`, `http-internet-access` settings, kept by data reset like the other host settings).
+- HTTP: `PUT /api/server-settings/domain-name` (`{ domain: string | null }`), `POST` / `DELETE
+  /api/server-settings/internet-access/http`. `ServerStatus` gains `domainName` and `httpInternetAccess`.
+- The upkeep adapter runs the HTTPS and HTTP upkeeps in turn.
 
-Libris
-- Panel, setup state: text field **Domain name (optional)** with a hint ("Only if you own a domain name that already
-  points to this connection, for example through your router's dynamic DNS. Leave empty to use the internet
-  address."), prefilled from the status.
-- Active state: the address shows the name; the domain failures show as warnings with the public address.
+Libris (Internet access panel)
+- Domain name field with **Save** and the check result.
+- **HTTP from the internet**: warning, **Open** / **Close**, rule state, manual values, address and QR code; the
+  "closed because HTTPS works" note.
+- **HTTPS from the internet**: Task 9.5's section without the domain field.
+- Addresses panel: the internet addresses after the local ones.
 
 ## Steps
 
 Each step: tests, the relevant checks, architecture review skill on the changes, commit, tick below.
 
-- [x] **1. Documentation and plan**: owning docs and this plan.
-- [x] **2. Domain**: `DomainName`, `InternetAccess`, `RenewalPolicy`; unit tests.
-- [x] **3. Application**: resolver port, `DomainNameCheck`, setup, upkeep, set-up use case; unit tests.
-- [x] **4. Infrastructure and HTTP**: DNS resolver, ACME identifiers and profile, challenge name, controller,
-  contracts, stand-ins; adapter and API tests.
-- [x] **5. Libris**: domain field, messages, EN/FR; component and browser tests.
-- [ ] **6. Wrap-up**: full check, implementation plan status, push, pull request. The real-world check (Freebox,
-  OVH name, phone on mobile data) is for the user.
-  Done so far (2026-11-09): `npm run check` passes (304 files, 2698 tests); architecture review of the changes found
-  no mandatory violation. Push and pull request wait for the user's go-ahead.
+- [x] **1. Documentation and plan** (first version), then updated for the new scope.
+- [x] **2. Domain** (first version): `DomainName`, `InternetAccess`, `RenewalPolicy`.
+- [x] **3. Application** (first version): resolver port, `DomainNameCheck`, setup, upkeep.
+- [x] **4. Infrastructure and HTTP** (first version): DNS resolver, ACME identifiers and profile, challenge name.
+- [x] **5. Libris** (first version): domain field in the setup.
+- [ ] **6. Domain name setting**: store, save/read use cases, check on save, follow a changed name while HTTPS is on,
+  endpoint, setup reads the saved name.
+- [ ] **7. HTTP from the internet**: entity, port forwarding service, open/close/read/maintain use cases, HTTPS
+  success closes HTTP, HTTP port lock, endpoints, upkeep.
+- [ ] **8. Libris**: panel sections, addresses panel, EN/FR; component and browser tests.
+- [ ] **9. Wrap-up**: full check, implementation plan status. Real-world check (Freebox, OVH name, phone on mobile
+  data) with the user; push and pull request on the user's go-ahead.
 
 ## Known limits
 
-- **Renewal check moment**: Node chooses the certificate from the server name before it sees the `acme-tls/1`
-  protocol. During the few seconds of a check (about every 60 days) a browser opening the name gets the challenge
-  certificate and a warning; reloading fixes it. With an IP address this never happens, because browsers do not send
-  the reverse-DNS name.
-- **Inside the home network**, the phone gets the public IP for the name; the router must send the traffic back to the
-  computer (NAT loopback). Freeboxes do.
-- **IPv6**: if the name also has an AAAA record, Let's Encrypt may try IPv6 first, and the app opens no IPv6 port. The
-  dynamic DNS should publish IPv4 only.
-- **Dynamic DNS delay**: after an IP change, the upkeep warns until the name catches up; the certificate stays valid.
-- **Duplicate certificates**: Let's Encrypt allows 5 certificates per week for the same name; renewals every 60 days
-  are far below it.
+- **HTTP is not encrypted**: passwords, the session cookie and library data can be read on the networks between the
+  phone and the home. The panel says so; HTTPS closes HTTP once it works.
+- **Renewal check moment**: Node chooses the certificate from the server name before it sees `acme-tls/1`. During the
+  few seconds of a check (about every 60 days) a browser opening the name may get the challenge certificate and a
+  warning; reloading fixes it.
+- **Inside the home network**, the name resolves to the public IP; the router must send the traffic back (NAT
+  loopback). Freeboxes do.
+- **IPv6**: the name should only have an A record; with an AAAA record Let's Encrypt may try IPv6, where no port is open.
+- **Dynamic DNS delay**: after an IP change, the upkeep warns until the name catches up.
+- **HTTP port override** (command line or environment, development only): the HTTP rule targets the saved HTTP port.
+- **Duplicate certificates**: 5 per week for the same name; renewals every 60 days are far below it.
