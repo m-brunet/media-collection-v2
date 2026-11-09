@@ -12,7 +12,8 @@ Owning docs: [updates](../operations/updates.md), [release expectations](../oper
   backup and download page, backup folder, failure handling.
 - Packaging and installer, icon set choice (Admin setting), credits and licences page.
 - Carried over from earlier work:
-  - the Windows Firewall rule in the installer ([Task 9.5](task-09-5-internet-access-https.md));
+  - the Windows Firewall rule in the installer ([Task 9.5](task-09-5-internet-access-https.md)), for the HTTPS port and,
+    since [Task 9.6](task-09-6-internet-access-domain-name.md), the HTTP port too;
   - the Libris icon files in `apps/desktop/assets/icons` for the installer (KI-4);
   - the credits listed in [Task 6](task-06-assisted-entry.md#credits-for-the-future-credits-page),
     [Task 7](task-07-leaf.md#credits-for-the-future-credits-page) and Task 9.5 (ACME client, NAT library, QR code
