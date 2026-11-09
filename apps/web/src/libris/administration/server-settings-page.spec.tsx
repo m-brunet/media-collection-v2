@@ -322,6 +322,16 @@ it('lists the HTTPS address on the domain name once active', async () => {
     ).toBeInTheDocument();
 });
 it('warns before opening HTTP to the internet', async () => {
+    administrator(status());
+
+    renderPage();
+    await userEvent.click(await screen.findByRole('button', { name: 'Open HTTP to the internet' }));
+
+    const dialog = await screen.findByRole('dialog', { name: 'Open HTTP to the internet?' });
+
+    expect(within(dialog).getByText(/HTTP is not encrypted/)).toBeInTheDocument();
+});
+it('opens HTTP to the internet once the warning is confirmed', async () => {
     const api = administrator(status()).on('POST /server-settings/internet-access/http', () => ({
         status: 201,
         body: httpOpen,
@@ -331,24 +341,31 @@ it('warns before opening HTTP to the internet', async () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Open HTTP to the internet' }));
     const dialog = await screen.findByRole('dialog', { name: 'Open HTTP to the internet?' });
 
-    expect(within(dialog).getByText(/HTTP is not encrypted/)).toBeInTheDocument();
     await userEvent.click(within(dialog).getByRole('button', { name: 'Open without encryption' }));
+
     expect(api.calls.map((call) => call.route)).toContain(
         'POST /server-settings/internet-access/http',
     );
 });
-it('lists the HTTP address and closes HTTP', async () => {
+it('lists the HTTP address while HTTP is open', async () => {
+    administrator(status(undefined, false, { httpInternetAccess: httpOpen }));
+
+    renderPage();
+
+    expect(
+        await screen.findByRole('link', { name: 'http://' + publicAddress + ':34345' }),
+    ).toBeInTheDocument();
+});
+it('closes HTTP to the internet', async () => {
     const api = administrator(status(undefined, false, { httpInternetAccess: httpOpen })).on(
         'DELETE /server-settings/internet-access/http',
         () => ({ status: 200, body: httpAccess() }),
     );
 
     renderPage();
-    expect(
-        await screen.findByRole('link', { name: 'http://' + publicAddress + ':34345' }),
-    ).toBeInTheDocument();
+    const close = await screen.findByRole('button', { name: 'Close HTTP' });
 
-    await userEvent.click(screen.getByRole('button', { name: 'Close HTTP' }));
+    await userEvent.click(close);
 
     expect(api.calls.map((call) => call.route)).toContain(
         'DELETE /server-settings/internet-access/http',
