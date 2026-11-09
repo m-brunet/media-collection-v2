@@ -20,9 +20,10 @@ design.
 | KI-5 | Bug         | Bookshelves count not vertically centred with the search field                        | Low      | Open   |
 | KI-6 | Improvement | Appearance offers seven new colour schemes; Mint, Emerald and Forest are removed      | Medium   | Open   |
 | KI-7 | Improvement | Interface text needs slightly wider letter spacing                                    | Low      | Open   |
-| KI-8 | Improvement | Server settings addresses need more space between them                                | Low      | Open   |
+| KI-8 | Improvement | Server settings addresses need more space between them                                | Low      | Done   |
 | KI-9 | Improvement | Internet access: no automatic Let's Encrypt retries, estimated attempts left           | Medium   | Open   |
 | KI-10 | Improvement | Internet access: renew certificates through ARI so renewals escape Let's Encrypt limits | Medium | Open |
+| KI-11 | Improvement | Server settings: QR code for each address, opening Leaf, with the Libris logo | Medium | Done |
 
 ## Open
 
@@ -155,20 +156,6 @@ design.
   Leaf at phone width, in English and French, at 1280 × 720 and 1440 wide.
 - **Severity:** low (typography). **Planned:** next fix pass, or the next task that touches shared styles.
 
-### KI-8 — Server settings addresses need more space between them
-
-- **Type:** Improvement.
-- **Reported:** 2026-11-08 by the user, on the Libris Server settings page (French: "Adresses actuelles"), Task 9.5
-  branch. The user likes how the addresses are shown, but the lines are too close together.
-- **Today:** the addresses (`http://127.0.0.1:34345`, the Tailscale and local network addresses) are links in a
-  `.plain-list` (`apps/web/src/libris/libris.css`), which only removes the list's margins and bullets, so the links sit
-  line against line. The same list style holds the "next addresses" shown after an HTTP port change
-  (`apps/web/src/libris/administration/server-settings-page.tsx`).
-- **Fix:** space the items of both address lists, for example a dedicated class
-  (`display: grid; gap: var(--space-2)`) instead of the bare `.plain-list`. Keep the current look of the links.
-  Check on the reference desktop viewport, in both languages.
-- **Severity:** low (readability). **Planned:** next fix pass, or the next task that touches Server settings.
-
 ### KI-9 — Internet access: no automatic Let's Encrypt retries, estimated attempts left
 
 - **Type:** Improvement.
@@ -224,6 +211,74 @@ design.
 - **Severity:** medium (removes the main risk of the weekly limit). **Planned:** next fix pass, together with KI-9.
 
 ## Done
+
+### KI-11 — Server settings: QR code for each address, opening Leaf, with the Libris logo
+
+- **Type:** Improvement (new feature).
+- **Reported:** 2026-11-09 by the user, with the design
+  [server-settings-ki11.html](../design/server-settings-ki11.html) (panel "Current addresses").
+- **Asked:** each address of the "Current addresses" panel gets a **Show QR code** button. Clicking it shows, on the
+  right of the list, the QR code of that address with a caption ("Scan to open this address") and the encoded address
+  under it. The aim is to open Leaf on a phone without typing the address.
+- **Decisions (user, 2026-11-09):**
+  - **The QR code opens Leaf** (`<address>/leaf/`). The links on the left stay as today and open Libris (`<address>`).
+    The text under the code shows the Leaf address it encodes.
+  - **Nothing selected at first:** on page load no button is pressed and the QR side is hidden. A click on a button
+    selects that address and shows its code; a click on another button switches to it. The pressed button is
+    highlighted (`aria-pressed`), as in the design.
+  - **No button for `localhost` and `127.0.0.1`** (loopback addresses, also `::1`): on a phone they point to the phone
+    itself, so their code could never work. The links themselves stay.
+  - **The Tailscale address (`100.64.0.0/10`) keeps its button, without a hint**: Tailscale users know they need it on
+    the phone too.
+  - **The Libris logo in the centre of the code** (`/libris.svg`, the official mark already used by `Brand`).
+- **Feasibility and libraries:** no new dependency. `qrcode` 1.5.4 (added by Task 9.5 for the Internet access panel)
+  generates the code locally as SVG. The design's image from `api.qrserver.com` is a mockup shortcut and must not be
+  used: it would send the addresses to a third party, fail without internet access and break the content security
+  policy.
+- **The logo:** QR codes carry error correction; at level **H** (about 30 % of the code can be rebuilt) a centred logo
+  of at most about 20 % of the code's width is read as recoverable damage. Rules: generate with
+  `errorCorrectionLevel: 'H'`; the logo sits on a small white square in the centre, never over the three corner
+  squares; the code keeps a white quiet zone (the design's 8 px white border plus the library margin; the Internet
+  access panel's `margin: 1` is below the recommended 4 modules and should follow the same rule). Level H makes the
+  code denser, so keep the design's 128 px display or larger and check with real phones.
+- **Fix:**
+  - One shared component (for example `AddressQrCode`) that draws a code for a URL, with the logo, used by the
+    "Current addresses" panel and by the Internet access panel (which then also gets the logo), so both look the same.
+  - The "Current addresses" panel follows the design: two columns (address list, QR preview of 300 px separated by a
+    border), rows of at least 44 px with 16 px between them (this closes **KI-8**), the QR button style and focus
+    outline, the caption and the encoded address in the mono font. At narrow widths the preview goes under the list.
+    The "next addresses" list shown after an HTTP port change gets the same spacing, without buttons.
+  - EN/FR texts: "Show QR code" / "Afficher le QR code", "Scan to open Leaf at this address" / "Scannez pour ouvrir
+    Leaf à cette adresse", button labels "Show the QR code for <address>" for screen readers; the image alt text names
+    the encoded address.
+  - Credits (Task 10): "QR Code is a registered trademark of DENSO WAVE INCORPORATED."
+- **Tests:** component tests: nothing selected and the preview hidden on load; a click shows the code for
+  `<address>/leaf/` and presses only that button; a second click switches; no button for loopback addresses; the code
+  is generated at level H with the logo present. Playwright on the reference desktop viewport: select an address,
+  decode the displayed code (for example with the `zxing` reader the web app already ships for Leaf) and compare it to
+  the expected Leaf address, so the logo is proven not to break scanning. A manual check with two phones.
+- **Severity:** medium (main way to reach Leaf from a phone on the local network). **Planned:** next fix pass, with
+  KI-8; it can follow Task 9.5's pull request.
+- **Done:** 2026-11-09, commit `9e64d1f` (branch `ki-11-address-qr-codes`): `QrCode` (`apps/web/src/shared/ui/qr-code.tsx`,
+  level H, 4-module margin, Libris mark at 20 % of the width) used by the new `AddressesPanel` and by the Internet
+  access panel; `ServerAddress` (Leaf address, loopback detection). Browser tests decode the displayed codes with
+  `zxing-wasm` (`tests/web/qr-reader.ts`). Still to do: the manual check with two phones; the credits line (Task 10).
+
+### KI-8 — Server settings addresses need more space between them
+
+- **Type:** Improvement.
+- **Reported:** 2026-11-08 by the user, on the Libris Server settings page (French: "Adresses actuelles"), Task 9.5
+  branch. The user likes how the addresses are shown, but the lines are too close together.
+- **Today:** the addresses (`http://127.0.0.1:34345`, the Tailscale and local network addresses) are links in a
+  `.plain-list` (`apps/web/src/libris/libris.css`), which only removes the list's margins and bullets, so the links sit
+  line against line. The same list style holds the "next addresses" shown after an HTTP port change
+  (`apps/web/src/libris/administration/server-settings-page.tsx`).
+- **Fix:** space the items of both address lists, for example a dedicated class
+  (`display: grid; gap: var(--space-2)`) instead of the bare `.plain-list`. Keep the current look of the links.
+  Check on the reference desktop viewport, in both languages.
+- **Severity:** low (readability). **Planned:** with KI-11, whose design gives the address rows 16 px spacing.
+- **Done:** 2026-11-09, commit `9e64d1f` (branch `ki-11-address-qr-codes`, with KI-11): address rows of at least
+  44 px with 16 px between them, in both address lists.
 
 ### KI-4 — Libris has an application icon in the Windows taskbar
 
