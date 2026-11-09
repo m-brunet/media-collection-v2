@@ -26,6 +26,7 @@ Created 2026-11-03. Working plan, kept with the documentation in the Obsidian va
 - Mobile existing Not Owned ISBN: a warning screen with Mark as Owned (changed 2026-11-07, Task 7), no form, no external lookup.
 - Leaf scanning works without HTTPS: live camera when the page allows it, otherwise a barcode photo read on the phone (2026-11-07).
 - Internet access (2026-11-08, Task 9.5): one Admin action opens the router port (UPnP/NAT-PMP) and gets a Let's Encrypt IP address certificate on external port 443; only HTTPS is exposed; manual PEM import stays advanced; dynamic DNS names deferred.
+- Domain name (2026-11-09, Task 9.6): the Admin may enter a domain name already kept on the home connection; the certificate then covers the name (`classic` profile, renewed at two thirds of its lifetime), still proven on external port 443. No DNS provider API.
 - Markdown excluded from oxfmt. `npm run check` builds before lint.
 
 ## Testing strategy (applies to every task)
@@ -143,6 +144,10 @@ Inserted at the user's request (2026-11-08). Owning docs: `../product/product-sc
 - HTTPS only exposed to the internet; incoming firewall rule built into the Task 10 installer; optional keep-awake setting; manual PEM import kept as an advanced setting.
 - Dynamic DNS name (stable address), tunnels and an MC-run name service deferred.
 
+### Task 9.6 — Internet access with a domain name
+Inserted at the user's request (2026-11-09). Owning docs: same as Task 9.5. Plan: [task-09-6-internet-access-domain-name](task-09-6-internet-access-domain-name.md).
+- Optional domain name in the Internet access panel; DNS check against the public address; certificate for the name (`classic` profile) proven with TLS-ALPN-01 on external 443; renewal at two thirds of the lifetime; the address and QR code use the name; a changed public IP needs no new certificate.
+
 ### Task 10 — Release readiness
 Owning docs: `../operations/updates.md`, `../design/design-guidelines.md`. Brief with the decisions made on 2026-11-08
 (version 2.0.0, update flow from the menu, menus, About window, backup folder, builds): [task-10-release-readiness](task-10-release-readiness.md).
@@ -155,7 +160,7 @@ Owning docs: `../operations/updates.md`, `../design/design-guidelines.md`. Brief
 
 ## Dependencies
 
-0 → 1 → 2 → 3 → 4; 5 needs 2; 5.5 follows 5 and needs 2-3; 5.8 follows 5.5; 6 follows 5.8; 7 needs 3, 5.5 and 6; 8 needs 1-5.5; 9 needs all data tasks; 9.5 follows 9; 10 needs 9.5 (the release includes internet access, and the installer adds its firewall rule).
+0 → 1 → 2 → 3 → 4; 5 needs 2; 5.5 follows 5 and needs 2-3; 5.8 follows 5.5; 6 follows 5.8; 7 needs 3, 5.5 and 6; 8 needs 1-5.5; 9 needs all data tasks; 9.5 follows 9; 9.6 follows 9.5; 10 needs 9.5 (the release includes internet access, and the installer adds its firewall rule).
 
 ## Future development data commands (outside Task 5.5)
 
@@ -188,6 +193,7 @@ Implemented on 2026-11-06 as `npm run dev:reset-data` and `npm run dev:import-v1
 | 8 Overview and Activity | Done (2026-11-08), PR #4 merged | [task-08-overview-activity](task-08-overview-activity.md) | `/` opens Overview; Activity from the audit log, one entry per operation; Mark Owned audited as `book.marked-owned`; see its notes for later tasks |
 | 9 Host maintenance | Done (2026-11-08), PR #5 merged | [task-09-host-maintenance](task-09-host-maintenance.md) | Maintenance window from the desktop menu or `--maintenance`: Admin recovery (audited), `.mcbackup` backup and same-version restore; Admin data reset on the Accounts page; see its notes for later tasks |
 | 9.5 Internet access and HTTPS | In progress (plan approved 2026-11-08); branch `task-09-5-internet-access-https` | [task-09-5-internet-access-https](task-09-5-internet-access-https.md) | Inserted at the user's request; brief records the analysis, open questions and deferred options |
+| 9.6 Internet access with a domain name | In progress (2026-11-09); branch `task-09-6-internet-access-domain-name` | [task-09-6-internet-access-domain-name](task-09-6-internet-access-domain-name.md) | Inserted at the user's request; no DNS provider API |
 | 10 Release readiness | Not started; decisions recorded (2026-11-08) | [task-10-release-readiness](task-10-release-readiness.md) (brief; detailed plan after 9.5) | First release 2.0.0 |
 
 Pre-implementation fixes done (2026-11-03): docs/design decisions recorded, foundation formatted with oxfmt, `whoami`/`icacls` resolved from System32, `npm run check` order fixed. Full check passes (41 files, 409 tests).
