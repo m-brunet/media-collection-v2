@@ -20,10 +20,10 @@ design.
 | KI-5 | Bug         | Bookshelves count not vertically centred with the search field                        | Low      | Open   |
 | KI-6 | Improvement | Appearance offers seven new colour schemes; Mint, Emerald and Forest are removed      | Medium   | Open   |
 | KI-7 | Improvement | Interface text needs slightly wider letter spacing                                    | Low      | Open   |
-| KI-8 | Improvement | Server settings addresses need more space between them                                | Low      | Open   |
+| KI-8 | Improvement | Server settings addresses need more space between them                                | Low      | Done   |
 | KI-9 | Improvement | Internet access: no automatic Let's Encrypt retries, estimated attempts left           | Medium   | Open   |
 | KI-10 | Improvement | Internet access: renew certificates through ARI so renewals escape Let's Encrypt limits | Medium | Open |
-| KI-11 | Improvement | Server settings: QR code for each address, opening Leaf, with the Libris logo | Medium | Open |
+| KI-11 | Improvement | Server settings: QR code for each address, opening Leaf, with the Libris logo | Medium | Done |
 
 ## Open
 
@@ -156,20 +156,6 @@ design.
   Leaf at phone width, in English and French, at 1280 × 720 and 1440 wide.
 - **Severity:** low (typography). **Planned:** next fix pass, or the next task that touches shared styles.
 
-### KI-8 — Server settings addresses need more space between them
-
-- **Type:** Improvement.
-- **Reported:** 2026-11-08 by the user, on the Libris Server settings page (French: "Adresses actuelles"), Task 9.5
-  branch. The user likes how the addresses are shown, but the lines are too close together.
-- **Today:** the addresses (`http://127.0.0.1:34345`, the Tailscale and local network addresses) are links in a
-  `.plain-list` (`apps/web/src/libris/libris.css`), which only removes the list's margins and bullets, so the links sit
-  line against line. The same list style holds the "next addresses" shown after an HTTP port change
-  (`apps/web/src/libris/administration/server-settings-page.tsx`).
-- **Fix:** space the items of both address lists, for example a dedicated class
-  (`display: grid; gap: var(--space-2)`) instead of the bare `.plain-list`. Keep the current look of the links.
-  Check on the reference desktop viewport, in both languages.
-- **Severity:** low (readability). **Planned:** with KI-11, whose design gives the address rows 16 px spacing.
-
 ### KI-9 — Internet access: no automatic Let's Encrypt retries, estimated attempts left
 
 - **Type:** Improvement.
@@ -224,6 +210,8 @@ design.
   Check against Let's Encrypt's staging server first.
 - **Severity:** medium (removes the main risk of the weekly limit). **Planned:** next fix pass, together with KI-9.
 
+## Done
+
 ### KI-11 — Server settings: QR code for each address, opening Leaf, with the Libris logo
 
 - **Type:** Improvement (new feature).
@@ -271,8 +259,26 @@ design.
   the expected Leaf address, so the logo is proven not to break scanning. A manual check with two phones.
 - **Severity:** medium (main way to reach Leaf from a phone on the local network). **Planned:** next fix pass, with
   KI-8; it can follow Task 9.5's pull request.
+- **Done:** 2026-11-09, commit `9e64d1f` (branch `ki-11-address-qr-codes`): `QrCode` (`apps/web/src/shared/ui/qr-code.tsx`,
+  level H, 4-module margin, Libris mark at 20 % of the width) used by the new `AddressesPanel` and by the Internet
+  access panel; `ServerAddress` (Leaf address, loopback detection). Browser tests decode the displayed codes with
+  `zxing-wasm` (`tests/web/qr-reader.ts`). Still to do: the manual check with two phones; the credits line (Task 10).
 
-## Done
+### KI-8 — Server settings addresses need more space between them
+
+- **Type:** Improvement.
+- **Reported:** 2026-11-08 by the user, on the Libris Server settings page (French: "Adresses actuelles"), Task 9.5
+  branch. The user likes how the addresses are shown, but the lines are too close together.
+- **Today:** the addresses (`http://127.0.0.1:34345`, the Tailscale and local network addresses) are links in a
+  `.plain-list` (`apps/web/src/libris/libris.css`), which only removes the list's margins and bullets, so the links sit
+  line against line. The same list style holds the "next addresses" shown after an HTTP port change
+  (`apps/web/src/libris/administration/server-settings-page.tsx`).
+- **Fix:** space the items of both address lists, for example a dedicated class
+  (`display: grid; gap: var(--space-2)`) instead of the bare `.plain-list`. Keep the current look of the links.
+  Check on the reference desktop viewport, in both languages.
+- **Severity:** low (readability). **Planned:** with KI-11, whose design gives the address rows 16 px spacing.
+- **Done:** 2026-11-09, commit `9e64d1f` (branch `ki-11-address-qr-codes`, with KI-11): address rows of at least
+  44 px with 16 px between them, in both address lists.
 
 ### KI-4 — Libris has an application icon in the Windows taskbar
 
