@@ -21,6 +21,8 @@ export interface LookupMessage {
     tone: 'info' | 'warning' | 'success';
     text: string;
     retry: boolean;
+    // Some or all lookup sources could not be reached.
+    offline?: boolean;
 }
 
 // Find book on the Add a book form (book entry rules, "Assisted lookup"): the library first,
@@ -74,6 +76,7 @@ export function useBookLookup({
                     tone: 'warning',
                     text: t('lookup.unavailable', { sources: unavailableNames(result) }),
                     retry: true,
+                    offline: true,
                 });
             } else {
                 setMessage({ tone: 'info', text: t('lookup.noResult'), retry: false });
@@ -82,7 +85,12 @@ export function useBookLookup({
             if (error instanceof ApiError && error.reason === 'isbn-invalid') {
                 showIsbnProblem(t(ApiErrorMessage.key(error)));
             } else {
-                setMessage({ tone: 'warning', text: t('lookup.unavailableAll'), retry: true });
+                setMessage({
+                    tone: 'warning',
+                    text: t('lookup.unavailableAll'),
+                    retry: true,
+                    offline: true,
+                });
             }
         } finally {
             setBusy(false);
@@ -113,6 +121,7 @@ export function useBookLookup({
                       tone: 'warning',
                       text: t('lookup.partial', { sources: unavailableNames(result) }),
                       retry: false,
+                      offline: true,
                   }
                 : { tone: 'success', text: t('lookup.applied'), retry: false },
         );

@@ -4,23 +4,19 @@ Status: decisions recorded (2026-11-08), detailed plan not written yet. It is wr
 needs the user's approval before implementation. Global plan: [implementation plan](implementation-plan.md).
 
 Owning docs: [updates](../operations/updates.md), [release expectations](../operations/release-expectations.md),
-[design guidelines](../design/design-guidelines.md) (icon sets, Libris icon).
+[design guidelines](../design/design-guidelines.md) (Libris icon).
 
 ## Scope (from the implementation plan)
 
 - GitHub Releases update checks, Windows integrated download and install with an automatic backup, macOS/Linux
   backup and download page, backup folder, failure handling.
-- Packaging and installer, icon set choice (Admin setting), credits and licences page.
+- Packaging and installer. The icon set choice and the credits and licences page moved to KI-6 (2026-11-09): Task 10
+  only checks that the credits page is complete for the release and links it from the About window.
 - Carried over from earlier work:
   - the Windows Firewall rule in the installer ([Task 9.5](task-09-5-internet-access-https.md)), for the HTTPS port and,
     since [Task 9.6](task-09-6-internet-access-domain-name.md), the HTTP port too;
   - the Libris icon files in `apps/desktop/assets/icons` for the installer (KI-4);
-  - the credits listed in [Task 6](task-06-assisted-entry.md#credits-for-the-future-credits-page),
-    [Task 7](task-07-leaf.md#credits-for-the-future-credits-page) and Task 9.5 (ACME client, NAT library, QR code
-    library), the Libris icon (Streamline Freehand, CC BY 4.0, modified) and every icon set shipped;
-  - the icon set as a saved preference: in backups, back to Lucide after the Admin data reset
-    (`KyselyApplicationDataEraser.preferences`, see [Task 9](task-09-host-maintenance.md));
-  - KI-6 (new colour schemes) if no fix pass has done it first, as it changes the same Appearance page.
+  - the credits page built by KI-6 (Libris `/credits`) is complete: every asset and library added since then is listed;
 
 ## Decisions (2026-11-08, with the user)
 

@@ -1,0 +1,99 @@
+import { render, screen, waitFor } from '@testing-library/react';
+import { expect, it } from 'vitest';
+import { Icon } from './icon';
+
+it('draws Lucide by default', () => {
+    const { container } = render(<Icon name="overview" />);
+
+    expect(container.querySelector('svg.lucide')).not.toBeNull();
+});
+it('draws the artwork of the chosen icon set', async () => {
+    const { container } = render(<Icon name="overview" set="hand-inked-editorial" size={24} />);
+
+    await waitFor(() => expect(container.querySelector('[data-icon-set]')).not.toBeNull());
+
+    const art = container.querySelector<HTMLElement>('[data-icon-set]')!;
+
+    expect([art.dataset.iconSet, art.style.width, art.querySelector('svg')]).toEqual([
+        'hand-inked-editorial',
+        '24px',
+        expect.anything(),
+    ]);
+});
+it('keeps Lucide for utility icons in every set', async () => {
+    const { container } = render(
+        <>
+            <Icon name="overview" set="solid-silhouettes" />
+            <Icon name="close" set="solid-silhouettes" />
+        </>,
+    );
+
+    await waitFor(() => expect(container.querySelector('[data-icon-set]')).not.toBeNull());
+
+    const drawn = [
+        container.querySelectorAll('[data-icon-set]').length,
+        container.querySelectorAll('svg.lucide').length,
+    ];
+
+    expect(drawn).toEqual([1, 1]);
+});
+it('names a meaningful icon of a set for assistive technology', async () => {
+    render(<Icon name="scan" set="quiet-editorial-monoline" label="Scan a barcode" />);
+
+    await waitFor(() =>
+        expect(screen.getByRole('img', { name: 'Scan a barcode' }).dataset.iconSet).toBe(
+            'quiet-editorial-monoline',
+        ),
+    );
+
+    const icon = screen.getByRole('img', { name: 'Scan a barcode' });
+
+    expect(icon.getAttribute('aria-hidden')).toBeNull();
+});
+it('draws the set artwork in the text colour, like Lucide', async () => {
+    const { container } = render(<Icon name="overview" set="solid-silhouettes" />);
+
+    await waitFor(() => expect(container.querySelector('[data-icon-set]')).not.toBeNull());
+
+    const markup = container.querySelector('[data-icon-set]')!.innerHTML;
+
+    expect([/#[0-9a-f]{6}/i.test(markup), markup.includes('currentColor')]).toEqual([false, true]);
+});
+it('draws the Administration artwork for Accounts and the Settings artwork for Server settings', async () => {
+    const { container } = render(
+        <>
+            <Icon name="accounts" set="hand-inked-editorial" />
+            <Icon name="server" set="hand-inked-editorial" />
+            <Icon name="appearance" set="hand-inked-editorial" />
+        </>,
+    );
+
+    await waitFor(() => expect(container.querySelectorAll('[data-icon-set]')).toHaveLength(2));
+
+    expect(container.querySelectorAll('svg.lucide')).toHaveLength(1);
+});
+it('draws the sets artwork for the screen states', async () => {
+    const states = [
+        'permission-denied',
+        'already-owned',
+        'existing-edition',
+        'camera-unavailable',
+        'lookup-offline',
+    ] as const;
+    const { container } = render(
+        <>
+            {states.map((state) => (
+                <Icon key={state} name={state} set="single-ink-risograph" />
+            ))}
+        </>,
+    );
+
+    await waitFor(() =>
+        expect(container.querySelectorAll('[data-icon-set]')).toHaveLength(states.length),
+    );
+});
+it('draws Lucide for the screen states by default', () => {
+    const { container } = render(<Icon name="camera-unavailable" />);
+
+    expect(container.querySelector('svg.lucide-camera-off')).not.toBeNull();
+});

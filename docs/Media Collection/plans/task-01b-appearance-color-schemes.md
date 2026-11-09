@@ -35,4 +35,8 @@ The administrator chooses the installation's colour scheme among four; the choic
 ## Outcome
 
 - Full `npm run check` from PowerShell: 64 test files, 570 tests.
-- Frontend: `AppearanceProvider` (shared/appearance) wraps both apps; `ColorSchemeDocument.restore()` runs before render. Task 10 adds the icon set to `appearance-page.tsx` and the `appearance` feature.
+- Frontend: `AppearanceProvider` (shared/appearance) wraps both apps; `ColorSchemeDocument.restore()` runs before render. KI-6 adds the icon set to `appearance-page.tsx` and the `appearance` feature (moved from Task 10, 2026-11-09).
+
+## Note (2026-11-09, KI-6)
+
+The four accent-only schemes of this task are replaced by eight full palettes (Spring green and seven schemes from the design); Mint, Emerald and Forest are removed, with migration 011 moving a saved choice to Spring green. See [design guidelines](../design/design-guidelines.md#colour-schemes) and KI-6 in [known issues](known-issues.md).

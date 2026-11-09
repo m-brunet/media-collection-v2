@@ -22,7 +22,7 @@ async function populatedLibrary() {
 
     await app.dependencies.builders.loan();
     await client.call('/tags', 'POST', { name: 'Signed copies' });
-    await client.call('/appearance', 'PUT', { colorScheme: 'forest' });
+    await client.call('/appearance', 'PUT', { colorScheme: 'rose-noir' });
 
     return client;
 }

@@ -31,6 +31,7 @@ export class ApiErrorMessage {
         'https-active': 'reason.httpsActive',
         'domain-name-in-use': 'reason.domainNameInUse',
         'color-scheme-unknown': 'reason.colorSchemeUnknown',
+        'icon-set-unknown': 'reason.iconSetUnknown',
         'title-invalid': 'reason.titleInvalid',
         'title-required': 'reason.titleRequired',
         'isbn-required': 'reason.isbnRequired',

@@ -285,7 +285,7 @@ describe('SQLite adapters', () => {
         await new KyselyAppearanceRepository(
             current.database.connections,
             new UuidGenerator(),
-        ).save(new ColorScheme('emerald'));
+        ).save(new ColorScheme('ember'));
 
         const reopened = await reopen(current);
 
@@ -296,7 +296,7 @@ describe('SQLite adapters', () => {
                     new UuidGenerator(),
                 ).read()
             ).name,
-        ).toBe('emerald');
+        ).toBe('ember');
     });
 
     it('rejects an unknown stored colour scheme', async () => {

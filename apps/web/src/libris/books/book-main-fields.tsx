@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import type { AuthorDto, BookDto } from '../../../../../packages/contracts/src/http';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Button } from '../../shared/ui/button';
+import { Icon } from '../../shared/ui/icon';
 import { Panel } from '../../shared/ui/layout';
 import { SelectField } from '../../shared/ui/select-field';
 import { TextField } from '../../shared/ui/text-field';
@@ -83,6 +84,7 @@ export function BookMainFields({
                         </div>
                         {existingBookId && (
                             <Link to={'/books/' + existingBookId} className="book-form__existing">
+                                <Icon name="existing-edition" size={14} />
                                 {t('form.openExisting')}
                             </Link>
                         )}

@@ -25,18 +25,18 @@ afterEach(() => {
 it('applies a scheme to the page and remembers it', () => {
     const { root, values } = page();
 
-    ColorSchemeDocument.apply('mint');
+    ColorSchemeDocument.apply('midnight-blue');
 
-    expect(root.dataset.colorScheme).toBe('mint');
-    expect(values.get('media-collection.color-scheme')).toBe('mint');
+    expect(root.dataset.colorScheme).toBe('midnight-blue');
+    expect(values.get('media-collection.color-scheme')).toBe('midnight-blue');
 });
 
 it('starts with the scheme remembered in this browser', () => {
-    const { root } = page('forest');
+    const { root } = page('rose-noir');
 
     ColorSchemeDocument.restore();
 
-    expect(root.dataset.colorScheme).toBe('forest');
+    expect(root.dataset.colorScheme).toBe('rose-noir');
 });
 
 it('ignores an unknown remembered scheme', () => {

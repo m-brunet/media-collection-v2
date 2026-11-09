@@ -189,7 +189,9 @@ function CameraUnavailable({ onRetry }: { onRetry(): void }) {
 
     return (
         <>
-            <Notice tone="error">{t('leaf.scan.cameraUnavailableBody')}</Notice>
+            <Notice tone="error" icon="camera-unavailable">
+                {t('leaf.scan.cameraUnavailableBody')}
+            </Notice>
             <Button variant="primary" onClick={onRetry}>
                 {t('leaf.retry')}
             </Button>

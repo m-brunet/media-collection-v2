@@ -71,7 +71,7 @@ it('closes a dialog from its close button', async () => {
     expect(close).toHaveBeenCalledOnce();
 });
 
-it('shows the official Libris icon next to the Libris name, and Leaf keeps its own mark', () => {
+it('shows the fixed Libris and Leaf marks, drawn in the text colour', () => {
     const { container } = render(
         <I18nProvider language="en">
             <Brand app="libris" size="large" />
@@ -80,8 +80,24 @@ it('shows the official Libris icon next to the Libris name, and Leaf keeps its o
     );
     const [libris, leaf] = container.querySelectorAll('.brand__mark');
 
-    expect(libris).toHaveAttribute('src', '/libris.svg');
-    expect(libris).toHaveAttribute('width', '30');
-    expect(libris).toHaveAttribute('alt', '');
-    expect(leaf?.tagName.toLowerCase()).toBe('svg');
+    expect([libris?.getAttribute('data-mark'), leaf?.getAttribute('data-mark')]).toEqual([
+        'libris',
+        'leaf',
+    ]);
+    expect((libris as HTMLElement).style.width).toBe('30px');
+    expect(libris?.querySelector('[fill="currentColor"]')).not.toBeNull();
+    expect(leaf?.querySelector('[stroke="currentColor"]')).not.toBeNull();
+});
+
+it('shows the situation icon of a notice instead of its tone icon', () => {
+    const { container } = render(
+        <Notice tone="error" icon="camera-unavailable">
+            The camera cannot be used.
+        </Notice>,
+    );
+
+    expect([
+        container.querySelector('svg.lucide-camera-off'),
+        container.querySelector('svg.lucide-circle-alert'),
+    ]).toEqual([expect.anything(), null]);
 });

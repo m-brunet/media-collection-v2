@@ -40,7 +40,8 @@ async function installation() {
         .insertInto('server_settings')
         .values([
             { id: randomUUID(), name: 'http', value: '{"port":36000}' },
-            { id: randomUUID(), name: 'appearance', value: '{"colorScheme":"forest"}' },
+            { id: randomUUID(), name: 'appearance', value: '{"colorScheme":"rose-noir"}' },
+            { id: randomUUID(), name: 'icon-set', value: '{"iconSet":"hand-inked-editorial"}' },
             { id: randomUUID(), name: 'internet-access', value: '{"phase":"off"}' },
             { id: randomUUID(), name: 'keep-awake', value: '{"enabled":true}' },
         ])
@@ -77,7 +78,7 @@ describe('application data eraser', () => {
         await database.close();
         expect(users).toEqual([{ username: 'admin', token_version: 2 }]);
     });
-    it('keeps the host settings and removes the colour scheme', async () => {
+    it('keeps the host settings and removes the colour scheme and the icon set', async () => {
         const { database, adminId } = await installation();
 
         await erase(database, adminId);

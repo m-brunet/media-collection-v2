@@ -17,10 +17,10 @@ describe('SaveAppearance', () => {
             AuditDoubles.auditedOperation(new MemoryAuditTrail()),
         );
 
-        const result = await subject.execute(administrator, 'mint');
+        const result = await subject.execute(administrator, 'midnight-blue');
 
-        expect(result).toEqual({ colorScheme: 'mint' });
-        expect((await store.read()).name).toBe('mint');
+        expect(result).toEqual({ colorScheme: 'midnight-blue' });
+        expect((await store.read()).name).toBe('midnight-blue');
     });
     it('records the change with the previous and new scheme', async () => {
         const trail = new MemoryAuditTrail();
@@ -29,14 +29,14 @@ describe('SaveAppearance', () => {
             AuditDoubles.auditedOperation(trail),
         );
 
-        await subject.execute(administrator, 'emerald');
+        await subject.execute(administrator, 'ember');
 
         expect(trail.entries).toEqual([
             expect.objectContaining({
                 category: 'appearance.color-scheme-changed',
                 outcome: 'successful',
                 before: { colorScheme: 'spring-green' },
-                after: { colorScheme: 'emerald' },
+                after: { colorScheme: 'ember' },
             }),
         ]);
     });
@@ -59,7 +59,7 @@ describe('SaveAppearance', () => {
             AuditDoubles.auditedOperation(new MemoryAuditTrail()),
         );
 
-        const result = subject.execute({ ...administrator, role: 'owner' }, 'mint');
+        const result = subject.execute({ ...administrator, role: 'owner' }, 'midnight-blue');
 
         await expect(result).rejects.toMatchObject({ code: 'forbidden', reason: 'admin-only' });
         expect((await store.read()).name).toBe('spring-green');

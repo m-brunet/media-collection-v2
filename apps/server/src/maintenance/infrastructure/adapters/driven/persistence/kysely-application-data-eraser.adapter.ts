@@ -2,10 +2,10 @@ import type { ApplicationDataEraser } from '../../../../application/ports/driven
 import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
 import type { KyselyLibraryEraser } from './kysely-library-eraser.adapter.js';
 
-// The saved application preferences return to their defaults; the HTTP, HTTPS, internet access
+// The saved application preferences (colour scheme, icon set) return to their defaults; the HTTP, HTTPS, internet access
 // (HTTPS and HTTP), domain name and keep-awake settings are host setup and stay.
 export class KyselyApplicationDataEraser implements ApplicationDataEraser {
-    private static readonly preferences = ['appearance'];
+    private static readonly preferences = ['appearance', 'icon-set'];
 
     constructor(
         private readonly connections: DatabaseConnections,

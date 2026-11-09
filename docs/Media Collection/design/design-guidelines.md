@@ -35,16 +35,22 @@ The artifact's CSS is generated per screen and is not reused. Implementation def
 
 ## Colour schemes
 
-The Admin chooses the installation's colour scheme in Administration → Appearance; it applies to every account, in Libris and Leaf, including the sign-in page. It is a saved application preference: included in backups, and an Admin data reset returns it to the default. The four schemes come from the design's colour charts (`design/color-charts.html`) and differ only in three accent roles; neutral and status colours are shared.
+The Admin chooses the installation's colour scheme in Administration → Appearance; it applies to every account, in Libris and Leaf, including the sign-in page. It is a saved application preference: included in backups, and an Admin data reset returns it to the default. Libris and Leaf are dark only.
 
-| Scheme | Accent | Accent background (selected) | Accent text |
-| --- | --- | --- | --- |
-| Spring green (default) | #79D670 | #2B3E29 | #BDEBB8 |
-| Mint | #86D39A | #2B3D31 | #B7E7C2 |
-| Emerald | #65D59B | #273E32 | #B0E9CA |
-| Forest | #65B881 | #293A30 | #AFD9BC |
+There are eight schemes (KI-6, 2026-11-09): Spring green, and seven schemes from the design (Doop canvas `shiKEeCX2V`, groups 13 "Appearance collection — 10 non-green themes", 14 "Dark Purple" and 15 "Red study"). Mint, Emerald and Forest are no longer offered; an installation that had chosen one moved to Spring green. Each scheme is a full palette: backgrounds, borders, text and accent all change. The source of truth is `apps/web/src/shared/ui/tokens.css`. Two schemes are shown under their own names rather than the design's (decided 2026-11-09, after Desna, the goddess of dreams and travel of the Pathfinder universe, whose symbol is the butterfly): Velvet violet (`velvet-violet`) is **Desna’s reveries** (FR **Rêveries de Desna**), Slate × Orchid (`slate-orchid`) is **The Butterfly’s Way** (FR **La Voie du papillon**).
 
-The design screens were drawn in Mint. The local recovery window, which runs without the server, always uses Spring green.
+| Scheme | Background | Panel | Control | Border | Text | Secondary text | Accent | Accent background | Accent text |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Spring green (default) | #1D1F20 | #1D2022 | #303336 | #3C4042 | #F2F5F2 | #A9B5AC | #79D670 | #2B3E29 | #BDEBB8 |
+| Midnight blue | #191F2C | #151B26 | #252E3D | #3D4F6B | #F0F5FF | #ABBBD2 | #8BB8FF | #10213B | #C6DCFF |
+| Desna’s reveries | #201C28 | #191620 | #2E2739 | #514361 | #F7F0FF | #BFB0CF | #C4A3FF | #27133F | #E2D2FF |
+| Ember | #27201D | #1F1916 | #372E28 | #604A3D | #FFF3E9 | #CDB7A7 | #FFAD79 | #361B0C | #FFD7BD |
+| Rose noir | #261E24 | #1F191F | #362C33 | #5C4354 | #FFF0F7 | #CEAFBF | #F3A4C4 | #371425 | #F9D2E2 |
+| Graphite gold | #242424 | #1D1D1D | #323232 | #505050 | #F7F5EE | #BCBAB2 | #E4C56B | #2C240C | #F2E2B6 |
+| The Butterfly’s Way | #252B32 | #20262D | #343D47 | #4D5C6A | #F3F6FA | #B6C1CD | #D7ACFF | #301B40 | #EBD6FF |
+| Warm charcoal × Soft scarlet | #272426 | #211F20 | #343032 | #51484C | #FFF2F1 | #D0B2B7 | #FF9994 | #3A1719 | #FFCDCA |
+
+The design does not draw every role. The surface, control hover, strong border, muted text, accent text and text on the accent are derived from each scheme with the ratios that give Spring green's values, and `tests/web/color-scheme-contrast.spec.ts` checks every scheme against WCAG AA (text 4.5:1 on every surface, accent 3:1). Status colours (danger, warning) are shared. The local recovery window, which runs without the server, always uses Spring green.
 
 ## Window size
 
@@ -52,7 +58,7 @@ The minimum supported desktop size is 1280 x 720. The Electron window cannot be 
 
 ## Icons
 
-**Libris icon.** The official Libris icon is the library brand mark of set 02 "Hand-inked editorial sketches" (Streamline Freehand, CC BY 4.0), always drawn in the Spring green accent `#79d670`: it is the desktop window and taskbar icon, the mark next to the "Libris" title and the favicon of the browser version, and it does not change with the colour scheme or the chosen icon set. Source: `apps/web/public/libris.svg`; desktop icon files and their credits in `apps/desktop/assets/icons`. Leaf's mark and favicon are not decided yet.
+**Libris icon.** The official Libris icon is the library brand mark of set 02 "Hand-inked editorial sketches" (Streamline Freehand, CC BY 4.0), always drawn in the Spring green accent `#79d670`: it is the desktop window and taskbar icon, the mark next to the "Libris" title and the favicon of the browser version, and it does not change with the chosen icon set. The mark next to the title is drawn in the colour scheme's accent (`currentColor`, decided 2026-11-09); the favicon and the desktop icon stay Spring green. Source: `apps/web/public/libris.svg`; desktop icon files and their credits in `apps/desktop/assets/icons`. **Leaf icon (decided 2026-11-09):** the Turning leaf is Leaf's application icon (the icon a phone shows when Leaf is added to the home screen) and its favicon, and the mark next to the "Leaf" title. Like the Libris icon, it is one fixed version: the Turning leaf of set 02 "Hand-inked editorial sketches" (`02-hand-inked-editorial/turning-leaf.svg`, stroke thickened to read at small sizes); it does not change with the chosen icon set. The mark next to the "Leaf" title is drawn in the colour scheme's accent; the favicon (`apps/web/public/leaf.svg`) and the home-screen icons (`leaf-icon-*.png`, `leaf.webmanifest`, from `tools/generate-leaf-icons.mjs`) stay Spring green `#79d670`.
 
 Lucide is the default icon set. The Admin can choose the installation's icon set in application settings; the choice applies to every account and to both Libris and Leaf. It is a saved application preference: it is included in backups and returns to Lucide after an Admin data reset.
 
@@ -67,9 +73,11 @@ Available sets come from the artifact's icon library (`design/artifact/icons/`):
 | 04 Single-ink risograph prints   | Streamline Ultimate   | CC BY 4.0 |
 | 05 Quiet editorial monoline      | Iconoir               | MIT       |
 
-Every icon is the work of the authors of its pack; sets 01-05 were selected from these packs and recoloured or lightly adapted for Libris. Full credits, licence links, and the changes made are in `design/artifact/icons/CREDITS.md`, with per-icon provenance in `SOURCES-AND-LICENSES.json`. Each alternative set covers 24 named purposes (brand, navigation, lending, return, scan, states such as loading/error/empty/missing cover, and similar). Small utility icons that those sets do not provide, such as close, chevrons, check, add, edit, and delete, stay Lucide in every set.
+Every icon is the work of the authors of its pack; sets 01-05 were selected from these packs and recoloured or lightly adapted for Libris. Full credits, licence links, and the changes made are in `design/artifact/icons/CREDITS.md`, with per-icon provenance in `SOURCES-AND-LICENSES.json`. Each alternative set covers 25 named purposes (brand, navigation, lending, return, scan, states such as loading/error/empty/missing cover, the Turning leaf, and similar). Small utility icons that those sets do not provide, such as close, chevrons, check, add, edit, and delete, stay Lucide in every set. The sets follow the colour scheme the way Lucide does (decided 2026-11-09): they are drawn in the text colour, so grey in a normal link and the accent in a selected one; a second tone, where a drawing has one, is the same colour at 60 % opacity (`tools/import-icon-sets.mjs` copies them into `apps/web/public/icon-sets`).
 
-The application must include a credits/licences page reachable without special permissions, listing every bundled icon pack, font, and other third-party asset with its author, licence, and required attribution, and stating when icons were modified. CC BY sets (01-04) require this attribution.
+**Turning leaf.** The Turning leaf icon of every set (`turning-leaf.svg`, Doop canvas `shiKEeCX2V`) is not taken from a pack: it was generated with GPT Astra for Media Collection, drawn in the style of each set. It is original artwork, not an adaptation of a pack icon (checked 2026-11-09: no path shared with the set's icons or the packs' leaf icons, pixel overlap no higher than with unrelated icons), so no pack licence or attribution applies; its origin is recorded in `design/artifact/icons/CREDITS.md` and `SOURCES-AND-LICENSES.json`. The credits page says that these icons were generated in the style of the sets.
+
+The application must include a credits/licences page reachable without special permissions (Libris `/credits`, linked from the sign-in page and the sidebar; KI-6), listing every bundled icon pack, font, and other third-party asset with its author, licence, and required attribution, and stating when icons were modified. CC BY sets (01-04) require this attribution.
 
 ## Accessibility
 

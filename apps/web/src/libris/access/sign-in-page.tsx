@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Link } from 'react-router';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { SignInForm } from '../../shared/session/sign-in-form';
 import { Brand } from '../../shared/ui/brand';
@@ -35,6 +36,9 @@ export function SignInPage() {
             <p className="muted">{t('signIn.welcome')}</p>
             <SignInForm />
             <p className="field__hint">{t('signIn.accountsByAdmin')}</p>
+            <p className="field__hint">
+                <Link to="/credits">{t('nav.credits')}</Link>
+            </p>
         </AccessLayout>
     );
 }

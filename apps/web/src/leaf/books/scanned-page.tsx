@@ -6,6 +6,7 @@ import { useSourceNames } from '../../shared/book-form/use-source-names';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { useAction } from '../../shared/use-action';
 import { Button } from '../../shared/ui/button';
+import { Icon } from '../../shared/ui/icon';
 import { Notice } from '../../shared/ui/notice';
 import { LoadingState } from '../../shared/ui/states';
 import { LeafPage } from '../leaf-page';
@@ -62,6 +63,7 @@ function Existing({ book, onOwned }: { book: BookDto; onOwned(book: BookDto): vo
     if (book.ownership === 'owned') {
         return (
             <LeafPage title={t('leaf.found.ownedTitle')}>
+                <Icon name="already-owned" size={32} className="leaf-found__icon" />
                 <BookLine book={book} />
                 <p className="muted">{t('leaf.found.isbn', { isbn: book.isbn ?? '' })}</p>
                 <p>{t('leaf.found.ownedBody')}</p>
@@ -72,6 +74,7 @@ function Existing({ book, onOwned }: { book: BookDto; onOwned(book: BookDto): vo
 
     return (
         <LeafPage title={t('leaf.found.registeredTitle')}>
+            <Icon name="existing-edition" size={32} className="leaf-found__icon" />
             <BookLine book={book} />
             <p className="muted">{t('leaf.found.savedNotOwned')}</p>
             <p>{t('leaf.found.registeredBody')}</p>

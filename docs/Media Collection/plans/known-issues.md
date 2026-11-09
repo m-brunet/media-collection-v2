@@ -18,7 +18,7 @@ design.
 | KI-3 | Improvement | Additional information uses the same numbered heading as the other book-form sections | Low      | Open   |
 | KI-4 | Improvement | Libris has an application icon in the Windows taskbar                                 | Low      | Done   |
 | KI-5 | Bug         | Bookshelves count not vertically centred with the search field                        | Low      | Open   |
-| KI-6 | Improvement | Appearance offers seven new colour schemes; Mint, Emerald and Forest are removed      | Medium   | Open   |
+| KI-6 | Improvement | Appearance: seven new colour schemes (Mint, Emerald, Forest removed) and the icon set choice | Medium | Done |
 | KI-7 | Improvement | Interface text needs slightly wider letter spacing                                    | Low      | Open   |
 | KI-8 | Improvement | Server settings addresses need more space between them                                | Low      | Done   |
 | KI-9 | Improvement | Internet access: no automatic Let's Encrypt retries, estimated attempts left           | Medium   | Open   |
@@ -87,58 +87,6 @@ design.
   keep the count from wrapping (`white-space: nowrap`). Component test not useful (layout); check it in the browser at
   1280 × 720 and 1440 wide, in English and French.
 - **Severity:** low (visual alignment). **Planned:** next fix pass, or the next task that touches the Bookshelves page.
-
-### KI-6 — Appearance offers seven new colour schemes; Mint, Emerald and Forest are removed
-
-- **Type:** Improvement.
-- **Reported:** 2026-11-08 by the user.
-- **Asked:** the Admin's Appearance page (Task 1b) offers these schemes, taken from the design (Doop canvas
-  `shiKEeCX2V`; first read from the former Pen file `design/media-collection-v3.pen`, whose group numbers are kept
-  below):
-  - **Spring green**, kept and still the default;
-  - the **five dark schemes** of group 13 "Appearance collection — 10 non-green themes": Midnight blue, Velvet violet,
-    Ember, Rose noir, Graphite gold;
-  - group 14 "Dark Purple": **Slate × Orchid**;
-  - group 15 "Red study": **Warm charcoal × Soft scarlet**.
-
-  **Mint, Emerald and Forest are removed.**
-- **Today:** a scheme only changes three accent colours (`--scheme-accent`, `--scheme-accent-background`,
-  `--scheme-accent-text` in `apps/web/src/shared/ui/tokens.css`); surfaces, borders and text are shared. The new
-  schemes also change the backgrounds, borders and text, so a scheme becomes a full palette. Names live in the
-  `ColorScheme` value object (`apps/server/src/appearance/domain/value-objects/color-scheme.value-object.ts`), the web
-  list (`apps/web/src/shared/appearance/color-scheme-document.util.ts`, `appearance-context.tsx`), the Appearance page
-  and the EN/FR catalogues.
-- **Colours read from the design** (page background, sidebar, panel, control, border, text, secondary text, accent,
-  accent background):
-
-  | Scheme | Background | Sidebar | Panel | Control | Border | Text | Secondary text | Accent | Accent background |
-  | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-  | Midnight blue | `#191F2C` | `#121721` | `#151B26` | `#252E3D` | `#3D4F6B` | `#F0F5FF` | `#ABBBD2` | `#8BB8FF` | `#10213B` |
-  | Velvet violet | `#201C28` | `#16131C` | `#191620` | `#2E2739` | `#514361` | `#F7F0FF` | `#BFB0CF` | `#C4A3FF` | `#27133F` |
-  | Ember | `#27201D` | `#1C1614` | `#1F1916` | `#372E28` | `#604A3D` | `#FFF3E9` | `#CDB7A7` | `#FFAD79` | `#361B0C` |
-  | Rose noir | `#261E24` | `#1A1419` | `#1F191F` | `#362C33` | `#5C4354` | `#FFF0F7` | `#CEAFBF` | `#F3A4C4` | `#371425` |
-  | Graphite gold | `#242424` | `#171717` | `#1D1D1D` | `#323232` | `#505050` | `#F7F5EE` | `#BCBAB2` | `#E4C56B` | `#2C240C` |
-  | Slate × Orchid | `#252B32` | `#191F26` | `#20262D` | `#343D47` | `#4D5C6A` | `#F3F6FA` | `#B6C1CD` | `#D7ACFF` | `#301B40` |
-  | Warm charcoal × Soft scarlet | `#272426` | `#1B191A` | `#211F20` | `#343032` | `#51484C` | `#FFF2F1` | `#D0B2B7` | `#FF9994` | `#3A1719` |
-
-  The design does not give every role (accent text on the accent background, focus ring, muted text, status
-  colours): derive them per scheme and check WCAG AA contrast for each, as Task 1b did for the green schemes.
-- **Fix:**
-  - **Server:** new scheme names in `ColorScheme`, the three removed names refused. Migration: an installation that
-    saved Mint, Emerald or Forest switches to Spring green (no error, no prompt).
-  - **Web:** one token block per scheme with all the colours above, applied to Libris and Leaf, including before
-    sign-in (as today). Hard-coded neutral colours in the CSS that should follow the scheme are moved to tokens.
-  - **Appearance page:** a preview swatch per scheme (background with its accent), names in EN/FR, Spring green
-    marked as the default.
-  - **Tests:** domain and use-case tests (new names, removed names refused, migration of a removed choice), API tests
-    for the setting, component tests for the Appearance page, a browser journey choosing a new scheme (Libris and
-    Leaf), and a contrast check of the text and accent pairs of every scheme.
-  - Update the design guidelines (colour schemes) and the Task 1b notes.
-- **Source:** the design as saved by the user on 2026-11-08 (groups 13 to 15 keep only these schemes), now on the Doop
-  canvas `shiKEeCX2V`: find the groups by their names above and check the colours against the canvas before the fix. The light
-  schemes are out of scope: Libris and Leaf are dark only.
-- **Severity:** medium (visible choice, touches every screen's colours). **Planned:** next fix pass, or Task 10 with
-  the icon sets on the same Appearance page, whichever comes first.
 
 ### KI-7 — Interface text needs slightly wider letter spacing
 
@@ -262,6 +210,133 @@ design.
   release.
 
 ## Done
+
+### KI-6 — Appearance: seven new colour schemes (Mint, Emerald, Forest removed) and the icon set choice
+
+- **Type:** Improvement.
+- **Reported:** 2026-11-08 by the user. **Extended 2026-11-09:** the icon set choice (with the credits and licences
+  page it needs) moved here from Task 10, so the whole Appearance update is done at once.
+- **Asked:** the Admin's Appearance page (Task 1b) offers these schemes, taken from the design (Doop canvas
+  `shiKEeCX2V`; first read from the former Pen file `design/media-collection-v3.pen`, whose group numbers are kept
+  below):
+  - **Spring green**, kept and still the default;
+  - the **five dark schemes** of group 13 "Appearance collection — 10 non-green themes": Midnight blue, Velvet violet,
+    Ember, Rose noir, Graphite gold;
+  - group 14 "Dark Purple": **Slate × Orchid**;
+
+  Display names (2026-11-09): Velvet violet is shown as "Desna’s reveries" and Slate × Orchid as "The Butterfly’s
+  Way" (FR "Rêveries de Desna", "La Voie du papillon"); the design keeps its names, the identifiers stay
+  `velvet-violet` and `slate-orchid`.
+  - group 15 "Red study": **Warm charcoal × Soft scarlet**.
+
+  **Mint, Emerald and Forest are removed.**
+- **Today:** a scheme only changes three accent colours (`--scheme-accent`, `--scheme-accent-background`,
+  `--scheme-accent-text` in `apps/web/src/shared/ui/tokens.css`); surfaces, borders and text are shared. The new
+  schemes also change the backgrounds, borders and text, so a scheme becomes a full palette. Names live in the
+  `ColorScheme` value object (`apps/server/src/appearance/domain/value-objects/color-scheme.value-object.ts`), the web
+  list (`apps/web/src/shared/appearance/color-scheme-document.util.ts`, `appearance-context.tsx`), the Appearance page
+  and the EN/FR catalogues.
+- **Colours read from the design** (page background, sidebar, panel, control, border, text, secondary text, accent,
+  accent background):
+
+  | Scheme | Background | Sidebar | Panel | Control | Border | Text | Secondary text | Accent | Accent background |
+  | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+  | Midnight blue | `#191F2C` | `#121721` | `#151B26` | `#252E3D` | `#3D4F6B` | `#F0F5FF` | `#ABBBD2` | `#8BB8FF` | `#10213B` |
+  | Velvet violet | `#201C28` | `#16131C` | `#191620` | `#2E2739` | `#514361` | `#F7F0FF` | `#BFB0CF` | `#C4A3FF` | `#27133F` |
+  | Ember | `#27201D` | `#1C1614` | `#1F1916` | `#372E28` | `#604A3D` | `#FFF3E9` | `#CDB7A7` | `#FFAD79` | `#361B0C` |
+  | Rose noir | `#261E24` | `#1A1419` | `#1F191F` | `#362C33` | `#5C4354` | `#FFF0F7` | `#CEAFBF` | `#F3A4C4` | `#371425` |
+  | Graphite gold | `#242424` | `#171717` | `#1D1D1D` | `#323232` | `#505050` | `#F7F5EE` | `#BCBAB2` | `#E4C56B` | `#2C240C` |
+  | Slate × Orchid | `#252B32` | `#191F26` | `#20262D` | `#343D47` | `#4D5C6A` | `#F3F6FA` | `#B6C1CD` | `#D7ACFF` | `#301B40` |
+  | Warm charcoal × Soft scarlet | `#272426` | `#1B191A` | `#211F20` | `#343032` | `#51484C` | `#FFF2F1` | `#D0B2B7` | `#FF9994` | `#3A1719` |
+
+  The design does not give every role (accent text on the accent background, focus ring, muted text, status
+  colours): derive them per scheme and check WCAG AA contrast for each, as Task 1b did for the green schemes.
+- **Fix:**
+  - **Server:** new scheme names in `ColorScheme`, the three removed names refused. Migration: an installation that
+    saved Mint, Emerald or Forest switches to Spring green (no error, no prompt).
+  - **Web:** one token block per scheme with all the colours above, applied to Libris and Leaf, including before
+    sign-in (as today). Hard-coded neutral colours in the CSS that should follow the scheme are moved to tokens.
+  - **Appearance page:** a preview swatch per scheme (background with its accent), names in EN/FR, Spring green
+    marked as the default.
+  - **Tests:** domain and use-case tests (new names, removed names refused, migration of a removed choice), API tests
+    for the setting, component tests for the Appearance page, a browser journey choosing a new scheme (Libris and
+    Leaf), and a contrast check of the text and accent pairs of every scheme.
+  - Update the design guidelines (colour schemes) and the Task 1b notes.
+- **Icon sets (moved from Task 10, 2026-11-09):**
+  - **Rule** ([design guidelines](../design/design-guidelines.md), icon sets): the Admin chooses the installation's
+    icon set on the same Appearance page; it applies to every account, in Libris and Leaf, including before sign-in.
+    Lucide is the default. It is a saved preference: in backups, back to Lucide after the Admin data reset (add it to
+    `KyselyApplicationDataEraser.preferences`, next to `appearance`, see [Task 9](task-09-host-maintenance.md)).
+  - **Sets:** 00 Lucide (ISC), 01 Solid silhouettes (game-icons.net, CC BY 3.0), 02 Hand-inked editorial sketches
+    (Streamline Freehand, CC BY 4.0), 03 Architectural wireframes (Streamline Cyber, CC BY 4.0), 04 Single-ink
+    risograph prints (Streamline Ultimate, CC BY 4.0), 05 Quiet editorial monoline (Iconoir, MIT). Each alternative set
+    covers 25 named purposes; small utility icons (close, chevrons, check, add, edit, delete) stay Lucide in every set.
+    The Libris icon never changes with the set.
+  - **Turning leaf (added 2026-11-09):** a 25th purpose in every set, `turning-leaf.svg` in each set folder (from the Doop
+    canvas `shiKEeCX2V`, "01 Turning leaf" of each style). Generated with GPT Astra in the style of each set; checked
+    original on 2026-11-09 (no path shared with the set's icons or the leaf icons of Lucide, Iconoir and Game Icons;
+    pixel overlap no higher than with unrelated icons), so no pack licence applies. Its origin is recorded in
+    `design/artifact/icons/CREDITS.md`, `SOURCES-AND-LICENSES.json` and `manifest.json` (source
+    `generated:gpt-astra`), and the credits page says these icons were generated in the style of the sets. Where Libris
+    and Leaf show it: **decided 2026-11-09, the Turning leaf is Leaf's application icon and favicon** (and the mark
+    next to the "Leaf" title). To build: Leaf's favicon, its home-screen icon (web app manifest and Apple touch icon,
+    PNG sizes generated from the SVG) and its title mark, in Leaf only (Libris keeps its own icon). Version (decided
+    2026-11-09): fixed like the Libris icon, the set 02 hand-inked Turning leaf
+    (`02-hand-inked-editorial/turning-leaf.svg`) in Spring green `#79d670`, whatever the colour scheme or icon set. **Built 2026-11-09:** favicon `apps/web/public/leaf.svg`, home-screen icons and manifest from `tools/generate-leaf-icons.mjs`, linked from `apps/web/leaf/index.html`; the title marks of Libris and Leaf are drawn in the scheme's accent (`currentColor`, changed the same day), the files stay Spring green. Tests: the Leaf page links the favicon and the manifest,
+    the manifest lists the icons, the title mark renders.
+  - **Artwork:** `design/artifact/icons/` (six set folders, `manifest.json`, `CREDITS.md`,
+    `SOURCES-AND-LICENSES.json`). The `design/` folder is Git-ignored: the shipped SVG files are copied into the web
+    app with their credits.
+  - **Today:** every icon goes through `apps/web/src/shared/ui/icon.tsx`, which only knows Lucide (the abstraction was
+    made for set switching, Task 0).
+  - **Colours (decided 2026-11-09, corrected the same day):** the icons follow the colour scheme the way Lucide does:
+    they are drawn in the text colour (`currentColor`), so grey in a normal link and the accent in a selected one.
+    The design's icons are single-colour (green, grey or gold by purpose); the only two-colour icon (set 03) keeps its
+    second tone as the same colour at 60 % opacity. A first version drew the green in the accent and the grey in the
+    secondary text colour, which did not follow the link state.
+  - **Built so far (2026-11-09, branch `ki-6-appearance`):** the server setting (`icon-set`, public with the colour
+    scheme, Admin only, audited `appearance.icon-set-changed`, reset to Lucide by the data reset); the import tool
+    `tools/import-icon-sets.mjs` (recolours, prefixes ids, writes one static file per set,
+    `apps/web/public/icon-sets/<set>.json`, with `CREDITS.md`); `Icon` drawing the chosen set and falling back to
+    Lucide for utility icons and while the set loads (fetched once; a failed load is retried); the Appearance page
+    "Icon set" panel with a preview per set. Purposes used by the interface today: overview, my books, collections,
+    shelves, tags, lending, record return, activity, administration, settings, search, missing cover, success,
+    loading, error, empty state, scan barcode, add book; the admin links (2026-11-09) use Administration for
+    Accounts and Settings for Server settings, Appearance stays Lucide until its own artwork is generated (the user
+    will provide it, with the same originality check as the Turning leaf). The screen-state purposes are used where
+    those states appear: permission denied (Libris no-permission page), already owned and existing edition (Leaf,
+    a scanned ISBN already in the library; the Libris book form's link to the existing book), camera unavailable
+    (Leaf scan page), lookup offline (Find book notices when sources cannot be reached; `Notice` takes an icon). Not
+    used: library brand (Libris keeps its own icon, Leaf takes the Turning leaf).
+  - **Fix:**
+    - **Server:** the icon set setting in the `appearance` feature (value object with the six names, unknown names
+      refused, Lucide by default), read before sign-in like the colour scheme, saved by the Admin, audited.
+    - **Web:** `Icon` picks the chosen set for the 24 purposes and falls back to Lucide for the others; the Appearance
+      page shows each set with a preview of a few icons, names in EN/FR, Lucide marked as the default.
+    - **Credits and licences page** (required by the CC BY sets 01-04): reachable without signing in, listing every
+      bundled icon pack, font and third-party asset with author, licence, required attribution and whether it was
+      modified: the icon sets (with a line saying the Turning leaf icons were generated in the style of the sets), the
+      Libris icon (Streamline Freehand, CC BY 4.0, modified,
+      `apps/desktop/assets/icons/CREDITS.md`), and the credits already listed in
+      [Task 6](task-06-assisted-entry.md#credits-for-the-future-credits-page),
+      [Task 7](task-07-leaf.md#credits-for-the-future-credits-page) and Task 9.5 (ACME client, NAT library, QR code
+      library). Task 10's About window links to it. **Built 2026-11-09:** Libris `/credits` (on its own when signed
+      out, inside the app when signed in), linked from the sign-in page and the bottom of the sidebar; data in
+      `apps/web/src/shared/credits/credits.util.ts` (icons, fonts, book data sources, libraries), texts in EN/FR.
+    - **Tests:** value object and use cases, API tests (setting, before sign-in, Admin only, audit), the data reset
+      returning to Lucide, component tests (Appearance page, `Icon` with each set and the Lucide fallback, credits
+      page), a browser journey choosing a set (Libris and Leaf).
+- **Source:** the design as saved by the user on 2026-11-08 (groups 13 to 15 keep only these schemes), now on the Doop
+  canvas `shiKEeCX2V`: find the groups by their names above and check the colours against the canvas before the fix. The light
+  schemes are out of scope: Libris and Leaf are dark only.
+- **Severity:** medium (visible choice, touches every screen's colours and icons). **Planned:** next fix pass,
+  before Task 10.
+- **Done:** 2026-11-09, branch `ki-6-appearance`, PR #12: commits `848a7d0` (docs), `e996672` (colour schemes and
+  migration 011), `43c5a7b` and `6a434ef` (icon set setting and Appearance panel), `e65fdff` (Desna's reveries,
+  The Butterfly's Way), `b30de03` (icons in the text colour), `73d81ab` (admin links), `a43a0a0` (credits page),
+  `758d9ba` and `01e6ba8` (Leaf's icon, marks in the accent), `7887dd1` (screen-state icons), and the closing
+  commit (tests, this entry). Open follow-up, outside KI-6: the Appearance artwork per icon set, when the user
+  provides it.
 
 ### KI-11 — Server settings: QR code for each address, opening Leaf, with the Libris logo
 
