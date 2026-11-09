@@ -30,6 +30,7 @@ import { TlsSettings } from '../../server-settings/domain/value-objects/tls-sett
 import { PemCertificateValidator } from '../../server-settings/infrastructure/adapters/driven/security/pem-certificate-validator.adapter.js';
 import { TlsAlpnChallenges } from '../../server-settings/infrastructure/adapters/driven/security/tls-alpn-challenges.adapter.js';
 import { NodeHttpsRuntime } from '../../server-settings/infrastructure/adapters/driven/runtime/node-https-runtime.adapter.js';
+import { KyselyDomainNameRepository } from '../../server-settings/infrastructure/adapters/driven/persistence/kysely-domain-name.repository.js';
 import { KyselyKeepAwakeRepository } from '../../server-settings/infrastructure/adapters/driven/persistence/kysely-keep-awake.repository.js';
 import { UpnpRouterGateway } from '../../server-settings/infrastructure/adapters/driven/third-party/upnp-router-gateway.adapter.js';
 import { HttpPublicAddressProbe } from '../../server-settings/infrastructure/adapters/driven/third-party/http-public-address-probe.adapter.js';
@@ -248,6 +249,7 @@ export class BackendRuntime {
                             status,
                             http: httpSettings,
                             operations,
+                            domainName: new KyselyDomainNameRepository(database.connections, ids),
                             internetAccess: new KyselyInternetAccessRepository(
                                 database.connections,
                                 ids,

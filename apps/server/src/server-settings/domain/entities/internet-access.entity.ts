@@ -221,6 +221,14 @@ export class InternetAccess {
         };
     }
 
+    // The Admin saved another domain name (or none): the certificate must follow it.
+    useDomain(domain: string | null): void {
+        this.requireActive();
+        const name = DomainName.optional(domain);
+
+        this.state = { ...this.state, domain: name ? name.value : null };
+    }
+
     addressChanged(publicAddress: string): void {
         this.requireActive();
         this.state = { ...this.state, publicAddress: ConnectionClass.of(publicAddress).address };

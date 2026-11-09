@@ -6,6 +6,7 @@ import type { BackgroundTasks } from '../../application/ports/driven/background-
 import type { CertificateAuthority } from '../../application/ports/driven/certificate-authority.interface.js';
 import type { CertificateValidator } from '../../application/ports/driven/certificate-validator.interface.js';
 import type { DomainNameResolver } from '../../application/ports/driven/domain-name-resolver.interface.js';
+import type { DomainNameStore } from '../../application/ports/driven/domain-name-store.interface.js';
 import type { HttpSettingsStore } from '../../application/ports/driven/http-settings-store.interface.js';
 import type { HttpsRuntime } from '../../application/ports/driven/https-runtime.interface.js';
 import type { InternetAccessStore } from '../../application/ports/driven/internet-access-store.interface.js';
@@ -18,12 +19,15 @@ import type { TlsStore } from '../../application/ports/driven/tls-store.interfac
 import type { MaintainInternetAccessUseCase } from '../../application/ports/driving/maintain-internet-access-use-case.interface.js';
 import { DomainNameCheck } from '../../application/services/domain-name-check.service.js';
 import { InternetAccessSetup } from '../../application/services/internet-access-setup.service.js';
+import { PublicAddressLookup } from '../../application/services/public-address-lookup.service.js';
 import { CheckInternetAccess } from '../../application/use-cases/check-internet-access.usecase.js';
 import { MaintainInternetAccess } from '../../application/use-cases/maintain-internet-access.usecase.js';
+import { ReadDomainName } from '../../application/use-cases/read-domain-name.usecase.js';
 import { ReadHttpSettings } from '../../application/use-cases/read-http-settings.usecase.js';
 import { ReadInternetAccess } from '../../application/use-cases/read-internet-access.usecase.js';
 import { ReadKeepAwake } from '../../application/use-cases/read-keep-awake.usecase.js';
 import { ReadTlsSettings } from '../../application/use-cases/read-tls-settings.usecase.js';
+import { SaveDomainName } from '../../application/use-cases/save-domain-name.usecase.js';
 import { SaveHttpSettings } from '../../application/use-cases/save-http-settings.usecase.js';
 import { SaveKeepAwake } from '../../application/use-cases/save-keep-awake.usecase.js';
 import { SaveTlsSettings } from '../../application/use-cases/save-tls-settings.usecase.js';
@@ -31,6 +35,7 @@ import { SetUpInternetAccess } from '../../application/use-cases/set-up-internet
 import { TurnOffInternetAccess } from '../../application/use-cases/turn-off-internet-access.usecase.js';
 import { RenewalPolicy } from '../../domain/services/renewal-policy.service.js';
 import { InternetAccessUpkeep } from '../adapters/driving/schedule/internet-access-upkeep.adapter.js';
+import { DomainNameController } from '../adapters/driving/web/domain-name.controller.js';
 import { InternetAccessController } from '../adapters/driving/web/internet-access.controller.js';
 import { KeepAwakeController } from '../adapters/driving/web/keep-awake.controller.js';
 import type { RuntimeStatus } from '../adapters/driving/web/settings.controller.js';
@@ -55,6 +60,8 @@ export const SERVER_SETTINGS_MAINTAIN_INTERNET_ACCESS = 'SERVER_SETTINGS_MAINTAI
 export const SERVER_SETTINGS_INTERNET_ACCESS_UPKEEP = 'SERVER_SETTINGS_INTERNET_ACCESS_UPKEEP';
 export const SERVER_SETTINGS_READ_KEEP_AWAKE = 'SERVER_SETTINGS_READ_KEEP_AWAKE';
 export const SERVER_SETTINGS_SAVE_KEEP_AWAKE = 'SERVER_SETTINGS_SAVE_KEEP_AWAKE';
+export const SERVER_SETTINGS_READ_DOMAIN_NAME = 'SERVER_SETTINGS_READ_DOMAIN_NAME';
+export const SERVER_SETTINGS_SAVE_DOMAIN_NAME = 'SERVER_SETTINGS_SAVE_DOMAIN_NAME';
 
 // The driven adapters the server settings feature needs; root composition supplies them.
 export interface SettingsAdapters {
@@ -64,6 +71,7 @@ export interface SettingsAdapters {
     http: HttpSettingsStore;
     operations: AuditedOperation;
     internetAccess: InternetAccessStore;
+    domainName: DomainNameStore;
     router: RouterGateway;
     probe: PublicAddressProbe;
     resolver: DomainNameResolver;
@@ -86,6 +94,7 @@ export class SettingsModule {
             http,
             operations,
             internetAccess,
+            domainName,
             router,
             probe,
             resolver,
@@ -98,10 +107,16 @@ export class SettingsModule {
             clock,
         } = adapters;
         const domains = new DomainNameCheck(resolver);
+        const lookup = new PublicAddressLookup(router, probe);
 
         return {
             module: SettingsModule,
-            controllers: [SettingsController, InternetAccessController, KeepAwakeController],
+            controllers: [
+                SettingsController,
+                InternetAccessController,
+                DomainNameController,
+                KeepAwakeController,
+            ],
             providers: [
                 { provide: SERVER_SETTINGS_TLS_STORE, useValue: tls },
                 { provide: SERVER_SETTINGS_CERTIFICATE_VALIDATOR, useValue: certificates },
@@ -137,6 +152,7 @@ export class SettingsModule {
                             https,
                             tls,
                             domains,
+                            domainName,
                             clock,
                         ),
                 },
@@ -148,7 +164,14 @@ export class SettingsModule {
                     provide: SERVER_SETTINGS_SET_UP_INTERNET_ACCESS,
                     inject: [SERVER_SETTINGS_INTERNET_ACCESS_SETUP],
                     useFactory: (setup: InternetAccessSetup) =>
-                        new SetUpInternetAccess(internetAccess, tls, setup, background, operations),
+                        new SetUpInternetAccess(
+                            internetAccess,
+                            tls,
+                            domainName,
+                            setup,
+                            background,
+                            operations,
+                        ),
                 },
                 {
                     provide: SERVER_SETTINGS_CHECK_INTERNET_ACCESS,
@@ -172,6 +195,7 @@ export class SettingsModule {
                             tls,
                             setup,
                             domains,
+                            domainName,
                             clock,
                         ),
                 },
@@ -180,6 +204,23 @@ export class SettingsModule {
                     inject: [SERVER_SETTINGS_MAINTAIN_INTERNET_ACCESS],
                     useFactory: (maintain: MaintainInternetAccessUseCase) =>
                         new InternetAccessUpkeep(maintain, RenewalPolicy.upkeepInterval),
+                },
+                {
+                    provide: SERVER_SETTINGS_READ_DOMAIN_NAME,
+                    useFactory: () => new ReadDomainName(domainName),
+                },
+                {
+                    provide: SERVER_SETTINGS_SAVE_DOMAIN_NAME,
+                    inject: [SERVER_SETTINGS_INTERNET_ACCESS_SETUP],
+                    useFactory: (setup: InternetAccessSetup) =>
+                        new SaveDomainName(
+                            domainName,
+                            lookup,
+                            domains,
+                            setup,
+                            background,
+                            operations,
+                        ),
                 },
                 {
                     provide: SERVER_SETTINGS_READ_KEEP_AWAKE,

@@ -1,3 +1,4 @@
+import { KyselyDomainNameRepository } from '../../../apps/server/src/server-settings/infrastructure/adapters/driven/persistence/kysely-domain-name.repository.js';
 import { KyselyInternetAccessRepository } from '../../../apps/server/src/server-settings/infrastructure/adapters/driven/persistence/kysely-internet-access.repository.js';
 import {
     AwaitableBackground,
@@ -129,6 +130,7 @@ export class TestApp {
             const clock = { now: () => new Date(this.now) };
             const internetAccess = {
                 store: new KyselyInternetAccessRepository(database.connections, ids),
+                domainName: new KyselyDomainNameRepository(database.connections, ids),
                 router: new FakeRouter(),
                 authority: new FakeAuthority(clock),
                 probe: new FakeProbe(),
@@ -211,6 +213,7 @@ export class TestApp {
                         http,
                         operations,
                         internetAccess: internetAccess.store,
+                        domainName: internetAccess.domainName,
                         router: internetAccess.router,
                         probe: internetAccess.probe,
                         resolver: internetAccess.resolver,

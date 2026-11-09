@@ -11,6 +11,7 @@ import type { UserRepository } from '../../../apps/server/src/identity/applicati
 import type { TlsStore } from '../../../apps/server/src/server-settings/application/ports/driven/tls-store.interface.js';
 import type { HttpSettingsStore } from '../../../apps/server/src/server-settings/application/ports/driven/http-settings-store.interface.js';
 import type { InternetAccessStore } from '../../../apps/server/src/server-settings/application/ports/driven/internet-access-store.interface.js';
+import type { DomainNameStore } from '../../../apps/server/src/server-settings/application/ports/driven/domain-name-store.interface.js';
 import type {
     AwaitableBackground,
     FakeAuthority,
@@ -51,6 +52,7 @@ export interface TestAppContext {
     // `background.settled()` waits for a setup started by a request.
     internetAccess: {
         store: InternetAccessStore;
+        domainName: DomainNameStore;
         router: FakeRouter;
         authority: FakeAuthority;
         probe: FakeProbe;

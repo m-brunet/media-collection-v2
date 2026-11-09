@@ -21,6 +21,7 @@ function subjectFor(
     return new SetUpInternetAccess(
         doubles.store,
         doubles.tls,
+        doubles.names,
         doubles.setup,
         doubles.background,
         AuditDoubles.auditedOperation(trail),
@@ -31,7 +32,7 @@ it('answers at once with the setup looking for the router', async () => {
     const doubles = InternetAccessDoubles.setup();
     const subject = subjectFor(doubles);
 
-    const state = await subject.execute(admin, { replaceCertificate: false, domain: null });
+    const state = await subject.execute(admin, { replaceCertificate: false });
 
     expect([state.phase, state.step]).toEqual(['setting-up', 'router']);
 });
@@ -39,7 +40,7 @@ it('runs the setup steps in the background', async () => {
     const doubles = InternetAccessDoubles.setup();
     const subject = subjectFor(doubles);
 
-    await subject.execute(admin, { replaceCertificate: false, domain: null });
+    await subject.execute(admin, { replaceCertificate: false });
 
     await doubles.background.settled();
 
@@ -52,7 +53,7 @@ it('records the Admin’s request in the technical audit log', async () => {
     const trail = new MemoryAuditTrail();
     const subject = subjectFor(InternetAccessDoubles.setup(), trail);
 
-    await subject.execute(admin, { replaceCertificate: false, domain: null });
+    await subject.execute(admin, { replaceCertificate: false });
 
     expect(trail.entries.map((entry) => [entry.category, entry.outcome])).toEqual([
         ['server-settings.internet-access-set-up', 'successful'],
@@ -62,10 +63,7 @@ it('refuses an Owner', async () => {
     const doubles = InternetAccessDoubles.setup();
     const subject = subjectFor(doubles);
 
-    const result = subject.execute(TestActors.of('owner', 'olivia'), {
-        replaceCertificate: false,
-        domain: null,
-    });
+    const result = subject.execute(TestActors.of('owner', 'olivia'), { replaceCertificate: false });
 
     await expect(result).rejects.toMatchObject({ code: 'forbidden' });
 });
@@ -73,7 +71,7 @@ it('asks for confirmation before replacing a manual certificate', async () => {
     const doubles = InternetAccessDoubles.setup(undefined, manualCertificate);
     const subject = subjectFor(doubles);
 
-    const result = subject.execute(admin, { replaceCertificate: false, domain: null });
+    const result = subject.execute(admin, { replaceCertificate: false });
 
     await expect(result).rejects.toMatchObject({
         code: 'conflict',
@@ -84,7 +82,7 @@ it('starts over a manual certificate once confirmed', async () => {
     const doubles = InternetAccessDoubles.setup(undefined, manualCertificate);
     const subject = subjectFor(doubles);
 
-    const state = await subject.execute(admin, { replaceCertificate: true, domain: null });
+    const state = await subject.execute(admin, { replaceCertificate: true });
 
     expect(state.phase).toBe('setting-up');
 });
@@ -92,7 +90,7 @@ it('sets up again over its own certificate without confirmation', async () => {
     const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active(), manualCertificate);
     const subject = subjectFor(doubles);
 
-    const state = await subject.execute(admin, { replaceCertificate: false, domain: null });
+    const state = await subject.execute(admin, { replaceCertificate: false });
 
     expect(state.phase).toBe('setting-up');
 });
@@ -100,34 +98,19 @@ it('refuses a second setup while one runs', async () => {
     const doubles = InternetAccessDoubles.setup();
     const subject = subjectFor(doubles);
 
-    await subject.execute(admin, { replaceCertificate: false, domain: null });
+    await subject.execute(admin, { replaceCertificate: false });
 
-    const result = subject.execute(admin, { replaceCertificate: false, domain: null });
+    const result = subject.execute(admin, { replaceCertificate: false });
 
     await expect(result).rejects.toMatchObject({ reason: 'setup-in-progress' });
 });
-it('sets up internet access for the domain name', async () => {
+it('sets up internet access for the saved domain name', async () => {
     const doubles = InternetAccessDoubles.setup();
     const subject = subjectFor(doubles);
 
-    const state = await subject.execute(admin, {
-        replaceCertificate: false,
-        domain: 'Home.Example.fr',
-    });
+    doubles.names.name = 'home.example.fr';
+
+    const state = await subject.execute(admin, { replaceCertificate: false });
 
     expect([state.phase, state.domain]).toEqual(['setting-up', 'home.example.fr']);
-});
-it('refuses an invalid domain name', async () => {
-    const doubles = InternetAccessDoubles.setup();
-    const subject = subjectFor(doubles);
-
-    const result = subject.execute(admin, {
-        replaceCertificate: false,
-        domain: 'home.example.fr:3443',
-    });
-
-    await expect(result).rejects.toMatchObject({
-        code: 'invalid_input',
-        reason: 'domain-name-invalid',
-    });
 });

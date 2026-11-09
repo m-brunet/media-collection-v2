@@ -399,3 +399,24 @@ it('keeps the domain name when the setup stops', () => {
         'domain-mismatch',
     ]);
 });
+it('follows another domain name while active', () => {
+    const access = activeWithDomain();
+
+    access.useDomain('library.example.fr');
+
+    expect([access.certificateName, access.renewalDue(now)]).toEqual(['library.example.fr', true]);
+});
+it('goes back to the public address when the domain name is removed', () => {
+    const access = activeWithDomain();
+
+    access.useDomain(null);
+
+    expect([access.certificateName, access.renewalDue(now)]).toEqual(['82.66.118.204', true]);
+});
+it('follows a domain name only while active', () => {
+    const access = InternetAccess.off();
+
+    const operation = () => access.useDomain('home.example.fr');
+
+    expect(operation).toThrow('not active');
+});

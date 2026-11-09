@@ -12,6 +12,8 @@ import type {
     CertificateSubject,
 } from '../ports/driven/certificate-authority.interface.js';
 import type { DomainNameResolver } from '../ports/driven/domain-name-resolver.interface.js';
+import type { DomainNameStore } from '../ports/driven/domain-name-store.interface.js';
+import type { DomainName } from '../../domain/value-objects/domain-name.value-object.js';
 import type { HttpsRuntime } from '../ports/driven/https-runtime.interface.js';
 import type { InternetAccessStore } from '../ports/driven/internet-access-store.interface.js';
 import type { KeepAwakeRuntime } from '../ports/driven/keep-awake-runtime.interface.js';
@@ -92,6 +94,18 @@ export class FakeResolver implements DomainNameResolver {
         this.asked.push(name);
 
         return [...this.answer];
+    }
+}
+
+export class MemoryDomainNameStore implements DomainNameStore {
+    constructor(public name: string | null = null) {}
+
+    async read(): Promise<string | null> {
+        return this.name;
+    }
+
+    async save(name: DomainName | null): Promise<void> {
+        this.name = name ? name.value : null;
     }
 }
 
@@ -221,6 +235,7 @@ export class InternetAccessDoubles {
         const tlsStore = new MemoryTlsStore(tls);
         const resolver = new FakeResolver();
         const domains = new DomainNameCheck(resolver);
+        const names = new MemoryDomainNameStore();
         const setup = new InternetAccessSetup(
             store,
             router,
@@ -229,6 +244,7 @@ export class InternetAccessDoubles {
             https,
             tlsStore,
             domains,
+            names,
             clock,
         );
 
@@ -242,6 +258,7 @@ export class InternetAccessDoubles {
             tls: tlsStore,
             resolver,
             domains,
+            names,
             setup,
             background: new AwaitableBackground(),
         };

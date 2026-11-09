@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { generate } from 'selfsigned';
 import { TestApp } from '../../../../../../../../tests/api/setup/test-app.js';
 import { UserFixture } from '../../../../../../../../tests/api/fixtures/user.fixture.js';
+import { DomainName } from '../../../../domain/value-objects/domain-name.value-object.js';
 import { TlsSettings } from '../../../../domain/value-objects/tls-settings.value-object.js';
 
 let app: TestApp;
@@ -88,38 +89,11 @@ describe('POST /api/server-settings/internet-access', () => {
 
         expect(response.status).toBe(202);
     });
-    it('starts the setup with the domain name', async () => {
-        const client = await app.authenticatedClient(admin);
-
-        const response = await client.call<InternetAccessStatus>(
-            '/server-settings/internet-access',
-            'POST',
-            { domain: 'Home.Example.fr' },
-        );
-
-        expect([response.status, response.body.phase, response.body.domain]).toEqual([
-            202,
-            'setting-up',
-            'home.example.fr',
-        ]);
-    });
-    it('rejects an invalid domain name', async () => {
+    it('rejects a domain name in the setup request', async () => {
         const client = await app.authenticatedClient(admin);
 
         const response = await client.call('/server-settings/internet-access', 'POST', {
-            domain: 'https://home.example.fr',
-        });
-
-        expect([response.status, response.body]).toEqual([
-            400,
-            expect.objectContaining({ reason: 'domain-name-invalid' }),
-        ]);
-    });
-    it('rejects a domain name that is not text', async () => {
-        const client = await app.authenticatedClient(admin);
-
-        const response = await client.call('/server-settings/internet-access', 'POST', {
-            domain: 42,
+            domain: 'home.example.fr',
         });
 
         expect(response.status).toBe(400);
@@ -216,13 +190,13 @@ describe('GET /api/server-settings after a setup', () => {
             response.body.internetAccess.failure?.reason,
         ]).toEqual(['off', 'cgnat']);
     });
-    it('gives the domain name as the address once the certificate is in use', async () => {
+    it('gives the saved domain name as the address once the certificate is in use', async () => {
         const client = await app.authenticatedClient(admin);
 
-        await client.call('/server-settings/internet-access', 'POST', {
-            domain: 'home.example.fr',
-        });
-        await app.dependencies.internetAccess.background.settled();
+        await app.dependencies.internetAccess.domainName.save(
+            DomainName.optional('home.example.fr'),
+        );
+        await setUp(client);
 
         const response = await client.call<ServerStatus>('/server-settings', 'GET');
 
@@ -238,22 +212,21 @@ describe('GET /api/server-settings after a setup', () => {
             [{ kind: 'domain', name: 'home.example.fr' }],
         ]);
     });
-    it('explains a domain name that points elsewhere', async () => {
+    it('explains a saved domain name that no longer points to the connection', async () => {
         const client = await app.authenticatedClient(admin);
 
+        await app.dependencies.internetAccess.domainName.save(
+            DomainName.optional('home.example.fr'),
+        );
         app.dependencies.internetAccess.resolver.answer = ['82.66.118.77'];
-        await client.call('/server-settings/internet-access', 'POST', {
-            domain: 'home.example.fr',
-        });
-        await app.dependencies.internetAccess.background.settled();
+        await setUp(client);
 
         const response = await client.call<ServerStatus>('/server-settings', 'GET');
 
         expect([
             response.body.internetAccess.phase,
             response.body.internetAccess.failure?.reason,
-            response.body.internetAccess.domain,
-        ]).toEqual(['off', 'domain-mismatch', 'home.example.fr']);
+        ]).toEqual(['off', 'domain-mismatch']);
     });
 });
 describe('POST /api/server-settings/internet-access/check', () => {

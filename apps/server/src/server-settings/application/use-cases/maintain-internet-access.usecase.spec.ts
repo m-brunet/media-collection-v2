@@ -15,6 +15,7 @@ function subjectFor(doubles: ReturnType<typeof InternetAccessDoubles.setup>) {
         doubles.tls,
         doubles.setup,
         doubles.domains,
+        doubles.names,
         doubles.clock,
     );
 }
@@ -191,6 +192,12 @@ it('does nothing while internet access is off', async () => {
     expect([doubles.router.opened, doubles.store.phases]).toEqual([[], []]);
 });
 
+function withSavedDomain(doubles: ReturnType<typeof InternetAccessDoubles.setup>) {
+    doubles.names.name = 'home.example.fr';
+
+    return doubles;
+}
+
 function activeWithDomain() {
     return InternetAccessDoubles.active({
         domain: 'home.example.fr',
@@ -203,7 +210,7 @@ function activeWithDomain() {
 }
 
 it('keeps the domain certificate when the public address changes', async () => {
-    const doubles = InternetAccessDoubles.setup(activeWithDomain());
+    const doubles = withSavedDomain(InternetAccessDoubles.setup(activeWithDomain()));
     const subject = subjectFor(doubles);
 
     doubles.router.connection = { mapping: 'upnp', externalAddress: '82.66.118.77' };
@@ -218,7 +225,7 @@ it('keeps the domain certificate when the public address changes', async () => {
     ]).toEqual(['82.66.118.77', null, []]);
 });
 it('warns when the domain name does not follow the public address', async () => {
-    const doubles = InternetAccessDoubles.setup(activeWithDomain());
+    const doubles = withSavedDomain(InternetAccessDoubles.setup(activeWithDomain()));
     const subject = subjectFor(doubles);
 
     doubles.router.connection = { mapping: 'upnp', externalAddress: '82.66.118.77' };
@@ -233,7 +240,7 @@ it('warns when the domain name does not follow the public address', async () => 
     ]).toEqual(['active', 'domain-mismatch', 'home.example.fr', '2026-11-08T11:00:00.000Z']);
 });
 it('renews the domain certificate at two thirds of its lifetime', async () => {
-    const doubles = InternetAccessDoubles.setup(activeWithDomain());
+    const doubles = withSavedDomain(InternetAccessDoubles.setup(activeWithDomain()));
     const subject = subjectFor(doubles);
     const renewal = new Date('2027-01-07T10:00:00.000Z');
 
@@ -247,7 +254,7 @@ it('renews the domain certificate at two thirds of its lifetime', async () => {
     ]);
 });
 it('keeps the domain certificate before two thirds of its lifetime', async () => {
-    const doubles = InternetAccessDoubles.setup(activeWithDomain());
+    const doubles = withSavedDomain(InternetAccessDoubles.setup(activeWithDomain()));
     const subject = subjectFor(doubles);
 
     doubles.clock.time = new Date('2027-01-07T09:00:00.000Z');
@@ -255,4 +262,22 @@ it('keeps the domain certificate before two thirds of its lifetime', async () =>
     await subject.execute();
 
     expect(doubles.authority.requested).toEqual([]);
+});
+it('follows a domain name saved since the last certificate', async () => {
+    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());
+    const subject = subjectFor(doubles);
+
+    doubles.names.name = 'home.example.fr';
+
+    await subject.execute();
+
+    expect([
+        doubles.store.current.domain,
+        doubles.store.current.certificate?.address,
+        doubles.authority.subjects,
+    ]).toEqual([
+        'home.example.fr',
+        'home.example.fr',
+        [{ kind: 'domain', name: 'home.example.fr' }],
+    ]);
 });
