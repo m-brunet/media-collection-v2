@@ -637,7 +637,9 @@ body {
 }
 
 .book-form__existing {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
     margin-top: var(--space-2);
     color: var(--color-accent);
 }
