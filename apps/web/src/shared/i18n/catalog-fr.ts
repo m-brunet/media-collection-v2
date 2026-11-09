@@ -179,6 +179,13 @@ export const fr = {
         'HTTPS n’a pas pu démarrer : son port est peut-être utilisé par un autre programme. Choisissez un autre port HTTPS dans les paramètres avancés, puis réessayez.',
     'internet.failure.setup-failed':
         'La configuration s’est arrêtée de façon inattendue. Réessayez.',
+    'internet.failure.domain-unresolved':
+        'Le nom de domaine {domain} ne pointe encore vers aucune adresse. Vérifiez les réglages de DNS dynamique de votre box, puis réessayez.',
+    'internet.failure.domain-mismatch':
+        'Le nom de domaine {domain} ne pointe pas vers l’adresse de cette connexion ({address}). Vérifiez les réglages de DNS dynamique de votre box, puis réessayez.',
+    'internet.domain': 'Nom de domaine (facultatif)',
+    'internet.domainHint':
+        'Seulement si vous possédez un nom de domaine qui pointe déjà vers cette connexion, par exemple grâce au DNS dynamique de votre box. Laissez vide pour utiliser l’adresse Internet.',
     'keepAwake.label': 'Garder cet ordinateur éveillé pendant que Media Collection fonctionne',
     'keepAwake.hint':
         'Leaf ne fonctionne que si cet ordinateur est allumé et éveillé. L’écran peut quand même s’éteindre.',
@@ -343,6 +350,8 @@ export const fr = {
     'reason.nothingToCheck': 'Il n’y a pas de règle de box à vérifier.',
     'reason.internetAccessOn':
         'Désactivez l’accès Internet avant de modifier les paramètres HTTPS.',
+    'reason.domainNameInvalid':
+        'Saisissez un nom de domaine comme maison.exemple.fr, sans https:// ni port.',
     'setup.title': 'Configurez votre bibliothèque',
     'setup.intro':
         'Créez le compte administrateur protégé. Terminez la configuration avant d’utiliser cette installation.',

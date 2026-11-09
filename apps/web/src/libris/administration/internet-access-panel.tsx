@@ -11,6 +11,7 @@ import { ConfirmDialog } from '../../shared/ui/confirm-dialog';
 import { Panel } from '../../shared/ui/layout';
 import { Notice } from '../../shared/ui/notice';
 import { QrCode } from '../../shared/ui/qr-code';
+import { TextField } from '../../shared/ui/text-field';
 import { useAction } from '../../shared/use-action';
 
 const steps = [
@@ -33,12 +34,15 @@ const failures: Record<InternetAccessFailureReason, MessageKey> = {
     'rate-limited': 'internet.failure.rate-limited',
     'authority-unavailable': 'internet.failure.authority-unavailable',
     'https-unavailable': 'internet.failure.https-unavailable',
+    'domain-unresolved': 'internet.failure.domain-unresolved',
+    'domain-mismatch': 'internet.failure.domain-mismatch',
     'setup-failed': 'internet.failure.setup-failed',
 };
 const termsAddress = 'https://letsencrypt.org/repository/';
 
 // One action that opens the router port and gets a Let's Encrypt certificate, then the address and
-// QR code phones use. The page refreshes the status while a setup runs.
+// QR code phones use. An optional domain name of the Admin's replaces the public address. The page
+// refreshes the status while a setup runs.
 export function InternetAccessPanel({
     status,
     keepAwake,
@@ -55,11 +59,20 @@ export function InternetAccessPanel({
     const awake = useAction();
     const [replacing, setReplacing] = useState(false);
     const [turningOff, setTurningOff] = useState(false);
-    const failure = status.failure ? t(failures[status.failure.reason]) : null;
+    const [domain, setDomain] = useState(status.domain ?? '');
+    const failure = status.failure
+        ? t(failures[status.failure.reason], {
+              domain: status.domain ?? '',
+              address: status.publicAddress ?? '',
+          })
+        : null;
     const setUp = (replaceCertificate: boolean) =>
         api.request<InternetAccessStatus>('/server-settings/internet-access', {
             method: 'POST',
-            body: replaceCertificate ? { replaceCertificate } : {},
+            body: {
+                domain: domain.trim() || null,
+                ...(replaceCertificate ? { replaceCertificate } : {}),
+            },
         });
     const start = () =>
         void action.run(async () => {
@@ -129,6 +142,19 @@ export function InternetAccessPanel({
                     </>
                 )}
                 {status.phase === 'off' && failure && <Notice tone="error">{failure}</Notice>}
+                {status.phase === 'off' && (
+                    <TextField
+                        label={t('internet.domain')}
+                        hint={t('internet.domainHint')}
+                        name="domain"
+                        value={domain}
+                        onChange={(event) => setDomain(event.target.value)}
+                        placeholder="home.example.com"
+                        autoComplete="off"
+                        spellCheck={false}
+                        maxLength={253}
+                    />
+                )}
                 {(status.phase === 'active' || status.phase === 'waiting-for-port') && (
                     <p className="muted">{t('internet.firewall')}</p>
                 )}

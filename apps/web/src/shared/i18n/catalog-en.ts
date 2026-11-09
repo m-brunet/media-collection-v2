@@ -170,6 +170,13 @@ export const en = {
     'internet.failure.https-unavailable':
         'HTTPS could not start: its port may be used by another program. Choose another HTTPS port in the advanced settings, then try again.',
     'internet.failure.setup-failed': 'The setup stopped unexpectedly. Try again.',
+    'internet.failure.domain-unresolved':
+        'The domain name {domain} does not point to any address yet. Check the dynamic DNS settings of your router, then try again.',
+    'internet.failure.domain-mismatch':
+        'The domain name {domain} does not point to this connection’s address ({address}). Check the dynamic DNS settings of your router, then try again.',
+    'internet.domain': 'Domain name (optional)',
+    'internet.domainHint':
+        'Only if you own a domain name that already points to this connection, for example through your router’s dynamic DNS. Leave empty to use the internet address.',
     'keepAwake.label': 'Keep this computer awake while Media Collection runs',
     'keepAwake.hint':
         'Leaf only works while this computer is on and awake. The screen can still turn off.',
@@ -325,6 +332,8 @@ export const en = {
     'reason.setupInProgress': 'Internet access is already being set up. Wait for it to finish.',
     'reason.nothingToCheck': 'There is no router rule to check.',
     'reason.internetAccessOn': 'Turn off internet access before changing the HTTPS settings.',
+    'reason.domainNameInvalid':
+        'Enter a domain name such as home.example.com, without https:// or a port.',
     'setup.title': 'Set up your library',
     'setup.intro':
         'Create the protected administrator account. Complete setup before using this installation.',

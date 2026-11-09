@@ -118,4 +118,33 @@ describe('Internet access', () => {
             true,
         );
     });
+    it('sets up internet access for a domain name and gives its Leaf address', async () => {
+        const { page } = await serverSettings({ externalAddress: publicAddress, accepts: true });
+
+        await page.getByRole('textbox', { name: 'Domain name (optional)' }).fill('home.example.fr');
+        await page.getByRole('button', { name: 'Set up internet access' }).click();
+        await page.getByText('Internet access is on.').waitFor();
+        await capture(page, 'internet-access-domain-active');
+
+        expect(
+            await readQrCode(
+                page.getByRole('img', { name: 'QR code for https://home.example.fr/leaf/' }),
+            ),
+        ).toEqual(['https://home.example.fr/leaf/']);
+    });
+    it('explains a domain name that does not point to the connection', async () => {
+        const { page } = await serverSettings({
+            externalAddress: publicAddress,
+            accepts: true,
+            domainAddress: '82.66.118.77',
+        });
+
+        await page.getByRole('textbox', { name: 'Domain name (optional)' }).fill('home.example.fr');
+        await page.getByRole('button', { name: 'Set up internet access' }).click();
+        await page.getByText(/home\.example\.fr does not point to this connection/).waitFor();
+
+        expect(
+            await page.getByRole('textbox', { name: 'Domain name (optional)' }).inputValue(),
+        ).toBe('home.example.fr');
+    });
 });

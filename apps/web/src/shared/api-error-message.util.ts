@@ -27,6 +27,7 @@ export class ApiErrorMessage {
         'setup-in-progress': 'reason.setupInProgress',
         'nothing-to-check': 'reason.nothingToCheck',
         'internet-access-on': 'reason.internetAccessOn',
+        'domain-name-invalid': 'reason.domainNameInvalid',
         'color-scheme-unknown': 'reason.colorSchemeUnknown',
         'title-invalid': 'reason.titleInvalid',
         'title-required': 'reason.titleRequired',
