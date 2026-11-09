@@ -8,6 +8,7 @@ import type { InternetAccessStore } from '../ports/driven/internet-access-store.
 import type { PublicAddressProbe } from '../ports/driven/public-address-probe.interface.js';
 import type { RouterGateway } from '../ports/driven/router-gateway.interface.js';
 import type { TlsStore } from '../ports/driven/tls-store.interface.js';
+import type { DomainNameCheck } from './domain-name-check.service.js';
 
 // The steps of an internet access setup, run after the Admin's request has answered: find the
 // router, open the port, get the certificate. Each step is saved so the page can follow it.
@@ -21,6 +22,7 @@ export class InternetAccessSetup {
         private readonly authority: CertificateAuthority,
         private readonly https: HttpsRuntime,
         private readonly tls: TlsStore,
+        private readonly domains: DomainNameCheck,
         private readonly clock: Clock,
     ) {}
 
@@ -40,16 +42,26 @@ export class InternetAccessSetup {
         await this.guarded((access) => this.obtain(access));
     }
 
-    // Gets and installs a certificate for the current public address. Used by the setup and by the
-    // upkeep; answers the failure reason, or null once the certificate is in use.
+    // Gets and installs a certificate for the domain name, or else the current public address. Used
+    // by the setup and by the upkeep; answers the failure reason, or null once the certificate is in
+    // use. A domain name must point to the public address first.
     async renew(access: InternetAccess): Promise<InternetAccessFailureReason | null> {
+        const problem = await this.domains.problem(access);
+
+        if (problem) {
+            return problem;
+        }
+
         const { port } = await this.tls.read();
 
         if (!(await this.https.ensureRunning(port))) {
             return 'https-unavailable';
         }
 
-        const issue = await this.authority.issue(access.publicAddress!);
+        const issue = await this.authority.issue({
+            kind: access.domain ? 'domain' : 'address',
+            name: access.certificateName!,
+        });
 
         if (issue.outcome === 'refused') {
             return issue.reason;
@@ -66,7 +78,7 @@ export class InternetAccessSetup {
             return 'https-unavailable';
         }
 
-        access.activate({ address: access.publicAddress!, issuedAt, expiresAt });
+        access.activate({ address: access.certificateName!, issuedAt, expiresAt });
 
         return null;
     }

@@ -20,7 +20,7 @@ export class ReadInternetAccess implements ReadInternetAccessUseCase {
 
         return {
             ...access.snapshot,
-            origin: access.phase === 'active' ? 'https://' + access.publicAddress : null,
+            origin: access.phase === 'active' ? 'https://' + access.certificateName : null,
             manualRule:
                 access.phase === 'waiting-for-port'
                     ? {

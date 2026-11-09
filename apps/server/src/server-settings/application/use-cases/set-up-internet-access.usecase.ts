@@ -21,7 +21,7 @@ export class SetUpInternetAccess implements SetUpInternetAccessUseCase {
 
     async execute(
         actor: Actor,
-        input: { replaceCertificate: boolean },
+        input: { replaceCertificate: boolean; domain: string | null },
     ): Promise<InternetAccessState> {
         const state = await this.operations.run(
             {
@@ -44,7 +44,7 @@ export class SetUpInternetAccess implements SetUpInternetAccessUseCase {
                     );
                 }
 
-                access.start();
+                access.start(input.domain);
                 await this.store.save(access);
 
                 return {

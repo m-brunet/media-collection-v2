@@ -7,10 +7,12 @@ import type { PublicAddressProbe } from '../ports/driven/public-address-probe.in
 import type { RouterGateway } from '../ports/driven/router-gateway.interface.js';
 import type { TlsSettingsReader } from '../ports/driven/tls-settings-reader.interface.js';
 import type { MaintainInternetAccessUseCase } from '../ports/driving/maintain-internet-access-use-case.interface.js';
+import type { DomainNameCheck } from '../services/domain-name-check.service.js';
 import type { InternetAccessSetup } from '../services/internet-access-setup.service.js';
 
-// The hourly upkeep: recreate the router rule, follow a changed public address and renew the
-// certificate. A failure keeps the current certificate and waits longer before the next try.
+// The hourly upkeep: recreate the router rule, follow a changed public address, check that the
+// domain name still points to it, and renew the certificate. A failure keeps the current
+// certificate and waits longer before the next try.
 export class MaintainInternetAccess implements MaintainInternetAccessUseCase {
     constructor(
         private readonly store: InternetAccessStore,
@@ -18,6 +20,7 @@ export class MaintainInternetAccess implements MaintainInternetAccessUseCase {
         private readonly probe: PublicAddressProbe,
         private readonly tls: TlsSettingsReader,
         private readonly setup: InternetAccessSetup,
+        private readonly domains: DomainNameCheck,
         private readonly clock: Clock,
     ) {}
 
@@ -67,6 +70,12 @@ export class MaintainInternetAccess implements MaintainInternetAccessUseCase {
 
         if (connection.address !== access.publicAddress) {
             access.addressChanged(connection.address);
+        }
+
+        const problem = await this.domains.problem(access);
+
+        if (problem) {
+            return problem;
         }
 
         return access.renewalDue(this.clock.now()) ? this.setup.renew(access) : null;
