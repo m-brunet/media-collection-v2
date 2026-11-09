@@ -59,3 +59,16 @@ it('draws the set artwork in the text colour, like Lucide', async () => {
 
     expect([/#[0-9a-f]{6}/i.test(markup), markup.includes('currentColor')]).toEqual([false, true]);
 });
+it('draws the Administration artwork for Accounts and the Settings artwork for Server settings', async () => {
+    const { container } = render(
+        <>
+            <Icon name="accounts" set="hand-inked-editorial" />
+            <Icon name="server" set="hand-inked-editorial" />
+            <Icon name="appearance" set="hand-inked-editorial" />
+        </>,
+    );
+
+    await waitFor(() => expect(container.querySelectorAll('[data-icon-set]')).toHaveLength(2));
+
+    expect(container.querySelectorAll('svg.lucide')).toHaveLength(1);
+});

@@ -178,7 +178,9 @@ design.
     Lucide for utility icons and while the set loads (fetched once; a failed load is retried); the Appearance page
     "Icon set" panel with a preview per set. Purposes used by the interface today: overview, my books, collections,
     shelves, tags, lending, record return, activity, administration, settings, search, missing cover, success,
-    loading, error, empty state, scan barcode, add book. Not used yet (no such screen state): permission denied,
+    loading, error, empty state, scan barcode, add book; the admin links (2026-11-09) use Administration for
+    Accounts and Settings for Server settings, Appearance stays Lucide until its own artwork is generated (the user
+    will provide it, with the same originality check as the Turning leaf). Not used yet (no such screen state): permission denied,
     already owned, existing edition, camera unavailable, lookup offline, library brand (Libris keeps its own icon,
     Leaf takes the Turning leaf).
   - **Fix:**

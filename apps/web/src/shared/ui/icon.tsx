@@ -95,6 +95,11 @@ const purposes: Partial<Record<IconName, string>> = {
     activity: 'activity',
     administration: 'administration',
     settings: 'settings',
+    // Admin links (decided 2026-11-09): Accounts shows the sets' Administration artwork and
+    // Server settings their Settings artwork. Appearance stays Lucide until it has its own
+    // artwork; with Lucide chosen, every link keeps its own Lucide icon.
+    accounts: 'administration',
+    server: 'settings',
     success: 'success',
     error: 'error',
     loading: 'loading',
