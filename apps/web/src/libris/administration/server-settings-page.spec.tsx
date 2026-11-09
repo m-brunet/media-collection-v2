@@ -352,7 +352,7 @@ it('shows which setup step is running', async () => {
         steps.find((step) => step.textContent?.includes('Finding your router')),
     ).toHaveTextContent('Done');
 });
-it('gives the Leaf address and its QR code once active', async () => {
+it('gives the Leaf address once active, its QR code being in the addresses list', async () => {
     administrator(status(active));
 
     renderPage();
@@ -360,8 +360,9 @@ it('gives the Leaf address and its QR code once active', async () => {
     expect(
         await screen.findByRole('link', { name: 'https://' + publicAddress + '/leaf/' }),
     ).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: /^QR code for/ })).not.toBeInTheDocument();
     expect(
-        await screen.findByRole('img', { name: 'QR code for https://' + publicAddress + '/leaf/' }),
+        screen.getByRole('button', { name: 'Show the QR code for https://' + publicAddress }),
     ).toBeInTheDocument();
 });
 it('gives the router rule to add by hand', async () => {

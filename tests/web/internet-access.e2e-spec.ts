@@ -21,6 +21,14 @@ afterEach(async () => {
     await runtime.teardown();
 });
 
+// Opens the QR code of an internet address from the addresses list.
+function qrCodeFor(page: Page, origin: string) {
+    return page
+        .getByRole('button', { name: 'Show the QR code for ' + origin })
+        .click()
+        .then(() => page.getByRole('img', { name: 'QR code for ' + origin + '/leaf/' }));
+}
+
 // Starts the application with stand-ins for the router and Let's Encrypt, an Admin, and a free
 // HTTPS port, then opens Server settings.
 async function serverSettings(internetAccess: NonNullable<RuntimeOptions['internetAccess']>) {
@@ -64,7 +72,7 @@ describe('Internet access', () => {
         ).toBe(true);
         expect(
             await page
-                .getByRole('img', { name: 'QR code for https://' + publicAddress + '/leaf/' })
+                .getByRole('button', { name: 'Show the QR code for https://' + publicAddress })
                 .isVisible(),
         ).toBe(true);
     });
@@ -74,11 +82,9 @@ describe('Internet access', () => {
         await page.getByRole('button', { name: 'Set up internet access' }).click();
         await page.getByText('Internet access is on.').waitFor();
 
-        expect(
-            await readQrCode(
-                page.getByRole('img', { name: 'QR code for https://' + publicAddress + '/leaf/' }),
-            ),
-        ).toEqual(['https://' + publicAddress + '/leaf/']);
+        expect(await readQrCode(await qrCodeFor(page, 'https://' + publicAddress))).toEqual([
+            'https://' + publicAddress + '/leaf/',
+        ]);
     });
     it('starts HTTPS with the new certificate without a restart', async () => {
         const { page, httpsPort } = await serverSettings({
@@ -128,11 +134,9 @@ describe('Internet access', () => {
         await page.getByText('Internet access is on.').waitFor();
         await capture(page, 'internet-access-domain-active');
 
-        expect(
-            await readQrCode(
-                page.getByRole('img', { name: 'QR code for https://home.example.fr/leaf/' }),
-            ),
-        ).toEqual(['https://home.example.fr/leaf/']);
+        expect(await readQrCode(await qrCodeFor(page, 'https://home.example.fr'))).toEqual([
+            'https://home.example.fr/leaf/',
+        ]);
     });
     it('refuses a domain name that does not point to the connection', async () => {
         const { page } = await serverSettings({
@@ -154,16 +158,14 @@ describe('Internet access', () => {
             externalAddress: publicAddress,
             accepts: true,
         });
-        const leaf = 'http://' + publicAddress + ':' + httpPort + '/leaf/';
+        const origin = 'http://' + publicAddress + ':' + httpPort;
 
         await page.getByRole('button', { name: 'Open HTTP to the internet' }).click();
         await page.getByRole('button', { name: 'Open without encryption' }).click();
         await page.getByText('HTTP is open to the internet.').waitFor();
         await capture(page, 'internet-access-http-open');
 
-        expect(await readQrCode(page.getByRole('img', { name: 'QR code for ' + leaf }))).toEqual([
-            leaf,
-        ]);
+        expect(await readQrCode(await qrCodeFor(page, origin))).toEqual([origin + '/leaf/']);
     });
     it('closes HTTP once HTTPS works', async () => {
         const { page } = await serverSettings({ externalAddress: publicAddress, accepts: true });
