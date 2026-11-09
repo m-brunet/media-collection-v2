@@ -178,6 +178,8 @@ export const en = {
     'internet.domainHint':
         'Only if you own a domain name that already points to this connection, for example through your router’s dynamic DNS. The internet addresses then use it. Leave empty to use the internet address.',
     'internet.domainSave': 'Save the domain name',
+    'internet.domainRemove': 'Remove the domain name',
+    'internet.domainLocked': 'To remove the domain name, turn off HTTPS from the internet first.',
     'internet.domainSaved': 'Domain name saved. The internet addresses use it.',
     'internet.domainRemoved': 'Domain name removed. The internet addresses use the public address.',
     'internet.domainRefused.unresolved':
@@ -354,6 +356,7 @@ export const en = {
     'reason.setupInProgress': 'Internet access is already being set up. Wait for it to finish.',
     'reason.nothingToCheck': 'There is no router rule to check.',
     'reason.internetAccessOn': 'Turn off internet access before changing the HTTPS settings.',
+    'reason.domainNameInUse': 'Turn off HTTPS from the internet before removing the domain name.',
     'reason.httpsActive': 'HTTPS works from the internet, so HTTP stays closed.',
     'reason.domainNameInvalid':
         'Enter a domain name such as home.example.com, without https:// or a port.',

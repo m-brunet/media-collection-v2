@@ -59,8 +59,10 @@ Domain name
 - Saving a name: the public address comes from the router (UPnP), else from the public service. Then the name's IPv4
   addresses (A records) must include it. Refusals (`invalid_input`): `domain-unresolved` (no address),
   `domain-mismatch` (points elsewhere; the message gives the public address), `public-address-unknown`.
-- Saving an empty name removes it. Admin only; audited `server-settings.domain-name-changed`.
-- While HTTPS is on, a changed or removed name gets a new certificate in the background (failure shown like an upkeep
+- **Remove** (or saving an empty name) removes it, only while HTTPS from the internet is off (otherwise `conflict`,
+  `domain-name-in-use`; decided 2026-11-09 after the real test). Admin only; audited
+  `server-settings.domain-name-changed`.
+- While HTTPS is on, a changed name gets a new certificate in the background (failure shown like an upkeep
   failure; the current certificate stays). Otherwise the next HTTPS upkeep or setup uses it.
 
 HTTP from the internet

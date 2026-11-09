@@ -78,7 +78,11 @@ export function InternetAccessPanel({
         <Panel title={t('internet.title')}>
             <div className="internet-access">
                 <p className="muted">{t('internet.intro')}</p>
-                <DomainNameSection domainName={domainName} onSaved={onRefresh} />
+                <DomainNameSection
+                    domainName={domainName}
+                    httpsOn={status.phase !== 'off'}
+                    onSaved={onRefresh}
+                />
                 <HttpsInternetSection status={status} onStatus={onStatus} />
                 <HttpInternetSection
                     status={http}

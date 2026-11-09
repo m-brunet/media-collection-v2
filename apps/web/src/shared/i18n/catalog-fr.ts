@@ -188,6 +188,9 @@ export const fr = {
     'internet.domainHint':
         'Seulement si vous possédez un nom de domaine qui pointe déjà vers cette connexion, par exemple grâce au DNS dynamique de votre box. Les adresses Internet l’utilisent alors. Laissez vide pour utiliser l’adresse Internet.',
     'internet.domainSave': 'Enregistrer le nom de domaine',
+    'internet.domainRemove': 'Retirer le nom de domaine',
+    'internet.domainLocked':
+        'Pour retirer le nom de domaine, désactivez d’abord HTTPS depuis Internet.',
     'internet.domainSaved': 'Nom de domaine enregistré. Les adresses Internet l’utilisent.',
     'internet.domainRemoved':
         'Nom de domaine retiré. Les adresses Internet utilisent l’adresse publique.',
@@ -374,6 +377,8 @@ export const fr = {
     'reason.nothingToCheck': 'Il n’y a pas de règle de box à vérifier.',
     'reason.internetAccessOn':
         'Désactivez l’accès Internet avant de modifier les paramètres HTTPS.',
+    'reason.domainNameInUse':
+        'Désactivez HTTPS depuis Internet avant de retirer le nom de domaine.',
     'reason.httpsActive': 'HTTPS fonctionne depuis Internet, HTTP reste donc fermé.',
     'reason.domainNameInvalid':
         'Saisissez un nom de domaine comme maison.exemple.fr, sans https:// ni port.',

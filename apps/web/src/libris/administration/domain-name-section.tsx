@@ -16,12 +16,14 @@ const refusals: Record<string, MessageKey> = {
 };
 
 // The Admin's domain name: saved only once it points to this connection, then used by every
-// internet address.
+// internet address. It can be removed while HTTPS is off.
 export function DomainNameSection({
     domainName,
+    httpsOn,
     onSaved,
 }: {
     domainName: string | null;
+    httpsOn: boolean;
     onSaved(): void;
 }) {
     const { t } = useI18n();
@@ -30,15 +32,14 @@ export function DomainNameSection({
     const [feedback, setFeedback] = useState<{ tone: 'success' | 'error'; text: string } | null>(
         null,
     );
-    const save = async (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
+    const save = async (domain: string | null) => {
         setBusy(true);
         setFeedback(null);
 
         try {
             const saved = await api.request<{ domain: string | null }>(
                 '/server-settings/domain-name',
-                { method: 'PUT', body: { domain: value.trim() || null } },
+                { method: 'PUT', body: { domain } },
             );
 
             setValue(saved.domain ?? '');
@@ -64,7 +65,13 @@ export function DomainNameSection({
     };
 
     return (
-        <form className="internet-access__domain" onSubmit={(event) => void save(event)}>
+        <form
+            className="internet-access__domain"
+            onSubmit={(event: FormEvent<HTMLFormElement>) => {
+                event.preventDefault();
+                void save(value.trim() || null);
+            }}
+        >
             <TextField
                 label={t('internet.domain')}
                 hint={t('internet.domainHint')}
@@ -81,7 +88,13 @@ export function DomainNameSection({
                 <Button type="submit" busy={busy}>
                     {t('internet.domainSave')}
                 </Button>
+                {domainName && !httpsOn && (
+                    <Button variant="ghost" busy={busy} onClick={() => void save(null)}>
+                        {t('internet.domainRemove')}
+                    </Button>
+                )}
             </div>
+            {domainName && httpsOn && <p className="muted">{t('internet.domainLocked')}</p>}
         </form>
     );
 }
