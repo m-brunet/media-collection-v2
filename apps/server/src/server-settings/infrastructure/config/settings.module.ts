@@ -42,7 +42,7 @@ import { SaveKeepAwake } from '../../application/use-cases/save-keep-awake.useca
 import { SaveTlsSettings } from '../../application/use-cases/save-tls-settings.usecase.js';
 import { SetUpInternetAccess } from '../../application/use-cases/set-up-internet-access.usecase.js';
 import { TurnOffInternetAccess } from '../../application/use-cases/turn-off-internet-access.usecase.js';
-import { RenewalPolicy } from '../../domain/services/renewal-policy.service.js';
+import { UpkeepSchedule } from '../../domain/services/upkeep-schedule.service.js';
 import { InternetAccessUpkeep } from '../adapters/driving/schedule/internet-access-upkeep.adapter.js';
 import { DomainNameController } from '../adapters/driving/web/domain-name.controller.js';
 import { HttpInternetAccessController } from '../adapters/driving/web/http-internet-access.controller.js';
@@ -264,8 +264,11 @@ export class SettingsModule {
                         maintainHttp: MaintainHttpInternetAccessUseCase,
                     ) =>
                         new InternetAccessUpkeep(
-                            [maintainHttps, maintainHttp],
-                            RenewalPolicy.upkeepInterval,
+                            [
+                                { name: 'HTTPS', maintenance: maintainHttps },
+                                { name: 'HTTP', maintenance: maintainHttp },
+                            ],
+                            (failedRuns) => UpkeepSchedule.delayAfter(failedRuns),
                         ),
                 },
                 {

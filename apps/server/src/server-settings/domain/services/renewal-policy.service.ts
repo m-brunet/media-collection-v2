@@ -2,7 +2,8 @@ import type { IssuedCertificate } from '../value-objects/issued-certificate.valu
 
 // When automatic internet access needs a new certificate, and how long it waits after a failure.
 export class RenewalPolicy {
-    static readonly upkeepInterval = 60 * 60 * 1000;
+    // The first wait after a failure, doubled at each new failure up to the longest one.
+    private static readonly firstRetryDelay = 60 * 60 * 1000;
     // Share of the lifetime after which a certificate is renewed: half for a short-lived IP address
     // certificate, two thirds for a domain name (day 60 of a 90-day certificate).
     static readonly addressShare = 1 / 2;
@@ -30,7 +31,7 @@ export class RenewalPolicy {
     // One hour after the first failure, then doubling, never more than six hours.
     static retryAt(failedAttempts: number, now: Date): Date {
         const delay = Math.min(
-            RenewalPolicy.upkeepInterval * 2 ** Math.max(0, failedAttempts - 1),
+            RenewalPolicy.firstRetryDelay * 2 ** Math.max(0, failedAttempts - 1),
             RenewalPolicy.longestRetryDelay,
         );
 
