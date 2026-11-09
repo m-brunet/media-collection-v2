@@ -30,7 +30,6 @@ import {
     Info,
     LayoutDashboard,
     Layers,
-    Library,
     Palette,
     LoaderCircle,
     LogOut,
@@ -46,8 +45,6 @@ import {
 // Semantic icon names used by the interface. The Lucide mapping is the default icon set; the
 // installation-wide icon set (KI-6) replaces the names listed in `purposes` below.
 const lucide = {
-    // Leaf's mark; Libris shows its own official icon (see Brand).
-    brand: Library,
     overview: LayoutDashboard,
     activity: History,
     account: UserRound,
