@@ -21,6 +21,11 @@ export type InternetAccessFailureReason =
     | 'domain-unresolved'
     | 'domain-mismatch'
     | 'setup-failed';
+// Why the router rule could not be kept: the router, the address or the port.
+export type RouterRuleFailureReason = Extract<
+    InternetAccessFailureReason,
+    'no-router' | 'public-address-unknown' | 'port-refused' | 'cgnat' | 'double-nat'
+>;
 
 export interface InternetAccessState {
     phase: InternetAccessPhase;
@@ -41,6 +46,9 @@ export interface InternetAccessState {
 export class InternetAccess {
     // The router's port that phones reach; Let's Encrypt's TLS-ALPN-01 check only uses 443.
     static readonly externalPort = 443;
+    private static readonly ruleFailures: ReadonlySet<InternetAccessFailureReason> = new Set<
+        RouterRuleFailureReason
+    >(['no-router', 'public-address-unknown', 'port-refused', 'cgnat', 'double-nat']);
     private state: InternetAccessState;
 
     constructor(state: InternetAccessState) {
@@ -264,6 +272,22 @@ export class InternetAccess {
             failedAttempts,
             nextAttemptAt: RenewalPolicy.retryAt(failedAttempts, now).toISOString(),
         };
+    }
+
+    // The router rule could not be renewed. Shown at once, without waiting longer: the rule lapses
+    // within its lease, so the next upkeep run tries it again.
+    ruleFailed(reason: RouterRuleFailureReason, now: Date): void {
+        this.requireActive();
+        this.state = { ...this.state, failure: { reason, at: now.toISOString() } };
+    }
+
+    // The router rule was renewed: a rule failure no longer applies; a certificate one still does.
+    ruleKept(): void {
+        this.requireActive();
+
+        if (this.state.failure && InternetAccess.ruleFailures.has(this.state.failure.reason)) {
+            this.state = { ...this.state, failure: null };
+        }
     }
 
     upkeepSucceeded(): void {
