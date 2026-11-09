@@ -23,7 +23,7 @@ describe('GET /api/appearance', () => {
         const response = await client.call<Appearance>('/appearance');
 
         expect(response.status).toBe(200);
-        expect(response.body).toEqual({ colorScheme: 'spring-green' });
+        expect(response.body).toEqual({ colorScheme: 'spring-green', iconSet: 'lucide' });
     });
     it('gives the saved scheme', async () => {
         const client = await app.authenticatedClient(admin);
@@ -97,5 +97,71 @@ describe('PUT /api/appearance', () => {
         );
 
         expect(response.status).toBe(403);
+    });
+});
+
+describe('PUT /api/appearance/icon-set', () => {
+    it('saves the icon set for everyone and gives it back', async () => {
+        const client = await app.authenticatedClient(admin);
+
+        const response = await client.call('/appearance/icon-set', 'PUT', {
+            iconSet: 'hand-inked-editorial',
+        });
+
+        expect([response.status, response.body]).toEqual([
+            200,
+            { iconSet: 'hand-inked-editorial' },
+        ]);
+    });
+    it('gives the saved icon set to a signed-out visitor', async () => {
+        const client = await app.authenticatedClient(admin);
+
+        await client.call('/appearance/icon-set', 'PUT', { iconSet: 'solid-silhouettes' });
+
+        const response = await app.client().call<Appearance>('/appearance');
+
+        expect(response.body.iconSet).toBe('solid-silhouettes');
+    });
+    it('records the change in the technical audit log', async () => {
+        const client = await app.authenticatedClient(admin);
+
+        await client.call('/appearance/icon-set', 'PUT', { iconSet: 'single-ink-risograph' });
+
+        expect(await app.dependencies.audit.entries()).toContainEqual(
+            expect.objectContaining({
+                category: 'appearance.icon-set-changed',
+                outcome: 'successful',
+            }),
+        );
+    });
+    it('rejects an unknown icon set', async () => {
+        const client = await app.authenticatedClient(admin);
+
+        const response = await client.call('/appearance/icon-set', 'PUT', { iconSet: 'emoji' });
+
+        expect([response.status, response.body]).toEqual([
+            400,
+            expect.objectContaining({ reason: 'icon-set-unknown' }),
+        ]);
+    });
+    it('rejects an Owner', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/appearance/icon-set', 'PUT', {
+            iconSet: 'solid-silhouettes',
+        });
+
+        expect(response.status).toBe(403);
+    });
+    it('rejects a signed-out visitor', async () => {
+        const client = app.client();
+
+        await client.prepare();
+
+        const response = await client.call('/appearance/icon-set', 'PUT', {
+            iconSet: 'solid-silhouettes',
+        });
+
+        expect(response.status).toBe(401);
     });
 });

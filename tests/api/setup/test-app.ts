@@ -42,6 +42,7 @@ import { LibraryProbe } from './library-probe.js';
 import { ScriptedLookupSources } from '../fixtures/scripted-lookup-sources.js';
 import { AppearanceModule } from '../../../apps/server/src/appearance/infrastructure/config/appearance.module.js';
 import { KyselyAppearanceRepository } from '../../../apps/server/src/appearance/infrastructure/adapters/driven/persistence/kysely-appearance.repository.js';
+import { KyselyIconSetRepository } from '../../../apps/server/src/appearance/infrastructure/adapters/driven/persistence/kysely-icon-set.repository.js';
 import { SetupAccess } from '../../../apps/server/src/identity/infrastructure/adapters/driving/web/setup-access.service.js';
 import { BooksModule } from '../../../apps/server/src/books/infrastructure/config/books.module.js';
 import { CollectionsModule } from '../../../apps/server/src/collections/infrastructure/config/collections.module.js';
@@ -229,7 +230,11 @@ export class TestApp {
                         keepAwakeRuntime: internetAccess.keepAwake,
                         clock,
                     }),
-                    AppearanceModule.register(appearance, operations),
+                    AppearanceModule.register(
+                        appearance,
+                        new KyselyIconSetRepository(database.connections, ids),
+                        operations,
+                    ),
                     BooksModule.register({
                         ...books,
                         collections: membership,
