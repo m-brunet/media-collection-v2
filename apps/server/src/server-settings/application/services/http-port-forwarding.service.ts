@@ -1,6 +1,6 @@
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 import { HttpInternetAccess } from '../../domain/entities/http-internet-access.entity.js';
-import type { HttpSettingsReader } from '../ports/driven/http-settings-reader.interface.js';
+import type { HttpListener } from '../ports/driven/http-listener.interface.js';
 import type { PortRule } from '../ports/driven/port-rule.interface.js';
 import type { PublicAddressProbe } from '../ports/driven/public-address-probe.interface.js';
 import type { RouterGateway } from '../ports/driven/router-gateway.interface.js';
@@ -11,7 +11,7 @@ export class HttpPortForwarding {
     constructor(
         private readonly router: RouterGateway,
         private readonly probe: PublicAddressProbe,
-        private readonly http: HttpSettingsReader,
+        private readonly listener: HttpListener,
         private readonly clock: Clock,
     ) {}
 
@@ -37,7 +37,7 @@ export class HttpPortForwarding {
             return;
         }
 
-        if (await this.router.open(await this.rule())) {
+        if (await this.router.open(this.rule())) {
             access.opened(router.mapping, router.externalAddress);
         } else {
             access.openedByHand(router.externalAddress, 'port-refused', now);
@@ -47,7 +47,7 @@ export class HttpPortForwarding {
     // `byHttps`: a working HTTPS setup closes it, not the Admin.
     async close(access: HttpInternetAccess, byHttps: boolean): Promise<void> {
         if (access.automatic) {
-            await this.router.close(await this.rule());
+            await this.router.close(this.rule());
         }
 
         access.close(byHttps);
@@ -85,12 +85,12 @@ export class HttpPortForwarding {
             return null;
         }
 
-        return (await this.router.open(await this.rule())) ? router.externalAddress : 'refused';
+        return (await this.router.open(this.rule())) ? router.externalAddress : 'refused';
     }
 
-    // The external port is the HTTP port itself (1024-65535).
-    private async rule(): Promise<PortRule> {
-        const { port } = await this.http.read();
+    // The external port is the running HTTP port itself (1024-65535).
+    private rule(): PortRule {
+        const port = this.listener.port();
 
         return { externalPort: port, internalPort: port };
     }

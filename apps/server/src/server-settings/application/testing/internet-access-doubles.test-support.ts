@@ -2,7 +2,6 @@ import type { Clock } from '../../../shared/application/ports/driven/clock.inter
 import { InternetAccess } from '../../domain/entities/internet-access.entity.js';
 import { HttpInternetAccess } from '../../domain/entities/http-internet-access.entity.js';
 import type { HttpInternetAccessState } from '../../domain/entities/http-internet-access.entity.js';
-import { HttpSettings } from '../../domain/value-objects/http-settings.value-object.js';
 import type { InternetAccessState } from '../../domain/entities/internet-access.entity.js';
 import type {
     TlsSettings,
@@ -19,7 +18,7 @@ import type { DomainNameStore } from '../ports/driven/domain-name-store.interfac
 import type { DomainName } from '../../domain/value-objects/domain-name.value-object.js';
 import type { HttpsRuntime } from '../ports/driven/https-runtime.interface.js';
 import type { HttpInternetAccessStore } from '../ports/driven/http-internet-access-store.interface.js';
-import type { HttpSettingsReader } from '../ports/driven/http-settings-reader.interface.js';
+import type { HttpListener } from '../ports/driven/http-listener.interface.js';
 import type { InternetAccessStore } from '../ports/driven/internet-access-store.interface.js';
 import type { KeepAwakeRuntime } from '../ports/driven/keep-awake-runtime.interface.js';
 import type { KeepAwakeStore } from '../ports/driven/keep-awake-store.interface.js';
@@ -70,11 +69,11 @@ export class MemoryHttpInternetAccessStore implements HttpInternetAccessStore {
     }
 }
 
-export class FixedHttpSettings implements HttpSettingsReader {
-    constructor(public port = 34345) {}
+export class FixedHttpListener implements HttpListener {
+    constructor(private readonly running = 34345) {}
 
-    async read(): Promise<HttpSettings> {
-        return new HttpSettings(this.port);
+    port(): number {
+        return this.running;
     }
 }
 
@@ -267,8 +266,8 @@ export class InternetAccessDoubles {
         const domains = new DomainNameCheck(resolver);
         const names = new MemoryDomainNameStore();
         const httpStore = new MemoryHttpInternetAccessStore();
-        const httpSettings = new FixedHttpSettings();
-        const forwarding = new HttpPortForwarding(router, probe, httpSettings, clock);
+        const httpListener = new FixedHttpListener();
+        const forwarding = new HttpPortForwarding(router, probe, httpListener, clock);
         const setup = new InternetAccessSetup(
             store,
             router,
@@ -295,7 +294,7 @@ export class InternetAccessDoubles {
             domains,
             names,
             http: httpStore,
-            httpSettings,
+            httpListener,
             forwarding,
             setup,
             background: new AwaitableBackground(),

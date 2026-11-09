@@ -43,7 +43,8 @@ name, IPv6, HTTP-01, HTTP→HTTPS redirects, an external HTTP port different fro
   addresses never switch to a name that does not work.
 - **HTTP may be opened to the internet** at the Admin's explicit request, with a warning. This reverses Task 9.5's
   "only HTTPS is exposed" rule: HTTPS stays the recommended way, HTTP is the fallback when HTTPS does not work.
-- The external HTTP port is the HTTP port itself (1024-65535 already). No port 80.
+- The external HTTP port is the HTTP port itself (1024-65535 already). No port 80. The rule and address follow the
+  port the HTTP listener actually runs on (an `HttpListener` port), including a command-line or environment override.
 - HTTPS working closes HTTP: a successful HTTPS setup removes the HTTP rule and says why; HTTP cannot be opened while
   HTTPS is on; turning HTTPS off does not reopen HTTP.
 - A name means the `classic` certificate profile, renewed about every 60 days (two thirds of the lifetime). Without a
@@ -144,5 +145,4 @@ Each step: tests, the relevant checks, architecture review skill on the changes,
   loopback). Freeboxes do.
 - **IPv6**: the name should only have an A record; with an AAAA record Let's Encrypt may try IPv6, where no port is open.
 - **Dynamic DNS delay**: after an IP change, the upkeep warns until the name catches up.
-- **HTTP port override** (command line or environment, development only): the HTTP rule targets the saved HTTP port.
 - **Duplicate certificates**: 5 per week for the same name; renewals every 60 days are far below it.

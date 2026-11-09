@@ -38,7 +38,7 @@ async function serverSettings(internetAccess: NonNullable<RuntimeOptions['intern
     await page.getByRole('link', { name: 'Server settings' }).click();
     await page.getByRole('heading', { name: 'Internet access' }).waitFor();
 
-    return { page, httpsPort };
+    return { page, httpsPort, httpPort: Number(new URL(started.client.base).port) };
 }
 
 async function signIn(page: Page) {
@@ -118,10 +118,12 @@ describe('Internet access', () => {
             true,
         );
     });
-    it('sets up internet access for a domain name and gives its Leaf address', async () => {
+    it('saves a domain name, then sets up HTTPS for it', async () => {
         const { page } = await serverSettings({ externalAddress: publicAddress, accepts: true });
 
         await page.getByRole('textbox', { name: 'Domain name (optional)' }).fill('home.example.fr');
+        await page.getByRole('button', { name: 'Save the domain name' }).click();
+        await page.getByText(/Domain name saved/).waitFor();
         await page.getByRole('button', { name: 'Set up internet access' }).click();
         await page.getByText('Internet access is on.').waitFor();
         await capture(page, 'internet-access-domain-active');
@@ -132,7 +134,7 @@ describe('Internet access', () => {
             ),
         ).toEqual(['https://home.example.fr/leaf/']);
     });
-    it('explains a domain name that does not point to the connection', async () => {
+    it('refuses a domain name that does not point to the connection', async () => {
         const { page } = await serverSettings({
             externalAddress: publicAddress,
             accepts: true,
@@ -140,11 +142,41 @@ describe('Internet access', () => {
         });
 
         await page.getByRole('textbox', { name: 'Domain name (optional)' }).fill('home.example.fr');
-        await page.getByRole('button', { name: 'Set up internet access' }).click();
-        await page.getByText(/home\.example\.fr does not point to this connection/).waitFor();
+        await page.getByRole('button', { name: 'Save the domain name' }).click();
+        await page.getByText(/does not point to this connection/).waitFor();
 
-        expect(
-            await page.getByRole('textbox', { name: 'Domain name (optional)' }).inputValue(),
-        ).toBe('home.example.fr');
+        expect(await page.getByText('(' + publicAddress + ')', { exact: false }).isVisible()).toBe(
+            true,
+        );
+    });
+    it('opens HTTP to the internet after a warning and gives its Leaf address', async () => {
+        const { page, httpPort } = await serverSettings({
+            externalAddress: publicAddress,
+            accepts: true,
+        });
+        const leaf = 'http://' + publicAddress + ':' + httpPort + '/leaf/';
+
+        await page.getByRole('button', { name: 'Open HTTP to the internet' }).click();
+        await page.getByRole('button', { name: 'Open without encryption' }).click();
+        await page.getByText('HTTP is open to the internet.').waitFor();
+        await capture(page, 'internet-access-http-open');
+
+        expect(await readQrCode(page.getByRole('img', { name: 'QR code for ' + leaf }))).toEqual([
+            leaf,
+        ]);
+    });
+    it('closes HTTP once HTTPS works', async () => {
+        const { page } = await serverSettings({ externalAddress: publicAddress, accepts: true });
+
+        await page.getByRole('button', { name: 'Open HTTP to the internet' }).click();
+        await page.getByRole('button', { name: 'Open without encryption' }).click();
+        await page.getByText('HTTP is open to the internet.').waitFor();
+        await page.getByRole('button', { name: 'Set up internet access' }).click();
+        await page.getByText('Internet access is on.').waitFor();
+
+        await page.getByText('HTTP was closed because HTTPS works.', { exact: false }).waitFor();
+        expect(await page.getByRole('button', { name: 'Open HTTP to the internet' }).count()).toBe(
+            0,
+        );
     });
 });

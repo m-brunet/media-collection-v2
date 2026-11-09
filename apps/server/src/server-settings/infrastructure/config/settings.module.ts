@@ -10,6 +10,7 @@ import type { DomainNameStore } from '../../application/ports/driven/domain-name
 import type { HttpSettingsStore } from '../../application/ports/driven/http-settings-store.interface.js';
 import type { HttpsRuntime } from '../../application/ports/driven/https-runtime.interface.js';
 import type { HttpInternetAccessStore } from '../../application/ports/driven/http-internet-access-store.interface.js';
+import type { HttpListener } from '../../application/ports/driven/http-listener.interface.js';
 import type { InternetAccessStore } from '../../application/ports/driven/internet-access-store.interface.js';
 import type { KeepAwakeRuntime } from '../../application/ports/driven/keep-awake-runtime.interface.js';
 import type { KeepAwakeStore } from '../../application/ports/driven/keep-awake-store.interface.js';
@@ -89,6 +90,7 @@ export interface SettingsAdapters {
     internetAccess: InternetAccessStore;
     domainName: DomainNameStore;
     httpInternetAccess: HttpInternetAccessStore;
+    httpListener: HttpListener;
     router: RouterGateway;
     probe: PublicAddressProbe;
     resolver: DomainNameResolver;
@@ -113,6 +115,7 @@ export class SettingsModule {
             internetAccess,
             domainName,
             httpInternetAccess,
+            httpListener,
             router,
             probe,
             resolver,
@@ -126,7 +129,7 @@ export class SettingsModule {
         } = adapters;
         const domains = new DomainNameCheck(resolver);
         const lookup = new PublicAddressLookup(router, probe);
-        const forwarding = new HttpPortForwarding(router, probe, http, clock);
+        const forwarding = new HttpPortForwarding(router, probe, httpListener, clock);
 
         return {
             module: SettingsModule,
@@ -240,7 +243,12 @@ export class SettingsModule {
                 {
                     provide: SERVER_SETTINGS_READ_HTTP_INTERNET_ACCESS,
                     useFactory: () =>
-                        new ReadHttpInternetAccess(httpInternetAccess, domainName, http, local),
+                        new ReadHttpInternetAccess(
+                            httpInternetAccess,
+                            domainName,
+                            httpListener,
+                            local,
+                        ),
                 },
                 {
                     provide: SERVER_SETTINGS_MAINTAIN_HTTP_INTERNET_ACCESS,

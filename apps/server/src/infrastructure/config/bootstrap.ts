@@ -251,6 +251,7 @@ export class BackendRuntime {
                             http: httpSettings,
                             operations,
                             domainName: new KyselyDomainNameRepository(database.connections, ids),
+                            httpListener: { port: () => httpPort },
                             httpInternetAccess: new KyselyHttpInternetAccessRepository(
                                 database.connections,
                                 ids,

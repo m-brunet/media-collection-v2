@@ -217,6 +217,7 @@ export class TestApp {
                         internetAccess: internetAccess.store,
                         domainName: internetAccess.domainName,
                         httpInternetAccess: internetAccess.http,
+                        httpListener: { port: () => 34345 },
                         router: internetAccess.router,
                         probe: internetAccess.probe,
                         resolver: internetAccess.resolver,
