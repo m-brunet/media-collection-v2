@@ -228,7 +228,7 @@ design.
 
 - **Type:** Improvement (new feature).
 - **Reported:** 2026-11-09 by the user, with the design
-  [Server settings.html](../design/Server%20settings.html) (panel "Current addresses").
+  [server-settings-ki11.html](../design/server-settings-ki11.html) (panel "Current addresses").
 - **Asked:** each address of the "Current addresses" panel gets a **Show QR code** button. Clicking it shows, on the
   right of the list, the QR code of that address with a caption ("Scan to open this address") and the encoded address
   under it. The aim is to open Leaf on a phone without typing the address.
