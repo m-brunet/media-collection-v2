@@ -229,37 +229,35 @@ design.
     - HTTP internet address: crosses public networks (shop Wi-Fi, mobile carrier) unencrypted, so excluded.
     - Loopback: no QR code already.
   - **Validity:** 2 minutes, single use (confirmed).
-  - **Owners too:** an Owner can also show such a QR code, signing the phone in as the Owner (confirmed "for now").
+  - **Admin only, for now:** only the Admin sees the addresses list, so only the Admin can show such a QR code; the
+    phone is signed in as the Admin. A way for Owners may come later.
   - **The phone session is a normal sign-in:** same account and rights as signing in with the password on the phone,
     same lifetime (one idle hour today, 24 hours with KI-2), ended like any session by a password change, a
     deactivation or the Admin recovery. No "Leaf only" limit and no device list.
-- **Today:** the addresses list is in Server settings, so only the Admin sees it (Owners have no way to show a QR
-  code yet); the QR code holds
+- **Today:** the addresses list is in Server settings, so only the Admin sees it; the QR code holds
   `<address>/leaf/` (`apps/web/src/libris/administration/addresses-panel.tsx`). Sessions: HttpOnly cookies with a
   token version (`architecture.md`, security section).
 - **Fix:**
   - **Pairing code:** when the user shows the QR code of an eligible address, Libris asks the server for a one-time
     code: random (32 bytes, base64url), only its hash stored with the account and an expiry of 2 minutes, usable once;
     showing the code again replaces the previous one. Feature `identity`: use cases "create a pairing code" (signed-in
-    Owner/Admin) and "redeem a pairing code", a store (SQLite table with UUID id, hashed code, account, expiry, used
+    Admin) and "redeem a pairing code", a store (SQLite table with UUID id, hashed code, account, expiry, used
     at), audit categories for both.
   - **QR value:** `<address>/leaf/#pair=<code>`. The code is after `#`, so the browser never sends it in a request:
     it stays out of server logs and `Referer` headers. The server decides which addresses are eligible (it knows the
     HTTP internet address), so the rule is not left to the browser.
   - **Leaf:** on start, reads `#pair=`, removes it from the address bar at once (`history.replaceState`), and sends it
     once to a pre-login endpoint (for example `POST /api/sessions/pair`, CSRF like the login). The server checks the
-    code (exists, not expired, not used, account active, Owner or Admin, no temporary password to change), marks it
+    code (exists, not expired, not used, account active and Admin, no temporary password to change), marks it
     used, and opens the session exactly like a login (cookie, token version). Expired or used: Leaf shows its sign-in
     screen with "This QR code has expired. Show it again on the computer." Rate-limited like the login.
   - **Libris:** under the QR code of an eligible address, "This code signs a phone in as <username>. It works once,
     for 2 minutes." and a new code when it expires while shown. Under the HTTP internet address, nothing changes.
-  - **Owners:** the addresses list (with its QR codes, without the server settings) is also shown to Owners, at a place
-    to choose with the user when the fix is planned (for example their account page).
-  - **Tests:** domain/application rules (expiry, single use, inactive account, temporary password, Guest), the
+  - **Tests:** domain/application rules (expiry, single use, inactive account, temporary password, Owner and Guest
+    refused), the
     redeem endpoint (success sets the session cookie, each refusal, rate limit, audit), Libris (the QR value has
     `#pair=` for local, Tailscale and HTTPS addresses, never for the HTTP internet address), a browser journey (scan value opened in a new context lands signed
     in on Leaf; second use refused). No test reaches Let's Encrypt (Task 9.6 testing rule).
-- **Open question for the fix:** where Owners see the addresses list and its QR codes.
 - **Severity:** medium (sign-in on the phone at every session today). **Planned:** next version, after the 2.0.0
   release.
 
