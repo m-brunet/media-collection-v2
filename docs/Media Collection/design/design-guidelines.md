@@ -35,16 +35,22 @@ The artifact's CSS is generated per screen and is not reused. Implementation def
 
 ## Colour schemes
 
-The Admin chooses the installation's colour scheme in Administration → Appearance; it applies to every account, in Libris and Leaf, including the sign-in page. It is a saved application preference: included in backups, and an Admin data reset returns it to the default. The four schemes come from the design's colour charts (`design/color-charts.html`) and differ only in three accent roles; neutral and status colours are shared.
+The Admin chooses the installation's colour scheme in Administration → Appearance; it applies to every account, in Libris and Leaf, including the sign-in page. It is a saved application preference: included in backups, and an Admin data reset returns it to the default. Libris and Leaf are dark only.
 
-| Scheme | Accent | Accent background (selected) | Accent text |
-| --- | --- | --- | --- |
-| Spring green (default) | #79D670 | #2B3E29 | #BDEBB8 |
-| Mint | #86D39A | #2B3D31 | #B7E7C2 |
-| Emerald | #65D59B | #273E32 | #B0E9CA |
-| Forest | #65B881 | #293A30 | #AFD9BC |
+There are eight schemes (KI-6, 2026-11-09): Spring green, and seven schemes from the design (Doop canvas `shiKEeCX2V`, groups 13 "Appearance collection — 10 non-green themes", 14 "Dark Purple" and 15 "Red study"). Mint, Emerald and Forest are no longer offered; an installation that had chosen one moved to Spring green. Each scheme is a full palette: backgrounds, borders, text and accent all change. The source of truth is `apps/web/src/shared/ui/tokens.css`.
 
-The design screens were drawn in Mint. The local recovery window, which runs without the server, always uses Spring green.
+| Scheme | Background | Panel | Control | Border | Text | Secondary text | Accent | Accent background | Accent text |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Spring green (default) | #1D1F20 | #1D2022 | #303336 | #3C4042 | #F2F5F2 | #A9B5AC | #79D670 | #2B3E29 | #BDEBB8 |
+| Midnight blue | #191F2C | #151B26 | #252E3D | #3D4F6B | #F0F5FF | #ABBBD2 | #8BB8FF | #10213B | #C6DCFF |
+| Velvet violet | #201C28 | #191620 | #2E2739 | #514361 | #F7F0FF | #BFB0CF | #C4A3FF | #27133F | #E2D2FF |
+| Ember | #27201D | #1F1916 | #372E28 | #604A3D | #FFF3E9 | #CDB7A7 | #FFAD79 | #361B0C | #FFD7BD |
+| Rose noir | #261E24 | #1F191F | #362C33 | #5C4354 | #FFF0F7 | #CEAFBF | #F3A4C4 | #371425 | #F9D2E2 |
+| Graphite gold | #242424 | #1D1D1D | #323232 | #505050 | #F7F5EE | #BCBAB2 | #E4C56B | #2C240C | #F2E2B6 |
+| Slate × Orchid | #252B32 | #20262D | #343D47 | #4D5C6A | #F3F6FA | #B6C1CD | #D7ACFF | #301B40 | #EBD6FF |
+| Warm charcoal × Soft scarlet | #272426 | #211F20 | #343032 | #51484C | #FFF2F1 | #D0B2B7 | #FF9994 | #3A1719 | #FFCDCA |
+
+The design does not draw every role. The surface, control hover, strong border, muted text, accent text and text on the accent are derived from each scheme with the ratios that give Spring green's values, and `tests/web/color-scheme-contrast.spec.ts` checks every scheme against WCAG AA (text 4.5:1 on every surface, accent 3:1). Status colours (danger, warning) are shared. The local recovery window, which runs without the server, always uses Spring green.
 
 ## Window size
 

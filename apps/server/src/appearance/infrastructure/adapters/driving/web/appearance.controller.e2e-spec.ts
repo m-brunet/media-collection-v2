@@ -28,11 +28,11 @@ describe('GET /api/appearance', () => {
     it('gives the saved scheme', async () => {
         const client = await app.authenticatedClient(admin);
 
-        await client.call('/appearance', 'PUT', { colorScheme: 'forest' });
+        await client.call('/appearance', 'PUT', { colorScheme: 'rose-noir' });
 
         const response = await app.client().call<Appearance>('/appearance');
 
-        expect(response.body.colorScheme).toBe('forest');
+        expect(response.body.colorScheme).toBe('rose-noir');
     });
 });
 
@@ -41,17 +41,17 @@ describe('PUT /api/appearance', () => {
         const client = await app.authenticatedClient(admin);
 
         const response = await client.call<Appearance>('/appearance', 'PUT', {
-            colorScheme: 'mint',
+            colorScheme: 'midnight-blue',
         });
 
         expect(response.status).toBe(200);
-        expect(response.body).toEqual({ colorScheme: 'mint' });
-        expect((await app.dependencies.appearance.read()).name).toBe('mint');
+        expect(response.body).toEqual({ colorScheme: 'midnight-blue' });
+        expect((await app.dependencies.appearance.read()).name).toBe('midnight-blue');
     });
     it('records the change in the audit log', async () => {
         const client = await app.authenticatedClient(admin);
 
-        await client.call('/appearance', 'PUT', { colorScheme: 'emerald' });
+        await client.call('/appearance', 'PUT', { colorScheme: 'ember' });
 
         expect(await app.dependencies.audit.entries()).toContainEqual(
             expect.objectContaining({
@@ -72,7 +72,7 @@ describe('PUT /api/appearance', () => {
     it('rejects an Owner', async () => {
         const client = await app.authenticatedClient(owner);
 
-        const response = await client.call('/appearance', 'PUT', { colorScheme: 'mint' });
+        const response = await client.call('/appearance', 'PUT', { colorScheme: 'midnight-blue' });
 
         expect(response.status).toBe(403);
         expect((await app.dependencies.appearance.read()).name).toBe('spring-green');
@@ -82,7 +82,7 @@ describe('PUT /api/appearance', () => {
 
         await client.prepare();
 
-        const response = await client.call('/appearance', 'PUT', { colorScheme: 'mint' });
+        const response = await client.call('/appearance', 'PUT', { colorScheme: 'midnight-blue' });
 
         expect(response.status).toBe(401);
     });
@@ -92,7 +92,7 @@ describe('PUT /api/appearance', () => {
         const response = await client.call(
             '/appearance',
             'PUT',
-            { colorScheme: 'mint' },
+            { colorScheme: 'midnight-blue' },
             { csrf: false },
         );
 

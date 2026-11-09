@@ -10,7 +10,16 @@ it('uses Spring green by default', () => {
 });
 
 it('accepts each available scheme', () => {
-    const names = ['mint', 'emerald', 'forest', 'spring-green'];
+    const names = [
+        'spring-green',
+        'midnight-blue',
+        'velvet-violet',
+        'ember',
+        'rose-noir',
+        'graphite-gold',
+        'slate-orchid',
+        'charcoal-scarlet',
+    ];
 
     const result = names.map((name) => new ColorScheme(name).name);
 
@@ -25,4 +34,28 @@ it('rejects an unknown scheme', () => {
     expect(operation).toThrow(
         expect.objectContaining({ code: 'invalid_input', reason: 'color-scheme-unknown' }),
     );
+});
+
+it('rejects Mint, no longer offered', () => {
+    const name = 'mint';
+
+    const operation = () => new ColorScheme(name);
+
+    expect(operation).toThrow(expect.objectContaining({ reason: 'color-scheme-unknown' }));
+});
+
+it('rejects Emerald, no longer offered', () => {
+    const name = 'emerald';
+
+    const operation = () => new ColorScheme(name);
+
+    expect(operation).toThrow(expect.objectContaining({ reason: 'color-scheme-unknown' }));
+});
+
+it('rejects Forest, no longer offered', () => {
+    const name = 'forest';
+
+    const operation = () => new ColorScheme(name);
+
+    expect(operation).toThrow(expect.objectContaining({ reason: 'color-scheme-unknown' }));
 });

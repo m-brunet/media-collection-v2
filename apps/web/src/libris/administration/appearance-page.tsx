@@ -10,9 +10,13 @@ import { useAction } from '../../shared/use-action';
 
 const names: Record<ColorSchemeName, MessageKey> = {
     'spring-green': 'appearance.scheme.springGreen',
-    mint: 'appearance.scheme.mint',
-    emerald: 'appearance.scheme.emerald',
-    forest: 'appearance.scheme.forest',
+    'midnight-blue': 'appearance.scheme.midnightBlue',
+    'velvet-violet': 'appearance.scheme.velvetViolet',
+    ember: 'appearance.scheme.ember',
+    'rose-noir': 'appearance.scheme.roseNoir',
+    'graphite-gold': 'appearance.scheme.graphiteGold',
+    'slate-orchid': 'appearance.scheme.slateOrchid',
+    'charcoal-scarlet': 'appearance.scheme.charcoalScarlet',
 };
 
 // Installation-wide appearance, chosen by the administrator for everyone in Libris and Leaf.
@@ -53,6 +57,7 @@ export function AppearancePage() {
                                     onChange={() => choose(name)}
                                 />
                                 <span className="scheme-choice__swatches" aria-hidden="true">
+                                    <span className="scheme-choice__swatch scheme-choice__swatch--canvas" />
                                     <span className="scheme-choice__swatch scheme-choice__swatch--accent" />
                                     <span className="scheme-choice__swatch scheme-choice__swatch--background" />
                                     <span className="scheme-choice__swatch scheme-choice__swatch--text" />

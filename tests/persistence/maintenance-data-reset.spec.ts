@@ -40,7 +40,7 @@ async function installation() {
         .insertInto('server_settings')
         .values([
             { id: randomUUID(), name: 'http', value: '{"port":36000}' },
-            { id: randomUUID(), name: 'appearance', value: '{"colorScheme":"forest"}' },
+            { id: randomUUID(), name: 'appearance', value: '{"colorScheme":"rose-noir"}' },
             { id: randomUUID(), name: 'internet-access', value: '{"phase":"off"}' },
             { id: randomUUID(), name: 'keep-awake', value: '{"enabled":true}' },
         ])
