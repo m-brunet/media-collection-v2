@@ -106,7 +106,7 @@ cross-version restore, V1 import UI, factory reset before sign-in, Admin deletio
   tables never dropped.
 - Kept by the reset (user, 2026-11-08): the HTTP port, the HTTPS settings with their certificate files, and the Admin's
   language (host and network setup, and part of the account). Only the colour scheme returns to its default (and the
-  icon set, when Task 10 adds it). The backup includes all of them, the HTTPS certificate files too (`tls/`).
+  icon set, when KI-6 adds it). The backup includes all of them, the HTTPS certificate files too (`tls/`).
 - Reuse: the development reset's `KyselyLibraryEraser` and `KyselyCoverFileCleanup` move into the new `maintenance`
   feature as the shared implementation; the development command is composed with them (root config), so the two
   resets cannot drift. The product reset adds the users and preferences erasure.
@@ -212,7 +212,7 @@ New feature `apps/server/src/maintenance/`:
   `400 password-incorrect`), on the Accounts page (design `iX066`). It keeps the Admin (username, password, language),
   the HTTP and HTTPS settings and certificate files, and backups; it deletes the library, the audit log, other
   accounts and the saved preferences listed in `KyselyApplicationDataEraser.preferences` (only `appearance` today:
-  **Task 10 adds the icon set there**). The page reloads `/` afterwards, so the sign-in page shows Spring green.
+  **KI-6 adds the icon set there**). The page reloads `/` afterwards, so the sign-in page shows Spring green.
 - **Audit:** `account.recovered` (actor null, subject the Admin), `maintenance.backup-created` (current data, after
   the copy), `maintenance.backup-restored` (restored data; a Failed record stays in the current data),
   `maintenance.data-reset` (the only record left). None is in `ActivityEligibility`.

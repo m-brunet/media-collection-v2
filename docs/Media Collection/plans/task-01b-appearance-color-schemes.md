@@ -35,4 +35,4 @@ The administrator chooses the installation's colour scheme among four; the choic
 ## Outcome
 
 - Full `npm run check` from PowerShell: 64 test files, 570 tests.
-- Frontend: `AppearanceProvider` (shared/appearance) wraps both apps; `ColorSchemeDocument.restore()` runs before render. Task 10 adds the icon set to `appearance-page.tsx` and the `appearance` feature.
+- Frontend: `AppearanceProvider` (shared/appearance) wraps both apps; `ColorSchemeDocument.restore()` runs before render. KI-6 adds the icon set to `appearance-page.tsx` and the `appearance` feature (moved from Task 10, 2026-11-09).

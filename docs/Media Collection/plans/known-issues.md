@@ -18,7 +18,7 @@ design.
 | KI-3 | Improvement | Additional information uses the same numbered heading as the other book-form sections | Low      | Open   |
 | KI-4 | Improvement | Libris has an application icon in the Windows taskbar                                 | Low      | Done   |
 | KI-5 | Bug         | Bookshelves count not vertically centred with the search field                        | Low      | Open   |
-| KI-6 | Improvement | Appearance offers seven new colour schemes; Mint, Emerald and Forest are removed      | Medium   | Open   |
+| KI-6 | Improvement | Appearance: seven new colour schemes (Mint, Emerald, Forest removed) and the icon set choice | Medium | Open |
 | KI-7 | Improvement | Interface text needs slightly wider letter spacing                                    | Low      | Open   |
 | KI-8 | Improvement | Server settings addresses need more space between them                                | Low      | Done   |
 | KI-9 | Improvement | Internet access: no automatic Let's Encrypt retries, estimated attempts left           | Medium   | Open   |
@@ -88,10 +88,11 @@ design.
   1280 × 720 and 1440 wide, in English and French.
 - **Severity:** low (visual alignment). **Planned:** next fix pass, or the next task that touches the Bookshelves page.
 
-### KI-6 — Appearance offers seven new colour schemes; Mint, Emerald and Forest are removed
+### KI-6 — Appearance: seven new colour schemes (Mint, Emerald, Forest removed) and the icon set choice
 
 - **Type:** Improvement.
-- **Reported:** 2026-11-08 by the user.
+- **Reported:** 2026-11-08 by the user. **Extended 2026-11-09:** the icon set choice (with the credits and licences
+  page it needs) moved here from Task 10, so the whole Appearance update is done at once.
 - **Asked:** the Admin's Appearance page (Task 1b) offers these schemes, taken from the design (Doop canvas
   `shiKEeCX2V`; first read from the former Pen file `design/media-collection-v3.pen`, whose group numbers are kept
   below):
@@ -134,11 +135,54 @@ design.
     for the setting, component tests for the Appearance page, a browser journey choosing a new scheme (Libris and
     Leaf), and a contrast check of the text and accent pairs of every scheme.
   - Update the design guidelines (colour schemes) and the Task 1b notes.
+- **Icon sets (moved from Task 10, 2026-11-09):**
+  - **Rule** ([design guidelines](../design/design-guidelines.md), icon sets): the Admin chooses the installation's
+    icon set on the same Appearance page; it applies to every account, in Libris and Leaf, including before sign-in.
+    Lucide is the default. It is a saved preference: in backups, back to Lucide after the Admin data reset (add it to
+    `KyselyApplicationDataEraser.preferences`, next to `appearance`, see [Task 9](task-09-host-maintenance.md)).
+  - **Sets:** 00 Lucide (ISC), 01 Solid silhouettes (game-icons.net, CC BY 3.0), 02 Hand-inked editorial sketches
+    (Streamline Freehand, CC BY 4.0), 03 Architectural wireframes (Streamline Cyber, CC BY 4.0), 04 Single-ink
+    risograph prints (Streamline Ultimate, CC BY 4.0), 05 Quiet editorial monoline (Iconoir, MIT). Each alternative set
+    covers 25 named purposes; small utility icons (close, chevrons, check, add, edit, delete) stay Lucide in every set.
+    The Libris icon never changes with the set.
+  - **Turning leaf (added 2026-11-09):** a 25th purpose in every set, `turning-leaf.svg` in each set folder (from the Doop
+    canvas `shiKEeCX2V`, "01 Turning leaf" of each style). Generated with GPT Astra in the style of each set; checked
+    original on 2026-11-09 (no path shared with the set's icons or the leaf icons of Lucide, Iconoir and Game Icons;
+    pixel overlap no higher than with unrelated icons), so no pack licence applies. Its origin is recorded in
+    `design/artifact/icons/CREDITS.md`, `SOURCES-AND-LICENSES.json` and `manifest.json` (source
+    `generated:gpt-astra`), and the credits page says these icons were generated in the style of the sets. Where Libris
+    and Leaf show it: **decided 2026-11-09, the Turning leaf is Leaf's application icon and favicon** (and the mark
+    next to the "Leaf" title). To build: Leaf's favicon, its home-screen icon (web app manifest and Apple touch icon,
+    PNG sizes generated from the SVG) and its title mark, in Leaf only (Libris keeps its own icon). Version (decided
+    2026-11-09): fixed like the Libris icon, the set 02 hand-inked Turning leaf
+    (`02-hand-inked-editorial/turning-leaf.svg`) in Spring green `#79d670`, whatever the colour scheme or icon set. Tests: the Leaf page links the favicon and the manifest,
+    the manifest lists the icons, the title mark renders.
+  - **Artwork:** `design/artifact/icons/` (six set folders, `manifest.json`, `CREDITS.md`,
+    `SOURCES-AND-LICENSES.json`). The `design/` folder is Git-ignored: the shipped SVG files are copied into the web
+    app with their credits.
+  - **Today:** every icon goes through `apps/web/src/shared/ui/icon.tsx`, which only knows Lucide (the abstraction was
+    made for set switching, Task 0).
+  - **Fix:**
+    - **Server:** the icon set setting in the `appearance` feature (value object with the six names, unknown names
+      refused, Lucide by default), read before sign-in like the colour scheme, saved by the Admin, audited.
+    - **Web:** `Icon` picks the chosen set for the 24 purposes and falls back to Lucide for the others; the Appearance
+      page shows each set with a preview of a few icons, names in EN/FR, Lucide marked as the default.
+    - **Credits and licences page** (required by the CC BY sets 01-04): reachable without signing in, listing every
+      bundled icon pack, font and third-party asset with author, licence, required attribution and whether it was
+      modified: the icon sets (with a line saying the Turning leaf icons were generated in the style of the sets), the
+      Libris icon (Streamline Freehand, CC BY 4.0, modified,
+      `apps/desktop/assets/icons/CREDITS.md`), and the credits already listed in
+      [Task 6](task-06-assisted-entry.md#credits-for-the-future-credits-page),
+      [Task 7](task-07-leaf.md#credits-for-the-future-credits-page) and Task 9.5 (ACME client, NAT library, QR code
+      library). Task 10's About window links to it.
+    - **Tests:** value object and use cases, API tests (setting, before sign-in, Admin only, audit), the data reset
+      returning to Lucide, component tests (Appearance page, `Icon` with each set and the Lucide fallback, credits
+      page), a browser journey choosing a set (Libris and Leaf).
 - **Source:** the design as saved by the user on 2026-11-08 (groups 13 to 15 keep only these schemes), now on the Doop
   canvas `shiKEeCX2V`: find the groups by their names above and check the colours against the canvas before the fix. The light
   schemes are out of scope: Libris and Leaf are dark only.
-- **Severity:** medium (visible choice, touches every screen's colours). **Planned:** next fix pass, or Task 10 with
-  the icon sets on the same Appearance page, whichever comes first.
+- **Severity:** medium (visible choice, touches every screen's colours and icons). **Planned:** next fix pass,
+  before Task 10.
 
 ### KI-7 — Interface text needs slightly wider letter spacing
 

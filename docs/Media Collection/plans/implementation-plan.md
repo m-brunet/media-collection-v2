@@ -73,7 +73,7 @@ Owning docs: `../product/accounts.md`, `../product/features.md` (accounts, audit
 
 ### Task 1b — Appearance: colour schemes
 Inserted at the user's request (2026-11-04). Owning doc: `../design/design-guidelines.md`; source `design/color-charts.html`.
-- Installation-wide colour scheme (Mint, Emerald, Forest, Spring green; default Spring green) chosen by the Admin, applied to Libris and Leaf including before sign-in. Task 10 adds the icon set to the same Appearance page.
+- Installation-wide colour scheme (Mint, Emerald, Forest, Spring green; default Spring green) chosen by the Admin, applied to Libris and Leaf including before sign-in. KI-6 adds the new colour schemes and the icon set to the same Appearance page (moved from Task 10, 2026-11-09).
 
 ### Task 2 — Books (core library)
 Owning docs: `../product/features.md` (books), `../product/book-entry.md`, `../product/collection-editions-impact.md`.
@@ -153,11 +153,8 @@ Inserted at the user's request (2026-11-09). Owning docs: same as Task 9.5. Plan
 Owning docs: `../operations/updates.md`, `../design/design-guidelines.md`. Brief with the decisions made on 2026-11-08
 (version 2.0.0, update flow from the menu, menus, About window, backup folder, builds): [task-10-release-readiness](task-10-release-readiness.md).
 - GitHub Releases update checks, Windows integrated download/install with automatic backup, macOS/Linux backup-and-open-download-page, backup folder, failure handling.
-- Packaging/installer naming; icon set switching (Admin setting) and credits/licences page (include the lookup
-  sources and image libraries listed in [Task 6 · Credits](task-06-assisted-entry.md#credits-for-the-future-credits-page)
-  and the barcode libraries in [Task 7 · Credits](task-07-leaf.md#credits-for-the-future-credits-page), and the
-  Libris icon: Streamline Freehand, CC BY 4.0, see `apps/desktop/assets/icons/CREDITS.md`); the installer uses the
-  Libris icon files in `apps/desktop/assets/icons`.
+- Packaging/installer naming; the installer uses the Libris icon files in `apps/desktop/assets/icons`. The icon set
+  choice and the credits/licences page moved to KI-6 (2026-11-09); Task 10 checks the credits page is complete.
 
 ## Dependencies
 
