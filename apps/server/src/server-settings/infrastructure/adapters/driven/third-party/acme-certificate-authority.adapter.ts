@@ -3,6 +3,7 @@ import { X509Certificate } from 'node:crypto';
 import type {
     CertificateAuthority,
     CertificateIssue,
+    CertificateSubject,
 } from '../../../../application/ports/driven/certificate-authority.interface.js';
 import type { AcmeAccountKey } from '../filesystem/acme-account-key.adapter.js';
 import type { TlsAlpnChallenges } from '../security/tls-alpn-challenges.adapter.js';
@@ -10,8 +11,9 @@ import type { AcmeConnector } from './acme-session.adapter.js';
 
 type Refusal = Extract<CertificateIssue, { outcome: 'refused' }>['reason'];
 
-// Let's Encrypt, short-lived IP address certificates proven with TLS-ALPN-01: the HTTPS listener
-// answers the check through the shared challenge store.
+// Let's Encrypt certificates proven with TLS-ALPN-01, the HTTPS listener answering the check
+// through the shared challenge store: short-lived for an IP address (the only profile Let's Encrypt
+// allows for one), classic (90 days today) for a domain name.
 export class AcmeCertificateAuthority implements CertificateAuthority {
     constructor(
         private readonly connector: AcmeConnector,
@@ -19,14 +21,16 @@ export class AcmeCertificateAuthority implements CertificateAuthority {
         private readonly challenges: TlsAlpnChallenges,
     ) {}
 
-    async issue(address: string): Promise<CertificateIssue> {
+    async issue(subject: CertificateSubject): Promise<CertificateIssue> {
         const client = this.connector.open(await this.accountKey.load());
 
         try {
             await client.createAccount({ termsOfServiceAgreed: true });
             const order = await client.createOrder({
-                identifiers: [{ type: 'ip', value: address }],
-                profile: 'shortlived',
+                identifiers: [
+                    { type: subject.kind === 'domain' ? 'dns' : 'ip', value: subject.name },
+                ],
+                profile: subject.kind === 'domain' ? 'classic' : 'shortlived',
             } as Parameters<typeof client.createOrder>[0]);
             const [authorization] = await client.getAuthorizations(order);
             const challenge = authorization?.challenges.find(
@@ -38,13 +42,13 @@ export class AcmeCertificateAuthority implements CertificateAuthority {
                 return { outcome: 'refused', reason: 'authority-unavailable' };
             }
 
-            const proven = await this.prove(client, authorization, challenge, address);
+            const proven = await this.prove(client, authorization, challenge, subject);
 
             if (proven) {
                 return { outcome: 'refused', reason: proven };
             }
 
-            const [key, request] = await acme.crypto.createCsr({ altNames: [address] });
+            const [key, request] = await acme.crypto.createCsr({ altNames: [subject.name] });
             const finalized = await client.finalizeOrder(order, request);
             const chain = await client.getCertificate(finalized);
             const leaf = new X509Certificate(chain);
@@ -68,7 +72,7 @@ export class AcmeCertificateAuthority implements CertificateAuthority {
         client: ReturnType<AcmeConnector['open']>,
         authorization: acme.Authorization,
         challenge: acme.Authorization['challenges'][number],
-        address: string,
+        subject: CertificateSubject,
     ): Promise<Refusal | null> {
         const keyAuthorization = await client.getChallengeKeyAuthorization(challenge);
         const [key, cert] = await acme.crypto.createAlpnCertificate(
@@ -76,7 +80,7 @@ export class AcmeCertificateAuthority implements CertificateAuthority {
             keyAuthorization,
         );
 
-        this.challenges.add(address, { key: key.toString(), cert: cert.toString() });
+        this.challenges.add(subject, { key: key.toString(), cert: cert.toString() });
 
         try {
             await client.completeChallenge(challenge);
@@ -88,7 +92,7 @@ export class AcmeCertificateAuthority implements CertificateAuthority {
 
             return refusal === 'rate-limited' ? refusal : 'not-reachable';
         } finally {
-            this.challenges.remove(address);
+            this.challenges.remove(subject);
         }
     }
 

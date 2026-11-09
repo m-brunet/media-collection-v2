@@ -33,6 +33,7 @@ import { NodeHttpsRuntime } from '../../server-settings/infrastructure/adapters/
 import { KyselyKeepAwakeRepository } from '../../server-settings/infrastructure/adapters/driven/persistence/kysely-keep-awake.repository.js';
 import { UpnpRouterGateway } from '../../server-settings/infrastructure/adapters/driven/third-party/upnp-router-gateway.adapter.js';
 import { HttpPublicAddressProbe } from '../../server-settings/infrastructure/adapters/driven/third-party/http-public-address-probe.adapter.js';
+import { DnsDomainNameResolver } from '../../server-settings/infrastructure/adapters/driven/runtime/dns-domain-name-resolver.adapter.js';
 import { AcmeCertificateAuthority } from '../../server-settings/infrastructure/adapters/driven/third-party/acme-certificate-authority.adapter.js';
 import { AcmeConnector } from '../../server-settings/infrastructure/adapters/driven/third-party/acme-session.adapter.js';
 import { AcmeAccountKey } from '../../server-settings/infrastructure/adapters/driven/filesystem/acme-account-key.adapter.js';
@@ -41,6 +42,7 @@ import { DetachedBackgroundTasks } from '../../server-settings/infrastructure/ad
 import type { RouterGateway } from '../../server-settings/application/ports/driven/router-gateway.interface.js';
 import type { CertificateAuthority } from '../../server-settings/application/ports/driven/certificate-authority.interface.js';
 import type { PublicAddressProbe } from '../../server-settings/application/ports/driven/public-address-probe.interface.js';
+import type { DomainNameResolver } from '../../server-settings/application/ports/driven/domain-name-resolver.interface.js';
 import { IdentityModule } from '../../identity/infrastructure/config/identity.module.js';
 import { SettingsModule } from '../../server-settings/infrastructure/config/settings.module.js';
 import { HttpSessions } from '../../shared/infrastructure/adapters/driving/web/http-sessions.service.js';
@@ -68,11 +70,12 @@ export interface BackendOptions {
     lookupAddresses?: LookupAddresses;
     // Per-launch secret that the Electron window attaches to first-launch setup requests.
     setupToken?: string;
-    // Test-only: stand-ins for the router, Let's Encrypt and the public address service.
+    // Test-only: stand-ins for the router, Let's Encrypt, the public address service and DNS.
     internetAccess?: {
         router: RouterGateway;
         authority: CertificateAuthority;
         probe: PublicAddressProbe;
+        resolver: DomainNameResolver;
     };
     // Called at startup and on each change of the keep-awake setting (the desktop host applies it).
     onKeepAwake?: (enabled: boolean) => void;
@@ -220,6 +223,7 @@ export class BackendRuntime {
                     challenges,
                 ),
                 probe: new HttpPublicAddressProbe(),
+                resolver: new DnsDomainNameResolver(),
             };
 
             https = runtime;

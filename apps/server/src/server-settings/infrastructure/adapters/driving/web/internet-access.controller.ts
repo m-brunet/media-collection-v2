@@ -10,6 +10,8 @@ import type { InternetAccessStatus } from '../../../../../../../../packages/cont
 
 const setUpSchema = z.strictObject({
     replaceCertificate: z.boolean().optional(),
+    // Checked by the domain (`domain-name-invalid`); blank or null means no domain name.
+    domain: z.string().max(260).nullable().optional(),
 });
 
 // The setup and the check answer at once (202); the page follows the steps with the settings.
@@ -35,6 +37,7 @@ export class InternetAccessController {
     ): Promise<InternetAccessStatus> {
         await this.setUp.execute(request.actor, {
             replaceCertificate: input.replaceCertificate ?? false,
+            domain: input.domain ?? null,
         });
 
         return this.read.execute(request.actor);
