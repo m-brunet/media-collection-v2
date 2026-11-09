@@ -651,7 +651,8 @@ export default {
                         return;
                     }
 
-                    const to = classify(root, realpathSync(result.path));
+                    // Bundler queries (for example Vite's `?raw`) name the same file.
+                    const to = classify(root, realpathSync(result.path.replace(/\?.*$/, '')));
 
                     if (!permitted(from, to)) {
                         context.report({

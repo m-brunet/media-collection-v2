@@ -5,9 +5,13 @@ import type { ColorSchemeName } from '../../../../../packages/contracts/src/http
 export class ColorSchemeDocument {
     static readonly names: readonly ColorSchemeName[] = [
         'spring-green',
-        'mint',
-        'emerald',
-        'forest',
+        'midnight-blue',
+        'velvet-violet',
+        'ember',
+        'rose-noir',
+        'graphite-gold',
+        'slate-orchid',
+        'charcoal-scarlet',
     ];
     private static readonly key = 'media-collection.color-scheme';
 

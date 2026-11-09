@@ -33,7 +33,7 @@ beforeEach(async () => {
         role: 'guest',
     });
     await api.call('/tags', 'POST', { name: 'Signed copies' });
-    await api.call('/appearance', 'PUT', { colorScheme: 'mint' });
+    await api.call('/appearance', 'PUT', { colorScheme: 'midnight-blue' });
 });
 afterEach(async () => {
     await browser.closeContexts();

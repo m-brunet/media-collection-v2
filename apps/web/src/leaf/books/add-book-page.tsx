@@ -122,7 +122,9 @@ function AddBookForm({ isbn, lookup }: AddBookState) {
             intro={t('leaf.form.intro')}
         >
             {unavailable && (
-                <Notice tone="warning">{t('lookup.partial', { sources: unavailable })}</Notice>
+                <Notice tone="warning" icon="lookup-offline">
+                    {t('lookup.partial', { sources: unavailable })}
+                </Notice>
             )}
             <form className="leaf-form" onSubmit={submit} noValidate>
                 <LeafBookFields

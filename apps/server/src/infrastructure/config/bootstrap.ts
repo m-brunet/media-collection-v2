@@ -53,6 +53,7 @@ import { HealthController } from '../adapters/driving/web/health.controller.js';
 import { LibraryModules } from './library-modules.js';
 import { AppearanceModule } from '../../appearance/infrastructure/config/appearance.module.js';
 import { KyselyAppearanceRepository } from '../../appearance/infrastructure/adapters/driven/persistence/kysely-appearance.repository.js';
+import { KyselyIconSetRepository } from '../../appearance/infrastructure/adapters/driven/persistence/kysely-icon-set.repository.js';
 import { MaintenanceModule } from '../../maintenance/infrastructure/config/maintenance.module.js';
 import { KyselyApplicationDataEraser } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-application-data-eraser.adapter.js';
 import { KyselyLibraryEraser } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-library-eraser.adapter.js';
@@ -287,6 +288,7 @@ export class BackendRuntime {
                         }),
                         AppearanceModule.register(
                             new KyselyAppearanceRepository(database.connections, ids),
+                            new KyselyIconSetRepository(database.connections, ids),
                             operations,
                         ),
                         MaintenanceModule.register({
