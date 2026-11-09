@@ -4,6 +4,7 @@ import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import type { InternetAccessState } from '../../domain/entities/internet-access.entity.js';
 import type { BackgroundTasks } from '../ports/driven/background-tasks.interface.js';
+import type { DomainNameReader } from '../ports/driven/domain-name-reader.interface.js';
 import type { InternetAccessStore } from '../ports/driven/internet-access-store.interface.js';
 import type { TlsSettingsReader } from '../ports/driven/tls-settings-reader.interface.js';
 import type { SetUpInternetAccessUseCase } from '../ports/driving/set-up-internet-access-use-case.interface.js';
@@ -14,6 +15,7 @@ export class SetUpInternetAccess implements SetUpInternetAccessUseCase {
     constructor(
         private readonly store: InternetAccessStore,
         private readonly tls: TlsSettingsReader,
+        private readonly names: DomainNameReader,
         private readonly setup: InternetAccessSetup,
         private readonly background: BackgroundTasks,
         private readonly operations: AuditedOperation,
@@ -21,7 +23,7 @@ export class SetUpInternetAccess implements SetUpInternetAccessUseCase {
 
     async execute(
         actor: Actor,
-        input: { replaceCertificate: boolean; domain: string | null },
+        input: { replaceCertificate: boolean },
     ): Promise<InternetAccessState> {
         const state = await this.operations.run(
             {
@@ -44,7 +46,7 @@ export class SetUpInternetAccess implements SetUpInternetAccessUseCase {
                     );
                 }
 
-                access.start(input.domain);
+                access.start(await this.names.read());
                 await this.store.save(access);
 
                 return {

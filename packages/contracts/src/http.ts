@@ -59,7 +59,7 @@ export interface InternetAccessStatus {
     step: 'router' | 'port' | 'certificate' | null;
     mapping: 'upnp' | 'nat-pmp' | 'manual' | null;
     publicAddress: string | null;
-    // The Admin's own domain name; the certificate and the address phones open use it.
+    // The domain name the HTTPS certificate uses (follows the saved domain name).
     domain: string | null;
     // `address` is the IP address or the domain name the certificate covers.
     certificate: { address: string; issuedAt: string; expiresAt: string } | null;
@@ -84,6 +84,8 @@ export interface ServerStatus {
     };
     internetAccess: InternetAccessStatus;
     keepAwake: boolean;
+    // The Admin's domain name, used by the internet addresses; checked when saved.
+    domainName: string | null;
     running: {
         httpPort: number;
         httpsPort: number | null;

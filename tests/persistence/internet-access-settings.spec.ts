@@ -3,6 +3,8 @@ import { randomUUID } from 'node:crypto';
 import { Database } from '../../apps/server/src/shared/infrastructure/adapters/driven/persistence/database.adapter.js';
 import { UuidGenerator } from '../../apps/server/src/shared/infrastructure/adapters/driven/runtime/uuid-generator.adapter.js';
 import { KyselyInternetAccessRepository } from '../../apps/server/src/server-settings/infrastructure/adapters/driven/persistence/kysely-internet-access.repository.js';
+import { KyselyDomainNameRepository } from '../../apps/server/src/server-settings/infrastructure/adapters/driven/persistence/kysely-domain-name.repository.js';
+import { DomainName } from '../../apps/server/src/server-settings/domain/value-objects/domain-name.value-object.js';
 import { KyselyKeepAwakeRepository } from '../../apps/server/src/server-settings/infrastructure/adapters/driven/persistence/kysely-keep-awake.repository.js';
 import { InternetAccess } from '../../apps/server/src/server-settings/domain/entities/internet-access.entity.js';
 import { DataDirectories } from './data-directories.test-support.js';
@@ -178,4 +180,50 @@ it('saves the domain name', async () => {
     const read = await repository.read();
 
     expect([read.phase, read.domain]).toEqual(['off', 'home.example.fr']);
+});
+it('reads no domain name when none was saved', async () => {
+    const { database } = await open();
+    const repository = new KyselyDomainNameRepository(database.connections, new UuidGenerator());
+
+    const name = await repository.read();
+
+    expect(name).toBeNull();
+});
+it('keeps the saved domain name across a restart', async () => {
+    const first = await open();
+
+    await new KyselyDomainNameRepository(first.database.connections, new UuidGenerator()).save(
+        DomainName.optional('home.example.fr'),
+    );
+    await first.database.close();
+    databases.splice(0);
+    const { database } = await open(first.path);
+    const repository = new KyselyDomainNameRepository(database.connections, new UuidGenerator());
+
+    const name = await repository.read();
+
+    expect(name).toBe('home.example.fr');
+});
+it('removes the saved domain name', async () => {
+    const { database } = await open();
+    const repository = new KyselyDomainNameRepository(database.connections, new UuidGenerator());
+
+    await repository.save(DomainName.optional('home.example.fr'));
+
+    await repository.save(null);
+
+    expect(await repository.read()).toBeNull();
+});
+it('rejects a saved domain name setting without a name', async () => {
+    const { database } = await open();
+
+    await database.connection
+        .insertInto('server_settings')
+        .values({ id: randomUUID(), name: 'domain-name', value: '{"domain":"home.example.fr"}' })
+        .execute();
+    const repository = new KyselyDomainNameRepository(database.connections, new UuidGenerator());
+
+    const result = repository.read();
+
+    await expect(result).rejects.toThrow('must hold a name or null');
 });

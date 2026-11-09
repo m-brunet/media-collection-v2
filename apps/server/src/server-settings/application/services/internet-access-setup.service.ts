@@ -3,6 +3,7 @@ import { InternetAccess } from '../../domain/entities/internet-access.entity.js'
 import type { InternetAccessFailureReason } from '../../domain/entities/internet-access.entity.js';
 import { TlsSettings } from '../../domain/value-objects/tls-settings.value-object.js';
 import type { CertificateAuthority } from '../ports/driven/certificate-authority.interface.js';
+import type { DomainNameReader } from '../ports/driven/domain-name-reader.interface.js';
 import type { HttpsRuntime } from '../ports/driven/https-runtime.interface.js';
 import type { InternetAccessStore } from '../ports/driven/internet-access-store.interface.js';
 import type { PublicAddressProbe } from '../ports/driven/public-address-probe.interface.js';
@@ -23,6 +24,7 @@ export class InternetAccessSetup {
         private readonly https: HttpsRuntime,
         private readonly tls: TlsStore,
         private readonly domains: DomainNameCheck,
+        private readonly names: DomainNameReader,
         private readonly clock: Clock,
     ) {}
 
@@ -40,6 +42,28 @@ export class InternetAccessSetup {
 
     async check(): Promise<void> {
         await this.guarded((access) => this.obtain(access));
+    }
+
+    // After the Admin saved another domain name: while HTTPS is on, get a certificate for it at once.
+    // A failure keeps the current certificate, like an upkeep failure.
+    async followDomain(): Promise<void> {
+        const access = await this.store.read();
+        const saved = await this.names.read();
+
+        if (access.phase !== 'active' || access.domain === saved) {
+            return;
+        }
+
+        access.useDomain(saved);
+        const reason = await this.renew(access).catch(() => 'setup-failed' as const);
+
+        if (reason) {
+            access.upkeepFailed(reason, this.clock.now());
+        } else {
+            access.upkeepSucceeded();
+        }
+
+        await this.store.save(access);
     }
 
     // Gets and installs a certificate for the domain name, or else the current public address. Used

@@ -2,6 +2,7 @@ import type { Clock } from '../../../shared/application/ports/driven/clock.inter
 import { InternetAccess } from '../../domain/entities/internet-access.entity.js';
 import type { InternetAccessFailureReason } from '../../domain/entities/internet-access.entity.js';
 import { ConnectionClass } from '../../domain/value-objects/connection-class.value-object.js';
+import type { DomainNameReader } from '../ports/driven/domain-name-reader.interface.js';
 import type { InternetAccessStore } from '../ports/driven/internet-access-store.interface.js';
 import type { PublicAddressProbe } from '../ports/driven/public-address-probe.interface.js';
 import type { RouterGateway } from '../ports/driven/router-gateway.interface.js';
@@ -21,6 +22,7 @@ export class MaintainInternetAccess implements MaintainInternetAccessUseCase {
         private readonly tls: TlsSettingsReader,
         private readonly setup: InternetAccessSetup,
         private readonly domains: DomainNameCheck,
+        private readonly names: DomainNameReader,
         private readonly clock: Clock,
     ) {}
 
@@ -70,6 +72,12 @@ export class MaintainInternetAccess implements MaintainInternetAccessUseCase {
 
         if (connection.address !== access.publicAddress) {
             access.addressChanged(connection.address);
+        }
+
+        const saved = await this.names.read();
+
+        if (saved !== access.domain) {
+            access.useDomain(saved);
         }
 
         const problem = await this.domains.problem(access);
