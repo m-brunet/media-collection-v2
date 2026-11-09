@@ -53,3 +53,41 @@ it('records an unexpected upkeep error as a failure', async () => {
 
     expect([store.current.phase, store.current.failure?.reason]).toEqual(['open', 'setup-failed']);
 });
+it('reports the kept rule and its public address', async () => {
+    const doubles = InternetAccessDoubles.setup();
+    const { subject } = subjectFor(doubles);
+
+    const outcome = await subject.execute();
+
+    expect(outcome).toEqual({ rule: 'kept', address: '82.66.118.204', problem: null });
+});
+it('reports a rule that could not be kept', async () => {
+    const doubles = InternetAccessDoubles.setup();
+    const { subject } = subjectFor(doubles);
+
+    doubles.router.connection = null;
+
+    const outcome = await subject.execute();
+
+    expect(outcome).toEqual({ rule: 'failed', reason: 'no-router' });
+});
+it('reports an unexpected upkeep error as a rule not kept', async () => {
+    const doubles = InternetAccessDoubles.setup();
+    const { subject } = subjectFor(doubles);
+
+    doubles.router.find = async () => {
+        throw new Error('network down');
+    };
+
+    const outcome = await subject.execute();
+
+    expect(outcome).toEqual({ rule: 'failed', reason: 'setup-failed' });
+});
+it('reports no rule while closed', async () => {
+    const doubles = InternetAccessDoubles.setup();
+    const { subject } = subjectFor(doubles, new MemoryHttpInternetAccessStore());
+
+    const outcome = await subject.execute();
+
+    expect(outcome).toEqual({ rule: 'none' });
+});

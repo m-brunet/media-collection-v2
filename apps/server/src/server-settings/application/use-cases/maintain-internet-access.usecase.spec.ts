@@ -330,3 +330,55 @@ it('follows a domain name saved since the last certificate', async () => {
         [{ kind: 'domain', name: 'home.example.fr' }],
     ]);
 });
+it('reports the kept rule and its public address', async () => {
+    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());
+    const subject = subjectFor(doubles);
+
+    const outcome = await subject.execute();
+
+    expect(outcome).toEqual({ rule: 'kept', address: publicAddress, problem: null });
+});
+it('reports a kept rule with the certificate failure still shown', async () => {
+    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());
+    const subject = subjectFor(doubles);
+
+    doubles.clock.time = halfLife;
+    doubles.authority.refusal = 'authority-unavailable';
+
+    const outcome = await subject.execute();
+
+    expect(outcome).toEqual({
+        rule: 'kept',
+        address: publicAddress,
+        problem: 'authority-unavailable',
+    });
+});
+it('reports a rule that could not be kept', async () => {
+    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());
+    const subject = subjectFor(doubles);
+
+    doubles.router.connection = null;
+
+    const outcome = await subject.execute();
+
+    expect(outcome).toEqual({ rule: 'failed', reason: 'no-router' });
+});
+it('reports an unexpected certificate error with the rule kept', async () => {
+    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());
+    const subject = subjectFor(doubles);
+
+    doubles.clock.time = halfLife;
+    doubles.authority.failure = new Error('network down');
+
+    const outcome = await subject.execute();
+
+    expect(outcome).toEqual({ rule: 'kept', address: publicAddress, problem: 'setup-failed' });
+});
+it('reports no rule while internet access is off', async () => {
+    const doubles = InternetAccessDoubles.setup();
+    const subject = subjectFor(doubles);
+
+    const outcome = await subject.execute();
+
+    expect(outcome).toEqual({ rule: 'none' });
+});

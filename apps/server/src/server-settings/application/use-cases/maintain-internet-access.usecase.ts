@@ -4,7 +4,10 @@ import type { InternetAccessFailureReason } from '../../domain/entities/internet
 import type { DomainNameReader } from '../ports/driven/domain-name-reader.interface.js';
 import type { InternetAccessStore } from '../ports/driven/internet-access-store.interface.js';
 import type { TlsSettingsReader } from '../ports/driven/tls-settings-reader.interface.js';
-import type { MaintainInternetAccessUseCase } from '../ports/driving/maintain-internet-access-use-case.interface.js';
+import type {
+    MaintainInternetAccessUseCase,
+    RuleUpkeepOutcome,
+} from '../ports/driving/maintain-internet-access-use-case.interface.js';
 import type { DomainNameCheck } from '../services/domain-name-check.service.js';
 import type { InternetAccessSetup } from '../services/internet-access-setup.service.js';
 import type { RouterRules } from '../services/router-rules.service.js';
@@ -24,7 +27,7 @@ export class MaintainInternetAccess implements MaintainInternetAccessUseCase {
         private readonly clock: Clock,
     ) {}
 
-    async execute(): Promise<void> {
+    async execute(): Promise<RuleUpkeepOutcome> {
         const access = await this.store.read();
         const now = this.clock.now();
 
@@ -32,18 +35,25 @@ export class MaintainInternetAccess implements MaintainInternetAccessUseCase {
             access.interrupted(now);
             await this.store.save(access);
 
-            return;
+            return { rule: 'none' };
         }
 
         if (access.phase !== 'active') {
-            return;
+            return { rule: 'none' };
         }
 
-        await this.upkeep(access, now).catch(() => access.upkeepFailed('setup-failed', now));
+        const outcome = await this.upkeep(access, now).catch((): RuleUpkeepOutcome => {
+            access.upkeepFailed('setup-failed', now);
+
+            return { rule: 'failed', reason: 'setup-failed' };
+        });
+
         await this.store.save(access);
+
+        return outcome;
     }
 
-    private async upkeep(access: InternetAccess, now: Date): Promise<void> {
+    private async upkeep(access: InternetAccess, now: Date): Promise<RuleUpkeepOutcome> {
         const { port } = await this.tls.read();
         const kept = await this.rules.keep(
             { externalPort: InternetAccess.externalPort, internalPort: port },
@@ -53,7 +63,7 @@ export class MaintainInternetAccess implements MaintainInternetAccessUseCase {
         if (kept.outcome === 'failed') {
             access.ruleFailed(kept.reason, now);
 
-            return;
+            return { rule: 'failed', reason: kept.reason };
         }
 
         access.ruleKept();
@@ -62,17 +72,23 @@ export class MaintainInternetAccess implements MaintainInternetAccessUseCase {
             access.addressChanged(kept.address);
         }
 
-        if (!access.upkeepDue(now)) {
-            return;
+        if (access.upkeepDue(now)) {
+            const reason = await this.certificateUpkeep(access).catch(
+                () => 'setup-failed' as const,
+            );
+
+            if (reason) {
+                access.upkeepFailed(reason, now);
+            } else {
+                access.upkeepSucceeded();
+            }
         }
 
-        const reason = await this.certificateUpkeep(access);
-
-        if (reason) {
-            access.upkeepFailed(reason, now);
-        } else {
-            access.upkeepSucceeded();
-        }
+        return {
+            rule: 'kept',
+            address: kept.address,
+            problem: access.snapshot.failure?.reason ?? null,
+        };
     }
 
     private async certificateUpkeep(
