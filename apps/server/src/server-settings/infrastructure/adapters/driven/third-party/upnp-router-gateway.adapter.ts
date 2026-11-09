@@ -4,17 +4,25 @@ import type { PortRule } from '../../../../application/ports/driven/port-rule.in
 import type { RouterConnection } from '../../../../application/ports/driven/router-connection.interface.js';
 import type { RouterGateway } from '../../../../application/ports/driven/router-gateway.interface.js';
 
+type Gateway = Awaited<ReturnType<UpnpClient['findGateway']>>;
+
 // The home router through UPnP. Each call opens a short-lived client: the router may have
 // restarted or changed since the last call.
 export class UpnpRouterGateway implements RouterGateway {
-    // The hourly upkeep renews the rule well before this lease ends.
+    // The upkeep renews the rule well before this lease ends.
     private static readonly leaseSeconds = 2 * 60 * 60;
     private static readonly description = 'Media Collection';
 
+    // The router search is one multicast question answered within 1.8 seconds, or not at all: a
+    // missed answer is asked again before the call fails.
+    constructor(
+        private readonly connect: () => Promise<UpnpClient> = createUpnpClient,
+        private readonly searches = 3,
+        private readonly pause = 1000,
+    ) {}
+
     async find(): Promise<RouterConnection | null> {
         return this.with(async (client) => {
-            await client.findGateway();
-
             return { mapping: 'upnp' as const, externalAddress: await client.externalIp() };
         }).catch(() => null);
     }
@@ -44,12 +52,37 @@ export class UpnpRouterGateway implements RouterGateway {
     }
 
     private async with<T>(work: (client: UpnpClient) => Promise<T>): Promise<T> {
-        const client = await createUpnpClient();
+        const client = await this.found();
 
         try {
             return await work(client);
         } finally {
             client.destroy();
+        }
+    }
+
+    // A client that has found the router. The library searches again on each call (its cache
+    // check is inverted), so the client keeps the router it found for the calls that follow.
+    private async found(): Promise<UpnpClient> {
+        for (let search = 1; ; search++) {
+            const client = await this.connect();
+            const gateway = await client.findGateway().catch((error: unknown) => {
+                client.destroy();
+
+                if (search >= this.searches) {
+                    throw error;
+                }
+
+                return null;
+            });
+
+            if (gateway) {
+                client.findGateway = (): Promise<Gateway> => Promise.resolve(gateway);
+
+                return client;
+            }
+
+            await new Promise((resolve) => setTimeout(resolve, this.pause));
         }
     }
 }
