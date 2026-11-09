@@ -100,6 +100,10 @@ design.
   - the **five dark schemes** of group 13 "Appearance collection — 10 non-green themes": Midnight blue, Velvet violet,
     Ember, Rose noir, Graphite gold;
   - group 14 "Dark Purple": **Slate × Orchid**;
+
+  Display names (2026-11-09): Velvet violet is shown as "Desna’s reveries" and Slate × Orchid as "The Butterfly’s
+  Way" (FR "Rêveries de Desna", "La Voie du papillon"); the design keeps its names, the identifiers stay
+  `velvet-violet` and `slate-orchid`.
   - group 15 "Red study": **Warm charcoal × Soft scarlet**.
 
   **Mint, Emerald and Forest are removed.**
