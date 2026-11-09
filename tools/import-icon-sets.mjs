@@ -4,12 +4,11 @@
 //
 //   node tools/import-icon-sets.mjs
 //
-// The artwork's colours become the colour scheme's (the user's choice, 2026-11-09): green and the
-// blueprint blue become the accent, grey the secondary text colour, gold and orange the warning
-// colour; `currentColor` already follows the text. SVG presentation attributes cannot hold CSS
-// variables, so those colours move into inline `style`. Internal ids (masks, patterns) are
-// prefixed per icon so two icons on one page never share an id. Set 00 (Lucide) is not copied:
-// the app draws it with lucide-react.
+// The artwork follows the text colour like Lucide (2026-11-09): grey in a normal link, the accent
+// in a selected one. Each icon's main colour becomes `currentColor`; its other tones (the design's
+// green highlights, gold details) become `currentColor` at 60 % opacity, which keeps the two-tone
+// drawing. Internal ids (masks, patterns) are prefixed per icon so two icons on one page never
+// share an id. Set 00 (Lucide) is not copied: the app draws it with lucide-react.
 import { copyFileSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -25,54 +24,39 @@ const sets = {
     '04-single-ink-risograph': 'single-ink-risograph',
     '05-quiet-editorial-monoline': 'quiet-editorial-monoline',
 };
-const colours = {
-    '#86d39a': 'var(--color-accent)',
-    '#87cf9b': 'var(--color-accent)',
-    '#a3d9e0': 'var(--color-accent)',
-    '#a6d4da': 'var(--color-accent)',
-    '#a9b5ac': 'var(--color-text-secondary)',
-    '#c7d5cc': 'var(--color-text-secondary)',
-    '#d5b66f': 'var(--color-warning)',
-    '#e7b27c': 'var(--color-warning)',
-};
+// Every colour the design's artwork uses; an unknown one stops the import.
+const known = [
+    '#86d39a',
+    '#87cf9b',
+    '#a3d9e0',
+    '#a6d4da',
+    '#a9b5ac',
+    '#c7d5cc',
+    '#d5b66f',
+    '#e7b27c',
+];
+const colourAttribute = /\s(fill|stroke)="(#[0-9a-fA-F]{6})"/g;
+const secondTone = '0.6';
 
 function recolour(svg, file) {
-    return svg.replace(
-        /<([a-zA-Z][\w:-]*)(\s[^<>]*?)?(\/?)>/g,
-        (tag, name, attributes = '', close) => {
-            const styles = [];
-            let rest = attributes.replace(
-                /\s(fill|stroke|stop-color)="(#[0-9a-fA-F]{3,6})"/g,
-                (_, property, value) => {
-                    const variable = colours[value.toLowerCase()];
+    const counts = new Map();
 
-                    if (!variable) {
-                        throw new Error(
-                            file + ': unknown colour ' + value + ', add it to the colour map.',
-                        );
-                    }
+    for (const [, , value] of svg.matchAll(colourAttribute)) {
+        const colour = value.toLowerCase();
 
-                    styles.push(property + ':' + variable);
+        if (!known.includes(colour)) {
+            throw new Error(file + ': unknown colour ' + value + ', add it to the known colours.');
+        }
 
-                    return '';
-                },
-            );
+        counts.set(colour, (counts.get(colour) ?? 0) + 1);
+    }
 
-            if (!styles.length) {
-                return tag;
-            }
+    const main = [...counts].sort((a, b) => b[1] - a[1])[0]?.[0];
 
-            const style = rest.match(/\sstyle="([^"]*)"/);
-
-            rest = style
-                ? rest.replace(
-                      style[0],
-                      ' style="' + style[1].replace(/;?$/, ';') + styles.join(';') + '"',
-                  )
-                : rest + ' style="' + styles.join(';') + '"';
-
-            return '<' + name + rest + close + '>';
-        },
+    return svg.replace(colourAttribute, (attribute, property, value) =>
+        value.toLowerCase() === main
+            ? ' ' + property + '="currentColor"'
+            : ' ' + property + '="currentColor" ' + property + '-opacity="' + secondTone + '"',
     );
 }
 

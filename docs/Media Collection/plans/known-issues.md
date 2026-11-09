@@ -166,9 +166,11 @@ design.
     app with their credits.
   - **Today:** every icon goes through `apps/web/src/shared/ui/icon.tsx`, which only knows Lucide (the abstraction was
     made for set switching, Task 0).
-  - **Colours (decided 2026-11-09):** the icons follow the colour scheme. The artwork's green and the blueprint blue
-    become the accent, grey the secondary text colour, gold and orange the warning colour; `currentColor` already
-    follows the text.
+  - **Colours (decided 2026-11-09, corrected the same day):** the icons follow the colour scheme the way Lucide does:
+    they are drawn in the text colour (`currentColor`), so grey in a normal link and the accent in a selected one.
+    The design's icons are single-colour (green, grey or gold by purpose); the only two-colour icon (set 03) keeps its
+    second tone as the same colour at 60 % opacity. A first version drew the green in the accent and the grey in the
+    secondary text colour, which did not follow the link state.
   - **Built so far (2026-11-09, branch `ki-6-appearance`):** the server setting (`icon-set`, public with the colour
     scheme, Admin only, audited `appearance.icon-set-changed`, reset to Lucide by the data reset); the import tool
     `tools/import-icon-sets.mjs` (recolours, prefixes ids, writes one static file per set,

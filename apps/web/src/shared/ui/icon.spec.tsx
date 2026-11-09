@@ -50,12 +50,12 @@ it('names a meaningful icon of a set for assistive technology', async () => {
 
     expect(icon.getAttribute('aria-hidden')).toBeNull();
 });
-it('draws the set artwork in the colour scheme colours', async () => {
+it('draws the set artwork in the text colour, like Lucide', async () => {
     const { container } = render(<Icon name="overview" set="solid-silhouettes" />);
 
     await waitFor(() => expect(container.querySelector('[data-icon-set]')).not.toBeNull());
 
     const markup = container.querySelector('[data-icon-set]')!.innerHTML;
 
-    expect([/#[0-9a-f]{6}/i.test(markup), markup.includes('var(--color-')]).toEqual([false, true]);
+    expect([/#[0-9a-f]{6}/i.test(markup), markup.includes('currentColor')]).toEqual([false, true]);
 });
