@@ -159,7 +159,7 @@ design.
     next to the "Leaf" title). To build: Leaf's favicon, its home-screen icon (web app manifest and Apple touch icon,
     PNG sizes generated from the SVG) and its title mark, in Leaf only (Libris keeps its own icon). Version (decided
     2026-11-09): fixed like the Libris icon, the set 02 hand-inked Turning leaf
-    (`02-hand-inked-editorial/turning-leaf.svg`) in Spring green `#79d670`, whatever the colour scheme or icon set. Tests: the Leaf page links the favicon and the manifest,
+    (`02-hand-inked-editorial/turning-leaf.svg`) in Spring green `#79d670`, whatever the colour scheme or icon set. **Built 2026-11-09:** favicon `apps/web/public/leaf.svg`, home-screen icons and manifest from `tools/generate-leaf-icons.mjs`, linked from `apps/web/leaf/index.html`; the title marks of Libris and Leaf are drawn in the scheme's accent (`currentColor`, changed the same day), the files stay Spring green. Tests: the Leaf page links the favicon and the manifest,
     the manifest lists the icons, the title mark renders.
   - **Artwork:** `design/artifact/icons/` (six set folders, `manifest.json`, `CREDITS.md`,
     `SOURCES-AND-LICENSES.json`). The `design/` folder is Git-ignored: the shipped SVG files are copied into the web
