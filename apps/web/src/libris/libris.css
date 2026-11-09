@@ -305,6 +305,64 @@ body {
     color: var(--color-text-secondary);
 }
 
+/* Credits and licences (KI-6). */
+.credit-list {
+    display: grid;
+    gap: var(--space-5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.credit__name {
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-base);
+}
+
+.credit__facts {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: var(--space-1) var(--space-4);
+    margin: 0;
+}
+
+.credit__facts > div {
+    display: contents;
+}
+
+.credit__facts dt {
+    color: var(--color-text-secondary);
+}
+
+.credit__facts dd {
+    margin: 0;
+}
+
+.credits-standalone {
+    display: grid;
+    gap: var(--space-6);
+    max-width: 960px;
+    margin: 0 auto;
+    padding: var(--space-8) var(--space-6);
+}
+
+.credits-standalone__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+}
+
+.credits-standalone__main {
+    display: grid;
+    gap: var(--space-6);
+}
+
+.sidebar__credits {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+}
+
 /* Books: list */
 .book-toolbar {
     display: flex;

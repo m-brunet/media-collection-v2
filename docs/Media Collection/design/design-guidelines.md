@@ -77,7 +77,7 @@ Every icon is the work of the authors of its pack; sets 01-05 were selected from
 
 **Turning leaf.** The Turning leaf icon of every set (`turning-leaf.svg`, Doop canvas `shiKEeCX2V`) is not taken from a pack: it was generated with GPT Astra for Media Collection, drawn in the style of each set. It is original artwork, not an adaptation of a pack icon (checked 2026-11-09: no path shared with the set's icons or the packs' leaf icons, pixel overlap no higher than with unrelated icons), so no pack licence or attribution applies; its origin is recorded in `design/artifact/icons/CREDITS.md` and `SOURCES-AND-LICENSES.json`. The credits page says that these icons were generated in the style of the sets.
 
-The application must include a credits/licences page reachable without special permissions, listing every bundled icon pack, font, and other third-party asset with its author, licence, and required attribution, and stating when icons were modified. CC BY sets (01-04) require this attribution.
+The application must include a credits/licences page reachable without special permissions (Libris `/credits`, linked from the sign-in page and the sidebar; KI-6), listing every bundled icon pack, font, and other third-party asset with its author, licence, and required attribution, and stating when icons were modified. CC BY sets (01-04) require this attribution.
 
 ## Accessibility
 

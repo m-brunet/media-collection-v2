@@ -234,3 +234,37 @@ it('explains that a Guest cannot add a book', async () => {
 
     expect(await screen.findByText('This page is unavailable')).toBeInTheDocument();
 });
+
+it('shows the credits and licences to a signed-out visitor', async () => {
+    window.history.replaceState(null, '', '/credits');
+    new FakeApi();
+
+    render(<LibrisApp />);
+
+    expect(
+        await screen.findByRole('heading', { name: 'Credits and licences', level: 1 }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Back to sign in' })).toBeInTheDocument();
+});
+it('links the sign-in page to the credits and licences', async () => {
+    new FakeApi();
+    render(<LibrisApp />);
+    await screen.findByRole('heading', { name: 'Sign in' });
+
+    await userEvent.click(screen.getByRole('link', { name: 'Credits and licences' }));
+
+    expect(
+        await screen.findByRole('heading', { name: 'Credits and licences', level: 1 }),
+    ).toBeInTheDocument();
+});
+it('shows the credits and licences inside the app once signed in', async () => {
+    window.history.replaceState(null, '', '/credits');
+    new FakeApi().signedIn(account({ role: 'owner' }));
+
+    render(<LibrisApp />);
+
+    expect(await screen.findByRole('navigation', { name: 'Main navigation' })).toBeInTheDocument();
+    expect(
+        screen.getByRole('heading', { name: 'Credits and licences', level: 1 }),
+    ).toBeInTheDocument();
+});

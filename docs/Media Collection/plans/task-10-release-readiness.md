@@ -16,7 +16,7 @@ Owning docs: [updates](../operations/updates.md), [release expectations](../oper
   - the Windows Firewall rule in the installer ([Task 9.5](task-09-5-internet-access-https.md)), for the HTTPS port and,
     since [Task 9.6](task-09-6-internet-access-domain-name.md), the HTTP port too;
   - the Libris icon files in `apps/desktop/assets/icons` for the installer (KI-4);
-  - the credits page built by KI-6 is complete: every asset and library added since then is listed;
+  - the credits page built by KI-6 (Libris `/credits`) is complete: every asset and library added since then is listed;
 
 ## Decisions (2026-11-08, with the user)
 

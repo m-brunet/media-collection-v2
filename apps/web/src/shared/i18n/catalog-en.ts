@@ -427,6 +427,52 @@ export const en = {
     'appearance.scheme.graphiteGold': 'Graphite gold',
     'appearance.scheme.slateOrchid': 'The Butterfly’s Way',
     'appearance.scheme.charcoalScarlet': 'Warm charcoal × Soft scarlet',
+    'nav.credits': 'Credits and licences',
+    'credits.title': 'Credits and licences',
+    'credits.intro':
+        'Media Collection is built with the work of others. These icons, fonts, data sources and libraries are credited here, with their licences and the changes made to them.',
+    'credits.backToSignIn': 'Back to sign in',
+    'credits.group.icons': 'Icons',
+    'credits.group.fonts': 'Fonts',
+    'credits.group.data': 'Book data sources',
+    'credits.group.libraries': 'Libraries',
+    'credits.author': 'Author',
+    'credits.licence': 'Licence',
+    'credits.used': 'Used for',
+    'credits.changes': 'Changes',
+    'credits.unchanged': 'None',
+    'credits.lucide.used': 'Default icon set, and the small utility icons of every set.',
+    'credits.gameIcons.used': 'Icon set “Solid silhouettes”.',
+    'credits.streamlineFreehand.used': 'Icon set “Hand-inked editorial sketches”.',
+    'credits.streamlineCyber.used': 'Icon set “Architectural wireframes”.',
+    'credits.streamlineUltimate.used': 'Icon set “Single-ink risograph prints”.',
+    'credits.iconoir.used': 'Icon set “Quiet editorial monoline”.',
+    'credits.iconSet.changes':
+        'Selected from the pack, redrawn in the text colour so the icons follow the colour scheme, and sized for the interface.',
+    'credits.streamlineCyber.changes':
+        'Selected from the pack, redrawn in the text colour so the icons follow the colour scheme, square stroke ends, sized for the interface; the offline icon is composed from icons of the same pack.',
+    'credits.librisIcon.used':
+        'The Libris icon: window, taskbar, favicon and the mark next to the Libris title.',
+    'credits.librisIcon.changes':
+        'Recoloured to Spring green (#79d670) and resized into application icon files.',
+    'credits.turningLeaf.used': 'The Turning leaf icon of every icon set, and Leaf’s icon.',
+    'credits.turningLeaf.changes':
+        'Original icons generated with GPT Astra for Media Collection, drawn in the style of each icon set; not derived from a specific icon of the packs, so no pack licence applies.',
+    'credits.inter.used': 'Interface text.',
+    'credits.spaceGrotesk.used': 'Headings.',
+    'credits.ibmPlexMono.used': 'Codes and small labels (ISBNs, section labels).',
+    'credits.bnf.used':
+        'Book information and summaries in Find book. Source: Bibliothèque nationale de France.',
+    'credits.openLibrary.used': 'Book information and covers in Find book.',
+    'credits.sharp.used': 'Removing the padding around covers.',
+    'credits.libvips.used': 'Image decoding and encoding, bundled with sharp.',
+    'credits.barcodeDetector.used':
+        'Barcode reading in Leaf where the browser has no barcode detector.',
+    'credits.zxingWasm.used': 'The barcode decoder bundled with Leaf.',
+    'credits.zxingCpp.used': 'Barcode decoding, compiled into zxing-wasm.',
+    'credits.acmeClient.used': 'Getting HTTPS certificates from Let’s Encrypt.',
+    'credits.natApi.used': 'Opening the router port (UPnP) for internet access.',
+    'credits.qrcode.used': 'The QR codes of the server addresses.',
     'appearance.default': 'default',
     'appearance.iconSetTitle': 'Icon set',
     'appearance.iconSetHint':
