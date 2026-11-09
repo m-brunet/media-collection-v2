@@ -64,6 +64,8 @@ export class ElectronRuntime {
                 ? JSON.stringify(options.internetAccess)
                 : undefined,
             APP_HIDDEN_WINDOWS: '1',
+            // No test may reach a real router, Let's Encrypt, the public address service or DNS.
+            APP_OFFLINE_INTERNET_ACCESS: '1',
         };
 
         delete environment.ELECTRON_RUN_AS_NODE;

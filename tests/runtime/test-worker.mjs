@@ -21,6 +21,7 @@ parent.on('message', async (event) => {
                 clock,
                 lookupAddresses,
                 internetAccess,
+                offlineInternetAccess: true,
             });
             parent.postMessage({
                 type: 'ready',

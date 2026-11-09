@@ -35,6 +35,7 @@ import { KyselyHttpInternetAccessRepository } from '../../server-settings/infras
 import { KyselyKeepAwakeRepository } from '../../server-settings/infrastructure/adapters/driven/persistence/kysely-keep-awake.repository.js';
 import { UpnpRouterGateway } from '../../server-settings/infrastructure/adapters/driven/third-party/upnp-router-gateway.adapter.js';
 import { HttpPublicAddressProbe } from '../../server-settings/infrastructure/adapters/driven/third-party/http-public-address-probe.adapter.js';
+import { OfflineInternetAccess } from '../../server-settings/infrastructure/adapters/driven/runtime/offline-internet-access.adapter.js';
 import { DnsDomainNameResolver } from '../../server-settings/infrastructure/adapters/driven/runtime/dns-domain-name-resolver.adapter.js';
 import { AcmeCertificateAuthority } from '../../server-settings/infrastructure/adapters/driven/third-party/acme-certificate-authority.adapter.js';
 import { AcmeConnector } from '../../server-settings/infrastructure/adapters/driven/third-party/acme-session.adapter.js';
@@ -79,6 +80,9 @@ export interface BackendOptions {
         probe: PublicAddressProbe;
         resolver: DomainNameResolver;
     };
+    // Test launches (`APP_OFFLINE_INTERNET_ACCESS=1`): internet access never leaves the machine, so
+    // no test reaches a real router, Let's Encrypt, the public address service or DNS.
+    offlineInternetAccess?: boolean;
     // Called at startup and on each change of the keep-awake setting (the desktop host applies it).
     onKeepAwake?: (enabled: boolean) => void;
 }
@@ -217,16 +221,17 @@ export class BackendRuntime {
             const challenges = new TlsAlpnChallenges();
             const runtime = new NodeHttpsRuntime(application, options.host, challenges);
             const keepAwake = new KyselyKeepAwakeRepository(database.connections, ids);
-            const internetAccess = options.internetAccess ?? {
-                router: new UpnpRouterGateway(),
-                authority: new AcmeCertificateAuthority(
-                    new AcmeConnector(),
-                    new AcmeAccountKey(options.dataDirectory, storage),
-                    challenges,
-                ),
-                probe: new HttpPublicAddressProbe(),
-                resolver: new DnsDomainNameResolver(),
-            };
+            const internetAccess = options.internetAccess ??
+                (options.offlineInternetAccess ? OfflineInternetAccess.adapters() : undefined) ?? {
+                    router: new UpnpRouterGateway(),
+                    authority: new AcmeCertificateAuthority(
+                        new AcmeConnector(),
+                        new AcmeAccountKey(options.dataDirectory, storage),
+                        challenges,
+                    ),
+                    probe: new HttpPublicAddressProbe(),
+                    resolver: new DnsDomainNameResolver(),
+                };
 
             https = runtime;
 

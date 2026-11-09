@@ -28,6 +28,7 @@ parent.on('message', (event) => {
                 starting = true;
                 backend = await new BackendRuntime().start({
                     ...message,
+                    offlineInternetAccess: process.env.APP_OFFLINE_INTERNET_ACCESS === '1',
                     onKeepAwake: (enabled) => send({ type: 'keep-awake', enabled }),
                 });
                 send({
