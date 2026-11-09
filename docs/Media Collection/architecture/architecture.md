@@ -237,13 +237,14 @@ profile) through a `CertificateAuthority` port. The HTTPS listener answers the T
 negotiated. The listener starts and swaps certificates live (`setSecureContext`) through an `HttpsRuntime` port, without
 a restart. An upkeep timer in root composition runs the maintain use case at startup and hourly: it recreates the
 router rule, follows a changed public address and renews certificates. Automatic certificates live in the same
-protected `tls/` storage as manual ones, with their source recorded. The HTTP port is never forwarded.
+protected `tls/` storage as manual ones, with their source recorded.
 
-An optional domain name (Task 9.6) is part of the internet access state. With a name, the certificate covers the name
-(`dns` identifier, `classic` profile), the challenge certificate is served for the name itself, a `DomainNameResolver`
-port checks before each issue and on each upkeep run that the name points to the public address, and a changed public
-address no longer needs a new certificate. Renewal happens at two thirds of the lifetime for a name and at half for an
-address.
+Task 9.6 adds a saved domain name and HTTP from the internet. The domain name is its own setting, checked on save
+through a `DomainNameResolver` port against the public address. The HTTPS internet access copies it as the name its
+certificate covers (`dns` identifier, `classic` profile, challenge certificate served for the name itself, renewal at
+two thirds of the lifetime, a changed public address needs no new certificate). HTTP from the internet is a separate
+`HttpInternetAccess` entity: a router rule from the HTTP port to the HTTP port, kept by the same upkeep timer, closed
+when an HTTPS setup succeeds.
 
 ## Runtime and packaging
 
