@@ -124,6 +124,14 @@ function administrator(current: ServerStatus) {
         .on('GET /server-settings', () => ({ status: 200, body: current }));
 }
 
+// A button of the domain name form (other forms have their own Save buttons).
+async function domainButton(name: string) {
+    return within(await screen.findByRole('form', { name: 'Domain name (optional)' })).getByRole(
+        'button',
+        { name },
+    );
+}
+
 function renderPage() {
     render(
         <AppearanceProvider>
@@ -169,7 +177,7 @@ it('saves the domain name', async () => {
         await screen.findByRole('textbox', { name: 'Domain name (optional)' }),
         ' home.example.fr ',
     );
-    await userEvent.click(screen.getByRole('button', { name: 'Save the domain name' }));
+    await userEvent.click(await domainButton('Save'));
 
     expect(await screen.findByText(/Domain name saved/)).toBeInTheDocument();
     expect(api.calls).toContainEqual({
@@ -185,7 +193,7 @@ it('removes the domain name when the field is emptied', async () => {
 
     renderPage();
     await userEvent.clear(await screen.findByRole('textbox', { name: 'Domain name (optional)' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Save the domain name' }));
+    await userEvent.click(await domainButton('Save'));
 
     expect(await screen.findByText(/Domain name removed/)).toBeInTheDocument();
     expect(api.calls).toContainEqual({
@@ -200,7 +208,7 @@ it('removes the domain name with its own button', async () => {
     );
 
     renderPage();
-    await userEvent.click(await screen.findByRole('button', { name: 'Remove the domain name' }));
+    await userEvent.click(await domainButton('Remove'));
 
     expect(await screen.findByText(/Domain name removed/)).toBeInTheDocument();
     expect(api.calls).toContainEqual({
@@ -218,16 +226,24 @@ it('offers no removal of the domain name while HTTPS is on', async () => {
             'To remove the domain name, turn off HTTPS from the internet first.',
         ),
     ).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Remove the domain name' })).toBeNull();
+    expect(
+        within(screen.getByRole('form', { name: 'Domain name (optional)' })).queryByRole('button', {
+            name: 'Remove',
+        }),
+    ).toBeNull();
 });
 it('offers no removal without a saved domain name', async () => {
     administrator(status());
 
     renderPage();
 
-    await screen.findByRole('button', { name: 'Save the domain name' });
+    await domainButton('Save');
 
-    expect(screen.queryByRole('button', { name: 'Remove the domain name' })).toBeNull();
+    expect(
+        within(screen.getByRole('form', { name: 'Domain name (optional)' })).queryByRole('button', {
+            name: 'Remove',
+        }),
+    ).toBeNull();
 });
 it('shows the saved domain name', async () => {
     administrator(status(undefined, false, { domainName: 'home.example.fr' }));
@@ -254,7 +270,7 @@ it('explains a refused domain name with the address of the connection', async ()
         await screen.findByRole('textbox', { name: 'Domain name (optional)' }),
         'home.example.fr',
     );
-    await userEvent.click(screen.getByRole('button', { name: 'Save the domain name' }));
+    await userEvent.click(await domainButton('Save'));
 
     expect(
         await screen.findByText(/does not point to this connection’s address \(82\.66\.118\.204\)/),
@@ -271,7 +287,7 @@ it('explains an invalid domain name', async () => {
         await screen.findByRole('textbox', { name: 'Domain name (optional)' }),
         'https://home.example.fr',
     );
-    await userEvent.click(screen.getByRole('button', { name: 'Save the domain name' }));
+    await userEvent.click(await domainButton('Save'));
 
     expect(await screen.findByText(/without https:\/\/ or a port/)).toBeInTheDocument();
 });

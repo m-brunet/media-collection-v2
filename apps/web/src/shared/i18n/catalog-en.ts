@@ -175,8 +175,8 @@ export const en = {
     'internet.domain': 'Domain name (optional)',
     'internet.domainHint':
         'Only if you own a domain name that already points to this connection, for example through your router’s dynamic DNS. The internet addresses then use it. Leave empty to use the internet address.',
-    'internet.domainSave': 'Save the domain name',
-    'internet.domainRemove': 'Remove the domain name',
+    'internet.domainSave': 'Save',
+    'internet.domainRemove': 'Remove',
     'internet.domainLocked': 'To remove the domain name, turn off HTTPS from the internet first.',
     'internet.domainSaved': 'Domain name saved. The internet addresses use it.',
     'internet.domainRemoved': 'Domain name removed. The internet addresses use the public address.',

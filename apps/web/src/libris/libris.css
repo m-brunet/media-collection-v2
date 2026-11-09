@@ -1933,6 +1933,18 @@ body {
     font-size: var(--text-lg);
 }
 
+/* The domain name input takes the line; its Save and Remove buttons end it. */
+.internet-access__domain-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.internet-access__domain-row .field__control {
+    flex: 1;
+    min-width: 0;
+}
+
 /* Every action of the Internet access panel sits on the right. */
 .internet-access .actions {
     justify-content: flex-end;
