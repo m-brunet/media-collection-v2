@@ -6,11 +6,10 @@ import type { CertificateAuthority } from '../ports/driven/certificate-authority
 import type { DomainNameReader } from '../ports/driven/domain-name-reader.interface.js';
 import type { HttpsRuntime } from '../ports/driven/https-runtime.interface.js';
 import type { InternetAccessStore } from '../ports/driven/internet-access-store.interface.js';
-import type { PublicAddressProbe } from '../ports/driven/public-address-probe.interface.js';
-import type { RouterGateway } from '../ports/driven/router-gateway.interface.js';
 import type { TlsStore } from '../ports/driven/tls-store.interface.js';
 import type { DomainNameCheck } from './domain-name-check.service.js';
 import type { HttpInternetAccessClosing } from './http-internet-access-closing.service.js';
+import type { RouterRules } from './router-rules.service.js';
 
 // The steps of an internet access setup, run after the Admin's request has answered: find the
 // router, open the port, get the certificate. Each step is saved so the page can follow it. Once
@@ -20,8 +19,7 @@ export class InternetAccessSetup {
 
     constructor(
         private readonly store: InternetAccessStore,
-        private readonly router: RouterGateway,
-        private readonly probe: PublicAddressProbe,
+        private readonly rules: RouterRules,
         private readonly authority: CertificateAuthority,
         private readonly https: HttpsRuntime,
         private readonly tls: TlsStore,
@@ -127,13 +125,11 @@ export class InternetAccessSetup {
 
     private async openPort(access: InternetAccess): Promise<boolean> {
         const now = this.clock.now();
-        const router = await this.router.find();
+        const search = await this.rules.find();
 
-        if (!router) {
-            const address = await this.probe.current();
-
-            if (address) {
-                access.portNeeded(address, 'no-router', now);
+        if (!search.router) {
+            if (search.publicAddress) {
+                access.portNeeded(search.publicAddress, 'no-router', now);
             } else {
                 access.stop('public-address-unknown', now);
             }
@@ -141,13 +137,15 @@ export class InternetAccessSetup {
             return false;
         }
 
+        const router = search.router;
+
         if (!access.routerFound(router.mapping, router.externalAddress, now)) {
             return false;
         }
 
         await this.store.save(access);
         const { port } = await this.tls.read();
-        const opened = await this.router.open({
+        const opened = await this.rules.open({
             externalPort: InternetAccess.externalPort,
             internalPort: port,
         });

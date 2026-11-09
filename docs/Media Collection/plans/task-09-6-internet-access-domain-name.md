@@ -99,8 +99,10 @@ Domain (`server-settings/domain/`)
 Application
 - Driven ports: `DomainNameResolver`, `DomainNameReader` / `DomainNameStore`, `HttpInternetAccessReader` /
   `HttpInternetAccessStore`.
-- Services: `DomainNameCheck` (name vs address), `PublicAddressLookup` (router, else public service),
-  `HttpPortForwarding` (open, close, refresh the HTTP rule).
+- Services: `DomainNameCheck` (name vs address), `RouterRules` (the router and its rules for HTTPS and HTTP: find,
+  open, close, upkeep classification, public address from the router or else the public service; shared with Task
+  9.5's setup and upkeep, which no longer repeat it), `HttpPortForwarding` (open, close, refresh the HTTP rule),
+  `HttpInternetAccessClosing` (closes HTTP once HTTPS works, called by the HTTPS setup).
 - Use cases: `SaveDomainName`, `ReadDomainName`, `OpenHttpInternetAccess`, `CloseHttpInternetAccess`,
   `ReadHttpInternetAccess`, `MaintainHttpInternetAccess`; `SetUpInternetAccess` reads the saved name;
   `InternetAccessSetup` closes HTTP on success and follows a changed name; `SaveHttpSettings` refuses a port change

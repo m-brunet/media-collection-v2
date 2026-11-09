@@ -24,7 +24,7 @@ import { DomainNameCheck } from '../../application/services/domain-name-check.se
 import { HttpInternetAccessClosing } from '../../application/services/http-internet-access-closing.service.js';
 import { HttpPortForwarding } from '../../application/services/http-port-forwarding.service.js';
 import { InternetAccessSetup } from '../../application/services/internet-access-setup.service.js';
-import { PublicAddressLookup } from '../../application/services/public-address-lookup.service.js';
+import { RouterRules } from '../../application/services/router-rules.service.js';
 import { CheckInternetAccess } from '../../application/use-cases/check-internet-access.usecase.js';
 import { CloseHttpInternetAccess } from '../../application/use-cases/close-http-internet-access.usecase.js';
 import { MaintainHttpInternetAccess } from '../../application/use-cases/maintain-http-internet-access.usecase.js';
@@ -129,8 +129,8 @@ export class SettingsModule {
             clock,
         } = adapters;
         const domains = new DomainNameCheck(resolver);
-        const lookup = new PublicAddressLookup(router, probe);
-        const forwarding = new HttpPortForwarding(router, probe, httpListener, clock);
+        const rules = new RouterRules(router, probe);
+        const forwarding = new HttpPortForwarding(rules, httpListener, clock);
 
         return {
             module: SettingsModule,
@@ -171,8 +171,7 @@ export class SettingsModule {
                     useFactory: () =>
                         new InternetAccessSetup(
                             internetAccess,
-                            router,
-                            probe,
+                            rules,
                             authority,
                             https,
                             tls,
@@ -216,8 +215,7 @@ export class SettingsModule {
                     useFactory: (setup: InternetAccessSetup) =>
                         new MaintainInternetAccess(
                             internetAccess,
-                            router,
-                            probe,
+                            rules,
                             tls,
                             setup,
                             domains,
@@ -281,7 +279,7 @@ export class SettingsModule {
                         new SaveDomainName(
                             domainName,
                             internetAccess,
-                            lookup,
+                            rules,
                             domains,
                             setup,
                             background,
