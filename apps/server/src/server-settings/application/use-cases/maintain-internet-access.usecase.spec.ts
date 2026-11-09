@@ -88,8 +88,7 @@ it('keeps the certificate when the router no longer answers', async () => {
         doubles.store.current.phase,
         doubles.store.current.certificate?.address,
         doubles.store.current.failure?.reason,
-        doubles.store.current.nextAttemptAt,
-    ]).toEqual(['active', publicAddress, 'no-router', '2026-11-08T11:00:00.000Z']);
+    ]).toEqual(['active', publicAddress, 'no-router']);
 });
 it('reports a refused router rule', async () => {
     const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());
@@ -139,9 +138,23 @@ it('reports an unexpected error as a failed upkeep', async () => {
 
     expect(doubles.store.current.failure?.reason).toBe('setup-failed');
 });
-it('waits for the next attempt after a failure', async () => {
+it('tries the router rule again at the next run, without waiting longer', async () => {
+    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());
+    const subject = subjectFor(doubles);
+
+    doubles.router.connection = null;
+
+    await subject.execute();
+
+    expect([doubles.store.current.failedAttempts, doubles.store.current.nextAttemptAt]).toEqual([
+        0,
+        null,
+    ]);
+});
+it('renews the router rule while the certificate work waits after a failure', async () => {
     const doubles = InternetAccessDoubles.setup(
         InternetAccessDoubles.active({
+            failure: { reason: 'authority-unavailable', at: '2026-11-08T09:00:00.000Z' },
             failedAttempts: 1,
             nextAttemptAt: '2026-11-08T11:00:00.000Z',
         }),
@@ -150,7 +163,44 @@ it('waits for the next attempt after a failure', async () => {
 
     await subject.execute();
 
-    expect(doubles.router.opened).toEqual([]);
+    expect([
+        doubles.router.opened,
+        doubles.store.current.failure?.reason,
+        doubles.store.current.nextAttemptAt,
+    ]).toEqual([
+        [{ externalPort: 443, internalPort: 3443 }],
+        'authority-unavailable',
+        '2026-11-08T11:00:00.000Z',
+    ]);
+});
+it('renews no certificate before the waiting time after a failure is over', async () => {
+    const doubles = InternetAccessDoubles.setup(
+        InternetAccessDoubles.active({
+            failedAttempts: 1,
+            nextAttemptAt: '2027-01-01T00:00:00.000Z',
+        }),
+    );
+    const subject = subjectFor(doubles);
+
+    doubles.clock.time = halfLife;
+
+    await subject.execute();
+
+    expect(doubles.authority.requested).toEqual([]);
+});
+it('clears a router rule failure while the certificate work waits', async () => {
+    const doubles = InternetAccessDoubles.setup(
+        InternetAccessDoubles.active({
+            failure: { reason: 'no-router', at: '2026-11-08T09:00:00.000Z' },
+            failedAttempts: 1,
+            nextAttemptAt: '2026-11-08T11:00:00.000Z',
+        }),
+    );
+    const subject = subjectFor(doubles);
+
+    await subject.execute();
+
+    expect(doubles.store.current.failure).toBeNull();
 });
 it('clears the failure after a successful upkeep', async () => {
     const doubles = InternetAccessDoubles.setup(
@@ -279,4 +329,56 @@ it('follows a domain name saved since the last certificate', async () => {
         'home.example.fr',
         [{ kind: 'domain', name: 'home.example.fr' }],
     ]);
+});
+it('reports the kept rule and its public address', async () => {
+    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());
+    const subject = subjectFor(doubles);
+
+    const outcome = await subject.execute();
+
+    expect(outcome).toEqual({ rule: 'kept', address: publicAddress, problem: null });
+});
+it('reports a kept rule with the certificate failure still shown', async () => {
+    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());
+    const subject = subjectFor(doubles);
+
+    doubles.clock.time = halfLife;
+    doubles.authority.refusal = 'authority-unavailable';
+
+    const outcome = await subject.execute();
+
+    expect(outcome).toEqual({
+        rule: 'kept',
+        address: publicAddress,
+        problem: 'authority-unavailable',
+    });
+});
+it('reports a rule that could not be kept', async () => {
+    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());
+    const subject = subjectFor(doubles);
+
+    doubles.router.connection = null;
+
+    const outcome = await subject.execute();
+
+    expect(outcome).toEqual({ rule: 'failed', reason: 'no-router' });
+});
+it('reports an unexpected certificate error with the rule kept', async () => {
+    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());
+    const subject = subjectFor(doubles);
+
+    doubles.clock.time = halfLife;
+    doubles.authority.failure = new Error('network down');
+
+    const outcome = await subject.execute();
+
+    expect(outcome).toEqual({ rule: 'kept', address: publicAddress, problem: 'setup-failed' });
+});
+it('reports no rule while internet access is off', async () => {
+    const doubles = InternetAccessDoubles.setup();
+    const subject = subjectFor(doubles);
+
+    const outcome = await subject.execute();
+
+    expect(outcome).toEqual({ rule: 'none' });
 });
