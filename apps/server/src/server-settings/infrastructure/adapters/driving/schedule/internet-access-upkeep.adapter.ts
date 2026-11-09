@@ -63,15 +63,15 @@ export class InternetAccessUpkeep {
         let failed = false;
 
         for (const { name, maintenance } of this.maintenances) {
-            const outcome = await maintenance.execute().catch(
-                (error: unknown): RuleUpkeepOutcome => {
+            const outcome = await maintenance
+                .execute()
+                .catch((error: unknown): RuleUpkeepOutcome => {
                     this.log(
                         'Internet access upkeep, ' + name + ': error, ' + this.describe(error),
                     );
 
                     return { rule: 'failed', reason: 'setup-failed' };
-                },
-            );
+                });
 
             failed ||= outcome.rule === 'failed';
             this.report(name, outcome);

@@ -46,9 +46,14 @@ export interface InternetAccessState {
 export class InternetAccess {
     // The router's port that phones reach; Let's Encrypt's TLS-ALPN-01 check only uses 443.
     static readonly externalPort = 443;
-    private static readonly ruleFailures: ReadonlySet<InternetAccessFailureReason> = new Set<
-        RouterRuleFailureReason
-    >(['no-router', 'public-address-unknown', 'port-refused', 'cgnat', 'double-nat']);
+    private static readonly ruleFailures: ReadonlySet<InternetAccessFailureReason> =
+        new Set<RouterRuleFailureReason>([
+            'no-router',
+            'public-address-unknown',
+            'port-refused',
+            'cgnat',
+            'double-nat',
+        ]);
     private state: InternetAccessState;
 
     constructor(state: InternetAccessState) {

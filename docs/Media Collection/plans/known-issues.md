@@ -25,7 +25,7 @@ design.
 | KI-10 | Improvement | Internet access: renew certificates through ARI so renewals escape Let's Encrypt limits | Medium | Open |
 | KI-11 | Improvement | Server settings: QR code for each address, opening Leaf, with the Libris logo | Medium | Done |
 | KI-12 | Improvement | The address QR codes also sign the phone in to Leaf (not the HTTP internet address) | Medium | Open |
-| KI-13 | Bug | Internet access: the router rule lapses while the panel still shows it on | High | Open |
+| KI-13 | Bug | Internet access: the router rule lapses while the panel still shows it on | High | Done |
 
 ## Open
 
@@ -210,6 +210,8 @@ design.
 - **Severity:** medium (sign-in on the phone at every session today). **Planned:** next version, after the 2.0.0
   release.
 
+## Done
+
 ### KI-13 — Internet access: the router rule lapses while the panel still shows it on
 
 - **Type:** Bug.
@@ -229,7 +231,9 @@ design.
     `RenewalPolicy.retryAt`) also skips the router rule renewal, so one failed upkeep, even a certificate or domain
     name problem, lets the 2-hour rule lapse until the back-off ends; restarting the app does not help.
 - **Fix:**
-  - Finding the router tries several times, with a longer wait, before the renewal counts as failed.
+  - Finding the router tries up to three times before the renewal counts as failed. The library also searched the
+    router again on every call (its cache check is inverted), so one renewal ran two or three searches, each able to
+    fail: the adapter now keeps the router it found for the rest of the call.
   - After a failed renewal, the upkeep tries again soon (1 minute, then 5, then 15) instead of an hour later; back to
     hourly once a renewal succeeds.
   - Each renewal outcome (HTTP and HTTPS, the startup one included) is written to the server log.
@@ -238,8 +242,8 @@ design.
   - Tests: the upkeep schedule (quick retries, back to hourly), the HTTPS rule renewed during the back-off, the router
     search retries. No test reaches a real router or Let's Encrypt.
 - **Severity:** high (internet access silently stops working). **Planned:** now, its own fix branch.
-
-## Done
+- **Done:** branch `fix/internet-access-renewal`: commits `47b1504` (router search), `c4e7b96` (HTTPS rule during
+  the back-off), `ccf5402` (quick retries, log).
 
 ### KI-6 — Appearance: seven new colour schemes (Mint, Emerald, Forest removed) and the icon set choice
 

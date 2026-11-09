@@ -74,10 +74,10 @@ it('tries again sooner after a run that could not keep a rule', async () => {
 });
 it('counts consecutive failed runs for the delay', async () => {
     vi.useFakeTimers();
-    const maintenance = new CountingMaintenance([failed, failed, kept]);
+    const outcomes = [failed, failed, kept];
     const delays: number[] = [];
     const upkeep = new InternetAccessUpkeep(
-        [{ name: 'HTTP', maintenance }],
+        [{ name: 'HTTP', maintenance: { execute: async () => outcomes.shift() ?? kept } }],
         (failedRuns) => {
             delays.push(failedRuns);
 
@@ -87,13 +87,9 @@ it('counts consecutive failed runs for the delay', async () => {
     );
 
     upkeep.onApplicationBootstrap();
-    for (let run = 0; run < 3; run++) {
-        maintenance.release?.();
-        await vi.advanceTimersByTimeAsync(10);
-    }
+    await vi.advanceTimersByTimeAsync(25);
 
     expect(delays).toEqual([1, 2, 0]);
-    maintenance.release?.();
     await upkeep.onModuleDestroy();
 });
 it('never overlaps a run that is still going', async () => {

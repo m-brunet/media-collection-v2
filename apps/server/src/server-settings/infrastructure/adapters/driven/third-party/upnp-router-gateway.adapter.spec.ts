@@ -105,7 +105,13 @@ it('opens the rule with a two-hour lease', async () => {
 
     expect(opened).toBe(true);
     expect(client.maps).toEqual([
-        { description: 'Media Collection', protocol: 'tcp', public: 8080, private: 8080, ttl: 7200 },
+        {
+            description: 'Media Collection',
+            protocol: 'tcp',
+            public: 8080,
+            private: 8080,
+            ttl: 7200,
+        },
     ]);
 });
 it('opens a permanent rule when the router refuses the lease', async () => {

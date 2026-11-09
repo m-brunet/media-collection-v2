@@ -259,10 +259,10 @@ it('keeps a certificate failure and its waiting time when the rule is kept', () 
 
     access.ruleKept();
 
-    expect([
-        access.snapshot.failure?.reason,
-        access.snapshot.nextAttemptAt,
-    ]).toEqual(['authority-unavailable', '2026-11-08T11:00:00.000Z']);
+    expect([access.snapshot.failure?.reason, access.snapshot.nextAttemptAt]).toEqual([
+        'authority-unavailable',
+        '2026-11-08T11:00:00.000Z',
+    ]);
 });
 it('runs no upkeep while off', () => {
     const access = InternetAccess.off();
