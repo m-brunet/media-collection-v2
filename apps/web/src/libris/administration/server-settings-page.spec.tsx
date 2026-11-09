@@ -26,6 +26,7 @@ function internetAccess(overrides: Partial<InternetAccessStatus> = {}): Internet
         step: null,
         mapping: null,
         publicAddress: null,
+        domain: null,
         certificate: null,
         failure: null,
         failedAttempts: 0,
@@ -127,7 +128,91 @@ it('starts the setup', async () => {
     renderPage();
     await userEvent.click(await screen.findByRole('button', { name: 'Set up internet access' }));
 
-    expect(api.calls).toContainEqual({ route: 'POST /server-settings/internet-access', body: {} });
+    expect(api.calls).toContainEqual({
+        route: 'POST /server-settings/internet-access',
+        body: { domain: null },
+    });
+});
+it('starts the setup with the domain name', async () => {
+    const api = administrator(status()).on('POST /server-settings/internet-access', () => ({
+        status: 202,
+        body: internetAccess({ phase: 'setting-up', step: 'router', domain: 'home.example.fr' }),
+    }));
+
+    renderPage();
+    await userEvent.type(
+        await screen.findByRole('textbox', { name: 'Domain name (optional)' }),
+        ' home.example.fr ',
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Set up internet access' }));
+
+    expect(api.calls).toContainEqual({
+        route: 'POST /server-settings/internet-access',
+        body: { domain: 'home.example.fr' },
+    });
+});
+it('shows the domain name kept from the last setup', async () => {
+    administrator(status(internetAccess({ domain: 'home.example.fr' })));
+
+    renderPage();
+
+    expect(await screen.findByRole('textbox', { name: 'Domain name (optional)' })).toHaveValue(
+        'home.example.fr',
+    );
+});
+it('explains an invalid domain name', async () => {
+    administrator(status()).on('POST /server-settings/internet-access', () => ({
+        status: 400,
+        body: {
+            code: 'invalid_input',
+            reason: 'domain-name-invalid',
+            message: 'Enter a domain name',
+        },
+    }));
+
+    renderPage();
+    await userEvent.type(
+        await screen.findByRole('textbox', { name: 'Domain name (optional)' }),
+        'https://home.example.fr',
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Set up internet access' }));
+
+    expect(await screen.findByText(/without https:\/\/ or a port/)).toBeInTheDocument();
+});
+it('explains a domain name that points elsewhere', async () => {
+    administrator(
+        status(
+            internetAccess({
+                domain: 'home.example.fr',
+                publicAddress: '82.66.118.204',
+                failure: { reason: 'domain-mismatch', at: '2026-11-08T10:00:00.000Z' },
+            }),
+        ),
+    );
+
+    renderPage();
+
+    expect(
+        await screen.findByText(
+            /home\.example\.fr does not point to this connection’s address \(82\.66\.118\.204\)/,
+        ),
+    ).toBeInTheDocument();
+});
+it('gives the domain name as the Leaf address once active', async () => {
+    administrator(
+        status({
+            ...active,
+            domain: 'home.example.fr',
+            origin: 'https://home.example.fr',
+        }),
+    );
+
+    renderPage();
+
+    expect(
+        await screen.findByRole('link', { name: 'https://home.example.fr/leaf/' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: 'Domain name (optional)' })).toBeNull();
 });
 it('shows which setup step is running', async () => {
     administrator(status(internetAccess({ phase: 'setting-up', step: 'port' })));
@@ -210,7 +295,7 @@ it('asks before replacing a saved certificate', async () => {
 
     expect(api.calls).toContainEqual({
         route: 'POST /server-settings/internet-access',
-        body: { replaceCertificate: true },
+        body: { domain: null, replaceCertificate: true },
     });
 });
 it('asks before turning internet access off', async () => {

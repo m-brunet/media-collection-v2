@@ -16,6 +16,7 @@ import type {
     FakeAuthority,
     FakeHttpsRuntime,
     FakeProbe,
+    FakeResolver,
     FakeRouter,
     MemoryKeepAwake,
 } from '../../../apps/server/src/server-settings/application/testing/internet-access-doubles.test-support.js';
@@ -53,6 +54,7 @@ export interface TestAppContext {
         router: FakeRouter;
         authority: FakeAuthority;
         probe: FakeProbe;
+        resolver: FakeResolver;
         https: FakeHttpsRuntime;
         background: AwaitableBackground;
         keepAwake: MemoryKeepAwake;
