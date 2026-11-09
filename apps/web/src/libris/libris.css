@@ -157,7 +157,8 @@ body {
 }
 
 /* Appearance: colour scheme choices. Each card previews its own scheme through
-   data-color-scheme, which redefines the accent variables for that card only. */
+   data-color-scheme, which redefines the --scheme-* palette for that card only: the card uses
+   --scheme-* values, not --color-* ones (those are computed once on the page root). */
 .scheme-choices {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -173,9 +174,10 @@ body {
     flex-direction: column;
     gap: var(--space-3);
     padding: var(--space-4);
-    border: var(--border);
+    border: 1px solid var(--scheme-border);
     border-radius: var(--radius-lg);
-    background: var(--color-surface);
+    background: var(--scheme-surface);
+    color: var(--scheme-text);
     cursor: pointer;
 }
 
@@ -206,7 +208,11 @@ body {
     width: 28px;
     height: 28px;
     border-radius: var(--radius-md);
-    border: var(--border);
+    border: 1px solid var(--scheme-border);
+}
+
+.scheme-choice__swatch--canvas {
+    background: var(--scheme-canvas);
 }
 
 .scheme-choice__swatch--accent {
@@ -236,7 +242,7 @@ body {
     padding: var(--space-1) var(--space-3);
     border-radius: var(--radius-sm);
     background: var(--scheme-accent);
-    color: var(--color-on-accent);
+    color: var(--scheme-on-accent);
     font-size: var(--text-sm);
 }
 

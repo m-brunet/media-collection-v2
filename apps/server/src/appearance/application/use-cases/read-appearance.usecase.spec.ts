@@ -14,9 +14,9 @@ it('reports Spring green before anything was chosen', async () => {
 it('reports the saved colour scheme', async () => {
     const store = new MemoryAppearanceStore();
 
-    await store.save(new ColorScheme('forest'));
+    await store.save(new ColorScheme('rose-noir'));
 
     const result = await new ReadAppearance(store).execute();
 
-    expect(result).toEqual({ colorScheme: 'forest' });
+    expect(result).toEqual({ colorScheme: 'rose-noir' });
 });

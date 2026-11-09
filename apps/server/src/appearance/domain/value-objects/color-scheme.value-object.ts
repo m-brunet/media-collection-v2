@@ -1,14 +1,27 @@
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 
-export type ColorSchemeName = 'mint' | 'emerald' | 'forest' | 'spring-green';
+export type ColorSchemeName =
+    | 'spring-green'
+    | 'midnight-blue'
+    | 'velvet-violet'
+    | 'ember'
+    | 'rose-noir'
+    | 'graphite-gold'
+    | 'slate-orchid'
+    | 'charcoal-scarlet';
 
-// The installation-wide accent colours of Libris and Leaf. Spring green is the default.
+// The installation-wide colour scheme of Libris and Leaf (KI-6). Spring green is the default.
+// Mint, Emerald and Forest are no longer offered (migration 011 moved them to Spring green).
 export class ColorScheme {
     static readonly names: readonly ColorSchemeName[] = [
-        'mint',
-        'emerald',
-        'forest',
         'spring-green',
+        'midnight-blue',
+        'velvet-violet',
+        'ember',
+        'rose-noir',
+        'graphite-gold',
+        'slate-orchid',
+        'charcoal-scarlet',
     ];
     static readonly default = new ColorScheme('spring-green');
 

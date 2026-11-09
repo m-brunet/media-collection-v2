@@ -50,15 +50,17 @@ it('applies the scheme chosen by the administrator to every visitor', async () =
     await admin.getByLabel(/^Password/).fill('administrator-new-password');
     await admin.getByRole('button', { name: 'Sign in' }).click();
     await admin.getByRole('link', { name: 'Appearance' }).click();
-    await admin.getByRole('radio', { name: /Mint/ }).check();
+    await admin.getByRole('radio', { name: /Midnight blue/ }).check();
     await admin.getByText('Colour scheme saved.').waitFor();
     await capture(admin, 'appearance-page');
     const visitor = await browser.page(base);
 
     await visitor.goto('/');
     await visitor.getByRole('heading', { name: 'Sign in' }).waitFor();
-    await visitor.waitForFunction(() => document.documentElement.dataset.colorScheme === 'mint');
+    await visitor.waitForFunction(
+        () => document.documentElement.dataset.colorScheme === 'midnight-blue',
+    );
 
-    expect(await primaryButtonColor(visitor)).toBe('rgb(134, 211, 154)');
-    await capture(visitor, 'appearance-sign-in-mint');
+    expect(await primaryButtonColor(visitor)).toBe('rgb(139, 184, 255)');
+    await capture(visitor, 'appearance-sign-in-midnight-blue');
 });

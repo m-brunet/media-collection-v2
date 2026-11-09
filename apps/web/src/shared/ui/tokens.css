@@ -3,26 +3,26 @@
 :root {
     color-scheme: dark;
 
-    /* Surfaces */
-    --color-canvas: #1d1f20;
-    --color-surface: #252729;
-    --color-sidebar: #1b1d1f;
-    --color-panel: #1d2022;
-    --color-control: #303336;
-    --color-control-hover: #3a3e41;
+    /* Surfaces (from the colour scheme below) */
+    --color-canvas: var(--scheme-canvas);
+    --color-surface: var(--scheme-surface);
+    --color-sidebar: var(--scheme-sidebar);
+    --color-panel: var(--scheme-panel);
+    --color-control: var(--scheme-control);
+    --color-control-hover: var(--scheme-control-hover);
     --color-selected: var(--scheme-accent-background);
-    --color-border: #3c4042;
-    --color-border-strong: #545c56;
+    --color-border: var(--scheme-border);
+    --color-border-strong: var(--scheme-border-strong);
 
-    /* Text (all meet WCAG AA on the surfaces above) */
-    --color-text: #f2f5f2;
-    --color-text-secondary: #a9b5ac;
-    --color-text-muted: #91a399;
+    /* Text (all meet WCAG AA on the surfaces above, in every scheme) */
+    --color-text: var(--scheme-text);
+    --color-text-secondary: var(--scheme-text-secondary);
+    --color-text-muted: var(--scheme-text-muted);
 
     /* Accent and status */
     --color-accent: var(--scheme-accent);
     --color-accent-strong: var(--scheme-accent-text);
-    --color-on-accent: #17251b;
+    --color-on-accent: var(--scheme-on-accent);
     --color-danger: #e5a19a;
     --color-danger-surface: #402c2b;
     --color-warning: #d5b66f;
@@ -67,30 +67,152 @@
     --control-height: 40px;
 }
 
-/* Colour schemes (design/color-charts): only these three accent roles differ; neutral and status
-   colours are shared. The installation-wide choice is set on <html data-color-scheme>.
-   Spring green is the default. */
+/* Colour schemes (KI-6, design: Doop canvas shiKEeCX2V, groups 13 to 15 and Spring green). Each scheme is a
+   full palette; the installation-wide choice is set on <html data-color-scheme>, and an Appearance card
+   previews its own scheme the same way. Surface, control hover, strong border, muted text, accent text and
+   text on the accent are not drawn in the design: they are derived with Spring green's ratios, and
+   tests/web/color-scheme-contrast.spec.ts checks every scheme against WCAG AA. Status colours are shared. */
 :root,
 [data-color-scheme='spring-green'] {
+    --scheme-canvas: #1d1f20;
+    --scheme-sidebar: #1b1d1f;
+    --scheme-panel: #1d2022;
+    --scheme-surface: #252729;
+    --scheme-control: #303336;
+    --scheme-control-hover: #3a3e41;
+    --scheme-border: #3c4042;
+    --scheme-border-strong: #545c56;
+    --scheme-text: #f2f5f2;
+    --scheme-text-secondary: #a9b5ac;
+    --scheme-text-muted: #91a399;
     --scheme-accent: #79d670;
     --scheme-accent-background: #2b3e29;
     --scheme-accent-text: #bdebb8;
+    --scheme-on-accent: #17251b;
 }
 
-[data-color-scheme='mint'] {
-    --scheme-accent: #86d39a;
-    --scheme-accent-background: #2b3d31;
-    --scheme-accent-text: #b7e7c2;
+[data-color-scheme='midnight-blue'] {
+    --scheme-canvas: #191f2c;
+    --scheme-sidebar: #121721;
+    --scheme-panel: #151b26;
+    --scheme-surface: #1e2533;
+    --scheme-control: #252e3d;
+    --scheme-control-hover: #303948;
+    --scheme-border: #3d4f6b;
+    --scheme-border-strong: #556681;
+    --scheme-text: #f0f5ff;
+    --scheme-text-secondary: #abbbd2;
+    --scheme-text-muted: #96a5ba;
+    --scheme-accent: #8bb8ff;
+    --scheme-accent-background: #10213b;
+    --scheme-accent-text: #c6dcff;
+    --scheme-on-accent: #0a1423;
 }
 
-[data-color-scheme='emerald'] {
-    --scheme-accent: #65d59b;
-    --scheme-accent-background: #273e32;
-    --scheme-accent-text: #b0e9ca;
+[data-color-scheme='velvet-violet'] {
+    --scheme-canvas: #201c28;
+    --scheme-sidebar: #16131c;
+    --scheme-panel: #191620;
+    --scheme-surface: #26212f;
+    --scheme-control: #2e2739;
+    --scheme-control-hover: #393244;
+    --scheme-border: #514361;
+    --scheme-border-strong: #695b79;
+    --scheme-text: #f7f0ff;
+    --scheme-text-secondary: #bfb0cf;
+    --scheme-text-muted: #a89bb7;
+    --scheme-accent: #c4a3ff;
+    --scheme-accent-background: #27133f;
+    --scheme-accent-text: #e2d2ff;
+    --scheme-on-accent: #170b26;
 }
 
-[data-color-scheme='forest'] {
-    --scheme-accent: #65b881;
-    --scheme-accent-background: #293a30;
-    --scheme-accent-text: #afd9bc;
+[data-color-scheme='ember'] {
+    --scheme-canvas: #27201d;
+    --scheme-sidebar: #1c1614;
+    --scheme-panel: #1f1916;
+    --scheme-surface: #2e2622;
+    --scheme-control: #372e28;
+    --scheme-control-hover: #423933;
+    --scheme-border: #604a3d;
+    --scheme-border-strong: #786254;
+    --scheme-text: #fff3e9;
+    --scheme-text-secondary: #cdb7a7;
+    --scheme-text-muted: #b5a293;
+    --scheme-accent: #ffad79;
+    --scheme-accent-background: #361b0c;
+    --scheme-accent-text: #ffd7bd;
+    --scheme-on-accent: #201007;
+}
+
+[data-color-scheme='rose-noir'] {
+    --scheme-canvas: #261e24;
+    --scheme-sidebar: #1a1419;
+    --scheme-panel: #1f191f;
+    --scheme-surface: #2d242a;
+    --scheme-control: #362c33;
+    --scheme-control-hover: #41373e;
+    --scheme-border: #5c4354;
+    --scheme-border-strong: #755a6b;
+    --scheme-text: #fff0f7;
+    --scheme-text-secondary: #ceafbf;
+    --scheme-text-muted: #b69aa9;
+    --scheme-accent: #f3a4c4;
+    --scheme-accent-background: #371425;
+    --scheme-accent-text: #f9d2e2;
+    --scheme-on-accent: #210c16;
+}
+
+[data-color-scheme='graphite-gold'] {
+    --scheme-canvas: #242424;
+    --scheme-sidebar: #171717;
+    --scheme-panel: #1d1d1d;
+    --scheme-surface: #2a2a2a;
+    --scheme-control: #323232;
+    --scheme-control-hover: #3d3d3c;
+    --scheme-border: #505050;
+    --scheme-border-strong: #676765;
+    --scheme-text: #f7f5ee;
+    --scheme-text-secondary: #bcbab2;
+    --scheme-text-muted: #a6a59e;
+    --scheme-accent: #e4c56b;
+    --scheme-accent-background: #2c240c;
+    --scheme-accent-text: #f2e2b6;
+    --scheme-on-accent: #1a1507;
+}
+
+[data-color-scheme='slate-orchid'] {
+    --scheme-canvas: #252b32;
+    --scheme-sidebar: #191f26;
+    --scheme-panel: #20262d;
+    --scheme-surface: #2b323b;
+    --scheme-control: #343d47;
+    --scheme-control-hover: #3f4751;
+    --scheme-border: #4d5c6a;
+    --scheme-border-strong: #64727f;
+    --scheme-text: #f3f6fa;
+    --scheme-text-secondary: #b6c1cd;
+    --scheme-text-muted: #a1acb7;
+    --scheme-accent: #d7acff;
+    --scheme-accent-background: #301b40;
+    --scheme-accent-text: #ebd6ff;
+    --scheme-on-accent: #1d1026;
+}
+
+[data-color-scheme='charcoal-scarlet'] {
+    --scheme-canvas: #272426;
+    --scheme-sidebar: #1b191a;
+    --scheme-panel: #211f20;
+    --scheme-surface: #2c292b;
+    --scheme-control: #343032;
+    --scheme-control-hover: #3f3b3d;
+    --scheme-border: #51484c;
+    --scheme-border-strong: #6c5f63;
+    --scheme-text: #fff2f1;
+    --scheme-text-secondary: #d0b2b7;
+    --scheme-text-muted: #b89ea2;
+    --scheme-accent: #ff9994;
+    --scheme-accent-background: #3a1719;
+    --scheme-accent-text: #ffcdca;
+    --scheme-on-accent: #230e0f;
 }

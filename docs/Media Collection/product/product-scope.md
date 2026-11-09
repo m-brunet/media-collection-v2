@@ -40,7 +40,7 @@ Lending introduces an explicit exception for receiver names: a receiver is store
 - Reusable tags and inclusion/exclusion filtering.
 - Simple search, advanced multiple-criteria filtering, and selected sort options.
 - Overview and book/collection/location views following the [design guidelines](../design/design-guidelines.md).
-- An installation-wide colour scheme chosen by Admin (Spring green by default, or Mint, Emerald, Forest). See [design guidelines](../design/design-guidelines.md).
+- An installation-wide colour scheme chosen by Admin: Spring green by default, or one of seven other dark schemes (KI-6, 2026-11-09; Mint, Emerald and Forest were removed). See [design guidelines](../design/design-guidelines.md).
 - An installation-wide icon set chosen by Admin in application settings, Lucide by default, with a credits/licences page for bundled third-party assets. See [design guidelines](../design/design-guidelines.md).
 - Technical audit logs for user-initiated use-case changes from the first release, with category, actor, timestamp, and before/after values excluding passwords. A distinct Activity feature presents selected events to all users, with actor and relative time but no before/after values initially; authentication events stay out of Activity.
 - Audit outcome is Successful or Failed, independently of category. Activity shows only successful eligible events and resolves the actor's current username from the user table.

@@ -127,7 +127,15 @@ export interface ServerStatus {
     restartRequired: boolean;
 }
 
-export type ColorSchemeName = 'mint' | 'emerald' | 'forest' | 'spring-green';
+export type ColorSchemeName =
+    | 'spring-green'
+    | 'midnight-blue'
+    | 'velvet-violet'
+    | 'ember'
+    | 'rose-noir'
+    | 'graphite-gold'
+    | 'slate-orchid'
+    | 'charcoal-scarlet';
 
 // Installation-wide appearance, readable before sign-in.
 export interface Appearance {
