@@ -17,6 +17,7 @@ import {
     ImagePlus,
     Pencil,
     Plus,
+    QrCode,
     Search,
     Trash2,
     CircleAlert,
@@ -78,6 +79,7 @@ const lucide = {
     move: ArrowRightLeft,
     lend: BookUp,
     'lend-return': BookDown,
+    qr: QrCode,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof lucide;

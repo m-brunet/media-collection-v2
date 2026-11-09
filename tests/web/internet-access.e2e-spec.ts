@@ -4,6 +4,7 @@ import { Client } from '../api/client.js';
 import type { RuntimeOptions } from '../api/runtime.js';
 import { RuntimeFixture, RuntimeSetup } from '../api/runtime-setup.js';
 import { BrowserFixture, capture, viewports } from './browser.js';
+import { readQrCode } from './qr-reader.js';
 
 const browser = new BrowserFixture();
 const publicAddress = '82.66.118.204';
@@ -66,6 +67,18 @@ describe('Internet access', () => {
                 .getByRole('img', { name: 'QR code for https://' + publicAddress + '/leaf/' })
                 .isVisible(),
         ).toBe(true);
+    });
+    it('gives a QR code that a phone reads as the Leaf address', async () => {
+        const { page } = await serverSettings({ externalAddress: publicAddress, accepts: true });
+
+        await page.getByRole('button', { name: 'Set up internet access' }).click();
+        await page.getByText('Internet access is on.').waitFor();
+
+        expect(
+            await readQrCode(
+                page.getByRole('img', { name: 'QR code for https://' + publicAddress + '/leaf/' }),
+            ),
+        ).toEqual(['https://' + publicAddress + '/leaf/']);
     });
     it('starts HTTPS with the new certificate without a restart', async () => {
         const { page, httpsPort } = await serverSettings({
