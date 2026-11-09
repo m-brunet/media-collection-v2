@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type {
+    HttpInternetAccessStatus,
     InternetAccessFailureReason,
     InternetAccessStatus,
 } from '../../../../../packages/contracts/src/http';
@@ -10,9 +11,10 @@ import { Button } from '../../shared/ui/button';
 import { ConfirmDialog } from '../../shared/ui/confirm-dialog';
 import { Panel } from '../../shared/ui/layout';
 import { Notice } from '../../shared/ui/notice';
-import { QrCode } from '../../shared/ui/qr-code';
-import { TextField } from '../../shared/ui/text-field';
 import { useAction } from '../../shared/use-action';
+import { DomainNameSection } from './domain-name-section';
+import { HttpInternetSection } from './http-internet-section';
+import { InternetAddress, ManualRule } from './internet-address';
 
 const steps = [
     { step: 'router', label: 'internet.stepRouter' },
@@ -40,26 +42,86 @@ const failures: Record<InternetAccessFailureReason, MessageKey> = {
 };
 const termsAddress = 'https://letsencrypt.org/repository/';
 
-// One action that opens the router port and gets a Let's Encrypt certificate, then the address and
-// QR code phones use. An optional domain name of the Admin's replaces the public address. The page
+// Reaching Libris and Leaf from outside: the Admin's domain name, plain HTTP as a fallback, and
+// HTTPS with a Let's Encrypt certificate (one action opens the router port and gets it). The page
 // refreshes the status while a setup runs.
 export function InternetAccessPanel({
     status,
+    http,
+    domainName,
     keepAwake,
     onStatus,
+    onRefresh,
     onKeepAwake,
 }: {
     status: InternetAccessStatus;
+    http: HttpInternetAccessStatus;
+    domainName: string | null;
     keepAwake: boolean;
     onStatus(status: InternetAccessStatus): void;
+    onRefresh(): void;
     onKeepAwake(enabled: boolean): void;
+}) {
+    const { t } = useI18n();
+    const awake = useAction();
+    const changeKeepAwake = (enabled: boolean) =>
+        void awake.run(async () => {
+            const saved = await api.request<{ enabled: boolean }>('/server-settings/keep-awake', {
+                method: 'PUT',
+                body: { enabled },
+            });
+
+            onKeepAwake(saved.enabled);
+        });
+
+    return (
+        <Panel title={t('internet.title')}>
+            <div className="internet-access">
+                <p className="muted">{t('internet.intro')}</p>
+                <DomainNameSection domainName={domainName} onSaved={onRefresh} />
+                <HttpsInternetSection status={status} onStatus={onStatus} />
+                <HttpInternetSection
+                    status={http}
+                    httpsActive={status.phase === 'active'}
+                    onChanged={onRefresh}
+                />
+                {(status.phase !== 'off' || http.phase === 'open') && (
+                    <p className="muted">{t('internet.firewall')}</p>
+                )}
+                <label className="checkbox">
+                    <input
+                        type="checkbox"
+                        checked={keepAwake}
+                        disabled={awake.busy}
+                        onChange={(event) => changeKeepAwake(event.currentTarget.checked)}
+                        aria-describedby="keep-awake-hint"
+                    />
+                    {t('keepAwake.label')}
+                </label>
+                <p id="keep-awake-hint" className="muted">
+                    {t('keepAwake.hint')}
+                </p>
+                {awake.feedback && (
+                    <Notice tone={awake.feedback.tone}>{awake.feedback.text}</Notice>
+                )}
+            </div>
+        </Panel>
+    );
+}
+
+// HTTPS from the internet: router rule on external 443 and a Let's Encrypt certificate for the
+// domain name, or else the public address.
+function HttpsInternetSection({
+    status,
+    onStatus,
+}: {
+    status: InternetAccessStatus;
+    onStatus(status: InternetAccessStatus): void;
 }) {
     const { t, dates } = useI18n();
     const action = useAction();
-    const awake = useAction();
     const [replacing, setReplacing] = useState(false);
     const [turningOff, setTurningOff] = useState(false);
-    const [domain, setDomain] = useState(status.domain ?? '');
     const failure = status.failure
         ? t(failures[status.failure.reason], {
               domain: status.domain ?? '',
@@ -69,10 +131,7 @@ export function InternetAccessPanel({
     const setUp = (replaceCertificate: boolean) =>
         api.request<InternetAccessStatus>('/server-settings/internet-access', {
             method: 'POST',
-            body: {
-                domain: domain.trim() || null,
-                ...(replaceCertificate ? { replaceCertificate } : {}),
-            },
+            body: replaceCertificate ? { replaceCertificate } : {},
         });
     const start = () =>
         void action.run(async () => {
@@ -99,110 +158,67 @@ export function InternetAccessPanel({
                 }),
             ),
         );
-    const changeKeepAwake = (enabled: boolean) =>
-        void awake.run(async () => {
-            const saved = await api.request<{ enabled: boolean }>('/server-settings/keep-awake', {
-                method: 'PUT',
-                body: { enabled },
-            });
-
-            onKeepAwake(saved.enabled);
-        });
 
     return (
-        <Panel title={t('internet.title')}>
-            <div className="internet-access">
-                <p className="muted">{t('internet.intro')}</p>
-                {status.phase === 'setting-up' && <SetupSteps current={status.step} />}
-                {status.phase === 'active' && status.origin && status.certificate && (
-                    <>
-                        <Notice tone="success">{t('internet.active')}</Notice>
-                        <ActiveAddress origin={status.origin} />
-                        <p>
-                            {t('internet.validUntil', {
-                                date: dates.dateTime(status.certificate.expiresAt),
+        <section className="internet-access__section" aria-labelledby="https-internet-title">
+            <h3 id="https-internet-title" className="internet-access__subtitle">
+                {t('internet.httpsTitle')}
+            </h3>
+            {status.phase === 'setting-up' && <SetupSteps current={status.step} />}
+            {status.phase === 'active' && status.origin && status.certificate && (
+                <>
+                    <Notice tone="success">{t('internet.active')}</Notice>
+                    <InternetAddress origin={status.origin} />
+                    <p>
+                        {t('internet.validUntil', {
+                            date: dates.dateTime(status.certificate.expiresAt),
+                        })}
+                    </p>
+                    {failure && (
+                        <Notice tone="warning">
+                            {t('internet.lastFailure', {
+                                reason: failure,
+                                date: status.nextAttemptAt
+                                    ? dates.dateTime(status.nextAttemptAt)
+                                    : '',
                             })}
-                        </p>
-                        {failure && (
-                            <Notice tone="warning">
-                                {t('internet.lastFailure', {
-                                    reason: failure,
-                                    date: status.nextAttemptAt
-                                        ? dates.dateTime(status.nextAttemptAt)
-                                        : '',
-                                })}
-                            </Notice>
-                        )}
-                    </>
+                        </Notice>
+                    )}
+                </>
+            )}
+            {status.phase === 'waiting-for-port' && (
+                <>
+                    {failure && <Notice tone="warning">{failure}</Notice>}
+                    {status.manualRule && <ManualRule rule={status.manualRule} />}
+                </>
+            )}
+            {status.phase === 'off' && failure && <Notice tone="error">{failure}</Notice>}
+            {action.feedback && <Notice tone={action.feedback.tone}>{action.feedback.text}</Notice>}
+            <div className="actions">
+                {status.phase === 'off' && (
+                    <Button variant="primary" busy={action.busy} onClick={start}>
+                        {t('internet.setUp')}
+                    </Button>
                 )}
                 {status.phase === 'waiting-for-port' && (
-                    <>
-                        {failure && <Notice tone="warning">{failure}</Notice>}
-                        {status.manualRule && <ManualRule rule={status.manualRule} />}
-                    </>
-                )}
-                {status.phase === 'off' && failure && <Notice tone="error">{failure}</Notice>}
-                {status.phase === 'off' && (
-                    <TextField
-                        label={t('internet.domain')}
-                        hint={t('internet.domainHint')}
-                        name="domain"
-                        value={domain}
-                        onChange={(event) => setDomain(event.target.value)}
-                        placeholder="home.example.com"
-                        autoComplete="off"
-                        spellCheck={false}
-                        maxLength={253}
-                    />
+                    <Button variant="primary" busy={action.busy} onClick={check}>
+                        {t('internet.check')}
+                    </Button>
                 )}
                 {(status.phase === 'active' || status.phase === 'waiting-for-port') && (
-                    <p className="muted">{t('internet.firewall')}</p>
-                )}
-                {action.feedback && (
-                    <Notice tone={action.feedback.tone}>{action.feedback.text}</Notice>
-                )}
-                <div className="actions">
-                    {status.phase === 'off' && (
-                        <Button variant="primary" busy={action.busy} onClick={start}>
-                            {t('internet.setUp')}
-                        </Button>
-                    )}
-                    {status.phase === 'waiting-for-port' && (
-                        <Button variant="primary" busy={action.busy} onClick={check}>
-                            {t('internet.check')}
-                        </Button>
-                    )}
-                    {(status.phase === 'active' || status.phase === 'waiting-for-port') && (
-                        <Button variant="secondary" onClick={() => setTurningOff(true)}>
-                            {t('internet.turnOff')}
-                        </Button>
-                    )}
-                </div>
-                {status.phase === 'off' && (
-                    <p className="muted">
-                        {t('internet.terms')}{' '}
-                        <a href={termsAddress} target="_blank" rel="noreferrer">
-                            {t('internet.termsLink')}
-                        </a>
-                    </p>
-                )}
-                <label className="checkbox">
-                    <input
-                        type="checkbox"
-                        checked={keepAwake}
-                        disabled={awake.busy}
-                        onChange={(event) => changeKeepAwake(event.currentTarget.checked)}
-                        aria-describedby="keep-awake-hint"
-                    />
-                    {t('keepAwake.label')}
-                </label>
-                <p id="keep-awake-hint" className="muted">
-                    {t('keepAwake.hint')}
-                </p>
-                {awake.feedback && (
-                    <Notice tone={awake.feedback.tone}>{awake.feedback.text}</Notice>
+                    <Button variant="secondary" onClick={() => setTurningOff(true)}>
+                        {t('internet.turnOff')}
+                    </Button>
                 )}
             </div>
+            {status.phase === 'off' && (
+                <p className="muted">
+                    {t('internet.terms')}{' '}
+                    <a href={termsAddress} target="_blank" rel="noreferrer">
+                        {t('internet.termsLink')}
+                    </a>
+                </p>
+            )}
             <ConfirmDialog
                 open={replacing}
                 title={t('internet.replaceTitle')}
@@ -230,7 +246,7 @@ export function InternetAccessPanel({
                 }}
                 onClose={() => setTurningOff(false)}
             />
-        </Panel>
+        </section>
     );
 }
 
@@ -256,58 +272,5 @@ function SetupSteps({ current }: { current: InternetAccessStatus['step'] }) {
                 );
             })}
         </ol>
-    );
-}
-
-function ActiveAddress({ origin }: { origin: string }) {
-    const { t } = useI18n();
-    const leaf = origin + '/leaf/';
-
-    return (
-        <div className="internet-access__address">
-            <dl className="internet-access__facts">
-                <div>
-                    <dt>{t('internet.address')}</dt>
-                    <dd>
-                        <a href={leaf} target="_blank" rel="noreferrer">
-                            {leaf}
-                        </a>
-                    </dd>
-                </div>
-            </dl>
-            <figure className="internet-access__qr">
-                <QrCode value={leaf} label={t('internet.qrAlt', { address: leaf })} />
-                <figcaption className="muted">{t('internet.qr')}</figcaption>
-            </figure>
-        </div>
-    );
-}
-
-function ManualRule({ rule }: { rule: NonNullable<InternetAccessStatus['manualRule']> }) {
-    const { t } = useI18n();
-
-    return (
-        <div>
-            <h3 className="internet-access__subtitle">{t('internet.manualTitle')}</h3>
-            <p>{t('internet.manualIntro')}</p>
-            <dl className="internet-access__facts">
-                <div>
-                    <dt>{t('internet.manualProtocol')}</dt>
-                    <dd>{rule.protocol}</dd>
-                </div>
-                <div>
-                    <dt>{t('internet.manualExternal')}</dt>
-                    <dd>{rule.externalPort}</dd>
-                </div>
-                <div>
-                    <dt>{t('internet.manualAddress')}</dt>
-                    <dd>{rule.localAddress ?? t('internet.manualUnknown')}</dd>
-                </div>
-                <div>
-                    <dt>{t('internet.manualInternal')}</dt>
-                    <dd>{rule.internalPort}</dd>
-                </div>
-            </dl>
-        </div>
     );
 }

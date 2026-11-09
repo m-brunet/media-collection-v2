@@ -2,7 +2,7 @@ import { expect, it } from 'vitest';
 import { TestActors } from '../../../shared/application/testing/test-actors.test-support.js';
 import { HttpInternetAccess } from '../../domain/entities/http-internet-access.entity.js';
 import {
-    FixedHttpSettings,
+    FixedHttpListener,
     FixedLocalAddress,
     InternetAccessDoubles,
     MemoryDomainNameStore,
@@ -17,7 +17,7 @@ function subjectFor(state = InternetAccessDoubles.httpOpen(), domain: string | n
     return new ReadHttpInternetAccess(
         new MemoryHttpInternetAccessStore(state),
         new MemoryDomainNameStore(domain),
-        new FixedHttpSettings(),
+        new FixedHttpListener(),
         new FixedLocalAddress(),
     );
 }
