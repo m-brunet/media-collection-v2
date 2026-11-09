@@ -81,7 +81,8 @@ HTTPS from the internet (changes to Task 9.5)
 
 Addresses
 - HTTP: `http://<name or public IP>:<HTTP port>` while open. HTTPS: `https://<name or public IP>` while active (the
-  name the certificate covers). Both appear with a QR code in the Internet access panel and in the addresses panel.
+  name the certificate covers). The Internet access panel shows the Leaf link; the QR codes are in the addresses
+  panel only, with the other addresses (decided 2026-11-09, after the real test).
 - Local addresses (`http://192.168.x.x:<port>`) are unchanged.
 
 ## Design

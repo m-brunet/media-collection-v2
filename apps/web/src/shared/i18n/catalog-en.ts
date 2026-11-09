@@ -127,7 +127,7 @@ export const en = {
     'internet.stepWaiting': 'Waiting',
     'internet.active': 'Internet access is on.',
     'internet.address': 'Address',
-    'internet.qr': 'Scan this code with your phone to open Leaf.',
+    'internet.qrInAddresses': 'Its QR code for the phone is in the addresses list below.',
     'internet.qrAlt': 'QR code for {address}',
     'internet.validUntil': 'Certificate valid until {date}. It is renewed automatically.',
     'internet.lastFailure':

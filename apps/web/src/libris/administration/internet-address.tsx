@@ -1,14 +1,14 @@
 import type { InternetAccessStatus } from '../../../../../packages/contracts/src/http';
 import { useI18n } from '../../shared/i18n/i18n-context';
-import { QrCode } from '../../shared/ui/qr-code';
 
-// An internet address (HTTP or HTTPS) as phones use it: the Leaf link and its QR code.
+// An internet address (HTTP or HTTPS) as phones use it: the Leaf link. Its QR code is in the
+// addresses list, with the other addresses.
 export function InternetAddress({ origin }: { origin: string }) {
     const { t } = useI18n();
     const leaf = origin + '/leaf/';
 
     return (
-        <div className="internet-access__address">
+        <div>
             <dl className="internet-access__facts">
                 <div>
                     <dt>{t('internet.address')}</dt>
@@ -19,10 +19,7 @@ export function InternetAddress({ origin }: { origin: string }) {
                     </dd>
                 </div>
             </dl>
-            <figure className="internet-access__qr">
-                <QrCode value={leaf} label={t('internet.qrAlt', { address: leaf })} />
-                <figcaption className="muted">{t('internet.qr')}</figcaption>
-            </figure>
+            <p className="muted">{t('internet.qrInAddresses')}</p>
         </div>
     );
 }
