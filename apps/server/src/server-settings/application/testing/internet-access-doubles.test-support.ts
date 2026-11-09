@@ -9,7 +9,9 @@ import type { BackgroundTasks } from '../ports/driven/background-tasks.interface
 import type {
     CertificateAuthority,
     CertificateIssue,
+    CertificateSubject,
 } from '../ports/driven/certificate-authority.interface.js';
+import type { DomainNameResolver } from '../ports/driven/domain-name-resolver.interface.js';
 import type { HttpsRuntime } from '../ports/driven/https-runtime.interface.js';
 import type { InternetAccessStore } from '../ports/driven/internet-access-store.interface.js';
 import type { KeepAwakeRuntime } from '../ports/driven/keep-awake-runtime.interface.js';
@@ -20,6 +22,7 @@ import type { PortRule } from '../ports/driven/port-rule.interface.js';
 import type { RouterConnection } from '../ports/driven/router-connection.interface.js';
 import type { RouterGateway } from '../ports/driven/router-gateway.interface.js';
 import type { TlsStore } from '../ports/driven/tls-store.interface.js';
+import { DomainNameCheck } from '../services/domain-name-check.service.js';
 import { InternetAccessSetup } from '../services/internet-access-setup.service.js';
 
 export const publicAddress = '82.66.118.204';
@@ -80,15 +83,31 @@ export class FakeProbe implements PublicAddressProbe {
     }
 }
 
+export class FakeResolver implements DomainNameResolver {
+    readonly asked: string[] = [];
+
+    constructor(public answer: string[] = [publicAddress]) {}
+
+    async addresses(name: string): Promise<string[]> {
+        this.asked.push(name);
+
+        return [...this.answer];
+    }
+}
+
 export class FakeAuthority implements CertificateAuthority {
     readonly requested: string[] = [];
+    readonly subjects: CertificateSubject[] = [];
     refusal: Extract<CertificateIssue, { outcome: 'refused' }>['reason'] | null = null;
     failure: Error | null = null;
 
     constructor(private readonly clock: Clock) {}
 
-    async issue(address: string): Promise<CertificateIssue> {
+    async issue(subject: CertificateSubject): Promise<CertificateIssue> {
+        const address = subject.name;
+
         this.requested.push(address);
+        this.subjects.push({ ...subject });
 
         if (this.failure) {
             throw this.failure;
@@ -200,6 +219,8 @@ export class InternetAccessDoubles {
         const authority = new FakeAuthority(clock);
         const https = new FakeHttpsRuntime();
         const tlsStore = new MemoryTlsStore(tls);
+        const resolver = new FakeResolver();
+        const domains = new DomainNameCheck(resolver);
         const setup = new InternetAccessSetup(
             store,
             router,
@@ -207,6 +228,7 @@ export class InternetAccessDoubles {
             authority,
             https,
             tlsStore,
+            domains,
             clock,
         );
 
@@ -218,6 +240,8 @@ export class InternetAccessDoubles {
             authority,
             https,
             tls: tlsStore,
+            resolver,
+            domains,
             setup,
             background: new AwaitableBackground(),
         };

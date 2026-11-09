@@ -24,7 +24,7 @@ it('gives the address phones open once active', async () => {
 it('gives the values for a manual router rule while waiting for it', async () => {
     const access = InternetAccess.off();
 
-    access.start();
+    access.start(null);
     access.portNeeded(publicAddress, 'no-router', new Date('2026-11-08T10:00:00.000Z'));
     const subject = subjectFor(InternetAccessDoubles.setup(access.snapshot));
 
@@ -48,4 +48,19 @@ it('refuses an Owner', async () => {
     const result = subject.execute(TestActors.of('owner', 'olivia'));
 
     await expect(result).rejects.toMatchObject({ code: 'forbidden' });
+});
+it('gives the domain name as the address phones open', async () => {
+    const state = InternetAccessDoubles.active({
+        domain: 'home.example.fr',
+        certificate: {
+            address: 'home.example.fr',
+            issuedAt: '2026-11-08T10:00:00.000Z',
+            expiresAt: '2027-02-06T10:00:00.000Z',
+        },
+    });
+    const subject = subjectFor(InternetAccessDoubles.setup(state));
+
+    const view = await subject.execute(admin);
+
+    expect([view.origin, view.domain]).toEqual(['https://home.example.fr', 'home.example.fr']);
 });

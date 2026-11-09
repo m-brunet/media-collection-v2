@@ -28,7 +28,7 @@ function activeAccess(): InternetAccess {
     const access = InternetAccess.off();
     const now = new Date('2026-11-08T10:00:00.000Z');
 
-    access.start();
+    access.start(null);
     access.routerFound('upnp', '82.66.118.204', now);
     access.portOpened();
     access.activate({
