@@ -452,6 +452,54 @@ export const fr = {
     'appearance.scheme.graphiteGold': 'Or graphite',
     'appearance.scheme.slateOrchid': 'La Voie du papillon',
     'appearance.scheme.charcoalScarlet': 'Charbon chaud × Écarlate doux',
+    'nav.credits': 'Crédits et licences',
+    'credits.title': 'Crédits et licences',
+    'credits.intro':
+        'Media Collection s’appuie sur le travail d’autres personnes. Ces icônes, polices, sources de données et bibliothèques logicielles sont créditées ici, avec leurs licences et les modifications apportées.',
+    'credits.backToSignIn': 'Retour à la connexion',
+    'credits.group.icons': 'Icônes',
+    'credits.group.fonts': 'Polices',
+    'credits.group.data': 'Sources des données des livres',
+    'credits.group.libraries': 'Bibliothèques logicielles',
+    'credits.author': 'Auteur',
+    'credits.licence': 'Licence',
+    'credits.used': 'Utilisation',
+    'credits.changes': 'Modifications',
+    'credits.unchanged': 'Aucune',
+    'credits.lucide.used':
+        'Jeu d’icônes par défaut, et les petites icônes utilitaires de tous les jeux.',
+    'credits.gameIcons.used': 'Jeu d’icônes « Silhouettes pleines ».',
+    'credits.streamlineFreehand.used': 'Jeu d’icônes « Croquis éditoriaux à l’encre ».',
+    'credits.streamlineCyber.used': 'Jeu d’icônes « Plans d’architecte ».',
+    'credits.streamlineUltimate.used': 'Jeu d’icônes « Risographie à une encre ».',
+    'credits.iconoir.used': 'Jeu d’icônes « Trait éditorial discret ».',
+    'credits.iconSet.changes':
+        'Sélectionnées dans le pack, redessinées dans la couleur du texte pour suivre le jeu de couleurs, et dimensionnées pour l’interface.',
+    'credits.streamlineCyber.changes':
+        'Sélectionnées dans le pack, redessinées dans la couleur du texte pour suivre le jeu de couleurs, extrémités de trait carrées, dimensionnées pour l’interface ; l’icône hors ligne est composée d’icônes du même pack.',
+    'credits.librisIcon.used':
+        'L’icône de Libris : fenêtre, barre des tâches, favicon et logo à côté du titre Libris.',
+    'credits.librisIcon.changes':
+        'Recolorée en vert printemps (#79d670) et redimensionnée en fichiers d’icône d’application.',
+    'credits.turningLeaf.used':
+        'L’icône Feuille qui tourne de chaque jeu d’icônes, et l’icône de Leaf.',
+    'credits.turningLeaf.changes':
+        'Icônes originales générées avec GPT Astra pour Media Collection, dessinées dans le style de chaque jeu d’icônes ; elles ne dérivent d’aucune icône précise des packs, aucune licence de pack ne s’applique.',
+    'credits.inter.used': 'Texte de l’interface.',
+    'credits.spaceGrotesk.used': 'Titres.',
+    'credits.ibmPlexMono.used': 'Codes et petites étiquettes (ISBN, titres de section).',
+    'credits.bnf.used':
+        'Informations et résumés des livres dans Trouver un livre. Source : Bibliothèque nationale de France.',
+    'credits.openLibrary.used': 'Informations et couvertures des livres dans Trouver un livre.',
+    'credits.sharp.used': 'Retrait des marges autour des couvertures.',
+    'credits.libvips.used': 'Décodage et encodage des images, fourni avec sharp.',
+    'credits.barcodeDetector.used':
+        'Lecture des codes-barres dans Leaf quand le navigateur n’a pas de détecteur.',
+    'credits.zxingWasm.used': 'Le décodeur de codes-barres fourni avec Leaf.',
+    'credits.zxingCpp.used': 'Décodage des codes-barres, compilé dans zxing-wasm.',
+    'credits.acmeClient.used': 'Obtention des certificats HTTPS auprès de Let’s Encrypt.',
+    'credits.natApi.used': 'Ouverture du port de la box (UPnP) pour l’accès Internet.',
+    'credits.qrcode.used': 'Les codes QR des adresses du serveur.',
     'appearance.default': 'par défaut',
     'appearance.iconSetTitle': 'Jeu d’icônes',
     'appearance.iconSetHint':

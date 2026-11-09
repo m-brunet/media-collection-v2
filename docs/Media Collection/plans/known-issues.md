@@ -195,7 +195,9 @@ design.
       `apps/desktop/assets/icons/CREDITS.md`), and the credits already listed in
       [Task 6](task-06-assisted-entry.md#credits-for-the-future-credits-page),
       [Task 7](task-07-leaf.md#credits-for-the-future-credits-page) and Task 9.5 (ACME client, NAT library, QR code
-      library). Task 10's About window links to it.
+      library). Task 10's About window links to it. **Built 2026-11-09:** Libris `/credits` (on its own when signed
+      out, inside the app when signed in), linked from the sign-in page and the bottom of the sidebar; data in
+      `apps/web/src/shared/credits/credits.util.ts` (icons, fonts, book data sources, libraries), texts in EN/FR.
     - **Tests:** value object and use cases, API tests (setting, before sign-in, Admin only, audit), the data reset
       returning to Lucide, component tests (Appearance page, `Icon` with each set and the Lucide fallback, credits
       page), a browser journey choosing a set (Libris and Leaf).

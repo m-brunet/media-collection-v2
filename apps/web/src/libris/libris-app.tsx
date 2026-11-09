@@ -1,6 +1,13 @@
 import type { ReactNode } from 'react';
 import { useState } from 'react';
-import { createBrowserRouter, Link, Route, RouterProvider, Routes } from 'react-router';
+import {
+    createBrowserRouter,
+    Link,
+    Route,
+    RouterProvider,
+    Routes,
+    useLocation,
+} from 'react-router';
 import { useI18n } from '../shared/i18n/i18n-context';
 import { AppearanceProvider } from '../shared/appearance/appearance-context';
 import { SessionProvider, useSession } from '../shared/session/session-context';
@@ -8,6 +15,7 @@ import { EmptyState, LoadingState } from '../shared/ui/states';
 import { PasswordSetupPage } from './access/password-setup-page';
 import { SetupPage } from './access/setup-page';
 import { SignInPage } from './access/sign-in-page';
+import { CreditsPage } from './credits/credits-page';
 import { AccountPage } from './account/account-page';
 import { AccountsPage } from './administration/accounts-page';
 import { AppearancePage } from './administration/appearance-page';
@@ -71,6 +79,12 @@ function LibraryEditorOnly({ children }: { children: ReactNode }) {
 function LibrisRoutes() {
     const { t } = useI18n();
     const { status, account } = useSession();
+    const { pathname } = useLocation();
+
+    // Credits and licences are public: shown on their own until someone signs in.
+    if (pathname === '/credits' && (status !== 'signed-in' || !account)) {
+        return <CreditsPage standalone />;
+    }
 
     if (status === 'loading') {
         return <LoadingState label={t('session.connecting')} />;
@@ -139,6 +153,7 @@ function LibrisRoutes() {
                     }
                 />
                 <Route path="/account" element={<AccountPage />} />
+                <Route path="/credits" element={<CreditsPage />} />
                 <Route
                     path="/admin/accounts"
                     element={

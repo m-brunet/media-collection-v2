@@ -92,6 +92,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                         </p>
                     )}
                     <LanguageSwitch />
+                    <NavLink to="/credits" className="sidebar__credits">
+                        {t('nav.credits')}
+                    </NavLink>
                 </div>
             </aside>
             <main id="main" className="shell__main">
