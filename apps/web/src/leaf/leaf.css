@@ -193,6 +193,10 @@
     border-radius: var(--radius-md);
 }
 
+.leaf-found__icon {
+    color: var(--color-accent);
+}
+
 .leaf-found__isbn {
     display: flex;
     flex-direction: column;

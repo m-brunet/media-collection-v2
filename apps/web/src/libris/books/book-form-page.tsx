@@ -167,7 +167,12 @@ function BookForm({ book }: { book: BookDto | null }) {
             <form id={sectionId} className="stack" onSubmit={submit} noValidate>
                 {notice && <Notice tone="success">{notice}</Notice>}
                 {lookup.message && (
-                    <Notice tone={lookup.message.tone}>{lookup.message.text}</Notice>
+                    <Notice
+                        tone={lookup.message.tone}
+                        icon={lookup.message.offline ? 'lookup-offline' : undefined}
+                    >
+                        {lookup.message.text}
+                    </Notice>
                 )}
                 <BookMainFields
                     book={book}

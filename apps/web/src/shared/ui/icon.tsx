@@ -10,6 +10,8 @@ import {
     LibraryBig,
     SlidersHorizontal,
     Tag,
+    BookCheck,
+    BookCopy,
     BookOpen,
     BookPlus,
     BookDown,
@@ -24,6 +26,7 @@ import {
     QrCode,
     Search,
     Trash2,
+    CameraOff,
     CircleAlert,
     CircleCheck,
     History,
@@ -36,9 +39,11 @@ import {
     ScanBarcode,
     Server,
     Settings2,
+    ShieldAlert,
     ShieldCheck,
     UserRound,
     Users,
+    WifiOff,
     X,
 } from 'lucide-react';
 
@@ -81,6 +86,12 @@ const lucide = {
     lend: BookUp,
     'lend-return': BookDown,
     qr: QrCode,
+    // Screen states that the icon sets draw (KI-6).
+    'permission-denied': ShieldAlert,
+    'already-owned': BookCheck,
+    'existing-edition': BookCopy,
+    'camera-unavailable': CameraOff,
+    'lookup-offline': WifiOff,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof lucide;
@@ -97,6 +108,11 @@ const purposes: Partial<Record<IconName, string>> = {
     // artwork; with Lucide chosen, every link keeps its own Lucide icon.
     accounts: 'administration',
     server: 'settings',
+    'permission-denied': 'permission-denied',
+    'already-owned': 'already-owned',
+    'existing-edition': 'existing-edition',
+    'camera-unavailable': 'camera-unavailable',
+    'lookup-offline': 'lookup-offline',
     success: 'success',
     error: 'error',
     loading: 'loading',

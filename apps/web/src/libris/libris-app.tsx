@@ -53,7 +53,7 @@ function PermissionDeniedPage() {
 
     return (
         <EmptyState
-            icon="administration"
+            icon="permission-denied"
             title={t('denied.title')}
             body={t('denied.body')}
             action={<Link to="/books">{t('denied.back')}</Link>}
