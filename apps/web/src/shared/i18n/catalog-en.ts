@@ -81,8 +81,6 @@ export const en = {
     'server.httpsStopped': 'HTTPS is not running.',
     'server.restartRequired':
         'Saved settings are waiting for a restart. Close and reopen the desktop application to apply them.',
-    'server.internet':
-        'Internet access uses your router’s port forwarding and the computer’s firewall. HTTP remains available when HTTPS is enabled.',
     'server.httpTitle': 'HTTP / web interface',
     'server.httpIntro':
         'Browsers use this port to reach Libris and Leaf. HTTP is listening on port {running}; the saved port is {saved}.',
@@ -108,6 +106,70 @@ export const en = {
     'server.key': 'PEM private key',
     'server.httpsSubmit': 'Save HTTPS settings',
     'server.httpsSaved': 'Settings saved. Restart the desktop application to apply them.',
+    'server.advanced': 'Advanced: ports and manual certificate',
+    'server.httpsManaged':
+        'Internet access manages the HTTPS certificate. Turn internet access off to change these settings.',
+    'internet.title': 'Internet access',
+    'internet.intro':
+        'Open Libris and Leaf from anywhere, for example from your phone while shopping. Media Collection opens the port on your router and gets a free certificate from Let’s Encrypt, renewed automatically.',
+    'internet.setUp': 'Set up internet access',
+    'internet.terms':
+        'The certificate comes from Let’s Encrypt. Setting up accepts the Let’s Encrypt Subscriber Agreement.',
+    'internet.termsLink': 'Read the agreement',
+    'internet.stepRouter': 'Finding your router',
+    'internet.stepPort': 'Opening the port',
+    'internet.stepCertificate': 'Getting the certificate',
+    'internet.stepDone': 'Done',
+    'internet.stepRunning': 'In progress',
+    'internet.stepWaiting': 'Waiting',
+    'internet.active': 'Internet access is on.',
+    'internet.address': 'Address',
+    'internet.qr': 'Scan this code with your phone to open Leaf.',
+    'internet.qrAlt': 'QR code for {address}',
+    'internet.validUntil': 'Certificate valid until {date}. It is renewed automatically.',
+    'internet.lastFailure':
+        'The last check failed: {reason} The current certificate stays in use. Next attempt: {date}.',
+    'internet.turnOff': 'Turn off internet access',
+    'internet.turnOffTitle': 'Turn off internet access?',
+    'internet.turnOffBody':
+        'Phones will no longer reach Libris and Leaf from outside your home. The router rule is removed. You can set it up again at any time.',
+    'internet.manualTitle': 'Add the rule in your router',
+    'internet.manualIntro':
+        'In your router’s settings, look for “Port forwarding” (also called “NAT/PAT” or “Port redirection”) and add this rule:',
+    'internet.manualProtocol': 'Protocol',
+    'internet.manualExternal': 'External port',
+    'internet.manualAddress': 'Internal address (this computer)',
+    'internet.manualInternal': 'Internal port',
+    'internet.manualUnknown': 'unknown',
+    'internet.check': 'Check again',
+    'internet.firewall':
+        'If Windows asks whether to allow Media Collection on the network, choose Allow.',
+    'internet.replaceTitle': 'Replace the saved certificate?',
+    'internet.replaceBody':
+        'An HTTPS certificate is already saved. Internet access replaces it with a certificate from Let’s Encrypt.',
+    'internet.replace': 'Replace and set up',
+    'internet.failure.no-router':
+        'Your router did not answer, so the rule cannot be added automatically.',
+    'internet.failure.port-refused':
+        'Your router refused to open port 443. It may already be used, for example by the router’s own remote access.',
+    'internet.failure.not-reachable':
+        'Let’s Encrypt could not reach this computer on port 443. Check the router rule and the Windows firewall.',
+    'internet.failure.cgnat':
+        'Your internet provider shares your public address with other customers (CGNAT), so this computer cannot be reached from the internet. Ask your provider for a full IPv4 address, then try again.',
+    'internet.failure.double-nat':
+        'Your router is connected behind another router. Open the port on the other router too, or put the provider box in bridge mode, then try again.',
+    'internet.failure.public-address-unknown':
+        'The public address of your connection could not be found. Check the internet connection, then try again.',
+    'internet.failure.rate-limited':
+        'Let’s Encrypt has reached its limit of certificates for this address. Try again later: the wait can last from a few hours to a few days.',
+    'internet.failure.authority-unavailable':
+        'Let’s Encrypt could not be reached. Check the internet connection, then try again.',
+    'internet.failure.https-unavailable':
+        'HTTPS could not start: its port may be used by another program. Choose another HTTPS port in the advanced settings, then try again.',
+    'internet.failure.setup-failed': 'The setup stopped unexpectedly. Try again.',
+    'keepAwake.label': 'Keep this computer awake while Media Collection runs',
+    'keepAwake.hint':
+        'Leaf only works while this computer is on and awake. The screen can still turn off.',
     'notFound.title': 'Page not found',
     'notFound.body': 'This page does not exist in Libris.',
     'notFound.back': 'Back to my books',
@@ -257,6 +319,9 @@ export const en = {
     'reason.roleRequired': 'Choose Owner or Guest.',
     'reason.portsIdentical': 'HTTP and HTTPS must use different ports.',
     'reason.certificateIncomplete': 'Supply both the certificate chain and the private key.',
+    'reason.setupInProgress': 'Internet access is already being set up. Wait for it to finish.',
+    'reason.nothingToCheck': 'There is no router rule to check.',
+    'reason.internetAccessOn': 'Turn off internet access before changing the HTTPS settings.',
     'setup.title': 'Set up your library',
     'setup.intro':
         'Create the protected administrator account. Complete setup before using this installation.',

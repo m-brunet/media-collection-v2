@@ -3,6 +3,7 @@ import type { TlsSettingsState } from '../../domain/value-objects/tls-settings.v
 import type { HttpSettingsStore } from '../ports/driven/http-settings-store.interface.js';
 import type { HttpSettingsState } from '../../domain/value-objects/http-settings.value-object.js';
 import { HttpSettings } from '../../domain/value-objects/http-settings.value-object.js';
+import { MemoryInternetAccessStore } from './internet-access-doubles.test-support.js';
 
 export const actor = {
     id: 'admin',
@@ -42,6 +43,12 @@ export class SettingsDoubles {
             },
         };
 
-        return { store, http, validator, validations: () => validations };
+        return {
+            store,
+            http,
+            validator,
+            internetAccess: new MemoryInternetAccessStore(),
+            validations: () => validations,
+        };
     }
 }

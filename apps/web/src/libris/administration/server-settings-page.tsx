@@ -10,6 +10,10 @@ import { Notice } from '../../shared/ui/notice';
 import { LoadingState } from '../../shared/ui/states';
 import { TextAreaField, TextField } from '../../shared/ui/text-field';
 import { useAction } from '../../shared/use-action';
+import { InternetAccessPanel } from './internet-access-panel';
+
+// While a setup runs, the page follows its steps.
+const followInterval = 1500;
 
 export function ServerSettingsPage() {
     const { t } = useI18n();
@@ -24,6 +28,23 @@ export function ServerSettingsPage() {
         void run(async () => setSettings(await api.request<ServerStatus>('/server-settings')));
     }, [run]);
 
+    const settingUp = settings?.internetAccess.phase === 'setting-up';
+
+    useEffect(() => {
+        if (!settingUp) {
+            return;
+        }
+
+        const timer = setInterval(() => {
+            void api
+                .request<ServerStatus>('/server-settings', { passive: true })
+                .then(setSettings, () => undefined);
+        }, followInterval);
+
+        return () => clearInterval(timer);
+    }, [settingUp]);
+
+    const managed = settings ? settings.internetAccess.phase !== 'off' : false;
     const submitHttp = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const port = Number(new FormData(event.currentTarget).get('httpPort'));
@@ -76,6 +97,18 @@ export function ServerSettingsPage() {
                     {settings.restartRequired && (
                         <Notice tone="warning">{t('server.restartRequired')}</Notice>
                     )}
+                    <InternetAccessPanel
+                        status={settings.internetAccess}
+                        keepAwake={settings.keepAwake}
+                        onStatus={(internetAccess) =>
+                            void api
+                                .request<ServerStatus>('/server-settings', { passive: true })
+                                .then(setSettings, () =>
+                                    setSettings({ ...settings, internetAccess }),
+                                )
+                        }
+                        onKeepAwake={(keepAwake) => setSettings({ ...settings, keepAwake })}
+                    />
                     <Panel title={t('server.listeners')}>
                         <ul className="plain-list">
                             {settings.running.addresses.map((address) => (
@@ -92,136 +125,146 @@ export function ServerSettingsPage() {
                         {settings.running.httpsError && (
                             <Notice tone="error">{settings.running.httpsError}</Notice>
                         )}
-                        <p className="muted">{t('server.internet')}</p>
                     </Panel>
-                    <div className="panel-grid">
-                        <Panel title={t('server.httpTitle')}>
-                            <form
-                                className="form"
-                                onSubmit={submitHttp}
-                                aria-label={t('server.httpTitle')}
-                            >
-                                <p className="muted">
-                                    {t('server.httpIntro', {
-                                        running: settings.running.httpPort,
-                                        saved: settings.configured.http.port,
-                                    })}
-                                </p>
-                                {settings.running.httpPortOverride && (
-                                    <Notice tone="warning">
-                                        {t(
-                                            settings.running.httpPortOverride.source ===
-                                                'command-line'
-                                                ? 'server.overrideCommandLine'
-                                                : 'server.overrideEnvironment',
-                                            { port: settings.running.httpPortOverride.port },
-                                        )}
-                                    </Notice>
-                                )}
-                                <TextField
-                                    label={t('server.httpPort')}
-                                    name="httpPort"
-                                    type="number"
-                                    defaultValue={settings.configured.http.port}
-                                    hint={t('server.portRule')}
-                                    min={1024}
-                                    max={65535}
-                                    step={1}
-                                    required
-                                />
-                                {settings.configured.http.port !== settings.running.httpPort && (
-                                    <div>
-                                        <p>{t('server.nextAddresses')}</p>
-                                        <ul className="plain-list">
-                                            {settings.running.addresses.map((address) => {
-                                                const next = new URL(address);
-
-                                                next.port = String(settings.configured.http.port);
-
-                                                return <li key={address}>{next.origin}</li>;
-                                            })}
-                                        </ul>
-                                    </div>
-                                )}
-                                {http.feedback && (
-                                    <Notice tone={http.feedback.tone}>{http.feedback.text}</Notice>
-                                )}
-                                <div className="actions">
-                                    <Button
-                                        type="submit"
-                                        variant="primary"
-                                        disabled={saving}
-                                        busy={http.busy}
-                                    >
-                                        {t('server.httpSubmit')}
-                                    </Button>
-                                </div>
-                            </form>
-                        </Panel>
-                        <Panel title={t('server.httpsTitle')}>
-                            <form
-                                className="form"
-                                onSubmit={submitHttps}
-                                aria-label={t('server.httpsTitle')}
-                            >
-                                <label className="checkbox">
-                                    <input
-                                        name="enabled"
-                                        type="checkbox"
-                                        defaultChecked={settings.configured.tls.enabled}
-                                    />
-                                    {t('server.httpsEnable')}
-                                </label>
-                                <TextField
-                                    label={t('server.httpsPort')}
-                                    name="port"
-                                    type="number"
-                                    defaultValue={settings.configured.tls.port}
-                                    hint={t('server.portRule')}
-                                    min={1024}
-                                    max={65535}
-                                    step={1}
-                                    required
-                                />
-                                <p className="muted">
-                                    {t(
-                                        settings.configured.tls.hasCertificate
-                                            ? 'server.certificateSaved'
-                                            : 'server.certificateMissing',
+                    <details className="advanced-settings">
+                        <summary>{t('server.advanced')}</summary>
+                        <div className="panel-grid">
+                            <Panel title={t('server.httpTitle')}>
+                                <form
+                                    className="form"
+                                    onSubmit={submitHttp}
+                                    aria-label={t('server.httpTitle')}
+                                >
+                                    <p className="muted">
+                                        {t('server.httpIntro', {
+                                            running: settings.running.httpPort,
+                                            saved: settings.configured.http.port,
+                                        })}
+                                    </p>
+                                    {settings.running.httpPortOverride && (
+                                        <Notice tone="warning">
+                                            {t(
+                                                settings.running.httpPortOverride.source ===
+                                                    'command-line'
+                                                    ? 'server.overrideCommandLine'
+                                                    : 'server.overrideEnvironment',
+                                                { port: settings.running.httpPortOverride.port },
+                                            )}
+                                        </Notice>
                                     )}
-                                </p>
-                                <TextAreaField
-                                    label={t('server.chain')}
-                                    name="chain"
-                                    rows={5}
-                                    spellCheck={false}
-                                    placeholder="-----BEGIN CERTIFICATE-----"
-                                />
-                                <TextAreaField
-                                    label={t('server.key')}
-                                    name="key"
-                                    rows={5}
-                                    spellCheck={false}
-                                    placeholder="-----BEGIN PRIVATE KEY-----"
-                                />
-                                {https.feedback && (
-                                    <Notice tone={https.feedback.tone}>
-                                        {https.feedback.text}
-                                    </Notice>
-                                )}
-                                <div className="actions">
-                                    <Button
-                                        type="submit"
-                                        variant="primary"
-                                        disabled={saving}
-                                        busy={https.busy}
-                                    >
-                                        {t('server.httpsSubmit')}
-                                    </Button>
-                                </div>
-                            </form>
-                        </Panel>
-                    </div>
+                                    <TextField
+                                        label={t('server.httpPort')}
+                                        name="httpPort"
+                                        type="number"
+                                        defaultValue={settings.configured.http.port}
+                                        hint={t('server.portRule')}
+                                        min={1024}
+                                        max={65535}
+                                        step={1}
+                                        required
+                                    />
+                                    {settings.configured.http.port !==
+                                        settings.running.httpPort && (
+                                        <div>
+                                            <p>{t('server.nextAddresses')}</p>
+                                            <ul className="plain-list">
+                                                {settings.running.addresses.map((address) => {
+                                                    const next = new URL(address);
+
+                                                    next.port = String(
+                                                        settings.configured.http.port,
+                                                    );
+
+                                                    return <li key={address}>{next.origin}</li>;
+                                                })}
+                                            </ul>
+                                        </div>
+                                    )}
+                                    {http.feedback && (
+                                        <Notice tone={http.feedback.tone}>
+                                            {http.feedback.text}
+                                        </Notice>
+                                    )}
+                                    <div className="actions">
+                                        <Button
+                                            type="submit"
+                                            variant="primary"
+                                            disabled={saving}
+                                            busy={http.busy}
+                                        >
+                                            {t('server.httpSubmit')}
+                                        </Button>
+                                    </div>
+                                </form>
+                            </Panel>
+                            <Panel title={t('server.httpsTitle')}>
+                                <form
+                                    className="form"
+                                    onSubmit={submitHttps}
+                                    aria-label={t('server.httpsTitle')}
+                                >
+                                    {managed && (
+                                        <Notice tone="info">{t('server.httpsManaged')}</Notice>
+                                    )}
+                                    <label className="checkbox">
+                                        <input
+                                            name="enabled"
+                                            type="checkbox"
+                                            defaultChecked={settings.configured.tls.enabled}
+                                        />
+                                        {t('server.httpsEnable')}
+                                    </label>
+                                    <TextField
+                                        label={t('server.httpsPort')}
+                                        name="port"
+                                        type="number"
+                                        defaultValue={settings.configured.tls.port}
+                                        hint={t('server.portRule')}
+                                        min={1024}
+                                        max={65535}
+                                        step={1}
+                                        required
+                                    />
+                                    <p className="muted">
+                                        {t(
+                                            settings.configured.tls.hasCertificate
+                                                ? 'server.certificateSaved'
+                                                : 'server.certificateMissing',
+                                        )}
+                                    </p>
+                                    <TextAreaField
+                                        label={t('server.chain')}
+                                        name="chain"
+                                        rows={5}
+                                        spellCheck={false}
+                                        placeholder="-----BEGIN CERTIFICATE-----"
+                                    />
+                                    <TextAreaField
+                                        label={t('server.key')}
+                                        name="key"
+                                        rows={5}
+                                        spellCheck={false}
+                                        placeholder="-----BEGIN PRIVATE KEY-----"
+                                    />
+                                    {https.feedback && (
+                                        <Notice tone={https.feedback.tone}>
+                                            {https.feedback.text}
+                                        </Notice>
+                                    )}
+                                    <div className="actions">
+                                        <Button
+                                            type="submit"
+                                            variant="primary"
+                                            disabled={saving || managed}
+                                            busy={https.busy}
+                                        >
+                                            {t('server.httpsSubmit')}
+                                        </Button>
+                                    </div>
+                                </form>
+                            </Panel>
+                        </div>
+                    </details>
                 </div>
             )}
         </>

@@ -20,6 +20,9 @@ design.
 | KI-5 | Bug         | Bookshelves count not vertically centred with the search field                        | Low      | Open   |
 | KI-6 | Improvement | Appearance offers seven new colour schemes; Mint, Emerald and Forest are removed      | Medium   | Open   |
 | KI-7 | Improvement | Interface text needs slightly wider letter spacing                                    | Low      | Open   |
+| KI-8 | Improvement | Server settings addresses need more space between them                                | Low      | Open   |
+| KI-9 | Improvement | Internet access: no automatic Let's Encrypt retries, estimated attempts left           | Medium   | Open   |
+| KI-10 | Improvement | Internet access: renew certificates through ARI so renewals escape Let's Encrypt limits | Medium | Open |
 
 ## Open
 
@@ -151,6 +154,74 @@ design.
   tight: the sidebar (long French labels such as "Paramètres du serveur"), buttons, table columns, the book form and
   Leaf at phone width, in English and French, at 1280 × 720 and 1440 wide.
 - **Severity:** low (typography). **Planned:** next fix pass, or the next task that touches shared styles.
+
+### KI-8 — Server settings addresses need more space between them
+
+- **Type:** Improvement.
+- **Reported:** 2026-11-08 by the user, on the Libris Server settings page (French: "Adresses actuelles"), Task 9.5
+  branch. The user likes how the addresses are shown, but the lines are too close together.
+- **Today:** the addresses (`http://127.0.0.1:34345`, the Tailscale and local network addresses) are links in a
+  `.plain-list` (`apps/web/src/libris/libris.css`), which only removes the list's margins and bullets, so the links sit
+  line against line. The same list style holds the "next addresses" shown after an HTTP port change
+  (`apps/web/src/libris/administration/server-settings-page.tsx`).
+- **Fix:** space the items of both address lists, for example a dedicated class
+  (`display: grid; gap: var(--space-2)`) instead of the bare `.plain-list`. Keep the current look of the links.
+  Check on the reference desktop viewport, in both languages.
+- **Severity:** low (readability). **Planned:** next fix pass, or the next task that touches Server settings.
+
+### KI-9 — Internet access: no automatic Let's Encrypt retries, estimated attempts left
+
+- **Type:** Improvement.
+- **Reported:** 2026-11-08 by the user, after the Task 9.5 real-world check hit Let's Encrypt's limit (see Step 11 in
+  [task-09-5-internet-access-https.md](task-09-5-internet-access-https.md)).
+- **Let's Encrypt limits** ([rate limits](https://letsencrypt.org/docs/rate-limits/), updated 2026-08-05):
+  - 5 certificates per exact set of identifiers (here: the public IP) per 7 days, refilled 1 every 34 hours, counted
+    across all accounts, no override; only ARI renewals are exempt (KI-10).
+  - 5 failed checks per identifier per account per hour, refilled 1 every 12 minutes, no override.
+  - 1,152 consecutive failed checks per identifier per account (refilled 1 per day, reset by a success); then issuance
+    for the address is paused until unpaused in Let's Encrypt's self-service portal.
+- **Today:** the setup and **Check again** only try when the Admin asks. The hourly upkeep retries a failed renewal on
+  its own, 1 hour after the first failure, then doubling up to 6 hours, whatever the reason; a rate-limit refusal is
+  retried long before Let's Encrypt's `Retry-After` date. Nothing tells the Admin how many attempts remain.
+- **Fix:**
+  - **No automatic retry of an attempt that cannot succeed:** after a rate-limit refusal, nothing is sent to
+    Let's Encrypt before the `Retry-After` date it gave (stored and shown: "Try again after Monday 23:30"); after a
+    failed check (port not reachable), the upkeep stops trying and waits for the Admin's **Check again**. Only
+    failures that cost nothing (Let's Encrypt or the router unreachable) keep the current growing delays.
+  - **Estimated attempts left, shown after the first failure:** from the app's own history of issued certificates and
+    failed checks for the address, apply the two refill rules above: "About N certificates left this week for this
+    address" and "About N checks left this hour". A rough estimate is enough; the panel says it is an estimate,
+    because other software or another installation using the same address also counts (as the Task 9.5 incident
+    did). At zero, the button explains when it becomes useful again instead of trying.
+  - **Turn off** warns that setting internet access up again uses a certificate.
+  - Tests: domain rules for the estimate (refill over time, zero, unknown history), the upkeep not calling the
+    authority before `Retry-After` nor after a failed check, the panel texts in EN/FR.
+- **Severity:** medium (a few retries can block internet access for days). **Planned:** next fix pass, or with
+  KI-10.
+
+### KI-10 — Internet access: renew certificates through ARI so renewals escape Let's Encrypt limits
+
+- **Type:** Improvement.
+- **Reported:** 2026-11-08 by the user.
+- **Why:** an ARI renewal (ACME Renewal Information, RFC 9773) is exempt from **every** Let's Encrypt rate limit, as
+  long as the new order names at least one identifier of the certificate it replaces and that certificate was not
+  already replaced through ARI. A normal renewal of the same address counts toward the 5 per 7 days; with 6-day
+  certificates renewed every ~3 days, that leaves little room for a setup, a turn off and on, or a failed attempt.
+- **Checked:** `acme-client` 5.4.0 (the latest release, 2024-07) has no ARI support. Let's Encrypt production
+  announces `renewalInfo` in its directory. `acme-client` passes order fields through unchanged (the app already adds
+  `profile: 'shortlived'`), so ARI can be added in the adapter without changing library:
+  - **Certificate identifier:** base64url of the Authority Key Identifier, a dot, base64url of the serial number
+    (DER), read from the current certificate (`@peculiar/x509`, already a dependency of `acme-client`).
+  - **Renewal order:** `replaces: <certificate identifier>` in `createOrder` when the address is unchanged.
+  - **Renewal window (optional):** `GET <renewalInfo>/<certificate identifier>` (no account needed) gives the window
+    Let's Encrypt suggests; the upkeep can renew inside it instead of at half-life, and earlier if Let's Encrypt asks
+    (for example before a revocation).
+- **Fix:** the authority port gets the certificate being replaced; the ACME adapter sends `replaces`; if
+  Let's Encrypt refuses the field (certificate already replaced, unknown), retry once as a normal order. A new
+  address is a new certificate, not a renewal, so it stays a normal order. Tests: the order carries `replaces` with
+  the expected identifier (computed from a fixture certificate), the fallback, no `replaces` after an address change.
+  Check against Let's Encrypt's staging server first.
+- **Severity:** medium (removes the main risk of the weekly limit). **Planned:** next fix pass, together with KI-9.
 
 ## Done
 

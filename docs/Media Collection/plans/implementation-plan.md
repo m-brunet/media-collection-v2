@@ -25,6 +25,7 @@ Created 2026-11-03. Working plan, kept with the documentation in the Obsidian va
 - Timestamps stored UTC, displayed in viewer's time zone and language; exact details include zone label.
 - Mobile existing Not Owned ISBN: a warning screen with Mark as Owned (changed 2026-11-07, Task 7), no form, no external lookup.
 - Leaf scanning works without HTTPS: live camera when the page allows it, otherwise a barcode photo read on the phone (2026-11-07).
+- Internet access (2026-11-08, Task 9.5): one Admin action opens the router port (UPnP/NAT-PMP) and gets a Let's Encrypt IP address certificate on external port 443; only HTTPS is exposed; manual PEM import stays advanced; dynamic DNS names deferred.
 - Markdown excluded from oxfmt. `npm run check` builds before lint.
 
 ## Testing strategy (applies to every task)
@@ -143,7 +144,8 @@ Inserted at the user's request (2026-11-08). Owning docs: `../product/product-sc
 - Dynamic DNS name (stable address), tunnels and an MC-run name service deferred.
 
 ### Task 10 — Release readiness
-Owning docs: `../operations/updates.md`, `../design/design-guidelines.md`.
+Owning docs: `../operations/updates.md`, `../design/design-guidelines.md`. Brief with the decisions made on 2026-11-08
+(version 2.0.0, update flow from the menu, menus, About window, backup folder, builds): [task-10-release-readiness](task-10-release-readiness.md).
 - GitHub Releases update checks, Windows integrated download/install with automatic backup, macOS/Linux backup-and-open-download-page, backup folder, failure handling.
 - Packaging/installer naming; icon set switching (Admin setting) and credits/licences page (include the lookup
   sources and image libraries listed in [Task 6 · Credits](task-06-assisted-entry.md#credits-for-the-future-credits-page)
@@ -185,7 +187,7 @@ Implemented on 2026-11-06 as `npm run dev:reset-data` and `npm run dev:import-v1
 | 7 Leaf (mobile) | Done (2026-11-07), PR #3 merged | [task-07-leaf](task-07-leaf.md) | Shopping, mark Owned, scanning without HTTPS (live camera or barcode photo), own phone form and covers; credits listed in its plan; see its notes for later tasks |
 | 8 Overview and Activity | Done (2026-11-08), PR #4 merged | [task-08-overview-activity](task-08-overview-activity.md) | `/` opens Overview; Activity from the audit log, one entry per operation; Mark Owned audited as `book.marked-owned`; see its notes for later tasks |
 | 9 Host maintenance | Done (2026-11-08), PR #5 merged | [task-09-host-maintenance](task-09-host-maintenance.md) | Maintenance window from the desktop menu or `--maintenance`: Admin recovery (audited), `.mcbackup` backup and same-version restore; Admin data reset on the Accounts page; see its notes for later tasks |
-| 9.5 Internet access and HTTPS | Not planned (brief 2026-11-08) | [task-09-5-internet-access-https](task-09-5-internet-access-https.md) | Inserted at the user's request; brief records the analysis, open questions and deferred options |
-| 10 Release readiness | Not started | — | |
+| 9.5 Internet access and HTTPS | In progress (plan approved 2026-11-08); branch `task-09-5-internet-access-https` | [task-09-5-internet-access-https](task-09-5-internet-access-https.md) | Inserted at the user's request; brief records the analysis, open questions and deferred options |
+| 10 Release readiness | Not started; decisions recorded (2026-11-08) | [task-10-release-readiness](task-10-release-readiness.md) (brief; detailed plan after 9.5) | First release 2.0.0 |
 
 Pre-implementation fixes done (2026-11-03): docs/design decisions recorded, foundation formatted with oxfmt, `whoami`/`icacls` resolved from System32, `npm run check` order fixed. Full check passes (41 files, 409 tests).

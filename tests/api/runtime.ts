@@ -26,6 +26,8 @@ export interface RuntimeOptions {
     environmentPort?: number;
     // Where Find book asks BnF and Open Library: a local stand-in instead of the real catalogues.
     lookupAddresses?: { bnf: string; openLibrary: string };
+    // Stand-ins for the router, Let's Encrypt and the public address service.
+    internetAccess?: { externalAddress: string | null; accepts: boolean };
 }
 
 export class ElectronRuntime {
@@ -56,6 +58,9 @@ export class ElectronRuntime {
             APP_TEST_FAKE_CLOCK: options.fakeClock ? '1' : '0',
             APP_TEST_LOOKUP_ADDRESSES: options.lookupAddresses
                 ? JSON.stringify(options.lookupAddresses)
+                : undefined,
+            APP_TEST_INTERNET_ACCESS: options.internetAccess
+                ? JSON.stringify(options.internetAccess)
                 : undefined,
             APP_HIDDEN_WINDOWS: '1',
         };
