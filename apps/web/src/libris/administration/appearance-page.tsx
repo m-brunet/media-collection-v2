@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import type { ColorSchemeName } from '../../../../../packages/contracts/src/http';
+import type { ColorSchemeName, IconSetName } from '../../../../../packages/contracts/src/http';
 import { useAppearance } from '../../shared/appearance/appearance-context';
 import { ColorSchemeDocument } from '../../shared/appearance/color-scheme-document.util';
+import { IconSetMemory } from '../../shared/appearance/icon-set-memory.util';
 import type { MessageKey } from '../../shared/i18n/catalog-en';
 import { useI18n } from '../../shared/i18n/i18n-context';
+import type { IconName } from '../../shared/ui/icon';
+import { Icon } from '../../shared/ui/icon';
 import { PageHeader, Panel } from '../../shared/ui/layout';
 import { Notice } from '../../shared/ui/notice';
 import { useAction } from '../../shared/use-action';
@@ -18,13 +21,25 @@ const names: Record<ColorSchemeName, MessageKey> = {
     'slate-orchid': 'appearance.scheme.slateOrchid',
     'charcoal-scarlet': 'appearance.scheme.charcoalScarlet',
 };
+const setNames: Record<IconSetName, MessageKey> = {
+    lucide: 'appearance.iconSet.lucide',
+    'solid-silhouettes': 'appearance.iconSet.solidSilhouettes',
+    'hand-inked-editorial': 'appearance.iconSet.handInkedEditorial',
+    'architectural-wireframes': 'appearance.iconSet.architecturalWireframes',
+    'single-ink-risograph': 'appearance.iconSet.singleInkRisograph',
+    'quiet-editorial-monoline': 'appearance.iconSet.quietEditorialMonoline',
+};
+// A few icons that show each set's character.
+const previewIcons: IconName[] = ['overview', 'books', 'collections', 'scan', 'lend'];
 
 // Installation-wide appearance, chosen by the administrator for everyone in Libris and Leaf.
 export function AppearancePage() {
     const { t } = useI18n();
-    const { colorScheme, saveColorScheme } = useAppearance();
+    const { colorScheme, iconSet, saveColorScheme, saveIconSet } = useAppearance();
     const [selected, setSelected] = useState<ColorSchemeName>(colorScheme);
+    const [selectedSet, setSelectedSet] = useState<IconSetName>(iconSet);
     const action = useAction();
+    const iconAction = useAction();
     // Choosing a scheme saves it immediately; a failed save restores the previous choice.
     const choose = (name: ColorSchemeName) => {
         const previous = selected;
@@ -38,6 +53,20 @@ export function AppearancePage() {
                 throw error;
             }
         }, 'appearance.saved');
+    };
+    // Choosing an icon set saves it immediately; a failed save restores the previous choice.
+    const chooseSet = (name: IconSetName) => {
+        const previous = selectedSet;
+
+        setSelectedSet(name);
+        void iconAction.run(async () => {
+            try {
+                await saveIconSet(name);
+            } catch (error) {
+                setSelectedSet(previous);
+                throw error;
+            }
+        }, 'appearance.iconSetSaved');
     };
 
     return (
@@ -85,6 +114,42 @@ export function AppearancePage() {
                     <p className="field__hint">{t('appearance.hint')}</p>
                     {action.feedback && (
                         <Notice tone={action.feedback.tone}>{action.feedback.text}</Notice>
+                    )}
+                </div>
+            </Panel>
+            <Panel title={t('appearance.iconSetTitle')}>
+                <div className="form">
+                    <fieldset className="icon-set-choices" disabled={iconAction.busy}>
+                        <legend className="visually-hidden">{t('appearance.iconSetTitle')}</legend>
+                        {IconSetMemory.names.map((name) => (
+                            <label key={name} className="icon-set-choice">
+                                <input
+                                    type="radio"
+                                    name="iconSet"
+                                    value={name}
+                                    checked={selectedSet === name}
+                                    onChange={() => chooseSet(name)}
+                                />
+                                <span className="icon-set-choice__name">
+                                    {t(setNames[name])}
+                                    {name === 'lucide' && (
+                                        <span className="field__hint">
+                                            {' '}
+                                            · {t('appearance.default')}
+                                        </span>
+                                    )}
+                                </span>
+                                <span className="icon-set-choice__preview" aria-hidden="true">
+                                    {previewIcons.map((icon) => (
+                                        <Icon key={icon} name={icon} set={name} size={28} />
+                                    ))}
+                                </span>
+                            </label>
+                        ))}
+                    </fieldset>
+                    <p className="field__hint">{t('appearance.iconSetHint')}</p>
+                    {iconAction.feedback && (
+                        <Notice tone={iconAction.feedback.tone}>{iconAction.feedback.text}</Notice>
                     )}
                 </div>
             </Panel>

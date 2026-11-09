@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { AppearanceProvider } from '../../shared/appearance/appearance-context';
@@ -34,7 +34,9 @@ it('offers the eight colour schemes with Spring green as the default', async () 
     renderPage();
 
     expect(await screen.findByRole('radio', { name: /Spring green/ })).toBeChecked();
-    expect(screen.getAllByRole('radio')).toHaveLength(8);
+    expect(
+        within(screen.getByRole('group', { name: 'Colour scheme' })).getAllByRole('radio'),
+    ).toHaveLength(8);
     expect(screen.getByRole('radio', { name: /Midnight blue/ })).not.toBeChecked();
 });
 
@@ -90,4 +92,42 @@ it('restores the previous scheme and explains a refused change', async () => {
         'Only the administrator can do this.',
     );
     expect(screen.getByRole('radio', { name: /Spring green/ })).toBeChecked();
+});
+
+it('offers the six icon sets with Lucide as the default', async () => {
+    administrator();
+
+    renderPage();
+
+    const group = await screen.findByRole('group', { name: 'Icon set' });
+
+    expect(within(group).getAllByRole('radio')).toHaveLength(6);
+    expect(within(group).getByRole('radio', { name: /Lucide/ })).toBeChecked();
+});
+it('saves an icon set for everyone as soon as it is chosen', async () => {
+    const api = administrator().on('PUT /appearance/icon-set', () => ({
+        status: 200,
+        body: { iconSet: 'hand-inked-editorial' },
+    }));
+
+    renderPage();
+    const group = await screen.findByRole('group', { name: 'Icon set' });
+
+    await userEvent.click(within(group).getByRole('radio', { name: /Hand-inked editorial/ }));
+
+    expect(await screen.findByText(/Icon set saved/)).toBeInTheDocument();
+    expect(api.calls).toContainEqual({
+        route: 'PUT /appearance/icon-set',
+        body: { iconSet: 'hand-inked-editorial' },
+    });
+});
+it('previews each icon set with its own icons', async () => {
+    administrator();
+
+    renderPage();
+    const group = await screen.findByRole('group', { name: 'Icon set' });
+
+    await waitFor(() =>
+        expect(group.querySelectorAll('[data-icon-set="solid-silhouettes"]').length).toBe(5),
+    );
 });
