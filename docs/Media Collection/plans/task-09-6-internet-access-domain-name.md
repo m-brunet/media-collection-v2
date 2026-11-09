@@ -126,13 +126,23 @@ Each step: tests, the relevant checks, architecture review skill on the changes,
 - [x] **3. Application** (first version): resolver port, `DomainNameCheck`, setup, upkeep.
 - [x] **4. Infrastructure and HTTP** (first version): DNS resolver, ACME identifiers and profile, challenge name.
 - [x] **5. Libris** (first version): domain field in the setup.
-- [ ] **6. Domain name setting**: store, save/read use cases, check on save, follow a changed name while HTTPS is on,
+- [x] **6. Domain name setting**: store, save/read use cases, check on save, follow a changed name while HTTPS is on,
   endpoint, setup reads the saved name.
-- [ ] **7. HTTP from the internet**: entity, port forwarding service, open/close/read/maintain use cases, HTTPS
+- [x] **7. HTTP from the internet**: entity, port forwarding service, open/close/read/maintain use cases, HTTPS
   success closes HTTP, HTTP port lock, endpoints, upkeep.
-- [ ] **8. Libris**: panel sections, addresses panel, EN/FR; component and browser tests.
+- [x] **8. Libris**: panel sections, addresses panel, EN/FR; component and browser tests.
 - [ ] **9. Wrap-up**: full check, implementation plan status. Real-world check (Freebox, OVH name, phone on mobile
   data) with the user; push and pull request on the user's go-ahead.
+  Done so far (2026-11-09): `npm run check` passes (317 files, 2814 tests); no test can reach the internet (see Testing
+  rule). Push and pull request wait for the user's go-ahead.
+
+## Testing rule (2026-11-09)
+
+No test may contact Let's Encrypt, a router, the public address service or DNS (Task 9.5's Step 9 incident used the
+week's Let's Encrypt limit). Unit and API tests use doubles; browser journeys use stand-ins; every Electron test launch
+sets `APP_OFFLINE_INTERNET_ACCESS=1`, so the real worker uses `OfflineInternetAccess`. `tests/api/offline-internet-access.e2e-spec.ts`
+proves it on the real worker: setting up HTTPS, opening HTTP and saving a domain name all stop at "public address
+unknown".
 
 ## Known limits
 

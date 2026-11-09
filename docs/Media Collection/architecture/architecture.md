@@ -246,6 +246,11 @@ two thirds of the lifetime, a changed public address needs no new certificate). 
 `HttpInternetAccess` entity: a router rule from the HTTP port to the HTTP port, kept by the same upkeep timer, closed
 when an HTTPS setup succeeds.
 
+No test reaches a real router, Let's Encrypt, the public address service or DNS. Unit and API tests use in-memory
+doubles; browser journeys pass stand-ins; every Electron test launch (browser, desktop, packaged smoke) sets
+`APP_OFFLINE_INTERNET_ACCESS=1`, and the desktop worker then builds `OfflineInternetAccess` instead of the real
+adapters. Only a normal launch (including `npm run dev`) uses the real ones.
+
 ## Runtime and packaging
 
 Normal startup waits for utility-process readiness before loading the web app. Ports, database failures and worker
