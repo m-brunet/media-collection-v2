@@ -8,6 +8,7 @@ import { DevelopmentDataGuard } from './development-data-guard.util.js';
 import { BackendProcess } from './backend-process.adapter.js';
 import { SetupRequestSigner } from './setup-request-signer.adapter.js';
 import { MaintenanceWindow } from './maintenance-window.adapter.js';
+import { KeepAwake } from './keep-awake.adapter.js';
 
 // Automated tests run the real windows without putting them on screen.
 const hiddenWindows = process.env.APP_HIDDEN_WINDOWS === '1';
@@ -28,6 +29,7 @@ let restarting = false;
 // The server is stopped while the local maintenance window is open.
 let maintaining = false;
 const setupSigner = new SetupRequestSigner();
+const keepAwake = new KeepAwake();
 // Development data commands run from a terminal: they report there instead of in dialogs.
 const commandLine = process.argv.some(
     (arg) => arg === '--dev-reset-data' || arg === '--dev-import-v1',
@@ -147,6 +149,10 @@ if (!startupOptions) {
 async function launch(options: ReturnType<typeof DesktopConfigurationParser.parse>): Promise<void> {
     while (!quitting) {
         backend = new BackendProcess(join(directory, 'worker.js'));
+        // The server reports the keep-awake setting at startup and on each change; a stopped server
+        // (quit, maintenance, crash) no longer needs the computer awake.
+        backend.onNotice((notice) => keepAwake.apply(notice.enabled));
+        backend.onExit(() => keepAwake.release());
 
         try {
             const ready = await backend.request({

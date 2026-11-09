@@ -227,8 +227,17 @@ the existing TLS configuration. HTTP defaults to `3000`; explicit CLI and enviro
 saved preference. Both user-facing port settings require integers in `1024`–`65535` and reject enabled HTTP/HTTPS port
 collisions. Saved HTTP and TLS settings become active on a full desktop restart. Configured and running state are
 separate; startup snapshots track pending changes, and settings report active HTTP overrides. HTTPS errors, including
-legacy ports below `1024`, preserve HTTP and allow correction from settings. No certificate issuance, redirects or HSTS
-are included.
+legacy ports below `1024`, preserve HTTP and allow correction from settings. No redirects or HSTS are included.
+
+Internet access (Task 9.5) is an exception to the restart rule. `server-settings` owns it: the Admin's set up asks the
+router for an external `443` → HTTPS port rule through a `RouterGateway` port (UPnP, then NAT-PMP), classifies the
+router's external address (CGNAT, double NAT), and issues a Let's Encrypt IP address certificate (`shortlived`
+profile) through a `CertificateAuthority` port. The HTTPS listener answers the TLS-ALPN-01 challenge itself: its
+`SNICallback` serves the challenge certificate for the reverse-DNS name of the address (RFC 8738) when `acme-tls/1` is
+negotiated. The listener starts and swaps certificates live (`setSecureContext`) through an `HttpsRuntime` port, without
+a restart. An upkeep timer in root composition runs the maintain use case at startup and hourly: it recreates the
+router rule, follows a changed public address and renews certificates. Automatic certificates live in the same
+protected `tls/` storage as manual ones, with their source recorded. The HTTP port is never forwarded.
 
 ## Runtime and packaging
 

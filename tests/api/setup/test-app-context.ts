@@ -10,6 +10,15 @@ import type { PasswordHasher } from '../../../apps/server/src/identity/applicati
 import type { UserRepository } from '../../../apps/server/src/identity/application/ports/driven/user-repository.interface.js';
 import type { TlsStore } from '../../../apps/server/src/server-settings/application/ports/driven/tls-store.interface.js';
 import type { HttpSettingsStore } from '../../../apps/server/src/server-settings/application/ports/driven/http-settings-store.interface.js';
+import type { InternetAccessStore } from '../../../apps/server/src/server-settings/application/ports/driven/internet-access-store.interface.js';
+import type {
+    AwaitableBackground,
+    FakeAuthority,
+    FakeHttpsRuntime,
+    FakeProbe,
+    FakeRouter,
+    MemoryKeepAwake,
+} from '../../../apps/server/src/server-settings/application/testing/internet-access-doubles.test-support.js';
 
 export interface TestAppContext {
     users: UserRepository;
@@ -37,4 +46,15 @@ export interface TestAppContext {
     lending: { loans: LoanRepository; receivers: ReceiverRepository };
     // Builds and saves entities through the repositories above, to arrange scenarios.
     builders: TestLibrary;
+    // Stand-ins for the router, Let's Encrypt, the public address service and the HTTPS listener;
+    // `background.settled()` waits for a setup started by a request.
+    internetAccess: {
+        store: InternetAccessStore;
+        router: FakeRouter;
+        authority: FakeAuthority;
+        probe: FakeProbe;
+        https: FakeHttpsRuntime;
+        background: AwaitableBackground;
+        keepAwake: MemoryKeepAwake;
+    };
 }

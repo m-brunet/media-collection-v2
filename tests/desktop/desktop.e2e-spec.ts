@@ -33,6 +33,22 @@ async function waitFor(runtime: ElectronRuntime, expression: string) {
     );
 }
 
+// The sleep blockers the main process holds, once there are `count` of them (recorded by the
+// main harness instead of reaching the test computer's power settings).
+async function sleepBlockers(runtime: ElectronRuntime, count: number) {
+    for (let attempt = 0; attempt < 80; attempt++) {
+        const blockers = (await runtime.send({ type: 'keep-awake' })).value as string[];
+
+        if (blockers.length === count) {
+            return blockers;
+        }
+
+        await delay(50);
+    }
+
+    return (await runtime.send({ type: 'keep-awake' })).value as string[];
+}
+
 // First launch in the real desktop window: create the protected administrator `admin`.
 async function readyDesktop() {
     const current = await fixture.start(undefined, { main: true });
@@ -63,6 +79,10 @@ describe('desktop lifecycle and renderer', () => {
             "Array.from(document.querySelectorAll('a')).find(link => link.textContent === 'Server settings').click();true",
         );
         await waitFor(current.runtime, "Boolean(document.querySelector('[name=httpPort]'))");
+        await evaluate(
+            current.runtime,
+            "document.querySelector('details.advanced-settings').open = true;true",
+        );
         await evaluate(
             current.runtime,
             "document.querySelector('[name=httpPort]').value='" + port + "';true",
@@ -99,6 +119,42 @@ describe('desktop lifecycle and renderer', () => {
         expect(restarted.ready.httpPort).toBe(port);
         expect(address).toBe('http://127.0.0.1:' + port);
         expect(await (await fetch(address + '/account')).text()).toContain('<div id="root">');
+    });
+
+    it('keeps the computer awake once the keep-awake setting is turned on', async () => {
+        const current = await readyDesktop();
+        const client = new Client(current.client.base);
+
+        await client.login('admin', 'desktop-new-password');
+
+        await client.call('/server-settings/keep-awake', 'PUT', { enabled: true });
+
+        expect(await sleepBlockers(current.runtime, 1)).toEqual(['prevent-app-suspension']);
+    });
+
+    it('lets the computer sleep again once the keep-awake setting is turned off', async () => {
+        const current = await readyDesktop();
+        const client = new Client(current.client.base);
+
+        await client.login('admin', 'desktop-new-password');
+        await client.call('/server-settings/keep-awake', 'PUT', { enabled: true });
+        await sleepBlockers(current.runtime, 1);
+
+        await client.call('/server-settings/keep-awake', 'PUT', { enabled: false });
+
+        expect(await sleepBlockers(current.runtime, 0)).toEqual([]);
+    });
+
+    it('keeps the computer awake from startup when the setting was saved on', async () => {
+        const current = await readyDesktop();
+        const client = new Client(current.client.base);
+
+        await client.login('admin', 'desktop-new-password');
+        await client.call('/server-settings/keep-awake', 'PUT', { enabled: true });
+
+        const restarted = await fixture.restart(current, { main: true });
+
+        expect(await sleepBlockers(restarted.runtime, 1)).toEqual(['prevent-app-suspension']);
     });
 
     it('starts a sandboxed renderer without a business or maintenance bridge', async () => {

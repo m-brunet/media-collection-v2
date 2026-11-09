@@ -11,7 +11,9 @@ void app
     .whenReady()
     .then(() => {
         const workerPath =
-            process.env.APP_TEST_FAKE_CLOCK === '1' || process.env.APP_TEST_LOOKUP_ADDRESSES
+            process.env.APP_TEST_FAKE_CLOCK === '1' ||
+            process.env.APP_TEST_LOOKUP_ADDRESSES ||
+            process.env.APP_TEST_INTERNET_ACCESS
                 ? fileURLToPath(new URL('./test-worker.mjs', import.meta.url))
                 : fileURLToPath(new URL('../../dist/apps/desktop/src/worker.js', import.meta.url));
         const worker = utilityProcess.fork(workerPath, [], { stdio: 'pipe' });
@@ -22,6 +24,11 @@ void app
         let stopping = false;
 
         worker.on('message', (message) => {
+            // The keep-awake notice is for the desktop main process, not an answer to a test request.
+            if (message.type === 'keep-awake') {
+                return;
+            }
+
             process.stdout.write(JSON.stringify({ ...message, requestId }) + '\n');
 
             if (message.type === 'stopped') {

@@ -12,7 +12,7 @@ Core desktop library management must work without internet, including access to 
 
 Mobile shopping works whenever it can reach the installation's host. No separate offline mobile copy or synchronization feature is implied. Mobile scanning does not acquire a manual-entry fallback when internet lookup is unavailable.
 
-External internet access remains expected, with user-managed port forwarding anticipated. Transport/security/setup mechanisms belong to technical agents, not a new standalone hosting architecture. Existing port constraints remain in force.
+External internet access remains expected. The Admin sets it up from the server settings with one action, Set up internet access, that needs no technical knowledge: the application opens the router port itself when the router allows it (otherwise it shows the exact values to enter), gets a trusted certificate for the home's public address, renews it automatically, and shows the address with a QR code for the phone. Only HTTPS is exposed to the internet. Manual certificate import remains an advanced setting. No server run by Media Collection is introduced. Existing listening-port constraints remain in force; an external router port 443 forwarded to the HTTPS listening port is allowed. Details: [Task 9.5](../plans/task-09-5-internet-access-https.md) (decided 2026-11-08).
 
 ## Backup and restore
 
