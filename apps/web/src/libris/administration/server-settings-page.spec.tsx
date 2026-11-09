@@ -78,6 +78,16 @@ const waiting = internetAccess({
         protocol: 'TCP',
     },
 });
+// The addresses of a computer on a home network that also runs Tailscale.
+const addresses = [
+    'http://127.0.0.1:34345',
+    'http://100.95.86.107:34345',
+    'http://192.168.1.99:34345',
+];
+
+function withAddresses(current: ServerStatus): ServerStatus {
+    return { ...current, running: { ...current.running, addresses } };
+}
 
 function administrator(current: ServerStatus) {
     return new FakeApi()
@@ -245,4 +255,94 @@ it('locks the manual HTTPS settings while internet access is on', async () => {
     expect(
         await screen.findByRole('button', { name: 'Save HTTPS settings', hidden: true }),
     ).toBeDisabled();
+});
+it('shows no QR code until an address is chosen', async () => {
+    administrator(withAddresses(status()));
+
+    renderPage();
+    await screen.findByRole('link', { name: 'http://192.168.1.99:34345' });
+
+    expect(screen.queryByRole('img', { name: /^QR code for/ })).not.toBeInTheDocument();
+});
+it('shows the QR code opening Leaf at the chosen address', async () => {
+    administrator(withAddresses(status()));
+
+    renderPage();
+    await userEvent.click(
+        await screen.findByRole('button', {
+            name: 'Show the QR code for http://192.168.1.99:34345',
+        }),
+    );
+
+    expect(
+        await screen.findByRole('img', { name: 'QR code for http://192.168.1.99:34345/leaf/' }),
+    ).toBeInTheDocument();
+});
+it('keeps the address links on Libris', async () => {
+    administrator(withAddresses(status()));
+
+    renderPage();
+
+    expect(await screen.findByRole('link', { name: 'http://192.168.1.99:34345' })).toHaveAttribute(
+        'href',
+        'http://192.168.1.99:34345',
+    );
+});
+it('switches the QR code to another address', async () => {
+    administrator(withAddresses(status()));
+    renderPage();
+    await userEvent.click(
+        await screen.findByRole('button', {
+            name: 'Show the QR code for http://192.168.1.99:34345',
+        }),
+    );
+
+    await userEvent.click(
+        screen.getByRole('button', { name: 'Show the QR code for http://100.95.86.107:34345' }),
+    );
+
+    expect(
+        await screen.findByRole('img', { name: 'QR code for http://100.95.86.107:34345/leaf/' }),
+    ).toBeInTheDocument();
+});
+it('marks only the chosen address as pressed', async () => {
+    administrator(withAddresses(status()));
+    renderPage();
+    const tailscale = await screen.findByRole('button', {
+        name: 'Show the QR code for http://100.95.86.107:34345',
+    });
+
+    await userEvent.click(tailscale);
+
+    expect(
+        screen
+            .getAllByRole('button', { name: /^Show the QR code for/ })
+            .map((button) => button.getAttribute('aria-pressed')),
+    ).toEqual(['true', 'false']);
+});
+it('offers no QR code for the loopback address', async () => {
+    administrator(withAddresses(status()));
+
+    renderPage();
+    await screen.findByRole('link', { name: 'http://127.0.0.1:34345' });
+
+    expect(
+        screen.queryByRole('button', { name: 'Show the QR code for http://127.0.0.1:34345' }),
+    ).not.toBeInTheDocument();
+});
+it('puts the Libris mark in the centre of the QR code', async () => {
+    administrator(withAddresses(status()));
+    renderPage();
+
+    await userEvent.click(
+        await screen.findByRole('button', {
+            name: 'Show the QR code for http://192.168.1.99:34345',
+        }),
+    );
+
+    const code = await screen.findByRole('img', {
+        name: 'QR code for http://192.168.1.99:34345/leaf/',
+    });
+
+    expect(code.querySelector('.qr-code__mark img')).toHaveAttribute('src', '/libris.svg');
 });

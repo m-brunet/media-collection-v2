@@ -10,6 +10,7 @@ import { Notice } from '../../shared/ui/notice';
 import { LoadingState } from '../../shared/ui/states';
 import { TextAreaField, TextField } from '../../shared/ui/text-field';
 import { useAction } from '../../shared/use-action';
+import { AddressesPanel } from './addresses-panel';
 import { InternetAccessPanel } from './internet-access-panel';
 
 // While a setup runs, the page follows its steps.
@@ -109,23 +110,11 @@ export function ServerSettingsPage() {
                         }
                         onKeepAwake={(keepAwake) => setSettings({ ...settings, keepAwake })}
                     />
-                    <Panel title={t('server.listeners')}>
-                        <ul className="plain-list">
-                            {settings.running.addresses.map((address) => (
-                                <li key={address}>
-                                    <a href={address}>{address}</a>
-                                </li>
-                            ))}
-                        </ul>
-                        <p>
-                            {settings.running.httpsPort
-                                ? t('server.httpsRunning', { port: settings.running.httpsPort })
-                                : t('server.httpsStopped')}
-                        </p>
-                        {settings.running.httpsError && (
-                            <Notice tone="error">{settings.running.httpsError}</Notice>
-                        )}
-                    </Panel>
+                    <AddressesPanel
+                        addresses={settings.running.addresses}
+                        httpsPort={settings.running.httpsPort}
+                        httpsError={settings.running.httpsError}
+                    />
                     <details className="advanced-settings">
                         <summary>{t('server.advanced')}</summary>
                         <div className="panel-grid">
@@ -167,7 +156,7 @@ export function ServerSettingsPage() {
                                         settings.running.httpPort && (
                                         <div>
                                             <p>{t('server.nextAddresses')}</p>
-                                            <ul className="plain-list">
+                                            <ul className="address-list">
                                                 {settings.running.addresses.map((address) => {
                                                     const next = new URL(address);
 
