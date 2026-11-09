@@ -83,14 +83,14 @@ it('reports a Let’s Encrypt limit at once instead of waiting for its Retry-Aft
         }),
     );
 
-    const issue = await authority.issue('82.66.118.204');
+    const issue = await authority.issue({ kind: 'address', name: '82.66.118.204' });
 
     expect(issue).toEqual({ outcome: 'refused', reason: 'rate-limited' });
 });
 it('gives up on a Let’s Encrypt request that does not answer', async () => {
     const authority = await authorityFor(await letsEncryptWith(() => undefined), 200);
 
-    const issue = await authority.issue('82.66.118.204');
+    const issue = await authority.issue({ kind: 'address', name: '82.66.118.204' });
 
     expect(issue).toEqual({ outcome: 'refused', reason: 'authority-unavailable' });
 });

@@ -134,8 +134,6 @@ export const fr = {
     'internet.stepRunning': 'En cours',
     'internet.stepWaiting': 'En attente',
     'internet.active': 'L’accès Internet est activé.',
-    'internet.address': 'Adresse',
-    'internet.qr': 'Scannez ce code avec votre téléphone pour ouvrir Leaf.',
     'internet.qrAlt': 'QR code pour {address}',
     'internet.validUntil': 'Certificat valable jusqu’au {date}. Il est renouvelé automatiquement.',
     'internet.lastFailure':
@@ -179,6 +177,39 @@ export const fr = {
         'HTTPS n’a pas pu démarrer : son port est peut-être utilisé par un autre programme. Choisissez un autre port HTTPS dans les paramètres avancés, puis réessayez.',
     'internet.failure.setup-failed':
         'La configuration s’est arrêtée de façon inattendue. Réessayez.',
+    'internet.failure.domain-unresolved':
+        'Le nom de domaine {domain} ne pointe encore vers aucune adresse. Vérifiez les réglages de DNS dynamique de votre box, puis réessayez.',
+    'internet.failure.domain-mismatch':
+        'Le nom de domaine {domain} ne pointe pas vers l’adresse de cette connexion ({address}). Vérifiez les réglages de DNS dynamique de votre box, puis réessayez.',
+    'internet.domain': 'Nom de domaine (facultatif)',
+    'internet.domainHint':
+        'Seulement si vous possédez un nom de domaine qui pointe déjà vers cette connexion, par exemple grâce au DNS dynamique de votre box. Les adresses Internet l’utilisent alors. Laissez vide pour utiliser l’adresse Internet.',
+    'internet.domainSave': 'Enregistrer',
+    'internet.domainRemove': 'Retirer',
+    'internet.domainLocked':
+        'Pour retirer le nom de domaine, désactivez d’abord HTTPS depuis Internet.',
+    'internet.domainSaved': 'Nom de domaine enregistré. Les adresses Internet l’utilisent.',
+    'internet.domainRemoved':
+        'Nom de domaine retiré. Les adresses Internet utilisent l’adresse publique.',
+    'internet.domainRefused.unresolved':
+        'Ce nom de domaine ne pointe encore vers aucune adresse. Vérifiez les réglages de DNS dynamique de votre box, puis enregistrez à nouveau.',
+    'internet.domainRefused.mismatch':
+        'Ce nom de domaine ne pointe pas vers l’adresse de cette connexion ({address}). Vérifiez les réglages de DNS dynamique de votre box, puis enregistrez à nouveau.',
+    'internet.domainRefused.addressUnknown':
+        'L’adresse de cette connexion est introuvable : le nom de domaine n’a pas pu être vérifié. Vérifiez la connexion Internet, puis enregistrez à nouveau.',
+    'internet.httpsTitle': 'HTTPS depuis Internet (recommandé)',
+    'internet.httpTitle': 'HTTP depuis Internet (non chiffré)',
+    'internet.httpWarning':
+        'HTTP n’est pas chiffré : les mots de passe et les données de la bibliothèque peuvent être lus sur les réseaux entre le téléphone et votre domicile. Ne l’utilisez que si HTTPS ne fonctionne pas.',
+    'internet.httpOpen': 'Ouvrir HTTP sur Internet',
+    'internet.httpClose': 'Fermer HTTP',
+    'internet.httpIsOpen': 'HTTP est ouvert sur Internet.',
+    'internet.httpClosedByHttps':
+        'HTTP a été fermé car HTTPS fonctionne. Les téléphones utilisent l’adresse HTTPS.',
+    'internet.httpHttpsActive': 'HTTPS fonctionne, HTTP reste donc fermé.',
+    'internet.httpPortRefused': 'Votre box a refusé d’ouvrir le port HTTP.',
+    'internet.httpConfirmTitle': 'Ouvrir HTTP sur Internet ?',
+    'internet.httpConfirm': 'Ouvrir sans chiffrement',
     'keepAwake.label': 'Garder cet ordinateur éveillé pendant que Media Collection fonctionne',
     'keepAwake.hint':
         'Leaf ne fonctionne que si cet ordinateur est allumé et éveillé. L’écran peut quand même s’éteindre.',
@@ -343,6 +374,11 @@ export const fr = {
     'reason.nothingToCheck': 'Il n’y a pas de règle de box à vérifier.',
     'reason.internetAccessOn':
         'Désactivez l’accès Internet avant de modifier les paramètres HTTPS.',
+    'reason.domainNameInUse':
+        'Désactivez HTTPS depuis Internet avant de retirer le nom de domaine.',
+    'reason.httpsActive': 'HTTPS fonctionne depuis Internet, HTTP reste donc fermé.',
+    'reason.domainNameInvalid':
+        'Saisissez un nom de domaine comme maison.exemple.fr, sans https:// ni port.',
     'setup.title': 'Configurez votre bibliothèque',
     'setup.intro':
         'Créez le compte administrateur protégé. Terminez la configuration avant d’utiliser cette installation.',

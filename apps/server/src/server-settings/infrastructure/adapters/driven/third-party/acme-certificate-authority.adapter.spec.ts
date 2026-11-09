@@ -11,6 +11,8 @@ import type { AcmeSession } from './acme-session.adapter.js';
 import { AcmeConnector } from './acme-session.adapter.js';
 
 const address = '82.66.118.204';
+const ip = { kind: 'address', name: address } as const;
+const domain = { kind: 'domain', name: 'home.example.fr' } as const;
 const directories: string[] = [];
 
 afterEach(async () => {
@@ -45,9 +47,11 @@ class ScriptedSession {
     }
 
     async getAuthorizations() {
+        const order = this.orders.at(-1) as { identifiers: { type: string; value: string }[] };
+
         return [
             {
-                identifier: { type: 'ip', value: address },
+                identifier: order.identifiers[0],
                 challenges: this.challengeTypes.map((type) => ({ type, url: type, token: 't' })),
             },
         ];
@@ -59,7 +63,8 @@ class ScriptedSession {
 
     async completeChallenge() {
         this.challengeWaiting =
-            this.challenges.contextFor(TlsAlpnChallenges.serverName(address)) !== undefined;
+            this.challenges.contextFor(TlsAlpnChallenges.serverName(ip)) !== undefined ||
+            this.challenges.contextFor(TlsAlpnChallenges.serverName(domain)) !== undefined;
     }
 
     async waitForValidStatus() {
@@ -106,7 +111,7 @@ async function authorityWith() {
 it('issues a short-lived certificate for the public IP address', async () => {
     const { authority, session } = await authorityWith();
 
-    const issue = await authority.issue(address);
+    const issue = await authority.issue(ip);
 
     expect([issue.outcome, session.orders]).toEqual([
         'issued',
@@ -116,18 +121,18 @@ it('issues a short-lived certificate for the public IP address', async () => {
 it('gives the new private key with the certificate', async () => {
     const { authority } = await authorityWith();
 
-    const issue = await authority.issue(address);
+    const issue = await authority.issue(ip);
 
     expect(issue.outcome === 'issued' && issue.certificate.key).toContain('PRIVATE KEY');
 });
 it('offers the challenge answer while Let’s Encrypt checks, then withdraws it', async () => {
     const { authority, session, challenges } = await authorityWith();
 
-    await authority.issue(address);
+    await authority.issue(ip);
 
     expect([
         session.challengeWaiting,
-        challenges.contextFor(TlsAlpnChallenges.serverName(address)),
+        challenges.contextFor(TlsAlpnChallenges.serverName(ip)),
     ]).toEqual([true, undefined]);
 });
 it('reports an unreachable port when the check fails', async () => {
@@ -135,7 +140,7 @@ it('reports an unreachable port when the check fails', async () => {
 
     session.validationFailure = new Error('Timeout after connect (your server may be slow)');
 
-    const issue = await authority.issue(address);
+    const issue = await authority.issue(ip);
 
     expect(issue).toEqual({ outcome: 'refused', reason: 'not-reachable' });
 });
@@ -144,7 +149,7 @@ it('reports Let’s Encrypt limits', async () => {
 
     session.orderFailure = new Error('too many certificates (5) already issued for this exact set');
 
-    const issue = await authority.issue(address);
+    const issue = await authority.issue(ip);
 
     expect(issue).toEqual({ outcome: 'refused', reason: 'rate-limited' });
 });
@@ -153,7 +158,7 @@ it('reports Let’s Encrypt as unavailable on any other error', async () => {
 
     session.orderFailure = new Error('getaddrinfo ENOTFOUND acme-v02.api.letsencrypt.org');
 
-    const issue = await authority.issue(address);
+    const issue = await authority.issue(ip);
 
     expect(issue).toEqual({ outcome: 'refused', reason: 'authority-unavailable' });
 });
@@ -162,7 +167,27 @@ it('reports Let’s Encrypt as unavailable without a TLS-ALPN-01 challenge', asy
 
     session.challengeTypes = ['http-01'];
 
-    const issue = await authority.issue(address);
+    const issue = await authority.issue(ip);
 
     expect(issue).toEqual({ outcome: 'refused', reason: 'authority-unavailable' });
+});
+it('issues a classic certificate for a domain name', async () => {
+    const { authority, session } = await authorityWith();
+
+    const issue = await authority.issue(domain);
+
+    expect([issue.outcome, session.orders]).toEqual([
+        'issued',
+        [{ identifiers: [{ type: 'dns', value: 'home.example.fr' }], profile: 'classic' }],
+    ]);
+});
+it('offers the domain challenge answer under the domain name, then withdraws it', async () => {
+    const { authority, session, challenges } = await authorityWith();
+
+    await authority.issue(domain);
+
+    expect([session.challengeWaiting, challenges.contextFor('home.example.fr')]).toEqual([
+        true,
+        undefined,
+    ]);
 });

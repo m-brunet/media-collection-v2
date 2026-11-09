@@ -30,9 +30,13 @@ import { TlsSettings } from '../../server-settings/domain/value-objects/tls-sett
 import { PemCertificateValidator } from '../../server-settings/infrastructure/adapters/driven/security/pem-certificate-validator.adapter.js';
 import { TlsAlpnChallenges } from '../../server-settings/infrastructure/adapters/driven/security/tls-alpn-challenges.adapter.js';
 import { NodeHttpsRuntime } from '../../server-settings/infrastructure/adapters/driven/runtime/node-https-runtime.adapter.js';
+import { KyselyDomainNameRepository } from '../../server-settings/infrastructure/adapters/driven/persistence/kysely-domain-name.repository.js';
+import { KyselyHttpInternetAccessRepository } from '../../server-settings/infrastructure/adapters/driven/persistence/kysely-http-internet-access.repository.js';
 import { KyselyKeepAwakeRepository } from '../../server-settings/infrastructure/adapters/driven/persistence/kysely-keep-awake.repository.js';
 import { UpnpRouterGateway } from '../../server-settings/infrastructure/adapters/driven/third-party/upnp-router-gateway.adapter.js';
 import { HttpPublicAddressProbe } from '../../server-settings/infrastructure/adapters/driven/third-party/http-public-address-probe.adapter.js';
+import { OfflineInternetAccess } from '../../server-settings/infrastructure/adapters/driven/runtime/offline-internet-access.adapter.js';
+import { DnsDomainNameResolver } from '../../server-settings/infrastructure/adapters/driven/runtime/dns-domain-name-resolver.adapter.js';
 import { AcmeCertificateAuthority } from '../../server-settings/infrastructure/adapters/driven/third-party/acme-certificate-authority.adapter.js';
 import { AcmeConnector } from '../../server-settings/infrastructure/adapters/driven/third-party/acme-session.adapter.js';
 import { AcmeAccountKey } from '../../server-settings/infrastructure/adapters/driven/filesystem/acme-account-key.adapter.js';
@@ -41,6 +45,7 @@ import { DetachedBackgroundTasks } from '../../server-settings/infrastructure/ad
 import type { RouterGateway } from '../../server-settings/application/ports/driven/router-gateway.interface.js';
 import type { CertificateAuthority } from '../../server-settings/application/ports/driven/certificate-authority.interface.js';
 import type { PublicAddressProbe } from '../../server-settings/application/ports/driven/public-address-probe.interface.js';
+import type { DomainNameResolver } from '../../server-settings/application/ports/driven/domain-name-resolver.interface.js';
 import { IdentityModule } from '../../identity/infrastructure/config/identity.module.js';
 import { SettingsModule } from '../../server-settings/infrastructure/config/settings.module.js';
 import { HttpSessions } from '../../shared/infrastructure/adapters/driving/web/http-sessions.service.js';
@@ -68,12 +73,16 @@ export interface BackendOptions {
     lookupAddresses?: LookupAddresses;
     // Per-launch secret that the Electron window attaches to first-launch setup requests.
     setupToken?: string;
-    // Test-only: stand-ins for the router, Let's Encrypt and the public address service.
+    // Test-only: stand-ins for the router, Let's Encrypt, the public address service and DNS.
     internetAccess?: {
         router: RouterGateway;
         authority: CertificateAuthority;
         probe: PublicAddressProbe;
+        resolver: DomainNameResolver;
     };
+    // Test launches (`APP_OFFLINE_INTERNET_ACCESS=1`): internet access never leaves the machine, so
+    // no test reaches a real router, Let's Encrypt, the public address service or DNS.
+    offlineInternetAccess?: boolean;
     // Called at startup and on each change of the keep-awake setting (the desktop host applies it).
     onKeepAwake?: (enabled: boolean) => void;
 }
@@ -212,15 +221,17 @@ export class BackendRuntime {
             const challenges = new TlsAlpnChallenges();
             const runtime = new NodeHttpsRuntime(application, options.host, challenges);
             const keepAwake = new KyselyKeepAwakeRepository(database.connections, ids);
-            const internetAccess = options.internetAccess ?? {
-                router: new UpnpRouterGateway(),
-                authority: new AcmeCertificateAuthority(
-                    new AcmeConnector(),
-                    new AcmeAccountKey(options.dataDirectory, storage),
-                    challenges,
-                ),
-                probe: new HttpPublicAddressProbe(),
-            };
+            const internetAccess = options.internetAccess ??
+                (options.offlineInternetAccess ? OfflineInternetAccess.adapters() : undefined) ?? {
+                    router: new UpnpRouterGateway(),
+                    authority: new AcmeCertificateAuthority(
+                        new AcmeConnector(),
+                        new AcmeAccountKey(options.dataDirectory, storage),
+                        challenges,
+                    ),
+                    probe: new HttpPublicAddressProbe(),
+                    resolver: new DnsDomainNameResolver(),
+                };
 
             https = runtime;
 
@@ -244,6 +255,12 @@ export class BackendRuntime {
                             status,
                             http: httpSettings,
                             operations,
+                            domainName: new KyselyDomainNameRepository(database.connections, ids),
+                            httpListener: { port: () => httpPort },
+                            httpInternetAccess: new KyselyHttpInternetAccessRepository(
+                                database.connections,
+                                ids,
+                            ),
                             internetAccess: new KyselyInternetAccessRepository(
                                 database.connections,
                                 ids,

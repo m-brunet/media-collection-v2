@@ -1,13 +1,17 @@
+import type { MaintainHttpInternetAccessUseCase } from '../../../../application/ports/driving/maintain-http-internet-access-use-case.interface.js';
 import type { MaintainInternetAccessUseCase } from '../../../../application/ports/driving/maintain-internet-access-use-case.interface.js';
 
-// Runs the internet access upkeep once the application is up, then at a fixed interval. Nest
-// calls the two lifecycle methods; a run never overlaps the previous one.
+type Maintenance = MaintainInternetAccessUseCase | MaintainHttpInternetAccessUseCase;
+
+// Runs the internet access upkeeps (HTTPS, then HTTP) once the application is up, then at a fixed
+// interval. Nest calls the two lifecycle methods; a run never overlaps the previous one, and one
+// failing upkeep does not stop the next.
 export class InternetAccessUpkeep {
     private timer: NodeJS.Timeout | undefined;
     private running: Promise<void> | undefined;
 
     constructor(
-        private readonly maintain: MaintainInternetAccessUseCase,
+        private readonly maintenances: readonly Maintenance[],
         private readonly interval: number,
     ) {}
 
@@ -23,11 +27,14 @@ export class InternetAccessUpkeep {
     }
 
     private tick(): void {
-        this.running ??= this.maintain
-            .execute()
-            .catch(() => undefined)
-            .finally(() => {
-                this.running = undefined;
-            });
+        this.running ??= this.runAll().finally(() => {
+            this.running = undefined;
+        });
+    }
+
+    private async runAll(): Promise<void> {
+        for (const maintenance of this.maintenances) {
+            await maintenance.execute().catch(() => undefined);
+        }
     }
 }

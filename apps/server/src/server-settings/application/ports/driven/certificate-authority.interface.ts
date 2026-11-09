@@ -11,7 +11,11 @@ export type CertificateIssue =
           >;
       };
 
-// Let's Encrypt: a short-lived certificate for a public IPv4 address, proven on external port 443.
+// What the certificate covers: the home's public IPv4 address or the Admin's domain name.
+export type CertificateSubject = { kind: 'address' | 'domain'; name: string };
+
+// Let's Encrypt, proven on external port 443: a short-lived certificate for an address, a classic
+// one for a domain name.
 export interface CertificateAuthority {
-    issue(address: string): Promise<CertificateIssue>;
+    issue(subject: CertificateSubject): Promise<CertificateIssue>;
 }

@@ -16,7 +16,7 @@ const admin = TestActors.of('admin', 'admin');
 function waitingForPort() {
     const access = InternetAccess.off();
 
-    access.start();
+    access.start(null);
     access.portNeeded(publicAddress, 'port-refused', new Date('2026-11-08T10:00:00.000Z'));
 
     return access.snapshot;

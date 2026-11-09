@@ -11,11 +11,14 @@ import type { UserRepository } from '../../../apps/server/src/identity/applicati
 import type { TlsStore } from '../../../apps/server/src/server-settings/application/ports/driven/tls-store.interface.js';
 import type { HttpSettingsStore } from '../../../apps/server/src/server-settings/application/ports/driven/http-settings-store.interface.js';
 import type { InternetAccessStore } from '../../../apps/server/src/server-settings/application/ports/driven/internet-access-store.interface.js';
+import type { HttpInternetAccessStore } from '../../../apps/server/src/server-settings/application/ports/driven/http-internet-access-store.interface.js';
+import type { DomainNameStore } from '../../../apps/server/src/server-settings/application/ports/driven/domain-name-store.interface.js';
 import type {
     AwaitableBackground,
     FakeAuthority,
     FakeHttpsRuntime,
     FakeProbe,
+    FakeResolver,
     FakeRouter,
     MemoryKeepAwake,
 } from '../../../apps/server/src/server-settings/application/testing/internet-access-doubles.test-support.js';
@@ -50,9 +53,12 @@ export interface TestAppContext {
     // `background.settled()` waits for a setup started by a request.
     internetAccess: {
         store: InternetAccessStore;
+        domainName: DomainNameStore;
+        http: HttpInternetAccessStore;
         router: FakeRouter;
         authority: FakeAuthority;
         probe: FakeProbe;
+        resolver: FakeResolver;
         https: FakeHttpsRuntime;
         background: AwaitableBackground;
         keepAwake: MemoryKeepAwake;

@@ -3,24 +3,29 @@ import { InternetAccess } from '../../domain/entities/internet-access.entity.js'
 import type { InternetAccessFailureReason } from '../../domain/entities/internet-access.entity.js';
 import { TlsSettings } from '../../domain/value-objects/tls-settings.value-object.js';
 import type { CertificateAuthority } from '../ports/driven/certificate-authority.interface.js';
+import type { DomainNameReader } from '../ports/driven/domain-name-reader.interface.js';
 import type { HttpsRuntime } from '../ports/driven/https-runtime.interface.js';
 import type { InternetAccessStore } from '../ports/driven/internet-access-store.interface.js';
-import type { PublicAddressProbe } from '../ports/driven/public-address-probe.interface.js';
-import type { RouterGateway } from '../ports/driven/router-gateway.interface.js';
 import type { TlsStore } from '../ports/driven/tls-store.interface.js';
+import type { DomainNameCheck } from './domain-name-check.service.js';
+import type { HttpInternetAccessClosing } from './http-internet-access-closing.service.js';
+import type { RouterRules } from './router-rules.service.js';
 
 // The steps of an internet access setup, run after the Admin's request has answered: find the
-// router, open the port, get the certificate. Each step is saved so the page can follow it.
+// router, open the port, get the certificate. Each step is saved so the page can follow it. Once
+// HTTPS works, HTTP from the internet is closed.
 export class InternetAccessSetup {
     private active = 0;
 
     constructor(
         private readonly store: InternetAccessStore,
-        private readonly router: RouterGateway,
-        private readonly probe: PublicAddressProbe,
+        private readonly rules: RouterRules,
         private readonly authority: CertificateAuthority,
         private readonly https: HttpsRuntime,
         private readonly tls: TlsStore,
+        private readonly domains: DomainNameCheck,
+        private readonly names: DomainNameReader,
+        private readonly httpClosing: HttpInternetAccessClosing,
         private readonly clock: Clock,
     ) {}
 
@@ -40,16 +45,48 @@ export class InternetAccessSetup {
         await this.guarded((access) => this.obtain(access));
     }
 
-    // Gets and installs a certificate for the current public address. Used by the setup and by the
-    // upkeep; answers the failure reason, or null once the certificate is in use.
+    // After the Admin saved another domain name: while HTTPS is on, get a certificate for it at once.
+    // A failure keeps the current certificate, like an upkeep failure.
+    async followDomain(): Promise<void> {
+        const access = await this.store.read();
+        const saved = await this.names.read();
+
+        if (access.phase !== 'active' || access.domain === saved) {
+            return;
+        }
+
+        access.useDomain(saved);
+        const reason = await this.renew(access).catch(() => 'setup-failed' as const);
+
+        if (reason) {
+            access.upkeepFailed(reason, this.clock.now());
+        } else {
+            access.upkeepSucceeded();
+        }
+
+        await this.store.save(access);
+    }
+
+    // Gets and installs a certificate for the domain name, or else the current public address. Used
+    // by the setup and by the upkeep; answers the failure reason, or null once the certificate is in
+    // use. A domain name must point to the public address first.
     async renew(access: InternetAccess): Promise<InternetAccessFailureReason | null> {
+        const problem = await this.domains.problem(access);
+
+        if (problem) {
+            return problem;
+        }
+
         const { port } = await this.tls.read();
 
         if (!(await this.https.ensureRunning(port))) {
             return 'https-unavailable';
         }
 
-        const issue = await this.authority.issue(access.publicAddress!);
+        const issue = await this.authority.issue({
+            kind: access.domain ? 'domain' : 'address',
+            name: access.certificateName!,
+        });
 
         if (issue.outcome === 'refused') {
             return issue.reason;
@@ -66,7 +103,7 @@ export class InternetAccessSetup {
             return 'https-unavailable';
         }
 
-        access.activate({ address: access.publicAddress!, issuedAt, expiresAt });
+        access.activate({ address: access.certificateName!, issuedAt, expiresAt });
 
         return null;
     }
@@ -88,13 +125,11 @@ export class InternetAccessSetup {
 
     private async openPort(access: InternetAccess): Promise<boolean> {
         const now = this.clock.now();
-        const router = await this.router.find();
+        const search = await this.rules.find();
 
-        if (!router) {
-            const address = await this.probe.current();
-
-            if (address) {
-                access.portNeeded(address, 'no-router', now);
+        if (!search.router) {
+            if (search.publicAddress) {
+                access.portNeeded(search.publicAddress, 'no-router', now);
             } else {
                 access.stop('public-address-unknown', now);
             }
@@ -102,13 +137,15 @@ export class InternetAccessSetup {
             return false;
         }
 
+        const router = search.router;
+
         if (!access.routerFound(router.mapping, router.externalAddress, now)) {
             return false;
         }
 
         await this.store.save(access);
         const { port } = await this.tls.read();
-        const opened = await this.router.open({
+        const opened = await this.rules.open({
             externalPort: InternetAccess.externalPort,
             internalPort: port,
         });
@@ -133,6 +170,8 @@ export class InternetAccessSetup {
             access.certificateRefused(reason, now);
         } else if (reason) {
             access.stop(reason, now);
+        } else {
+            await this.httpClosing.becauseHttpsWorks();
         }
     }
 }

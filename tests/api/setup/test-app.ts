@@ -1,9 +1,12 @@
+import { KyselyDomainNameRepository } from '../../../apps/server/src/server-settings/infrastructure/adapters/driven/persistence/kysely-domain-name.repository.js';
+import { KyselyHttpInternetAccessRepository } from '../../../apps/server/src/server-settings/infrastructure/adapters/driven/persistence/kysely-http-internet-access.repository.js';
 import { KyselyInternetAccessRepository } from '../../../apps/server/src/server-settings/infrastructure/adapters/driven/persistence/kysely-internet-access.repository.js';
 import {
     AwaitableBackground,
     FakeAuthority,
     FakeHttpsRuntime,
     FakeProbe,
+    FakeResolver,
     FakeRouter,
     FixedLocalAddress,
     MemoryKeepAwake,
@@ -128,9 +131,12 @@ export class TestApp {
             const clock = { now: () => new Date(this.now) };
             const internetAccess = {
                 store: new KyselyInternetAccessRepository(database.connections, ids),
+                domainName: new KyselyDomainNameRepository(database.connections, ids),
+                http: new KyselyHttpInternetAccessRepository(database.connections, ids),
                 router: new FakeRouter(),
                 authority: new FakeAuthority(clock),
                 probe: new FakeProbe(),
+                resolver: new FakeResolver(),
                 https: new FakeHttpsRuntime(),
                 background: new AwaitableBackground(),
                 keepAwake: new MemoryKeepAwake(),
@@ -209,8 +215,12 @@ export class TestApp {
                         http,
                         operations,
                         internetAccess: internetAccess.store,
+                        domainName: internetAccess.domainName,
+                        httpInternetAccess: internetAccess.http,
+                        httpListener: { port: () => 34345 },
                         router: internetAccess.router,
                         probe: internetAccess.probe,
+                        resolver: internetAccess.resolver,
                         authority: internetAccess.authority,
                         https: internetAccess.https,
                         local: new FixedLocalAddress(),

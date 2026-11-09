@@ -126,8 +126,6 @@ export const en = {
     'internet.stepRunning': 'In progress',
     'internet.stepWaiting': 'Waiting',
     'internet.active': 'Internet access is on.',
-    'internet.address': 'Address',
-    'internet.qr': 'Scan this code with your phone to open Leaf.',
     'internet.qrAlt': 'QR code for {address}',
     'internet.validUntil': 'Certificate valid until {date}. It is renewed automatically.',
     'internet.lastFailure':
@@ -170,6 +168,37 @@ export const en = {
     'internet.failure.https-unavailable':
         'HTTPS could not start: its port may be used by another program. Choose another HTTPS port in the advanced settings, then try again.',
     'internet.failure.setup-failed': 'The setup stopped unexpectedly. Try again.',
+    'internet.failure.domain-unresolved':
+        'The domain name {domain} does not point to any address yet. Check the dynamic DNS settings of your router, then try again.',
+    'internet.failure.domain-mismatch':
+        'The domain name {domain} does not point to this connection’s address ({address}). Check the dynamic DNS settings of your router, then try again.',
+    'internet.domain': 'Domain name (optional)',
+    'internet.domainHint':
+        'Only if you own a domain name that already points to this connection, for example through your router’s dynamic DNS. The internet addresses then use it. Leave empty to use the internet address.',
+    'internet.domainSave': 'Save',
+    'internet.domainRemove': 'Remove',
+    'internet.domainLocked': 'To remove the domain name, turn off HTTPS from the internet first.',
+    'internet.domainSaved': 'Domain name saved. The internet addresses use it.',
+    'internet.domainRemoved': 'Domain name removed. The internet addresses use the public address.',
+    'internet.domainRefused.unresolved':
+        'This domain name does not point to any address yet. Check the dynamic DNS settings of your router, then save again.',
+    'internet.domainRefused.mismatch':
+        'This domain name does not point to this connection’s address ({address}). Check the dynamic DNS settings of your router, then save again.',
+    'internet.domainRefused.addressUnknown':
+        'The address of this connection could not be found, so the domain name could not be checked. Check the internet connection, then save again.',
+    'internet.httpsTitle': 'HTTPS from the internet (recommended)',
+    'internet.httpTitle': 'HTTP from the internet (not encrypted)',
+    'internet.httpWarning':
+        'HTTP is not encrypted: passwords and library data can be read on the networks between the phone and your home. Use it only when HTTPS does not work.',
+    'internet.httpOpen': 'Open HTTP to the internet',
+    'internet.httpClose': 'Close HTTP',
+    'internet.httpIsOpen': 'HTTP is open to the internet.',
+    'internet.httpClosedByHttps':
+        'HTTP was closed because HTTPS works. Phones use the HTTPS address.',
+    'internet.httpHttpsActive': 'HTTPS works, so HTTP stays closed.',
+    'internet.httpPortRefused': 'Your router refused to open the HTTP port.',
+    'internet.httpConfirmTitle': 'Open HTTP to the internet?',
+    'internet.httpConfirm': 'Open without encryption',
     'keepAwake.label': 'Keep this computer awake while Media Collection runs',
     'keepAwake.hint':
         'Leaf only works while this computer is on and awake. The screen can still turn off.',
@@ -325,6 +354,10 @@ export const en = {
     'reason.setupInProgress': 'Internet access is already being set up. Wait for it to finish.',
     'reason.nothingToCheck': 'There is no router rule to check.',
     'reason.internetAccessOn': 'Turn off internet access before changing the HTTPS settings.',
+    'reason.domainNameInUse': 'Turn off HTTPS from the internet before removing the domain name.',
+    'reason.httpsActive': 'HTTPS works from the internet, so HTTP stays closed.',
+    'reason.domainNameInvalid':
+        'Enter a domain name such as home.example.com, without https:// or a port.',
     'setup.title': 'Set up your library',
     'setup.intro':
         'Create the protected administrator account. Complete setup before using this installation.',
