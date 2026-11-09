@@ -72,3 +72,28 @@ it('draws the Administration artwork for Accounts and the Settings artwork for S
 
     expect(container.querySelectorAll('svg.lucide')).toHaveLength(1);
 });
+it('draws the sets artwork for the screen states', async () => {
+    const states = [
+        'permission-denied',
+        'already-owned',
+        'existing-edition',
+        'camera-unavailable',
+        'lookup-offline',
+    ] as const;
+    const { container } = render(
+        <>
+            {states.map((state) => (
+                <Icon key={state} name={state} set="single-ink-risograph" />
+            ))}
+        </>,
+    );
+
+    await waitFor(() =>
+        expect(container.querySelectorAll('[data-icon-set]')).toHaveLength(states.length),
+    );
+});
+it('draws Lucide for the screen states by default', () => {
+    const { container } = render(<Icon name="camera-unavailable" />);
+
+    expect(container.querySelector('svg.lucide-camera-off')).not.toBeNull();
+});
