@@ -24,6 +24,7 @@ function subjectFor(
 ) {
     return new SaveDomainName(
         doubles.names,
+        doubles.store,
         new PublicAddressLookup(doubles.router, doubles.probe),
         doubles.domains,
         doubles.setup,
@@ -128,7 +129,7 @@ it('gets a certificate for the new name while HTTPS is on', async () => {
         [{ kind: 'domain', name: 'home.example.fr' }],
     ]);
 });
-it('goes back to an address certificate when the name is removed while HTTPS is on', async () => {
+it('refuses to remove the domain name while HTTPS is on', async () => {
     const doubles = InternetAccessDoubles.setup(
         InternetAccessDoubles.active({ domain: 'home.example.fr', certificate: domainCertificate }),
     );
@@ -136,10 +137,30 @@ it('goes back to an address certificate when the name is removed while HTTPS is 
 
     doubles.names.name = 'home.example.fr';
 
-    await subject.execute(admin, { domain: null });
-    await doubles.background.settled();
+    const result = subject.execute(admin, { domain: null });
 
-    expect(doubles.store.current.certificate?.address).toBe(publicAddress);
+    await expect(result).rejects.toMatchObject({
+        code: 'conflict',
+        reason: 'domain-name-in-use',
+    });
+    expect(doubles.names.name).toBe('home.example.fr');
+});
+it('refuses to remove the domain name while HTTPS waits for a router rule', async () => {
+    const doubles = InternetAccessDoubles.setup(
+        InternetAccessDoubles.active({
+            phase: 'waiting-for-port',
+            mapping: 'manual',
+            certificate: null,
+            domain: 'home.example.fr',
+        }),
+    );
+    const subject = subjectFor(doubles);
+
+    doubles.names.name = 'home.example.fr';
+
+    const result = subject.execute(admin, { domain: null });
+
+    await expect(result).rejects.toMatchObject({ reason: 'domain-name-in-use' });
 });
 it('keeps the current certificate when the new one cannot be issued', async () => {
     const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());

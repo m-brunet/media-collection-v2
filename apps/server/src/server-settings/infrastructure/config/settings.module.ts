@@ -280,6 +280,7 @@ export class SettingsModule {
                     useFactory: (setup: InternetAccessSetup) =>
                         new SaveDomainName(
                             domainName,
+                            internetAccess,
                             lookup,
                             domains,
                             setup,

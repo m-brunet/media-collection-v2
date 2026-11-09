@@ -43,6 +43,21 @@ describe('PUT /api/server-settings/domain-name', () => {
 
         expect([response.status, response.body]).toEqual([200, { domain: null }]);
     });
+    it('refuses to remove the domain name while HTTPS is on', async () => {
+        const client = await app.authenticatedClient(admin);
+
+        await client.call('/server-settings/domain-name', 'PUT', { domain: 'home.example.fr' });
+        await app.dependencies.internetAccess.background.settled();
+        await client.call('/server-settings/internet-access', 'POST', {});
+        await app.dependencies.internetAccess.background.settled();
+
+        const response = await client.call('/server-settings/domain-name', 'PUT', { domain: null });
+
+        expect([response.status, response.body]).toEqual([
+            409,
+            expect.objectContaining({ reason: 'domain-name-in-use' }),
+        ]);
+    });
     it('refuses a domain name that points elsewhere and gives the public address', async () => {
         const client = await app.authenticatedClient(admin);
 

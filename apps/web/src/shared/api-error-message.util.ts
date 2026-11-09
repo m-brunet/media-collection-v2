@@ -29,6 +29,7 @@ export class ApiErrorMessage {
         'internet-access-on': 'reason.internetAccessOn',
         'domain-name-invalid': 'reason.domainNameInvalid',
         'https-active': 'reason.httpsActive',
+        'domain-name-in-use': 'reason.domainNameInUse',
         'color-scheme-unknown': 'reason.colorSchemeUnknown',
         'title-invalid': 'reason.titleInvalid',
         'title-required': 'reason.titleRequired',

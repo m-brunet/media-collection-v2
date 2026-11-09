@@ -193,6 +193,42 @@ it('removes the domain name when the field is emptied', async () => {
         body: { domain: null },
     });
 });
+it('removes the domain name with its own button', async () => {
+    const api = administrator(status(undefined, false, { domainName: 'home.example.fr' })).on(
+        'PUT /server-settings/domain-name',
+        () => ({ status: 200, body: { domain: null } }),
+    );
+
+    renderPage();
+    await userEvent.click(await screen.findByRole('button', { name: 'Remove the domain name' }));
+
+    expect(await screen.findByText(/Domain name removed/)).toBeInTheDocument();
+    expect(api.calls).toContainEqual({
+        route: 'PUT /server-settings/domain-name',
+        body: { domain: null },
+    });
+});
+it('offers no removal of the domain name while HTTPS is on', async () => {
+    administrator(status(active, false, { domainName: 'home.example.fr' }));
+
+    renderPage();
+
+    expect(
+        await screen.findByText(
+            'To remove the domain name, turn off HTTPS from the internet first.',
+        ),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Remove the domain name' })).toBeNull();
+});
+it('offers no removal without a saved domain name', async () => {
+    administrator(status());
+
+    renderPage();
+
+    await screen.findByRole('button', { name: 'Save the domain name' });
+
+    expect(screen.queryByRole('button', { name: 'Remove the domain name' })).toBeNull();
+});
 it('shows the saved domain name', async () => {
     administrator(status(undefined, false, { domainName: 'home.example.fr' }));
 
