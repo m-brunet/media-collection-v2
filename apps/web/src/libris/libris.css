@@ -109,12 +109,6 @@ body {
     gap: var(--space-6);
 }
 
-.plain-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
 /* Access pages (sign-in, setup): introduction on the left, form on the right. */
 .access {
     display: grid;
@@ -1863,12 +1857,94 @@ body {
 }
 
 /* The code stays dark on white so every phone camera reads it. */
-.internet-access__qr img {
+.internet-access__qr .qr-code {
     width: 180px;
-    height: 180px;
-    padding: var(--space-2);
-    border-radius: var(--radius-md);
-    background: #fff;
+}
+
+/* Current addresses: the list on the left, the QR code of the chosen address on the right. */
+.address-panel {
+    display: grid;
+    gap: var(--space-8);
+}
+
+.address-panel--qr {
+    grid-template-columns: minmax(0, 1fr) 300px;
+}
+
+.address-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.address-list__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-6);
+    min-height: 44px;
+    padding: var(--space-1) 0;
+}
+
+.qr-button {
+    white-space: nowrap;
+}
+
+.qr-button[aria-pressed='true'] {
+    border-color: var(--color-accent);
+    background: var(--color-selected);
+    color: var(--color-accent);
+}
+
+.address-panel__status {
+    margin: var(--space-5) 0 0;
+    color: var(--color-text-secondary);
+}
+
+.address-qr {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding-left: var(--space-8);
+    border-left: 1px solid var(--color-border);
+}
+
+.address-qr[hidden] {
+    display: none;
+}
+
+.address-qr .qr-code {
+    width: 144px;
+}
+
+.address-qr__caption {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+    text-align: center;
+}
+
+.address-qr__url {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 900px) {
+    .address-panel--qr {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .address-qr {
+        padding-left: 0;
+        border-left: 0;
+    }
 }
 
 .internet-access__subtitle {

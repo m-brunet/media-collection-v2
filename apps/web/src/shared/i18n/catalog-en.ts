@@ -77,6 +77,9 @@ export const en = {
     'server.title': 'Server settings',
     'server.intro': 'How browsers and phones reach this library.',
     'server.listeners': 'Current addresses',
+    'server.qrShow': 'Show QR code',
+    'server.qrShowFor': 'Show the QR code for {address}',
+    'server.qrCaption': 'Scan to open Leaf at this address',
     'server.httpsRunning': 'HTTPS is running on port {port}.',
     'server.httpsStopped': 'HTTPS is not running.',
     'server.restartRequired':

@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import QRCode from 'qrcode';
+import { useState } from 'react';
 import type {
     InternetAccessFailureReason,
     InternetAccessStatus,
@@ -11,6 +10,7 @@ import { Button } from '../../shared/ui/button';
 import { ConfirmDialog } from '../../shared/ui/confirm-dialog';
 import { Panel } from '../../shared/ui/layout';
 import { Notice } from '../../shared/ui/notice';
+import { QrCode } from '../../shared/ui/qr-code';
 import { useAction } from '../../shared/use-action';
 
 const steps = [
@@ -236,21 +236,6 @@ function SetupSteps({ current }: { current: InternetAccessStatus['step'] }) {
 function ActiveAddress({ origin }: { origin: string }) {
     const { t } = useI18n();
     const leaf = origin + '/leaf/';
-    const [picture, setPicture] = useState<string | null>(null);
-
-    useEffect(() => {
-        let current = true;
-
-        void QRCode.toString(leaf, { type: 'svg', margin: 1 }).then((svg) => {
-            if (current) {
-                setPicture('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg));
-            }
-        });
-
-        return () => {
-            current = false;
-        };
-    }, [leaf]);
 
     return (
         <div className="internet-access__address">
@@ -264,12 +249,10 @@ function ActiveAddress({ origin }: { origin: string }) {
                     </dd>
                 </div>
             </dl>
-            {picture && (
-                <figure className="internet-access__qr">
-                    <img src={picture} alt={t('internet.qrAlt', { address: leaf })} />
-                    <figcaption className="muted">{t('internet.qr')}</figcaption>
-                </figure>
-            )}
+            <figure className="internet-access__qr">
+                <QrCode value={leaf} label={t('internet.qrAlt', { address: leaf })} />
+                <figcaption className="muted">{t('internet.qr')}</figcaption>
+            </figure>
         </div>
     );
 }

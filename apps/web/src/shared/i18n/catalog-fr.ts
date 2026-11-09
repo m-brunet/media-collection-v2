@@ -82,6 +82,9 @@ export const fr = {
     'server.title': 'Paramètres du serveur',
     'server.intro': 'Comment les navigateurs et les téléphones accèdent à cette bibliothèque.',
     'server.listeners': 'Adresses actuelles',
+    'server.qrShow': 'Afficher le QR code',
+    'server.qrShowFor': 'Afficher le QR code pour {address}',
+    'server.qrCaption': 'Scannez pour ouvrir Leaf à cette adresse',
     'server.httpsRunning': 'HTTPS fonctionne sur le port {port}.',
     'server.httpsStopped': 'HTTPS n’est pas actif.',
     'server.restartRequired':
