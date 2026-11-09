@@ -21,6 +21,7 @@ import type { TlsStore } from '../../application/ports/driven/tls-store.interfac
 import type { MaintainInternetAccessUseCase } from '../../application/ports/driving/maintain-internet-access-use-case.interface.js';
 import type { MaintainHttpInternetAccessUseCase } from '../../application/ports/driving/maintain-http-internet-access-use-case.interface.js';
 import { DomainNameCheck } from '../../application/services/domain-name-check.service.js';
+import { HttpInternetAccessClosing } from '../../application/services/http-internet-access-closing.service.js';
 import { HttpPortForwarding } from '../../application/services/http-port-forwarding.service.js';
 import { InternetAccessSetup } from '../../application/services/internet-access-setup.service.js';
 import { PublicAddressLookup } from '../../application/services/public-address-lookup.service.js';
@@ -177,8 +178,7 @@ export class SettingsModule {
                             tls,
                             domains,
                             domainName,
-                            httpInternetAccess,
-                            forwarding,
+                            new HttpInternetAccessClosing(httpInternetAccess, forwarding),
                             clock,
                         ),
                 },

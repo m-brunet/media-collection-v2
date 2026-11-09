@@ -29,6 +29,7 @@ import type { RouterConnection } from '../ports/driven/router-connection.interfa
 import type { RouterGateway } from '../ports/driven/router-gateway.interface.js';
 import type { TlsStore } from '../ports/driven/tls-store.interface.js';
 import { DomainNameCheck } from '../services/domain-name-check.service.js';
+import { HttpInternetAccessClosing } from '../services/http-internet-access-closing.service.js';
 import { HttpPortForwarding } from '../services/http-port-forwarding.service.js';
 import { InternetAccessSetup } from '../services/internet-access-setup.service.js';
 
@@ -277,8 +278,7 @@ export class InternetAccessDoubles {
             tlsStore,
             domains,
             names,
-            httpStore,
-            forwarding,
+            new HttpInternetAccessClosing(httpStore, forwarding),
             clock,
         );
 
