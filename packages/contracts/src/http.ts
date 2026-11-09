@@ -77,6 +77,36 @@ export interface InternetAccessStatus {
     } | null;
 }
 
+// HTTP opened to the internet at the Admin's request (not encrypted): the router rule and address.
+export interface HttpInternetAccessStatus {
+    phase: 'off' | 'open';
+    mapping: 'upnp' | 'nat-pmp' | 'manual' | null;
+    publicAddress: string | null;
+    failure: {
+        reason: Extract<
+            InternetAccessFailureReason,
+            | 'no-router'
+            | 'port-refused'
+            | 'cgnat'
+            | 'double-nat'
+            | 'public-address-unknown'
+            | 'setup-failed'
+        >;
+        at: string;
+    } | null;
+    // Closed by a working HTTPS setup rather than by the Admin.
+    closedByHttps: boolean;
+    // The address phones open while it is open (domain name, else public address).
+    origin: string | null;
+    // What to enter in the router when the application could not add the rule.
+    manualRule: {
+        localAddress: string | null;
+        internalPort: number;
+        externalPort: number;
+        protocol: 'TCP';
+    } | null;
+}
+
 export interface ServerStatus {
     configured: {
         http: { port: number };
@@ -86,6 +116,7 @@ export interface ServerStatus {
     keepAwake: boolean;
     // The Admin's domain name, used by the internet addresses; checked when saved.
     domainName: string | null;
+    httpInternetAccess: HttpInternetAccessStatus;
     running: {
         httpPort: number;
         httpsPort: number | null;

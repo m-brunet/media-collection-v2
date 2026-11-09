@@ -1,5 +1,8 @@
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 import { InternetAccess } from '../../domain/entities/internet-access.entity.js';
+import { HttpInternetAccess } from '../../domain/entities/http-internet-access.entity.js';
+import type { HttpInternetAccessState } from '../../domain/entities/http-internet-access.entity.js';
+import { HttpSettings } from '../../domain/value-objects/http-settings.value-object.js';
 import type { InternetAccessState } from '../../domain/entities/internet-access.entity.js';
 import type {
     TlsSettings,
@@ -15,6 +18,8 @@ import type { DomainNameResolver } from '../ports/driven/domain-name-resolver.in
 import type { DomainNameStore } from '../ports/driven/domain-name-store.interface.js';
 import type { DomainName } from '../../domain/value-objects/domain-name.value-object.js';
 import type { HttpsRuntime } from '../ports/driven/https-runtime.interface.js';
+import type { HttpInternetAccessStore } from '../ports/driven/http-internet-access-store.interface.js';
+import type { HttpSettingsReader } from '../ports/driven/http-settings-reader.interface.js';
 import type { InternetAccessStore } from '../ports/driven/internet-access-store.interface.js';
 import type { KeepAwakeRuntime } from '../ports/driven/keep-awake-runtime.interface.js';
 import type { KeepAwakeStore } from '../ports/driven/keep-awake-store.interface.js';
@@ -25,6 +30,7 @@ import type { RouterConnection } from '../ports/driven/router-connection.interfa
 import type { RouterGateway } from '../ports/driven/router-gateway.interface.js';
 import type { TlsStore } from '../ports/driven/tls-store.interface.js';
 import { DomainNameCheck } from '../services/domain-name-check.service.js';
+import { HttpPortForwarding } from '../services/http-port-forwarding.service.js';
 import { InternetAccessSetup } from '../services/internet-access-setup.service.js';
 
 export const publicAddress = '82.66.118.204';
@@ -45,6 +51,30 @@ export class MemoryInternetAccessStore implements InternetAccessStore {
 
     get current(): InternetAccessState {
         return structuredClone(this.state);
+    }
+}
+
+export class MemoryHttpInternetAccessStore implements HttpInternetAccessStore {
+    constructor(private state: HttpInternetAccessState = HttpInternetAccess.off().snapshot) {}
+
+    async read(): Promise<HttpInternetAccess> {
+        return new HttpInternetAccess(this.state);
+    }
+
+    async save(access: HttpInternetAccess): Promise<void> {
+        this.state = access.snapshot;
+    }
+
+    get current(): HttpInternetAccessState {
+        return structuredClone(this.state);
+    }
+}
+
+export class FixedHttpSettings implements HttpSettingsReader {
+    constructor(public port = 34345) {}
+
+    async read(): Promise<HttpSettings> {
+        return new HttpSettings(this.port);
     }
 }
 
@@ -236,6 +266,9 @@ export class InternetAccessDoubles {
         const resolver = new FakeResolver();
         const domains = new DomainNameCheck(resolver);
         const names = new MemoryDomainNameStore();
+        const httpStore = new MemoryHttpInternetAccessStore();
+        const httpSettings = new FixedHttpSettings();
+        const forwarding = new HttpPortForwarding(router, probe, httpSettings, clock);
         const setup = new InternetAccessSetup(
             store,
             router,
@@ -245,6 +278,8 @@ export class InternetAccessDoubles {
             tlsStore,
             domains,
             names,
+            httpStore,
+            forwarding,
             clock,
         );
 
@@ -259,8 +294,21 @@ export class InternetAccessDoubles {
             resolver,
             domains,
             names,
+            http: httpStore,
+            httpSettings,
+            forwarding,
             setup,
             background: new AwaitableBackground(),
+        };
+    }
+
+    // HTTP opened through UPnP on the public address.
+    static httpOpen(): HttpInternetAccessState {
+        return {
+            ...HttpInternetAccess.off().snapshot,
+            phase: 'open',
+            mapping: 'upnp',
+            publicAddress,
         };
     }
 

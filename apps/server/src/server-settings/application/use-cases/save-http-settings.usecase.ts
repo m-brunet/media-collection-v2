@@ -5,6 +5,7 @@ import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import type { HttpSettingsState } from '../../domain/value-objects/http-settings.value-object.js';
 import { HttpSettings } from '../../domain/value-objects/http-settings.value-object.js';
 import type { HttpSettingsStore } from '../ports/driven/http-settings-store.interface.js';
+import type { HttpInternetAccessReader } from '../ports/driven/http-internet-access-reader.interface.js';
 import type { TlsSettingsReader } from '../ports/driven/tls-settings-reader.interface.js';
 import type { AuditedOperation } from '../../../shared/application/services/audited-operation.service.js';
 import { SettingsAudit } from '../settings-audit.js';
@@ -13,6 +14,7 @@ export class SaveHttpSettings implements SaveHttpSettingsUseCase {
     constructor(
         private readonly store: HttpSettingsStore,
         private readonly tls: TlsSettingsReader,
+        private readonly internet: HttpInternetAccessReader,
         private readonly operations: AuditedOperation,
     ) {}
 
@@ -35,6 +37,17 @@ export class SaveHttpSettings implements SaveHttpSettingsUseCase {
                     'HTTP and HTTPS must use different ports.',
                     'ports-identical',
                 );
+
+                if (
+                    settings.port !== before.port &&
+                    (await this.internet.read()).phase === 'open'
+                ) {
+                    throw new Failure(
+                        'conflict',
+                        'Close HTTP from the internet before changing the HTTP port.',
+                        'internet-access-on',
+                    );
+                }
 
                 await this.store.save(settings);
 
