@@ -185,21 +185,29 @@ it('saves the domain name', async () => {
         body: { domain: 'home.example.fr' },
     });
 });
-it('removes the domain name when the field is emptied', async () => {
-    const api = administrator(status(undefined, false, { domainName: 'home.example.fr' })).on(
-        'PUT /server-settings/domain-name',
-        () => ({ status: 200, body: { domain: null } }),
-    );
+it('offers no saving while the field holds the saved domain name', async () => {
+    administrator(status(undefined, false, { domainName: 'home.example.fr' }));
 
     renderPage();
-    await userEvent.clear(await screen.findByRole('textbox', { name: 'Domain name (optional)' }));
-    await userEvent.click(await domainButton('Save'));
 
-    expect(await screen.findByText(/Domain name removed/)).toBeInTheDocument();
-    expect(api.calls).toContainEqual({
-        route: 'PUT /server-settings/domain-name',
-        body: { domain: null },
-    });
+    expect(await domainButton('Save')).toBeDisabled();
+});
+it('offers saving once the domain name changes', async () => {
+    administrator(status(undefined, false, { domainName: 'home.example.fr' }));
+
+    renderPage();
+    const field = await screen.findByRole('textbox', { name: 'Domain name (optional)' });
+
+    await userEvent.type(field, 'x');
+
+    expect(await domainButton('Save')).toBeEnabled();
+});
+it('offers no saving while the field is empty', async () => {
+    administrator(status());
+
+    renderPage();
+
+    expect(await domainButton('Save')).toBeDisabled();
 });
 it('removes the domain name with its own button', async () => {
     const api = administrator(status(undefined, false, { domainName: 'home.example.fr' })).on(
@@ -221,29 +229,24 @@ it('offers no removal of the domain name while HTTPS is on', async () => {
 
     renderPage();
 
+    expect(await domainButton('Remove')).toBeDisabled();
     expect(
-        await screen.findByText(
-            'To remove the domain name, turn off HTTPS from the internet first.',
-        ),
+        screen.getByText('To remove the domain name, turn off HTTPS from the internet first.'),
     ).toBeInTheDocument();
-    expect(
-        within(screen.getByRole('form', { name: 'Domain name (optional)' })).queryByRole('button', {
-            name: 'Remove',
-        }),
-    ).toBeNull();
 });
 it('offers no removal without a saved domain name', async () => {
     administrator(status());
 
     renderPage();
 
-    await domainButton('Save');
+    expect(await domainButton('Remove')).toBeDisabled();
+});
+it('offers removal of a saved domain name while HTTPS is off', async () => {
+    administrator(status(undefined, false, { domainName: 'home.example.fr' }));
 
-    expect(
-        within(screen.getByRole('form', { name: 'Domain name (optional)' })).queryByRole('button', {
-            name: 'Remove',
-        }),
-    ).toBeNull();
+    renderPage();
+
+    expect(await domainButton('Remove')).toBeEnabled();
 });
 it('shows the saved domain name', async () => {
     administrator(status(undefined, false, { domainName: 'home.example.fr' }));

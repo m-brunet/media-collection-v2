@@ -32,6 +32,10 @@ export function DomainNameSection({
     const [feedback, setFeedback] = useState<{ tone: 'success' | 'error'; text: string } | null>(
         null,
     );
+    // Written as the server saves it, to tell whether the field holds anything new.
+    const entered = value.trim().toLowerCase().replace(/\.$/, '');
+    const canSave = entered !== '' && entered !== domainName;
+    const canRemove = domainName !== null && !httpsOn;
     const save = async (domain: string | null) => {
         setBusy(true);
         setFeedback(null);
@@ -70,7 +74,10 @@ export function DomainNameSection({
             aria-label={t('internet.domain')}
             onSubmit={(event: FormEvent<HTMLFormElement>) => {
                 event.preventDefault();
-                void save(value.trim() || null);
+
+                if (canSave) {
+                    void save(value.trim());
+                }
             }}
         >
             {/* The input and its buttons share one line; the hint stays under them. */}
@@ -91,14 +98,12 @@ export function DomainNameSection({
                         maxLength={253}
                         aria-describedby={id + '-hint'}
                     />
-                    <Button type="submit" busy={busy}>
+                    <Button type="submit" busy={busy} disabled={!canSave}>
                         {t('internet.domainSave')}
                     </Button>
-                    {domainName && !httpsOn && (
-                        <Button variant="ghost" busy={busy} onClick={() => void save(null)}>
-                            {t('internet.domainRemove')}
-                        </Button>
-                    )}
+                    <Button busy={busy} disabled={!canRemove} onClick={() => void save(null)}>
+                        {t('internet.domainRemove')}
+                    </Button>
                 </div>
                 <p id={id + '-hint'} className="field__hint">
                     {t('internet.domainHint')}
