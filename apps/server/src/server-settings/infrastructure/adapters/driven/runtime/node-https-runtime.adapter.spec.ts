@@ -95,7 +95,10 @@ it('answers Let’s Encrypt with the waiting challenge certificate', async () =>
     const port = await subject.start(await freePort(), await certificate('saved'));
     const challenge = await certificate('challenge');
 
-    challenges.add('82.66.118.204', { cert: challenge.chain, key: challenge.key });
+    challenges.add(
+        { kind: 'address', name: '82.66.118.204' },
+        { cert: challenge.chain, key: challenge.key },
+    );
 
     const answer = await handshake(port, {
         servername: '204.118.66.82.in-addr.arpa',
@@ -121,7 +124,10 @@ it('starts without a certificate so that Let’s Encrypt can check the port', as
     const challenge = await certificate('challenge');
     const port = await freePort();
 
-    challenges.add('82.66.118.204', { cert: challenge.chain, key: challenge.key });
+    challenges.add(
+        { kind: 'address', name: '82.66.118.204' },
+        { cert: challenge.chain, key: challenge.key },
+    );
 
     await subject.ensureRunning(port);
 
@@ -161,4 +167,33 @@ it('starts the listener when the first certificate is installed', async () => {
         subject: 'CN=first',
         protocol: 'http/1.1',
     });
+});
+it('answers Let’s Encrypt for a domain name with the challenge certificate', async () => {
+    const challenges = new TlsAlpnChallenges();
+    const subject = runtime(challenges);
+    const port = await subject.start(await freePort(), await certificate('saved'));
+    const challenge = await certificate('challenge');
+
+    challenges.add(
+        { kind: 'domain', name: 'home.example.fr' },
+        { cert: challenge.chain, key: challenge.key },
+    );
+
+    const answer = await handshake(port, {
+        servername: 'home.example.fr',
+        protocols: ['acme-tls/1'],
+    });
+
+    expect(answer).toEqual({ subject: 'CN=challenge', protocol: 'acme-tls/1' });
+});
+it('gives browsers the normal certificate for the domain name', async () => {
+    const subject = runtime();
+    const port = await subject.start(await freePort(), await certificate('saved'));
+
+    const answer = await handshake(port, {
+        servername: 'home.example.fr',
+        protocols: ['http/1.1'],
+    });
+
+    expect(answer).toEqual({ subject: 'CN=saved', protocol: 'http/1.1' });
 });

@@ -139,3 +139,43 @@ it('rejects a saved keep-awake setting that is not true or false', async () => {
 
     await expect(result).rejects.toThrow('true or false');
 });
+it('reads internet access saved before domain names as without a domain name', async () => {
+    const { database } = await open();
+    const saved = { ...activeAccess().snapshot } as Partial<
+        ReturnType<typeof activeAccess>['snapshot']
+    >;
+
+    delete saved.domain;
+    await database.connection
+        .insertInto('server_settings')
+        .values({ id: randomUUID(), name: 'internet-access', value: JSON.stringify(saved) })
+        .execute();
+    const repository = new KyselyInternetAccessRepository(
+        database.connections,
+        new UuidGenerator(),
+    );
+
+    const access = await repository.read();
+
+    expect([access.phase, access.domain, access.certificateName]).toEqual([
+        'active',
+        null,
+        '82.66.118.204',
+    ]);
+});
+it('saves the domain name', async () => {
+    const { database } = await open();
+    const repository = new KyselyInternetAccessRepository(
+        database.connections,
+        new UuidGenerator(),
+    );
+    const access = InternetAccess.off();
+
+    access.start('home.example.fr');
+    access.stop('domain-mismatch', new Date('2026-11-08T10:00:00.000Z'));
+    await repository.save(access);
+
+    const read = await repository.read();
+
+    expect([read.phase, read.domain]).toEqual(['off', 'home.example.fr']);
+});

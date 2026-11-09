@@ -49,6 +49,8 @@ export type InternetAccessFailureReason =
     | 'rate-limited'
     | 'authority-unavailable'
     | 'https-unavailable'
+    | 'domain-unresolved'
+    | 'domain-mismatch'
     | 'setup-failed';
 
 // Automatic internet access: the router rule, the public address and its certificate.
@@ -57,11 +59,14 @@ export interface InternetAccessStatus {
     step: 'router' | 'port' | 'certificate' | null;
     mapping: 'upnp' | 'nat-pmp' | 'manual' | null;
     publicAddress: string | null;
+    // The Admin's own domain name; the certificate and the address phones open use it.
+    domain: string | null;
+    // `address` is the IP address or the domain name the certificate covers.
     certificate: { address: string; issuedAt: string; expiresAt: string } | null;
     failure: { reason: InternetAccessFailureReason; at: string } | null;
     failedAttempts: number;
     nextAttemptAt: string | null;
-    // The address phones open, once the certificate is in use.
+    // The address phones open (domain name, else public address), once the certificate is in use.
     origin: string | null;
     // What to enter in the router when it cannot be configured automatically.
     manualRule: {

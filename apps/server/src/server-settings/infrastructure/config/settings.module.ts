@@ -5,6 +5,7 @@ import { Module } from '@nestjs/common';
 import type { BackgroundTasks } from '../../application/ports/driven/background-tasks.interface.js';
 import type { CertificateAuthority } from '../../application/ports/driven/certificate-authority.interface.js';
 import type { CertificateValidator } from '../../application/ports/driven/certificate-validator.interface.js';
+import type { DomainNameResolver } from '../../application/ports/driven/domain-name-resolver.interface.js';
 import type { HttpSettingsStore } from '../../application/ports/driven/http-settings-store.interface.js';
 import type { HttpsRuntime } from '../../application/ports/driven/https-runtime.interface.js';
 import type { InternetAccessStore } from '../../application/ports/driven/internet-access-store.interface.js';
@@ -15,6 +16,7 @@ import type { PublicAddressProbe } from '../../application/ports/driven/public-a
 import type { RouterGateway } from '../../application/ports/driven/router-gateway.interface.js';
 import type { TlsStore } from '../../application/ports/driven/tls-store.interface.js';
 import type { MaintainInternetAccessUseCase } from '../../application/ports/driving/maintain-internet-access-use-case.interface.js';
+import { DomainNameCheck } from '../../application/services/domain-name-check.service.js';
 import { InternetAccessSetup } from '../../application/services/internet-access-setup.service.js';
 import { CheckInternetAccess } from '../../application/use-cases/check-internet-access.usecase.js';
 import { MaintainInternetAccess } from '../../application/use-cases/maintain-internet-access.usecase.js';
@@ -64,6 +66,7 @@ export interface SettingsAdapters {
     internetAccess: InternetAccessStore;
     router: RouterGateway;
     probe: PublicAddressProbe;
+    resolver: DomainNameResolver;
     authority: CertificateAuthority;
     https: HttpsRuntime;
     local: LocalAddressReader;
@@ -85,6 +88,7 @@ export class SettingsModule {
             internetAccess,
             router,
             probe,
+            resolver,
             authority,
             https,
             local,
@@ -93,6 +97,7 @@ export class SettingsModule {
             keepAwakeRuntime,
             clock,
         } = adapters;
+        const domains = new DomainNameCheck(resolver);
 
         return {
             module: SettingsModule,
@@ -131,6 +136,7 @@ export class SettingsModule {
                             authority,
                             https,
                             tls,
+                            domains,
                             clock,
                         ),
                 },
@@ -165,6 +171,7 @@ export class SettingsModule {
                             probe,
                             tls,
                             setup,
+                            domains,
                             clock,
                         ),
                 },
