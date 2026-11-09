@@ -1,6 +1,7 @@
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { RenewalPolicy } from '../services/renewal-policy.service.js';
 import { ConnectionClass } from '../value-objects/connection-class.value-object.js';
+import { DomainName } from '../value-objects/domain-name.value-object.js';
 import type { IssuedCertificateState } from '../value-objects/issued-certificate.value-object.js';
 import { IssuedCertificate } from '../value-objects/issued-certificate.value-object.js';
 
@@ -17,6 +18,8 @@ export type InternetAccessFailureReason =
     | 'rate-limited'
     | 'authority-unavailable'
     | 'https-unavailable'
+    | 'domain-unresolved'
+    | 'domain-mismatch'
     | 'setup-failed';
 
 export interface InternetAccessState {
@@ -24,6 +27,8 @@ export interface InternetAccessState {
     step: SetupStep | null;
     mapping: PortMapping | null;
     publicAddress: string | null;
+    // The Admin's own domain name, kept on the public address by dynamic DNS; null to use the address.
+    domain: string | null;
     certificate: IssuedCertificateState | null;
     failure: { reason: InternetAccessFailureReason; at: string } | null;
     failedAttempts: number;
@@ -32,9 +37,9 @@ export interface InternetAccessState {
 
 // Automatic internet access: the router rule, the public address and the certificate that lets
 // phones reach the installation over HTTPS. A setup runs in steps; once active, the upkeep keeps
-// the certificate valid for the current public address.
+// the certificate valid for the Admin's domain name, or else for the current public address.
 export class InternetAccess {
-    // The router's port that phones reach; Let's Encrypt only checks an IP address on 443.
+    // The router's port that phones reach; Let's Encrypt's TLS-ALPN-01 check only uses 443.
     static readonly externalPort = 443;
     private state: InternetAccessState;
 
@@ -43,6 +48,10 @@ export class InternetAccess {
             new IssuedCertificate(state.certificate);
         }
 
+        Failure.ensure(
+            state.domain === null || DomainName.optional(state.domain)?.value === state.domain,
+            'A saved domain name must be valid.',
+        );
         Failure.ensure(
             state.phase !== 'active' || (state.certificate !== null && state.mapping !== null),
             'Active internet access needs a certificate and a port rule.',
@@ -56,6 +65,7 @@ export class InternetAccess {
             step: null,
             mapping: null,
             publicAddress: null,
+            domain: null,
             certificate: null,
             failure: null,
             failedAttempts: 0,
@@ -75,6 +85,15 @@ export class InternetAccess {
         return this.state.publicAddress;
     }
 
+    get domain(): string | null {
+        return this.state.domain;
+    }
+
+    // What the certificate covers and phones open: the domain name, else the public address.
+    get certificateName(): string | null {
+        return this.state.domain ?? this.state.publicAddress;
+    }
+
     get certificate(): IssuedCertificate | null {
         return this.state.certificate ? new IssuedCertificate(this.state.certificate) : null;
     }
@@ -83,7 +102,7 @@ export class InternetAccess {
         return InternetAccess.copy(this.state);
     }
 
-    start(): void {
+    start(domain: string | null): void {
         if (this.state.phase === 'setting-up') {
             throw new Failure(
                 'conflict',
@@ -92,10 +111,13 @@ export class InternetAccess {
             );
         }
 
+        const name = DomainName.optional(domain);
+
         this.state = {
             ...InternetAccess.off().state,
             phase: 'setting-up',
             step: 'router',
+            domain: name ? name.value : null,
             certificate: this.state.certificate,
         };
     }
@@ -160,10 +182,12 @@ export class InternetAccess {
         this.state = { ...this.state, step: 'certificate' };
     }
 
-    // The setup cannot go further (no public address, or the provider shares it).
+    // The setup cannot go further (no public address, or the provider shares it). The domain name
+    // stays for the next setup.
     stop(reason: InternetAccessFailureReason, now: Date): void {
         this.state = {
             ...InternetAccess.off().state,
+            domain: this.state.domain,
             failure: { reason, at: now.toISOString() },
         };
     }
@@ -183,8 +207,8 @@ export class InternetAccess {
         const issued = new IssuedCertificate(certificate);
 
         Failure.ensure(
-            this.state.mapping !== null && issued.address === this.state.publicAddress,
-            'The certificate must cover the public address.',
+            this.state.mapping !== null && issued.address === this.certificateName,
+            'The certificate must cover the domain name or the public address.',
         );
         this.state = {
             ...this.state,
@@ -205,7 +229,12 @@ export class InternetAccess {
     renewalDue(now: Date): boolean {
         return (
             this.state.phase === 'active' &&
-            RenewalPolicy.renewalDue(this.certificate, this.state.publicAddress!, now)
+            RenewalPolicy.renewalDue(
+                this.certificate,
+                this.certificateName!,
+                this.state.domain ? RenewalPolicy.domainShare : RenewalPolicy.addressShare,
+                now,
+            )
         );
     }
 
@@ -243,7 +272,7 @@ export class InternetAccess {
             );
         }
 
-        this.state = InternetAccess.off().state;
+        this.state = { ...InternetAccess.off().state, domain: this.state.domain };
     }
 
     // A setup cut short by a restart cannot resume.
