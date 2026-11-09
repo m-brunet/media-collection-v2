@@ -67,7 +67,7 @@ describe('Internet access', () => {
 
         expect(
             await page
-                .getByRole('link', { name: 'https://' + publicAddress + '/leaf/' })
+                .getByRole('link', { name: 'https://' + publicAddress, exact: true })
                 .isVisible(),
         ).toBe(true);
         expect(

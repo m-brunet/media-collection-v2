@@ -294,7 +294,7 @@ it('explains an HTTPS setup stopped by a domain name that points elsewhere', asy
         ),
     ).toBeInTheDocument();
 });
-it('gives the domain name as the HTTPS Leaf address once active', async () => {
+it('lists the HTTPS address on the domain name once active', async () => {
     administrator(
         status({ ...active, domain: 'home.example.fr', origin: 'https://home.example.fr' }),
     );
@@ -302,7 +302,7 @@ it('gives the domain name as the HTTPS Leaf address once active', async () => {
     renderPage();
 
     expect(
-        await screen.findByRole('link', { name: 'https://home.example.fr/leaf/' }),
+        await screen.findByRole('link', { name: 'https://home.example.fr' }),
     ).toBeInTheDocument();
 });
 it('warns before opening HTTP to the internet', async () => {
@@ -321,7 +321,7 @@ it('warns before opening HTTP to the internet', async () => {
         'POST /server-settings/internet-access/http',
     );
 });
-it('gives the HTTP Leaf address and closes HTTP', async () => {
+it('lists the HTTP address and closes HTTP', async () => {
     const api = administrator(status(undefined, false, { httpInternetAccess: httpOpen })).on(
         'DELETE /server-settings/internet-access/http',
         () => ({ status: 200, body: httpAccess() }),
@@ -329,7 +329,7 @@ it('gives the HTTP Leaf address and closes HTTP', async () => {
 
     renderPage();
     expect(
-        await screen.findByRole('link', { name: 'http://' + publicAddress + ':34345/leaf/' }),
+        await screen.findByRole('link', { name: 'http://' + publicAddress + ':34345' }),
     ).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Close HTTP' }));
@@ -388,13 +388,13 @@ it('shows which setup step is running', async () => {
         steps.find((step) => step.textContent?.includes('Finding your router')),
     ).toHaveTextContent('Done');
 });
-it('gives the Leaf address once active, its QR code being in the addresses list', async () => {
+it('lists the HTTPS address with its QR code button once active', async () => {
     administrator(status(active));
 
     renderPage();
 
     expect(
-        await screen.findByRole('link', { name: 'https://' + publicAddress + '/leaf/' }),
+        await screen.findByRole('link', { name: 'https://' + publicAddress }),
     ).toBeInTheDocument();
     expect(screen.queryByRole('img', { name: /^QR code for/ })).not.toBeInTheDocument();
     expect(
