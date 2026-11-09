@@ -25,6 +25,7 @@ design.
 | KI-10 | Improvement | Internet access: renew certificates through ARI so renewals escape Let's Encrypt limits | Medium | Open |
 | KI-11 | Improvement | Server settings: QR code for each address, opening Leaf, with the Libris logo | Medium | Done |
 | KI-12 | Improvement | The address QR codes also sign the phone in to Leaf (not the HTTP internet address) | Medium | Open |
+| KI-13 | Bug | Internet access: the router rule lapses while the panel still shows it on | High | Open |
 
 ## Open
 
@@ -208,6 +209,35 @@ design.
     in on Leaf; second use refused). No test reaches Let's Encrypt (Task 9.6 testing rule).
 - **Severity:** medium (sign-in on the phone at every session today). **Planned:** next version, after the 2.0.0
   release.
+
+### KI-13 — Internet access: the router rule lapses while the panel still shows it on
+
+- **Type:** Bug.
+- **Reported:** 2026-11-09 by the user: HTTP internet access no longer worked after the app had been closed for about
+  8 hours, although Server settings showed it on. Turning it off and on again fixed it. The app runs in development
+  sessions of about 20 minutes, on a wired computer.
+- **Cause (likely; nothing is logged, so it cannot be confirmed afterwards):**
+  - The UPnP rule is created with a 2-hour lease (`upnp-router-gateway.adapter.ts`) and renewed by the upkeep at
+    startup, then every hour (`internet-access-upkeep.adapter.ts`). After 8 hours off, the router had dropped it, so
+    the startup renewal was the only chance to bring it back.
+  - Finding the router is fragile: `@xmcl/nat-api` sends a single SSDP search and gives up after 1.8 seconds, with no
+    retry, although the search lets the router wait up to 1 second before answering. One missed answer fails the
+    renewal.
+  - After a failed renewal, the next one is an hour later, so a short session never gets a second try.
+  - No renewal outcome is logged anywhere, so the cause of a failure cannot be found afterwards.
+  - **HTTPS (not tested in real use yet, same upkeep):** the certificate back-off (1 hour, then doubling up to 6 hours,
+    `RenewalPolicy.retryAt`) also skips the router rule renewal, so one failed upkeep, even a certificate or domain
+    name problem, lets the 2-hour rule lapse until the back-off ends; restarting the app does not help.
+- **Fix:**
+  - Finding the router tries several times, with a longer wait, before the renewal counts as failed.
+  - After a failed renewal, the upkeep tries again soon (1 minute, then 5, then 15) instead of an hour later; back to
+    hourly once a renewal succeeds.
+  - Each renewal outcome (HTTP and HTTPS, the startup one included) is written to the server log.
+  - HTTPS: the router rule is renewed on every upkeep run, whatever the certificate back-off; only the certificate and
+    domain name work waits for it.
+  - Tests: the upkeep schedule (quick retries, back to hourly), the HTTPS rule renewed during the back-off, the router
+    search retries. No test reaches a real router or Let's Encrypt.
+- **Severity:** high (internet access silently stops working). **Planned:** now, its own fix branch.
 
 ## Done
 
