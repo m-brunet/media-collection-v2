@@ -184,8 +184,8 @@ export const fr = {
     'internet.domain': 'Nom de domaine (facultatif)',
     'internet.domainHint':
         'Seulement si vous possédez un nom de domaine qui pointe déjà vers cette connexion, par exemple grâce au DNS dynamique de votre box. Les adresses Internet l’utilisent alors. Laissez vide pour utiliser l’adresse Internet.',
-    'internet.domainSave': 'Enregistrer le nom de domaine',
-    'internet.domainRemove': 'Retirer le nom de domaine',
+    'internet.domainSave': 'Enregistrer',
+    'internet.domainRemove': 'Retirer',
     'internet.domainLocked':
         'Pour retirer le nom de domaine, désactivez d’abord HTTPS depuis Internet.',
     'internet.domainSaved': 'Nom de domaine enregistré. Les adresses Internet l’utilisent.',

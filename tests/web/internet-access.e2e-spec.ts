@@ -128,7 +128,10 @@ describe('Internet access', () => {
         const { page } = await serverSettings({ externalAddress: publicAddress, accepts: true });
 
         await page.getByRole('textbox', { name: 'Domain name (optional)' }).fill('home.example.fr');
-        await page.getByRole('button', { name: 'Save the domain name' }).click();
+        await page
+            .getByRole('form', { name: 'Domain name (optional)' })
+            .getByRole('button', { name: 'Save' })
+            .click();
         await page.getByText(/Domain name saved/).waitFor();
         await page.getByRole('button', { name: 'Set up internet access' }).click();
         await page.getByText('Internet access is on.').waitFor();
@@ -146,7 +149,10 @@ describe('Internet access', () => {
         });
 
         await page.getByRole('textbox', { name: 'Domain name (optional)' }).fill('home.example.fr');
-        await page.getByRole('button', { name: 'Save the domain name' }).click();
+        await page
+            .getByRole('form', { name: 'Domain name (optional)' })
+            .getByRole('button', { name: 'Save' })
+            .click();
         await page.getByText(/does not point to this connection/).waitFor();
 
         expect(await page.getByText('(' + publicAddress + ')', { exact: false }).isVisible()).toBe(
