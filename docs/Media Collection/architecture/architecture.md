@@ -239,6 +239,12 @@ a restart. An upkeep timer in root composition runs the maintain use case at sta
 router rule, follows a changed public address and renews certificates. Automatic certificates live in the same
 protected `tls/` storage as manual ones, with their source recorded. The HTTP port is never forwarded.
 
+An optional domain name (Task 9.6) is part of the internet access state. With a name, the certificate covers the name
+(`dns` identifier, `classic` profile), the challenge certificate is served for the name itself, a `DomainNameResolver`
+port checks before each issue and on each upkeep run that the name points to the public address, and a changed public
+address no longer needs a new certificate. Renewal happens at two thirds of the lifetime for a name and at half for an
+address.
+
 ## Runtime and packaging
 
 Normal startup waits for utility-process readiness before loading the web app. Ports, database failures and worker

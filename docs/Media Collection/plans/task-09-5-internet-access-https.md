@@ -289,6 +289,9 @@ and phone and what to report back; the next step starts from the results.
 - **B. Stable address (maybe later)**: a free dynamic DNS name (DuckDNS, dynv6, deSEC). The user signs up once and
   pastes the name and a token; the app keeps the name on the current public IP and gets the certificate with DNS-01, on
   any external port. Stable, readable address; needs a third-party account.
+  Partly done in [Task 9.6](task-09-6-internet-access-domain-name.md) (2026-11-09): the Admin enters a domain name that
+  the router's dynamic DNS already keeps up to date; the certificate is still proven on external port 443 (no DNS-01,
+  no provider account).
 - **C. Tunnel services** (Tailscale Funnel, Cloudflare Tunnel): no port forwarding, works behind CGNAT, but third-party
   software, account and traffic. At most a CGNAT fallback.
 - **D. A name service run by Media Collection** (Plex-style `*.plex.direct`): the only fully zero-knowledge option, but
