@@ -162,6 +162,19 @@ design.
     app with their credits.
   - **Today:** every icon goes through `apps/web/src/shared/ui/icon.tsx`, which only knows Lucide (the abstraction was
     made for set switching, Task 0).
+  - **Colours (decided 2026-11-09):** the icons follow the colour scheme. The artwork's green and the blueprint blue
+    become the accent, grey the secondary text colour, gold and orange the warning colour; `currentColor` already
+    follows the text.
+  - **Built so far (2026-11-09, branch `ki-6-appearance`):** the server setting (`icon-set`, public with the colour
+    scheme, Admin only, audited `appearance.icon-set-changed`, reset to Lucide by the data reset); the import tool
+    `tools/import-icon-sets.mjs` (recolours, prefixes ids, writes one static file per set,
+    `apps/web/public/icon-sets/<set>.json`, with `CREDITS.md`); `Icon` drawing the chosen set and falling back to
+    Lucide for utility icons and while the set loads (fetched once; a failed load is retried); the Appearance page
+    "Icon set" panel with a preview per set. Purposes used by the interface today: overview, my books, collections,
+    shelves, tags, lending, record return, activity, administration, settings, search, missing cover, success,
+    loading, error, empty state, scan barcode, add book. Not used yet (no such screen state): permission denied,
+    already owned, existing edition, camera unavailable, lookup offline, library brand (Libris keeps its own icon,
+    Leaf takes the Turning leaf).
   - **Fix:**
     - **Server:** the icon set setting in the `appearance` feature (value object with the six names, unknown names
       refused, Lucide by default), read before sign-in like the colour scheme, saved by the Admin, audited.

@@ -453,11 +453,23 @@ export const fr = {
     'appearance.scheme.slateOrchid': 'Ardoise × Orchidée',
     'appearance.scheme.charcoalScarlet': 'Charbon chaud × Écarlate doux',
     'appearance.default': 'par défaut',
+    'appearance.iconSetTitle': 'Jeu d’icônes',
+    'appearance.iconSetHint':
+        'S’applique à tout le monde, dans Libris et Leaf. Les petites icônes utilitaires (fermer, flèches, modifier, supprimer…) restent les mêmes dans tous les jeux.',
+    'appearance.iconSetSaved':
+        'Jeu d’icônes enregistré. Les autres fenêtres ouvertes l’utiliseront à leur prochain chargement.',
+    'appearance.iconSet.lucide': 'Lucide (icônes actuelles)',
+    'appearance.iconSet.solidSilhouettes': 'Silhouettes pleines',
+    'appearance.iconSet.handInkedEditorial': 'Croquis éditoriaux à l’encre',
+    'appearance.iconSet.architecturalWireframes': 'Plans d’architecte',
+    'appearance.iconSet.singleInkRisograph': 'Risographie à une encre',
+    'appearance.iconSet.quietEditorialMonoline': 'Trait éditorial discret',
     'appearance.sample': 'Ajouter un livre',
     'appearance.hint':
         'S’applique à tous les comptes, dans Libris et Leaf, y compris sur la page de connexion. Le choix est enregistré immédiatement.',
     'appearance.saved':
         'Jeu de couleurs enregistré. Les autres fenêtres ouvertes l’utiliseront à leur prochain chargement.',
+    'reason.iconSetUnknown': 'Choisissez l’un des jeux d’icônes proposés.',
     'reason.colorSchemeUnknown': 'Choisissez l’un des jeux de couleurs proposés.',
     'nav.books': 'Mes livres',
     'books.title': 'Mes livres',

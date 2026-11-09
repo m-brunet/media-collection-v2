@@ -254,6 +254,57 @@ body {
     font-size: var(--text-sm);
 }
 
+/* Appearance: icon set choices, each with a preview of a few of its icons. */
+.icon-set-choices {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.icon-set-choice {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border: var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    cursor: pointer;
+}
+
+.icon-set-choice:has(input:checked) {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.icon-set-choice:has(input:focus-visible) {
+    box-shadow: var(--focus-ring);
+}
+
+.icon-set-choice input {
+    position: absolute;
+    top: var(--space-4);
+    right: var(--space-4);
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-accent);
+}
+
+.icon-set-choice__name {
+    font-weight: 500;
+    padding-right: var(--space-8);
+}
+
+.icon-set-choice__preview {
+    display: flex;
+    gap: var(--space-3);
+    color: var(--color-text-secondary);
+}
+
 /* Books: list */
 .book-toolbar {
     display: flex;
