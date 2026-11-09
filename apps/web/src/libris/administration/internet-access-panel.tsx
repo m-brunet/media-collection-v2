@@ -14,7 +14,7 @@ import { Notice } from '../../shared/ui/notice';
 import { useAction } from '../../shared/use-action';
 import { DomainNameSection } from './domain-name-section';
 import { HttpInternetSection } from './http-internet-section';
-import { InternetAddress, ManualRule } from './internet-address';
+import { ManualRule } from './manual-rule';
 
 const steps = [
     { step: 'router', label: 'internet.stepRouter' },
@@ -172,7 +172,6 @@ function HttpsInternetSection({
             {status.phase === 'active' && status.origin && status.certificate && (
                 <>
                     <Notice tone="success">{t('internet.active')}</Notice>
-                    <InternetAddress origin={status.origin} />
                     <p>
                         {t('internet.validUntil', {
                             date: dates.dateTime(status.certificate.expiresAt),

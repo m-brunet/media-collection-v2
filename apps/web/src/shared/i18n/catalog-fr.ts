@@ -134,9 +134,6 @@ export const fr = {
     'internet.stepRunning': 'En cours',
     'internet.stepWaiting': 'En attente',
     'internet.active': 'L’accès Internet est activé.',
-    'internet.address': 'Adresse',
-    'internet.qrInAddresses':
-        'Son code QR pour le téléphone est dans la liste des adresses ci-dessous.',
     'internet.qrAlt': 'QR code pour {address}',
     'internet.validUntil': 'Certificat valable jusqu’au {date}. Il est renouvelé automatiquement.',
     'internet.lastFailure':

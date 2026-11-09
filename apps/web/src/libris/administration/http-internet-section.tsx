@@ -7,7 +7,7 @@ import { Button } from '../../shared/ui/button';
 import { ConfirmDialog } from '../../shared/ui/confirm-dialog';
 import { Notice } from '../../shared/ui/notice';
 import { useAction } from '../../shared/use-action';
-import { InternetAddress, ManualRule } from './internet-address';
+import { ManualRule } from './manual-rule';
 
 const failures: Record<NonNullable<HttpInternetAccessStatus['failure']>['reason'], MessageKey> = {
     'no-router': 'internet.failure.no-router',
@@ -52,7 +52,6 @@ export function HttpInternetSection({
                     <Notice tone="success">{t('internet.httpIsOpen')}</Notice>
                     {failure && <Notice tone="warning">{failure}</Notice>}
                     {status.manualRule && <ManualRule rule={status.manualRule} />}
-                    {status.origin && <InternetAddress origin={status.origin} />}
                 </>
             )}
             {status.phase === 'off' && status.closedByHttps && (
