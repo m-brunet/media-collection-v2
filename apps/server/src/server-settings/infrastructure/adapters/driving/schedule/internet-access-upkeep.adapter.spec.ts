@@ -20,7 +20,7 @@ class CountingMaintenance {
 
 it('runs the upkeep once the application is up', () => {
     const maintenance = new CountingMaintenance();
-    const upkeep = new InternetAccessUpkeep(maintenance, 1000);
+    const upkeep = new InternetAccessUpkeep([maintenance], 1000);
 
     upkeep.onApplicationBootstrap();
 
@@ -31,7 +31,7 @@ it('runs the upkeep once the application is up', () => {
 it('runs again at each interval once the previous run ended', async () => {
     vi.useFakeTimers();
     const maintenance = new CountingMaintenance();
-    const upkeep = new InternetAccessUpkeep(maintenance, 1000);
+    const upkeep = new InternetAccessUpkeep([maintenance], 1000);
 
     upkeep.onApplicationBootstrap();
     maintenance.release?.();
@@ -44,7 +44,7 @@ it('runs again at each interval once the previous run ended', async () => {
 it('never overlaps a run that is still going', async () => {
     vi.useFakeTimers();
     const maintenance = new CountingMaintenance();
-    const upkeep = new InternetAccessUpkeep(maintenance, 1000);
+    const upkeep = new InternetAccessUpkeep([maintenance], 1000);
 
     upkeep.onApplicationBootstrap();
     await vi.advanceTimersByTimeAsync(3000);
@@ -56,7 +56,7 @@ it('never overlaps a run that is still going', async () => {
 it('stops at shutdown after the current run', async () => {
     vi.useFakeTimers();
     const maintenance = new CountingMaintenance();
-    const upkeep = new InternetAccessUpkeep(maintenance, 1000);
+    const upkeep = new InternetAccessUpkeep([maintenance], 1000);
 
     upkeep.onApplicationBootstrap();
     maintenance.release?.();
@@ -64,4 +64,38 @@ it('stops at shutdown after the current run', async () => {
     await vi.advanceTimersByTimeAsync(5000);
 
     expect(maintenance.runs).toBe(1);
+});
+it('runs each upkeep in turn', async () => {
+    const order: string[] = [];
+    const upkeep = new InternetAccessUpkeep(
+        [
+            { execute: async () => void order.push('https') },
+            { execute: async () => void order.push('http') },
+        ],
+        1000,
+    );
+
+    upkeep.onApplicationBootstrap();
+    await upkeep.onModuleDestroy();
+
+    expect(order).toEqual(['https', 'http']);
+});
+it('runs the next upkeep after one fails', async () => {
+    const order: string[] = [];
+    const upkeep = new InternetAccessUpkeep(
+        [
+            {
+                execute: async () => {
+                    throw new Error('router gone');
+                },
+            },
+            { execute: async () => void order.push('http') },
+        ],
+        1000,
+    );
+
+    upkeep.onApplicationBootstrap();
+    await upkeep.onModuleDestroy();
+
+    expect(order).toEqual(['http']);
 });

@@ -6,6 +6,8 @@ import type { ReadHttpSettingsUseCase } from '../../../../application/ports/driv
 import type { SaveHttpSettingsUseCase } from '../../../../application/ports/driving/save-http-settings-use-case.interface.js';
 import type { ReadInternetAccessUseCase } from '../../../../application/ports/driving/read-internet-access-use-case.interface.js';
 import type { ReadKeepAwakeUseCase } from '../../../../application/ports/driving/read-keep-awake-use-case.interface.js';
+import type { ReadDomainNameUseCase } from '../../../../application/ports/driving/read-domain-name-use-case.interface.js';
+import type { ReadHttpInternetAccessUseCase } from '../../../../application/ports/driving/read-http-internet-access-use-case.interface.js';
 import type { AuthenticatedRequest } from '../../../../../shared/infrastructure/adapters/driving/web/api-guard.js';
 import { Access } from '../../../../../shared/infrastructure/adapters/driving/web/api-guard.js';
 import type { ServerStatus } from '../../../../../../../../packages/contracts/src/http.js';
@@ -38,6 +40,10 @@ export class SettingsController {
         @Inject('SERVER_SETTINGS_READ_INTERNET_ACCESS')
         private readonly internetAccess: ReadInternetAccessUseCase,
         @Inject('SERVER_SETTINGS_READ_KEEP_AWAKE') private readonly keepAwake: ReadKeepAwakeUseCase,
+        @Inject('SERVER_SETTINGS_READ_DOMAIN_NAME')
+        private readonly domainName: ReadDomainNameUseCase,
+        @Inject('SERVER_SETTINGS_READ_HTTP_INTERNET_ACCESS')
+        private readonly httpInternetAccess: ReadHttpInternetAccessUseCase,
     ) {}
 
     @Get()
@@ -78,6 +84,8 @@ export class SettingsController {
             configured,
             internetAccess: await this.internetAccess.execute(request.actor),
             keepAwake: await this.keepAwake.execute(request.actor),
+            domainName: await this.domainName.execute(request.actor),
+            httpInternetAccess: await this.httpInternetAccess.execute(request.actor),
             ...(await this.runtime.read()),
         };
     }

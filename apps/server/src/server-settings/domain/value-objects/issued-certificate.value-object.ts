@@ -1,12 +1,13 @@
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 
 export interface IssuedCertificateState {
+    // The public IP address or the domain name the certificate covers.
     address: string;
     issuedAt: string;
     expiresAt: string;
 }
 
-// An automatically issued certificate: the public address it covers and its validity period.
+// An automatically issued certificate: the address or domain name it covers and its validity period.
 // Key material never enters the domain.
 export class IssuedCertificate {
     private readonly state: Readonly<IssuedCertificateState>;

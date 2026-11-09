@@ -49,6 +49,8 @@ export type InternetAccessFailureReason =
     | 'rate-limited'
     | 'authority-unavailable'
     | 'https-unavailable'
+    | 'domain-unresolved'
+    | 'domain-mismatch'
     | 'setup-failed';
 
 // Automatic internet access: the router rule, the public address and its certificate.
@@ -57,13 +59,46 @@ export interface InternetAccessStatus {
     step: 'router' | 'port' | 'certificate' | null;
     mapping: 'upnp' | 'nat-pmp' | 'manual' | null;
     publicAddress: string | null;
+    // The domain name the HTTPS certificate uses (follows the saved domain name).
+    domain: string | null;
+    // `address` is the IP address or the domain name the certificate covers.
     certificate: { address: string; issuedAt: string; expiresAt: string } | null;
     failure: { reason: InternetAccessFailureReason; at: string } | null;
     failedAttempts: number;
     nextAttemptAt: string | null;
-    // The address phones open, once the certificate is in use.
+    // The address phones open (domain name, else public address), once the certificate is in use.
     origin: string | null;
     // What to enter in the router when it cannot be configured automatically.
+    manualRule: {
+        localAddress: string | null;
+        internalPort: number;
+        externalPort: number;
+        protocol: 'TCP';
+    } | null;
+}
+
+// HTTP opened to the internet at the Admin's request (not encrypted): the router rule and address.
+export interface HttpInternetAccessStatus {
+    phase: 'off' | 'open';
+    mapping: 'upnp' | 'nat-pmp' | 'manual' | null;
+    publicAddress: string | null;
+    failure: {
+        reason: Extract<
+            InternetAccessFailureReason,
+            | 'no-router'
+            | 'port-refused'
+            | 'cgnat'
+            | 'double-nat'
+            | 'public-address-unknown'
+            | 'setup-failed'
+        >;
+        at: string;
+    } | null;
+    // Closed by a working HTTPS setup rather than by the Admin.
+    closedByHttps: boolean;
+    // The address phones open while it is open (domain name, else public address).
+    origin: string | null;
+    // What to enter in the router when the application could not add the rule.
     manualRule: {
         localAddress: string | null;
         internalPort: number;
@@ -79,6 +114,9 @@ export interface ServerStatus {
     };
     internetAccess: InternetAccessStatus;
     keepAwake: boolean;
+    // The Admin's domain name, used by the internet addresses; checked when saved.
+    domainName: string | null;
+    httpInternetAccess: HttpInternetAccessStatus;
     running: {
         httpPort: number;
         httpsPort: number | null;

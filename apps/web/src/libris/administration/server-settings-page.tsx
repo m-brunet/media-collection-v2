@@ -100,6 +100,8 @@ export function ServerSettingsPage() {
                     )}
                     <InternetAccessPanel
                         status={settings.internetAccess}
+                        http={settings.httpInternetAccess}
+                        domainName={settings.domainName}
                         keepAwake={settings.keepAwake}
                         onStatus={(internetAccess) =>
                             void api
@@ -108,10 +110,21 @@ export function ServerSettingsPage() {
                                     setSettings({ ...settings, internetAccess }),
                                 )
                         }
+                        onRefresh={() =>
+                            void api
+                                .request<ServerStatus>('/server-settings', { passive: true })
+                                .then(setSettings, () => undefined)
+                        }
                         onKeepAwake={(keepAwake) => setSettings({ ...settings, keepAwake })}
                     />
                     <AddressesPanel
-                        addresses={settings.running.addresses}
+                        addresses={[
+                            ...settings.running.addresses,
+                            ...[
+                                settings.httpInternetAccess.origin,
+                                settings.internetAccess.origin,
+                            ].filter((origin): origin is string => origin !== null),
+                        ]}
                         httpsPort={settings.running.httpsPort}
                         httpsError={settings.running.httpsError}
                     />

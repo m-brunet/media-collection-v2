@@ -1825,13 +1825,6 @@ body {
     color: var(--color-text-muted);
 }
 
-.internet-access__address {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: var(--space-6);
-}
-
 .internet-access__facts {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -1847,18 +1840,6 @@ body {
 .internet-access__facts dd {
     margin: var(--space-1) 0 0;
     overflow-wrap: anywhere;
-}
-
-.internet-access__qr {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    margin: 0;
-}
-
-/* The code stays dark on white so every phone camera reads it. */
-.internet-access__qr .qr-code {
-    width: 180px;
 }
 
 /* Current addresses: the list on the left, the QR code of the chosen address on the right. */
@@ -1950,6 +1931,31 @@ body {
 .internet-access__subtitle {
     margin: 0 0 var(--space-2);
     font-size: var(--text-lg);
+}
+
+/* The domain name input takes the line; its Save and Remove buttons end it. */
+.internet-access__domain-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.internet-access__domain-row .field__control {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Every action of the Internet access panel sits on the right. */
+.internet-access .actions {
+    justify-content: flex-end;
+}
+
+.internet-access__section,
+.internet-access__domain {
+    display: grid;
+    gap: var(--space-3);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
 }
 
 .advanced-settings > summary {

@@ -62,7 +62,7 @@ From the discussion (2026-11-08):
   product docs; manual forwarding stays the fallback.
 - An **external** port 443 forwarded to a listening port of 1024 or above is allowed. The listening-port rule
   (1024-65535, never 80 or 443) is unchanged.
-- Only the HTTPS port is ever exposed to the internet; the flow never maps the HTTP port.
+- Only the HTTPS port is ever exposed to the internet; the flow never maps the HTTP port. Changed on 2026-11-09 by [Task 9.6](task-09-6-internet-access-domain-name.md): the Admin may open HTTP to the internet when HTTPS does not work.
 - Self-signed certificates and a local certificate authority are rejected for internet access.
 - Manual PEM import stays as an advanced setting.
 - Option B (dynamic DNS name, stable address) is deferred, "maybe later". It moves up if router tests show that UPnP
@@ -289,6 +289,9 @@ and phone and what to report back; the next step starts from the results.
 - **B. Stable address (maybe later)**: a free dynamic DNS name (DuckDNS, dynv6, deSEC). The user signs up once and
   pastes the name and a token; the app keeps the name on the current public IP and gets the certificate with DNS-01, on
   any external port. Stable, readable address; needs a third-party account.
+  Partly done in [Task 9.6](task-09-6-internet-access-domain-name.md) (2026-11-09): the Admin enters a domain name that
+  the router's dynamic DNS already keeps up to date; the certificate is still proven on external port 443 (no DNS-01,
+  no provider account).
 - **C. Tunnel services** (Tailscale Funnel, Cloudflare Tunnel): no port forwarding, works behind CGNAT, but third-party
   software, account and traffic. At most a CGNAT fallback.
 - **D. A name service run by Media Collection** (Plex-style `*.plex.direct`): the only fully zero-knowledge option, but

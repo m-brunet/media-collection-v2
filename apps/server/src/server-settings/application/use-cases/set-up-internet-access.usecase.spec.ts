@@ -21,6 +21,7 @@ function subjectFor(
     return new SetUpInternetAccess(
         doubles.store,
         doubles.tls,
+        doubles.names,
         doubles.setup,
         doubles.background,
         AuditDoubles.auditedOperation(trail),
@@ -102,4 +103,14 @@ it('refuses a second setup while one runs', async () => {
     const result = subject.execute(admin, { replaceCertificate: false });
 
     await expect(result).rejects.toMatchObject({ reason: 'setup-in-progress' });
+});
+it('sets up internet access for the saved domain name', async () => {
+    const doubles = InternetAccessDoubles.setup();
+    const subject = subjectFor(doubles);
+
+    doubles.names.name = 'home.example.fr';
+
+    const state = await subject.execute(admin, { replaceCertificate: false });
+
+    expect([state.phase, state.domain]).toEqual(['setting-up', 'home.example.fr']);
 });

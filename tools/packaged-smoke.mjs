@@ -38,7 +38,12 @@ let child;
 let failureOutput = '';
 const launch = async (withPortOverride = true, debugging = false) => {
     // The packaged window stays off screen while the smoke test drives it.
-    const environment = { ...process.env, APP_HIDDEN_WINDOWS: '1' };
+    // Internet access stays offline: the smoke test never reaches a router or Let's Encrypt.
+    const environment = {
+        ...process.env,
+        APP_HIDDEN_WINDOWS: '1',
+        APP_OFFLINE_INTERNET_ACCESS: '1',
+    };
 
     delete environment.APP_DEV_UI;
     delete environment.ELECTRON_RUN_AS_NODE;

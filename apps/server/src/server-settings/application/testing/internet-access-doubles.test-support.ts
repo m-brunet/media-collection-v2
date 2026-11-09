@@ -1,5 +1,7 @@
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 import { InternetAccess } from '../../domain/entities/internet-access.entity.js';
+import { HttpInternetAccess } from '../../domain/entities/http-internet-access.entity.js';
+import type { HttpInternetAccessState } from '../../domain/entities/http-internet-access.entity.js';
 import type { InternetAccessState } from '../../domain/entities/internet-access.entity.js';
 import type {
     TlsSettings,
@@ -9,8 +11,14 @@ import type { BackgroundTasks } from '../ports/driven/background-tasks.interface
 import type {
     CertificateAuthority,
     CertificateIssue,
+    CertificateSubject,
 } from '../ports/driven/certificate-authority.interface.js';
+import type { DomainNameResolver } from '../ports/driven/domain-name-resolver.interface.js';
+import type { DomainNameStore } from '../ports/driven/domain-name-store.interface.js';
+import type { DomainName } from '../../domain/value-objects/domain-name.value-object.js';
 import type { HttpsRuntime } from '../ports/driven/https-runtime.interface.js';
+import type { HttpInternetAccessStore } from '../ports/driven/http-internet-access-store.interface.js';
+import type { HttpListener } from '../ports/driven/http-listener.interface.js';
 import type { InternetAccessStore } from '../ports/driven/internet-access-store.interface.js';
 import type { KeepAwakeRuntime } from '../ports/driven/keep-awake-runtime.interface.js';
 import type { KeepAwakeStore } from '../ports/driven/keep-awake-store.interface.js';
@@ -20,7 +28,11 @@ import type { PortRule } from '../ports/driven/port-rule.interface.js';
 import type { RouterConnection } from '../ports/driven/router-connection.interface.js';
 import type { RouterGateway } from '../ports/driven/router-gateway.interface.js';
 import type { TlsStore } from '../ports/driven/tls-store.interface.js';
+import { DomainNameCheck } from '../services/domain-name-check.service.js';
+import { HttpInternetAccessClosing } from '../services/http-internet-access-closing.service.js';
+import { HttpPortForwarding } from '../services/http-port-forwarding.service.js';
 import { InternetAccessSetup } from '../services/internet-access-setup.service.js';
+import { RouterRules } from '../services/router-rules.service.js';
 
 export const publicAddress = '82.66.118.204';
 
@@ -40,6 +52,30 @@ export class MemoryInternetAccessStore implements InternetAccessStore {
 
     get current(): InternetAccessState {
         return structuredClone(this.state);
+    }
+}
+
+export class MemoryHttpInternetAccessStore implements HttpInternetAccessStore {
+    constructor(private state: HttpInternetAccessState = HttpInternetAccess.off().snapshot) {}
+
+    async read(): Promise<HttpInternetAccess> {
+        return new HttpInternetAccess(this.state);
+    }
+
+    async save(access: HttpInternetAccess): Promise<void> {
+        this.state = access.snapshot;
+    }
+
+    get current(): HttpInternetAccessState {
+        return structuredClone(this.state);
+    }
+}
+
+export class FixedHttpListener implements HttpListener {
+    constructor(private readonly running = 34345) {}
+
+    port(): number {
+        return this.running;
     }
 }
 
@@ -80,15 +116,43 @@ export class FakeProbe implements PublicAddressProbe {
     }
 }
 
+export class FakeResolver implements DomainNameResolver {
+    readonly asked: string[] = [];
+
+    constructor(public answer: string[] = [publicAddress]) {}
+
+    async addresses(name: string): Promise<string[]> {
+        this.asked.push(name);
+
+        return [...this.answer];
+    }
+}
+
+export class MemoryDomainNameStore implements DomainNameStore {
+    constructor(public name: string | null = null) {}
+
+    async read(): Promise<string | null> {
+        return this.name;
+    }
+
+    async save(name: DomainName | null): Promise<void> {
+        this.name = name ? name.value : null;
+    }
+}
+
 export class FakeAuthority implements CertificateAuthority {
     readonly requested: string[] = [];
+    readonly subjects: CertificateSubject[] = [];
     refusal: Extract<CertificateIssue, { outcome: 'refused' }>['reason'] | null = null;
     failure: Error | null = null;
 
     constructor(private readonly clock: Clock) {}
 
-    async issue(address: string): Promise<CertificateIssue> {
+    async issue(subject: CertificateSubject): Promise<CertificateIssue> {
+        const address = subject.name;
+
         this.requested.push(address);
+        this.subjects.push({ ...subject });
 
         if (this.failure) {
             throw this.failure;
@@ -200,13 +264,22 @@ export class InternetAccessDoubles {
         const authority = new FakeAuthority(clock);
         const https = new FakeHttpsRuntime();
         const tlsStore = new MemoryTlsStore(tls);
+        const resolver = new FakeResolver();
+        const domains = new DomainNameCheck(resolver);
+        const names = new MemoryDomainNameStore();
+        const httpStore = new MemoryHttpInternetAccessStore();
+        const httpListener = new FixedHttpListener();
+        const rules = new RouterRules(router, probe);
+        const forwarding = new HttpPortForwarding(rules, httpListener, clock);
         const setup = new InternetAccessSetup(
             store,
-            router,
-            probe,
+            rules,
             authority,
             https,
             tlsStore,
+            domains,
+            names,
+            new HttpInternetAccessClosing(httpStore, forwarding),
             clock,
         );
 
@@ -215,11 +288,28 @@ export class InternetAccessDoubles {
             store,
             router,
             probe,
+            rules,
             authority,
             https,
             tls: tlsStore,
+            resolver,
+            domains,
+            names,
+            http: httpStore,
+            httpListener,
+            forwarding,
             setup,
             background: new AwaitableBackground(),
+        };
+    }
+
+    // HTTP opened through UPnP on the public address.
+    static httpOpen(): HttpInternetAccessState {
+        return {
+            ...HttpInternetAccess.off().snapshot,
+            phase: 'open',
+            mapping: 'upnp',
+            publicAddress,
         };
     }
 

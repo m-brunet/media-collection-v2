@@ -237,7 +237,19 @@ profile) through a `CertificateAuthority` port. The HTTPS listener answers the T
 negotiated. The listener starts and swaps certificates live (`setSecureContext`) through an `HttpsRuntime` port, without
 a restart. An upkeep timer in root composition runs the maintain use case at startup and hourly: it recreates the
 router rule, follows a changed public address and renews certificates. Automatic certificates live in the same
-protected `tls/` storage as manual ones, with their source recorded. The HTTP port is never forwarded.
+protected `tls/` storage as manual ones, with their source recorded.
+
+Task 9.6 adds a saved domain name and HTTP from the internet. The domain name is its own setting, checked on save
+through a `DomainNameResolver` port against the public address. The HTTPS internet access copies it as the name its
+certificate covers (`dns` identifier, `classic` profile, challenge certificate served for the name itself, renewal at
+two thirds of the lifetime, a changed public address needs no new certificate). HTTP from the internet is a separate
+`HttpInternetAccess` entity: a router rule from the HTTP port to the HTTP port, kept by the same upkeep timer, closed
+when an HTTPS setup succeeds.
+
+No test reaches a real router, Let's Encrypt, the public address service or DNS. Unit and API tests use in-memory
+doubles; browser journeys pass stand-ins; every Electron test launch (browser, desktop, packaged smoke) sets
+`APP_OFFLINE_INTERNET_ACCESS=1`, and the desktop worker then builds `OfflineInternetAccess` instead of the real
+adapters. Only a normal launch (including `npm run dev`) uses the real ones.
 
 ## Runtime and packaging
 

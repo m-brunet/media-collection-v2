@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { generate } from 'selfsigned';
 import { TestApp } from '../../../../../../../../tests/api/setup/test-app.js';
 import { UserFixture } from '../../../../../../../../tests/api/fixtures/user.fixture.js';
+import { DomainName } from '../../../../domain/value-objects/domain-name.value-object.js';
 import { TlsSettings } from '../../../../domain/value-objects/tls-settings.value-object.js';
 
 let app: TestApp;
@@ -87,6 +88,15 @@ describe('POST /api/server-settings/internet-access', () => {
         });
 
         expect(response.status).toBe(202);
+    });
+    it('rejects a domain name in the setup request', async () => {
+        const client = await app.authenticatedClient(admin);
+
+        const response = await client.call('/server-settings/internet-access', 'POST', {
+            domain: 'home.example.fr',
+        });
+
+        expect(response.status).toBe(400);
     });
     it('rejects an unknown field', async () => {
         const client = await app.authenticatedClient(admin);
@@ -179,6 +189,44 @@ describe('GET /api/server-settings after a setup', () => {
             response.body.internetAccess.phase,
             response.body.internetAccess.failure?.reason,
         ]).toEqual(['off', 'cgnat']);
+    });
+    it('gives the saved domain name as the address once the certificate is in use', async () => {
+        const client = await app.authenticatedClient(admin);
+
+        await app.dependencies.internetAccess.domainName.save(
+            DomainName.optional('home.example.fr'),
+        );
+        await setUp(client);
+
+        const response = await client.call<ServerStatus>('/server-settings', 'GET');
+
+        expect([
+            response.body.internetAccess.phase,
+            response.body.internetAccess.origin,
+            response.body.internetAccess.certificate?.address,
+            app.dependencies.internetAccess.authority.subjects,
+        ]).toEqual([
+            'active',
+            'https://home.example.fr',
+            'home.example.fr',
+            [{ kind: 'domain', name: 'home.example.fr' }],
+        ]);
+    });
+    it('explains a saved domain name that no longer points to the connection', async () => {
+        const client = await app.authenticatedClient(admin);
+
+        await app.dependencies.internetAccess.domainName.save(
+            DomainName.optional('home.example.fr'),
+        );
+        app.dependencies.internetAccess.resolver.answer = ['82.66.118.77'];
+        await setUp(client);
+
+        const response = await client.call<ServerStatus>('/server-settings', 'GET');
+
+        expect([
+            response.body.internetAccess.phase,
+            response.body.internetAccess.failure?.reason,
+        ]).toEqual(['off', 'domain-mismatch']);
     });
 });
 describe('POST /api/server-settings/internet-access/check', () => {
