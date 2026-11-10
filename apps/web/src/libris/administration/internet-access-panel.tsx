@@ -146,6 +146,9 @@ function HttpsInternetSection({
                 throw error;
             }
         });
+    // The server sends Let's Encrypt's date only while it is ahead.
+    const blocked = status.retryAfter !== null;
+    const checking = status.phase === 'active' && status.step !== null;
     const check = () =>
         void action.run(async () =>
             onStatus(
@@ -169,14 +172,17 @@ function HttpsInternetSection({
                             date: dates.dateTime(status.certificate.expiresAt),
                         })}
                     </p>
-                    {failure && (
+                    {checking && <Notice tone="info">{t('internet.checking')}</Notice>}
+                    {failure && !checking && (
                         <Notice tone="warning">
-                            {t('internet.lastFailure', {
-                                reason: failure,
-                                date: status.nextAttemptAt
-                                    ? dates.dateTime(status.nextAttemptAt)
-                                    : '',
-                            })}
+                            {status.awaitingCheck
+                                ? t('internet.awaitingCheck', { reason: failure })
+                                : t('internet.lastFailure', {
+                                      reason: failure,
+                                      date: status.nextAttemptAt
+                                          ? dates.dateTime(status.nextAttemptAt)
+                                          : '',
+                                  })}
                         </Notice>
                     )}
                 </>
@@ -188,6 +194,14 @@ function HttpsInternetSection({
                 </>
             )}
             {status.phase === 'off' && failure && <Notice tone="error">{failure}</Notice>}
+            {status.retryAfter && (
+                <Notice tone="warning">
+                    {t('internet.retryAfter', { date: dates.dateTime(status.retryAfter) })}
+                </Notice>
+            )}
+            {status.allowances && !checking && (
+                <Allowances status={status} allowances={status.allowances} />
+            )}
             {action.feedback && <Notice tone={action.feedback.tone}>{action.feedback.text}</Notice>}
             {status.phase === 'off' && (
                 <p className="muted">
@@ -199,12 +213,13 @@ function HttpsInternetSection({
             )}
             <div className="actions">
                 {status.phase === 'off' && (
-                    <Button variant="primary" busy={action.busy} onClick={start}>
+                    <Button variant="primary" busy={action.busy} disabled={blocked} onClick={start}>
                         {t('internet.setUp')}
                     </Button>
                 )}
-                {status.phase === 'waiting-for-port' && (
-                    <Button variant="primary" busy={action.busy} onClick={check}>
+                {(status.phase === 'waiting-for-port' ||
+                    (status.phase === 'active' && status.awaitingCheck && !checking)) && (
+                    <Button variant="primary" busy={action.busy} disabled={blocked} onClick={check}>
                         {t('internet.check')}
                     </Button>
                 )}
@@ -242,6 +257,37 @@ function HttpsInternetSection({
                 onClose={() => setTurningOff(false)}
             />
         </section>
+    );
+}
+
+// The estimate of what Let's Encrypt still allows, after a failure. At zero the button stays usable
+// (it is only an estimate) and says when an attempt is likely to work.
+function Allowances({
+    status,
+    allowances,
+}: {
+    status: InternetAccessStatus;
+    allowances: NonNullable<InternetAccessStatus['allowances']>;
+}) {
+    const { t, dates } = useI18n();
+    const name = status.domain ?? status.publicAddress ?? status.certificate?.address ?? '';
+    const empty = [allowances.certificates.nextAt, allowances.checks.nextAt]
+        .filter((date): date is string => date !== null)
+        .sort()
+        .at(-1);
+
+    return (
+        <div className="internet-access__allowances">
+            <p>
+                {t('internet.allowanceCertificates', {
+                    name,
+                    count: allowances.certificates.left,
+                })}{' '}
+                {t('internet.allowanceChecks', { count: allowances.checks.left })}
+            </p>
+            {empty && <p>{t('internet.probablyRefused', { date: dates.dateTime(empty) })}</p>}
+            <p className="muted">{t('internet.allowanceEstimate')}</p>
+        </div>
     );
 }
 

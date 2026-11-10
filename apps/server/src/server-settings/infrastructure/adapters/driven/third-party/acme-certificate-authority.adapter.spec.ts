@@ -182,7 +182,22 @@ it('reports Let’s Encrypt limits', async () => {
 
     const issue = await authority.issue(ip, null);
 
-    expect(issue).toEqual({ outcome: 'refused', reason: 'rate-limited' });
+    expect(issue).toEqual({ outcome: 'refused', reason: 'rate-limited', retryAfter: null });
+});
+it('reads the date Let’s Encrypt gives with a limit', async () => {
+    const { authority, session } = await authorityWith();
+
+    session.orderFailure = new Error(
+        'too many failed authorizations (5) for "82.66.118.204" in the last 1h0m0s, retry after 2026-11-10 12:12:00 UTC: see https://letsencrypt.org/docs/rate-limits/',
+    );
+
+    const issue = await authority.issue(ip, null);
+
+    expect(issue).toEqual({
+        outcome: 'refused',
+        reason: 'rate-limited',
+        retryAfter: '2026-11-10T12:12:00.000Z',
+    });
 });
 it('reports Let’s Encrypt as unavailable on any other error', async () => {
     const { authority, session } = await authorityWith();
@@ -286,7 +301,7 @@ it('orders nothing more when the renewal meets a rate limit', async () => {
     const issue = await authority.issue(ip, await currentChain());
 
     expect([issue, session.requested.length]).toEqual([
-        { outcome: 'refused', reason: 'rate-limited' },
+        { outcome: 'refused', reason: 'rate-limited', retryAfter: null },
         1,
     ]);
 });

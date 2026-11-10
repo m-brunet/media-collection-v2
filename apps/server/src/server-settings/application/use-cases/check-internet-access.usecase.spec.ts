@@ -28,6 +28,7 @@ function subjectFor(doubles: ReturnType<typeof InternetAccessDoubles.setup>) {
         doubles.setup,
         doubles.background,
         AuditDoubles.auditedOperation(new MemoryAuditTrail()),
+        doubles.clock,
     );
 }
 
@@ -64,4 +65,75 @@ it('refuses a Guest', async () => {
     const result = subject.execute(TestActors.of('guest', 'gus'));
 
     await expect(result).rejects.toMatchObject({ code: 'forbidden' });
+});
+it('checks again while active after a failed check, keeping the certificate in use', async () => {
+    const doubles = InternetAccessDoubles.setup(
+        InternetAccessDoubles.active({
+            failure: { reason: 'not-reachable', at: '2026-11-08T10:00:00.000Z' },
+            awaitingCheck: true,
+        }),
+    );
+    const subject = subjectFor(doubles);
+
+    const state = await subject.execute(admin);
+
+    expect([state.phase, state.step, state.certificate?.address]).toEqual([
+        'active',
+        'certificate',
+        publicAddress,
+    ]);
+});
+it('replaces the certificate once the check while active works', async () => {
+    const doubles = InternetAccessDoubles.setup(
+        InternetAccessDoubles.active({
+            failure: { reason: 'not-reachable', at: '2026-11-08T10:00:00.000Z' },
+            awaitingCheck: true,
+        }),
+    );
+    const subject = subjectFor(doubles);
+
+    doubles.clock.time = new Date('2026-11-09T10:00:00.000Z');
+
+    await subject.execute(admin);
+
+    await doubles.background.settled();
+
+    expect([
+        doubles.store.current.phase,
+        doubles.store.current.certificate?.issuedAt,
+        doubles.store.current.awaitingCheck,
+    ]).toEqual(['active', '2026-11-09T10:00:00.000Z', false]);
+});
+it('keeps internet access on when the check while active fails again', async () => {
+    const doubles = InternetAccessDoubles.setup(
+        InternetAccessDoubles.active({
+            failure: { reason: 'not-reachable', at: '2026-11-08T10:00:00.000Z' },
+            awaitingCheck: true,
+        }),
+    );
+    const subject = subjectFor(doubles);
+
+    doubles.authority.refusal = 'not-reachable';
+
+    await subject.execute(admin);
+
+    await doubles.background.settled();
+
+    expect([
+        doubles.store.current.phase,
+        doubles.store.current.step,
+        doubles.store.current.awaitingCheck,
+        doubles.store.current.certificate?.issuedAt,
+    ]).toEqual(['active', null, true, '2026-11-08T10:00:00.000Z']);
+});
+it('refuses a check before Let’s Encrypt’s date', async () => {
+    const doubles = InternetAccessDoubles.setup({
+        ...waitingForPort(),
+        retryAfter: '2026-11-12T23:30:00.000Z',
+    });
+    const subject = subjectFor(doubles);
+
+    const result = subject.execute(admin);
+
+    await expect(result).rejects.toMatchObject({ code: 'conflict', reason: 'rate-limited' });
 });

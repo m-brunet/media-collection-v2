@@ -1,4 +1,6 @@
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
+import type { Allowance, CertificateAttempt } from '../services/attempt-allowance.service.js';
+import { AttemptAllowance } from '../services/attempt-allowance.service.js';
 import { RenewalPolicy } from '../services/renewal-policy.service.js';
 import { ConnectionClass } from '../value-objects/connection-class.value-object.js';
 import { DomainName } from '../value-objects/domain-name.value-object.js';
@@ -37,11 +39,29 @@ export interface InternetAccessState {
     failure: { reason: InternetAccessFailureReason; at: string } | null;
     failedAttempts: number;
     nextAttemptAt: string | null;
+    // Let's Encrypt's own date after a rate-limit refusal: nothing is asked before it. Kept through
+    // Turn off and a new setup, like the history.
+    retryAfter: string | null;
+    // This installation's certificates and failed checks of the last 8 days, for the estimate.
+    history: CertificateAttempt[];
+    // The address or domain name last asked of Let's Encrypt, for the estimate once off.
+    lastAttemptName: string | null;
+    // Active, after a failed check: the upkeep stops trying the certificate until the Admin's Check
+    // again.
+    awaitingCheck: boolean;
+}
+
+// The estimate of what Let's Encrypt still allows for the name in use.
+export interface AttemptAllowances {
+    certificates: Allowance;
+    checks: Allowance;
 }
 
 export class InternetAccess {
     // Let's Encrypt's TLS-ALPN-01 check only uses 443.
     static readonly externalPort = 443;
+    // Without a date in Let's Encrypt's refusal: today's longest wait between upkeep attempts.
+    private static readonly defaultRetryAfterMs = 6 * 60 * 60 * 1000;
     private static readonly ruleFailures: ReadonlySet<InternetAccessFailureReason> =
         new Set<RouterRuleFailureReason>([
             'no-router',
@@ -79,6 +99,10 @@ export class InternetAccess {
             failure: null,
             failedAttempts: 0,
             nextAttemptAt: null,
+            retryAfter: null,
+            history: [],
+            lastAttemptName: null,
+            awaitingCheck: false,
         });
     }
 
@@ -110,6 +134,73 @@ export class InternetAccess {
         return InternetAccess.copy(this.state);
     }
 
+    // The name the last attempts were for, also once internet access is off.
+    get attemptName(): string | null {
+        return this.certificateName ?? this.state.lastAttemptName;
+    }
+
+    attemptAllowed(now: Date): boolean {
+        return !this.state.retryAfter || now.getTime() >= Date.parse(this.state.retryAfter);
+    }
+
+    // Set up and Check again ask nothing of Let's Encrypt before its own date.
+    ensureAttemptAllowed(now: Date): void {
+        if (!this.attemptAllowed(now)) {
+            throw new Failure(
+                'conflict',
+                'Let’s Encrypt accepts a new attempt after ' + this.state.retryAfter + '.',
+                'rate-limited',
+            );
+        }
+    }
+
+    // Null before any failure: the estimate is only useful once something went wrong.
+    allowances(now: Date): AttemptAllowances | null {
+        const name = this.attemptName;
+
+        if (!name || (!this.state.failure && !this.state.retryAfter)) {
+            return null;
+        }
+
+        return {
+            certificates: AttemptAllowance.certificatesLeft(this.state.history, name, now),
+            checks: AttemptAllowance.checksLeft(this.state.history, name, now),
+        };
+    }
+
+    certificateIssued(renewal: boolean, now: Date): void {
+        if (!renewal) {
+            this.attempted('certificate', now);
+        }
+
+        this.state = { ...this.state, retryAfter: null };
+    }
+
+    // A failed check counts toward Let's Encrypt's hourly limit; a rate limit holds every attempt
+    // until Let's Encrypt's date.
+    authorityRefused(
+        reason: InternetAccessFailureReason,
+        retryAfter: string | null,
+        now: Date,
+    ): void {
+        this.state = { ...this.state, lastAttemptName: this.certificateName };
+
+        if (reason === 'not-reachable') {
+            this.attempted('failed-check', now);
+        } else if (reason === 'rate-limited') {
+            const date = retryAfter ? Date.parse(retryAfter) : Number.NaN;
+
+            this.state = {
+                ...this.state,
+                retryAfter: new Date(
+                    Number.isFinite(date)
+                        ? date
+                        : now.getTime() + InternetAccess.defaultRetryAfterMs,
+                ).toISOString(),
+            };
+        }
+    }
+
     start(domain: string | null): void {
         if (this.state.phase === 'setting-up') {
             throw new Failure(
@@ -122,7 +213,7 @@ export class InternetAccess {
         const name = DomainName.optional(domain);
 
         this.state = {
-            ...InternetAccess.off().state,
+            ...this.kept(),
             phase: 'setting-up',
             step: 'router',
             domain: name ? name.value : null,
@@ -130,7 +221,15 @@ export class InternetAccess {
         };
     }
 
+    // While setting up, after the router rule; while active, after a failed check (the current
+    // certificate stays in use, `step` shows the check running).
     check(): void {
+        if (this.state.phase === 'active' && this.state.awaitingCheck && this.state.step === null) {
+            this.state = { ...this.state, step: 'certificate' };
+
+            return;
+        }
+
         if (this.state.phase !== 'waiting-for-port' || !this.state.publicAddress) {
             throw new Failure('conflict', 'There is no router rule to check.', 'nothing-to-check');
         }
@@ -141,6 +240,10 @@ export class InternetAccess {
             step: 'certificate',
             failure: null,
         };
+    }
+
+    get checking(): boolean {
+        return this.state.phase === 'active' && this.state.step !== null;
     }
 
     routerFound(
@@ -189,7 +292,7 @@ export class InternetAccess {
 
     stop(reason: InternetAccessFailureReason, now: Date): void {
         this.state = {
-            ...InternetAccess.off().state,
+            ...this.kept(),
             domain: this.state.domain,
             failure: { reason, at: now.toISOString() },
         };
@@ -220,6 +323,7 @@ export class InternetAccess {
             failure: null,
             failedAttempts: 0,
             nextAttemptAt: null,
+            awaitingCheck: false,
         };
     }
 
@@ -247,22 +351,35 @@ export class InternetAccess {
         );
     }
 
+    // Not while a check runs or waits for the Admin, nor before Let's Encrypt's date.
     upkeepDue(now: Date): boolean {
         return (
             this.state.phase === 'active' &&
+            this.state.step === null &&
+            !this.state.awaitingCheck &&
+            this.attemptAllowed(now) &&
             (!this.state.nextAttemptAt || now.getTime() >= Date.parse(this.state.nextAttemptAt))
         );
     }
 
+    // A failed check waits for the Admin; a rate limit for Let's Encrypt's date; anything else, which
+    // costs no attempt, for the growing delay.
     upkeepFailed(reason: InternetAccessFailureReason, now: Date): void {
         this.requireActive();
         const failedAttempts = this.state.failedAttempts + 1;
+        const retryAt = RenewalPolicy.retryAt(failedAttempts, now);
+        const nextAttemptAt =
+            reason === 'rate-limited' && this.state.retryAfter
+                ? new Date(Math.max(retryAt.getTime(), Date.parse(this.state.retryAfter)))
+                : retryAt;
 
         this.state = {
             ...this.state,
+            step: null,
             failure: { reason, at: now.toISOString() },
             failedAttempts,
-            nextAttemptAt: RenewalPolicy.retryAt(failedAttempts, now).toISOString(),
+            nextAttemptAt: nextAttemptAt.toISOString(),
+            awaitingCheck: reason === 'not-reachable',
         };
     }
 
@@ -283,7 +400,14 @@ export class InternetAccess {
 
     upkeepSucceeded(): void {
         this.requireActive();
-        this.state = { ...this.state, failure: null, failedAttempts: 0, nextAttemptAt: null };
+        this.state = {
+            ...this.state,
+            step: null,
+            failure: null,
+            failedAttempts: 0,
+            nextAttemptAt: null,
+            awaitingCheck: false,
+        };
     }
 
     turnOff(): void {
@@ -295,14 +419,44 @@ export class InternetAccess {
             );
         }
 
-        this.state = { ...InternetAccess.off().state, domain: this.state.domain };
+        this.state = { ...this.kept(), domain: this.state.domain };
     }
 
-    // A setup cut short by a restart cannot resume.
+    // A setup cut short by a restart cannot resume; a check while active is simply over, still
+    // waiting for the Admin.
     interrupted(now: Date): void {
         if (this.state.phase === 'setting-up') {
             this.stop('setup-failed', now);
+        } else if (this.checking) {
+            this.state = { ...this.state, step: null };
         }
+    }
+
+    private attempted(kind: CertificateAttempt['kind'], now: Date): void {
+        const name = this.certificateName;
+
+        if (!name) {
+            return;
+        }
+
+        this.state = {
+            ...this.state,
+            lastAttemptName: name,
+            history: [
+                ...AttemptAllowance.recent(this.state.history, now),
+                { name, at: now.toISOString(), kind },
+            ],
+        };
+    }
+
+    // Off, with what must outlive Turn off and a new setup: Let's Encrypt still counts.
+    private kept(): InternetAccessState {
+        return {
+            ...InternetAccess.off().state,
+            retryAfter: this.state.retryAfter,
+            history: this.state.history,
+            lastAttemptName: this.state.lastAttemptName,
+        };
     }
 
     private requireSettingUp(): void {
@@ -318,6 +472,7 @@ export class InternetAccess {
             ...state,
             certificate: state.certificate ? { ...state.certificate } : null,
             failure: state.failure ? { ...state.failure } : null,
+            history: state.history.map((attempt) => ({ ...attempt })),
         };
     }
 }

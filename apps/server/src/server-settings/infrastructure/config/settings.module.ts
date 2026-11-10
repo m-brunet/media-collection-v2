@@ -183,7 +183,7 @@ export class SettingsModule {
                 },
                 {
                     provide: SERVER_SETTINGS_READ_INTERNET_ACCESS,
-                    useFactory: () => new ReadInternetAccess(internetAccess, tls, local),
+                    useFactory: () => new ReadInternetAccess(internetAccess, tls, local, clock),
                 },
                 {
                     provide: SERVER_SETTINGS_SET_UP_INTERNET_ACCESS,
@@ -196,13 +196,20 @@ export class SettingsModule {
                             setup,
                             background,
                             operations,
+                            clock,
                         ),
                 },
                 {
                     provide: SERVER_SETTINGS_CHECK_INTERNET_ACCESS,
                     inject: [SERVER_SETTINGS_INTERNET_ACCESS_SETUP],
                     useFactory: (setup: InternetAccessSetup) =>
-                        new CheckInternetAccess(internetAccess, setup, background, operations),
+                        new CheckInternetAccess(
+                            internetAccess,
+                            setup,
+                            background,
+                            operations,
+                            clock,
+                        ),
                 },
                 {
                     provide: SERVER_SETTINGS_TURN_OFF_INTERNET_ACCESS,

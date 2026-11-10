@@ -415,3 +415,93 @@ it('reports no rule while internet access is off', async () => {
 
     expect(outcome).toEqual({ rule: 'none' });
 });
+it('asks Let’s Encrypt nothing before its date after a rate limit', async () => {
+    const doubles = InternetAccessDoubles.setup(
+        InternetAccessDoubles.active({ retryAfter: '2026-11-12T23:30:00.000Z' }),
+    );
+    const subject = subjectFor(doubles);
+
+    doubles.clock.time = halfLife;
+
+    await subject.execute();
+
+    expect(doubles.authority.requested).toEqual([]);
+});
+it('waits for Let’s Encrypt’s date after a rate-limited renewal', async () => {
+    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());
+    const subject = subjectFor(doubles);
+
+    doubles.clock.time = halfLife;
+    doubles.authority.refusal = 'rate-limited';
+    doubles.authority.retryAfter = '2026-11-12T23:30:00.000Z';
+
+    await subject.execute();
+
+    expect([doubles.store.current.retryAfter, doubles.store.current.nextAttemptAt]).toEqual([
+        '2026-11-12T23:30:00.000Z',
+        '2026-11-12T23:30:00.000Z',
+    ]);
+});
+it('stops trying the certificate after a failed check, until the Admin checks again', async () => {
+    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());
+    const subject = subjectFor(doubles);
+
+    doubles.clock.time = halfLife;
+    doubles.authority.refusal = 'not-reachable';
+    await subject.execute();
+    doubles.clock.time = new Date('2026-11-12T18:00:00.000Z');
+
+    await subject.execute();
+
+    expect([doubles.authority.requested.length, doubles.store.current.awaitingCheck]).toEqual([
+        1,
+        true,
+    ]);
+});
+it('keeps the router rule while the certificate waits for the Admin', async () => {
+    const doubles = InternetAccessDoubles.setup(
+        InternetAccessDoubles.active({
+            failure: { reason: 'not-reachable', at: '2026-11-08T10:00:00.000Z' },
+            awaitingCheck: true,
+        }),
+    );
+    const subject = subjectFor(doubles);
+
+    await subject.execute();
+
+    expect(doubles.router.opened).toEqual([{ externalPort: 443, internalPort: 3443 }]);
+});
+it('records a failed check for the estimate', async () => {
+    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());
+    const subject = subjectFor(doubles);
+
+    doubles.clock.time = halfLife;
+    doubles.authority.refusal = 'not-reachable';
+
+    await subject.execute();
+
+    expect(doubles.store.current.history).toEqual([
+        { name: publicAddress, at: halfLife.toISOString(), kind: 'failed-check' },
+    ]);
+});
+it('records no ARI renewal for the estimate', async () => {
+    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());
+    const subject = subjectFor(doubles);
+
+    doubles.tls.material = { chain: 'current chain', key: 'current key' };
+    doubles.clock.time = halfLife;
+
+    await subject.execute();
+
+    expect(doubles.store.current.history).toEqual([]);
+});
+it('ends a check while active cut short by a restart', async () => {
+    const doubles = InternetAccessDoubles.setup(
+        InternetAccessDoubles.active({ step: 'certificate', awaitingCheck: true }),
+    );
+    const subject = subjectFor(doubles);
+
+    await subject.execute();
+
+    expect([doubles.store.current.phase, doubles.store.current.step]).toEqual(['active', null]);
+});
