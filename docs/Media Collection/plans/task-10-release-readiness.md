@@ -260,9 +260,11 @@ draft, publish.
 Each step: tests, the relevant checks, architecture review skill on the changes, commit, tick below.
 
 - [x] **1. Documentation**: `updates.md` (controls in the File menu, acceptance example 2 rewritten), this plan.
-- [ ] **2. Desktop texts (KI-14)**: `DesktopLanguage`, `DesktopTexts`, used by the existing dialogs, menus and window
+- [x] **2. Desktop texts (KI-14)**: `DesktopLanguage`, `DesktopTexts`, used by the existing dialogs, menus and window
   titles; language passed to the Maintenance page. Unit tests (same keys in both languages, `fr-*` → French, other →
   English); desktop e2e test in French (one dialog, the menu labels).
+  Done: the File and View labels come with the new menu in step 3; the test harness takes a device language
+  (`language` runtime option) and records the message boxes and menu labels.
 - [ ] **3. Menus**: `ApplicationMenu` (File, View, Maintenance; Edit and Window removed, no macOS menu). Desktop e2e:
   the labels, Exit quits, copy and paste work in a text field.
 - [ ] **4. Backup folder and Maintenance window**: `BackupFolder`, Open backup folder, the "After a failed update"

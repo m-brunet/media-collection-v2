@@ -27,6 +27,8 @@ export interface RuntimeOptions {
     lookupAddresses?: { bnf: string; openLibrary: string };
     // `domainAddress`: where every domain name points (default: the external address).
     internetAccess?: { externalAddress: string | null; accepts: boolean; domainAddress?: string };
+    // The device language the main harness reports (default `en-GB`).
+    language?: string;
 }
 
 export class ElectronRuntime {
@@ -61,6 +63,7 @@ export class ElectronRuntime {
             APP_TEST_INTERNET_ACCESS: options.internetAccess
                 ? JSON.stringify(options.internetAccess)
                 : undefined,
+            APP_TEST_LANGUAGE: options.language,
             APP_HIDDEN_WINDOWS: '1',
             // No test may reach a real router, Let's Encrypt, the public address service or DNS.
             APP_OFFLINE_INTERNET_ACCESS: '1',

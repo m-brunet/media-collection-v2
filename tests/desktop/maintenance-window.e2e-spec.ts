@@ -131,7 +131,7 @@ describe('local maintenance window', () => {
             contextIsolation: true,
             maintenance: true,
         });
-        expect(bridge).toBe('undefined:chooseBackup,createBackup,recover,restoreBackup,status');
+        expect(bridge).toBe('undefined:chooseBackup,createBackup,language,recover,restoreBackup,status');
         await expect(client.call('/health')).rejects.toThrow();
     });
     it('names the protected Admin', async () => {
@@ -338,5 +338,63 @@ describe('local maintenance from the application menu', () => {
 
         await waitForWindow(current.runtime, 'http:');
         await waitFor(current.runtime, "document.querySelector('h1')?.textContent === 'Sign in'");
+    });
+});
+
+describe('desktop texts on a French device', () => {
+    async function frenchDesktop() {
+        const current = await fixture.start(undefined, { main: true, language: 'fr-FR' });
+
+        await waitForWindow(current.runtime, 'http:');
+
+        return current;
+    }
+
+    it('labels the maintenance menu in French', async () => {
+        const current = await frenchDesktop();
+
+        const menu = (await current.runtime.send({ type: 'menu-labels' })).value as {
+            label: string;
+            submenu?: { id: string; label: string }[];
+        }[];
+
+        const maintenance = menu.find((item) => item.label === 'Maintenance');
+
+        expect(maintenance?.submenu?.[0]).toMatchObject({
+            id: 'local-maintenance',
+            label: 'Ouvrir la maintenance locale…',
+        });
+    });
+    it('asks in French before opening maintenance', async () => {
+        const current = await frenchDesktop();
+
+        await current.runtime.send({ type: 'menu', id: 'local-maintenance' });
+
+        await waitForWindow(current.runtime, 'file:');
+        const dialogs = (await current.runtime.send({ type: 'dialogs' })).value;
+
+        expect(dialogs).toEqual([
+            {
+                title: 'Maintenance locale',
+                message: 'Ouvrir la maintenance locale ?',
+                buttons: ['Arrêter le serveur et ouvrir la maintenance', 'Annuler'],
+            },
+        ]);
+    });
+    it('opens the maintenance window in the device language', async () => {
+        const current = await fixture.start(undefined, {
+            main: true,
+            maintenance: true,
+            language: 'fr-FR',
+        });
+
+        await waitFor(current.runtime, "document.querySelector('h1').textContent !== ''");
+
+        expect(await evaluate(current.runtime, "document.querySelector('h1').textContent")).toBe(
+            'Maintenance locale',
+        );
+        expect(await evaluate(current.runtime, 'document.title')).toBe(
+            'Media Collection · Maintenance locale',
+        );
     });
 });
