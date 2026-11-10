@@ -3,7 +3,6 @@ import { useEffect, useId, useState } from 'react';
 import { Icon } from '../../shared/ui/icon';
 import { BookDraft } from '../../shared/book-form/book-draft.util';
 
-// A saved identity (author, tag) suggested while typing.
 export interface NamedChoice {
     id: string;
     name: string;
@@ -17,8 +16,6 @@ export interface NamedValue {
 
 type Option = { kind: 'existing'; found: NamedChoice } | { kind: 'new'; name: string };
 
-// Chooses several named identities as chips: existing ones are suggested while typing; Enter
-// adds the typed name as a new one unless an equivalent one is suggested (it is then picked).
 export function NamePicker<T extends NamedValue>({
     label,
     hint,

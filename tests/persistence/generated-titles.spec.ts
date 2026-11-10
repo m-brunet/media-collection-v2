@@ -66,7 +66,6 @@ async function legacyBook(db: Kysely<unknown>, title: string, titleKey: string) 
     return id;
 }
 
-// A migrated library whose books are saved through the books repository.
 async function library() {
     const path = await mkdtemp(join(tmpdir(), 'titles-'));
 

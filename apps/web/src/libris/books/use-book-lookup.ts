@@ -16,7 +16,6 @@ import { LookupFill } from '../../shared/book-form/lookup-fill.util';
 
 export type LookedUpBook = Extract<BookLookupDto, { kind: 'looked-up' }>;
 
-// The outcome of a lookup, shown under the page title; `retry` turns Find book into Retry lookup.
 export interface LookupMessage {
     tone: 'info' | 'warning' | 'success';
     text: string;
@@ -25,10 +24,6 @@ export interface LookupMessage {
     offline?: boolean;
 }
 
-// Find book on the Add a book form (book entry rules, "Assisted lookup"): the library first,
-// then the sources. An ISBN already saved opens that book; otherwise the result is reviewed
-// (`review`), empty fields are filled, and typed values are replaced only after confirmation
-// (`replacing`). Nothing is saved here.
 export function useBookLookup({
     values,
     setValues,
@@ -96,8 +91,6 @@ export function useBookLookup({
             setBusy(false);
         }
     };
-    // The reviewed values: empty fields are filled at once, typed ones only after confirmation.
-    // A chosen cover is downloaded unless the person already chose one.
     const use = async (selection: LookupSelection, coverToken: string | null) => {
         const result = review!;
         const { next, conflicts } = LookupFill.apply(values, selection);
@@ -144,7 +137,6 @@ export function useBookLookup({
             }
         }
     };
-    // The typed values the person chose to replace with the lookup's.
     const replace = (fields: LookupField[]) => {
         setValues((current) => LookupFill.replace(current, replacing!.selection, fields));
         setReplacing(null);

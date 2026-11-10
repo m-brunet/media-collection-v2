@@ -14,8 +14,6 @@ export interface LoanState {
     bookIsbn: string | null;
 }
 
-// What lending needs to know about a book: its identity, ownership and, when it is lent now, the
-// name of the receiver who has it.
 export interface LendableBook {
     id: string;
     title: string;
@@ -39,8 +37,8 @@ export class Loan {
         this.state = { ...state };
     }
 
-    // Rebuilds a saved loan. An active loan has its book and no return date; a returned loan has a
-    // return date and may have outlived its book.
+    // An active loan has its book and no return date; a returned loan has a return date and may
+    // have outlived its book.
     static restore(state: LoanState): Loan {
         return new Loan(state);
     }
@@ -81,8 +79,6 @@ export class Loan {
         });
     }
 
-    // Records the books one receiver handed back together. All of them must still be lent, and to
-    // the same person; otherwise none is returned.
     static returnTogether(loans: readonly Loan[], now: string): void {
         Failure.ensure(loans.length > 0, 'Select at least one book.', 'selection-empty');
         Failure.ensure(

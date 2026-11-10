@@ -7,13 +7,9 @@ import { BookLoader } from './book-loader.service.js';
 import { LentBookGuard } from './lent-book-guard.service.js';
 import type { RelatedChange } from '../../../shared/application/ports/driven/audit-entry.interface.js';
 
-// The removed book, and the collection change its removal caused, for the audit.
 export type BookRemoved = { book: Book; changes: RelatedChange[] };
 
-// Removes an edition with everyone's reading status and notes on it, its collection membership
-// (an emptied collection disappears) and the authors linked to no other book. A lent book cannot
-// be removed; its completed loans stay identifiable by its title and ISBN. The caller removes
-// the cover file once the operation is committed.
+// The caller removes the cover file once the operation is committed.
 export class BookRemoval {
     constructor(
         private readonly books: BookRepository,

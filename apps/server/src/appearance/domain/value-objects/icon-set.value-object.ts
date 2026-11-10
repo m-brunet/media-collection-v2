@@ -8,8 +8,6 @@ export type IconSetName =
     | 'single-ink-risograph'
     | 'quiet-editorial-monoline';
 
-// The installation-wide icon set of Libris and Leaf (KI-6). Lucide is the default; the five others
-// are the design's icon sets 01 to 05.
 export class IconSet {
     static readonly names: readonly IconSetName[] = [
         'lucide',

@@ -10,7 +10,6 @@ import { BookDraft } from '../../shared/book-form/book-draft.util';
 import type { Filter, TagChoice } from './book-filter.util';
 import { BookFilter } from './book-filter.util';
 
-// Summary chips shown before the rest are reviewed under "Selected".
 const summaryLimit = 6;
 const choices: Record<TagChoice, MessageKey> = {
     none: 'filters.tagChoice.none',
@@ -18,8 +17,7 @@ const choices: Record<TagChoice, MessageKey> = {
     exclude: 'filters.tagChoice.exclude',
 };
 
-// Tag criteria: each tag is not selected, included or excluded. Every included tag must be on
-// the book and any excluded tag rejects it, in one combined search.
+// Every included tag must be on the book and any excluded tag rejects it, in one combined search.
 export function TagFilter({
     filter,
     onChange,

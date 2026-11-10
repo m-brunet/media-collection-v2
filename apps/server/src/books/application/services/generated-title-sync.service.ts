@@ -4,8 +4,6 @@ import { BookIdentityCheck } from './book-identity-check.service.js';
 import type { Book } from '../../domain/entities/book.entity.js';
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 
-// Once a saved book's membership is applied, gives a generated title its final text from the
-// resolved collection and coverage, then checks the no-ISBN duplicate rule on that text.
 export class GeneratedTitleSync {
     constructor(
         private readonly books: BookRepository,

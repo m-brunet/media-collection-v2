@@ -1,9 +1,8 @@
 import type { BookCollection } from './book-collection-reader.interface.js';
 import type { RelatedChange } from '../../../../shared/application/ports/driven/audit-entry.interface.js';
 
-// The collection a book being saved should belong to: an existing collection, or a name to
-// join or create. `distinct` confirms that a name similar to an existing collection is really
-// another one; `enableVolumeZero` answers the request to include volume 0 in the collection.
+// `distinct` confirms that a name similar to an existing collection is really another one;
+// `enableVolumeZero` answers the request to include volume 0 in the collection.
 export type CollectionChoice = { id: string } | { name: string; distinct?: boolean };
 
 export type MembershipRequest = {
@@ -15,12 +14,9 @@ export type MembershipRequest = {
 
 export type MemberBook = { id: string; ownership: 'owned' | 'not-owned' };
 
-// The book's resulting membership, and the collection changes it caused (created, volume 0
-// included, reopened, removed), which the book operation records in its audit.
 export type MembershipOutcome = { collection: BookCollection | null; changes: RelatedChange[] };
 
-// Collection membership of books, owned by the collections feature. Every call joins the
-// transaction of the book operation in progress.
+// Every call joins the transaction of the book operation in progress.
 export interface CollectionMembership {
     // Records the book's membership, or its absence, once the book itself is saved: applies the
     // collection rules (similar names, volume 0, coverage overlap) and tidies the collections

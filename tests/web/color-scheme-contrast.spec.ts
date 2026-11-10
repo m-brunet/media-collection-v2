@@ -1,7 +1,6 @@
 import { expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 
-// The colour schemes offered by Libris and Leaf (`ColorSchemeName`, KI-6), in their display order.
 const offered = [
     'spring-green',
     'midnight-blue',
@@ -17,7 +16,6 @@ const tokens = readFileSync(
     'utf8',
 );
 
-// Every colour scheme of tokens.css, as role → hex colour (KI-6).
 function palettes(): Map<string, Record<string, string>> {
     const result = new Map<string, Record<string, string>>();
 
@@ -47,7 +45,6 @@ function contrast(first: string, second: string): number {
     return (light! + 0.05) / (dark! + 0.05);
 }
 
-// The pairs below `minimum` in any scheme, as "scheme: text on surface".
 function failures(text: string, surfaces: string[], minimum: number): string[] {
     const found: string[] = [];
 

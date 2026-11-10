@@ -23,9 +23,8 @@ import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 
-// Saves a book recorded earlier in another library, under the same rules as a new book, but
-// keeping its original creation date. Nobody is there to answer questions: similar author or
-// collection names are kept as distinct, and an unusable cover is left out.
+// Nobody is there to answer questions: similar author or collection names are kept as distinct,
+// and an unusable cover is left out.
 export class ImportBook implements ImportBookUseCase {
     constructor(
         private readonly books: BookRepository,

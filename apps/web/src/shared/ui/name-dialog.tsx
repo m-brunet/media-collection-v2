@@ -7,8 +7,6 @@ import { Dialog } from './dialog';
 import { Notice } from './notice';
 import { TextField } from './text-field';
 
-// Asks for one name (create or rename), sends it, and keeps the dialog open with the reason when
-// the server refuses it. `children` adds fields before the name (for example a parent choice).
 export function NameDialog({
     open,
     title,

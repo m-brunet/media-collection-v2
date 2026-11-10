@@ -14,7 +14,6 @@ import type { BookDraftValues, SaveOptions } from './book-draft.util';
 import { BookDraft } from './book-draft.util';
 import type { CoverChoice } from './cover-choice';
 
-// The form fields a refusal can point at.
 export type BookField =
     | 'isbn'
     | 'title'
@@ -29,16 +28,12 @@ export type BookField =
     | 'location'
     | 'tags';
 
-// A refusal shown under the form, and beside its field when it is about one.
 export interface BookFormFailure {
     text: string;
     field: BookField | null;
-    // The existing record of an already saved ISBN.
     existingBookId: string | null;
 }
 
-// A question the server asks before saving (a similar author, a possible duplicate…). The
-// person's answer leads to a new attempt; see `BookSaveQuestions`.
 export type SaveQuestion =
     | { kind: 'similar-author'; details: SimilarAuthorDetails }
     | { kind: 'possible-duplicate'; details: PossibleDuplicateDetails }
@@ -46,7 +41,6 @@ export type SaveQuestion =
     | { kind: 'volume-zero'; details: VolumeZeroDetails }
     | { kind: 'coverage-conflict'; details: CoverageConflictDetails };
 
-// Which field a server refusal is about, so the message appears beside it.
 const fieldOfReason: Record<string, BookField> = {
     'isbn-required': 'isbn',
     'isbn-invalid': 'isbn',
@@ -71,7 +65,6 @@ const fieldOfReason: Record<string, BookField> = {
     'tag-missing': 'tags',
     'tag-name-invalid': 'tags',
 };
-// Fields inside Additional information, opened when a refusal is about one of them.
 const additionalFields: BookField[] = [
     'publisher',
     'publication',
@@ -80,7 +73,6 @@ const additionalFields: BookField[] = [
     'price',
     'note',
 ];
-// Refusals that are questions for the person rather than errors.
 const questionOfReason: Record<string, SaveQuestion['kind']> = {
     'author-similar': 'similar-author',
     'possible-duplicate': 'possible-duplicate',
@@ -89,10 +81,6 @@ const questionOfReason: Record<string, SaveQuestion['kind']> = {
     'coverage-conflict': 'coverage-conflict',
 };
 
-// Saving the book form: the shared information first, where a refusal keeps the draft and is
-// shown as an error or asked as a question; then the personal parts and the cover, whose failure
-// is reported after the book is saved. Libris and Leaf each show the form, the refusals and
-// the questions their own way.
 export function useBookSave({
     book,
     initial,
@@ -102,14 +90,10 @@ export function useBookSave({
     showAdditional,
     onSaved,
 }: {
-    // The book being edited, or null when adding one.
     book: BookDto | null;
-    // The draft as the form opened, to send only the personal parts that changed.
     initial: BookDraftValues;
-    // Whether the account has a reading status and notes (not a Guest).
     personal: boolean;
     cover: CoverChoice;
-    // Called as each attempt starts.
     onAttempt: () => void;
     showAdditional: () => void;
     // Once saved: `updated` when an existing record (the edited book or a planned one) was
@@ -121,7 +105,6 @@ export function useBookSave({
     const [saving, setSaving] = useState(false);
     const [failure, setFailure] = useState<BookFormFailure | null>(null);
     const [question, setQuestion] = useState<SaveQuestion | null>(null);
-    // Answers already given to questions, kept for the following attempts.
     const answers = useRef<SaveOptions>({});
     // `target` is a planned record a new purchased book updates instead of being added.
     const save = async (draft: BookDraftValues, given: SaveOptions = {}, target?: string) => {
@@ -185,7 +168,6 @@ export function useBookSave({
 
         onSaved(saved, { updated: Boolean(book || target), followUpFailed });
     };
-    // A refusal of the shared information: a question to ask, or an error to show.
     const refused = (error: unknown) => {
         const reason = error instanceof ApiError ? (error.reason ?? '') : '';
         const kind = questionOfReason[reason];
@@ -216,7 +198,6 @@ export function useBookSave({
                     : null,
         });
     };
-    // The reading status, the personal note and the cover, once the book exists.
     const saveFollowUps = async (
         saved: BookDto,
         draft: BookDraftValues,

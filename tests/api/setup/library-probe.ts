@@ -22,8 +22,6 @@ export interface BookcaseRecord {
     shelves: string[];
 }
 
-// Read-only view of the stored library for API test assertions, so a case checks the state its
-// request left without sending a second request.
 export class LibraryProbe {
     constructor(private readonly database: Database) {}
 
@@ -78,7 +76,6 @@ export class LibraryProbe {
         );
     }
 
-    // Receiver names, in name order.
     async receivers(): Promise<string[]> {
         const rows = await this.db
             .selectFrom('receivers')
@@ -101,7 +98,6 @@ export class LibraryProbe {
         return row ?? null;
     }
 
-    // Tag names of a book, in name order.
     async tags(bookId: string): Promise<string[]> {
         const rows = await this.db
             .selectFrom('book_tags')
@@ -114,7 +110,6 @@ export class LibraryProbe {
         return rows.map((row) => row.name);
     }
 
-    // Bookcases with their shelf names, both in name order.
     async bookcases(): Promise<BookcaseRecord[]> {
         const bookcases = await this.db
             .selectFrom('bookcases')
@@ -145,7 +140,6 @@ export class LibraryProbe {
         return rows.map((row) => row.name);
     }
 
-    // The name of the collection a book belongs to.
     async collectionOf(bookId: string): Promise<string | null> {
         const row = await this.db
             .selectFrom('collection_books')
@@ -157,7 +151,6 @@ export class LibraryProbe {
         return row?.name ?? null;
     }
 
-    // A collection as its details page describes it, computed by the collections feature itself.
     async collection(collectionId: string): Promise<CollectionDetailsView | null> {
         const collections = new KyselyCollectionRepository(this.database.connections);
         const members = new KyselyCollectionMemberStore(this.database.connections);

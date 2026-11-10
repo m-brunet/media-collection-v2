@@ -6,8 +6,6 @@ const known: Record<string, MessageKey> = {
     openlibrary: 'source.openlibrary',
 };
 
-// "BnF" or "Open Library"; an unknown source keeps its technical name. Libris and Leaf name
-// the lookup sources the same way.
 export function useSourceNames() {
     const { t } = useI18n();
 

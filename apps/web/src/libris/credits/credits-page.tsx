@@ -6,9 +6,6 @@ import { Brand } from '../../shared/ui/brand';
 import { LanguageSwitch } from '../../shared/ui/language-switch';
 import { PageHeader, Panel } from '../../shared/ui/layout';
 
-// Credits and licences: every bundled icon pack, font, data source and library that needs credit
-// (KI-6). Reachable without signing in: `standalone` shows it on its own, with a way back to the
-// sign-in page.
 export function CreditsPage({ standalone = false }: { standalone?: boolean }) {
     const { t } = useI18n();
     const content = (

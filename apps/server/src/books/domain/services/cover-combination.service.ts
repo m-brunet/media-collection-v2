@@ -14,11 +14,8 @@ export interface CoverChoice {
     sources: string[];
 }
 
-// Combines the covers of several sources, added in order of preference (book entry rules,
-// "Lookup sources"): very small thumbnails are not offered, and the same picture offered by
-// several sources is shown once, at its best resolution, where it first appeared.
+// Combines the covers of several sources, added in order of preference.
 export class CoverCombination {
-    // Thumbnails shorter than this are too small to make a cover.
     static readonly minimumHeight = 300;
 
     private readonly choices: (CoverChoice & { fingerprint: string | null })[] = [];

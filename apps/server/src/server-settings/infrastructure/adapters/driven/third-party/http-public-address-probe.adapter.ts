@@ -1,6 +1,5 @@
 import type { PublicAddressProbe } from '../../../../application/ports/driven/public-address-probe.interface.js';
 
-// Asks a "what is my IP" service; it only learns the home's public address.
 export class HttpPublicAddressProbe implements PublicAddressProbe {
     static readonly ipify = 'https://api.ipify.org';
     private static readonly timeout = 5000;

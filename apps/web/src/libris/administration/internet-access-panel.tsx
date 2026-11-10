@@ -42,9 +42,6 @@ const failures: Record<InternetAccessFailureReason, MessageKey> = {
 };
 const termsAddress = 'https://letsencrypt.org/repository/';
 
-// Reaching Libris and Leaf from outside: the Admin's domain name, plain HTTP as a fallback, and
-// HTTPS with a Let's Encrypt certificate (one action opens the router port and gets it). The page
-// refreshes the status while a setup runs.
 export function InternetAccessPanel({
     status,
     http,
@@ -113,8 +110,6 @@ export function InternetAccessPanel({
     );
 }
 
-// HTTPS from the internet: router rule on external 443 and a Let's Encrypt certificate for the
-// domain name, or else the public address.
 function HttpsInternetSection({
     status,
     onStatus,

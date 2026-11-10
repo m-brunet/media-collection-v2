@@ -7,7 +7,6 @@ import { Dialog } from '../../shared/ui/dialog';
 import { Notice } from '../../shared/ui/notice';
 import { useAction } from '../../shared/use-action';
 
-// Confirms deactivating an active account or reactivating a deactivated one.
 export function AccountStatusDialog({
     account,
     onClose,

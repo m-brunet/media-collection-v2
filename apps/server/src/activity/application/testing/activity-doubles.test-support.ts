@@ -6,7 +6,6 @@ import type {
 import type { ActivityOperationQuery } from '../ports/driven/activity-operation-query.interface.js';
 import type { ActivityRecordReader } from '../ports/driven/activity-record-reader.interface.js';
 
-// Signed-in accounts as the use cases receive them.
 export class ActivityActors {
     static readonly owner = TestActors.of('owner', 'camille');
     static readonly guest = TestActors.of('guest', 'morgan');
@@ -44,9 +43,7 @@ export class InMemoryActivityRecords implements ActivityRecordReader {
     }
 }
 
-// Audit operations for Activity tests, at fixed times on 1 November 2026 (UTC).
 export class ActivityOperations {
-    // An operation of one record, `minutes` after 10:00.
     static at(
         minutes: number,
         category: string,
@@ -71,7 +68,6 @@ export class ActivityOperations {
         };
     }
 
-    // `count` book creations, one per minute from `from`, the newest last.
     static additions(count: number, from = 0): ActivityOperation[] {
         return Array.from({ length: count }, (_, index) =>
             ActivityOperations.at(from + index, 'book.created', {

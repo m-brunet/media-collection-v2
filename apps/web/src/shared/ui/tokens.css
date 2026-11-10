@@ -1,9 +1,6 @@
-/* Design values shared by Libris and Leaf, derived from the Libris design artifact.
-   Change the look here rather than in individual components. */
 :root {
     color-scheme: dark;
 
-    /* Surfaces (from the colour scheme below) */
     --color-canvas: var(--scheme-canvas);
     --color-surface: var(--scheme-surface);
     --color-sidebar: var(--scheme-sidebar);
@@ -14,12 +11,10 @@
     --color-border: var(--scheme-border);
     --color-border-strong: var(--scheme-border-strong);
 
-    /* Text (all meet WCAG AA on the surfaces above, in every scheme) */
     --color-text: var(--scheme-text);
     --color-text-secondary: var(--scheme-text-secondary);
     --color-text-muted: var(--scheme-text-muted);
 
-    /* Accent and status */
     --color-accent: var(--scheme-accent);
     --color-accent-strong: var(--scheme-accent-text);
     --color-on-accent: var(--scheme-on-accent);
@@ -30,7 +25,6 @@
     --color-success-surface: var(--scheme-accent-background);
     --color-focus: var(--scheme-accent-text);
 
-    /* Typography */
     --font-body: 'Inter', system-ui, sans-serif;
     --font-heading: 'Space Grotesk', 'Inter', system-ui, sans-serif;
     --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
@@ -46,7 +40,6 @@
     --tracking-body: 0.01em;
     --leading: 1.5;
 
-    /* Spacing scale */
     --space-1: 4px;
     --space-2: 8px;
     --space-3: 12px;
@@ -57,19 +50,17 @@
     --space-10: 40px;
     --space-12: 48px;
 
-    /* Shape */
     --radius-sm: 4px;
     --radius-md: 6px;
     --radius-lg: 8px;
     --border: 1px solid var(--color-border);
     --focus-ring: 0 0 0 2px var(--color-canvas), 0 0 0 4px var(--color-focus);
 
-    /* Layout */
     --sidebar-width: 232px;
     --control-height: 40px;
 }
 
-/* Colour schemes (KI-6, design: Doop canvas shiKEeCX2V, groups 13 to 15 and Spring green). Each scheme is a
+/* Each scheme is a
    full palette; the installation-wide choice is set on <html data-color-scheme>, and an Appearance card
    previews its own scheme the same way. Surface, control hover, strong border, muted text, accent text and
    text on the accent are not drawn in the design: they are derived with Spring green's ratios, and

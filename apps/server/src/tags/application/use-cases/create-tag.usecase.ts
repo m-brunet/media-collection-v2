@@ -11,7 +11,6 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// A new unused tag, from the Tags page. An equivalent existing name is refused.
 export class CreateTag implements CreateTagUseCase {
     constructor(
         private readonly tags: TagRepository,

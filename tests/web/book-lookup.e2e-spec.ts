@@ -45,7 +45,6 @@ afterEach(async () => {
     await runtime.teardown();
 });
 
-// A plain-coloured PNG with portrait proportions, standing in for a cover picture.
 function portraitImage(width: number, height: number): Buffer {
     const chunk = (type: string, data: Buffer) => {
         const body = Buffer.concat([Buffer.from(type), data]);
@@ -75,7 +74,6 @@ function portraitImage(width: number, height: number): Buffer {
     ]);
 }
 
-// A ready Owner account: created by the administrator, temporary password already replaced.
 async function owner(username: string) {
     await admin.call('/users', 'POST', { username, password: 'temporary-pw', role: 'owner' });
     const client = new Client(base);
@@ -97,7 +95,6 @@ async function savedBook(overrides: Partial<NewBookDto> = {}): Promise<BookDto> 
     return response.body;
 }
 
-// Camille's Add a book form with the ISBN typed in.
 async function addBookWith(isbn: string, viewport = viewports.referenceDesktop): Promise<Page> {
     const page = await browser.page(base, { viewport });
 

@@ -2,7 +2,6 @@ import type { Shelf } from '../../../domain/entities/shelf.entity.js';
 
 export interface ShelfRepository {
     findById(id: string): Promise<Shelf | null>;
-    // The shelf of that bookcase with an equivalent name.
     findByKey(bookcaseId: string, key: string): Promise<Shelf | null>;
     list(): Promise<Shelf[]>;
     ofBookcase(bookcaseId: string): Promise<Shelf[]>;

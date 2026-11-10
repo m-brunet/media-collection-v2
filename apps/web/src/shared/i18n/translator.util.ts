@@ -4,7 +4,6 @@ export type Language = 'en' | 'fr';
 export type Catalog = Record<MessageKey, string>;
 export type MessageValues = Record<string, string | number>;
 
-// Looks up interface text in one language and fills `{name}` placeholders.
 export class Translator {
     constructor(
         readonly language: Language,

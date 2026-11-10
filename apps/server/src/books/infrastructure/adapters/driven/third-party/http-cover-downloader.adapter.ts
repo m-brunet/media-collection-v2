@@ -3,17 +3,14 @@ import { CoverImage } from '../../../../domain/value-objects/cover-image.value-o
 import type { Fetcher } from './source-http.adapter.js';
 import { SourceHttp } from './source-http.adapter.js';
 
-// Which addresses a download may reach, checked at every redirect.
 export interface AddressPolicy {
     allows(url: URL): Promise<boolean>;
 }
 
-// Downloads a cover over HTTP(S), stopping as soon as it exceeds the size a cover may have.
 // Redirects are followed one by one (at most `maximumRedirects`) so that `policy` checks each
 // address: lookup sources are trusted as they are; an address a person pasted is not.
 export class HttpCoverDownloader implements CoverDownloader {
     static readonly maximumRedirects = 3;
-    // Lookup sources are trusted: any web address they offer may be downloaded.
     private static readonly anyWebAddress: AddressPolicy = { allows: async () => true };
 
     constructor(

@@ -4,7 +4,6 @@ import type { ActivityRecordReader } from '../../application/ports/driven/activi
 import { ListActivity } from '../../application/use-cases/list-activity.usecase.js';
 import { ActivityController } from '../adapters/driving/web/activity.controller.js';
 
-// Driven adapters the activity feature reads from.
 export interface ActivityDependencies {
     records: ActivityRecordReader;
 }

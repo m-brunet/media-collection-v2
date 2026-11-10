@@ -70,7 +70,6 @@ export class DataDirectoryFiles implements ApplicationDataFiles {
         }
     }
 
-    // Moves the current data aside, then the staged data in; any error puts the current data back.
     private async swap(staging: string, previous: string): Promise<void> {
         await mkdir(previous);
         const moved: string[] = [];

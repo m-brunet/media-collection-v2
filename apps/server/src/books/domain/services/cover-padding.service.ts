@@ -6,7 +6,6 @@ export interface CoverPixels {
     data: Uint8Array;
 }
 
-// The part of an image to keep.
 export interface CropBox {
     left: number;
     top: number;
@@ -17,7 +16,7 @@ export interface CropBox {
 // Shop padding around a cover: online shops centre the real cover in a white square. The padding
 // is removed only when it looks like that — near-white bars of about the same width on exactly
 // one pair of opposite sides — so that a cover whose own artwork is white at an edge is never cut
-// into. See the book entry rules, "Cover padding".
+// into.
 export class CoverPadding {
     // Every colour channel at least this bright counts as white (JPEG noise is never pure white).
     static readonly whiteness = 235;
@@ -31,7 +30,6 @@ export class CoverPadding {
     // The other two sides may show this many white lines (a cover's own light edge).
     static readonly strayLines = 1;
 
-    // The box inside the padding, or null when the image has no shop padding to remove.
     static measure(pixels: CoverPixels): CropBox | null {
         const { width, height } = pixels;
         let top = 0;
@@ -72,7 +70,6 @@ export class CoverPadding {
         return { left, top, width: right - left + 1, height: bottom - top + 1 };
     }
 
-    // Two opposite bars of shop padding: both wide enough and about the same width.
     private static pair(first: number, second: number, size: number): boolean {
         const tolerance = Math.max(
             CoverPadding.barToleranceInPixels,

@@ -1,7 +1,6 @@
 import type { V1ImportReport } from '../../../../application/ports/driving/import-v1-library-use-case.interface.js';
 import type { ResetReport } from '../../../../application/ports/driving/reset-development-data-use-case.interface.js';
 
-// The development data commands' terminal output: what each command did, one line per fact.
 export class DevelopmentDataReport {
     static importing(source: string): string {
         return 'Checking ' + source + ' and fetching its covers…';

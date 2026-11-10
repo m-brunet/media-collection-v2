@@ -11,7 +11,6 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// A new empty bookcase, ready for shelves.
 export class CreateBookcase implements CreateBookcaseUseCase {
     constructor(
         private readonly bookcases: BookcaseRepository,

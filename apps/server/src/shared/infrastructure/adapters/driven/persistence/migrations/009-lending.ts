@@ -32,7 +32,6 @@ export class LendingMigration implements Migration {
             .addColumn('returned_at', 'text')
             .addColumn('book_title', 'text', (c) => c.notNull())
             .addColumn('book_isbn', 'text')
-            // A return date exactly when returned.
             .addCheckConstraint(
                 'loans_returned_at',
                 sql`(status = 'lent' and returned_at is null) or (status = 'returned' and returned_at is not null)`,

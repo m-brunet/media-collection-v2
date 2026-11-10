@@ -5,7 +5,6 @@ import type {
     BookLoanReader,
 } from '../../../books/application/ports/driven/book-loan-reader.interface.js';
 
-// Tells the books feature which books are lent, to whom and since when.
 export class BookLoanLookup implements BookLoanReader {
     constructor(
         private readonly loans: LoanRepository,

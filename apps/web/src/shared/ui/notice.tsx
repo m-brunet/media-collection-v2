@@ -11,9 +11,7 @@ const icons: Record<Tone, IconName> = {
     warning: 'info',
 };
 
-// Feedback message announced to assistive technology; errors interrupt, others are polite.
-// The icon and wording carry the meaning, never the colour alone. `icon` names the situation
-// (for example a camera that cannot be used) instead of the tone's icon.
+// The icon and wording carry the meaning, never the colour alone.
 export function Notice({
     tone = 'info',
     icon,

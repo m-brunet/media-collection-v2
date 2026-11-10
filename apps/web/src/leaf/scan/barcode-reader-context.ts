@@ -8,7 +8,6 @@ export interface BarcodeReader {
     read(source: HTMLVideoElement | Blob): Promise<string[]>;
 }
 
-// The production reader; component tests provide a scripted one.
 export const BarcodeReaderContext = createContext<BarcodeReader>(new ZxingBarcodeReader());
 
 export function useBarcodeReader(): BarcodeReader {

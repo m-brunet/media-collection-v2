@@ -19,8 +19,6 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// Saves a new edition, with its collection membership, location and tags. A purchased Owned book may replace the
-// planned Not Owned books it overlaps, when the person explicitly chose to delete them.
 export class CreateBook implements CreateBookUseCase {
     constructor(
         private readonly books: BookRepository,

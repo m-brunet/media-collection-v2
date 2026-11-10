@@ -12,7 +12,6 @@ import { LoanBuilder } from '../../../apps/server/src/lending/application/testin
 import { ReceiverBuilder } from '../../../apps/server/src/lending/application/testing/receiver-builder.test-support.js';
 import { TestLibrary } from './test-library.js';
 
-// A library backed by the memory doubles of the books and lending features.
 function memoryLibrary() {
     const books = new MemoryBooks();
     const ports = {

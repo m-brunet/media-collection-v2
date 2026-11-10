@@ -11,7 +11,6 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// Finished is only ever set by a person, once every expected volume is Owned.
 export class FinishCollection implements FinishCollectionUseCase {
     constructor(
         private readonly collections: CollectionRepository,

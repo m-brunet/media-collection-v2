@@ -1,8 +1,6 @@
 import type { BookLoanReader } from '../ports/driven/book-loan-reader.interface.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 
-// A lent book must stay in the library as an Owned book until it is returned: it can be neither
-// deleted nor changed to Not Owned while its loan is active.
 export class LentBookGuard {
     constructor(private readonly loans: BookLoanReader) {}
 

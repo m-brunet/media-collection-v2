@@ -47,8 +47,6 @@ import {
     X,
 } from 'lucide-react';
 
-// Semantic icon names used by the interface. The Lucide mapping is the default icon set; the
-// installation-wide icon set (KI-6) replaces the names listed in `purposes` below.
 const lucide = {
     overview: LayoutDashboard,
     activity: History,
@@ -86,7 +84,6 @@ const lucide = {
     lend: BookUp,
     'lend-return': BookDown,
     qr: QrCode,
-    // Screen states that the icon sets draw (KI-6).
     'permission-denied': ShieldAlert,
     'already-owned': BookCheck,
     'existing-edition': BookCopy,
@@ -96,15 +93,14 @@ const lucide = {
 
 export type IconName = keyof typeof lucide;
 
-// The icon set purposes (artwork file names) the interface uses. Names without a purpose, such as
+// Names without a purpose, such as
 // close, chevrons, check, add, edit and delete, stay Lucide in every set (design guidelines).
 const purposes: Partial<Record<IconName, string>> = {
     overview: 'overview',
     activity: 'activity',
     administration: 'administration',
     settings: 'settings',
-    // Admin links (decided 2026-11-09): Accounts shows the sets' Administration artwork and
-    // Server settings their Settings artwork. Appearance stays Lucide until it has its own
+    // Appearance stays Lucide until it has its own
     // artwork; with Lucide chosen, every link keeps its own Lucide icon.
     accounts: 'administration',
     server: 'settings',
@@ -129,11 +125,9 @@ const purposes: Partial<Record<IconName, string>> = {
     'lend-return': 'record-return',
 };
 
-// The chosen set's artwork, loaded once per set; null while loading or for Lucide.
 function useArtwork(set: IconSetName): Map<string, string> | null {
     // Only re-renders this icon once the set has loaded; the artwork itself comes from the cache.
     const [, setLoaded] = useState<IconSetName | null>(null);
-    // A failed load keeps Lucide and tries again a few seconds later, at most a few times.
     const [attempt, setAttempt] = useState(0);
 
     useEffect(() => {
@@ -166,9 +160,7 @@ function useArtwork(set: IconSetName): Map<string, string> | null {
     return set === 'lucide' ? null : IconArtwork.ready(set);
 }
 
-// Decorative by default; pass `label` when the icon alone carries meaning. Draws the
-// installation's icon set (KI-6), falling back to Lucide for the other names and while the set
-// loads.
+// Decorative by default; pass `label` when the icon alone carries meaning.
 export function Icon({
     name,
     size = 18,
@@ -180,7 +172,6 @@ export function Icon({
     size?: number;
     label?: string;
     className?: string;
-    // A specific set instead of the installation's, for example to preview a choice.
     set?: IconSetName;
 }) {
     const chosen = useIconSet();

@@ -9,8 +9,6 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// Saves the location and tags edited directly on the book details, one change at a time. The
-// book information itself is left untouched.
 export class OrganiseBook implements OrganiseBookUseCase {
     constructor(
         private readonly loader: BookLoader,

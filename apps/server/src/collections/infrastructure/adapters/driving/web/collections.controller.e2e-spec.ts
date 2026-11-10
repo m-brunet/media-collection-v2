@@ -32,7 +32,6 @@ function membership(name: string, volumeFrom: number, volumeTo = volumeFrom): Me
     return { collection: { name }, volumeFrom, volumeTo };
 }
 
-// Saves a book without ISBN through the API, as an Owner.
 async function book(collection: MembershipDto | null, overrides: Partial<NewBookDto> = {}) {
     const client = await app.authenticatedClient(owner);
     const response = await client.call<BookDto>(
@@ -55,7 +54,6 @@ async function book(collection: MembershipDto | null, overrides: Partial<NewBook
     return response.body;
 }
 
-// Gives a saved book a cover, as an Owner.
 async function withCover(saved: BookDto) {
     const client = await app.authenticatedClient(owner);
     const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);

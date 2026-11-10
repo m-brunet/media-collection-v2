@@ -15,13 +15,12 @@ export type WorkerRequest =
           development: boolean;
           setupToken: string;
       }
-    // Local maintenance; `version` is the running Media Collection version.
     | { type: 'maintenance-status'; dataDirectory: string; version: string }
     | { type: 'recover'; dataDirectory: string; version: string; password: string }
     | { type: 'backup'; dataDirectory: string; version: string; destination: string }
     | { type: 'inspect-backup'; dataDirectory: string; version: string; source: string }
     | { type: 'restore-backup'; dataDirectory: string; version: string; source: string }
-    // Development-only data commands; the main process checked the directory first.
+    // The main process checked the directory first.
     | { type: 'dev-reset'; dataDirectory: string }
     | { type: 'dev-import-v1'; dataDirectory: string; source: string }
     | { type: 'stop' };

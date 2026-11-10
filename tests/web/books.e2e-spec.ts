@@ -35,7 +35,6 @@ afterEach(async () => {
     await runtime.teardown();
 });
 
-// A plain-coloured PNG with portrait proportions, standing in for a cover photo.
 function portraitImage(width: number, height: number): Buffer {
     const chunk = (type: string, data: Buffer) => {
         const body = Buffer.concat([Buffer.from(type), data]);
@@ -65,7 +64,6 @@ function portraitImage(width: number, height: number): Buffer {
     ]);
 }
 
-// A ready account: created by the administrator, temporary password already replaced.
 async function account(username: string, role: 'owner' | 'guest') {
     await admin.call('/users', 'POST', { username, password: 'temporary-pw', role });
     const client = new Client(base);

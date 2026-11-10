@@ -10,10 +10,9 @@ import { SetupRequestSigner } from './setup-request-signer.adapter.js';
 import { MaintenanceWindow } from './maintenance-window.adapter.js';
 import { KeepAwake } from './keep-awake.adapter.js';
 
-// Automated tests run the real windows without putting them on screen.
 const hiddenWindows = process.env.APP_HIDDEN_WINDOWS === '1';
 const directory = dirname(fileURLToPath(import.meta.url));
-// The Libris icon (apps/desktop/assets/icons) for every window: Windows reads the .ico, Linux the PNG.
+// Windows reads the .ico, Linux the PNG.
 const windowIcon = join(
     app.getAppPath(),
     'apps/desktop/assets/icons',
@@ -26,11 +25,9 @@ let quitting = false;
 let shutdownComplete = false;
 let window: BrowserWindow | undefined;
 let restarting = false;
-// The server is stopped while the local maintenance window is open.
 let maintaining = false;
 const setupSigner = new SetupRequestSigner();
 const keepAwake = new KeepAwake();
-// Development data commands run from a terminal: they report there instead of in dialogs.
 const commandLine = process.argv.some(
     (arg) => arg === '--dev-reset-data' || arg === '--dev-import-v1',
 );
@@ -158,8 +155,6 @@ if (!startupOptions) {
 async function launch(options: ReturnType<typeof DesktopConfigurationParser.parse>): Promise<void> {
     while (!quitting) {
         backend = new BackendProcess(join(directory, 'worker.js'));
-        // The server reports the keep-awake setting at startup and on each change; a stopped server
-        // (quit, maintenance, crash) no longer needs the computer awake.
         backend.onNotice((notice) => keepAwake.apply(notice.enabled));
         backend.onExit(() => keepAwake.release());
 
@@ -290,7 +285,6 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
     }
 }
 
-// Runs one development data command without a window, reports in the terminal and exits.
 async function maintain(dataDirectory: string, maintenance: DevelopmentMaintenance): Promise<void> {
     const worker = new BackendProcess(join(directory, 'worker.js'));
     let code = 0;
@@ -353,8 +347,6 @@ function applicationMenu(options: ReturnType<typeof DesktopConfigurationParser.p
     ]);
 }
 
-// Stops the server and replaces the Libris window with the maintenance window, then starts the
-// application again once maintenance is closed.
 async function openMaintenance(
     options: ReturnType<typeof DesktopConfigurationParser.parse>,
 ): Promise<void> {

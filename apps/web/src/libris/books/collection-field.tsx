@@ -12,9 +12,6 @@ type CollectionValues = Pick<
     'inCollection' | 'collectionName' | 'collectionDistinct' | 'omnibus' | 'volumeFrom' | 'volumeTo'
 >;
 
-// Collection membership in the book form: an existing collection is suggested while typing,
-// and a new name creates its collection when the book is saved. Coverage is one volume, or a
-// consecutive range for an omnibus.
 export function CollectionField({
     values,
     error,
@@ -74,7 +71,6 @@ export function CollectionField({
                         onChange={(event) =>
                             onChange({
                                 collectionName: event.target.value,
-                                // A new name has not been confirmed as distinct yet.
                                 collectionDistinct:
                                     values.collectionDistinct &&
                                     BookDraft.nameKey(event.target.value) ===

@@ -1003,7 +1003,6 @@ export const en = {
     'reason.shelfMissing': 'This shelf no longer exists. Choose another one.',
     'reason.tagMissing': 'One of the tags no longer exists. Choose the tags again.',
     'reason.readingFilterUnavailable': 'Guests have no reading status to filter on.',
-    // Lending (Task 5)
     'nav.loans': 'Loans',
     'books.lent': 'Lent',
     'loans.title': 'Lent books',

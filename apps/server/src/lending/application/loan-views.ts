@@ -1,5 +1,4 @@
-// Read models of the lending pages. Dates are UTC ISO strings; interfaces display them in the
-// viewer's own time zone and language.
+// Dates are UTC ISO strings; interfaces display them in the viewer's own time zone and language.
 
 export interface LoanBookView {
     id: string;

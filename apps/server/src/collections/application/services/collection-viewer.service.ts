@@ -11,8 +11,6 @@ import type { MemberRecord } from '../ports/driven/collection-member-store.inter
 import type { Collection } from '../../domain/entities/collection.entity.js';
 import { CollectionShopping } from '../../domain/services/collection-shopping.service.js';
 
-// Describes a collection from its saved members: whole-collection counts, and the expected
-// volumes in coverage order with the books covering each.
 export class CollectionViewer {
     summary(collection: Collection, records: readonly MemberRecord[]): CollectionSummaryView {
         const { id, name, includesVolumeZero, finished } = collection.snapshot;
@@ -75,7 +73,6 @@ export class CollectionViewer {
         };
     }
 
-    // Covers of the first owned books in coverage order, then of the other members.
     private previews(records: readonly MemberRecord[]): CollectionPreviewView[] {
         const covered = records.filter((record) => record.hasCover);
 

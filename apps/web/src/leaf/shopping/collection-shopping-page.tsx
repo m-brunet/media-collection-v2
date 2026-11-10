@@ -14,7 +14,6 @@ import { useLeafResource } from '../use-leaf-resource';
 type Missing = CollectionShoppingDto['missing'][number];
 type QuickAdd = { volume: number; bookId: string; title: string };
 
-// Confirms marking a saved Not Owned book Owned; stays open with the reason when it fails.
 function MarkOwnedDialog({
     collection,
     choice,
@@ -168,7 +167,6 @@ function Shopping({ shopping, reload }: { shopping: CollectionShoppingDto; reloa
     );
 }
 
-// One collection while shopping: last Owned volume, missing volumes, and quick add.
 export function CollectionShoppingPage() {
     const { t } = useI18n();
     const { id = '' } = useParams();

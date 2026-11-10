@@ -37,7 +37,6 @@ export class ReplaceCover implements ReplaceCoverUseCase {
                 },
                 async () => {
                     ActorAuthorization.requireLibraryEditor(actor);
-                    // Shop padding is removed before storing; see the book entry rules.
                     const cover = await this.trimmer.trim(CoverImage.from(image));
                     const book = await this.loader.load(bookId);
 

@@ -4,16 +4,11 @@ import type {
 } from '../../../../application/ports/driving/maintain-internet-access-use-case.interface.js';
 import type { MaintainHttpInternetAccessUseCase } from '../../../../application/ports/driving/maintain-http-internet-access-use-case.interface.js';
 
-// One upkeep and the name it has in the log ("HTTPS", "HTTP").
 export interface NamedMaintenance {
     name: string;
     maintenance: MaintainInternetAccessUseCase | MaintainHttpInternetAccessUseCase;
 }
 
-// Runs the internet access upkeeps (HTTPS, then HTTP) once the application is up, then again after
-// the delay `delayAfter` gives for the number of consecutive runs that could not keep a router
-// rule. Nest calls the two lifecycle methods; a run never overlaps the previous one, one failing
-// upkeep does not stop the next, and each outcome is written to the log.
 export class InternetAccessUpkeep {
     private timer: NodeJS.Timeout | undefined;
     private running: Promise<void> | undefined;

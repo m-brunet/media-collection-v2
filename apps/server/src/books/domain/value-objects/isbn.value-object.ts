@@ -1,7 +1,5 @@
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 
-// An edition's ISBN, always kept as ISBN-13. A valid ISBN-10 is converted to its ISBN-13
-// equivalent, and the conversion is remembered so the interface can explain it.
 export class Isbn {
     private constructor(
         readonly isbn13: string,
@@ -32,7 +30,6 @@ export class Isbn {
         return new Isbn(isbn13, convertedFromIsbn10);
     }
 
-    // The ISBN-13 a search text stands for, when it is a complete valid ISBN-10 or ISBN-13.
     static equivalent(input: string): string | null {
         const compact = Isbn.compact(input);
 

@@ -6,7 +6,6 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// Removes only the author's own note; the book is unchanged.
 export class DeletePersonalNote implements DeletePersonalNoteUseCase {
     constructor(
         private readonly notes: PersonalNoteStore,

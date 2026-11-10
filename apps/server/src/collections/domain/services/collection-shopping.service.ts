@@ -3,7 +3,6 @@ import type {
     CoverageMember,
 } from '../value-objects/collection-coverage.value-object.js';
 
-// A member as the shopping view needs it: its coverage, title and category.
 export interface ShoppingMember extends CoverageMember {
     title: string;
     category: 'books' | 'manga' | 'comics';
@@ -28,9 +27,8 @@ export interface ShoppingList {
     missing: MissingVolume[];
 }
 
-// What to look for while shopping: the last Owned volume and every missing volume. Quick add is
-// offered only for a volume covered by exactly one saved single-volume Not Owned book; inferred
-// volumes, omnibus editions and ambiguous coverage need the full book entry.
+// Quick add is offered only for a volume covered by exactly one saved single-volume Not Owned
+// book; inferred volumes, omnibus editions and ambiguous coverage need the full book entry.
 export class CollectionShopping {
     static of(coverage: CollectionCoverage, members: readonly ShoppingMember[]): ShoppingList {
         return {

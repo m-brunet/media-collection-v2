@@ -15,7 +15,6 @@ export class DatabaseConnections implements TransactionRunner {
     }
 
     run<T>(work: () => Promise<T>): Promise<T> {
-        // Nested work joins the transaction already in progress.
         if (this.scope.getStore()) {
             return work();
         }

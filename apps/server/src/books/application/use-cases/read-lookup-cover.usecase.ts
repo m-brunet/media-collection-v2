@@ -6,8 +6,6 @@ import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// A cover a lookup offered, fetched from its source by token so the person can see and choose it.
-// Nothing is stored: a chosen cover is uploaded with the book like any other.
 export class ReadLookupCover implements ReadLookupCoverUseCase {
     constructor(
         private readonly registry: LookupCoverRegistry,

@@ -1,6 +1,5 @@
 import { powerSaveBlocker } from 'electron';
 
-// Keeps the computer from sleeping while the setting is on, so phones can still reach the server.
 // The screen may still turn off.
 export class KeepAwake {
     private blocker: number | undefined;

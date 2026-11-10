@@ -11,10 +11,7 @@ export type ArrangedLending = {
     loans: { loanId: string; bookId: string; lentAt: string }[];
 };
 
-// Arranges loans in API tests through the builders, without the lending endpoints: lends books to
-// a receiver (created by name, or an existing one by identity) and records returns. Books are
-// given as a loan records them (identity, title, ISBN): a saved book DTO, or
-// `TestLibrary.lendable(book)`. Successive lendings are a minute apart, so the newest one comes
+// Successive lendings are a minute apart, so the newest one comes
 // first in lists; all happen in December 2025, before anything the test application does at its
 // own clock (from 2026-01-01).
 export class LendingArrangement {

@@ -24,7 +24,7 @@ function Progress({ collection }: { collection: ShoppingCollectionDto }) {
     return <>{missing + ' · ' + owned}</>;
 }
 
-// Unfinished collections, ready for shopping. Finished ones are left out by the server.
+// Finished ones are left out by the server.
 export function ShoppingListPage() {
     const { t } = useI18n();
     const { resource, reload } = useLeafResource<ShoppingCollectionDto[]>('/collections/shopping');

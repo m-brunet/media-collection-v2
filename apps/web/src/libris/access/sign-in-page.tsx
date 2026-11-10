@@ -5,7 +5,6 @@ import { SignInForm } from '../../shared/session/sign-in-form';
 import { Brand } from '../../shared/ui/brand';
 import { LanguageSwitch } from '../../shared/ui/language-switch';
 
-// Two-column access layout from the design: library introduction on the left, form on the right.
 export function AccessLayout({ children }: { children: ReactNode }) {
     const { t } = useI18n();
 

@@ -1,4 +1,3 @@
-/* Brand */
 .brand {
     display: flex;
     align-items: center;
@@ -40,7 +39,6 @@
     font-size: var(--text-3xl);
 }
 
-/* Buttons */
 .button {
     display: inline-flex;
     align-items: center;
@@ -89,7 +87,6 @@
     color: var(--color-danger);
 }
 
-/* An icon of the chosen icon set (KI-6): inline artwork sized like the Lucide icons. */
 .icon-art {
     display: inline-flex;
     flex: none;
@@ -124,7 +121,6 @@
     gap: var(--space-3);
 }
 
-/* Fields */
 .field {
     display: flex;
     flex-direction: column;
@@ -200,7 +196,6 @@
     gap: var(--space-4);
 }
 
-/* Notices */
 .notice {
     display: flex;
     gap: var(--space-3);
@@ -243,7 +238,6 @@
     color: var(--color-warning);
 }
 
-/* Page structure */
 .page-header {
     display: flex;
     justify-content: space-between;
@@ -286,7 +280,6 @@
     align-items: start;
 }
 
-/* Tables */
 .table {
     width: 100%;
     border-collapse: collapse;
@@ -316,7 +309,6 @@
     font-size: var(--text-sm);
 }
 
-/* Loading and empty states */
 .state {
     display: flex;
     flex-direction: column;
@@ -343,7 +335,6 @@
     color: var(--color-text-secondary);
 }
 
-/* Dialog */
 .dialog {
     width: min(520px, calc(100vw - 32px));
     padding: 0;
@@ -379,7 +370,6 @@
     padding: 0 var(--space-6) var(--space-6);
 }
 
-/* Language switch */
 .language-switch__group {
     display: inline-flex;
     border: var(--border);

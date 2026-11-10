@@ -1,6 +1,6 @@
 import type { ColorSchemeName } from '../../../../../packages/contracts/src/http';
 
-// Applies the installation's colour scheme to the page. The last scheme seen is remembered in
+// The last scheme seen is remembered in
 // this browser so the next page load starts with the right colours instead of flashing.
 export class ColorSchemeDocument {
     static readonly names: readonly ColorSchemeName[] = [

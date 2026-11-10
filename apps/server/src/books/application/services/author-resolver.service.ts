@@ -6,8 +6,6 @@ import type { IdGenerator } from '../../../shared/application/ports/driven/id-ge
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { NameKey } from '../../../shared/domain/name-key.helper.js';
 
-// Turns the authors chosen in the form into author identities. An equivalent name reuses the
-// existing author; a similar one is only created once the person confirms it is someone else.
 export class AuthorResolver {
     constructor(
         private readonly authors: AuthorRepository,

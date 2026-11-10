@@ -9,8 +9,6 @@ import type { AuthenticatedRequest } from '../../../../../shared/infrastructure/
 import type { BookLookupDto } from '../../../../../../../../packages/contracts/src/http.js';
 import { bookLookupSchema, coverAddressSchema, idSchema } from './book-schemas.js';
 
-// Find book for Owners and Admin: the library first, then the outside sources. Nothing is saved
-// here; the reviewed book is created with the books endpoints.
 @Controller('api/books/lookups')
 export class LookupsController {
     constructor(
@@ -42,7 +40,6 @@ export class LookupsController {
         );
     }
 
-    // An image address the person pasted, fetched from the public web for the form to show.
     @Post('covers')
     @HttpCode(200)
     async fromAddress(

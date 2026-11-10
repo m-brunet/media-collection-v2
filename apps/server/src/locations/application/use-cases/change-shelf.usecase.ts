@@ -10,8 +10,6 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// Renames a shelf and/or moves it to another bookcase. Its books stay on it, so their displayed
-// location follows. An equivalent shelf name in the destination bookcase blocks the change.
 export class ChangeShelf implements ChangeShelfUseCase {
     constructor(
         private readonly shelves: ShelfRepository,

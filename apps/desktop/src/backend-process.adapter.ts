@@ -61,7 +61,6 @@ export class BackendProcess {
         this.noticeListeners.add(listener);
     }
 
-    // Long development data commands (downloading covers) allow more than the default 30 seconds.
     request(message: WorkerRequest, timeoutSeconds = 30): Promise<WorkerResponse> {
         if (this.exited) {
             return Promise.reject(new Error('The backend process has stopped.'));

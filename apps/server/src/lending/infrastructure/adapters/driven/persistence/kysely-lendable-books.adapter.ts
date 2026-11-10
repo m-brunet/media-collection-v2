@@ -2,8 +2,6 @@ import type { LendableBooks } from '../../../../application/ports/driven/lendabl
 import type { LendableBook } from '../../../../domain/entities/loan.entity.js';
 import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
 
-// Reads the books table, and active loans with their receiver, for the books chosen in a lending
-// operation.
 export class KyselyLendableBooks implements LendableBooks {
     constructor(private readonly connections: DatabaseConnections) {}
 

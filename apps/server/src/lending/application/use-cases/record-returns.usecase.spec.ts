@@ -9,7 +9,6 @@ function subject(current: ReturnType<typeof LendingDoubles.lending>) {
     return new RecordReturns(current.loans, current.receivers, current.clock, current.operations);
 }
 
-// Sam has three books from two lending occasions; Morgan has one.
 async function onLoan(current: ReturnType<typeof LendingDoubles.lending>) {
     const sam = await new ReceiverBuilder().withName('Sam Taylor').buildAndSave(current);
     const morgan = await new ReceiverBuilder().withName('Morgan').buildAndSave(current);

@@ -25,16 +25,12 @@ export interface LookupSelection {
     collection: { name: string; volume: number } | null;
 }
 
-// A field the person already filled with something else: kept unless they choose the lookup's.
 export interface LookupConflict {
     field: LookupField;
     mine: string;
     lookup: string;
 }
 
-// How a lookup result reaches the book form (book entry rules, "Failure and incomplete results"
-// and "Lookup sources"): empty fields are filled, a field holding another value is only
-// replaced after the person confirms, and values differing only by case or accents are equal.
 export class LookupFill {
     static readonly fields: LookupField[] = [
         'title',
@@ -52,7 +48,7 @@ export class LookupFill {
     }
 
     // A Manga or Comics in a collection with a blank title keeps its generated title unless the
-    // person picks the lookup's (decision of 2026-11-06).
+    // person picks the lookup's.
     static keepsGeneratedTitle(draft: BookDraftValues, fields: BookLookupFieldsDto): boolean {
         return (
             (draft.category === 'manga' || draft.category === 'comics') &&
@@ -61,7 +57,6 @@ export class LookupFill {
         );
     }
 
-    // The preferred source's value of every field.
     static defaults(fields: BookLookupFieldsDto, draft: BookDraftValues): LookupSelection {
         return {
             title: LookupFill.keepsGeneratedTitle(draft, fields)
@@ -76,12 +71,10 @@ export class LookupFill {
         };
     }
 
-    // A new draft filled with every field's preferred value, as Leaf's review form opens.
     static prefilled(draft: BookDraftValues, fields: BookLookupFieldsDto): BookDraftValues {
         return LookupFill.apply(draft, LookupFill.defaults(fields, draft)).next;
     }
 
-    // Fills the empty fields; the fields holding something else are returned as conflicts.
     static apply(
         draft: BookDraftValues,
         selection: LookupSelection,
@@ -108,7 +101,6 @@ export class LookupFill {
         return { next, conflicts };
     }
 
-    // Uses the lookup's values for the conflicting fields the person chose to replace.
     static replace(
         draft: BookDraftValues,
         selection: LookupSelection,
@@ -120,7 +112,6 @@ export class LookupFill {
         );
     }
 
-    // A selection holding only this field's value.
     static only(field: LookupField, value: unknown): LookupSelection {
         return {
             title: null,
@@ -134,8 +125,6 @@ export class LookupFill {
         } as LookupSelection;
     }
 
-    // Whether the draft already holds this lookup value for the field (equal values ignore case,
-    // accents and author order).
     static holds(draft: BookDraftValues, field: LookupField, value: unknown): boolean {
         const lookup = LookupFill.lookupText(LookupFill.only(field, value), field);
 
@@ -146,7 +135,6 @@ export class LookupFill {
         );
     }
 
-    // A lookup value as shown to the person, for example "3/2012" or "Batman · 12".
     static text(field: LookupField, value: unknown): string {
         return LookupFill.lookupText(LookupFill.only(field, value), field) ?? '';
     }
@@ -189,7 +177,6 @@ export class LookupFill {
         }
     }
 
-    // The field's value as typed in the form; '' when empty.
     private static draftText(draft: BookDraftValues, field: LookupField): string {
         switch (field) {
             case 'title':
@@ -216,7 +203,6 @@ export class LookupFill {
         }
     }
 
-    // The selected lookup value in the same text form; null when nothing was selected.
     private static lookupText(selection: LookupSelection, field: LookupField): string | null {
         switch (field) {
             case 'authors':
@@ -244,7 +230,6 @@ export class LookupFill {
         }
     }
 
-    // "3/2012" or "2012"; a month without a year is not a date.
     private static date(year: string, month: string): string {
         if (!year) {
             return '';
@@ -257,7 +242,6 @@ export class LookupFill {
         return name + ' · ' + volumes;
     }
 
-    // Equal values ignore case, accents and outer spaces; author order does not matter.
     private static key(field: LookupField, text: string): string {
         if (field === 'authors') {
             return text

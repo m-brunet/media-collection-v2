@@ -7,11 +7,9 @@ export type DomainNameProblem = Extract<
     'domain-unresolved' | 'domain-mismatch'
 >;
 
-// Whether a domain name points to the home's public address, as Let's Encrypt and phones need.
 export class DomainNameCheck {
     constructor(private readonly resolver: DomainNameResolver) {}
 
-    // The name the HTTPS access uses; without a domain name there is nothing to check.
     async problem(access: InternetAccess): Promise<DomainNameProblem | null> {
         return access.domain ? this.problemFor(access.domain, access.publicAddress) : null;
     }

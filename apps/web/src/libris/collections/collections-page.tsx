@@ -27,8 +27,7 @@ interface Listing {
     items: CollectionSummaryDto[];
 }
 
-// One collection as a card: its name, up to two covers standing for it, and whole-collection
-// coverage. The covers are decorative; the name and coverage name the link.
+// The covers are decorative; the name and coverage name the link.
 function CollectionCard({ collection }: { collection: CollectionSummaryDto }) {
     const { t } = useI18n();
     const message = CollectionFormat.status(collection);
@@ -81,8 +80,7 @@ function CollectionCard({ collection }: { collection: CollectionSummaryDto }) {
     );
 }
 
-// Collections by name, with simple search over their books and paging. Counts always describe
-// the whole collection, whatever book matched the search.
+// Counts always describe the whole collection, whatever book matched the search.
 export function CollectionsPage() {
     const { t } = useI18n();
     const { account } = useSession();
@@ -125,7 +123,6 @@ export function CollectionsPage() {
         [parameters, setParameters, location.state],
     );
 
-    // Searching starts shortly after typing stops.
     useEffect(() => {
         if (typed === search) {
             return;
@@ -136,7 +133,6 @@ export function CollectionsPage() {
         return () => clearTimeout(timer);
     }, [typed, search, update]);
 
-    // Every collection, for "3 of 12 collections" while searching or filtering.
     useEffect(() => {
         let current = true;
 

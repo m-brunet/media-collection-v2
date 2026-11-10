@@ -12,7 +12,6 @@ afterEach(async () => {
     await fixture.teardown();
 });
 
-// Reads the server settings once the internet access setup has finished.
 async function settledStatus(client: Client): Promise<ServerStatus> {
     for (let attempt = 0; attempt < 50; attempt++) {
         const response = await client.call<ServerStatus>('/server-settings', 'GET');
@@ -27,8 +26,6 @@ async function settledStatus(client: Client): Promise<ServerStatus> {
     throw new Error('The internet access setup did not finish.');
 }
 
-// Every test launch sets APP_OFFLINE_INTERNET_ACCESS: the real worker then never reaches a
-// router, Let's Encrypt, the public address service or DNS.
 describe('Internet access in a test launch of the real worker', () => {
     it('sets up HTTPS without reaching a router or Let’s Encrypt', async () => {
         const current = await fixture.start();

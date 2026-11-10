@@ -1,8 +1,6 @@
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 
-// A domain name the Admin owns and keeps on the home connection (for example through the router's
-// dynamic DNS). Only a plain host name is accepted: no scheme, port, path or wildcard, and never
-// an IP address.
+// Only a plain host name is accepted: no scheme, port, path or wildcard, and never an IP address.
 export class DomainName {
     private static readonly longest = 253;
     private static readonly label = /^(?!-)[a-z0-9-]{1,63}(?<!-)$/;

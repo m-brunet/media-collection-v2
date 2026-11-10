@@ -1,6 +1,5 @@
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 
-// The collection volumes a book covers: one number, or a consecutive range for an omnibus.
 export class VolumeRange {
     static readonly highest = 9999;
 

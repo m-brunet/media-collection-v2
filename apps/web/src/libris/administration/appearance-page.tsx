@@ -29,10 +29,8 @@ const setNames: Record<IconSetName, MessageKey> = {
     'single-ink-risograph': 'appearance.iconSet.singleInkRisograph',
     'quiet-editorial-monoline': 'appearance.iconSet.quietEditorialMonoline',
 };
-// A few icons that show each set's character.
 const previewIcons: IconName[] = ['overview', 'books', 'collections', 'scan', 'lend'];
 
-// Installation-wide appearance, chosen by the administrator for everyone in Libris and Leaf.
 export function AppearancePage() {
     const { t } = useI18n();
     const { colorScheme, iconSet, saveColorScheme, saveIconSet } = useAppearance();
@@ -40,7 +38,6 @@ export function AppearancePage() {
     const [selectedSet, setSelectedSet] = useState<IconSetName>(iconSet);
     const action = useAction();
     const iconAction = useAction();
-    // Choosing a scheme saves it immediately; a failed save restores the previous choice.
     const choose = (name: ColorSchemeName) => {
         const previous = selected;
 
@@ -54,7 +51,6 @@ export function AppearancePage() {
             }
         }, 'appearance.saved');
     };
-    // Choosing an icon set saves it immediately; a failed save restores the previous choice.
     const chooseSet = (name: IconSetName) => {
         const previous = selectedSet;
 

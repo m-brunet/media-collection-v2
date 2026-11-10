@@ -16,8 +16,6 @@ afterEach(async () => {
     await directories.cleanup();
 });
 
-// The populated directory, plus an Owner, the HTTP port, internet access, keep awake and a
-// colour scheme.
 async function installation() {
     const directory = await directories.populated('reset-');
     const database = await Database.open(directory, new UuidGenerator());

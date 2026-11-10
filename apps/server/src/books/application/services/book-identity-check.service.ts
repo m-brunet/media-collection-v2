@@ -5,8 +5,6 @@ import type { BookDetails } from '../../domain/entities/book.entity.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { NameKey } from '../../../shared/domain/name-key.helper.js';
 
-// One record per edition: an ISBN can belong to one book only, and a book without ISBN that
-// looks like a saved one (same or similar title, a shared author) is confirmed first.
 export class BookIdentityCheck {
     constructor(
         private readonly books: BookRepository,

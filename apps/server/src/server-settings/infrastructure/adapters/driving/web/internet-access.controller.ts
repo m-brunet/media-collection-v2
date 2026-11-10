@@ -12,7 +12,6 @@ const setUpSchema = z.strictObject({
     replaceCertificate: z.boolean().optional(),
 });
 
-// The setup and the check answer at once (202); the page follows the steps with the settings.
 @Controller('api/server-settings/internet-access')
 @Access('admin')
 export class InternetAccessController {

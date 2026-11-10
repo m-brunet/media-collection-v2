@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { OpenLibraryRecords } from './open-library-records.adapter.js';
 import { SourceHttp } from './source-http.adapter.js';
 
-// Open Library answering with `bodies` in turn (the last one repeated), with a movable clock.
 function library(...bodies: (string | Error)[]) {
     const requests: string[] = [];
     let now = new Date('2026-11-06T10:00:00Z');

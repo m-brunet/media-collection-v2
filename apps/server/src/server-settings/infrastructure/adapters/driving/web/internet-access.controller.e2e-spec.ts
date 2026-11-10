@@ -23,7 +23,6 @@ afterEach(async () => {
     await app?.teardown();
 });
 
-// Starts a setup and waits for its background steps.
 async function setUp(client: Awaited<ReturnType<TestApp['authenticatedClient']>>) {
     await client.call('/server-settings/internet-access', 'POST', {});
     await app.dependencies.internetAccess.background.settled();

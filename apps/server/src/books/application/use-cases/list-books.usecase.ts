@@ -5,8 +5,6 @@ import type { BookLoanReader } from '../ports/driven/book-loan-reader.interface.
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// The shared library list; each Owner or the administrator sees, and may filter on, their own
-// reading status. Guests have no reading status to filter on. Lent books carry their loan.
 export class ListBooks implements ListBooksUseCase {
     constructor(
         private readonly catalog: BookCatalog,

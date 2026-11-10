@@ -20,8 +20,6 @@ import type { AuthenticatedRequest } from '../../../../../shared/infrastructure/
 import type { BookcaseDto, ShelfDto } from '../../../../../../../../packages/contracts/src/http.js';
 import { locationIdSchema, locationNameSchema } from './location-schemas.js';
 
-// Bookcases and the shelves created inside them: every signed-in account reads them, Owners
-// manage them.
 @Controller('api/bookcases')
 export class BookcasesController {
     constructor(

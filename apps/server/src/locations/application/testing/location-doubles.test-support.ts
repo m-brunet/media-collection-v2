@@ -134,7 +134,6 @@ export class MemoryBookShelves implements BookShelfStore {
 }
 
 export class LocationDoubles {
-    // Locations with all doubles and services wired as in production.
     static furniture() {
         const store = new MemoryBookShelves();
         const shelves = new MemoryShelves(store);
@@ -158,7 +157,6 @@ export class LocationDoubles {
         };
     }
 
-    // Saves a bookcase (reused when it exists) with an optional shelf, for arranging scenarios.
     static async withShelf(
         current: ReturnType<typeof LocationDoubles.furniture>,
         bookcaseName: string,
@@ -197,7 +195,6 @@ export class LocationDoubles {
         return { bookcase, shelf: shelf! };
     }
 
-    // Keeps a book on a shelf, for arranging scenarios.
     static async placed(
         current: ReturnType<typeof LocationDoubles.furniture>,
         bookId: string,

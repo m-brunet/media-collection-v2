@@ -14,9 +14,6 @@ import { BookCover } from '../books/book-cover';
 import { BookFormat } from '../../shared/book-form/book-format.util';
 import { LoanLinks } from './loan-links.util';
 
-// The answer to "which books are lent, and who has them?": active loans grouped by receiver,
-// with their lending dates. Search covers receiver names and book titles only. Guests see the
-// same page without return actions.
 export function LoansPage() {
     const { t, dates } = useI18n();
     const { account } = useSession();

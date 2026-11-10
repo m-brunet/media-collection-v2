@@ -1,6 +1,5 @@
 import type { CoverMediaType } from '../../../domain/value-objects/cover-image.value-object.js';
 
-// Stored cover images, referred to by the file name returned when storing them.
 export interface CoverStorage {
     store(bytes: Uint8Array, mediaType: CoverMediaType): Promise<string>;
     read(file: string): Promise<{ bytes: Uint8Array; mediaType: CoverMediaType } | null>;

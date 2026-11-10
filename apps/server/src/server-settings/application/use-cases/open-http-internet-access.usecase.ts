@@ -9,8 +9,7 @@ import type { OpenHttpInternetAccessUseCase } from '../ports/driving/open-http-i
 import type { HttpPortForwarding } from '../services/http-port-forwarding.service.js';
 import { SettingsAudit } from '../settings-audit.js';
 
-// Opens plain HTTP to the internet, the Admin's choice when HTTPS does not work. Never while HTTPS
-// is on: phones then use the encrypted address.
+// Never while HTTPS is on: phones then use the encrypted address.
 export class OpenHttpInternetAccess implements OpenHttpInternetAccessUseCase {
     constructor(
         private readonly store: HttpInternetAccessStore,

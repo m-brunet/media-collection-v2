@@ -45,7 +45,6 @@ function SignOutButton() {
     );
 }
 
-// The signed-in account and its role, with Sign out, under every Owner/Admin screen.
 function SignedInAs() {
     const { t } = useI18n();
     const { account } = useSession();
@@ -91,7 +90,6 @@ function LeafRoutes() {
         );
     }
 
-    // Leaf is for Owners and the administrator; Guests use Libris on a computer.
     if (account.role === 'guest') {
         return (
             <section className="leaf__section">

@@ -248,7 +248,6 @@ export class IdentityModule {
         };
     }
 
-    // The Admin password check of the application data reset (wired at the root).
     static administratorPassword(
         users: UserReader,
         passwords: PasswordHasher,
@@ -256,7 +255,6 @@ export class IdentityModule {
         return new AdministratorPasswordConfirmation(users, passwords);
     }
 
-    // The protected administrator, for the development V1 import (wired at the root).
     static administrator(users: UserReader): LibraryAdministrator {
         return new LibraryAdministratorLookup(users);
     }

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useEffect, useRef } from 'react';
 
-// Page title block. The heading receives focus on navigation so screen-reader users hear the
+// The heading receives focus on navigation so screen-reader users hear the
 // new page, as with a full page load.
 export function PageHeader({
     title,
@@ -11,7 +11,6 @@ export function PageHeader({
 }: {
     title: string;
     intro?: string;
-    // Navigation trail shown under the title instead of an introduction.
     breadcrumb?: ReactNode;
     actions?: ReactNode;
 }) {
@@ -35,7 +34,6 @@ export function PageHeader({
     );
 }
 
-// Grouped content block with an optional small uppercase label (IBM Plex Mono in the design).
 export function Panel({
     label,
     title,
