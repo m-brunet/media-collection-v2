@@ -1,11 +1,12 @@
 import type { FileFilter, IpcMainInvokeEvent } from 'electron';
-import { app, BrowserWindow, dialog, ipcMain } from 'electron';
-import { mkdirSync } from 'node:fs';
+import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import { join } from 'node:path';
 import { BackendProcess, WorkerFailure } from './backend-process.adapter.js';
 import { BackupFileName } from './backup-file-name.util.js';
 import type { BackupSummary, WorkerRequest, WorkerResponse } from './protocol.js';
 import type { DesktopTexts } from './desktop-texts.util.js';
+import type { BackupFolder } from './backup-folder.adapter.js';
+import { ProjectLinks } from './project-links.util.js';
 
 interface MaintenanceFailure {
     success: false;
@@ -24,6 +25,7 @@ interface MaintenanceWindowOptions {
     iconPath: string;
     hidden: boolean;
     texts: DesktopTexts;
+    backupFolder: BackupFolder;
 }
 
 // The page
@@ -35,6 +37,8 @@ export class MaintenanceWindow {
         'maintenance:create-backup',
         'maintenance:choose-backup',
         'maintenance:restore-backup',
+        'maintenance:open-backup-folder',
+        'maintenance:open-releases',
     ];
     private readonly worker: BackendProcess;
     private window: BrowserWindow | undefined;
@@ -100,6 +104,8 @@ export class MaintenanceWindow {
         this.handle('maintenance:create-backup', () => this.createBackup());
         this.handle('maintenance:choose-backup', () => this.chooseBackup());
         this.handle('maintenance:restore-backup', () => this.restoreBackup());
+        this.handle('maintenance:open-backup-folder', () => this.openBackupFolder());
+        this.handle('maintenance:open-releases', () => this.openReleases());
     }
 
     private unregister(): void {
@@ -134,9 +140,7 @@ export class MaintenanceWindow {
     private async createBackup(): Promise<
         MaintenanceResult<{ backup: BackupSummary; file: string }>
     > {
-        const folder = join(app.getPath('documents'), 'Media Collection backups');
-
-        mkdirSync(folder, { recursive: true });
+        const folder = this.options.backupFolder.ensure();
         const choice = await dialog.showSaveDialog(this.window!, {
             title: this.options.texts.text('createBackupTitle'),
             defaultPath: join(folder, BackupFileName.at(new Date())),
@@ -160,7 +164,7 @@ export class MaintenanceWindow {
         this.chosenBackup = null;
         const choice = await dialog.showOpenDialog(this.window!, {
             title: this.options.texts.text('restoreBackupTitle'),
-            defaultPath: join(app.getPath('documents'), 'Media Collection backups'),
+            defaultPath: this.options.backupFolder.path,
             properties: ['openFile'],
             filters: [this.backupFilter()],
         });
@@ -183,6 +187,31 @@ export class MaintenanceWindow {
         }
 
         return result;
+    }
+
+    private async openBackupFolder(): Promise<MaintenanceResult<{ folder: string }>> {
+        try {
+            const folder = this.options.backupFolder.ensure();
+            const error = await shell.openPath(folder);
+
+            if (error) {
+                throw new Error(error);
+            }
+
+            return { success: true, value: { folder } };
+        } catch (error) {
+            return this.failed(error);
+        }
+    }
+
+    private async openReleases(): Promise<MaintenanceResult<null>> {
+        try {
+            await shell.openExternal(ProjectLinks.releases);
+
+            return { success: true, value: null };
+        } catch (error) {
+            return this.failed(error);
+        }
     }
 
     private async restoreBackup(): Promise<MaintenanceResult<{ backup: BackupSummary }>> {
@@ -216,16 +245,20 @@ export class MaintenanceWindow {
 
             return { success: true, value };
         } catch (error) {
-            return {
-                success: false,
-                reason: error instanceof WorkerFailure ? error.reason : null,
-                message:
-                    error instanceof Error
-                        ? error.message
-                        : this.options.texts.text('maintenanceFailed'),
-                details: error instanceof WorkerFailure ? error.details : null,
-            };
+            return this.failed(error);
         }
+    }
+
+    private failed(error: unknown): MaintenanceFailure {
+        return {
+            success: false,
+            reason: error instanceof WorkerFailure ? error.reason : null,
+            message:
+                error instanceof Error
+                    ? error.message
+                    : this.options.texts.text('maintenanceFailed'),
+            details: error instanceof WorkerFailure ? error.details : null,
+        };
     }
 
     private backupFilter(): FileFilter {

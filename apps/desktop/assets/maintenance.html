@@ -67,7 +67,15 @@
                 <h2 data-text="backupTitle" id="backup-heading"></h2>
                 <p class="muted" data-text="backupIntro"></p>
                 <p class="warning" data-text="backupPrivate"></p>
-                <button data-text="backupButton" id="create-backup" type="button"></button>
+                <div class="actions">
+                    <button data-text="backupButton" id="create-backup" type="button"></button>
+                    <button
+                        class="button--secondary"
+                        data-text="openFolderButton"
+                        id="open-backup-folder"
+                        type="button"
+                    ></button>
+                </div>
                 <p class="result" id="backup-result" role="status"></p>
             </section>
 
@@ -105,6 +113,23 @@
                     ></button>
                 </div>
                 <p class="result" id="restore-result" role="status"></p>
+            </section>
+
+            <section aria-labelledby="failed-update-heading" id="failed-update">
+                <h2 data-text="failedUpdateTitle" id="failed-update-heading"></h2>
+                <p class="muted" data-text="failedUpdateIntro"></p>
+                <ol class="steps">
+                    <li data-text="failedUpdateReinstall"></li>
+                    <li data-text="failedUpdateOpen"></li>
+                    <li data-text="failedUpdateRestore"></li>
+                </ol>
+                <button
+                    class="button--secondary"
+                    data-text="releasesButton"
+                    id="open-releases"
+                    type="button"
+                ></button>
+                <p class="result" id="failed-update-result" role="status"></p>
             </section>
         </main>
         <script src="maintenance.js"></script>

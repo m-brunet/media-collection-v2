@@ -196,6 +196,22 @@ h2 {
     background: #2c3a2e;
 }
 
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.steps {
+    margin: 10px 0 0;
+    padding-left: 22px;
+    color: #f2f5f2;
+}
+
+.steps li + li {
+    margin-top: 6px;
+}
+
 .summary {
     display: grid;
     grid-template-columns: max-content 1fr;
