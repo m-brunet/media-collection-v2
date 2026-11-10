@@ -44,5 +44,5 @@ The installers are then kept for a week on the run page.
 
 ## Cost
 
-While the repository is private, a release uses about 30 to 40 of the 2,000 free Actions minutes a month (Windows
-minutes count double). Once the repository is public, standard runners are free.
+While the repository is private, a release uses about 15 of the 2,000 free Actions minutes a month (first run on
+2026-11-10: Windows 4.5 minutes, counted double; Linux 1.2 minutes). Once the repository is public, standard runners are free.
