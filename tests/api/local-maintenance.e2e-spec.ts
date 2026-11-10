@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { join } from 'node:path';
 import { RuntimeFixture, RuntimeSetup } from './runtime-setup.js';
 import { desktopWindow } from './client.js';
+import { appVersion } from './app-version.js';
 
 let fixture: RuntimeFixture;
 
@@ -26,7 +27,7 @@ async function backedUpLibrary() {
     await maintenance.runtime.send({
         type: 'backup',
         dataDirectory: source.directory,
-        version: '0.1.0',
+        version: appVersion,
         destination: backup,
     });
     await maintenance.runtime.close();
@@ -54,7 +55,7 @@ async function restore(directory: string, backup: string) {
     const response = await maintenance.runtime.send({
         type: 'restore-backup',
         dataDirectory: directory,
-        version: '0.1.0',
+        version: appVersion,
         source: backup,
     });
 
@@ -129,7 +130,7 @@ describe('local backup and restore through the Electron worker', () => {
 
         expect(response).toMatchObject({
             type: 'restored',
-            backup: { version: '0.1.0', contents: { books: 0, accounts: 1 } },
+            backup: { version: appVersion, contents: { books: 0, accounts: 1 } },
         });
     });
     it('rejects a backup of another version', async () => {

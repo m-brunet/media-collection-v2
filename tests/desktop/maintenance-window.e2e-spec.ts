@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { Client } from '../api/client.js';
 import { RuntimeFixture } from '../api/runtime-setup.js';
 import type { ElectronRuntime } from '../api/runtime.js';
+import { appVersion } from '../api/app-version.js';
 
 let fixture: RuntimeFixture;
 
@@ -239,7 +240,7 @@ describe('local maintenance window', () => {
                 "].join('|')",
         );
 
-        expect(summary).toBe('0.1.0|0|1');
+        expect(summary).toBe(`${appVersion}|0|1`);
     });
     it('requires the confirmation before restoring', async () => {
         const { current } = await maintenanceDesktop();

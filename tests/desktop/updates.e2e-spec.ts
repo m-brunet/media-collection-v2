@@ -4,6 +4,7 @@ import { existsSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { RuntimeFixture } from '../api/runtime-setup.js';
 import type { ElectronRuntime, RuntimeOptions } from '../api/runtime.js';
+import { appVersion } from '../api/app-version.js';
 
 let fixture: RuntimeFixture;
 
@@ -116,7 +117,7 @@ describe('checking for updates', () => {
         expect(shown).toEqual([
             {
                 title: 'Media Collection update',
-                message: 'You have the latest version (0.1.0).',
+                message: `You have the latest version (${appVersion}).`,
                 buttons: ['OK'],
             },
         ]);
