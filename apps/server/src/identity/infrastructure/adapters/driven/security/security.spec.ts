@@ -52,10 +52,10 @@ it('accepts a newly issued token', async () => {
 
     const result = await tokens.verify(token);
 
-    expect(result).toEqual(elapsed < 3600 ? claims : null);
+    expect(result).toEqual(elapsed < 86_400 ? claims : null);
 });
 it('accepts a token just before expiry', async () => {
-    const elapsed = 3599;
+    const elapsed = 86_399;
     let now = new Date('2026-01-01T00:00:00Z');
     const clock = { now: () => now };
     const tokens = new JwtSessionTokens(new Uint8Array(32).fill(7), clock);
@@ -65,10 +65,10 @@ it('accepts a token just before expiry', async () => {
 
     const result = await tokens.verify(token);
 
-    expect(result).toEqual(elapsed < 3600 ? claims : null);
+    expect(result).toEqual(elapsed < 86_400 ? claims : null);
 });
 it('rejects a token at expiry', async () => {
-    const elapsed = 3600;
+    const elapsed = 86_400;
     let now = new Date('2026-01-01T00:00:00Z');
     const clock = { now: () => now };
     const tokens = new JwtSessionTokens(new Uint8Array(32).fill(7), clock);
@@ -78,7 +78,7 @@ it('rejects a token at expiry', async () => {
 
     const result = await tokens.verify(token);
 
-    expect(result).toEqual(elapsed < 3600 ? claims : null);
+    expect(result).toEqual(elapsed < 86_400 ? claims : null);
 });
 it('rejects another signing key', async () => {
     const clock = { now: () => new Date('2026-01-01T00:00:00Z') };

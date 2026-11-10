@@ -1,5 +1,6 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import type { NextFunction, Request, Response } from 'express';
+import { SessionLifetime } from '../../../../domain/session-lifetime.helper.js';
 
 export class HttpSessions {
     constructor(
@@ -15,7 +16,7 @@ export class HttpSessions {
     set(request: Request, response: Response, token: string): void {
         response.cookie(this.names(request).auth, token, {
             ...this.options(request),
-            maxAge: 3_600_000,
+            maxAge: SessionLifetime.milliseconds,
         });
     }
 

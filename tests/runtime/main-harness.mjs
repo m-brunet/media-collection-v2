@@ -20,9 +20,11 @@ const documents = join(process.env.APP_TEST_DATA, 'test-documents');
 
 mkdirSync(documents, { recursive: true });
 app.setPath('documents', documents);
-const answers = { save: [], open: [] };
+const answers = { save: [], open: [], message: [] };
 
 dialog.showMessageBox = async () => ({ response: 0, checkboxChecked: false });
+// Synchronous questions (unsaved changes) take the queued button index, else the first button.
+dialog.showMessageBoxSync = () => answers.message.shift() ?? 0;
 process.on('uncaughtException', (error) => {
     process.stderr.write('Uncaught main process error: ' + (error?.stack ?? error) + '\n');
     app.exit(1);
@@ -101,11 +103,17 @@ watchFile(process.env.APP_TEST_COMMAND_FILE, { interval: 20 }, async () => {
         if (request.type === 'evaluate') {
             send({
                 type: 'evaluated',
-                value: await window.webContents.executeJavaScript(request.expression),
+                // `userGesture` gives the page the user activation some browser features need (a
+                // `beforeunload` prompt is only shown after the person has interacted with the page).
+                value: await window.webContents.executeJavaScript(
+                    request.expression,
+                    request.userGesture === true,
+                ),
             });
         } else if (request.type === 'answer-dialogs') {
             answers.save.push(...(request.save ?? []));
             answers.open.push(...(request.open ?? []));
+            answers.message.push(...(request.message ?? []));
             send({ type: 'answered' });
         } else if (request.type === 'menu') {
             Menu.getApplicationMenu().getMenuItemById(request.id).click();
@@ -120,6 +128,10 @@ watchFile(process.env.APP_TEST_COMMAND_FILE, { interval: 20 }, async () => {
         } else if (request.type === 'close-window') {
             window.close();
             send({ type: 'closed' });
+        } else if (request.type === 'quit') {
+            // Like the application menu's Quit: answers at once, the application may stay open.
+            app.quit();
+            send({ type: 'quitting' });
         } else if (request.type === 'stop') {
             app.quit();
         }

@@ -13,98 +13,23 @@ design.
 
 | ID   | Type        | Title                                                                                 | Severity | Status |
 | ---- | ----------- | ------------------------------------------------------------------------------------- | -------- | ------ |
-| KI-1 | Bug         | The desktop window cannot be closed while the book form has unsaved changes           | Low      | Open   |
-| KI-2 | Improvement | Libris sessions last 24 hours instead of one idle hour                                | Medium   | Open   |
-| KI-3 | Improvement | Additional information uses the same numbered heading as the other book-form sections | Low      | Open   |
+| KI-1 | Bug         | The desktop window cannot be closed while the book form has unsaved changes           | Low      | Done   |
+| KI-2 | Improvement | Libris sessions last 24 hours instead of one idle hour                                | Medium   | Done   |
+| KI-3 | Improvement | Additional information uses the same numbered heading as the other book-form sections | Low      | Done   |
 | KI-4 | Improvement | Libris has an application icon in the Windows taskbar                                 | Low      | Done   |
-| KI-5 | Bug         | Bookshelves count not vertically centred with the search field                        | Low      | Open   |
+| KI-5 | Bug         | Bookshelves count not vertically centred with the search field                        | Low      | Done   |
 | KI-6 | Improvement | Appearance: seven new colour schemes (Mint, Emerald, Forest removed) and the icon set choice | Medium | Done |
-| KI-7 | Improvement | Interface text needs slightly wider letter spacing                                    | Low      | Open   |
+| KI-7 | Improvement | Interface text needs slightly wider letter spacing                                    | Low      | Done   |
 | KI-8 | Improvement | Server settings addresses need more space between them                                | Low      | Done   |
 | KI-9 | Improvement | Internet access: no automatic Let's Encrypt retries, estimated attempts left           | Medium   | Open   |
 | KI-10 | Improvement | Internet access: renew certificates through ARI so renewals escape Let's Encrypt limits | Medium | Open |
 | KI-11 | Improvement | Server settings: QR code for each address, opening Leaf, with the Libris logo | Medium | Done |
 | KI-12 | Improvement | The address QR codes also sign the phone in to Leaf (not the HTTP internet address) | Medium | Open |
 | KI-13 | Bug | Internet access: the router rule lapses while the panel still shows it on | High | Done |
+| KI-14 | Improvement | Desktop dialogs, menus and window titles are only in English | Medium | Open |
+| KI-15 | Bug | Activity: a shelf change and a tag change read as the same vague entry | Low | Done |
 
 ## Open
-
-### KI-1 — The desktop window cannot be closed while the book form has unsaved changes
-
-- **Type:** Bug.
-- **Found:** 2026-11-06 by the user, on the Task 6 branch (cause predates Task 6).
-- **Reproduce:** in the desktop app, open Add a book, fill a few fields, close the window: nothing happens.
-- **Cause:** the book form warns before leaving with unsaved changes through the browser's `beforeunload` event
-  (`apps/web/src/libris/books/book-form-page.tsx`, since Task 2). A browser shows its own "Leave this page?" prompt;
-  Electron shows nothing and silently cancels the close unless the main process handles `will-prevent-unload`, which
-  `apps/desktop/src/main.ts` does not.
-- **Fix:** handle `will-prevent-unload` on the Libris window: show a native dialog (Leave without saving / Stay) and
-  call `event.preventDefault()` on Leave so the window closes. Desktop e2e test: fill the form, close, choose Leave.
-  Also check that quitting from the tray or the application menu behaves the same.
-- **Severity:** low (the person can save or clear the form first). **Planned:** next fix pass, or the next task that
-  touches the desktop shell.
-
-### KI-2 — Libris sessions last 24 hours instead of one idle hour
-
-- **Type:** Improvement.
-- **Reported:** 2026-11-07 by the user: the Libris session is too short; signing out should happen only after 24 hours.
-- **Today:** a session ends after one idle hour; authenticated actions renew it (`architecture.md`, security section).
-  The hour is set in two places: the token expiry in
-  `apps/server/src/identity/infrastructure/adapters/driven/security/jwt-session-tokens.adapter.ts`
-  (`setExpirationTime(now + 3600)`) and the cookie lifetime in
-  `apps/server/src/shared/infrastructure/adapters/driving/web/http-sessions.service.ts` (`maxAge: 3_600_000`).
-- **Fix:** one shared session lifetime of 24 hours used by both the token and the cookie, keeping renewal on
-  authenticated actions, passive requests not renewing, and the token version check after password changes. Update
-  `architecture.md` ("idle hour" becomes 24 hours). Tests: token expiry and cookie `Max-Age` at 24 hours; a session is
-  still valid just before 24 idle hours and refused just after (with the test clock). Leaf shares the same session.
-- **Open question for the fix:** 24 hours since the last activity (renewed, as today), or 24 hours after sign-in
-  whatever the activity. The first is assumed unless the user says otherwise.
-- **Severity:** medium (frequent sign-ins during normal use). **Planned:** next fix pass.
-
-### KI-3 — Additional information uses the same numbered heading as the other book-form sections
-
-- **Type:** Improvement.
-- **Reported:** 2026-11-07 by the user, on the Libris book form.
-- **Today:** "01 / Main information" and "02 / Location & tags · Optional" use the panel label style (small green
-  numbered heading, `Panel label`). "Additional information" is a large white heading with an arrow
-  (`apps/web/src/libris/books/book-additional-fields.tsx`, `book-form__toggle-heading`), so it looks unlike the others.
-- **Fix:** give it the same green numbered label, "03 / Additional information" ("03 / Informations
-  complémentaires"), in the same font and style as the other two sections. **Keep it collapsible**, unlike the other
-  sections: the label itself stays the expand/collapse button (with its arrow, `aria-expanded` and the closed hint).
-  Check the Edit book form too, and whether Leaf's phone form should follow.
-- **Severity:** low (visual consistency). **Planned:** next fix pass, or the next task that touches the book form.
-
-### KI-5 — Bookshelves count not vertically centred with the search field
-
-- **Type:** Bug.
-- **Reported:** 2026-11-08 by the user, on the Libris Bookshelves page (French: "1 bibliothèque · 2 étagères").
-- **Seen:** the count of bookcases and shelves on the right of the search field sits at the top of the row instead of
-  being centred on the 44 px search field.
-- **Cause:** the page reuses the `.book-toolbar` row (`apps/web/src/libris/libris.css`), a flex row without
-  `align-items`, so the count (`<span className="muted">` in `apps/web/src/libris/locations/bookshelves-page.tsx`)
-  stretches to the field's height and its text stays at the top.
-- **Fix:** centre the items of that row (`align-items: center` on `.book-toolbar`, or on a Bookshelves-specific
-  modifier). Check that My books and Collections, which use the same row with a sort selector, still look right, and
-  keep the count from wrapping (`white-space: nowrap`). Component test not useful (layout); check it in the browser at
-  1280 × 720 and 1440 wide, in English and French.
-- **Severity:** low (visual alignment). **Planned:** next fix pass, or the next task that touches the Bookshelves page.
-
-### KI-7 — Interface text needs slightly wider letter spacing
-
-- **Type:** Improvement.
-- **Reported:** 2026-11-08 by the user, first on the Libris sidebar (screenshot in French: Vue d’ensemble, Mes livres,
-  Paramètres du serveur…): "The letter spacing could be a tiny bit bigger." Widened to all interface text after
-  discussion the same day.
-- **Today:** the body text (`body` in `apps/web/src/shared/ui/base.css`, `--font-body` Inter at `--text-base`) sets
-  no `letter-spacing`, so menus, buttons, labels, fields and tables use the font's default (0), which is a little
-  tight at 13–14 px. Already spaced and unchanged by this fix: section labels and other `.eyebrow` text (`0.06em`) and
-  the elements in `components.css` with `0.02em`.
-- **Fix:** one token in `apps/web/src/shared/ui/tokens.css` (for example `--tracking-body: 0.01em`) applied to `body`,
-  so Libris and Leaf follow together. Headings (`--font-heading`, Space Grotesk), monospace text and the brand name
-  keep their current spacing (set it back to `normal` on headings if they inherit it). Check the places where text is
-  tight: the sidebar (long French labels such as "Paramètres du serveur"), buttons, table columns, the book form and
-  Leaf at phone width, in English and French, at 1280 × 720 and 1440 wide.
-- **Severity:** low (typography). **Planned:** next fix pass, or the next task that touches shared styles.
 
 ### KI-9 — Internet access: no automatic Let's Encrypt retries, estimated attempts left
 
@@ -120,6 +45,12 @@ design.
 - **Today:** the setup and **Check again** only try when the Admin asks. The hourly upkeep retries a failed renewal on
   its own, 1 hour after the first failure, then doubling up to 6 hours, whatever the reason; a rate-limit refusal is
   retried long before Let's Encrypt's `Retry-After` date. Nothing tells the Admin how many attempts remain.
+- **Since KI-13 (2026-11-10, checked in the code):** the router rule is renewed on every upkeep run whatever the
+  certificate back-off, and a router rule that is not kept is tried again after 1, 5 and 15 minutes; each outcome is
+  logged. The certificate back-off itself (`RenewalPolicy.retryAt`) is unchanged and still treats every reason alike,
+  although the ACME adapter already tells `rate-limited` from `not-reachable` (`acme-certificate-authority.adapter.ts`)
+  and turns off `acme-client`'s silent `Retry-After` wait. The `Retry-After` date is not kept and no estimate exists.
+  The fix below must keep the KI-13 router retries separate from the certificate attempts.
 - **Fix:**
   - **No automatic retry of an attempt that cannot succeed:** after a rate-limit refusal, nothing is sent to
     Let's Encrypt before the `Retry-After` date it gave (stored and shown: "Try again after Monday 23:30"); after a
@@ -158,6 +89,8 @@ design.
   address is a new certificate, not a renewal, so it stays a normal order. Tests: the order carries `replaces` with
   the expected identifier (computed from a fixture certificate), the fallback, no `replaces` after an address change.
   Check against Let's Encrypt's staging server first.
+- **Progress (checked 2026-11-10):** nothing done yet: no `replaces` or `renewalInfo` in the code, `acme-client` still
+  5.4.0.
 - **Severity:** medium (removes the main risk of the weekly limit). **Planned:** next fix pass, together with KI-9.
 
 ### KI-12 — The address QR codes also sign the phone in to Leaf (not the HTTP internet address)
@@ -181,7 +114,7 @@ design.
   - **Admin only, for now:** only the Admin sees the addresses list, so only the Admin can show such a QR code; the
     phone is signed in as the Admin. A way for Owners may come later.
   - **The phone session is a normal sign-in:** same account and rights as signing in with the password on the phone,
-    same lifetime (one idle hour today, 24 hours with KI-2), ended like any session by a password change, a
+    same lifetime (24 idle hours, KI-2), ended like any session by a password change, a
     deactivation or the Admin recovery. No "Leaf only" limit and no device list.
 - **Today:** the addresses list is in Server settings, so only the Admin sees it; the QR code holds
   `<address>/leaf/` (`apps/web/src/libris/administration/addresses-panel.tsx`). Sessions: HttpOnly cookies with a
@@ -209,8 +142,164 @@ design.
     in on Leaf; second use refused). No test reaches Let's Encrypt (Task 9.6 testing rule).
 - **Severity:** medium (sign-in on the phone at every session today). **Planned:** next version, after the 2.0.0
   release.
+- **Progress (checked 2026-11-10):** nothing done yet: no pairing code in the server or in Leaf.
+
+### KI-14 — Desktop dialogs, menus and window titles are only in English
+
+- **Type:** Improvement.
+- **Found:** 2026-11-10, while bringing KI-1 over (its new "Unsaved changes" dialog follows the existing English-only
+  ones). [Release expectations](../operations/release-expectations.md#languages) say the release supports English and
+  French, so 2.0.0 should not ship them in English only.
+- **Today:** Libris, Leaf and the Maintenance page are translated (the Maintenance page has its own EN/FR texts in
+  `apps/desktop/assets/maintenance.js`, from the device language, with a selector). The texts drawn by the Electron
+  main process are hard-coded in English:
+  - `apps/desktop/src/main.ts`: the dialogs "Unsaved changes" (KI-1), "Server stopped" (Retry / Quit), "Server could
+    not start" (its detail line; the message itself is the raw error) and "Local maintenance" (Stop the server and
+    open maintenance / Cancel); the "Maintenance" menu and its "Open local maintenance…" item.
+  - The standard menus built from Electron roles (File, Edit, View, Window and their items): Electron gives them
+    English labels on Windows and Linux whatever the system language.
+  - `apps/desktop/src/maintenance-window.adapter.ts`: the window title "Media Collection · Local maintenance", the
+    save and open dialog titles "Create a backup" and "Restore a backup", the fallback "Maintenance failed.".
+  - Error messages written by the backend process (`backend-process.adapter.ts`, `worker.ts`) that a dialog may show.
+- **Possible:** yes, with no new dependency.
+  - **Which language:** the device language, like the Maintenance page and the pre-login rule: French when
+    `app.getPreferredSystemLanguages()` (or `app.getLocale()`) starts with `fr`, otherwise English. The signed-in
+    person's saved language is not used: the main process has no business access to the account (business operations
+    stay on HTTP, no business IPC), and these texts also appear before sign-in or with no account at all.
+  - **How:** a small EN/FR catalogue class in `apps/desktop/src` (for example `DesktopTexts`, static, with the two
+    languages side by side, like `maintenance.js`) used by every dialog, menu label and window title. Role menus keep
+    their `role` (shortcuts, behaviour) and get a translated `label`. A raw error message stays as detail text;
+    the dialog's own sentence is translated.
+  - The Maintenance page and the main process should share the language rule, so one device shows one language.
+- **Fix:** the catalogue and its use everywhere listed above, plus the texts Task 10 adds (menus "About Media
+  Collection", "Check for updates…", "Exit", the About window, update dialogs), written translated from the start.
+  Tests: a unit test of the catalogue (both languages have the same keys, French chosen for `fr-*`, English
+  otherwise); a desktop e2e test checking one dialog and the menu labels in French (the test harness can set the
+  language).
+- **Severity:** medium (a French user sees English desktop dialogs; release requirement). **Planned:** Task 10, which
+  reworks the menus and adds the About window and update dialogs.
 
 ## Done
+
+### KI-15 — Activity: a shelf change and a tag change read as the same vague entry
+
+- **Type:** Bug.
+- **Found:** 2026-11-08 by the user, on the Libris Activity page; fixed the same day on the `known-issues-fix-pass`
+  branch without an entry here. Entry written 2026-11-10 to track it.
+- **Seen:** placing a book on a shelf and changing its tags both showed "You changed the location or tags of *Dune*"
+  with the Books icon, so the entry did not say what had changed.
+- **Cause:** both changes are audited as one category, `book.organised`, and the Activity projection gave it a single
+  sentence (Task 8).
+- **Fix:** the projection compares the recorded before and after states: only the shelf changed → "You changed the
+  location of *Dune*" ("Vous avez modifié l’emplacement de *Dune*") with the Bookshelves icon; only the tags changed
+  (order ignored) → "You changed the tags of *Dune*" ("Vous avez modifié les étiquettes de *Dune*") with the Tags
+  icon; both, or a record that cannot tell → the general sentence as before. Older records are split too (no new
+  audit data). [Task 8](task-08-overview-activity.md) sentence table updated. Tests: projection rules (location only,
+  tags only, tags reordered, both), the API listing both kinds, the Activity page sentences and icons.
+- **Severity:** low (wording). **Done:** 2026-11-10, branch `fix/known-issues-1-2-5-7`, commit `95378d3`
+  (cherry-picked from `385f2db`, first written 2026-11-08).
+
+### KI-1 — The desktop window cannot be closed while the book form has unsaved changes
+
+- **Type:** Bug.
+- **Found:** 2026-11-06 by the user, on the Task 6 branch (cause predates Task 6).
+- **Reproduce:** in the desktop app, open Add a book, fill a few fields, close the window: nothing happens.
+- **Cause:** the book form warns before leaving with unsaved changes through the browser's `beforeunload` event
+  (`apps/web/src/libris/books/book-form-page.tsx`, since Task 2). A browser shows its own "Leave this page?" prompt;
+  Electron shows nothing and silently cancels the close unless the main process handles `will-prevent-unload`, which
+  `apps/desktop/src/main.ts` does not.
+- **Fix:** handle `will-prevent-unload` on the Libris window: show a native dialog (Leave without saving / Stay) and
+  call `event.preventDefault()` on Leave so the window closes. Desktop e2e test: fill the form, close, choose Leave.
+  Also check that quitting from the tray or the application menu behaves the same.
+- **Severity:** low (the person can save or clear the form first). **Planned:** next fix pass, or the next task that
+  touches the desktop shell.
+- **Done:** 2026-11-10, branch `fix/known-issues-1-2-5-7`, commit `d110e84` (cherry-picked from the stale `known-issues-fix-pass`
+  branch, first written 2026-11-08): the Libris window handles `will-prevent-unload` with a native
+  dialog (Leave without saving / Stay, Stay by default). Quitting (application menu, signals) now closes the Libris
+  window before stopping the server, so Stay keeps both the window and the server running. Desktop e2e tests: close the
+  window and Leave; quit and Leave (server stopped); quit and Stay (window and server still running). The test harness
+  can answer synchronous dialogs and give a page a user gesture. The dialog is in English, like the desktop's other
+  dialogs.
+
+### KI-2 — Libris sessions last 24 hours instead of one idle hour
+
+- **Type:** Improvement.
+- **Reported:** 2026-11-07 by the user: the Libris session is too short; signing out should happen only after 24 hours.
+- **Today:** a session ends after one idle hour; authenticated actions renew it (`architecture.md`, security section).
+  The hour is set in two places: the token expiry in
+  `apps/server/src/identity/infrastructure/adapters/driven/security/jwt-session-tokens.adapter.ts`
+  (`setExpirationTime(now + 3600)`) and the cookie lifetime in
+  `apps/server/src/shared/infrastructure/adapters/driving/web/http-sessions.service.ts` (`maxAge: 3_600_000`).
+- **Fix:** one shared session lifetime of 24 hours used by both the token and the cookie, keeping renewal on
+  authenticated actions, passive requests not renewing, and the token version check after password changes. Update
+  `architecture.md` ("idle hour" becomes 24 hours). Tests: token expiry and cookie `Max-Age` at 24 hours; a session is
+  still valid just before 24 idle hours and refused just after (with the test clock). Leaf shares the same session.
+- **Open question for the fix:** 24 hours since the last activity (renewed, as today), or 24 hours after sign-in
+  whatever the activity. The first is assumed unless the user says otherwise.
+- **Severity:** medium (frequent sign-ins during normal use). **Planned:** next fix pass.
+- **Done:** 2026-11-10, branch `fix/known-issues-1-2-5-7`, commit `e2af329` (cherry-picked from the stale `known-issues-fix-pass`
+  branch, first written 2026-11-08): 24 hours since the last authenticated action (the assumed answer to
+  the open question). One lifetime, `SessionLifetime` (`apps/server/src/shared/domain/session-lifetime.helper.ts`),
+  sets both the token expiry and the cookie `Max-Age`; renewal, passive requests and the token version check are
+  unchanged. Tests: token valid at 23:59:59 and refused at 24 h, cookie `Max-Age=86400`, session kept just before 24
+  idle hours and refused at 24 h, passive request 23 h 59 / 24 h 01 after renewal. `architecture.md` updated.
+
+### KI-5 — Bookshelves count not vertically centred with the search field
+
+- **Type:** Bug.
+- **Reported:** 2026-11-08 by the user, on the Libris Bookshelves page (French: "1 bibliothèque · 2 étagères").
+- **Seen:** the count of bookcases and shelves on the right of the search field sits at the top of the row instead of
+  being centred on the 44 px search field.
+- **Cause:** the page reuses the `.book-toolbar` row (`apps/web/src/libris/libris.css`), a flex row without
+  `align-items`, so the count (`<span className="muted">` in `apps/web/src/libris/locations/bookshelves-page.tsx`)
+  stretches to the field's height and its text stays at the top.
+- **Fix:** centre the items of that row (`align-items: center` on `.book-toolbar`, or on a Bookshelves-specific
+  modifier). Check that My books and Collections, which use the same row with a sort selector, still look right, and
+  keep the count from wrapping (`white-space: nowrap`). Component test not useful (layout); check it in the browser at
+  1280 × 720 and 1440 wide, in English and French.
+- **Severity:** low (visual alignment). **Planned:** next fix pass, or the next task that touches the Bookshelves page.
+- **Done:** 2026-11-10, branch `fix/known-issues-1-2-5-7`, commit `31eb6cd` (cherry-picked from the stale `known-issues-fix-pass`
+  branch, first written 2026-11-08): `.book-toolbar` centres its items; the Bookshelves count
+  (`.book-toolbar__count`) stays on one line. My books and Collections are unchanged (their buttons and selects share
+  the 44 px control height).
+
+### KI-7 — Interface text needs slightly wider letter spacing
+
+- **Type:** Improvement.
+- **Reported:** 2026-11-08 by the user, first on the Libris sidebar (screenshot in French: Vue d’ensemble, Mes livres,
+  Paramètres du serveur…): "The letter spacing could be a tiny bit bigger." Widened to all interface text after
+  discussion the same day.
+- **Today:** the body text (`body` in `apps/web/src/shared/ui/base.css`, `--font-body` Inter at `--text-base`) sets
+  no `letter-spacing`, so menus, buttons, labels, fields and tables use the font's default (0), which is a little
+  tight at 13–14 px. Already spaced and unchanged by this fix: section labels and other `.eyebrow` text (`0.06em`) and
+  the elements in `components.css` with `0.02em`.
+- **Fix:** one token in `apps/web/src/shared/ui/tokens.css` (for example `--tracking-body: 0.01em`) applied to `body`,
+  so Libris and Leaf follow together. Headings (`--font-heading`, Space Grotesk), monospace text and the brand name
+  keep their current spacing (set it back to `normal` on headings if they inherit it). Check the places where text is
+  tight: the sidebar (long French labels such as "Paramètres du serveur"), buttons, table columns, the book form and
+  Leaf at phone width, in English and French, at 1280 × 720 and 1440 wide.
+- **Severity:** low (typography). **Planned:** next fix pass, or the next task that touches shared styles.
+- **Done:** 2026-11-10, branch `fix/known-issues-1-2-5-7`, commits `37125e1` and `8563169` (cherry-picked from the stale `known-issues-fix-pass`
+  branch, first written 2026-11-08): token `--tracking-body: 0.01em` on `body`; buttons, fields
+  and selects inherit it (browsers reset it on form controls); every rule using the heading or monospace font sets
+  `letter-spacing: normal` unless it already had its own spacing, including the QR code address added since by
+  KI-11. Design guidelines updated (typography).
+
+### KI-3 — Additional information uses the same numbered heading as the other book-form sections
+
+- **Type:** Improvement.
+- **Reported:** 2026-11-07 by the user, on the Libris book form.
+- **Today:** "01 / Main information" and "02 / Location & tags · Optional" use the panel label style (small green
+  numbered heading, `Panel label`). "Additional information" is a large white heading with an arrow
+  (`apps/web/src/libris/books/book-additional-fields.tsx`, `book-form__toggle-heading`), so it looks unlike the others.
+- **Fix:** give it the same green numbered label, "03 / Additional information" ("03 / Informations
+  complémentaires"), in the same font and style as the other two sections. **Keep it collapsible**, unlike the other
+  sections: the label itself stays the expand/collapse button (with its arrow, `aria-expanded` and the closed hint).
+  Check the Edit book form too, and whether Leaf's phone form should follow.
+- **Severity:** low (visual consistency). **Planned:** next fix pass, or the next task that touches the book form.
+- **Done:** 2026-11-08, commit `9a0fed6` (branch `fix-additional-section-title`, PR #9): "03 / Additional information"
+  ("03 / Informations complémentaires") in the green numbered label style, still the collapsible toggle; the Edit book
+  form and Leaf's phone form use the same label. Confirmed in the code on 2026-11-10 (review of open entries).
 
 ### KI-13 — Internet access: the router rule lapses while the panel still shows it on
 
@@ -242,7 +331,7 @@ design.
   - Tests: the upkeep schedule (quick retries, back to hourly), the HTTPS rule renewed during the back-off, the router
     search retries. No test reaches a real router or Let's Encrypt.
 - **Severity:** high (internet access silently stops working). **Planned:** now, its own fix branch.
-- **Done:** branch `fix/internet-access-renewal`: commits `47b1504` (router search), `c4e7b96` (HTTPS rule during
+- **Done:** branch `fix/internet-access-renewal` (PR #13 merged): commits `47b1504` (router search), `c4e7b96` (HTTPS rule during
   the back-off), `ccf5402` (quick retries, log).
 
 ### KI-6 — Appearance: seven new colour schemes (Mint, Emerald, Forest removed) and the icon set choice

@@ -105,6 +105,7 @@
 .leaf-home__action-title,
 .leaf-list__name {
     font-family: var(--font-heading);
+    letter-spacing: normal;
     font-size: var(--text-lg);
 }
 
@@ -160,6 +161,7 @@
 
 .leaf-shopping__last-volume {
     font-family: var(--font-mono);
+    letter-spacing: normal;
     font-size: var(--text-3xl);
 }
 
@@ -209,6 +211,7 @@
 
 .leaf-found__digits {
     font-family: var(--font-mono);
+    letter-spacing: normal;
     font-size: var(--text-xl);
     overflow-wrap: anywhere;
 }

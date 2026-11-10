@@ -65,6 +65,19 @@ describe('POST /api/auth/login', () => {
         expect(response.headers['set-cookie']!.join(';')).toContain('HttpOnly');
         expect(response.headers['set-cookie']!.join(';')).not.toContain('Secure');
     });
+    it('sets a session cookie that lasts 24 hours', async () => {
+        const client = app.client();
+
+        await client.prepare();
+        const input = { username: member.username, password: member.password };
+
+        const response = await client.call('/auth/login', 'POST', input);
+
+        expect(response.status).toBe(200);
+        expect(
+            response.headers['set-cookie']!.find((cookie) => cookie.startsWith('app_auth=')),
+        ).toContain('Max-Age=86400');
+    });
     it('returns temporary-password state', async () => {
         const client = app.client();
 
@@ -202,29 +215,29 @@ describe('GET /api/auth/me', () => {
         expect(response.status).toBe(401);
     });
 
-    it('accepts a passive session 59 minutes after renewal', async () => {
-        const minutes = 59;
+    it('accepts a passive session 23 h 59 after renewal', async () => {
+        const minutes = 24 * 60 - 1;
         const client = await app.authenticatedClient(member);
 
-        app.advance(30 * 60_000);
+        app.advance(12 * 60 * 60_000);
         await client.call('/auth/me');
         app.advance(minutes * 60_000);
 
         const response = await client.call('/auth/me', 'GET', undefined, { passive: true });
 
-        expect(response.status).toBe(minutes < 60 ? 200 : 401);
+        expect(response.status).toBe(minutes < 24 * 60 ? 200 : 401);
     });
-    it('rejects a passive session 61 minutes after renewal', async () => {
-        const minutes = 61;
+    it('rejects a passive session 24 h 01 after renewal', async () => {
+        const minutes = 24 * 60 + 1;
         const client = await app.authenticatedClient(member);
 
-        app.advance(30 * 60_000);
+        app.advance(12 * 60 * 60_000);
         await client.call('/auth/me');
         app.advance(minutes * 60_000);
 
         const response = await client.call('/auth/me', 'GET', undefined, { passive: true });
 
-        expect(response.status).toBe(minutes < 60 ? 200 : 401);
+        expect(response.status).toBe(minutes < 24 * 60 ? 200 : 401);
     });
     it('returns the authenticated account', async () => {
         const client = await app.authenticatedClient(member);
@@ -271,10 +284,19 @@ describe('GET /api/auth/me', () => {
         expect(response.status).toBe(200);
         expect(client.cookies.get('app_auth')).not.toBe(previous);
     });
-    it('rejects an expired session', async () => {
+    it('keeps a session just before 24 idle hours', async () => {
         const client = await app.authenticatedClient(member);
 
-        app.advance(60 * 60_000);
+        app.advance(24 * 60 * 60_000 - 60_000);
+
+        const response = await client.call('/auth/me', 'GET');
+
+        expect(response.status).toBe(200);
+    });
+    it('rejects a session after 24 idle hours', async () => {
+        const client = await app.authenticatedClient(member);
+
+        app.advance(24 * 60 * 60_000);
 
         const response = await client.call('/auth/me', 'GET');
 

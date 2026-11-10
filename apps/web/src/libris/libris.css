@@ -49,6 +49,7 @@ body {
 .sidebar__identity {
     padding: 0 var(--space-3);
     font-family: var(--font-mono);
+    letter-spacing: normal;
     font-size: var(--text-xs);
     color: var(--color-accent);
 }
@@ -134,6 +135,7 @@ body {
 
 .access__tagline {
     font-family: var(--font-heading);
+    letter-spacing: normal;
     font-size: 44px;
     line-height: 1.1;
 }
@@ -366,7 +368,13 @@ body {
 /* Books: list */
 .book-toolbar {
     display: flex;
+    align-items: center;
     gap: var(--space-3);
+}
+
+/* A short count beside the search field (Bookshelves): one line, centred on the field. */
+.book-toolbar__count {
+    white-space: nowrap;
 }
 
 .book-toolbar__sort {
@@ -506,6 +514,7 @@ body {
 
 .book-details__title {
     font-family: var(--font-heading);
+    letter-spacing: normal;
     font-size: var(--text-3xl);
     font-weight: 500;
     line-height: 1.2;
@@ -889,6 +898,7 @@ body {
 
 .collection-card__name {
     font-family: var(--font-heading);
+    letter-spacing: normal;
     font-size: 23px;
     line-height: 1.25;
 }
@@ -1377,6 +1387,7 @@ body {
     background: none;
     color: var(--color-text);
     font-family: var(--font-heading);
+    letter-spacing: normal;
     font-size: var(--text-lg);
     text-align: left;
     cursor: pointer;
@@ -1476,6 +1487,7 @@ body {
 
 .tag-row__name {
     font-family: var(--font-heading);
+    letter-spacing: normal;
     font-size: var(--text-lg);
 }
 
@@ -1536,6 +1548,7 @@ body {
 .receiver-group__name {
     margin: 0;
     font-family: var(--font-heading);
+    letter-spacing: normal;
     font-size: var(--text-xl);
     overflow-wrap: anywhere;
 }
@@ -1642,6 +1655,7 @@ body {
 .lend-summary__count {
     margin: 0;
     font-family: var(--font-heading);
+    letter-spacing: normal;
     font-size: var(--text-2xl);
 }
 
@@ -1694,6 +1708,7 @@ body {
 .overview-counter__value {
     margin: 0;
     font-family: var(--font-heading);
+    letter-spacing: normal;
     font-size: var(--text-3xl);
     font-weight: 600;
     line-height: 1.1;
@@ -1774,6 +1789,7 @@ body {
 
 .overview-reading__counts {
     font-family: var(--font-heading);
+    letter-spacing: normal;
     font-size: var(--text-2xl);
 }
 
@@ -1904,6 +1920,7 @@ body {
 
 .activity-time__label {
     font-family: var(--font-mono);
+    letter-spacing: normal;
     font-size: var(--text-xs);
     color: var(--color-accent);
     text-transform: uppercase;
@@ -2029,6 +2046,7 @@ body {
 .address-qr__url {
     margin: 0;
     font-family: var(--font-mono);
+    letter-spacing: normal;
     font-size: var(--text-sm);
     text-align: center;
     overflow-wrap: anywhere;
