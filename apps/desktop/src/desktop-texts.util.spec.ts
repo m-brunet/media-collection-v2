@@ -29,3 +29,28 @@ it('gives the French text', () => {
 
     expect(result).toBe('Serveur arrêté');
 });
+it('fills a placeholder with its value', () => {
+    const texts = new DesktopTexts('fr');
+
+    const result = texts.text('availableMessage', { version: '2.0.1' });
+
+    expect(result).toBe('La version 2.0.1 est disponible.');
+});
+it('leaves a placeholder without a value as it is', () => {
+    const texts = new DesktopTexts('en');
+
+    const result = texts.text('availableMessage');
+
+    expect(result).toBe('Version {version} is available.');
+});
+it('uses the same placeholders in English and French', () => {
+    const catalogue = DesktopTexts.catalogue;
+    const placeholders = (text: string) => (text.match(/\{\w+\}/g) ?? []).sort().join();
+
+    const different = Object.entries(catalogue.en).filter(
+        ([key, english]) =>
+            placeholders(english) !== placeholders(catalogue.fr[key as keyof typeof catalogue.fr]),
+    );
+
+    expect(different).toEqual([]);
+});
