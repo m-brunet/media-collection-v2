@@ -13,6 +13,7 @@ import { DesktopLanguage } from './desktop-language.util.js';
 import { DesktopTexts } from './desktop-texts.util.js';
 import { ApplicationMenu } from './application-menu.adapter.js';
 import { BackupFolder } from './backup-folder.adapter.js';
+import { AboutWindow } from './about-window.adapter.js';
 
 const hiddenWindows = process.env.APP_HIDDEN_WINDOWS === '1';
 const directory = dirname(fileURLToPath(import.meta.url));
@@ -33,6 +34,14 @@ let restarting = false;
 let maintaining = false;
 const setupSigner = new SetupRequestSigner();
 const keepAwake = new KeepAwake();
+const aboutWindow = new AboutWindow({
+    preloadPath: join(directory, 'about-preload.cjs'),
+    pagePath: join(app.getAppPath(), 'apps/desktop/assets/about.html'),
+    iconPath: windowIcon,
+    hidden: hiddenWindows,
+    texts,
+    openCredits: () => openCredits(),
+});
 const commandLine = process.argv.some(
     (arg) => arg === '--dev-reset-data' || arg === '--dev-import-v1',
 );
@@ -142,6 +151,7 @@ if (!startupOptions) {
             } else {
                 Menu.setApplicationMenu(
                     new ApplicationMenu(texts, {
+                        openAbout: () => void aboutWindow.open(window),
                         openMaintenance: () => void openMaintenance(options),
                     }).build(),
                 );
@@ -336,6 +346,20 @@ function maintenanceWindow(dataDirectory: string): MaintenanceWindow {
         texts,
         backupFolder: new BackupFolder(app.getPath('documents')),
     });
+}
+
+// The credits page in the Libris window, which comes to the front.
+function openCredits(): void {
+    if (!window || window.isDestroyed()) {
+        return;
+    }
+
+    void window.loadURL(new URL('/credits', window.webContents.getURL()).href);
+
+    if (!hiddenWindows) {
+        window.show();
+        window.focus();
+    }
 }
 
 async function openMaintenance(

@@ -3,6 +3,7 @@ import { Menu } from 'electron';
 import type { DesktopTexts } from './desktop-texts.util.js';
 
 export interface ApplicationMenuActions {
+    openAbout(): void;
     openMaintenance(): void;
 }
 
@@ -22,7 +23,15 @@ export class ApplicationMenu {
         return {
             id: 'file',
             label: this.texts.text('menuFile'),
-            submenu: [{ id: 'exit', role: 'quit', label: this.texts.text('menuExit') }],
+            submenu: [
+                {
+                    id: 'about',
+                    label: this.texts.text('menuAbout'),
+                    click: () => this.actions.openAbout(),
+                },
+                { type: 'separator' },
+                { id: 'exit', role: 'quit', label: this.texts.text('menuExit') },
+            ],
         };
     }
 

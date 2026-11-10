@@ -330,14 +330,22 @@ describe('application menu', () => {
 
         expect(menu.map((item) => item.label)).toEqual(['File', 'View', 'Maintenance']);
     });
-    it('offers Exit in the File menu', async () => {
+    it('offers About and Exit in the File menu', async () => {
         const current = await setupPage();
 
         const menu = await menuLabels(current.runtime);
 
-        expect(menu[0]?.submenu).toEqual([
-            { id: 'exit', label: 'Exit', role: 'quit', type: 'normal' },
+        expect(menu[0]?.submenu?.map((item) => item.label)).toEqual([
+            'About Media Collection',
+            '',
+            'Exit',
         ]);
+        expect(menu[0]?.submenu?.at(-1)).toEqual({
+            id: 'exit',
+            label: 'Exit',
+            role: 'quit',
+            type: 'normal',
+        });
     });
     it('labels the menus in French on a French device', async () => {
         const current = await setupPage('fr-FR');
@@ -345,7 +353,11 @@ describe('application menu', () => {
         const menu = await menuLabels(current.runtime);
 
         expect(menu.map((item) => item.label)).toEqual(['Fichier', 'Affichage', 'Maintenance']);
-        expect(menu[0]?.submenu?.[0]?.label).toBe('Quitter');
+        expect(menu[0]?.submenu?.map((item) => item.label)).toEqual([
+            'À propos de Media Collection',
+            '',
+            'Quitter',
+        ]);
         expect(menu[1]?.submenu?.map((item) => item.label)).toEqual([
             'Actualiser',
             'Forcer l’actualisation',
@@ -386,5 +398,108 @@ describe('application menu', () => {
                 "document.querySelector('[name=username]').selectionStart",
             ),
         ).toBe(0);
+    });
+});
+
+describe('About window', () => {
+    async function aboutWindow(language?: string) {
+        const current = await setupPage(language);
+
+        await current.runtime.send({ type: 'menu', id: 'about' });
+        await waitFor(current.runtime, "document.getElementById('version')?.textContent !== ''");
+
+        return current;
+    }
+
+    // The pages opened in the default browser, once there is at least one.
+    async function opened(runtime: ElectronRuntime) {
+        const read = async () =>
+            ((await runtime.send({ type: 'opened' })).value as { external: string[] }).external;
+
+        for (let attempt = 0; attempt < 80 && (await read()).length === 0; attempt++) {
+            await delay(50);
+        }
+
+        return read();
+    }
+
+    async function windowAddresses(runtime: ElectronRuntime) {
+        const windows = (await runtime.send({ type: 'windows' })).value as { url: string }[];
+
+        return windows.map((each) => each.url);
+    }
+
+    async function waitForWindowAt(runtime: ElectronRuntime, url: string) {
+        for (let attempt = 0; attempt < 80; attempt++) {
+            if ((await windowAddresses(runtime)).includes(url)) {
+                return;
+            }
+
+            await delay(50);
+        }
+    }
+
+    it('shows the name and the running version', async () => {
+        const current = await aboutWindow();
+
+        const shown = await evaluate(
+            current.runtime,
+            "document.querySelector('h1').textContent + ' ' + document.getElementById('version').textContent",
+        );
+
+        expect(shown).toBe('Media Collection Version 0.1.0');
+    });
+    it('opens the source code in the default browser', async () => {
+        const current = await aboutWindow();
+
+        await evaluate(
+            current.runtime,
+            "document.querySelector('[data-target=repository]').click();true",
+        );
+
+        expect(await opened(current.runtime)).toEqual([
+            'https://github.com/m-brunet/media-collection-v2',
+        ]);
+    });
+    it('opens the licence in the default browser', async () => {
+        const current = await aboutWindow();
+
+        await evaluate(
+            current.runtime,
+            "document.querySelector('[data-target=licence]').click();true",
+        );
+
+        expect(await opened(current.runtime)).toEqual([
+            'https://github.com/m-brunet/media-collection-v2/blob/master/LICENSE',
+        ]);
+    });
+    it('shows the credits page in the Libris window', async () => {
+        const current = await aboutWindow();
+        const credits = new URL('/credits', current.client.base).href;
+
+        await evaluate(current.runtime, "document.getElementById('credits').click();true");
+
+        await waitForWindowAt(current.runtime, credits);
+        expect(await windowAddresses(current.runtime)).toContain(credits);
+    });
+    it('opens a single About window', async () => {
+        const current = await aboutWindow();
+
+        await current.runtime.send({ type: 'menu', id: 'about' });
+
+        await delay(200);
+        expect(
+            (await windowAddresses(current.runtime)).filter((url) => url.endsWith('about.html')),
+        ).toHaveLength(1);
+    });
+    it('is written in French on a French device', async () => {
+        const current = await aboutWindow('fr-FR');
+
+        const texts = await evaluate(
+            current.runtime,
+            "document.title + ' | ' + document.getElementById('credits').textContent",
+        );
+
+        expect(texts).toBe('À propos de Media Collection | Crédits et licences');
     });
 });
