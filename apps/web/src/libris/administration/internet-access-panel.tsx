@@ -86,9 +86,6 @@ export function InternetAccessPanel({
                     httpsActive={status.phase === 'active'}
                     onChanged={onRefresh}
                 />
-                {(status.phase !== 'off' || http.phase === 'open') && (
-                    <p className="muted">{t('internet.firewall')}</p>
-                )}
                 <label className="checkbox">
                     <input
                         type="checkbox"
