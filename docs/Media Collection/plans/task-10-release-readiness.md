@@ -220,7 +220,12 @@ keep working in text fields on Windows and Linux without the Edit menu (checked 
 - **Windows (NSIS):** assisted installer (not one-click), **per machine** in Program Files (chosen by the user on 2026-11-10), Libris
   icon (`apps/desktop/assets/icons/libris.ico`) for the installer, uninstaller and shortcuts, desktop and Start menu
   shortcuts named "Media Collection", and a Start menu shortcut "Media Collection maintenance" that starts it with
-  `--maintenance` (named in the Maintenance window's recovery steps). The uninstaller keeps the application data and the backups.
+  `--maintenance` (named in the Maintenance window's recovery steps). The uninstaller asks about the application data (decided by the user on 2026-11-10): a page after its welcome page
+  with an unticked box "Also delete my Media Collection data". Unticked (the default), the data stays for a later
+  installation. Ticked, it deletes `%APPDATA%\Media Collection` (library, covers, accounts, settings, certificates),
+  and the page says so: deleted for good, a later installation starts from nothing. Backups in
+  `Documents\Media Collection backups` are never deleted by the uninstaller, only by hand. An update's silent
+  uninstall never deletes anything. The installer and uninstaller follow the system language (English, French).
 - **Firewall rule:** an NSIS include (`build/installer.nsh`, `customInstall` / `customUnInstall`) adds an inbound
   Windows Firewall rule **for the program** (`$INSTDIR\Media Collection.exe`, every protocol, private and public profiles, chosen by the user on 2026-11-10) and
   removes it on uninstall. A program rule covers the HTTP and HTTPS ports whatever they are set to, including a later
