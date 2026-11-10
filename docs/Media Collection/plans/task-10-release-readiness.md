@@ -222,7 +222,7 @@ keep working in text fields on Windows and Linux without the Edit menu (checked 
   shortcuts named "Media Collection", and a Start menu shortcut "Media Collection maintenance" that starts it with
   `--maintenance` (named in the Maintenance window's recovery steps). The uninstaller keeps the application data and the backups.
 - **Firewall rule:** an NSIS include (`build/installer.nsh`, `customInstall` / `customUnInstall`) adds an inbound
-  Windows Firewall rule **for the program** (`$INSTDIR\Media Collection.exe`, TCP, private and public profiles, chosen by the user on 2026-11-10) and
+  Windows Firewall rule **for the program** (`$INSTDIR\Media Collection.exe`, every protocol, private and public profiles, chosen by the user on 2026-11-10) and
   removes it on uninstall. A program rule covers the HTTP and HTTPS ports whatever they are set to, including a later
   port change in the server settings; the backend runs in an Electron utility process of the same executable. The
   Task 9.5 panel reminder about the Windows prompt is removed once the rule exists.
@@ -301,6 +301,10 @@ Each step: tests, the relevant checks, architecture review skill on the changes,
   dependency of NestJS that was never declared, so electron-builder left it out; the smoke test still passed because
   it ran inside the checkout, where Node found the repository's copy. Fixed: `rxjs` is a declared dependency, and
   `test:packaged` now runs a copy of the unpacked application outside the checkout (it fails on the old build).
+  Second install: start, rule, maintenance shortcut and uninstall (rule removed, data in `%APPDATA%\Media Collection`
+  and the backups kept) confirmed by the user. A Windows network prompt was seen; the rules it created belong to the
+  smoke test's temporary copy, which listened on the network. Now the smoke test listens on 127.0.0.1 only, and the
+  installer rule covers every protocol (the router discovery uses UDP), not TCP only.
 - Full check after step 8 (2026-11-10): `npm run check` passed 3005 of 3006 tests; the one failure was a test-harness
   race (a window finishing its load answered another request), fixed by giving each harness answer its own request
   id; the desktop and runtime suites then passed again.

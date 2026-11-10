@@ -61,6 +61,9 @@ const launch = async (withPortOverride = true, debugging = false) => {
         [
             ...(withPortOverride ? ['--http-port', String(port)] : []),
             ...(debugging ? ['--remote-debugging-port=' + debugPort] : []),
+            // This computer only: a copy listening on the network makes Windows ask to allow it.
+            '--host',
+            '127.0.0.1',
             '--data-dir',
             directory,
         ],
