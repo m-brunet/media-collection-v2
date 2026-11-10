@@ -4,6 +4,7 @@ import { Client } from '../api/client.js';
 import { RuntimeFixture, RuntimeSetup } from '../api/runtime-setup.js';
 import type { ServerStatus } from '../../packages/contracts/src/http.js';
 import type { ElectronRuntime } from '../api/runtime.js';
+import { appVersion } from '../api/app-version.js';
 
 let fixture: RuntimeFixture;
 
@@ -306,6 +307,7 @@ interface MenuLabel {
     id: string | null;
     label: string;
     role?: string;
+    enabled?: boolean;
     type: string;
     submenu?: MenuLabel[];
 }
@@ -346,6 +348,16 @@ describe('application menu', () => {
             label: 'Exit',
             role: 'quit',
             type: 'normal',
+        });
+    });
+    it('shows Check for updates disabled while the releases are not published', async () => {
+        const current = await setupPage();
+
+        const menu = await menuLabels(current.runtime);
+
+        expect(menu[0]?.submenu?.find((item) => item.id === 'updates')).toMatchObject({
+            label: 'Check for updates…',
+            enabled: false,
         });
     });
     it('labels the menus in French on a French device', async () => {
@@ -449,7 +461,7 @@ describe('About window', () => {
             "document.querySelector('h1').textContent + ' ' + document.getElementById('version').textContent",
         );
 
-        expect(shown).toBe('Media Collection Version 0.1.0');
+        expect(shown).toBe(`Media Collection Version ${appVersion}`);
     });
     it('opens the source code in the default browser', async () => {
         const current = await aboutWindow();

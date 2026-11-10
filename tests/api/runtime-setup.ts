@@ -6,6 +6,7 @@ import { createServer } from 'node:net';
 import type { RuntimeOptions } from './runtime.js';
 import { Client, ElectronRuntime } from './runtime.js';
 import { desktopWindow } from './client.js';
+import { appVersion } from './app-version.js';
 
 export class RuntimeFixture {
     private readonly directories = new Set<string>();
@@ -56,7 +57,7 @@ export class RuntimeFixture {
     async recover(current: { runtime: ElectronRuntime; directory: string }, password: string) {
         const result = await current.runtime.send({
             type: 'recover',
-            version: '0.1.0',
+            version: appVersion,
             dataDirectory: current.directory,
             password,
         });
