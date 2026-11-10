@@ -43,11 +43,7 @@ Owning docs: [updates](../operations/updates.md), [release expectations](../oper
 - The root `package.json` is the single source of the version (installer, `app.getVersion()`, backup version check).
 - `0.1.0` stays during development; the version becomes `2.0.0` in the release step at the very end of the task.
   Backups made with `0.1.0` cannot be restored by 2.0.0: accepted, current data is test data only.
-- No V1 migration feature: V1 has no users. Release procedure for the user's own V1 library:
-  1. set the version to `2.0.0` (release commit);
-  2. run `npm run dev:import-v1` on the development data;
-  3. create a backup from the development Maintenance window;
-  4. restore it in the installed 2.0.0 (same version, so the restore accepts it).
+- No V1 migration feature: V1 has no users.
 - The version is shown in the About window.
 
 ### Update flow
@@ -344,15 +340,13 @@ Each step: tests, the relevant checks, architecture review skill on the changes,
 - [ ] **10. Going public**: the four checks under Going public, with the user; the user switches the repository to
   public. Postponed for the in-house trial (see In-house trial first); `UpdateChannel.published` is set to `true` in
   the same change.
-- [x] **11. Release 2.0.0**: version commit `2.0.0`, the V1 library procedure above, full `npm run check`, tag
+- [x] **11. Release 2.0.0**: version commit `2.0.0`, full `npm run check`, tag
   `v2.0.0`, the user reads and publishes the draft, install from the release page on Windows.
   Done on 2026-11-10, on the in-house pull request #18 (going public postponed):
   - Secret scan: gitleaks 8.30.1 on every commit of every branch (476 commits, 14 MB): one finding, a false
     positive: the `fileToken` of the Pencil design file `design/handoff-lending-final/media-collection-v2-final.pen`
     (commit `ede04d6`, file removed since), a UUID naming the document, not a credential.
   - Version `2.0.0`; the desktop and API tests read the version from `package.json` (`tests/api/app-version.ts`).
-  - V1 library imported in the development data: 446 books in 91 collections, 437 covers. The user moves it into the
-    installed 2.0.0 (backup from the development Maintenance window, restored in the installed application).
   - Full `npm run check` passed (334 files, 3007 tests); the pull request run built and smoke-tested 2.0.0 on both
     systems.
   - Tag `v2.0.0` on the merge commit `6d614c9`; the release run passed on Windows and Linux and made the draft with
