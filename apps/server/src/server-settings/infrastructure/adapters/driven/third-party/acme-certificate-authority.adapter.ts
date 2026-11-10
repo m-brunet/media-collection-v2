@@ -7,31 +7,30 @@ import type {
 } from '../../../../application/ports/driven/certificate-authority.interface.js';
 import type { AcmeAccountKey } from '../filesystem/acme-account-key.adapter.js';
 import type { TlsAlpnChallenges } from '../security/tls-alpn-challenges.adapter.js';
-import type { AcmeConnector } from './acme-session.adapter.js';
+import type { AcmeConnector, AcmeSession } from './acme-session.adapter.js';
+import { AriCertificateId } from './ari-certificate-id.adapter.js';
 
 type Refusal = Extract<CertificateIssue, { outcome: 'refused' }>['reason'];
+type OrderRequest = Parameters<AcmeSession['createOrder']>[0];
 
 // Let's Encrypt certificates proven with TLS-ALPN-01, the HTTPS listener answering the check
 // through the shared challenge store: short-lived for an IP address (the only profile Let's Encrypt
-// allows for one), classic (90 days today) for a domain name.
+// allows for one), classic (90 days today) for a domain name. A renewal of the same name is ordered
+// through ARI (RFC 9773, `replaces`), which Let's Encrypt exempts from every rate limit.
 export class AcmeCertificateAuthority implements CertificateAuthority {
     constructor(
         private readonly connector: AcmeConnector,
         private readonly accountKey: AcmeAccountKey,
         private readonly challenges: TlsAlpnChallenges,
+        private readonly log: (line: string) => void = console.log,
     ) {}
 
-    async issue(subject: CertificateSubject): Promise<CertificateIssue> {
+    async issue(subject: CertificateSubject, replacing: string | null): Promise<CertificateIssue> {
         const client = this.connector.open(await this.accountKey.load());
 
         try {
             await client.createAccount({ termsOfServiceAgreed: true });
-            const order = await client.createOrder({
-                identifiers: [
-                    { type: subject.kind === 'domain' ? 'dns' : 'ip', value: subject.name },
-                ],
-                profile: subject.kind === 'domain' ? 'classic' : 'shortlived',
-            } as Parameters<typeof client.createOrder>[0]);
+            const { order, renewal } = await this.order(client, subject, replacing);
             const [authorization] = await client.getAuthorizations(order);
             const challenge = authorization?.challenges.find(
                 // acme-client's types list only dns-01 and http-01, but it supports tls-alpn-01.
@@ -61,14 +60,62 @@ export class AcmeCertificateAuthority implements CertificateAuthority {
                     issuedAt: new Date(leaf.validFrom).toISOString(),
                     expiresAt: new Date(leaf.validTo).toISOString(),
                 },
+                renewal,
             };
         } catch (error) {
             return { outcome: 'refused', reason: AcmeCertificateAuthority.refusal(error) };
         }
     }
 
+    // A refused ARI order (certificate already replaced or unknown, field not accepted) is ordered
+    // once more as a new certificate; a rate limit is not, as the new order would count.
+    private async order(
+        client: AcmeSession,
+        subject: CertificateSubject,
+        replacing: string | null,
+    ): Promise<{ order: acme.Order; renewal: boolean }> {
+        const request = {
+            identifiers: [{ type: subject.kind === 'domain' ? 'dns' : 'ip', value: subject.name }],
+            profile: subject.kind === 'domain' ? 'classic' : 'shortlived',
+        };
+        const replaces = replacing ? this.identifier(replacing) : null;
+
+        if (replaces) {
+            try {
+                const order = await client.createOrder({ ...request, replaces } as OrderRequest);
+
+                this.log('Let’s Encrypt: ' + subject.name + ' renewed through ARI');
+
+                return { order, renewal: true };
+            } catch (error) {
+                if (AcmeCertificateAuthority.refusal(error) === 'rate-limited') {
+                    throw error;
+                }
+
+                this.log(
+                    'Let’s Encrypt: ARI renewal of ' +
+                        subject.name +
+                        ' refused (' +
+                        (error instanceof Error ? error.message : String(error)) +
+                        '), ordering a new certificate',
+                );
+            }
+        }
+
+        return { order: await client.createOrder(request as OrderRequest), renewal: false };
+    }
+
+    // A certificate without an Authority Key Identifier (one imported by hand) cannot be named.
+    private identifier(chain: string): string | null {
+        try {
+            return AriCertificateId.of(chain);
+        } catch {
+            return null;
+        }
+    }
+
     private async prove(
-        client: ReturnType<AcmeConnector['open']>,
+        client: AcmeSession,
         authorization: acme.Authorization,
         challenge: acme.Authorization['challenges'][number],
         subject: CertificateSubject,

@@ -9,6 +9,9 @@ import { KyselyHttpInternetAccessRepository } from '../../apps/server/src/server
 import { HttpInternetAccess } from '../../apps/server/src/server-settings/domain/entities/http-internet-access.entity.js';
 import { KyselyKeepAwakeRepository } from '../../apps/server/src/server-settings/infrastructure/adapters/driven/persistence/kysely-keep-awake.repository.js';
 import { InternetAccess } from '../../apps/server/src/server-settings/domain/entities/internet-access.entity.js';
+import { FileTlsStore } from '../../apps/server/src/server-settings/infrastructure/adapters/driven/persistence/file-tls-store.adapter.js';
+import { TlsSettings } from '../../apps/server/src/server-settings/domain/value-objects/tls-settings.value-object.js';
+import { PrivateStorage } from '../../apps/server/src/shared/infrastructure/adapters/driven/filesystem/private-storage.adapter.js';
 import { DataDirectories } from './data-directories.test-support.js';
 
 const directories = new DataDirectories();
@@ -276,4 +279,35 @@ it('rejects saved HTTP internet access with an unknown phase', async () => {
     const result = repository.read();
 
     await expect(result).rejects.toThrow('known phase');
+});
+it('reads no current certificate chain before a certificate is saved', async () => {
+    const { path, database } = await open();
+    const tls = new FileTlsStore(
+        database.connections,
+        path,
+        new PrivateStorage(),
+        new UuidGenerator(),
+    );
+
+    const chain = await tls.currentChain();
+
+    expect(chain).toBeNull();
+});
+it('reads the certificate chain HTTPS uses, for a renewal through ARI', async () => {
+    const { path, database } = await open();
+    const tls = new FileTlsStore(
+        database.connections,
+        path,
+        new PrivateStorage(),
+        new UuidGenerator(),
+    );
+
+    await tls.save(new TlsSettings({ enabled: true, port: 3443, hasCertificate: true }), {
+        chain: 'saved chain',
+        key: 'saved key',
+    });
+
+    const chain = await tls.currentChain();
+
+    expect(chain).toBe('saved chain');
 });
