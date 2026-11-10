@@ -297,6 +297,9 @@ Each step: tests, the relevant checks, architecture review skill on the changes,
   workspace packages no longer carry their own version. The Libris "allow in the Windows prompt" reminder is removed.
   The local build and `test:packaged` pass. **Waiting for the user:** the install itself needs the administrator
   prompt, so the install, firewall, phone and uninstall checks are done by the user.
+- Full check after step 8 (2026-11-10): `npm run check` passed 3005 of 3006 tests; the one failure was a test-harness
+  race (a window finishing its load answered another request), fixed by giving each harness answer its own request
+  id; the desktop and runtime suites then passed again.
 - [x] **8. Credits**: QR trademark line, completeness check; component test updated.
   Done: an optional `notice` on a credit, shown under it (the QR Code trademark line with node-qrcode). Checked
   against the KI-6 rule: no icon, font or asset was added since; the libraries listed are the ones behind a feature
