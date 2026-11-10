@@ -3,8 +3,7 @@ import type { ActiveLoansQuery, ReceiverLoansView } from '../../../../applicatio
 import { NameKey } from '../../../../../shared/domain/name-key.helper.js';
 import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
 
-// The active-loans page: books currently lent with their receiver. Search covers the receiver
-// name and the book title only, never authors or ISBN.
+// Search covers the receiver name and the book title only, never authors or ISBN.
 export class KyselyActiveLoans implements ActiveLoans {
     constructor(private readonly connections: DatabaseConnections) {}
 

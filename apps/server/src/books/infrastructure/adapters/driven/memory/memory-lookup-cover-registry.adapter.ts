@@ -2,8 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { LookupCoverRegistry } from '../../../../application/ports/driven/lookup-cover-registry.interface.js';
 import type { Clock } from '../../../../../shared/application/ports/driven/clock.interface.js';
 
-// Lookup covers kept in memory for half an hour under random tokens. A restart forgets them,
-// which only means looking the book up again.
+// A restart forgets them, which only means looking the book up again.
 export class MemoryLookupCoverRegistry implements LookupCoverRegistry {
     static readonly keptMinutes = 30;
 

@@ -24,7 +24,6 @@ export interface LeafFieldsProps {
     set: DraftFieldSetter;
     update(changes: Partial<BookDraftValues>): void;
     errorFor(field: BookField): string | undefined;
-    // What Find book found, to offer the other sources' values beside each field.
     lookup: BookLookupFieldsDto | null;
     covers: LookupCoverDto[];
     cover: CoverChoice;
@@ -34,7 +33,6 @@ export interface LeafFieldsProps {
     setAdditionalOpen(open: boolean): void;
 }
 
-// The other values the sources gave for a field, each with a button to use it instead.
 function Alternatives({
     field,
     props,
@@ -95,7 +93,6 @@ function Alternatives({
     );
 }
 
-// Names added one at a time (authors, tags), each removable.
 function NameList({
     label,
     names,
@@ -435,8 +432,6 @@ function AdditionalFields(props: LeafFieldsProps) {
     );
 }
 
-// Leaf's own book form (one column, touch-sized), with the same three sections and field rules
-// as Libris: main information and cover; location and tags; collapsed additional information.
 export function LeafBookFields(props: LeafFieldsProps) {
     return (
         <>

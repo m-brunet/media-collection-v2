@@ -3,8 +3,7 @@ import { NameKey } from '../../../shared/domain/name-key.helper.js';
 
 export type V1Category = 'books' | 'manga' | 'comics';
 
-// One book of the V1 (MongoDB) dump, decoded but not yet interpreted. `record` is its position
-// in the dump, from 1.
+// `record` is its position in the dump, from 1.
 export interface V1Book {
     record: number;
     title: string | null;
@@ -65,8 +64,8 @@ export interface V1LibraryPlan {
 
 const types: Record<string, V1Category> = { book: 'books', manga: 'manga', comics: 'comics' };
 
-// The agreed V1 → V2 rules. Every problem of the whole dump is reported at once, before anything
-// is written, so the corrections can be completed in one go.
+// Every problem of the whole dump is reported at once, before anything is written, so the
+// corrections can be completed in one go.
 export class V1LibraryPlanner {
     static plan(books: readonly V1Book[], corrections: V1Corrections): V1LibraryPlan {
         const problems: string[] = [];

@@ -1,5 +1,3 @@
-// Technical audit categories of account and authentication changes. None of them appear in the
-// shared Activity view; they exist for investigation only.
 export const AccountAudit = {
     subject: 'account',
     setup: 'setup.administrator-created',

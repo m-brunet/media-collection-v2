@@ -12,7 +12,6 @@ import {
 } from '../../../apps/server/src/lending/application/testing/loan-builder.test-support.js';
 import { ReceiverBuilder } from '../../../apps/server/src/lending/application/testing/receiver-builder.test-support.js';
 
-// The repository ports of every feature the library builds for.
 export type LibraryPorts = BookPorts & LoanPorts;
 
 // A book described as plain facts, for tests outside the books feature, which may not use its
@@ -26,8 +25,6 @@ export type BookFacts = {
     planned?: boolean;
 };
 
-// Each method saves what its builder describes, creating missing parents in other features
-// (a loan's book). Ports come from the memory doubles or from the API test context.
 export class TestLibrary {
     constructor(private readonly ports: LibraryPorts) {}
 
@@ -41,7 +38,6 @@ export class TestLibrary {
         return builder.buildAndSave(this.ports);
     }
 
-    // A loan of the given book, of the builder's book, or of a new default book.
     async loan(builder = new LoanBuilder(), book?: Book): Promise<Loan> {
         const lent = book ?? (builder.hasBook() ? null : await this.book());
 
@@ -82,7 +78,6 @@ export class TestLibrary {
         return builder;
     }
 
-    // A saved book as a loan records it.
     static lendable(book: Book): LoanBook {
         const { title, isbn } = book.details;
 

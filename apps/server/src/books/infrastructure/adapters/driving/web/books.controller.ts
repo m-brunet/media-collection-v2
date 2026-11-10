@@ -34,7 +34,6 @@ import {
     organisationSchema,
 } from './book-schemas.js';
 
-// The shared book records every signed-in account may read and Owners may change.
 @Controller('api/books')
 export class BooksController {
     constructor(
@@ -91,7 +90,6 @@ export class BooksController {
         return this.updateBook.execute(request.actor, id, input);
     }
 
-    // Location and tags edited directly on the book details, saved on each change.
     @Patch(':id/organisation')
     organise(
         @Param('id', { schema: idSchema }) id: string,
@@ -101,7 +99,6 @@ export class BooksController {
         return this.organiseBook.execute(request.actor, id, organisation);
     }
 
-    // Leaf quick add: a Not Owned book bought since becomes Owned, nothing else changes.
     @Post(':id/owned')
     @HttpCode(200)
     markOwned(

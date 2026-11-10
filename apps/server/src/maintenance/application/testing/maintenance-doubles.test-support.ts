@@ -118,7 +118,6 @@ export class FixedPasswordCheck implements AdministratorPasswordCheck {
     }
 }
 
-// The application data as account IDs and cover files; erasing keeps one account.
 export class MemoryApplicationData implements ApplicationDataEraser, CoverFileCleanup {
     accounts = ['admin', 'owner', 'guest'];
     covers = ['cover.jpg'];

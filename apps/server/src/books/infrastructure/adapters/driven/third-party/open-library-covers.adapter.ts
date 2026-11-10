@@ -5,8 +5,7 @@ import type {
 import type { CoverOffer } from '../../../../domain/services/cover-combination.service.js';
 import type { OpenLibraryRecords } from './open-library-records.adapter.js';
 
-// The cover Open Library holds for an edition, at its largest size. Its size is only known
-// once downloaded, so it is offered without one.
+// Its size is only known once downloaded, so it is offered without one.
 export class OpenLibraryCovers implements LookupSource<CoverOffer[]> {
     readonly name = 'openlibrary';
     // Kept well below Open Library's published limits for identified clients.

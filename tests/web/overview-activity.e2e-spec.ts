@@ -33,8 +33,6 @@ afterEach(async () => {
     await runtime.teardown();
 });
 
-// A ready account, signed in through the API: created by the administrator, temporary
-// password already replaced.
 async function account(username: string, role: 'owner' | 'guest'): Promise<Client> {
     await admin.call('/users', 'POST', { username, password: 'temporary-pw', role });
     const client = new Client(base);
@@ -48,7 +46,6 @@ async function account(username: string, role: 'owner' | 'guest'): Promise<Clien
     return client;
 }
 
-// Arranges data through the API as `client`, failing loudly when the server refuses it.
 async function sent<T>(client: Client, path: string, method: string, body: object): Promise<T> {
     const response = await client.call<T>(path, method, body);
 
@@ -59,7 +56,6 @@ async function sent<T>(client: Client, path: string, method: string, body: objec
     return response.body;
 }
 
-// A saved Owned book without ISBN, added by Camille.
 async function book(title: string, overrides: Partial<NewBookDto> = {}): Promise<BookDto> {
     return sent<BookDto>(
         camille,

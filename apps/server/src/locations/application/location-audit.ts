@@ -1,7 +1,6 @@
 import type { Bookcase } from '../domain/entities/bookcase.entity.js';
 import type { Shelf } from '../domain/entities/shelf.entity.js';
 
-// Audit categories of the locations feature, all shared changes eligible for Activity.
 export const LocationAudit = {
     bookcase: 'bookcase',
     shelf: 'shelf',

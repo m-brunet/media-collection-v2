@@ -9,8 +9,6 @@ import {
 } from './book-form-dialogs';
 import type { SaveQuestion } from '../../shared/book-form/use-book-save';
 
-// The question the server asked before saving (see `useBookSave`), and what each answer does:
-// most adjust the draft, keep the adjustment in the form, and save again.
 export function BookSaveQuestions({
     question,
     values,
@@ -22,20 +20,17 @@ export function BookSaveQuestions({
 }: {
     question: SaveQuestion | null;
     values: BookDraftValues;
-    // Adding a book, rather than editing one.
     creating: boolean;
     onChange(draft: BookDraftValues): void;
     onSave(draft: BookDraftValues, answers?: SaveOptions, target?: string): void;
     onOpenBook(bookId: string): void;
     onClose(): void;
 }) {
-    // The open question's details; each dialog shows when its own is set.
     const similarAuthor = question?.kind === 'similar-author' ? question.details : null;
     const duplicate = question?.kind === 'possible-duplicate' ? question.details : null;
     const similarCollection = question?.kind === 'similar-collection' ? question.details : null;
     const volumeZero = question?.kind === 'volume-zero' ? question.details : null;
     const coverage = question?.kind === 'coverage-conflict' ? question.details : null;
-    // Keeps the adjusted draft in the form, then saves it.
     const saveChanged = (next: BookDraftValues) => {
         onClose();
         onChange(next);
@@ -86,7 +81,6 @@ export function BookSaveQuestions({
                     volumeTo: Number(values.omnibus ? values.volumeTo : values.volumeFrom),
                 }}
                 onClose={onClose}
-                // The planned record becomes this Owned book; the form keeps its values.
                 onUpdatePlanned={(bookId) => {
                     onClose();
                     onSave({ ...values, ownership: 'owned' }, {}, bookId);

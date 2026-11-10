@@ -181,7 +181,6 @@ export class MemoryNotes implements PersonalNoteStore {
     }
 }
 
-// Records the covers it was asked to trim and gives back `result` when set, the cover otherwise.
 export class MemoryTrimmer implements CoverTrimmer {
     readonly received: CoverImage[] = [];
     result: CoverImage | null = null;
@@ -193,7 +192,6 @@ export class MemoryTrimmer implements CoverTrimmer {
     }
 }
 
-// A lookup source answering from a script: a fixed reply, a failure (`'fail'`), or never (`'hang'`).
 export class ScriptedSource<T> implements LookupSource<T> {
     readonly asked: string[] = [];
 
@@ -218,7 +216,6 @@ export class ScriptedSource<T> implements LookupSource<T> {
     }
 }
 
-// Lookup covers under predictable tokens; `forget` makes a token expire.
 export class MemoryCoverRegistry implements LookupCoverRegistry {
     readonly addresses = new Map<string, string>();
 
@@ -239,7 +236,6 @@ export class MemoryCoverRegistry implements LookupCoverRegistry {
     }
 }
 
-// Downloads from a fixed table of addresses; anything else cannot be fetched.
 export class TableDownloader implements CoverDownloader {
     readonly requested: string[] = [];
 
@@ -252,7 +248,6 @@ export class TableDownloader implements CoverDownloader {
     }
 }
 
-// A clock that only moves when told to.
 export class ManualClock implements Clock {
     constructor(private current = new Date('2026-03-01T10:00:00Z')) {}
 
@@ -290,9 +285,6 @@ export class MemoryCovers implements CoverStorage {
     }
 }
 
-// Minimal catalog: author names in book order; searching is covered by SQLite tests.
-// Active loans of books and the history kept for deleted books, without the lending rules the
-// lending feature tests.
 export class MemoryLoans implements BookLoanReader, LoanHistory {
     readonly active = new Map<string, BookLoan>();
     readonly retained: { id: string; title: string; isbn: string | null }[] = [];
@@ -361,7 +353,6 @@ export class MemoryCatalog implements BookCatalog {
     }
 }
 
-// Places books on a few known shelves, without the location rules the locations feature tests.
 export class MemoryShelving implements ShelfAssignment, BookLocationReader {
     readonly known = new Map<string, BookLocation>([
         [
@@ -397,14 +388,10 @@ export class MemoryShelving implements ShelfAssignment, BookLocationReader {
     }
 }
 
-// Keeps the tags of books with the contract of the tags feature: known tags by id, equivalent
-// names reused, new names created as `tag-<name>`, no duplicates, name order. Unknown ids are
-// refused like in production.
 export class MemoryTagging implements TagAssignment, BookTagReader {
     readonly known = new Map<string, string>([['history', 'History']]);
     readonly tags = new Map<string, BookTag[]>();
 
-    // Like the tags feature: equivalent names reuse a tag, new names create one and report it.
     async assign(bookId: string, choices: readonly TagChoice[]): Promise<TagOutcome> {
         const chosen = new Map<string, BookTag>();
         const changes: TagOutcome['changes'] = [];
@@ -466,15 +453,12 @@ export class MemoryTagging implements TagAssignment, BookTagReader {
     }
 }
 
-// Records memberships without the coverage rules, which the collections feature tests itself.
-// Like production, planned books can only be replaced by a book joining a collection.
 export class MemoryMembership implements CollectionMembership, BookCollectionReader {
     readonly memberships = new Map<string, BookCollection>();
     readonly replaced: string[][] = [];
     // Existing collections' display names, by identity or by comparison key of an equivalent
     // typed name, as the collections feature would resolve them.
     readonly names = new Map<string, string>();
-    // Collection changes the next assign or leave reports, as the collections feature would.
     changes: RelatedChange[] = [];
 
     async assign(
@@ -530,7 +514,6 @@ export class MemoryMembership implements CollectionMembership, BookCollectionRea
 }
 
 export class BookDoubles {
-    // A library with all doubles and services wired as in production.
     static library() {
         const books = new MemoryBooks();
         const authors = new MemoryAuthors(books);
@@ -602,7 +585,6 @@ export class BookDoubles {
         };
     }
 
-    // Saves a book through the real use case, as an Owner, for arranging later scenarios.
     static async saved(
         current: ReturnType<typeof BookDoubles.library>,
         overrides: Partial<BookInput> = {},
@@ -626,7 +608,6 @@ export class BookDoubles {
     }
 }
 
-// A filter that keeps every book.
 export const anyBook = BookFilter.of();
 
 export const owner = TestActors.of('owner', 'camille');

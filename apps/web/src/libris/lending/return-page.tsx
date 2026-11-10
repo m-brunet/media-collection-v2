@@ -10,9 +10,6 @@ import { Notice } from '../../shared/ui/notice';
 import { EmptyState, LoadingState } from '../../shared/ui/states';
 import { LoanLinks } from './loan-links.util';
 
-// Records the books one receiver handed back: every book still lent to them is offered, across
-// lending occasions, with the starting book preselected. Unselected books stay lent; the
-// selected returns are saved together or not at all.
 export function ReturnPage() {
     const { t, dates } = useI18n();
     const navigate = useNavigate();
@@ -32,7 +29,6 @@ export function ReturnPage() {
                         const found = groups[0] ?? null;
 
                         setGroup(found);
-                        // Loans no longer active leave the selection; the others keep their state.
                         setChecked(
                             (current) =>
                                 new Set(

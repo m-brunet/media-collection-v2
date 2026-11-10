@@ -6,8 +6,6 @@ import { Icon } from '../../shared/ui/icon';
 import type { DraftAuthor } from '../../shared/book-form/book-draft.util';
 import { NamePicker } from './name-picker';
 
-// Chooses the book's authors: existing ones are suggested while typing; Enter adds the typed name
-// as a new author (the server then reuses an equivalent one or asks about a similar one).
 export function AuthorPicker({
     authors,
     onChange,
@@ -16,7 +14,6 @@ export function AuthorPicker({
 }: {
     authors: DraftAuthor[];
     onChange(authors: DraftAuthor[]): void;
-    // Offered for saved authors: correct the shared spelling.
     onCorrect?(author: AuthorDto): void;
     error?: string;
 }) {

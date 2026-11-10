@@ -6,7 +6,6 @@ export class ApiError extends Error {
         public readonly code: string | null = null,
         // Precise stable cause (for example `username-taken`), translated by the interface.
         public readonly reason: string | null = null,
-        // Data the interface needs to resolve the failure (for example similar authors).
         public readonly details: Record<string, unknown> | null = null,
     ) {
         super(message);
@@ -23,7 +22,6 @@ export class ApiClient {
             method?: string;
             body?: unknown;
             passive?: boolean;
-            // Sent as-is instead of JSON (cover images).
             file?: Blob;
         } = {},
     ): Promise<T> {
@@ -60,8 +58,6 @@ export class ApiClient {
         return response.status === 204 ? (undefined as T) : ((await response.json()) as T);
     }
 
-    // A binary resource (an image), failing like `request` does. With a body, it is asked for by
-    // POST (for example an image fetched from an address).
     async download(path: string, body?: unknown): Promise<Blob> {
         const response = await fetch(
             '/api' + path,
@@ -85,8 +81,6 @@ export class ApiClient {
         return response.blob();
     }
 
-    // The server's refusal as an `ApiError`. An expired session is announced so the sign-in
-    // prompt appears; a refused request forgets the CSRF token so the next one fetches a new one.
     private async failure(response: Response, path: string): Promise<ApiError> {
         const result = (await response
             .json()

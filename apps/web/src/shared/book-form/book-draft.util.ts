@@ -22,7 +22,6 @@ export interface DraftTag {
     name: string;
 }
 
-// Everything the book form edits, as typed.
 export interface BookDraftValues {
     isbn: string;
     noIsbn: boolean;
@@ -41,7 +40,6 @@ export interface BookDraftValues {
     summary: string;
     pageCount: string;
     price: string;
-    // The viewer's own note; null when they have none.
     note: string | null;
     // Collection membership: a collection name (joined or created by the server) and the covered
     // volumes, one number or a consecutive omnibus range.
@@ -52,7 +50,6 @@ export interface BookDraftValues {
     omnibus: boolean;
     volumeFrom: string;
     volumeTo: string;
-    // The person accepted to include volume 0 in the collection.
     enableVolumeZero: boolean;
     // Physical location: a shelf of the chosen bookcase; a bookcase alone is not a location.
     bookcaseId: string | null;
@@ -60,16 +57,13 @@ export interface BookDraftValues {
     tags: DraftTag[];
 }
 
-// Changes one field of the draft (the callback the form's field groups share).
 export type DraftFieldSetter = <K extends keyof BookDraftValues>(
     key: K,
     value: BookDraftValues[K],
 ) => void;
 
-// Why the collection part of the form cannot be sent yet.
 export type CollectionProblem = 'collection-name-required' | 'volume-required';
 
-// Why the location part of the form cannot be sent yet.
 export type LocationProblem = 'shelf-required';
 
 export interface SaveOptions {
@@ -110,7 +104,6 @@ export class BookDraft {
         };
     }
 
-    // A new book started from a collection page belongs to that collection.
     static inCollection(name: string): BookDraftValues {
         return { ...BookDraft.empty(), inCollection: true, collectionName: name };
     }
@@ -174,12 +167,10 @@ export class BookDraft {
         };
     }
 
-    // Only Manga and Comics in a collection may leave their title blank.
     static titleOptional(values: BookDraftValues): boolean {
         return (values.category === 'manga' || values.category === 'comics') && values.inCollection;
     }
 
-    // The title the server would generate, shown as a hint; null until it can be told.
     static generatedTitle(values: BookDraftValues): string | null {
         const name = values.collectionName.trim();
         const from = BookDraft.number(values.volumeFrom);
@@ -216,7 +207,6 @@ export class BookDraft {
         return next;
     }
 
-    // Whether Additional information holds something, so the form shows it open.
     static hasAdditional(values: BookDraftValues): boolean {
         return [values.publisher, values.publicationYear, values.summary, values.pageCount].some(
             (value) => value.trim() !== '',
@@ -255,7 +245,6 @@ export class BookDraft {
         return value.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase().trim();
     }
 
-    // Applies the person's answer to a similar-author question to the matching typed name.
     static resolveAuthor(
         values: BookDraftValues,
         typedName: string,

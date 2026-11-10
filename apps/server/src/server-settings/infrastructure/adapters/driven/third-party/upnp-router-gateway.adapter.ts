@@ -6,8 +6,8 @@ import type { RouterGateway } from '../../../../application/ports/driven/router-
 
 type Gateway = Awaited<ReturnType<UpnpClient['findGateway']>>;
 
-// The home router through UPnP. Each call opens a short-lived client: the router may have
-// restarted or changed since the last call.
+// Each call opens a short-lived client: the router may have restarted or changed since the last
+// call.
 export class UpnpRouterGateway implements RouterGateway {
     // The upkeep renews the rule well before this lease ends.
     private static readonly leaseSeconds = 2 * 60 * 60;

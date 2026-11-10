@@ -2,7 +2,6 @@ import type { VolumeRange } from './volume-range.value-object.js';
 
 export type MemberOwnership = 'owned' | 'not-owned';
 
-// A book of the collection, as far as coverage is concerned.
 export interface CoverageMember {
     bookId: string;
     ownership: MemberOwnership;
@@ -54,7 +53,6 @@ export class CollectionCoverage {
         return this.expected - this.missing.length;
     }
 
-    // Expected volumes no Owned book covers, saved Not Owned or inferred alike.
     get missing(): number[] {
         return this.expectedVolumes().filter((volume) => this.state(volume) !== 'owned');
     }

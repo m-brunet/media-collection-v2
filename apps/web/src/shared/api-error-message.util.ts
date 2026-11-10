@@ -1,8 +1,6 @@
 import { ApiError } from './api.util';
 import type { MessageKey } from './i18n/catalog-en';
 
-// Turns a failed request into translated interface text: a screen-specific message first, then
-// the server's precise reason, then a general message for the kind of failure.
 export class ApiErrorMessage {
     private static readonly reasons: Record<string, MessageKey> = {
         'username-taken': 'reason.usernameTaken',

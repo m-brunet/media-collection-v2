@@ -89,7 +89,6 @@ export function account(overrides: Partial<Account> = {}): Account {
     };
 }
 
-// Simulates the browser/device language list seen by the interface.
 export function deviceLanguages(languages: string[]): void {
     vi.spyOn(window.navigator, 'languages', 'get').mockReturnValue(languages);
 }

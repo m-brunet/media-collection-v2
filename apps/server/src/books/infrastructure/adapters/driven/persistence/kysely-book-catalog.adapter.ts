@@ -14,10 +14,8 @@ import { NameKey } from '../../../../../shared/domain/name-key.helper.js';
 import type { DatabaseSchema } from '../../../../../shared/infrastructure/adapters/driven/persistence/database.adapter.js';
 import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
 
-// Simple search: case- and accent-insensitive partial match on title, author and collection names
-// (stored comparison keys), partial ISBN digits, and the ISBN-13 equivalent of a complete
-// ISBN-10. Advanced filters apply to the same books. Collection listings apply the same search
-// and filters: a collection matches through one of its books satisfying all of them.
+// Collection listings apply the same search and filters: a collection matches through one of
+// its books satisfying all of them.
 export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
     constructor(private readonly connections: DatabaseConnections) {}
 
@@ -123,7 +121,6 @@ export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
             .execute();
     }
 
-    // One expression per book: the search text and every advanced criterion together.
     private matching(search: string, filter: BookFilter, readerId: string | null) {
         const text = this.text(search);
         const criteria = this.criteria(filter, readerId);
@@ -227,7 +224,6 @@ export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
         ];
     }
 
-    // Read and Not read together accept any book; without a reader there is nothing to filter on.
     private reading(
         eb: ExpressionBuilder<DatabaseSchema, 'books'>,
         reading: BookFilter['reading'],

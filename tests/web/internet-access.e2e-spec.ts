@@ -21,7 +21,6 @@ afterEach(async () => {
     await runtime.teardown();
 });
 
-// Opens the QR code of an internet address from the addresses list.
 function qrCodeFor(page: Page, origin: string) {
     return page
         .getByRole('button', { name: 'Show the QR code for ' + origin })
@@ -29,8 +28,6 @@ function qrCodeFor(page: Page, origin: string) {
         .then(() => page.getByRole('img', { name: 'QR code for ' + origin + '/leaf/' }));
 }
 
-// Starts the application with stand-ins for the router and Let's Encrypt, an Admin, and a free
-// HTTPS port, then opens Server settings.
 async function serverSettings(internetAccess: NonNullable<RuntimeOptions['internetAccess']>) {
     runtime = new RuntimeFixture();
     const started = await runtime.start(undefined, { internetAccess });

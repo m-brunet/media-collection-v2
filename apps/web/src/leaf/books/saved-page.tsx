@@ -5,7 +5,6 @@ import { Notice } from '../../shared/ui/notice';
 import { LeafPage } from '../leaf-page';
 import type { SavedBookState } from './add-book-page';
 
-// Shown only after a confirmed save: Scan another book, or Back to home (not Collections).
 export function SavedPage() {
     const { t } = useI18n();
     const navigate = useNavigate();

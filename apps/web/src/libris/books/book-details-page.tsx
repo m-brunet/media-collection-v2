@@ -197,7 +197,6 @@ function DeleteBookDialog({
     );
 }
 
-// One book: shared information for everyone, plus the viewer's own reading status and note.
 export function BookDetailsPage() {
     const { id = '' } = useParams();
 

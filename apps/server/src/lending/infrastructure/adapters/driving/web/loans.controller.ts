@@ -11,8 +11,6 @@ import type {
 } from '../../../../../../../../packages/contracts/src/http.js';
 import { activeLoansSchema, lendBooksSchema, recordReturnsSchema } from './lending-schemas.js';
 
-// Lending books and recording their return. Everyone signed in sees active loans; Owners and the
-// administrator lend and record returns.
 @Controller('api/loans')
 export class LoansController {
     constructor(

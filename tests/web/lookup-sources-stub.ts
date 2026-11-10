@@ -10,9 +10,6 @@ const recorded = new URL(
     import.meta.url,
 );
 
-// A local stand-in for BnF's SRU catalogue and Open Library's Books API and covers, so browser
-// journeys run Find book through the real backend chain without reaching the internet. BnF
-// answers come from the recorded adapter fixtures; Open Library records are written here.
 export class LookupSourcesStub {
     private server: Server | undefined;
     private port = 0;
@@ -20,7 +17,6 @@ export class LookupSourcesStub {
     private readonly openLibraryRecords = new Map<string, object>();
     private readonly troubles = new Map<Source, Trouble>();
     private readonly cover: Buffer;
-    // Paths asked so far, to check which sources a journey reached.
     readonly requests: string[] = [];
 
     constructor(cover: Buffer) {
@@ -33,14 +29,12 @@ export class LookupSourcesStub {
         return { bnf: base + '/bnf/SRU', openLibrary: base + '/openlibrary/api/books' };
     }
 
-    // The ISBN's BnF record, from a recorded answer (for example `bnf-ewilan-1.xml`).
     bnf(isbn13: string, fixture: string): this {
         this.bnfRecords.set(isbn13, readFileSync(new URL(fixture, recorded), 'utf8'));
 
         return this;
     }
 
-    // An Open Library record for the ISBN; `cover: true` offers the stub's cover picture.
     openLibrary(
         isbn13: string,
         record: { title: string; authors: string[]; publisher: string; cover: boolean },

@@ -42,7 +42,6 @@ export class LocationsAndTagsMigration implements Migration {
             )
             .addPrimaryKeyConstraint('book_shelves_pk', ['book_id', 'shelf_id'])
             .execute();
-        // At most one shelf per book.
         await db.schema
             .createIndex('book_shelves_book')
             .on('book_shelves')

@@ -6,7 +6,6 @@ import type { AuthenticatedRequest } from '../../../../../shared/infrastructure/
 import type { ActivityPageDto } from '../../../../../../../../packages/contracts/src/http.js';
 import { activityQuerySchema } from './activity-schemas.js';
 
-// The shared Activity every signed-in account reads.
 @Controller('api/activity')
 export class ActivityController {
     constructor(@Inject('ACTIVITY_LIST') private readonly listActivity: ListActivityUseCase) {}

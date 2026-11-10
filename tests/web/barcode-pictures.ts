@@ -16,11 +16,7 @@ prepareZXingModule({
     },
 });
 
-// Pictures of a book's EAN-13 barcode, standing in for the phone camera in browser journeys: a
-// photo for the camera-app path, and a video file for Chromium's fake camera. Leaf's real
-// barcode reader then reads them. Generated on the fly; no picture is committed.
 export class BarcodePictures {
-    // A PNG of the barcode on a white margin, like a photo of the back cover.
     static async photo(isbn: string): Promise<Buffer> {
         const written = await writeBarcode(isbn, { format: 'EAN13', scale: 4 });
 

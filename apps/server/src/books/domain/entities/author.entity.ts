@@ -7,7 +7,6 @@ export interface AuthorState {
     createdAt: string;
 }
 
-// A shared author identity linked to books. Correcting its name changes it on every linked book.
 export class Author {
     private state: AuthorState;
 
@@ -19,7 +18,6 @@ export class Author {
         return { ...this.state };
     }
 
-    // Equal keys mean the same author: case, accents and outer spaces are ignored.
     get key(): string {
         return NameKey.of(this.state.name);
     }

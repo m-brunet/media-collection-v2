@@ -47,9 +47,7 @@ export interface TestAppContext {
     audit: AuditLogProbe;
     library: LibraryProbe;
     lending: { loans: LoanRepository; receivers: ReceiverRepository };
-    // Builds and saves entities through the repositories above, to arrange scenarios.
     builders: TestLibrary;
-    // Stand-ins for the router, Let's Encrypt, the public address service and the HTTPS listener;
     // `background.settled()` waits for a setup started by a request.
     internetAccess: {
         store: InternetAccessStore;

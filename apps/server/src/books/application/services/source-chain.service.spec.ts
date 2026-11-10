@@ -17,7 +17,6 @@ function link(
     return new SourceLink(source, new SourceBudget(source.limit, clock), clock, next);
 }
 
-// Records what the chain handed over, in order.
 function recorder() {
     const events: string[] = [];
     const recipient: SourceRecipient<string> = {

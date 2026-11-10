@@ -1,6 +1,5 @@
 import type { NewBookDto } from '../../../packages/contracts/src/http.js';
 
-// A complete new-book request body; tests override only what they exercise.
 export class BookInputFixture {
     static of(overrides: Partial<NewBookDto> = {}): NewBookDto {
         return {

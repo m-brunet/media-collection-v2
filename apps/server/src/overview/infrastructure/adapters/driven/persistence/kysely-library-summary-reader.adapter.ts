@@ -7,8 +7,6 @@ import type {
 import type { LibrarySummaryReader } from '../../../../application/ports/driven/library-summary-reader.interface.js';
 import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
 
-// Counts and lists the shared library for the Overview. It only reads the tables the books,
-// collections, locations and lending features write.
 export class KyselyLibrarySummaryReader implements LibrarySummaryReader {
     constructor(private readonly connections: DatabaseConnections) {}
 

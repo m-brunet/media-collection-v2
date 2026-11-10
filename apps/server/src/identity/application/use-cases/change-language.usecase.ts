@@ -5,7 +5,6 @@ import type { Actor, InterfaceLanguage } from '../../../shared/domain/actor.help
 import { AccountAudit } from '../account-audit.js';
 import { AccountLoader } from '../services/account-loader.service.js';
 
-// Saves the signed-in account's own interface language; it never changes another account.
 export class ChangeLanguage implements ChangeLanguageUseCase {
     constructor(
         private readonly users: UserWriter,

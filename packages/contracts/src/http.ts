@@ -1,6 +1,5 @@
 export type AccountRole = 'admin' | 'owner' | 'guest';
 
-// The signed-in account.
 export interface Account {
     id: string;
     username: string;
@@ -9,7 +8,6 @@ export interface Account {
     language: 'en' | 'fr' | null;
 }
 
-// An account as listed for the administrator.
 export interface AccountSummary {
     id: string;
     username: string;
@@ -53,7 +51,6 @@ export type InternetAccessFailureReason =
     | 'domain-mismatch'
     | 'setup-failed';
 
-// Automatic internet access: the router rule, the public address and its certificate.
 export interface InternetAccessStatus {
     phase: 'off' | 'setting-up' | 'waiting-for-port' | 'active';
     step: 'router' | 'port' | 'certificate' | null;
@@ -77,7 +74,6 @@ export interface InternetAccessStatus {
     } | null;
 }
 
-// HTTP opened to the internet at the Admin's request (not encrypted): the router rule and address.
 export interface HttpInternetAccessStatus {
     phase: 'off' | 'open';
     mapping: 'upnp' | 'nat-pmp' | 'manual' | null;
@@ -137,7 +133,6 @@ export type ColorSchemeName =
     | 'slate-orchid'
     | 'charcoal-scarlet';
 
-// Installation-wide appearance, readable before sign-in.
 export type IconSetName =
     | 'lucide'
     | 'solid-silhouettes'
@@ -146,6 +141,7 @@ export type IconSetName =
     | 'single-ink-risograph'
     | 'quiet-editorial-monoline';
 
+// Installation-wide appearance, readable before sign-in.
 export interface Appearance {
     colorScheme: ColorSchemeName;
     iconSet: IconSetName;
@@ -200,7 +196,6 @@ export interface BookCollectionDto {
     volumeTo: number;
 }
 
-// Shared information of a book as entered in the form.
 // A blank `title` on a Manga or Comics in a collection asks for one generated from the
 // collection; any other blank title is refused (`title-required`). Typed text is always kept.
 export interface BookInputDto {
@@ -272,7 +267,6 @@ export interface BookDto {
     location: BookLocationDto | null;
     // Ordered by name.
     tags: BookTagDto[];
-    // The active loan, if the book is currently lent.
     loan: BookLoanDto | null;
     createdAt: string;
     updatedAt: string;
@@ -357,7 +351,6 @@ export interface CoverageConflictDetails {
 
 export type VolumeState = 'owned' | 'planned' | 'inferred';
 
-// One value a lookup offers for a field, with the sources that gave it.
 export interface LookupChoiceDto<T> {
     value: T;
     sources: string[];
@@ -382,7 +375,6 @@ export interface LookupCoverDto {
     sources: string[];
 }
 
-// Find book: the ISBN is already in the library, or what the sources know about it.
 export type BookLookupDto =
     | { kind: 'existing'; bookId: string }
     | {
@@ -570,7 +562,6 @@ export interface ReceiverLoansDto {
     loans: ActiveLoanDto[];
 }
 
-// What an Activity entry says happened, with the names needed to say it ("You added Dune").
 // `title` is null only for an older record of a book deleted since.
 export type ActivityEventDto =
     | {
@@ -610,7 +601,6 @@ export type ActivityEventDto =
     | { kind: 'shelf-renamed'; from: string; to: string; bookcase: string }
     | { kind: 'shelf-moved'; name: string; from: string; to: string };
 
-// One operation of the shared Activity: its main change and the changes it caused.
 export interface ActivityEntryDto {
     // The audit operation ID.
     id: string;

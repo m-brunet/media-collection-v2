@@ -24,7 +24,7 @@ interface MaintenanceWindowOptions {
     hidden: boolean;
 }
 
-// The local maintenance window: Admin recovery, backup and restore, with no HTTP server. The page
+// The page
 // only triggers actions; file paths come from native dialogs, never from the page.
 export class MaintenanceWindow {
     private static readonly channels = [

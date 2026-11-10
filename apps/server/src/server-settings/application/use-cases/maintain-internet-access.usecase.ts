@@ -12,10 +12,8 @@ import type { DomainNameCheck } from '../services/domain-name-check.service.js';
 import type { InternetAccessSetup } from '../services/internet-access-setup.service.js';
 import type { RouterRules } from '../services/router-rules.service.js';
 
-// The upkeep: keep the router rule and follow a changed public address on every run, then check
-// that the domain name still points to it and renew the certificate. A certificate or domain name
-// failure keeps the current certificate and waits longer before that work runs again; the router
-// rule never waits, as it lapses at the end of its lease.
+// A certificate or domain name failure keeps the current certificate and waits longer before that
+// work runs again; the router rule never waits, as it lapses at the end of its lease.
 export class MaintainInternetAccess implements MaintainInternetAccessUseCase {
     constructor(
         private readonly store: InternetAccessStore,

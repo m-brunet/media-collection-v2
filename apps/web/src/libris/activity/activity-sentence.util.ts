@@ -39,7 +39,6 @@ export class ActivitySentence {
         'receiver-created': 'activity.receiverCreated',
     };
 
-    // The changes an operation caused, said without "You" after "Also:".
     private static readonly consequences: Partial<Record<Kind, MessageKey>> = {
         'collection-created': 'activity.also.collectionCreated',
         'collection-updated': 'activity.also.collectionUpdated',
@@ -71,8 +70,6 @@ export class ActivitySentence {
         return t(ActivitySentence.sentences[event.kind], ActivitySentence.values(event, t));
     }
 
-    // "Also: created the collection Naruto · created the tag Fantasy", or null when nothing else
-    // changed.
     static also(events: readonly ActivityEventDto[], t: Translate): string | null {
         if (events.length === 0) {
             return null;

@@ -6,10 +6,8 @@ import type {
 
 export type FilterKey = keyof BookFilterParams;
 
-// Every advanced filter, each a list of chosen values (empty: not filtered).
 export type Filter = { [K in FilterKey]-?: NonNullable<BookFilterParams[K]> };
 
-// One chosen value, as shown in the applied-filter chips.
 export interface FilterEntry {
     key: FilterKey;
     value: string;
@@ -72,7 +70,6 @@ export class BookFilter {
         };
     }
 
-    // The other parameters (search, sort) are kept; the filter ones are replaced.
     static write(filter: Filter, base: URLSearchParams = new URLSearchParams()): URLSearchParams {
         const next = new URLSearchParams(base);
 
@@ -119,7 +116,6 @@ export class BookFilter {
         return filter.notTag.includes(tagId) ? 'exclude' : 'none';
     }
 
-    // A tag is included, excluded or neither, never both.
     static withTag(filter: Filter, tagId: string, choice: TagChoice): Filter {
         return {
             ...filter,
@@ -138,7 +134,6 @@ export class BookFilter {
         return { ...filter, tag: [], notTag: [] };
     }
 
-    // Guests have no reading status to filter on; collection listings have no collection field.
     static applicable(filter: Filter, options: { guest: boolean; collections: boolean }): Filter {
         return {
             ...filter,

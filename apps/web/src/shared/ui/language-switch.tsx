@@ -5,8 +5,6 @@ import { useSession } from '../session/session-context';
 
 const languages: Language[] = ['en', 'fr'];
 
-// English / Français choice. Signed out it is remembered on this device; signed in it is saved
-// to the account and only affects that account.
 export function LanguageSwitch() {
     const { language, chooseLanguage } = useSession();
     const { t } = useI18n();

@@ -5,7 +5,6 @@ import { TestIds } from '../../../shared/application/testing/test-ids.test-suppo
 
 export type ReceiverPorts = { receivers: ReceiverRepository };
 
-// A person books are lent to. Defaults: a unique name ("Receiver 7").
 export class ReceiverBuilder extends EntityBuilder<Receiver, ReceiverPorts> {
     private id: string | null = null;
     private name: string | null = null;

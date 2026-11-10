@@ -30,7 +30,6 @@ function BackHome() {
     );
 }
 
-// Live viewfinder: frames are read on the phone until an ISBN barcode shows up.
 function LiveScanner({ onUnavailable }: { onUnavailable(): void }) {
     const { t } = useI18n();
     const reader = useBarcodeReader();
@@ -200,7 +199,6 @@ function CameraUnavailable({ onRetry }: { onRetry(): void }) {
     );
 }
 
-// Scanning is the only way into the mobile add form: no ISBN can be typed on the phone.
 export function ScanPage() {
     const { t } = useI18n();
     // Browsers give live camera video only to secure pages (HTTPS, or the computer itself).

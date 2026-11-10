@@ -26,7 +26,6 @@ function HomeAction({
     );
 }
 
-// Mobile home: the two things Leaf is for, shopping and scanning.
 export function HomePage() {
     const { t } = useI18n();
 

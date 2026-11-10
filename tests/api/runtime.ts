@@ -24,9 +24,7 @@ export interface RuntimeOptions {
     port?: number | null;
     main?: boolean;
     environmentPort?: number;
-    // Where Find book asks BnF and Open Library: a local stand-in instead of the real catalogues.
     lookupAddresses?: { bnf: string; openLibrary: string };
-    // Stand-ins for the router, Let's Encrypt and the public address service.
     // `domainAddress`: where every domain name points (default: the external address).
     internetAccess?: { externalAddress: string | null; accepts: boolean; domainAddress?: string };
 }

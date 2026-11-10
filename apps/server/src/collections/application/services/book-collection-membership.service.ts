@@ -130,7 +130,6 @@ export class BookCollectionMembership implements CollectionMembership, BookColle
             : null;
     }
 
-    // Creating a collection, or including volume 0 in an existing one, changes the collection.
     private change(collection: Collection, before: Collection | null): RelatedChange | null {
         if (!before) {
             return CollectionChange.of(CollectionAudit.created, collection.id, null, collection);

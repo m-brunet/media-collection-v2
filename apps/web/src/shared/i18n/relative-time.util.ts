@@ -1,6 +1,4 @@
-// Says how long ago a UTC moment was, in the viewer's language and time zone, with the browser's
-// own wording, starting with a capital ("12 minutes ago", "Yesterday", "Il y a 2 semaines").
-// Under a minute it gives `justNow`. Past the same calendar day it counts calendar days in the
+// Past the same calendar day it counts calendar days in the
 // viewer's time zone, so something done at 23:00 is "Yesterday" the next morning, not "9 hours ago".
 export class RelativeTime {
     private readonly words: Intl.RelativeTimeFormat;
@@ -53,12 +51,10 @@ export class RelativeTime {
         return this.words.format(-Math.floor(months / 12), 'year');
     }
 
-    // Whole calendar days between the two dates in the viewer's time zone.
     private calendarDays(then: Date, now: Date): number {
         return Math.round((this.day(now) - this.day(then)) / 86_400_000);
     }
 
-    // Whole calendar months, not counting the current one until its day of the month is reached.
     private calendarMonths(then: Date, now: Date): number {
         const [fromYear, fromMonth, fromDay] = this.parts(then);
         const [toYear, toMonth, toDay] = this.parts(now);

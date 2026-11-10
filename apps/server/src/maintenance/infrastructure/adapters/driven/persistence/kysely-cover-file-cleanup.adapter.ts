@@ -2,8 +2,6 @@ import type { CoverFileCleanup } from '../../../../application/ports/driven/cove
 import type { CoverStorage } from '../../../../../books/application/ports/driven/cover-storage.interface.js';
 import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
 
-// Compares the books' cover references with the covers the books storage holds, and removes the
-// stored covers no book refers to. The storage decides what a stored cover is.
 export class KyselyCoverFileCleanup implements CoverFileCleanup {
     constructor(
         private readonly connections: DatabaseConnections,

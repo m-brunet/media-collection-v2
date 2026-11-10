@@ -11,9 +11,7 @@ import type { DomainNameCheck } from './domain-name-check.service.js';
 import type { HttpInternetAccessClosing } from './http-internet-access-closing.service.js';
 import type { RouterRules } from './router-rules.service.js';
 
-// The steps of an internet access setup, run after the Admin's request has answered: find the
-// router, open the port, get the certificate. Each step is saved so the page can follow it. Once
-// HTTPS works, HTTP from the internet is closed.
+// Each step is saved so the page can follow it.
 export class InternetAccessSetup {
     private active = 0;
 
@@ -45,7 +43,6 @@ export class InternetAccessSetup {
         await this.guarded((access) => this.obtain(access));
     }
 
-    // After the Admin saved another domain name: while HTTPS is on, get a certificate for it at once.
     // A failure keeps the current certificate, like an upkeep failure.
     async followDomain(): Promise<void> {
         const access = await this.store.read();
@@ -67,9 +64,6 @@ export class InternetAccessSetup {
         await this.store.save(access);
     }
 
-    // Gets and installs a certificate for the domain name, or else the current public address. Used
-    // by the setup and by the upkeep; answers the failure reason, or null once the certificate is in
-    // use. A domain name must point to the public address first.
     async renew(access: InternetAccess): Promise<InternetAccessFailureReason | null> {
         const problem = await this.domains.problem(access);
 

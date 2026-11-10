@@ -10,7 +10,6 @@ import { LookupAnswer } from '../../../apps/server/src/books/domain/value-object
 import { HttpCoverDownloader } from '../../../apps/server/src/books/infrastructure/adapters/driven/third-party/http-cover-downloader.adapter.js';
 import { PublicAddresses } from '../../../apps/server/src/books/infrastructure/adapters/driven/third-party/public-addresses.adapter.js';
 
-// A source answering from what a test arranged per ISBN; anything else is unknown to it.
 class ScriptedSource<T> implements LookupSource<T> {
     readonly limit = { requests: 1000, seconds: 60 };
     readonly asked: string[] = [];
@@ -34,7 +33,6 @@ class ScriptedSource<T> implements LookupSource<T> {
     }
 }
 
-// Covers downloaded from addresses a test arranged; any other address cannot be fetched.
 class ScriptedDownloader implements CoverDownloader {
     readonly images = new Map<string, Uint8Array>();
 
@@ -43,13 +41,11 @@ class ScriptedDownloader implements CoverDownloader {
     }
 }
 
-// Find book's sources for API tests: BnF then Open Library, as in production, with no network.
 export class ScriptedLookupSources implements BookLookupSources {
     readonly bnf = new ScriptedSource<LookupAnswer>('bnf');
     readonly openLibrary = new ScriptedSource<LookupAnswer>('openlibrary');
     readonly openLibraryCovers = new ScriptedSource<CoverOffer[]>('openlibrary');
     readonly downloader = new ScriptedDownloader();
-    // Images on the scripted web, by address (see `webImage`).
     private readonly web = new Map<string, Uint8Array>();
     // Pasted image addresses go through the real downloader and home-network guard, over a
     // scripted web: every host name resolves to a public address and only arranged images answer.
@@ -68,14 +64,12 @@ export class ScriptedLookupSources implements BookLookupSources {
     readonly information = [this.bnf, this.openLibrary];
     readonly covers = [this.openLibraryCovers];
 
-    // The source `name` knows these facts about the ISBN.
     knows(name: 'bnf' | 'openlibrary', isbn13: string, fields: LookupAnswerFields): void {
         const source = name === 'bnf' ? this.bnf : this.openLibrary;
 
         source.answer(isbn13, { kind: 'found', value: LookupAnswer.of(fields) });
     }
 
-    // Open Library offers this cover for the ISBN, served from `address`.
     cover(isbn13: string, address: string, bytes: Uint8Array): void {
         this.openLibraryCovers.answer(isbn13, {
             kind: 'found',
@@ -84,7 +78,6 @@ export class ScriptedLookupSources implements BookLookupSources {
         this.downloader.images.set(address, bytes);
     }
 
-    // An image a person can paste the address of.
     webImage(address: string, bytes: Uint8Array): void {
         this.web.set(address, bytes);
     }

@@ -1,8 +1,7 @@
 import type { Tag } from '../domain/entities/tag.entity.js';
 import type { RelatedChange } from '../../shared/application/ports/driven/audit-entry.interface.js';
 
-// Audit categories of the tags feature, all shared changes eligible for Activity. A tag created
-// while saving a book is a related change of that book operation.
+// A tag created while saving a book is a related change of that book operation.
 export const TagAudit = {
     tag: 'tag',
     created: 'tag.created',

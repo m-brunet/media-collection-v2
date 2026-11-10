@@ -6,7 +6,6 @@ import { useI18n } from '../../shared/i18n/i18n-context';
 import { Button } from '../../shared/ui/button';
 import { Dialog } from '../../shared/ui/dialog';
 
-// One question as a phone dialog: the explanation, then one full-width button per answer.
 function Question({
     title,
     body,
@@ -31,8 +30,6 @@ function Question({
     );
 }
 
-// The server's questions before saving a book on Leaf (similar author or collection, volume 0,
-// planned volumes, possible duplicate), with the same answers as on desktop.
 export function LeafSaveQuestions({
     question,
     values,

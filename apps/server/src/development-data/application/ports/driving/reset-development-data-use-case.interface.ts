@@ -1,6 +1,5 @@
 import type { ErasedLibrary } from '../driven/library-eraser.interface.js';
 
-// What a development data reset removed.
 export type ResetReport = ErasedLibrary & { removedCoverFiles: number };
 
 export interface ResetDevelopmentDataUseCase {

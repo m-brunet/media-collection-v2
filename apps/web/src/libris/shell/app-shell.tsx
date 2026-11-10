@@ -15,7 +15,6 @@ interface NavigationItem {
     icon: IconName;
 }
 
-// Each feature task adds its own entries here; only implemented pages appear.
 const libraryItems: NavigationItem[] = [
     { to: '/', label: 'nav.overview', icon: 'overview' },
     { to: '/books', label: 'nav.books', icon: 'books' },

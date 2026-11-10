@@ -24,7 +24,6 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import { BookcasesController } from '../adapters/driving/web/bookcases.controller.js';
 import { ShelvesController } from '../adapters/driving/web/shelves.controller.js';
 
-// Driven adapters and shared services the locations feature is composed from.
 export interface LocationsDependencies {
     bookcases: BookcaseRepository;
     shelves: ShelfRepository;
@@ -188,7 +187,6 @@ export class LocationsModule {
         };
     }
 
-    // Where the books feature keeps its books, applied when they are saved and read with them.
     static assignment(
         bookcases: BookcaseRepository,
         shelves: ShelfRepository,

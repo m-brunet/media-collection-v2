@@ -1,6 +1,5 @@
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 
-// Optional publication date with a year, optionally a month, and never a day.
 export class PublicationDate {
     private constructor(
         readonly year: number,
@@ -9,7 +8,6 @@ export class PublicationDate {
         Object.freeze(this);
     }
 
-    // Both absent means no date; a month without a year is invalid.
     static from(year: number | null, month: number | null): PublicationDate | null {
         if (year === null) {
             Failure.ensure(

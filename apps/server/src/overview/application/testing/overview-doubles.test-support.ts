@@ -7,7 +7,6 @@ import type {
 } from '../overview-views.js';
 import type { LibrarySummaryReader } from '../ports/driven/library-summary-reader.interface.js';
 
-// Signed-in accounts as the use cases receive them.
 export class OverviewActors {
     static readonly owner = TestActors.of('owner', 'camille');
     static readonly otherOwner = TestActors.of('owner', 'sam');
@@ -17,8 +16,6 @@ export class OverviewActors {
 
 type StoredBook = Omit<RecentBook, 'read'> & { addedAt: string; readBy: string[] };
 
-// Owned books held in memory, with the reader's contract: newest record first, each viewer's
-// own reading status.
 export class InMemoryLibrarySummary implements LibrarySummaryReader {
     readonly books: StoredBook[] = [];
     counted: LibraryCounts = {

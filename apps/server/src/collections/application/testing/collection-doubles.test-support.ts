@@ -78,7 +78,6 @@ type SavedBook = Pick<
     'title' | 'isbn' | 'publisher' | 'category' | 'ownership' | 'hasCover' | 'updatedAt'
 >;
 
-// Memberships, with the saved books they describe (written by the books feature in production).
 export class MemoryMembers implements CollectionMemberStore {
     readonly books = new Map<string, SavedBook>();
     readonly memberships = new Map<
@@ -163,11 +162,8 @@ export class FixedBookSearch implements CollectionBookSearch {
     }
 }
 
-// A filter that keeps every book.
 export const anyBook = BookFilter.of();
 
-// Collections with all doubles and services wired as in production.
-// Records the member-title calls of collection operations and answers with prepared changes.
 export class RecordedMemberTitles implements MemberTitles {
     readonly regenerated: { collectionName: string; members: TitledMember[] }[] = [];
     readonly kept: string[][] = [];
@@ -231,7 +227,6 @@ export class CollectionDoubles {
         };
     }
 
-    // Saves a book as a member, through the membership rules, for arranging later scenarios.
     static async member(
         current: ReturnType<typeof CollectionDoubles.shelf>,
         bookId: string,
@@ -249,7 +244,6 @@ export class CollectionDoubles {
         );
     }
 
-    // Marks a complete collection Finished, as a person would.
     static async markFinished(
         current: ReturnType<typeof CollectionDoubles.shelf>,
         collectionId: string,

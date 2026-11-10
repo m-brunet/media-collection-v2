@@ -18,8 +18,6 @@ const failures: Record<NonNullable<HttpInternetAccessStatus['failure']>['reason'
     'setup-failed': 'internet.failure.setup-failed',
 };
 
-// Plain HTTP from the internet: the Admin's choice when HTTPS does not work, with its warning.
-// Closed by a working HTTPS, and never offered while HTTPS is on.
 export function HttpInternetSection({
     status,
     httpsActive,

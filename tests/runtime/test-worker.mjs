@@ -5,7 +5,6 @@ const parent = process.parentPort;
 let offset = 0;
 let backend;
 const clock = { now: () => new Date(Date.now() + offset) };
-// Browser journeys point Find book at a local stand-in for BnF and Open Library.
 const lookupAddresses = process.env.APP_TEST_LOOKUP_ADDRESSES
     ? JSON.parse(process.env.APP_TEST_LOOKUP_ADDRESSES)
     : undefined;

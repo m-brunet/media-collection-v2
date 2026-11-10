@@ -8,7 +8,6 @@ import { GeneratedTitle } from '../value-objects/generated-title.value-object.js
 export type BookCategory = 'books' | 'manga' | 'comics';
 export type Ownership = 'owned' | 'not-owned';
 
-// Shared edition information, as entered or corrected by an Owner or the administrator.
 export interface BookDetails {
     title: string;
     // True when the title was generated from the book's collection rather than supplied. Only
@@ -38,7 +37,6 @@ export interface BookState {
 const categories: readonly BookCategory[] = ['books', 'manga', 'comics'];
 const ownerships: readonly Ownership[] = ['owned', 'not-owned'];
 
-// One record per edition: the shared book information, independent of personal reading data.
 export class Book {
     private state: BookState;
 
@@ -67,13 +65,10 @@ export class Book {
         return this.titleKey.replace(/\d+/g, (digits) => digits.padStart(10, '0'));
     }
 
-    // Only Manga and Comics take a title from their collection.
     static generatesTitle(category: BookCategory): boolean {
         return category === 'manga' || category === 'comics';
     }
 
-    // A generated title follows the collection's current name and the book's coverage. Returns
-    // whether the title changed; a supplied title is never replaced.
     regenerateTitle(
         collection: { name: string; volumeFrom: number; volumeTo: number },
         now: string,
@@ -99,7 +94,7 @@ export class Book {
     }
 
     // When its whole collection is deleted, a book keeps its last generated title as a supplied
-    // one. Returns whether anything changed.
+    // one.
     keepTitle(now: string): boolean {
         if (!this.state.details.titleGenerated) {
             return false;
@@ -116,7 +111,6 @@ export class Book {
         this.state.updatedAt = now;
     }
 
-    // A Not Owned book bought since: only its ownership changes.
     markOwned(now: string): void {
         if (this.state.details.ownership === 'owned') {
             throw new Failure('conflict', 'This book is already Owned.', 'book-already-owned');

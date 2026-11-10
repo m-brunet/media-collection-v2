@@ -27,7 +27,6 @@ function sources() {
     return app.dependencies.books.lookup;
 }
 
-// Looks the ISBN up as an Owner, to obtain a cover token.
 async function lookedUp(): Promise<Extract<BookLookupDto, { kind: 'looked-up' }>> {
     const client = await app.authenticatedClient(owner);
     const response = await client.call<BookLookupDto>('/books/lookups', 'POST', { isbn });

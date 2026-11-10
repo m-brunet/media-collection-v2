@@ -27,8 +27,6 @@ import { useBookLookup } from './use-book-lookup';
 import type { BookField } from '../../shared/book-form/use-book-save';
 import { useBookSave } from '../../shared/book-form/use-book-save';
 
-// Add and edit form. Nothing is saved before the person confirms; leaving with unsaved changes
-// asks first. The cover, the creator's reading status and note are saved right after the book.
 export function BookFormPage() {
     const { id } = useParams();
 
@@ -71,9 +69,6 @@ function EditBook({ id }: { id: string }) {
     );
 }
 
-// The form itself. Its parts: the field groups (`BookMainFields`, organisation, and
-// `BookAdditionalFields`), saving with the server's questions (`useBookSave`,
-// `BookSaveQuestions`) and, when adding, Find book (`useBookLookup`).
 function BookForm({ book }: { book: BookDto | null }) {
     const { t, locale } = useI18n();
     const { account } = useSession();

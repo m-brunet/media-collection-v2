@@ -14,7 +14,6 @@ export interface DevelopmentDataTarget {
 export class DevelopmentDataGuard {
     static readonly directoryName = '.dev-data';
 
-    // Returns the development data directory, or explains why the command must not run.
     static ensure(target: DevelopmentDataTarget): string {
         if (target.packaged) {
             throw new Error(

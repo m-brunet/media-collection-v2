@@ -12,7 +12,6 @@ import { Notice } from '../../shared/ui/notice';
 import { EmptyState, LoadingState } from '../../shared/ui/states';
 import { ActivitySentence } from './activity-sentence.util';
 
-// The current time, refreshed every minute so relative times stay true while the page is open.
 function useNow(): Date {
     const [now, setNow] = useState(() => new Date());
 
@@ -25,7 +24,6 @@ function useNow(): Date {
     return now;
 }
 
-// The icon of each kind of change, by what it concerns (book, loan, collection, location, tag).
 const icons: Record<ActivityEntryDto['event']['kind'], IconName> = {
     'book-added': 'book-add',
     'book-updated': 'books',
@@ -58,8 +56,6 @@ const icons: Record<ActivityEntryDto['event']['kind'], IconName> = {
     'tag-deleted': 'tag',
 };
 
-// The relative time of an entry. Hovering it or giving it keyboard focus shows the exact date,
-// time, time zone and acting account; Escape hides it again.
 function EntryTime({ entry, relative }: { entry: ActivityEntryDto; relative: string }) {
     const { t, dates } = useI18n();
     const id = useId();
@@ -108,8 +104,6 @@ function EntryTime({ entry, relative }: { entry: ActivityEntryDto; relative: str
     );
 }
 
-// Shared Activity, newest first, with older entries loaded on request. Every entry says "You"
-// for the household; the acting account appears only in the time details.
 export function ActivityPage() {
     const { t, locale } = useI18n();
     const now = useNow();

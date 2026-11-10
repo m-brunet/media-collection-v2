@@ -25,8 +25,6 @@ const labels: Record<LookupField, MessageKey> = {
     collection: 'lookup.collection',
 };
 
-// The lookup's values for review (design VMQcQ): the preferred source's value is selected first,
-// alternatives can be chosen, and nothing reaches the form before "Use these values".
 export function LookupReviewDialog({
     fields,
     covers,
@@ -192,8 +190,6 @@ export function LookupReviewDialog({
     );
 }
 
-// Fields the person already filled differently (design OGDgW): one row per field, keeping their
-// value unless they choose the lookup's.
 export function LookupConflictsDialog({
     conflicts,
     onApply,
@@ -255,7 +251,6 @@ export function LookupConflictsDialog({
     );
 }
 
-// How a lookup value reads in the review.
 class LookupDisplay {
     static text(field: LookupField, value: unknown, t: ReturnType<typeof useI18n>['t']): string {
         switch (field) {

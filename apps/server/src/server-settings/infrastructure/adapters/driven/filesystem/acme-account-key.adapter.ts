@@ -3,7 +3,6 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { PrivateStorage } from '../../../../../shared/infrastructure/adapters/driven/filesystem/private-storage.adapter.js';
 
-// The Let's Encrypt account key, created on first use and kept with the other protected keys.
 export class AcmeAccountKey {
     private static readonly fileName = 'acme-account.key';
 

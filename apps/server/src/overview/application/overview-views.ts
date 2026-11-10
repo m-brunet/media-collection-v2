@@ -1,5 +1,5 @@
-// Counts of the shared library. Owned books are saved Owned edition records: an omnibus is one
-// book, inferred volumes and Not Owned records are not counted.
+// Owned books are saved Owned edition records: an omnibus is one book, inferred volumes and Not
+// Owned records are not counted.
 export type LibraryCounts = {
     ownedBooks: number;
     collections: number;
@@ -8,7 +8,7 @@ export type LibraryCounts = {
     lentBooks: number;
 };
 
-// An Owned book among the most recently added records. `read` is the viewer's own status.
+// `read` is the viewer's own status.
 export type RecentBook = {
     id: string;
     title: string;
@@ -21,7 +21,6 @@ export type RecentBook = {
 
 export type BookcaseSummary = { id: string; name: string; shelfCount: number };
 
-// The viewer's own reading over Owned books.
 export type ReadingSummary = { read: number; notRead: number };
 
 export type OverviewView = LibraryCounts & {

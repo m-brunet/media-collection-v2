@@ -9,7 +9,7 @@ import type { TlsSettingsReader } from '../ports/driven/tls-settings-reader.inte
 import type { TurnOffInternetAccessUseCase } from '../ports/driving/turn-off-internet-access-use-case.interface.js';
 import { SettingsAudit } from '../settings-audit.js';
 
-// Removes the router rule and stops renewals. HTTPS keeps its last certificate until a restart.
+// HTTPS keeps its last certificate until a restart.
 export class TurnOffInternetAccess implements TurnOffInternetAccessUseCase {
     constructor(
         private readonly store: InternetAccessStore,

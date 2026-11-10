@@ -20,7 +20,6 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import { LoansController } from '../adapters/driving/web/loans.controller.js';
 import { ReceiversController } from '../adapters/driving/web/receivers.controller.js';
 
-// Driven adapters and shared services the lending feature is composed from.
 export interface LendingDependencies {
     loans: LoanRepository;
     receivers: ReceiverRepository;
@@ -105,13 +104,10 @@ export class LendingModule {
         };
     }
 
-    // Which books are lent, read by the books feature for its views and its delete / Not Owned
-    // guard.
     static bookLoans(loans: LoanRepository, receivers: ReceiverRepository): BookLoanReader {
         return new BookLoanLookup(loans, receivers);
     }
 
-    // Keeps completed loans identifiable when the books feature deletes a book.
     static history(loans: LoanRepository): LoanHistory {
         return new BookLoanHistory(loans);
     }

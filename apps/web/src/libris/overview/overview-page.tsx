@@ -47,8 +47,7 @@ function RecentBookCard({ book }: { book: RecentBook }) {
     );
 }
 
-// Read and Not read shares of the viewer's owned books. The counts are written out beside it,
-// so the bar itself is decorative.
+// The counts are written out beside it, so the bar itself is decorative.
 function ReadingBar({ read, notRead }: { read: number; notRead: number }) {
     return (
         <div className="overview-reading__bar" aria-hidden="true">
@@ -60,8 +59,6 @@ function ReadingBar({ read, notRead }: { read: number; notRead: number }) {
     );
 }
 
-// The household library at a glance. Counts come from the server; the reading part is the
-// viewer's own and absent for Guests.
 export function OverviewPage() {
     const { t } = useI18n();
     const { account } = useSession();

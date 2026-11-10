@@ -12,8 +12,6 @@ import { LocationFormat } from '../locations/location-format.util';
 import type { Filter, FilterEntry } from './book-filter.util';
 import { useChosenNames } from './use-chosen-names';
 
-// Turns chosen filter values into readable labels, loading the names of tags, locations,
-// authors and collections when needed.
 export function useFilterLabels(filter: Filter) {
     const { t } = useI18n();
     const [tags, setTags] = useState<TagDto[]>([]);

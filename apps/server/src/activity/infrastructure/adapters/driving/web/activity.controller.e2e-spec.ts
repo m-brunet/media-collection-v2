@@ -23,7 +23,6 @@ afterEach(async () => {
     await app?.teardown();
 });
 
-// Sends one arranging request as the Owner, a second after the previous one.
 async function arrange<T>(path: string, method: string, body?: object): Promise<T> {
     const client = await app.authenticatedClient(owner);
 

@@ -6,7 +6,6 @@ import { LocationViewer } from './location-viewer.service.js';
 import type { Bookcase } from '../../domain/entities/bookcase.entity.js';
 import type { Shelf } from '../../domain/entities/shelf.entity.js';
 
-// Current bookcases and shelves with the number of books kept on them.
 export class LocationOverview {
     constructor(
         private readonly bookcases: BookcaseRepository,

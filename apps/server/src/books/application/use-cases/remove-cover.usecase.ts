@@ -10,7 +10,6 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// The book then shows the neutral missing-cover fallback.
 export class RemoveCover implements RemoveCoverUseCase {
     constructor(
         private readonly books: BookRepository,

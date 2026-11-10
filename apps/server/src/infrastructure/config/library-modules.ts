@@ -42,9 +42,6 @@ export interface LibraryDependencies {
 
 export type LookupAddresses = { bnf?: string; openLibrary?: string };
 
-// The shared library features (books, collections, locations, tags, lending, Activity, Overview) wired to SQLite and
-// the data directory, for the HTTP backend and the development data commands alike.
-// `developmentImport` adds the use cases only the development V1 import needs.
 export class LibraryModules {
     static register(
         { database, dataDirectory, ids, clock, operations, lookupAddresses }: LibraryDependencies,

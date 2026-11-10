@@ -10,8 +10,7 @@ import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { AccountAudit } from '../account-audit.js';
 
-// First launch: the person installing the library creates the protected administrator with a
-// password of their choice. Possible only while no account exists; never a public sign-up.
+// Possible only while no account exists; never a public sign-up.
 export class CompleteSetup implements CompleteSetupUseCase {
     constructor(
         private readonly users: UserRepository,

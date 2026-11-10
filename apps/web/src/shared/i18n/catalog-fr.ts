@@ -1046,7 +1046,6 @@ export const fr = {
     'reason.shelfMissing': 'Cette étagère n’existe plus. Choisissez-en une autre.',
     'reason.tagMissing': 'L’une des étiquettes n’existe plus. Choisissez à nouveau les étiquettes.',
     'reason.readingFilterUnavailable': 'Les invités n’ont pas de statut de lecture à filtrer.',
-    // Lending (Task 5)
     'nav.loans': 'Prêts',
     'books.lent': 'Prêté',
     'loans.title': 'Livres prêtés',

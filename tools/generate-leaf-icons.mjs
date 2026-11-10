@@ -1,5 +1,5 @@
 // Generates Leaf's home-screen icons from its icon (apps/web/public/leaf.svg, the hand-inked
-// Turning leaf in Spring green, KI-6): PNGs on Leaf's dark background, as phones expect for an app
+// Turning leaf in Spring green): PNGs on Leaf's dark background, as phones expect for an app
 // icon, and the web app manifest that lists them. The favicon is leaf.svg itself.
 // Run with `node tools/generate-leaf-icons.mjs` after changing the SVG, and commit the output.
 import { readFile, writeFile } from 'node:fs/promises';

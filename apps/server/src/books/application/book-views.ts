@@ -5,21 +5,16 @@ import type { BookLocation } from './ports/driven/book-location-reader.interface
 import type { BookTag } from './ports/driven/book-tag-reader.interface.js';
 import type { BookCategory, Ownership } from '../domain/entities/book.entity.js';
 
-// Read models returned by the books use cases. Personal fields are null for Guests, who have no
-// reading status or notes.
-
 export interface AuthorView {
     id: string;
     name: string;
 }
 
-// Where a book is kept and how it is tagged.
 export type BookOrganisation = { location: BookLocation | null; tags: BookTag[] };
 
 export interface BookView {
     id: string;
     title: string;
-    // True when the title is generated from the book's collection.
     titleGenerated: boolean;
     isbn: string | null;
     isbnConvertedFromIsbn10: boolean;
@@ -38,7 +33,6 @@ export interface BookView {
     location: BookLocation | null;
     // Ordered by name.
     tags: BookTag[];
-    // The active loan, if the book is currently lent.
     loan: BookLoan | null;
     createdAt: string;
     updatedAt: string;
@@ -59,7 +53,6 @@ export interface BookListQuery {
     readerId: string | null;
 }
 
-// A book of the list as the catalog finds it.
 export interface CatalogBookItem {
     id: string;
     title: string;
@@ -77,7 +70,6 @@ export interface CatalogPage {
     items: CatalogBookItem[];
 }
 
-// A book of the list with its active loan, for the Lent indicator.
 export interface BookListItem extends CatalogBookItem {
     loan: BookLoan | null;
 }
@@ -87,7 +79,6 @@ export interface BookListPage {
     items: BookListItem[];
 }
 
-// A saved book a new no-ISBN book may duplicate, offered so the person can decide.
 export interface DuplicateCandidate {
     id: string;
     title: string;

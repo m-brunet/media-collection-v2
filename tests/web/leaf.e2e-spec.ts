@@ -93,7 +93,6 @@ async function savedBook(overrides: Partial<NewBookDto>): Promise<BookDto> {
     return response.body;
 }
 
-// The administrator on Leaf's home, on a phone.
 async function signedIn(): Promise<Page> {
     const page = await browser.page(base, { viewport: viewports.phone });
 
@@ -106,7 +105,6 @@ async function signedIn(): Promise<Page> {
     return page;
 }
 
-// Batman: volume 1 Owned, volume 3 saved as Not Owned, volume 2 inferred.
 async function batman(): Promise<BookDto> {
     await savedBook({
         title: 'Year One',

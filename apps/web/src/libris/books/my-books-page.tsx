@@ -63,7 +63,6 @@ function BookCard({ book }: { book: BookListItemDto }) {
     );
 }
 
-// The shared library as a cover grid, with simple search, sorting and paging.
 export function MyBooksPage() {
     const { t } = useI18n();
     const { account } = useSession();
@@ -115,7 +114,6 @@ export function MyBooksPage() {
         [parameters, setParameters, location.state],
     );
 
-    // Searching starts shortly after typing stops.
     useEffect(() => {
         if (typed === search) {
             return;
@@ -126,7 +124,6 @@ export function MyBooksPage() {
         return () => clearTimeout(timer);
     }, [typed, search, update]);
 
-    // The whole library's size, for "6 of 842 books" while searching or filtering.
     useEffect(() => {
         let current = true;
 

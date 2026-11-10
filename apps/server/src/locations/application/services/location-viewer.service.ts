@@ -4,7 +4,6 @@ import type { Shelf } from '../../domain/entities/shelf.entity.js';
 
 const order = new Intl.Collator('en', { numeric: true, sensitivity: 'base' });
 
-// Bookcases and shelves with the number of books kept on them.
 export class LocationViewer {
     bookcase(
         bookcase: Bookcase,
@@ -30,7 +29,6 @@ export class LocationViewer {
         return { id, bookcaseId, name, bookCount: counts.get(id) ?? 0 };
     }
 
-    // Bookcases in name order, numbers compared by value.
     sorted(views: BookcaseView[]): BookcaseView[] {
         return views.sort((first, second) => order.compare(first.name, second.name));
     }

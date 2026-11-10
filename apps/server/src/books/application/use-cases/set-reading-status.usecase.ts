@@ -6,7 +6,6 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// Personal Read / Not read for Owners and the administrator; never shown in shared Activity.
 export class SetReadingStatus implements SetReadingStatusUseCase {
     constructor(
         private readonly readings: ReadingStatusStore,

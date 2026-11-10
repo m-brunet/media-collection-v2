@@ -9,7 +9,6 @@ export interface ReadBackup {
     files: DataFile[];
 }
 
-// Reads a backup that this version can restore, with every file as it was saved.
 export class BackupReader {
     constructor(
         private readonly archive: BackupArchive,

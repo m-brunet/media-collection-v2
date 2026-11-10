@@ -1,7 +1,6 @@
 import type { ErasedLibrary } from '../driven/library-eraser.interface.js';
 import type { UnfinishedCollection } from '../../../domain/services/v1-library-planner.service.js';
 
-// What a V1 import replaced and brought in.
 export type V1ImportReport = {
     erased: ErasedLibrary;
     books: number;
@@ -11,7 +10,6 @@ export type V1ImportReport = {
     // Untitled V1 Books, saved with their collection title as a supplied title.
     titled: { record: number; title: string }[];
     coversStored: number;
-    // Books saved without their V1 cover, with the reason.
     coversSkipped: { record: number; title: string; reason: 'unavailable' | 'unusable' }[];
 };
 

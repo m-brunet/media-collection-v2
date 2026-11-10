@@ -29,8 +29,6 @@ interface SimilarReceivers {
     candidates: ReceiverDto[];
 }
 
-// The receiver as the person decided it: typed (reused or created by the server), an existing
-// receiver chosen after a similar-name question, or a new one confirmed as someone else.
 type ReceiverDecision =
     | { kind: 'typed' }
     | { kind: 'existing'; receiver: ReceiverDto }
@@ -72,9 +70,6 @@ function fromListing(book: BookListItemDto): LendingBook {
     };
 }
 
-// Lends one or several books to one receiver, starting from the book the person came from. Every
-// selected book can be removed; nothing is saved before confirmation, and a refused handover
-// keeps the draft.
 export function LendPage() {
     const { t, locale } = useI18n();
     const navigate = useNavigate();
@@ -224,7 +219,6 @@ export function LendPage() {
                     .join(', ');
 
                 setFailure(t(failures[error.reason]!, { titles }));
-                // The refusal tells why each book was refused, so the rows explain it at once.
                 setSelected((current) =>
                     LendingChoice.refused(current ?? [], error.reason!, error.details),
                 );

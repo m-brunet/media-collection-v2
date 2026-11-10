@@ -11,7 +11,6 @@ afterEach(async () => {
     );
 });
 
-// A local stand-in for the "what is my IP" service.
 async function service(status: number, body: string): Promise<string> {
     const server = createServer((_request, response) => {
         response.statusCode = status;

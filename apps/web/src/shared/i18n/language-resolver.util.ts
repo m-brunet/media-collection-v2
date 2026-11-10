@@ -1,7 +1,5 @@
 import type { Language } from './translator.util';
 
-// Chooses the interface language: the account's saved choice first, then a choice made on this
-// device before signing in, then the device/browser language (French or English, else English).
 export class LanguageResolver {
     static fromDevice(languages: readonly string[]): Language {
         const first = languages[0]?.toLowerCase() ?? '';

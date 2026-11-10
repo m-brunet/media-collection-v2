@@ -5,7 +5,6 @@ import { SessionLifetime } from '../../../../domain/session-lifetime.helper.js';
 export class HttpSessions {
     constructor(
         private readonly secret: Uint8Array,
-        // Request paths whose body is an uploaded file rather than JSON (chosen by composition).
         private readonly uploadPaths: readonly RegExp[] = [],
     ) {}
 

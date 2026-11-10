@@ -1,6 +1,4 @@
-// What a phone can do with one of the server's addresses.
 export class ServerAddress {
-    // The QR codes open Leaf, the phone application, at that address.
     static leaf(address: string): string {
         return new URL('/leaf/', address).href;
     }

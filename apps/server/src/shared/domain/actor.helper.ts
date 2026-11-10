@@ -34,7 +34,6 @@ export class ActorAuthorization {
         }
     }
 
-    // Shared library changes (books, locations, collections, tags, loans): Owners and Admin only.
     static requireLibraryEditor(actor: Actor): void {
         this.requireReady(actor);
 

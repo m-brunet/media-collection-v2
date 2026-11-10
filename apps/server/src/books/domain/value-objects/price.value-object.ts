@@ -6,7 +6,6 @@ export class Price {
         Object.freeze(this);
     }
 
-    // Accepts "16.90", "16,90", "0" or "12": non-negative, at most two decimals.
     static parse(text: string): Price {
         const value = text.trim().replace(',', '.');
 

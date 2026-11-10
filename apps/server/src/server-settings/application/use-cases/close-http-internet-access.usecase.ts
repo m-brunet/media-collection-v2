@@ -7,7 +7,6 @@ import type { CloseHttpInternetAccessUseCase } from '../ports/driving/close-http
 import type { HttpPortForwarding } from '../services/http-port-forwarding.service.js';
 import { SettingsAudit } from '../settings-audit.js';
 
-// Closes HTTP from the internet: the router rule is removed when the application created it.
 export class CloseHttpInternetAccess implements CloseHttpInternetAccessUseCase {
     constructor(
         private readonly store: HttpInternetAccessStore,

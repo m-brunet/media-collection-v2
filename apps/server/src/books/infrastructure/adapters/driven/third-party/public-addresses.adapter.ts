@@ -2,7 +2,6 @@ import { lookup } from 'node:dns/promises';
 import { BlockList, isIP } from 'node:net';
 import type { AddressPolicy } from './http-cover-downloader.adapter.js';
 
-// Resolves a host name to all its IP addresses.
 export type HostResolver = (hostname: string) => Promise<string[]>;
 
 // Only addresses on the public internet: an image address someone pastes must never make the
@@ -29,7 +28,6 @@ export class PublicAddresses implements AddressPolicy {
         }
     }
 
-    // Every address the system resolver gives for the name.
     private static async resolveAll(hostname: string): Promise<string[]> {
         return (await lookup(hostname, { all: true })).map(({ address }) => address);
     }
@@ -51,7 +49,6 @@ export class PublicAddresses implements AddressPolicy {
         return !PublicAddresses.reserved.check(address, family === 4 ? 'ipv4' : 'ipv6');
     }
 
-    // Local, private, shared, link-local, documentation, multicast and reserved ranges.
     private static ranges(): BlockList {
         const list = new BlockList();
 

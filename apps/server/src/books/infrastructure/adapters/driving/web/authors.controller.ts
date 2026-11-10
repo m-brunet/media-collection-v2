@@ -32,7 +32,6 @@ export class AuthorsController {
         return this.findAuthors.execute(request.actor, query.search);
     }
 
-    // `GET /api/authors/by-id?id=…&id=…`: the names of chosen authors.
     @Get('by-id')
     named(
         @Query({ schema: idsSchema }) query: z.infer<typeof idsSchema>,

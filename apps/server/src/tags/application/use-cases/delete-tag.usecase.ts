@@ -7,7 +7,6 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// Removes the tag and its assignments; the books are kept.
 export class DeleteTag implements DeleteTagUseCase {
     constructor(
         private readonly tags: TagRepository,

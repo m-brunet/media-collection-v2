@@ -1,7 +1,7 @@
 import type { BackgroundTasks } from '../../../../application/ports/driven/background-tasks.interface.js';
 
-// Runs work after the request answered. The work records its own outcome; an error here only
-// means the outcome could not be saved, and must not stop the server.
+// The work records its own outcome; an error here only means the outcome could not be saved,
+// and must not stop the server.
 export class DetachedBackgroundTasks implements BackgroundTasks {
     private readonly running = new Set<Promise<void>>();
 
@@ -13,7 +13,6 @@ export class DetachedBackgroundTasks implements BackgroundTasks {
         this.running.add(work);
     }
 
-    // Shutdown waits for the setup to save where it stopped.
     async settled(): Promise<void> {
         await Promise.all([...this.running]);
     }

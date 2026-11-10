@@ -7,7 +7,6 @@ import type { BarcodeReader } from './barcode-reader-context';
 import { BarcodeReaderContext } from './barcode-reader-context';
 import { ScanPage } from './scan-page';
 
-// Answers each reading with the next scripted list of barcode values, then nothing.
 class ScriptedReader implements BarcodeReader {
     readonly sources: (HTMLVideoElement | Blob)[] = [];
 

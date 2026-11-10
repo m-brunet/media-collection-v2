@@ -8,7 +8,6 @@ import { PageHeader } from '../../shared/ui/layout';
 import { Notice } from '../../shared/ui/notice';
 import { EmptyState, LoadingState } from '../../shared/ui/states';
 
-// Confirmation after adding a book: nothing was created before the person saved.
 export function BookSavedPage() {
     const { t } = useI18n();
     const { id = '' } = useParams();

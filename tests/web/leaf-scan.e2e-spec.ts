@@ -56,7 +56,6 @@ afterEach(async () => {
     await runtime.teardown();
 });
 
-// A ready Owner account: created by the administrator, temporary password already replaced.
 async function owner(username: string) {
     await admin.call('/users', 'POST', { username, password: 'temporary-pw', role: 'owner' });
     const client = new Client(base);
@@ -78,7 +77,6 @@ async function savedBook(overrides: Partial<NewBookDto> = {}): Promise<BookDto> 
     return response.body;
 }
 
-// Camille on Leaf's home, on a phone.
 async function leafHome(
     fixture = browser,
     options: { beforeLoad?: string; permissions?: string[] } = { beforeLoad: plainHttpPage },
@@ -94,7 +92,6 @@ async function leafHome(
     return page;
 }
 
-// Scan a book, then photograph the barcode with the phone's camera app.
 async function scanPhoto(page: Page, isbn: string): Promise<void> {
     await page.getByRole('link', { name: /Scan a book/ }).click();
     const chooser = page.waitForEvent('filechooser');

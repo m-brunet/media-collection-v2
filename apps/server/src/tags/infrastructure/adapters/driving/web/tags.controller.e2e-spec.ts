@@ -17,7 +17,6 @@ afterEach(async () => {
     await app?.teardown();
 });
 
-// Creates a tag from the Tags page, as an Owner.
 async function tag(name: string) {
     const client = await app.authenticatedClient(owner);
     const response = await client.call<TagDto>('/tags', 'POST', { name });
@@ -29,7 +28,6 @@ async function tag(name: string) {
     return response.body;
 }
 
-// Saves a book with tags, as an Owner.
 async function tagged(...tagIds: string[]) {
     const client = await app.authenticatedClient(owner);
     const response = await client.call<BookDto>(

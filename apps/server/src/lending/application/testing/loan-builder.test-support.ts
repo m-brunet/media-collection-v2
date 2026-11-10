@@ -10,12 +10,10 @@ import { TestIds } from '../../../shared/application/testing/test-ids.test-suppo
 
 export type LoanPorts = { loans: LoanRepository; receivers: ReceiverRepository };
 
-// The book a loan concerns, as the loan records it.
 export type LoanBook = { id: string; title?: string; isbn?: string | null };
 
-// One loan occurrence. Defaults: active, lent on 2026-10-01 09:00 UTC. Saving creates a receiver
-// when none was given; the book must exist already (lending never creates books), so give it with
-// `of(…)`, or let `TestLibrary` create it.
+// Saving creates a receiver when none was given; the book must exist already (lending never
+// creates books), so give it with `of(…)`, or let `TestLibrary` create it.
 export class LoanBuilder extends EntityBuilder<Loan, LoanPorts> {
     private id: string | null = null;
     private book: LoanBook | null = null;
@@ -47,12 +45,10 @@ export class LoanBuilder extends EntityBuilder<Loan, LoanPorts> {
         return this;
     }
 
-    // Whether the book was given; `TestLibrary` creates one otherwise.
     hasBook(): boolean {
         return this.book !== null;
     }
 
-    // A completed loan: returned at the given time.
     asReturned(returnedAt = '2026-10-15T09:00:00.000Z'): this {
         this.returnedAt = returnedAt;
 

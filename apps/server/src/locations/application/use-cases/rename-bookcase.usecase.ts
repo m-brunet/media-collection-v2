@@ -10,7 +10,6 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// Every book on its shelves shows the new name; an equivalent existing name blocks the rename.
 export class RenameBookcase implements RenameBookcaseUseCase {
     constructor(
         private readonly bookcases: BookcaseRepository,

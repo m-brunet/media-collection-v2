@@ -8,8 +8,6 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// Deletes an edition with everyone's reading status and notes on it, its cover, its collection
-// membership (an emptied collection disappears), location, tag links and the authors linked to no other book.
 export class DeleteBook implements DeleteBookUseCase {
     constructor(
         private readonly removal: BookRemoval,
