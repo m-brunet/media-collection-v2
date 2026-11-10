@@ -4,7 +4,7 @@ Status: product decisions complete. Confirmed behavior and acceptance examples o
 
 ## Distribution and access
 
-Use GitHub Releases for release information and application downloads, without an update server operated by MC. The repository is expected to be public before release.
+Use GitHub Releases for release information and application downloads, without an update server operated by MC. The in-app check reads the releases without a token, which only works on a public repository; the repository stays private for now (decided 2026-11-10).
 
 Supported systems are Windows and Linux. macOS is dropped for now (decided 2026-11-10): without an Apple Developer account the application cannot be signed and notarized, and macOS would block it.
 
@@ -16,7 +16,7 @@ Offer stable releases only initially. Beta/prerelease versions are excluded from
 
 Check for updates automatically at startup without delaying application access. Also provide a manual Check for updates action. Installation requires explicit user approval and can always be postponed; there is no forced installation.
 
-Until the repository is public (in-house trial, decided 2026-11-10), Check for updates… is shown disabled and nothing is checked at startup; a newer version is installed by running its installer over the installed one, which keeps the data.
+While the repository is private, Check for updates… is shown disabled and nothing is checked at startup; a newer version is installed by running its installer over the installed one, which keeps the data.
 
 ## Windows
 

@@ -10,10 +10,9 @@ Created 2026-11-03. Working plan, kept with the documentation in the Obsidian va
 4. Check [known issues and feedback](known-issues.md): an open entry in the area the task touches is handled in that task.
 5. Before stopping, update the Status table and the task plan's checklist so the next thread can continue. Never leave work uncommitted between tasks without noting it here.
 
-**Current: Task 10 — Release readiness.** Version 2.0.0 is released in house (2026-11-10): published from the
-private repository, with Check for updates shown disabled until the repository goes public. Remaining in
-[Task 10](task-10-release-readiness.md): going public (step 10, postponed by the user for an in-house trial; it
-also sets `UpdateChannel.published` to `true`) and starting the Linux AppImage by hand once (step 9).
+**All planned tasks are done.** Task 10 ended with 2.0.0 released from the private repository on 2026-11-10
+([Task 10](task-10-release-readiness.md)); Check for updates stays disabled while the repository is private. Open
+improvements are listed in [known issues](known-issues.md).
 
 ## Sources of truth
 
@@ -197,6 +196,6 @@ Implemented on 2026-11-06 as `npm run dev:reset-data` and `npm run dev:import-v1
 | 9 Host maintenance | Done (2026-11-08), PR #5 merged | [task-09-host-maintenance](task-09-host-maintenance.md) | Maintenance window from the desktop menu or `--maintenance`: Admin recovery (audited), `.mcbackup` backup and same-version restore; Admin data reset on the Accounts page; see its notes for later tasks |
 | 9.5 Internet access and HTTPS | Done, PR #6 merged | [task-09-5-internet-access-https](task-09-5-internet-access-https.md) | Inserted at the user's request; brief records the analysis, open questions and deferred options. Its real-world check (step 11) is not ticked in its plan; KI-13 (router rule renewal) fixed, PR #13 merged |
 | 9.6 Domain name and HTTP internet access | Done (2026-11-09), PR #11 merged | [task-09-6-internet-access-domain-name](task-09-6-internet-access-domain-name.md) | Inserted at the user's request; no DNS provider API. Its real-world check (step 9) is not ticked in its plan |
-| 10 Release readiness | 2.0.0 released in house (2026-11-10), PRs #16, #17, #18 merged | [task-10-release-readiness](task-10-release-readiness.md) | Private repository, updates off; going public and the AppImage check by hand remain |
+| 10 Release readiness | Done (2026-11-10), PRs #16, #17, #18 merged | [task-10-release-readiness](task-10-release-readiness.md) | 2.0.0 released from the private repository; updates off |
 
 Pre-implementation fixes done (2026-11-03): docs/design decisions recorded, foundation formatted with oxfmt, `whoami`/`icacls` resolved from System32, `npm run check` order fixed. Full check passes (41 files, 409 tests).
