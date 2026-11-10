@@ -201,8 +201,8 @@ design.
   "Open port 443 on your router before {date}"; the Admin opens 443 in the router and may close it after the
   renewal. If forgotten, the renewal fails once (KI-9: the app then waits), the current certificate stays in use
   (about a month left for a domain name) and the panel asks to open 443 and Check again.
-- **To confirm when planning:** an IP address without a domain name renews every 3 days, so a reminder would come
-  every 3 days; proposed: in that case only, the panel advises a permanent 443 rule instead of the reminder.
+- **Decided (the user, 2026-11-10): an IP address without a domain name** renews every 3 days, so in that case only
+  the panel advises a permanent 443 rule instead of the reminder.
 - **Severity:** medium. **Planned:** to plan with the user (detailed plan to write).
 
 ## Done
