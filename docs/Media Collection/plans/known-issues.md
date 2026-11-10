@@ -29,6 +29,8 @@ design.
 | KI-14 | Improvement | Desktop dialogs, menus and window titles are only in English | Medium | Done |
 | KI-15 | Bug | Activity: a shelf change and a tag change read as the same vague entry | Low | Done |
 | KI-16 | Improvement | Internet access: the HTTP and HTTPS ports are chosen in Server settings and used outside too; 443 opens only for Let's Encrypt's check | Medium | Open |
+| KI-17 | Improvement | Book lookup: the category (Books, Manga, Comics) is never filled in from the BnF record | Medium | Open |
+| KI-18 | Improvement | Book lookup: a source's author spelling is filled in even when a similar author already exists | Medium | Open |
 
 ## Open
 
@@ -142,6 +144,44 @@ design.
 - **Decided (the user, 2026-11-10): an IP address without a domain name** renews every 3 days, so in that case only
   the panel advises a permanent 443 rule instead of the reminder.
 - **Severity:** medium. **Planned:** to plan with the user (detailed plan to write).
+
+### KI-17 — Book lookup: the category (Books, Manga, Comics) is never filled in from the BnF record
+
+- **Type:** Improvement.
+- **Reported:** 2026-11-10 by the user, adding Darwin's Game volumes with Leaf: the form always proposes Books.
+- **Today:** the lookup answer (`LookupAnswer`) has no category, so the Libris and Leaf forms keep their default,
+  Books. `BnfCatalogue` reads fields 101 (language), 200, 210/214, 215, 461 and 70x/71x, not the ones below.
+- **Found in the BnF records (2026-11-10, the test fixtures):** Claymore 15 and Rose Hip Rose 1 (manga) have field
+  **686 $a 805** (the "Bandes dessinées" class of the Bibliographie nationale française), field **608 $a "Bandes
+  dessinées"** and **101 $c jpn** (translated from Japanese); Claymore also has the collection "Shonen manga" (225).
+  The novels have 686 $a 803 (Ewilan) or no 686 (La Passe-miroir), and no 101 $c.
+- **Fix:** the BnF adapter reads the category:
+  - comic class (686 $a 805 or 608 $a "Bandes dessinées") and original language Japanese, Korean or Chinese (101 $c
+    `jpn`, `kor`, `chi`/`zho`) → **Manga** (manhwa and manhua count as manga, decided by the user on 2026-11-10);
+  - comic class otherwise → **Comics**;
+  - anything else → no category (the form keeps its default).
+  - Open Library as a backup when the BnF has no record: subjects such as "Manga" or "Comic books, strips, etc."
+    (to check on real answers). Publishers are not used: some publish both (Glénat).
+  - `LookupAnswer` gains an optional category; Libris and Leaf prefill it, and the person can change it as usual.
+  - Tests: the adapter on the four fixtures (Claymore and Rose Hip Rose → Manga, the novels → none), a European
+    comic fixture → Comics, a Korean original → Manga; the forms prefilled; the merge of sources.
+- **Severity:** medium (every manga added through the lookup needs a correction). **Planned:** to plan.
+
+### KI-18 — Book lookup: a source's author spelling is filled in even when a similar author already exists
+
+- **Type:** Improvement.
+- **Reported:** 2026-11-10 by the user: for Darwin's Game the BnF gives "Flipsflops"; the form fills it in, and
+  only at save asks whether to use the existing "Flipflop's" (the similar-author question works).
+- **Today:** the similar-name rule (`NameKey.similar`) runs only at save (`AuthorResolver`, `author-similar`
+  conflict, then the question in Libris and Leaf).
+- **Fix:** the lookup applies the same rule as soon as it answers: for each author of the answer, an existing author
+  with the same key or a similar name is filled in instead (here "Flipflop's"), and under the field the form shows
+  "BnF suggests: Flipsflops" with a button to use that spelling instead (a new author, as the save question allows
+  today). Same in Libris and Leaf, both using the lookup. The save question stays for names typed by hand.
+  - Tests: the lookup answer carries the matching existing author; exact key match and similar match; no match keeps
+    the source's spelling; the forms show the suggestion and switch to it.
+- **Severity:** medium (a question at every save for those authors, and a risk of duplicate authors).
+  **Planned:** to plan.
 
 ## Done
 
