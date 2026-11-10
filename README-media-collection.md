@@ -21,6 +21,7 @@ The documentation is an [Obsidian](https://obsidian.md) vault: open the `docs/Me
 - [Decisions and open questions](docs/Media%20Collection/product/decisions-and-open-questions.md): rationale, recommendations, and questions to resolve before implementation.
 - [Design guidelines](docs/Media%20Collection/design/design-guidelines.md): design reference location and authority, product names (Libris, Leaf), icon sets, accessibility, and window size.
 - [Foundation import](docs/Media%20Collection/architecture/foundation-import.md): baseline provenance and verification.
+- [Releasing a version](docs/Media%20Collection/operations/releasing.md): version, tag, GitHub Actions release workflow, draft and publication.
 - [Configuration](docs/Media%20Collection/operations/configuration.md): everyday settings and optional startup overrides.
 - [Lending](docs/Media%20Collection/product/lending.md): business flows, open decisions, and implementation-planning handoff.
 - [Lending design brief](docs/Media%20Collection/design/lending-design-brief.md): required lending screens and states.
