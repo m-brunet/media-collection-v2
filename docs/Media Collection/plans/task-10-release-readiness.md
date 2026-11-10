@@ -19,7 +19,7 @@ Owning docs: [updates](../operations/updates.md), [release expectations](../oper
   - the Windows Firewall rule in the installer ([Task 9.5](task-09-5-internet-access-https.md)), for the HTTPS port and,
     since [Task 9.6](task-09-6-internet-access-domain-name.md), the HTTP port too;
   - the Libris icon files in `apps/desktop/assets/icons` for the installer (KI-4);
-  - [KI-14](known-issues.md#ki-14--desktop-dialogs-menus-and-window-titles-are-only-in-english): desktop dialogs,
+  - [KI-14](resolved-issues.md#ki-14--desktop-dialogs-menus-and-window-titles-are-only-in-english): desktop dialogs,
     menus and window titles in English and French (device language); the new menus, About window and update dialogs
     are written translated from the start;
   - the credits page built by KI-6 (Libris `/credits`) is complete: every asset and library added since then is listed;

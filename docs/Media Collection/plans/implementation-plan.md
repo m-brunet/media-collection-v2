@@ -7,12 +7,26 @@ Created 2026-11-03. Working plan, kept with the documentation in the Obsidian va
 1. Read `AGENTS.md` (mandatory architecture/SOLID/validation rules and the required review skill), then this file.
 2. Check the **Status** table below and `git log --oneline -15` to find the current task and whether it is planned, in progress, or done.
 3. If the current task has a detailed plan (`plans/task-NN-*.md`), read it and continue from its own checklist. If not, write it first (see "Per-task workflow") and get user approval before implementing.
-4. Check [known issues and feedback](known-issues.md): an open entry in the area the task touches is handled in that task.
+4. Check the [open GitHub issues](https://github.com/m-brunet/media-collection-v2/issues) in the area the task touches: an open issue there is handled in that task (see [Future work](#future-work)).
 5. Before stopping, update the Status table and the task plan's checklist so the next thread can continue. Never leave work uncommitted between tasks without noting it here.
 
 **All planned tasks are done.** Task 10 ended with 2.0.0 released from the private repository on 2026-11-10
 ([Task 10](task-10-release-readiness.md)); Check for updates stays disabled while the repository is private. Open
-improvements are listed in [known issues](known-issues.md).
+work is tracked in [GitHub Issues](https://github.com/m-brunet/media-collection-v2/issues) (see [Future work](#future-work)); fixed issues are recorded in
+[resolved issues](resolved-issues.md).
+
+## Future work
+
+Bugs, improvements and features are GitHub issues in this repository, decided on 2026-11-10 (the earlier
+`known-issues.md` became [resolved issues](resolved-issues.md), the record of the fixed KI entries; the open ones moved to issues #20 to #23).
+
+- **One issue per item**, with one type label: `bug`, `improvement` or `feature`; and the `area: …` labels it touches
+  (`libris`, `leaf`, `desktop`, `server`).
+- **`needs-refinement`:** an idea dropped in whose details are still to discuss and plan; it is not started before the
+  label is removed.
+- **The issue holds the request, the findings and the decisions.** A detailed plan, when one is needed, stays a file in
+  `plans/`, linked from the issue. A pull request that resolves it says `Fixes #<number>`, which closes it on merge.
+- **Design reference:** the Doop canvas `shiKEeCX2V`, as described in [resolved issues](resolved-issues.md).
 
 ## Sources of truth
 

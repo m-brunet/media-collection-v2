@@ -1,9 +1,8 @@
-# Known issues and feedback
+# Resolved issues
 
-Bugs and improvement requests found during development or reported by the user, not done yet. Each entry has an
-identifier, a type (**Bug** or **Improvement**), what was seen or asked, the cause when known, the intended fix and when
-it is planned. Done entries move to **Done** with their commit, then are deleted once the change is released. Read this
-list before starting a task: an open entry in the area a task touches is handled in that task.
+Bugs and improvements fixed during development (KI-1 to KI-15; KI-12 moved to GitHub Issues), kept as a record:
+commits and plans refer to them by these identifiers. **Future work** (bugs, improvements and features) is tracked in
+[GitHub Issues](https://github.com/m-brunet/media-collection-v2/issues), not here; see the [implementation plan](implementation-plan.md#future-work).
 
 **Design reference:** the Doop canvas **`shiKEeCX2V`** (doop.design). It replaces the Pen file
 `design/media-collection-v3.pen` that older entries were written against: look up the same groups and frames by name on
@@ -24,166 +23,11 @@ design.
 | KI-9 | Improvement | Internet access: no automatic Let's Encrypt retries, estimated attempts left           | Medium   | Done   |
 | KI-10 | Improvement | Internet access: renew certificates through ARI so renewals escape Let's Encrypt limits | Medium | Done |
 | KI-11 | Improvement | Server settings: QR code for each address, opening Leaf, with the Libris logo | Medium | Done |
-| KI-12 | Improvement | The address QR codes also sign the phone in to Leaf (not the HTTP internet address) | Medium | Open |
 | KI-13 | Bug | Internet access: the router rule lapses while the panel still shows it on | High | Done |
 | KI-14 | Improvement | Desktop dialogs, menus and window titles are only in English | Medium | Done |
 | KI-15 | Bug | Activity: a shelf change and a tag change read as the same vague entry | Low | Done |
-| KI-16 | Improvement | Internet access: the HTTP and HTTPS ports are chosen in Server settings and used outside too; 443 opens only for Let's Encrypt's check | Medium | Open |
-| KI-17 | Improvement | Book lookup: the category (Books, Manga, Comics) is never filled in from the BnF record | Medium | Open |
-| KI-18 | Improvement | Book lookup: a source's author spelling is filled in even when a similar author already exists | Medium | Open |
 
-## Open
-
-### KI-12 — The address QR codes also sign the phone in to Leaf (not the HTTP internet address)
-
-- **Type:** Improvement.
-- **Reported:** 2026-11-09 by the user, during Task 9.6.
-- **Wanted:** scanning the QR code opens Leaf already signed in with the account of the user who displayed it, without
-  typing the password on the phone.
-- **Decisions (2026-11-09):**
-  - **No new button:** it is the existing QR code of the addresses list (Server settings, KI-11, Task 9.6).
-  - **Which addresses:** every address with a QR code signs the phone in, whatever the HTTPS state, **except the HTTP
-    internet address** (`http://<domain or public IP>:<port>`), which keeps a plain QR code (the phone signs in with
-    the password). Why:
-    - HTTPS internet address: encrypted.
-    - Local network addresses (`http://192.168.x.x`): only the home network carries the code; signing in there with
-      the password already sends it unencrypted today, so a single-use 2-minute code adds no exposure.
-    - Tailscale addresses (`http://100.x.x.x`): Tailscale encrypts the traffic between devices (WireGuard).
-    - HTTP internet address: crosses public networks (shop Wi-Fi, mobile carrier) unencrypted, so excluded.
-    - Loopback: no QR code already.
-  - **Validity:** 2 minutes, single use (confirmed).
-  - **Admin only, for now:** only the Admin sees the addresses list, so only the Admin can show such a QR code; the
-    phone is signed in as the Admin. A way for Owners may come later.
-  - **The phone session is a normal sign-in:** same account and rights as signing in with the password on the phone,
-    same lifetime (24 idle hours, KI-2), ended like any session by a password change, a
-    deactivation or the Admin recovery. No "Leaf only" limit and no device list.
-- **Today:** the addresses list is in Server settings, so only the Admin sees it; the QR code holds
-  `<address>/leaf/` (`apps/web/src/libris/administration/addresses-panel.tsx`). Sessions: HttpOnly cookies with a
-  token version (`architecture.md`, security section).
-- **Fix:**
-  - **Pairing code:** when the user shows the QR code of an eligible address, Libris asks the server for a one-time
-    code: random (32 bytes, base64url), only its hash stored with the account and an expiry of 2 minutes, usable once;
-    showing the code again replaces the previous one. Feature `identity`: use cases "create a pairing code" (signed-in
-    Admin) and "redeem a pairing code", a store (SQLite table with UUID id, hashed code, account, expiry, used
-    at), audit categories for both.
-  - **QR value:** `<address>/leaf/#pair=<code>`. The code is after `#`, so the browser never sends it in a request:
-    it stays out of server logs and `Referer` headers. The server decides which addresses are eligible (it knows the
-    HTTP internet address), so the rule is not left to the browser.
-  - **Leaf:** on start, reads `#pair=`, removes it from the address bar at once (`history.replaceState`), and sends it
-    once to a pre-login endpoint (for example `POST /api/sessions/pair`, CSRF like the login). The server checks the
-    code (exists, not expired, not used, account active and Admin, no temporary password to change), marks it
-    used, and opens the session exactly like a login (cookie, token version). Expired or used: Leaf shows its sign-in
-    screen with "This QR code has expired. Show it again on the computer." Rate-limited like the login.
-  - **Libris:** under the QR code of an eligible address, "This code signs a phone in as <username>. It works once,
-    for 2 minutes." and a new code when it expires while shown. Under the HTTP internet address, nothing changes.
-  - **Tests:** domain/application rules (expiry, single use, inactive account, temporary password, Owner and Guest
-    refused), the
-    redeem endpoint (success sets the session cookie, each refusal, rate limit, audit), Libris (the QR value has
-    `#pair=` for local, Tailscale and HTTPS addresses, never for the HTTP internet address), a browser journey (scan value opened in a new context lands signed
-    in on Leaf; second use refused). No test reaches Let's Encrypt (Task 9.6 testing rule).
-- **Severity:** medium (sign-in on the phone at every session today). **Planned:** next version, after the 2.0.0
-  release.
-- **Progress (checked 2026-11-10):** nothing done yet: no pairing code in the server or in Leaf.
-
-### KI-16 — Internet access: chosen HTTP and HTTPS ports used outside too; 443 opens only for Let's Encrypt's check
-
-- **Type:** Improvement.
-- **Reported:** 2026-11-10 by the user, after HTTPS from the internet worked with the domain name: phones should not
-  reach Media Collection on the default HTTPS port 443 but on a port of the Admin's choice.
-- **Wanted (the user, 2026-11-10):**
-  - The HTTP port and the HTTPS port are set in Server settings, and each is **both the port on this computer and
-    the outside port** on the router.
-  - Defaults: **34345** for HTTP (as now) and **34443** for HTTPS (today: 3443 on this computer, 443 outside).
-  - Phones open `https://<domain name or address>:<HTTPS port>`; addresses and QR codes show the port.
-  - Port 443 is open only while Let's Encrypt checks the computer (option A below, chosen by the user).
-- **Findings (checked in the code and the standards, 2026-11-10):**
-  - **The certificate does not depend on the port:** it covers a name (`kaze-d.fr`) or an address. Changing ports
-    reissues nothing.
-  - **Let's Encrypt only checks on fixed ports:** TLS-ALPN-01 (used here) always connects to port 443 (RFC 8737),
-    HTTP-01 to port 80, and DNS-01 needs the DNS provider's API. So 443 must be open at every check: each setup,
-    each Check again, and each renewal (about every 60 days for a domain name, every 3 days for an IP address
-    certificate). ARI renewals (KI-10) are still checked.
-  - Options discussed: **A.** open 443 just before each check and close it right after (automatic with UPnP/NAT-PMP;
-    with a rule added by hand, the Admin opens 443 at each renewal); **B.** keep 443 open for Let's Encrypt only;
-    **C.** the DNS check (credentials and one integration per DNS provider). The user chose **A**.
-  - **Today:** both ports are already settings, in Server settings › "Advanced: ports and manual certificate". HTTP
-    internet access (Task 9.6) already uses the same port inside and outside (`HttpPortForwarding`). HTTPS uses the
-    HTTPS port inside and the fixed `InternetAccess.externalPort = 443` outside; the address phones open is built
-    without a port (`ReadInternetAccess`: `'https://' + certificateName`).
-  - **Router rule:** the upkeep adds it again every hour with a 2-hour lease, so after an update to another outside
-    port the new rule is added by the first upkeep and the old 443 rule usually lapses within 2 hours. A router that
-    refuses leases gets a permanent rule (`ttl: 0`, `UpnpRouterGateway`): that old 443 rule must be removed
-    explicitly. A rule added by hand is changed by the Admin only.
-- **Proposed fix (to plan):**
-  - **Settings:** HTTP and HTTPS ports shown in Server settings (outside the Advanced section), with a short note that
-    the same port is opened on the router; HTTPS default 34443. Changing a port while internet access is on moves the
-    listener and the router rule; no certificate is reissued.
-  - **Router:** the permanent rule maps the HTTPS port outside to the same port on this computer. For each
-    Let's Encrypt check, a temporary rule 443 → HTTPS port is opened just before the order and closed right after,
-    success or failure (the HTTPS listener answers the TLS-ALPN-01 check as today); both logged. KI-13's router
-    retries and KI-9's attempt rules stay as they are.
-  - **Rule added by hand:** the manual rule screen gives the HTTPS port rule, and explains that 443 is needed only
-    while Let's Encrypt checks (setup, Check again, renewals), with the date of the next renewal.
-  - **Addresses:** the origin, the addresses list and the QR codes include the port when it is not 443.
-  - **After the update (existing installations):** the old 443 → 3443 rule is removed once by the app; the panel says
-    once that phones must open the new address (scan the QR code again); the saved HTTPS port is handled per open
-    question 1.
-  - **Tests:** domain rule for the outside port; the temporary 443 rule opened before and closed after a check (also
-    after a refusal or an error); no 443 rule between checks; the origin with and without port; the one-time removal
-    of the old rule; Server settings fields and texts in EN/FR.
-- **Decided (the user, 2026-11-10):** existing installations move from 3443 to **34443** on update (the
-  one-time step that removes the old 443 → 3443 rule also opens the new one).
-- **Detecting a rule added by hand (checked 2026-11-10):** the app knows it is in that case (`mapping: 'manual'`:
-  the router did not answer UPnP/NAT-PMP or refused the rule), but cannot see the rule itself: UPnP lists rules on
-  some routers only, usually not those made in the router's web page, and testing 443 from outside would need an
-  outside service. Since KI-9 a missing 443 rule costs one failed check, then the app waits for Check again.
-- **Decided (the user, 2026-11-10): a reminder for a rule added by hand.** The panel shows the next renewal date with
-  "Open port 443 on your router before {date}"; the Admin opens 443 in the router and may close it after the
-  renewal. If forgotten, the renewal fails once (KI-9: the app then waits), the current certificate stays in use
-  (about a month left for a domain name) and the panel asks to open 443 and Check again.
-- **Decided (the user, 2026-11-10): an IP address without a domain name** renews every 3 days, so in that case only
-  the panel advises a permanent 443 rule instead of the reminder.
-- **Severity:** medium. **Planned:** to plan with the user (detailed plan to write).
-
-### KI-17 — Book lookup: the category (Books, Manga, Comics) is never filled in from the BnF record
-
-- **Type:** Improvement.
-- **Reported:** 2026-11-10 by the user, adding Darwin's Game volumes with Leaf: the form always proposes Books.
-- **Today:** the lookup answer (`LookupAnswer`) has no category, so the Libris and Leaf forms keep their default,
-  Books. `BnfCatalogue` reads fields 101 (language), 200, 210/214, 215, 461 and 70x/71x, not the ones below.
-- **Found in the BnF records (2026-11-10, the test fixtures):** Claymore 15 and Rose Hip Rose 1 (manga) have field
-  **686 $a 805** (the "Bandes dessinées" class of the Bibliographie nationale française), field **608 $a "Bandes
-  dessinées"** and **101 $c jpn** (translated from Japanese); Claymore also has the collection "Shonen manga" (225).
-  The novels have 686 $a 803 (Ewilan) or no 686 (La Passe-miroir), and no 101 $c.
-- **Fix:** the BnF adapter reads the category:
-  - comic class (686 $a 805 or 608 $a "Bandes dessinées") and original language Japanese, Korean or Chinese (101 $c
-    `jpn`, `kor`, `chi`/`zho`) → **Manga** (manhwa and manhua count as manga, decided by the user on 2026-11-10);
-  - comic class otherwise → **Comics**;
-  - anything else → no category (the form keeps its default).
-  - Open Library as a backup when the BnF has no record: subjects such as "Manga" or "Comic books, strips, etc."
-    (to check on real answers). Publishers are not used: some publish both (Glénat).
-  - `LookupAnswer` gains an optional category; Libris and Leaf prefill it, and the person can change it as usual.
-  - Tests: the adapter on the four fixtures (Claymore and Rose Hip Rose → Manga, the novels → none), a European
-    comic fixture → Comics, a Korean original → Manga; the forms prefilled; the merge of sources.
-- **Severity:** medium (every manga added through the lookup needs a correction). **Planned:** to plan.
-
-### KI-18 — Book lookup: a source's author spelling is filled in even when a similar author already exists
-
-- **Type:** Improvement.
-- **Reported:** 2026-11-10 by the user: for Darwin's Game the BnF gives "Flipsflops"; the form fills it in, and
-  only at save asks whether to use the existing "Flipflop's" (the similar-author question works).
-- **Today:** the similar-name rule (`NameKey.similar`) runs only at save (`AuthorResolver`, `author-similar`
-  conflict, then the question in Libris and Leaf).
-- **Fix:** the lookup applies the same rule as soon as it answers: for each author of the answer, an existing author
-  with the same key or a similar name is filled in instead (here "Flipflop's"), and under the field the form shows
-  "BnF suggests: Flipsflops" with a button to use that spelling instead (a new author, as the save question allows
-  today). Same in Libris and Leaf, both using the lookup. The save question stays for names typed by hand.
-  - Tests: the lookup answer carries the matching existing author; exact key match and similar match; no match keeps
-    the source's spelling; the forms show the suggestion and switch to it.
-- **Severity:** medium (a question at every save for those authors, and a risk of duplicate authors).
-  **Planned:** to plan.
-
-## Done
+## Entries
 
 ### KI-9 — Internet access: no automatic Let's Encrypt retries, estimated attempts left
 

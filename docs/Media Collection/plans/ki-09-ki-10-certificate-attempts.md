@@ -3,8 +3,8 @@
 Status: **done** (2026-11-10): plan approved by the user (both proposals below accepted); both commits made. Branch
 `fix/ki-9-ki-10-certificate-attempts`, one pull request, two commits: KI-10 first, then KI-9.
 
-Known issues: [KI-9](known-issues.md#ki-9--internet-access-no-automatic-lets-encrypt-retries-estimated-attempts-left)
-and [KI-10](known-issues.md#ki-10--internet-access-renew-certificates-through-ari-so-renewals-escape-lets-encrypt-limits).
+Resolved issues: [KI-9](resolved-issues.md#ki-9--internet-access-no-automatic-lets-encrypt-retries-estimated-attempts-left)
+and [KI-10](resolved-issues.md#ki-10--internet-access-renew-certificates-through-ari-so-renewals-escape-lets-encrypt-limits).
 Owning docs: [Task 9.5](task-09-5-internet-access-https.md), [Task 9.6](task-09-6-internet-access-domain-name.md),
 `operations/configuration.md`. Feature: `apps/server/src/server-settings`; Libris panel
 `apps/web/src/libris/administration/internet-access-panel.tsx`.
