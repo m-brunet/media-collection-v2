@@ -339,6 +339,12 @@ Each step: tests, the relevant checks, architecture review skill on the changes,
   the same change.
 - [ ] **11. Release 2.0.0**: version commit `2.0.0`, the V1 library procedure above, full `npm run check`, tag
   `v2.0.0`, the user reads and publishes the draft, install from the release page on Windows.
+  Done on 2026-11-10, on the in-house pull request (going public postponed):
+  - Secret scan: gitleaks 8.30.1 on every commit of every branch (476 commits, 14 MB): one finding, a false
+    positive: the `fileToken` of the Pencil design file `design/handoff-lending-final/media-collection-v2-final.pen`
+    (commit `ede04d6`, file removed since), a UUID naming the document, not a credential.
+  - Version `2.0.0`; the desktop and API tests read the version from `package.json` (`tests/api/app-version.ts`).
+  - V1 library imported in the development data: 446 books in 91 collections, 437 covers.
 
 Pull requests: steps 1 to 8 on this branch (one pull request, on the user's go-ahead), steps 9 to 11 after it is
 merged.

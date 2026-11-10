@@ -4,6 +4,7 @@ import { Client } from '../api/client.js';
 import { RuntimeFixture, RuntimeSetup } from '../api/runtime-setup.js';
 import type { ServerStatus } from '../../packages/contracts/src/http.js';
 import type { ElectronRuntime } from '../api/runtime.js';
+import { appVersion } from '../api/app-version.js';
 
 let fixture: RuntimeFixture;
 
@@ -460,7 +461,7 @@ describe('About window', () => {
             "document.querySelector('h1').textContent + ' ' + document.getElementById('version').textContent",
         );
 
-        expect(shown).toBe('Media Collection Version 0.1.0');
+        expect(shown).toBe(`Media Collection Version ${appVersion}`);
     });
     it('opens the source code in the default browser', async () => {
         const current = await aboutWindow();

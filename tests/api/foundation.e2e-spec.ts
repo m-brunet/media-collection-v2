@@ -8,6 +8,7 @@ import BetterSqlite3 from 'better-sqlite3';
 import type { Account, ServerStatus } from '../../packages/contracts/src/http.js';
 import { Client } from './client.js';
 import { RuntimeFixture, RuntimeSetup } from './runtime-setup.js';
+import { appVersion } from './app-version.js';
 
 let fixture: RuntimeFixture;
 let occupied: Server | undefined;
@@ -323,7 +324,7 @@ describe('Electron-managed runtime integration', () => {
         const recovery = await fixture.start(undefined, { maintenance: true });
         const command = {
             type: 'recover',
-            version: '0.1.0',
+            version: appVersion,
             dataDirectory: recovery.directory,
             password: 'recovery-password',
         };
@@ -364,7 +365,7 @@ describe('Electron-managed runtime integration', () => {
 
         await recovery.runtime.send({
             type: 'recover',
-            version: '0.1.0',
+            version: appVersion,
             dataDirectory: current.directory,
             password: 'recovery-password',
         });
@@ -391,7 +392,7 @@ describe('Electron-managed runtime integration', () => {
 
         await recovery.runtime.send({
             type: 'recover',
-            version: '0.1.0',
+            version: appVersion,
             dataDirectory: current.directory,
             password: 'recovery-password',
         });
