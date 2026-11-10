@@ -131,6 +131,15 @@ cannot really be undone (clones, forks, caches), so a full check comes first:
 3. Review what becomes public in `docs/` (plans, known issues) and `.obsidian/` workspace files; keep or remove.
 4. After the switch: turn on GitHub secret scanning and push protection.
 
+### In-house trial first (2026-11-10)
+
+Going public is postponed: Media Collection is first tried in house. Until then the File menu shows Check for updates…
+disabled, and nothing is checked at startup (`UpdateChannel.published` in `apps/desktop/src/update-channel.util.ts`
+is `false`; set it to `true` when the repository goes public). A newer version is installed by running its installer
+over the installed one: it finds the installed copy (same folder by default), removes it silently as an update
+(`--updated`: the data in the person's application data folder stays, the uninstaller's delete-data page is not shown)
+and installs the new one with its firewall rule and maintenance shortcut.
+
 ## Design
 
 Everything new lives in the Electron application (`apps/desktop`): updates, menus, the About window and the installer
@@ -324,7 +333,8 @@ Each step: tests, the relevant checks, architecture review skill on the changes,
   (`v0.1.0-ci.1`, a draft that is deleted afterwards). The Linux AppImage is also started by hand once (WSL with
   WSLg or a Linux machine): it opens, the backup folder is created.
 - [ ] **10. Going public**: the four checks under Going public, with the user; the user switches the repository to
-  public.
+  public. Postponed for the in-house trial (see In-house trial first); `UpdateChannel.published` is set to `true` in
+  the same change.
 - [ ] **11. Release 2.0.0**: version commit `2.0.0`, the V1 library procedure above, full `npm run check`, tag
   `v2.0.0`, the user reads and publishes the draft, install from the release page on Windows.
 

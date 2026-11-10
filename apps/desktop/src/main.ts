@@ -5,6 +5,7 @@ import { ElectronUpdaterSource } from './electron-updater-source.adapter.js';
 import { ScriptedUpdateSource } from './scripted-update-source.adapter.js';
 import { NativeUpdateDialogs } from './update-dialogs.adapter.js';
 import { UpdateBackup } from './update-backup.adapter.js';
+import { UpdateChannel } from './update-channel.util.js';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { mkdirSync } from 'node:fs';
@@ -163,11 +164,14 @@ if (!startupOptions) {
                 const updates = applicationUpdates(options);
 
                 await launch(options);
-                // Never delays the window; silent unless an update is available.
-                setTimeout(
-                    () => void updates.checkAtStartup(),
-                    process.env.APP_TEST_UPDATES ? 0 : 5000,
-                );
+
+                if (updates) {
+                    // Never delays the window; silent unless an update is available.
+                    setTimeout(
+                        () => void updates.checkAtStartup(),
+                        process.env.APP_TEST_UPDATES ? 0 : 5000,
+                    );
+                }
             }
         } catch (error) {
             if (quitting) {
@@ -363,14 +367,14 @@ function maintenanceWindow(dataDirectory: string): MaintenanceWindow {
 }
 
 // The update flow from the File menu. Test launches script the releases (`APP_TEST_UPDATES`);
-// outside a packaged application electron-updater finds no release information.
+// outside a packaged application electron-updater finds no release information. Until the releases
+// are published (UpdateChannel), only the menu is set up, with its update item disabled.
 function applicationUpdates(
     options: ReturnType<typeof DesktopConfigurationParser.parse>,
-): ApplicationUpdates {
-    const source: UpdateSource =
-        (!app.isPackaged
-            ? ScriptedUpdateSource.fromEnvironment(process.env.APP_TEST_UPDATES)
-            : undefined) ?? new ElectronUpdaterSource();
+): ApplicationUpdates | undefined {
+    const scripted = !app.isPackaged
+        ? ScriptedUpdateSource.fromEnvironment(process.env.APP_TEST_UPDATES)
+        : undefined;
     const backup = new UpdateBackup({
         workerPath: join(directory, 'worker.js'),
         dataDirectory: options.dataDirectory,
@@ -381,6 +385,14 @@ function applicationUpdates(
         updates: () => void updates.chooseFromMenu(),
         openMaintenance: () => void openMaintenance(options),
     });
+
+    if (!UpdateChannel.published && !scripted) {
+        Menu.setApplicationMenu(menu.build({ kind: 'off' }));
+
+        return undefined;
+    }
+
+    const source: UpdateSource = scripted ?? new ElectronUpdaterSource();
     const updates: ApplicationUpdates = new ApplicationUpdates(
         source,
         new NativeUpdateDialogs(texts),
