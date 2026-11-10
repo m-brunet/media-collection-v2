@@ -139,6 +139,8 @@ is `false`; set it to `true` when the repository goes public). A newer version i
 over the installed one: it finds the installed copy (same folder by default), removes it silently as an update
 (`--updated`: the data in the person's application data folder stays, the uninstaller's delete-data page is not shown)
 and installs the new one with its firewall rule and maintenance shortcut.
+Tried by the user on 2026-11-10 (0.1.0 installed, then the 0.1.1 installer run over it): data kept, About shows
+0.1.1, Check for updates… disabled, firewall rule and maintenance shortcut present, one entry in Settings › Apps.
 
 ## Design
 
