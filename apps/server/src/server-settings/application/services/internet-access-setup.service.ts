@@ -6,6 +6,7 @@ import type { CertificateAuthority } from '../ports/driven/certificate-authority
 import type { DomainNameReader } from '../ports/driven/domain-name-reader.interface.js';
 import type { HttpsRuntime } from '../ports/driven/https-runtime.interface.js';
 import type { InternetAccessStore } from '../ports/driven/internet-access-store.interface.js';
+import type { TlsCertificateReader } from '../ports/driven/tls-certificate-reader.interface.js';
 import type { TlsStore } from '../ports/driven/tls-store.interface.js';
 import type { DomainNameCheck } from './domain-name-check.service.js';
 import type { HttpInternetAccessClosing } from './http-internet-access-closing.service.js';
@@ -20,7 +21,7 @@ export class InternetAccessSetup {
         private readonly rules: RouterRules,
         private readonly authority: CertificateAuthority,
         private readonly https: HttpsRuntime,
-        private readonly tls: TlsStore,
+        private readonly tls: TlsStore & TlsCertificateReader,
         private readonly domains: DomainNameCheck,
         private readonly names: DomainNameReader,
         private readonly httpClosing: HttpInternetAccessClosing,
@@ -77,10 +78,14 @@ export class InternetAccessSetup {
             return 'https-unavailable';
         }
 
-        const issue = await this.authority.issue({
-            kind: access.domain ? 'domain' : 'address',
-            name: access.certificateName!,
-        });
+        const name = access.certificateName!;
+        // Same name: an ARI renewal of the certificate in use, which Let's Encrypt does not count.
+        const replacing =
+            access.certificate?.address === name ? await this.tls.currentChain() : null;
+        const issue = await this.authority.issue(
+            { kind: access.domain ? 'domain' : 'address', name },
+            replacing,
+        );
 
         if (issue.outcome === 'refused') {
             return issue.reason;
@@ -97,7 +102,7 @@ export class InternetAccessSetup {
             return 'https-unavailable';
         }
 
-        access.activate({ address: access.certificateName!, issuedAt, expiresAt });
+        access.activate({ address: name, issuedAt, expiresAt });
 
         return null;
     }

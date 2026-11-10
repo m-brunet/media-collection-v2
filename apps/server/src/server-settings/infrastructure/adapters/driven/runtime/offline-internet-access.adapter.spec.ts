@@ -32,7 +32,7 @@ it('resolves no domain name', async () => {
 it('never issues a certificate', async () => {
     const { authority } = OfflineInternetAccess.adapters();
 
-    const issue = await authority.issue({ kind: 'address', name: '82.66.118.204' });
+    const issue = await authority.issue({ kind: 'address', name: '82.66.118.204' }, null);
 
     expect(issue).toEqual({ outcome: 'refused', reason: 'authority-unavailable' });
 });
