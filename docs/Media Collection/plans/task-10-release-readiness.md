@@ -1,7 +1,9 @@
 # Task 10 — Release readiness
 
-Status: **in progress**, plan approved by the user on 2026-11-10. Decisions recorded on 2026-11-08 and
-2026-11-10; every question is answered (see [Answers from the user](#answers-from-the-user-2026-11-10)). Branch `docs/task-10-decisions`.
+Status: **2.0.0 released in house** (2026-11-10, private repository, updates off). Remaining: going public (step 10)
+and starting the AppImage by hand once (step 9). Plan approved by the user on 2026-11-10; decisions recorded on
+2026-11-08 and 2026-11-10 (see [Answers from the user](#answers-from-the-user-2026-11-10)). Pull requests #16, #17
+and #18.
 Global plan: [implementation plan](implementation-plan.md).
 
 Owning docs: [updates](../operations/updates.md), [release expectations](../operations/release-expectations.md),
@@ -336,20 +338,28 @@ Each step: tests, the relevant checks, architecture review skill on the changes,
   packaging runs the same builds and smoke tests without publishing (and Run workflow does too), so no throwaway tag
   or draft is needed; publishing itself is first used by `v2.0.0`, as a draft the user reads before publishing.
   First run (PR #17, 2026-11-10): both jobs passed, smoke tests included (Windows 4.5 minutes, Linux 1.2 minutes),
-  and kept `Media-Collection-Setup-0.1.0.exe` and `Media-Collection-0.1.0.AppImage`. Still to do: start the AppImage
-  by hand once on a Linux desktop. The Linux AppImage is also started by hand once (WSL with
-  WSLg or a Linux machine): it opens, the backup folder is created.
+  and kept `Media-Collection-Setup-0.1.0.exe` and `Media-Collection-0.1.0.AppImage`. Merged (PR #17). Still to do:
+  start the AppImage by hand once on a Linux desktop (WSL with WSLg or a Linux machine): it opens, creating a backup
+  creates the backup folder.
 - [ ] **10. Going public**: the four checks under Going public, with the user; the user switches the repository to
   public. Postponed for the in-house trial (see In-house trial first); `UpdateChannel.published` is set to `true` in
   the same change.
-- [ ] **11. Release 2.0.0**: version commit `2.0.0`, the V1 library procedure above, full `npm run check`, tag
+- [x] **11. Release 2.0.0**: version commit `2.0.0`, the V1 library procedure above, full `npm run check`, tag
   `v2.0.0`, the user reads and publishes the draft, install from the release page on Windows.
-  Done on 2026-11-10, on the in-house pull request (going public postponed):
+  Done on 2026-11-10, on the in-house pull request #18 (going public postponed):
   - Secret scan: gitleaks 8.30.1 on every commit of every branch (476 commits, 14 MB): one finding, a false
     positive: the `fileToken` of the Pencil design file `design/handoff-lending-final/media-collection-v2-final.pen`
     (commit `ede04d6`, file removed since), a UUID naming the document, not a credential.
   - Version `2.0.0`; the desktop and API tests read the version from `package.json` (`tests/api/app-version.ts`).
-  - V1 library imported in the development data: 446 books in 91 collections, 437 covers.
+  - V1 library imported in the development data: 446 books in 91 collections, 437 covers. The user moves it into the
+    installed 2.0.0 (backup from the development Maintenance window, restored in the installed application).
+  - Full `npm run check` passed (334 files, 3007 tests); the pull request run built and smoke-tested 2.0.0 on both
+    systems.
+  - Tag `v2.0.0` on the merge commit `6d614c9`; the release run passed on Windows and Linux and made the draft with
+    `Media-Collection-Setup-2.0.0.exe`, `Media-Collection-2.0.0.AppImage`, `latest.yml`, `latest-linux.yml` and the
+    blockmap. The user added release notes (Libris and Leaf feature lists) and published it on 2026-11-10:
+    <https://github.com/m-brunet/media-collection-v2/releases/tag/v2.0.0>. The repository is still private, so the
+    release is visible to its collaborators only.
 
 Pull requests: steps 1 to 8 on this branch (one pull request, on the user's go-ahead), steps 9 to 11 after it is
 merged.
@@ -360,6 +370,7 @@ merged.
 - KI-14: on a French system every desktop dialog, menu label and window title is French.
 - The installed Windows application is reachable from a phone with no Windows Firewall prompt.
 - `v2.0.0` is published from a public repository with a Windows installer and a Linux AppImage built by the workflow.
+  Published from the private repository on 2026-11-10 (in-house trial); the public part waits for step 10.
 - First real update test: 2.0.1, as decided.
 
 ## Known limits
