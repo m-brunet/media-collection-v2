@@ -27,6 +27,7 @@ design.
 | KI-12 | Improvement | The address QR codes also sign the phone in to Leaf (not the HTTP internet address) | Medium | Open |
 | KI-13 | Bug | Internet access: the router rule lapses while the panel still shows it on | High | Done |
 | KI-14 | Improvement | Desktop dialogs, menus and window titles are only in English | Medium | Open |
+| KI-15 | Bug | Activity: a shelf change and a tag change read as the same vague entry | Low | Done |
 
 ## Open
 
@@ -179,6 +180,24 @@ design.
   reworks the menus and adds the About window and update dialogs.
 
 ## Done
+
+### KI-15 — Activity: a shelf change and a tag change read as the same vague entry
+
+- **Type:** Bug.
+- **Found:** 2026-11-08 by the user, on the Libris Activity page; fixed the same day on the `known-issues-fix-pass`
+  branch without an entry here. Entry written 2026-11-10 to track it.
+- **Seen:** placing a book on a shelf and changing its tags both showed "You changed the location or tags of *Dune*"
+  with the Books icon, so the entry did not say what had changed.
+- **Cause:** both changes are audited as one category, `book.organised`, and the Activity projection gave it a single
+  sentence (Task 8).
+- **Fix:** the projection compares the recorded before and after states: only the shelf changed → "You changed the
+  location of *Dune*" ("Vous avez modifié l’emplacement de *Dune*") with the Bookshelves icon; only the tags changed
+  (order ignored) → "You changed the tags of *Dune*" ("Vous avez modifié les étiquettes de *Dune*") with the Tags
+  icon; both, or a record that cannot tell → the general sentence as before. Older records are split too (no new
+  audit data). [Task 8](task-08-overview-activity.md) sentence table updated. Tests: projection rules (location only,
+  tags only, tags reordered, both), the API listing both kinds, the Activity page sentences and icons.
+- **Severity:** low (wording). **Done:** 2026-11-10, branch `fix/known-issues-1-2-5-7`, commit `95378d3`
+  (cherry-picked from `385f2db`, first written 2026-11-08).
 
 ### KI-1 — The desktop window cannot be closed while the book form has unsaved changes
 
