@@ -11,8 +11,9 @@ Created 2026-11-03. Working plan, kept with the documentation in the Obsidian va
 5. Before stopping, update the Status table and the task plan's checklist so the next thread can continue. Never leave work uncommitted between tasks without noting it here.
 
 **Next task: Task 10 — Release readiness** (decided by the user on 2026-11-10). In progress: detailed plan
-approved on 2026-11-10 in [Task 10](task-10-release-readiness.md). Known issues in its area: KI-14 (desktop dialogs
-and menus only in English); the credits page and installer icon follow-ups of KI-4, KI-6 and KI-11.
+approved on 2026-11-10 in [Task 10](task-10-release-readiness.md). Steps 1 to 8 (in-app work, installer, credits)
+are done on branch `docs/task-10-decisions`, including KI-14 and the KI-4, KI-6 and KI-11 follow-ups; next are the
+release workflow, going public and 2.0.0.
 
 ## Sources of truth
 
