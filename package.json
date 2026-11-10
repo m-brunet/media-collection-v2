@@ -3,7 +3,13 @@
     "version": "0.1.0",
     "private": true,
     "description": "Media Collection: manage a shared household book library (Libris desktop, Leaf mobile)",
+    "homepage": "https://github.com/m-brunet/media-collection-v2",
     "license": "MIT",
+    "author": "Matthias Brunet",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/m-brunet/media-collection-v2.git"
+    },
     "workspaces": [
         "apps/*",
         "packages/*"
@@ -108,14 +114,38 @@
             "**/node_modules/@img/**/*"
         ],
         "npmRebuild": false,
+        "publish": [
+            {
+                "provider": "github",
+                "owner": "m-brunet",
+                "repo": "media-collection-v2",
+                "releaseType": "draft"
+            }
+        ],
         "win": {
             "target": "nsis",
-            "signAndEditExecutable": false
+            "icon": "apps/desktop/assets/icons/libris.ico"
+        },
+        "nsis": {
+            "oneClick": false,
+            "perMachine": true,
+            "allowElevation": true,
+            "allowToChangeInstallationDirectory": true,
+            "createDesktopShortcut": true,
+            "createStartMenuShortcut": true,
+            "shortcutName": "Media Collection",
+            "installerIcon": "apps/desktop/assets/icons/libris.ico",
+            "uninstallerIcon": "apps/desktop/assets/icons/libris.ico",
+            "include": "build/installer.nsh",
+            "artifactName": "Media-Collection-Setup-${version}.${ext}",
+            "deleteAppDataOnUninstall": false
         },
         "linux": {
             "target": "AppImage",
             "category": "Utility",
-            "executableName": "media-collection"
+            "executableName": "media-collection",
+            "icon": "apps/desktop/assets/icons/libris.png",
+            "artifactName": "Media-Collection-${version}.${ext}"
         }
     }
 }

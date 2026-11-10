@@ -151,8 +151,6 @@ export const fr = {
     'internet.manualInternal': 'Port interne',
     'internet.manualUnknown': 'inconnue',
     'internet.check': 'Vérifier à nouveau',
-    'internet.firewall':
-        'Si Windows demande d’autoriser Media Collection sur le réseau, choisissez Autoriser.',
     'internet.replaceTitle': 'Remplacer le certificat enregistré ?',
     'internet.replaceBody':
         'Un certificat HTTPS est déjà enregistré. L’accès Internet le remplace par un certificat de Let’s Encrypt.',

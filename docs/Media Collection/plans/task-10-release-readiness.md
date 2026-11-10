@@ -290,6 +290,13 @@ Each step: tests, the relevant checks, architecture review skill on the changes,
 - [ ] **7. Installer**: `package.json` build settings, NSIS include with the firewall rule, icons, `repository`
   and `publish` fields, one version. Local Windows build: install, check the rule (`netsh advfirewall firewall show
   rule name="Media Collection"`), start, reach it from a phone, uninstall (rule gone, data kept).
+  Done: per-machine assisted NSIS installer with the Libris icon (the executable's icon too: executable editing is
+  back on), `build/installer.nsh` (firewall rule for the program, private and public; Start menu shortcut "Media
+  Collection maintenance"), `publish` to a draft GitHub Release, file names without spaces
+  (`Media-Collection-Setup-<version>.exe`, `Media-Collection-<version>.AppImage`), `repository`, `author`; the
+  workspace packages no longer carry their own version. The Libris "allow in the Windows prompt" reminder is removed.
+  The local build and `test:packaged` pass. **Waiting for the user:** the install itself needs the administrator
+  prompt, so the install, firewall, phone and uninstall checks are done by the user.
 - [ ] **8. Credits**: QR trademark line, completeness check; component test updated.
 - [ ] **9. Release workflow**: `release.yml`, `operations/releasing.md`, README (installation, SmartScreen steps,
   release procedure link; the "no continuous-integration pipeline" line updated). Tried with a throwaway tag
