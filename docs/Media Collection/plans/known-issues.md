@@ -197,11 +197,13 @@ design.
   the router did not answer UPnP/NAT-PMP or refused the rule), but cannot see the rule itself: UPnP lists rules on
   some routers only, usually not those made in the router's web page, and testing 443 from outside would need an
   outside service. Since KI-9 a missing 443 rule costs one failed check, then the app waits for Check again.
-- **Open question:** **rule added by hand.** Proposed: the panel shows the next renewal date with "Open port 443 on
-  your router before {date}"; if forgotten, the renewal fails once, the current certificate stays in use (about a
-  month left for a domain name) and the panel asks to open 443 and Check again. For an IP address without a domain
-  name (renewed every 3 days), the panel advises a permanent 443 rule instead.
-- **Severity:** medium. **Planned:** to plan with the user.
+- **Decided (the user, 2026-11-10): a reminder for a rule added by hand.** The panel shows the next renewal date with
+  "Open port 443 on your router before {date}"; the Admin opens 443 in the router and may close it after the
+  renewal. If forgotten, the renewal fails once (KI-9: the app then waits), the current certificate stays in use
+  (about a month left for a domain name) and the panel asks to open 443 and Check again.
+- **To confirm when planning:** an IP address without a domain name renews every 3 days, so a reminder would come
+  every 3 days; proposed: in that case only, the panel advises a permanent 443 rule instead of the reminder.
+- **Severity:** medium. **Planned:** to plan with the user (detailed plan to write).
 
 ## Done
 
