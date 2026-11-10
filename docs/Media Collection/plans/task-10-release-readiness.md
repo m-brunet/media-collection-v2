@@ -1,7 +1,7 @@
 # Task 10 — Release readiness
 
-Status: **2.0.0 released in house** (2026-11-10, private repository, updates off). Remaining: going public (step 10)
-and starting the AppImage by hand once (step 9). Plan approved by the user on 2026-11-10; decisions recorded on
+Status: **done** (2026-11-10): 2.0.0 released from the private repository, updates off. Plan approved by the user
+on 2026-11-10; decisions recorded on
 2026-11-08 and 2026-11-10 (see [Answers from the user](#answers-from-the-user-2026-11-10)). Pull requests #16, #17
 and #18.
 Global plan: [implementation plan](implementation-plan.md).
@@ -23,7 +23,6 @@ Owning docs: [updates](../operations/updates.md), [release expectations](../oper
     menus and window titles in English and French (device language); the new menus, About window and update dialogs
     are written translated from the start;
   - the credits page built by KI-6 (Libris `/credits`) is complete: every asset and library added since then is listed;
-- Pre-publication check of the repository before it is made public (see Going public below).
 
 ## Decisions (2026-11-08 and 2026-11-10, with the user)
 
@@ -117,23 +116,13 @@ The folder is created when missing (test it, Linux included). Update backups are
   within the free 2,000 a month; free once it is public. The README line "the project includes no
   continuous-integration pipeline" is updated when the workflow is added.
 
-### Going public
+### Private repository, updates off (2026-11-10)
 
-The repository is public before the release (updates.md): the in-app update check reads GitHub Releases without a
-token, which only works on a public repository. Made public after the in-app work and before `v2.0.0`. Going public
-cannot really be undone (clones, forks, caches), so a full check comes first:
-
-1. Secret scan of the contents of every commit on every branch with gitleaks (a 2026-11-10 check of file names found
-   no committed `config.json`, `.env`, keys, certificates or databases; contents were not scanned).
-2. Commit author email: kept as it is (decided 2026-11-10); the history is not rewritten.
-3. Review what becomes public in `docs/` (plans, known issues) and `.obsidian/` workspace files; keep or remove.
-4. After the switch: turn on GitHub secret scanning and push protection.
-
-### In-house trial first (2026-11-10)
-
-Going public is postponed: Media Collection is first tried in house. Until then the File menu shows Check for updates…
-disabled, and nothing is checked at startup (`UpdateChannel.published` in `apps/desktop/src/update-channel.util.ts`
-is `false`; set it to `true` when the repository goes public). A newer version is installed by running its installer
+The repository stays private; going public is not planned (decided by the user on 2026-11-10). The in-app update
+check reads GitHub Releases without a token, which only works on a public repository, so the File menu shows Check
+for updates… disabled and nothing is checked at startup (`UpdateChannel.published` in
+`apps/desktop/src/update-channel.util.ts` is `false`; it would be set to `true` if the repository went public, after a
+fresh secret scan and a review of what `docs/` and `.obsidian/` would make public). A newer version is installed by running its installer
 over the installed one: it finds the installed copy (same folder by default), removes it silently as an update
 (`--updated`: the data in the person's application data folder stays, the uninstaller's delete-data page is not shown)
 and installs the new one with its firewall rule and maintenance shortcut.
@@ -328,21 +317,17 @@ Each step: tests, the relevant checks, architecture review skill on the changes,
   against the KI-6 rule: no icon, font or asset was added since; the libraries listed are the ones behind a feature
   (book data, images, barcodes, certificates, router, QR codes), so `electron-updater`, like Electron, NestJS and
   React, is not listed. The installer ships `LICENSE.electron.txt` and `LICENSES.chromium.html`.
-- [ ] **9. Release workflow**: `release.yml`, `operations/releasing.md`, README (installation, SmartScreen steps,
+- [x] **9. Release workflow**: `release.yml`, `operations/releasing.md`, README (installation, SmartScreen steps,
   release procedure link; the "no continuous-integration pipeline" line updated). Tried with a throwaway tag
   (`v0.1.0-ci.1`, a draft that is deleted afterwards). Changed while building it: a pull request that changes the
   packaging runs the same builds and smoke tests without publishing (and Run workflow does too), so no throwaway tag
   or draft is needed; publishing itself is first used by `v2.0.0`, as a draft the user reads before publishing.
   First run (PR #17, 2026-11-10): both jobs passed, smoke tests included (Windows 4.5 minutes, Linux 1.2 minutes),
-  and kept `Media-Collection-Setup-0.1.0.exe` and `Media-Collection-0.1.0.AppImage`. Merged (PR #17). Still to do:
-  start the AppImage by hand once on a Linux desktop (WSL with WSLg or a Linux machine): it opens, creating a backup
-  creates the backup folder.
-- [ ] **10. Going public**: the four checks under Going public, with the user; the user switches the repository to
-  public. Postponed for the in-house trial (see In-house trial first); `UpdateChannel.published` is set to `true` in
-  the same change.
-- [x] **11. Release 2.0.0**: version commit `2.0.0`, full `npm run check`, tag
+  and kept `Media-Collection-Setup-0.1.0.exe` and `Media-Collection-0.1.0.AppImage`. Merged (PR #17). Starting the
+  AppImage by hand on a Linux desktop is dropped (user, 2026-11-10); the smoke test starts it on the Linux runner.
+- [x] **10. Release 2.0.0**: version commit `2.0.0`, full `npm run check`, tag
   `v2.0.0`, the user reads and publishes the draft, install from the release page on Windows.
-  Done on 2026-11-10, on the in-house pull request #18 (going public postponed):
+  Done on 2026-11-10, on pull request #18 (repository kept private):
   - Secret scan: gitleaks 8.30.1 on every commit of every branch (476 commits, 14 MB): one finding, a false
     positive: the `fileToken` of the Pencil design file `design/handoff-lending-final/media-collection-v2-final.pen`
     (commit `ede04d6`, file removed since), a UUID naming the document, not a credential.
@@ -352,19 +337,18 @@ Each step: tests, the relevant checks, architecture review skill on the changes,
   - Tag `v2.0.0` on the merge commit `6d614c9`; the release run passed on Windows and Linux and made the draft with
     `Media-Collection-Setup-2.0.0.exe`, `Media-Collection-2.0.0.AppImage`, `latest.yml`, `latest-linux.yml` and the
     blockmap. The user added release notes (Libris and Leaf feature lists) and published it on 2026-11-10:
-    <https://github.com/m-brunet/media-collection-v2/releases/tag/v2.0.0>. The repository is still private, so the
-    release is visible to its collaborators only.
+    <https://github.com/m-brunet/media-collection-v2/releases/tag/v2.0.0>. The repository is private, so the release
+    is visible to its collaborators only.
 
-Pull requests: steps 1 to 8 on this branch (one pull request, on the user's go-ahead), steps 9 to 11 after it is
-merged.
+Pull requests: steps 1 to 8 in #16, step 9 in #17, step 10 in #18.
 
 ## Acceptance
 
 - The `updates.md` acceptance examples pass with the stand-in, and the update backup is restorable in Maintenance.
 - KI-14: on a French system every desktop dialog, menu label and window title is French.
 - The installed Windows application is reachable from a phone with no Windows Firewall prompt.
-- `v2.0.0` is published from a public repository with a Windows installer and a Linux AppImage built by the workflow.
-  Published from the private repository on 2026-11-10 (in-house trial); the public part waits for step 10.
+- `v2.0.0` is published with a Windows installer and a Linux AppImage built by the workflow (from the private
+  repository, 2026-11-10).
 - First real update test: 2.0.1, as decided.
 
 ## Known limits
