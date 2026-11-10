@@ -1,6 +1,6 @@
 # KI-9 and KI-10 — Let's Encrypt attempts
 
-Status: **plan approved by the user** (2026-11-10, both proposals below accepted); commit 1 (KI-10) done. Branch
+Status: **done** (2026-11-10): plan approved by the user (both proposals below accepted); both commits made. Branch
 `fix/ki-9-ki-10-certificate-attempts`, one pull request, two commits: KI-10 first, then KI-9.
 
 Known issues: [KI-9](known-issues.md#ki-9--internet-access-no-automatic-lets-encrypt-retries-estimated-attempts-left)
@@ -47,8 +47,10 @@ count it toward any rate limit.
   setup; cleared once passed.
 - `history: { name, at, kind: 'certificate' | 'failed-check' }[]`: certificates issued (not ARI renewals) and failed
   checks, per address or domain name, last 8 days only. Kept through Turn off.
-- `checkNeeded` is not a new field: in the `active` phase, a `not-reachable` failure means the upkeep waits for the
-  Admin.
+- `awaitingCheck: boolean` (changed while building it: first planned as no new field, read from a `not-reachable`
+  failure; but a router failure replaces the shown failure, and the upkeep would then retry the check on its own).
+- `lastAttemptName`: the name last asked of Let's Encrypt, so the estimate still has a name once a stopped setup is
+  back to off (added while building it).
 
 ### Rules (domain)
 

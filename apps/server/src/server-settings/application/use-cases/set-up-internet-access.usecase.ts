@@ -1,3 +1,4 @@
+import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 import type { AuditedOperation } from '../../../shared/application/services/audited-operation.service.js';
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
@@ -19,6 +20,7 @@ export class SetUpInternetAccess implements SetUpInternetAccessUseCase {
         private readonly setup: InternetAccessSetup,
         private readonly background: BackgroundTasks,
         private readonly operations: AuditedOperation,
+        private readonly clock: Clock,
     ) {}
 
     async execute(
@@ -46,6 +48,7 @@ export class SetUpInternetAccess implements SetUpInternetAccessUseCase {
                     );
                 }
 
+                access.ensureAttemptAllowed(this.clock.now());
                 access.start(await this.names.read());
                 await this.store.save(access);
 

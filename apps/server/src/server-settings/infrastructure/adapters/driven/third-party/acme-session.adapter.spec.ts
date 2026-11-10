@@ -76,7 +76,7 @@ it('reports a Let’s Encrypt limit at once instead of waiting for its Retry-Aft
             response.end(
                 JSON.stringify({
                     type: 'urn:ietf:params:acme:error:rateLimited',
-                    detail: 'too many certificates (5) already issued for this exact set of identifiers',
+                    detail: 'too many certificates (5) already issued for this exact set of identifiers in the last 168h0m0s, retry after 2026-11-12 23:30:00 UTC: see https://letsencrypt.org/docs/rate-limits/#new-certificates-per-exact-set-of-identifiers',
                 }),
             );
         }),
@@ -84,7 +84,11 @@ it('reports a Let’s Encrypt limit at once instead of waiting for its Retry-Aft
 
     const issue = await authority.issue({ kind: 'address', name: '82.66.118.204' }, null);
 
-    expect(issue).toEqual({ outcome: 'refused', reason: 'rate-limited' });
+    expect(issue).toEqual({
+        outcome: 'refused',
+        reason: 'rate-limited',
+        retryAfter: '2026-11-12T23:30:00.000Z',
+    });
 });
 it('gives up on a Let’s Encrypt request that does not answer', async () => {
     const authority = await authorityFor(await letsEncryptWith(() => undefined), 200);

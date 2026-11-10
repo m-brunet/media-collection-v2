@@ -138,10 +138,20 @@ export const fr = {
     'internet.validUntil': 'Certificat valable jusqu’au {date}. Il est renouvelé automatiquement.',
     'internet.lastFailure':
         'La dernière vérification a échoué : {reason} Le certificat actuel reste utilisé. Prochain essai : {date}.',
+    'internet.awaitingCheck':
+        'La dernière vérification a échoué : {reason} Le certificat actuel reste utilisé. Rien n’est retenté tant que vous ne vérifiez pas à nouveau.',
+    'internet.checking': 'Nouvelle vérification en cours…',
+    'internet.retryAfter': 'Let’s Encrypt accepte un nouvel essai après le {date}.',
+    'internet.allowanceCertificates':
+        'Certificats restants cette semaine pour {name} : environ {count}.',
+    'internet.allowanceChecks': 'Vérifications restantes cette heure-ci : environ {count}.',
+    'internet.allowanceEstimate':
+        'C’est une estimation : un autre logiciel utilisant la même adresse compte aussi.',
+    'internet.probablyRefused': 'Probablement refusé jusqu’au {date}.',
     'internet.turnOff': 'Désactiver l’accès Internet',
     'internet.turnOffTitle': 'Désactiver l’accès Internet ?',
     'internet.turnOffBody':
-        'Les téléphones ne pourront plus joindre Libris et Leaf hors de chez vous. La règle de la box est supprimée. Vous pouvez la reconfigurer à tout moment.',
+        'Les téléphones ne pourront plus joindre Libris et Leaf hors de chez vous. La règle de la box est supprimée. Vous pouvez la reconfigurer à tout moment ; cela utilise l’un des 5 certificats que Let’s Encrypt accorde par semaine pour cette adresse.',
     'internet.manualTitle': 'Ajoutez la règle dans votre box',
     'internet.manualIntro':
         'Dans les réglages de votre box, cherchez « Redirection de ports » (ou « NAT/PAT ») et ajoutez cette règle :',
@@ -168,7 +178,7 @@ export const fr = {
     'internet.failure.public-address-unknown':
         'L’adresse publique de votre connexion est introuvable. Vérifiez la connexion Internet, puis réessayez.',
     'internet.failure.rate-limited':
-        'Let’s Encrypt a atteint sa limite de certificats pour cette adresse. Réessayez plus tard : l’attente peut aller de quelques heures à quelques jours.',
+        'Let’s Encrypt a refusé un nouvel essai : trop d’essais récents pour cette adresse.',
     'internet.failure.authority-unavailable':
         'Let’s Encrypt est injoignable. Vérifiez la connexion Internet, puis réessayez.',
     'internet.failure.https-unavailable':

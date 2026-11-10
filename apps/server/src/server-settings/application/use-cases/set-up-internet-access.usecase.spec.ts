@@ -9,6 +9,7 @@ import {
     InternetAccessDoubles,
     publicAddress,
 } from '../testing/internet-access-doubles.test-support.js';
+import { InternetAccess } from '../../domain/entities/internet-access.entity.js';
 import { SetUpInternetAccess } from './set-up-internet-access.usecase.js';
 
 const admin = TestActors.of('admin', 'admin');
@@ -25,6 +26,7 @@ function subjectFor(
         doubles.setup,
         doubles.background,
         AuditDoubles.auditedOperation(trail),
+        doubles.clock,
     );
 }
 
@@ -113,4 +115,26 @@ it('sets up internet access for the saved domain name', async () => {
     const state = await subject.execute(admin, { replaceCertificate: false });
 
     expect([state.phase, state.domain]).toEqual(['setting-up', 'home.example.fr']);
+});
+it('refuses a setup before Let’s Encrypt’s date', async () => {
+    const doubles = InternetAccessDoubles.setup({
+        ...InternetAccess.off().snapshot,
+        retryAfter: '2026-11-12T23:30:00.000Z',
+    });
+    const subject = subjectFor(doubles);
+
+    const result = subject.execute(admin, { replaceCertificate: false });
+
+    await expect(result).rejects.toMatchObject({ code: 'conflict', reason: 'rate-limited' });
+});
+it('sets up again from Let’s Encrypt’s date', async () => {
+    const doubles = InternetAccessDoubles.setup({
+        ...InternetAccess.off().snapshot,
+        retryAfter: '2026-11-08T10:00:00.000Z',
+    });
+    const subject = subjectFor(doubles);
+
+    const state = await subject.execute(admin, { replaceCertificate: false });
+
+    expect(state.phase).toBe('setting-up');
 });

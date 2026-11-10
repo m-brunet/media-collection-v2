@@ -10,7 +10,7 @@ import type { TlsAlpnChallenges } from '../security/tls-alpn-challenges.adapter.
 import type { AcmeConnector, AcmeSession } from './acme-session.adapter.js';
 import { AriCertificateId } from './ari-certificate-id.adapter.js';
 
-type Refusal = Extract<CertificateIssue, { outcome: 'refused' }>['reason'];
+type Refused = Extract<CertificateIssue, { outcome: 'refused' }>;
 type OrderRequest = Parameters<AcmeSession['createOrder']>[0];
 
 // Let's Encrypt certificates proven with TLS-ALPN-01, the HTTPS listener answering the check
@@ -44,7 +44,7 @@ export class AcmeCertificateAuthority implements CertificateAuthority {
             const proven = await this.prove(client, authorization, challenge, subject);
 
             if (proven) {
-                return { outcome: 'refused', reason: proven };
+                return proven;
             }
 
             const [key, request] = await acme.crypto.createCsr({ altNames: [subject.name] });
@@ -63,7 +63,7 @@ export class AcmeCertificateAuthority implements CertificateAuthority {
                 renewal,
             };
         } catch (error) {
-            return { outcome: 'refused', reason: AcmeCertificateAuthority.refusal(error) };
+            return AcmeCertificateAuthority.refused(error);
         }
     }
 
@@ -88,7 +88,7 @@ export class AcmeCertificateAuthority implements CertificateAuthority {
 
                 return { order, renewal: true };
             } catch (error) {
-                if (AcmeCertificateAuthority.refusal(error) === 'rate-limited') {
+                if (AcmeCertificateAuthority.refused(error).reason === 'rate-limited') {
                     throw error;
                 }
 
@@ -119,7 +119,7 @@ export class AcmeCertificateAuthority implements CertificateAuthority {
         authorization: acme.Authorization,
         challenge: acme.Authorization['challenges'][number],
         subject: CertificateSubject,
-    ): Promise<Refusal | null> {
+    ): Promise<Refused | null> {
         const keyAuthorization = await client.getChallengeKeyAuthorization(challenge);
         const [key, cert] = await acme.crypto.createAlpnCertificate(
             authorization,
@@ -134,19 +134,33 @@ export class AcmeCertificateAuthority implements CertificateAuthority {
 
             return null;
         } catch (error) {
-            const refusal = AcmeCertificateAuthority.refusal(error);
+            const refused = AcmeCertificateAuthority.refused(error);
 
-            return refusal === 'rate-limited' ? refusal : 'not-reachable';
+            return refused.reason === 'rate-limited'
+                ? refused
+                : { outcome: 'refused', reason: 'not-reachable' };
         } finally {
             this.challenges.remove(subject);
         }
     }
 
-    private static refusal(error: unknown): Refusal {
-        const message = error instanceof Error ? error.message.toLowerCase() : '';
+    // Let's Encrypt writes its date in the rate-limit message ("…, retry after 2026-11-12 23:30:00 UTC:
+    // see https://letsencrypt.org/docs/rate-limits/…"); acme-client keeps no response header.
+    private static refused(error: unknown): Refused {
+        const message = error instanceof Error ? error.message : '';
+        const lower = message.toLowerCase();
 
-        return message.includes('too many') || message.includes('rate limit')
-            ? 'rate-limited'
-            : 'authority-unavailable';
+        if (!lower.includes('too many') && !lower.includes('rate limit')) {
+            return { outcome: 'refused', reason: 'authority-unavailable' };
+        }
+
+        const date = message.match(/retry after (\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}:\d{2})/i);
+        const at = date ? Date.parse(date[1] + 'T' + date[2] + 'Z') : Number.NaN;
+
+        return {
+            outcome: 'refused',
+            reason: 'rate-limited',
+            retryAfter: Number.isFinite(at) ? new Date(at).toISOString() : null,
+        };
     }
 }

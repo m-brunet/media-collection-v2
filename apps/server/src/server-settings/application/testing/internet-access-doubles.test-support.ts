@@ -147,6 +147,8 @@ export class FakeAuthority implements CertificateAuthority {
     readonly replaced: (string | null)[] = [];
     refusal: Extract<CertificateIssue, { outcome: 'refused' }>['reason'] | null = null;
     failure: Error | null = null;
+    // The date given with a rate-limit refusal.
+    retryAfter: string | null = null;
 
     constructor(private readonly clock: Clock) {}
 
@@ -159,6 +161,10 @@ export class FakeAuthority implements CertificateAuthority {
 
         if (this.failure) {
             throw this.failure;
+        }
+
+        if (this.refusal === 'rate-limited') {
+            return { outcome: 'refused', reason: 'rate-limited', retryAfter: this.retryAfter };
         }
 
         if (this.refusal) {

@@ -40,8 +40,11 @@ export class InternetAccessSetup {
         });
     }
 
+    // While active (after a failed check), a failure keeps the current certificate.
     async check(): Promise<void> {
-        await this.guarded((access) => this.obtain(access));
+        await this.guarded((access) =>
+            access.phase === 'active' ? this.recheck(access) : this.obtain(access),
+        );
     }
 
     // A failure keeps the current certificate, like an upkeep failure.
@@ -54,18 +57,17 @@ export class InternetAccessSetup {
         }
 
         access.useDomain(saved);
-        const reason = await this.renew(access).catch(() => 'setup-failed' as const);
-
-        if (reason) {
-            access.upkeepFailed(reason, this.clock.now());
-        } else {
-            access.upkeepSucceeded();
-        }
-
+        await this.recheck(access);
         await this.store.save(access);
     }
 
+    // The one way to Let's Encrypt: nothing is asked before its own date after a rate limit, and
+    // each certificate and failed check is recorded for the estimate.
     async renew(access: InternetAccess): Promise<InternetAccessFailureReason | null> {
+        if (!access.attemptAllowed(this.clock.now())) {
+            return 'rate-limited';
+        }
+
         const problem = await this.domains.problem(access);
 
         if (problem) {
@@ -88,9 +90,16 @@ export class InternetAccessSetup {
         );
 
         if (issue.outcome === 'refused') {
+            access.authorityRefused(
+                issue.reason,
+                issue.reason === 'rate-limited' ? issue.retryAfter : null,
+                this.clock.now(),
+            );
+
             return issue.reason;
         }
 
+        access.certificateIssued(issue.renewal, this.clock.now());
         const { chain, key, issuedAt, expiresAt } = issue.certificate;
 
         await this.tls.save(new TlsSettings({ enabled: true, port, hasCertificate: true }), {
@@ -105,6 +114,16 @@ export class InternetAccessSetup {
         access.activate({ address: name, issuedAt, expiresAt });
 
         return null;
+    }
+
+    private async recheck(access: InternetAccess): Promise<void> {
+        const reason = await this.renew(access).catch(() => 'setup-failed' as const);
+
+        if (reason) {
+            access.upkeepFailed(reason, this.clock.now());
+        } else {
+            access.upkeepSucceeded();
+        }
     }
 
     private async guarded(steps: (access: InternetAccess) => Promise<void>): Promise<void> {
