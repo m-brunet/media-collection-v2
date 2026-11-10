@@ -297,6 +297,10 @@ Each step: tests, the relevant checks, architecture review skill on the changes,
   workspace packages no longer carry their own version. The Libris "allow in the Windows prompt" reminder is removed.
   The local build and `test:packaged` pass. **Waiting for the user:** the install itself needs the administrator
   prompt, so the install, firewall, phone and uninstall checks are done by the user.
+  First install by the user (2026-11-10): the backend stopped at start, `rxjs` missing from the package. It is a peer
+  dependency of NestJS that was never declared, so electron-builder left it out; the smoke test still passed because
+  it ran inside the checkout, where Node found the repository's copy. Fixed: `rxjs` is a declared dependency, and
+  `test:packaged` now runs a copy of the unpacked application outside the checkout (it fails on the old build).
 - Full check after step 8 (2026-11-10): `npm run check` passed 3005 of 3006 tests; the one failure was a test-harness
   race (a window finishing its load answered another request), fixed by giving each harness answer its own request
   id; the desktop and runtime suites then passed again.
