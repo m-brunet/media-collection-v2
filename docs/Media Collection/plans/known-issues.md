@@ -191,11 +191,16 @@ design.
   - **Tests:** domain rule for the outside port; the temporary 443 rule opened before and closed after a check (also
     after a refusal or an error); no 443 rule between checks; the origin with and without port; the one-time removal
     of the old rule; Server settings fields and texts in EN/FR.
-- **Open questions:**
-  1. **Existing installations:** move a saved HTTPS port of 3443 to 34443 on update, or keep 3443 (only new
-     installations get 34443)?
-  2. **Rule added by hand:** remind the Admin before each renewal to open 443, or advise keeping a 443 rule
-     permanently in that case (option B for manual routers only)?
+- **Decided (the user, 2026-11-10):** existing installations move from 3443 to **34443** on update (the
+  one-time step that removes the old 443 → 3443 rule also opens the new one).
+- **Detecting a rule added by hand (checked 2026-11-10):** the app knows it is in that case (`mapping: 'manual'`:
+  the router did not answer UPnP/NAT-PMP or refused the rule), but cannot see the rule itself: UPnP lists rules on
+  some routers only, usually not those made in the router's web page, and testing 443 from outside would need an
+  outside service. Since KI-9 a missing 443 rule costs one failed check, then the app waits for Check again.
+- **Open question:** **rule added by hand.** Proposed: the panel shows the next renewal date with "Open port 443 on
+  your router before {date}"; if forgotten, the renewal fails once, the current certificate stays in use (about a
+  month left for a domain name) and the panel asks to open 443 and Check again. For an IP address without a domain
+  name (renewed every 3 days), the panel advises a permanent 443 rule instead.
 - **Severity:** medium. **Planned:** to plan with the user.
 
 ## Done
