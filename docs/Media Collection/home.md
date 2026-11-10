@@ -41,6 +41,8 @@ Start with the [implementation plan](plans/implementation-plan.md) for task stat
 ## Plans
 
 - [Implementation plan](plans/implementation-plan.md): task order, status, and how to resume work.
+- Future work: [GitHub Issues](https://github.com/m-brunet/media-collection-v2/issues); fixed issues are recorded in
+  [resolved issues](plans/resolved-issues.md).
 - Task plans: [0 Platform and UI foundation](plans/task-00-platform-ui-foundation.md),
   [1 Access and accountability](plans/task-01-access-accountability.md),
   [1b Appearance](plans/task-01b-appearance-color-schemes.md), [2 Books](plans/task-02-books.md),
