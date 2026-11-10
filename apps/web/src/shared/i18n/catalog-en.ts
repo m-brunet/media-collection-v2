@@ -471,6 +471,7 @@ export const en = {
     'credits.acmeClient.used': 'Getting HTTPS certificates from Let’s Encrypt.',
     'credits.natApi.used': 'Opening the router port (UPnP) for internet access.',
     'credits.qrcode.used': 'The QR codes of the server addresses.',
+    'credits.qrcode.trademark': 'QR Code is a registered trademark of DENSO WAVE INCORPORATED.',
     'appearance.default': 'default',
     'appearance.iconSetTitle': 'Icon set',
     'appearance.iconSetHint':

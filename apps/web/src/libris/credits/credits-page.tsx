@@ -75,6 +75,7 @@ function CreditItem({ credit }: { credit: Credit }) {
                     <dd>{credit.changes ? t(credit.changes) : t('credits.unchanged')}</dd>
                 </div>
             </dl>
+            {credit.notice && <p className="credit__notice">{t(credit.notice)}</p>}
         </li>
     );
 }
