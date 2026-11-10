@@ -17,6 +17,7 @@ import type { KeepAwakeStore } from '../../application/ports/driven/keep-awake-s
 import type { LocalAddressReader } from '../../application/ports/driven/local-address-reader.interface.js';
 import type { PublicAddressProbe } from '../../application/ports/driven/public-address-probe.interface.js';
 import type { RouterGateway } from '../../application/ports/driven/router-gateway.interface.js';
+import type { TlsCertificateReader } from '../../application/ports/driven/tls-certificate-reader.interface.js';
 import type { TlsStore } from '../../application/ports/driven/tls-store.interface.js';
 import type { MaintainInternetAccessUseCase } from '../../application/ports/driving/maintain-internet-access-use-case.interface.js';
 import type { MaintainHttpInternetAccessUseCase } from '../../application/ports/driving/maintain-http-internet-access-use-case.interface.js';
@@ -82,7 +83,7 @@ export const SERVER_SETTINGS_MAINTAIN_HTTP_INTERNET_ACCESS =
     'SERVER_SETTINGS_MAINTAIN_HTTP_INTERNET_ACCESS';
 
 export interface SettingsAdapters {
-    tls: TlsStore;
+    tls: TlsStore & TlsCertificateReader;
     certificates: CertificateValidator;
     status: RuntimeStatus;
     http: HttpSettingsStore;

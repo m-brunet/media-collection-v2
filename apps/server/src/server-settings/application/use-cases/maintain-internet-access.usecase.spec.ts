@@ -48,6 +48,39 @@ it('renews the certificate at half of its lifetime and installs it live', async 
         1,
     ]);
 });
+it('renews through ARI, naming the certificate in use', async () => {
+    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());
+    const subject = subjectFor(doubles);
+
+    doubles.tls.material = { chain: 'current chain', key: 'current key' };
+    doubles.clock.time = halfLife;
+
+    await subject.execute();
+
+    expect(doubles.authority.replaced).toEqual(['current chain']);
+});
+it('names no certificate to replace for a new public address', async () => {
+    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());
+    const subject = subjectFor(doubles);
+
+    doubles.tls.material = { chain: 'current chain', key: 'current key' };
+    doubles.router.connection = { mapping: 'upnp', externalAddress: '82.66.118.77' };
+
+    await subject.execute();
+
+    expect(doubles.authority.replaced).toEqual([null]);
+});
+it('names no certificate to replace for a domain name saved since', async () => {
+    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());
+    const subject = subjectFor(doubles);
+
+    doubles.tls.material = { chain: 'current chain', key: 'current key' };
+    doubles.names.name = 'home.example.fr';
+
+    await subject.execute();
+
+    expect(doubles.authority.replaced).toEqual([null]);
+});
 it('follows a new public address with a new certificate', async () => {
     const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());
     const subject = subjectFor(doubles);

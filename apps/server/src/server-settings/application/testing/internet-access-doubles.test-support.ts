@@ -27,6 +27,7 @@ import type { PublicAddressProbe } from '../ports/driven/public-address-probe.in
 import type { PortRule } from '../ports/driven/port-rule.interface.js';
 import type { RouterConnection } from '../ports/driven/router-connection.interface.js';
 import type { RouterGateway } from '../ports/driven/router-gateway.interface.js';
+import type { TlsCertificateReader } from '../ports/driven/tls-certificate-reader.interface.js';
 import type { TlsStore } from '../ports/driven/tls-store.interface.js';
 import { DomainNameCheck } from '../services/domain-name-check.service.js';
 import { HttpInternetAccessClosing } from '../services/http-internet-access-closing.service.js';
@@ -143,16 +144,18 @@ export class MemoryDomainNameStore implements DomainNameStore {
 export class FakeAuthority implements CertificateAuthority {
     readonly requested: string[] = [];
     readonly subjects: CertificateSubject[] = [];
+    readonly replaced: (string | null)[] = [];
     refusal: Extract<CertificateIssue, { outcome: 'refused' }>['reason'] | null = null;
     failure: Error | null = null;
 
     constructor(private readonly clock: Clock) {}
 
-    async issue(subject: CertificateSubject): Promise<CertificateIssue> {
+    async issue(subject: CertificateSubject, replacing: string | null): Promise<CertificateIssue> {
         const address = subject.name;
 
         this.requested.push(address);
         this.subjects.push({ ...subject });
+        this.replaced.push(replacing);
 
         if (this.failure) {
             throw this.failure;
@@ -172,6 +175,7 @@ export class FakeAuthority implements CertificateAuthority {
                 issuedAt: issued.toISOString(),
                 expiresAt: new Date(issued.getTime() + 160 * 3_600_000).toISOString(),
             },
+            renewal: replacing !== null,
         };
     }
 }
@@ -194,7 +198,7 @@ export class FakeHttpsRuntime implements HttpsRuntime {
     }
 }
 
-export class MemoryTlsStore implements TlsStore {
+export class MemoryTlsStore implements TlsStore, TlsCertificateReader {
     material: { chain: string; key: string } | null = null;
 
     constructor(
@@ -208,6 +212,10 @@ export class MemoryTlsStore implements TlsStore {
     async save(settings: TlsSettings, certificate?: { chain: string; key: string }): Promise<void> {
         this.settings = settings.snapshot();
         this.material = certificate ?? this.material;
+    }
+
+    async currentChain(): Promise<string | null> {
+        return this.material?.chain ?? null;
     }
 }
 

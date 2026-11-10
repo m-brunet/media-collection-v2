@@ -4,6 +4,7 @@ import { join, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import type { PrivateStorage } from '../../../../../shared/infrastructure/adapters/driven/filesystem/private-storage.adapter.js';
 import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
+import type { TlsCertificateReader } from '../../../../application/ports/driven/tls-certificate-reader.interface.js';
 import type { TlsStore } from '../../../../application/ports/driven/tls-store.interface.js';
 import type {
     TlsSettings,
@@ -15,7 +16,7 @@ interface StoredSettings extends TlsSettingsState {
     revision: string;
 }
 
-export class FileTlsStore implements TlsStore {
+export class FileTlsStore implements TlsStore, TlsCertificateReader {
     constructor(
         private readonly connections: DatabaseConnections,
         private readonly directory: string,
@@ -67,18 +68,30 @@ export class FileTlsStore implements TlsStore {
     }
 
     async material(): Promise<{ cert: Buffer; key: Buffer }> {
-        const saved = await this.stored();
+        const directory = this.certificateDirectory(await this.stored());
 
-        if (!saved.certificateDirectory || !/^[a-f0-9-]{36}$/.test(saved.certificateDirectory)) {
+        if (!directory) {
             throw new Error('Saved certificate material is missing.');
         }
-
-        const directory = resolve(this.directory, 'tls', saved.certificateDirectory);
 
         return {
             cert: readFileSync(join(directory, 'chain.pem')),
             key: readFileSync(join(directory, 'key.pem')),
         };
+    }
+
+    async currentChain(): Promise<string | null> {
+        const directory = this.certificateDirectory(await this.stored());
+
+        return directory ? readFileSync(join(directory, 'chain.pem'), 'utf8') : null;
+    }
+
+    private certificateDirectory(saved: StoredSettings): string | null {
+        if (!saved.certificateDirectory || !/^[a-f0-9-]{36}$/.test(saved.certificateDirectory)) {
+            return null;
+        }
+
+        return resolve(this.directory, 'tls', saved.certificateDirectory);
     }
 
     private async stored(): Promise<StoredSettings> {

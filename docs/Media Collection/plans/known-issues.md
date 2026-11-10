@@ -22,7 +22,7 @@ design.
 | KI-7 | Improvement | Interface text needs slightly wider letter spacing                                    | Low      | Done   |
 | KI-8 | Improvement | Server settings addresses need more space between them                                | Low      | Done   |
 | KI-9 | Improvement | Internet access: no automatic Let's Encrypt retries, estimated attempts left           | Medium   | Open   |
-| KI-10 | Improvement | Internet access: renew certificates through ARI so renewals escape Let's Encrypt limits | Medium | Open |
+| KI-10 | Improvement | Internet access: renew certificates through ARI so renewals escape Let's Encrypt limits | Medium | Done |
 | KI-11 | Improvement | Server settings: QR code for each address, opening Leaf, with the Libris logo | Medium | Done |
 | KI-12 | Improvement | The address QR codes also sign the phone in to Leaf (not the HTTP internet address) | Medium | Open |
 | KI-13 | Bug | Internet access: the router rule lapses while the panel still shows it on | High | Done |
@@ -67,32 +67,6 @@ design.
     authority before `Retry-After` nor after a failed check, the panel texts in EN/FR.
 - **Severity:** medium (a few retries can block internet access for days). **Planned:** next fix pass, or with
   KI-10.
-
-### KI-10 — Internet access: renew certificates through ARI so renewals escape Let's Encrypt limits
-
-- **Type:** Improvement.
-- **Reported:** 2026-11-08 by the user.
-- **Why:** an ARI renewal (ACME Renewal Information, RFC 9773) is exempt from **every** Let's Encrypt rate limit, as
-  long as the new order names at least one identifier of the certificate it replaces and that certificate was not
-  already replaced through ARI. A normal renewal of the same address counts toward the 5 per 7 days; with 6-day
-  certificates renewed every ~3 days, that leaves little room for a setup, a turn off and on, or a failed attempt.
-- **Checked:** `acme-client` 5.4.0 (the latest release, 2024-07) has no ARI support. Let's Encrypt production
-  announces `renewalInfo` in its directory. `acme-client` passes order fields through unchanged (the app already adds
-  `profile: 'shortlived'`), so ARI can be added in the adapter without changing library:
-  - **Certificate identifier:** base64url of the Authority Key Identifier, a dot, base64url of the serial number
-    (DER), read from the current certificate (`@peculiar/x509`, already a dependency of `acme-client`).
-  - **Renewal order:** `replaces: <certificate identifier>` in `createOrder` when the address is unchanged.
-  - **Renewal window (optional):** `GET <renewalInfo>/<certificate identifier>` (no account needed) gives the window
-    Let's Encrypt suggests; the upkeep can renew inside it instead of at half-life, and earlier if Let's Encrypt asks
-    (for example before a revocation).
-- **Fix:** the authority port gets the certificate being replaced; the ACME adapter sends `replaces`; if
-  Let's Encrypt refuses the field (certificate already replaced, unknown), retry once as a normal order. A new
-  address is a new certificate, not a renewal, so it stays a normal order. Tests: the order carries `replaces` with
-  the expected identifier (computed from a fixture certificate), the fallback, no `replaces` after an address change.
-  Check against Let's Encrypt's staging server first.
-- **Progress (checked 2026-11-10):** nothing done yet: no `replaces` or `renewalInfo` in the code, `acme-client` still
-  5.4.0.
-- **Severity:** medium (removes the main risk of the weekly limit). **Planned:** next fix pass, together with KI-9.
 
 ### KI-12 — The address QR codes also sign the phone in to Leaf (not the HTTP internet address)
 
@@ -206,6 +180,44 @@ design.
 - **Severity:** medium. **Planned:** to plan with the user (detailed plan to write).
 
 ## Done
+
+### KI-10 — Internet access: renew certificates through ARI so renewals escape Let's Encrypt limits
+
+- **Type:** Improvement.
+- **Reported:** 2026-11-08 by the user.
+- **Why:** an ARI renewal (ACME Renewal Information, RFC 9773) is exempt from **every** Let's Encrypt rate limit, as
+  long as the new order names at least one identifier of the certificate it replaces and that certificate was not
+  already replaced through ARI. A normal renewal of the same address counts toward the 5 per 7 days; with 6-day
+  certificates renewed every ~3 days, that leaves little room for a setup, a turn off and on, or a failed attempt.
+- **Checked:** `acme-client` 5.4.0 (the latest release, 2024-07) has no ARI support. Let's Encrypt production
+  announces `renewalInfo` in its directory. `acme-client` passes order fields through unchanged (the app already adds
+  `profile: 'shortlived'`), so ARI can be added in the adapter without changing library:
+  - **Certificate identifier:** base64url of the Authority Key Identifier, a dot, base64url of the serial number
+    (DER), read from the current certificate (`@peculiar/x509`, already a dependency of `acme-client`).
+  - **Renewal order:** `replaces: <certificate identifier>` in `createOrder` when the address is unchanged.
+  - **Renewal window (optional):** `GET <renewalInfo>/<certificate identifier>` (no account needed) gives the window
+    Let's Encrypt suggests; the upkeep can renew inside it instead of at half-life, and earlier if Let's Encrypt asks
+    (for example before a revocation).
+- **Fix:** the authority port gets the certificate being replaced; the ACME adapter sends `replaces`; if
+  Let's Encrypt refuses the field (certificate already replaced, unknown), retry once as a normal order. A new
+  address is a new certificate, not a renewal, so it stays a normal order. Tests: the order carries `replaces` with
+  the expected identifier (computed from a fixture certificate), the fallback, no `replaces` after an address change.
+  Check against Let's Encrypt's staging server first.
+- **Severity:** medium (removes the main risk of the weekly limit).
+- **Done:** 2026-11-10, branch `fix/ki-9-ki-10-certificate-attempts`
+  ([plan](ki-09-ki-10-certificate-attempts.md), commit 1):
+  - `CertificateAuthority.issue(subject, replacing)`: `InternetAccessSetup.renew` passes the chain in use (new
+    `TlsCertificateReader` port, implemented by `FileTlsStore`) when the certificate covers the same name; a first
+    setup, a new public address or a domain name change passes nothing.
+  - `AriCertificateId` (`@peculiar/x509`, now a direct dependency at 1.14.3) computes the identifier; checked against
+    the RFC 9773 example (`aYhba4dGQEHhs3uEe6CuLN4ByNQ.AIdlQyE`).
+  - `AcmeCertificateAuthority` sends `replaces`; a refusal other than a rate limit, or a certificate it cannot name
+    (no Authority Key Identifier, for example one imported by hand), gives one normal order. The outcome says whether
+    the order was an ARI renewal (`renewal`), and the server log says so.
+  - Not done: the renewal window (`renewalInfo`); renewals stay at half-life (address) and two thirds (domain name).
+  - Not checked against Let's Encrypt's staging server (it must reach port 443 from the internet); the first real
+    renewal is the check: the log line `Let’s Encrypt: <name> renewed through ARI`.
+
 
 ### KI-14 — Desktop dialogs, menus and window titles are only in English
 
