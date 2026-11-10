@@ -71,6 +71,62 @@ describe('ActivityProjection', () => {
 
         expect(entry?.event).toEqual({ kind: 'book-organised', title: 'Dune' });
     });
+    it('says a book was moved when only its location changed', () => {
+        const moved = operation(
+            record(
+                'book.organised',
+                { title: 'Dune', location: { shelfId: 'shelf-3' }, tags: [{ id: 'fantasy' }] },
+                { title: 'Dune', location: null, tags: [{ id: 'fantasy' }] },
+            ),
+        );
+
+        const entry = ActivityProjection.entry(moved);
+
+        expect(entry?.event).toEqual({ kind: 'book-relocated', title: 'Dune' });
+    });
+    it('says the tags of a book changed when only its tags changed', () => {
+        const retagged = operation(
+            record(
+                'book.organised',
+                { title: 'Dune', location: { shelfId: 'shelf-3' }, tags: [{ id: 'history' }] },
+                { title: 'Dune', location: { shelfId: 'shelf-3' }, tags: [{ id: 'fantasy' }] },
+            ),
+        );
+
+        const entry = ActivityProjection.entry(retagged);
+
+        expect(entry?.event).toEqual({ kind: 'book-retagged', title: 'Dune' });
+    });
+    it('reads the same tags in another order as unchanged', () => {
+        const moved = operation(
+            record(
+                'book.organised',
+                { title: 'Dune', location: null, tags: [{ id: 'b' }, { id: 'a' }] },
+                {
+                    title: 'Dune',
+                    location: { shelfId: 'shelf-3' },
+                    tags: [{ id: 'a' }, { id: 'b' }],
+                },
+            ),
+        );
+
+        const entry = ActivityProjection.entry(moved);
+
+        expect(entry?.event).toEqual({ kind: 'book-relocated', title: 'Dune' });
+    });
+    it('keeps the general sentence when both the location and the tags changed', () => {
+        const both = operation(
+            record(
+                'book.organised',
+                { title: 'Dune', location: { shelfId: 'shelf-3' }, tags: [{ id: 'history' }] },
+                { title: 'Dune', location: null, tags: [] },
+            ),
+        );
+
+        const entry = ActivityProjection.entry(both);
+
+        expect(entry?.event).toEqual({ kind: 'book-organised', title: 'Dune' });
+    });
     it('leaves the title out when an older record names a book deleted since', () => {
         const covered = operation(record('book.cover-changed', { hasCover: true }));
 

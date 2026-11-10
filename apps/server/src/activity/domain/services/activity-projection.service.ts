@@ -24,6 +24,8 @@ export type BookEventKind =
     | 'book-updated'
     | 'book-marked-owned'
     | 'book-deleted'
+    | 'book-relocated'
+    | 'book-retagged'
     | 'book-organised'
     | 'book-cover-changed';
 
@@ -174,7 +176,7 @@ export class ActivityProjection {
             case 'book.deleted':
                 return ActivityProjection.book('book-deleted', record);
             case 'book.organised':
-                return ActivityProjection.book('book-organised', record);
+                return ActivityProjection.book(ActivityProjection.organised(before, after), record);
             case 'book.cover-changed':
                 return ActivityProjection.book('book-cover-changed', record);
             case 'loan.lent':
@@ -234,6 +236,43 @@ export class ActivityProjection {
             record.currentTitle;
 
         return { kind, title };
+    }
+
+    // A location change and a tag change read as two different entries. A record that changed
+    // both (possible through the API) or that cannot tell keeps the general sentence.
+    private static organised(before: Values, after: Values): BookEventKind {
+        if (!before || !after) {
+            return 'book-organised';
+        }
+
+        const relocated =
+            ActivityProjection.shelfId(before.location) !==
+            ActivityProjection.shelfId(after.location);
+        const retagged =
+            ActivityProjection.tagIds(before.tags) !== ActivityProjection.tagIds(after.tags);
+
+        if (relocated && !retagged) {
+            return 'book-relocated';
+        }
+
+        if (retagged && !relocated) {
+            return 'book-retagged';
+        }
+
+        return 'book-organised';
+    }
+
+    private static shelfId(location: unknown): string | null {
+        return ActivityProjection.text(ActivityProjection.values(location), 'shelfId');
+    }
+
+    private static tagIds(tags: unknown): string {
+        return Array.isArray(tags)
+            ? tags
+                  .map((tag) => ActivityProjection.text(ActivityProjection.values(tag), 'id') ?? '')
+                  .sort()
+                  .join(',')
+            : '';
     }
 
     private static loans(

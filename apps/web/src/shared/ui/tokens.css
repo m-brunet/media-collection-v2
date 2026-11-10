@@ -42,6 +42,8 @@
     --text-xl: 20px;
     --text-2xl: 27px;
     --text-3xl: 32px;
+    /* Body text tracking: Inter is a little tight at 13-14 px. Headings and monospace text keep `normal`. */
+    --tracking-body: 0.01em;
     --leading: 1.5;
 
     /* Spacing scale */
