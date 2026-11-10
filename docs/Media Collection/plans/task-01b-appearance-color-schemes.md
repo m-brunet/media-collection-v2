@@ -39,4 +39,4 @@ The administrator chooses the installation's colour scheme among four; the choic
 
 ## Note (2026-11-09, KI-6)
 
-The four accent-only schemes of this task are replaced by eight full palettes (Spring green and seven schemes from the design); Mint, Emerald and Forest are removed, with migration 011 moving a saved choice to Spring green. See [design guidelines](../design/design-guidelines.md#colour-schemes) and KI-6 in [known issues](known-issues.md).
+The four accent-only schemes of this task are replaced by eight full palettes (Spring green and seven schemes from the design); Mint, Emerald and Forest are removed, with migration 011 moving a saved choice to Spring green. See [design guidelines](../design/design-guidelines.md#colour-schemes) and KI-6 in [known issues](resolved-issues.md).
