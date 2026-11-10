@@ -2046,6 +2046,7 @@ body {
 .address-qr__url {
     margin: 0;
     font-family: var(--font-mono);
+    letter-spacing: normal;
     font-size: var(--text-sm);
     text-align: center;
     overflow-wrap: anywhere;
