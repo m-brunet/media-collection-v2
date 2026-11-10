@@ -275,7 +275,7 @@ Each step: tests, the relevant checks, architecture review skill on the changes,
   Done: `BackupFolder` (`backup-folder.adapter.ts`), `ProjectLinks` (repository, releases, licence URLs), Open the
   releases page in the new section. The recovery steps name a **Media Collection maintenance** shortcut, which the
   installer adds in step 7 (Start menu, starts the application with `--maintenance`).
-- [ ] **5. About window**: page, preload, links, Credits and licences. Desktop e2e (version shown, links reach the
+- [x] **5. About window**: page, preload, links, Credits and licences. Desktop e2e (version shown, links reach the
   stand-in `shell`, credits opens `/credits` in the Libris window).
 - [ ] **6. Update flow**: `electron-updater`, `UpdateSource` and stand-in, `ApplicationUpdates`, `UpdateDialogs`,
   `BackupBeforeUpdate`, menu item states, startup check. Unit tests of `ApplicationUpdates` (every state change and

@@ -1,4 +1,4 @@
-import { app, dialog, Menu, powerSaveBlocker, shell } from 'electron';
+import { app, BrowserWindow, dialog, Menu, powerSaveBlocker, shell } from 'electron';
 import { fileURLToPath } from 'node:url';
 import { mkdirSync, readFileSync, unwatchFile, watchFile } from 'node:fs';
 import { join } from 'node:path';
@@ -172,6 +172,14 @@ watchFile(process.env.APP_TEST_COMMAND_FILE, { interval: 20 }, async () => {
                 }));
 
             send({ type: 'menu-labels', value: labels(Menu.getApplicationMenu()) });
+        } else if (request.type === 'windows') {
+            send({
+                type: 'windows',
+                value: BrowserWindow.getAllWindows().map((each) => ({
+                    title: each.getTitle(),
+                    url: each.webContents.getURL(),
+                })),
+            });
         } else if (request.type === 'window') {
             send({
                 type: 'window',
