@@ -144,6 +144,8 @@ design.
   release.
 - **Progress (checked 2026-11-10):** nothing done yet: no pairing code in the server or in Leaf.
 
+## Done
+
 ### KI-14 — Desktop dialogs, menus and window titles are only in English
 
 - **Type:** Improvement.
@@ -178,8 +180,10 @@ design.
   language).
 - **Severity:** medium (a French user sees English desktop dialogs; release requirement). **Planned:** Task 10, which
   reworks the menus and adds the About window and update dialogs.
-
-## Done
+- **Done:** 2026-11-10, Task 10 steps 2 to 6 (branch `docs/task-10-decisions`): `DesktopLanguage` and `DesktopTexts`
+  in `apps/desktop/src`, used by every dialog, menu and window title; the Maintenance and About pages take the
+  language from the main process. Tests: catalogue unit tests, desktop e2e tests on a French device (menus,
+  maintenance confirmation, Maintenance and About windows, update dialogs).
 
 ### KI-15 — Activity: a shelf change and a tag change read as the same vague entry
 

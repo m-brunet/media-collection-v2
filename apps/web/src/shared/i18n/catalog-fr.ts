@@ -151,8 +151,6 @@ export const fr = {
     'internet.manualInternal': 'Port interne',
     'internet.manualUnknown': 'inconnue',
     'internet.check': 'Vérifier à nouveau',
-    'internet.firewall':
-        'Si Windows demande d’autoriser Media Collection sur le réseau, choisissez Autoriser.',
     'internet.replaceTitle': 'Remplacer le certificat enregistré ?',
     'internet.replaceBody':
         'Un certificat HTTPS est déjà enregistré. L’accès Internet le remplace par un certificat de Let’s Encrypt.',
@@ -500,6 +498,7 @@ export const fr = {
     'credits.acmeClient.used': 'Obtention des certificats HTTPS auprès de Let’s Encrypt.',
     'credits.natApi.used': 'Ouverture du port de la box (UPnP) pour l’accès Internet.',
     'credits.qrcode.used': 'Les codes QR des adresses du serveur.',
+    'credits.qrcode.trademark': 'QR Code est une marque déposée de DENSO WAVE INCORPORATED.',
     'appearance.default': 'par défaut',
     'appearance.iconSetTitle': 'Jeu d’icônes',
     'appearance.iconSetHint':

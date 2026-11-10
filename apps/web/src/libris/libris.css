@@ -337,6 +337,11 @@ body {
     margin: 0;
 }
 
+.credit__notice {
+    margin: var(--space-2) 0 0;
+    color: var(--color-text-secondary);
+}
+
 .credits-standalone {
     display: grid;
     gap: var(--space-6);

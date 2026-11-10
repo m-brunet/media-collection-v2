@@ -1,10 +1,12 @@
-import type { IpcMainInvokeEvent } from 'electron';
-import { app, BrowserWindow, dialog, ipcMain } from 'electron';
-import { mkdirSync } from 'node:fs';
+import type { FileFilter, IpcMainInvokeEvent } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import { join } from 'node:path';
 import { BackendProcess, WorkerFailure } from './backend-process.adapter.js';
 import { BackupFileName } from './backup-file-name.util.js';
 import type { BackupSummary, WorkerRequest, WorkerResponse } from './protocol.js';
+import type { DesktopTexts } from './desktop-texts.util.js';
+import type { BackupFolder } from './backup-folder.adapter.js';
+import { ProjectLinks } from './project-links.util.js';
 
 interface MaintenanceFailure {
     success: false;
@@ -22,6 +24,8 @@ interface MaintenanceWindowOptions {
     pagePath: string;
     iconPath: string;
     hidden: boolean;
+    texts: DesktopTexts;
+    backupFolder: BackupFolder;
 }
 
 // The page
@@ -33,6 +37,8 @@ export class MaintenanceWindow {
         'maintenance:create-backup',
         'maintenance:choose-backup',
         'maintenance:restore-backup',
+        'maintenance:open-backup-folder',
+        'maintenance:open-releases',
     ];
     private readonly worker: BackendProcess;
     private window: BrowserWindow | undefined;
@@ -50,13 +56,15 @@ export class MaintenanceWindow {
             height: 820,
             minWidth: 560,
             minHeight: 600,
-            title: 'Media Collection · Local maintenance',
+            title: this.options.texts.text('maintenanceWindowTitle'),
             icon: this.options.iconPath,
             backgroundColor: '#1d2022',
             show: !this.options.hidden,
             webPreferences: {
                 backgroundThrottling: !this.options.hidden,
                 preload: this.options.preloadPath,
+                // The page shows the same language as the dialogs and menus.
+                additionalArguments: ['--mc-language=' + this.options.texts.language],
                 contextIsolation: true,
                 sandbox: true,
                 nodeIntegration: false,
@@ -96,6 +104,8 @@ export class MaintenanceWindow {
         this.handle('maintenance:create-backup', () => this.createBackup());
         this.handle('maintenance:choose-backup', () => this.chooseBackup());
         this.handle('maintenance:restore-backup', () => this.restoreBackup());
+        this.handle('maintenance:open-backup-folder', () => this.openBackupFolder());
+        this.handle('maintenance:open-releases', () => this.openReleases());
     }
 
     private unregister(): void {
@@ -130,13 +140,11 @@ export class MaintenanceWindow {
     private async createBackup(): Promise<
         MaintenanceResult<{ backup: BackupSummary; file: string }>
     > {
-        const folder = join(app.getPath('documents'), 'Media Collection backups');
-
-        mkdirSync(folder, { recursive: true });
+        const folder = this.options.backupFolder.ensure();
         const choice = await dialog.showSaveDialog(this.window!, {
-            title: 'Create a backup',
+            title: this.options.texts.text('createBackupTitle'),
             defaultPath: join(folder, BackupFileName.at(new Date())),
-            filters: [{ name: 'Media Collection backup', extensions: [BackupFileName.extension] }],
+            filters: [this.backupFilter()],
         });
 
         if (choice.canceled || !choice.filePath) {
@@ -155,10 +163,10 @@ export class MaintenanceWindow {
     > {
         this.chosenBackup = null;
         const choice = await dialog.showOpenDialog(this.window!, {
-            title: 'Restore a backup',
-            defaultPath: join(app.getPath('documents'), 'Media Collection backups'),
+            title: this.options.texts.text('restoreBackupTitle'),
+            defaultPath: this.options.backupFolder.path,
             properties: ['openFile'],
-            filters: [{ name: 'Media Collection backup', extensions: [BackupFileName.extension] }],
+            filters: [this.backupFilter()],
         });
         const source = choice.filePaths[0];
 
@@ -179,6 +187,31 @@ export class MaintenanceWindow {
         }
 
         return result;
+    }
+
+    private async openBackupFolder(): Promise<MaintenanceResult<{ folder: string }>> {
+        try {
+            const folder = this.options.backupFolder.ensure();
+            const error = await shell.openPath(folder);
+
+            if (error) {
+                throw new Error(error);
+            }
+
+            return { success: true, value: { folder } };
+        } catch (error) {
+            return this.failed(error);
+        }
+    }
+
+    private async openReleases(): Promise<MaintenanceResult<null>> {
+        try {
+            await shell.openExternal(ProjectLinks.releases);
+
+            return { success: true, value: null };
+        } catch (error) {
+            return this.failed(error);
+        }
     }
 
     private async restoreBackup(): Promise<MaintenanceResult<{ backup: BackupSummary }>> {
@@ -212,13 +245,27 @@ export class MaintenanceWindow {
 
             return { success: true, value };
         } catch (error) {
-            return {
-                success: false,
-                reason: error instanceof WorkerFailure ? error.reason : null,
-                message: error instanceof Error ? error.message : 'Maintenance failed.',
-                details: error instanceof WorkerFailure ? error.details : null,
-            };
+            return this.failed(error);
         }
+    }
+
+    private failed(error: unknown): MaintenanceFailure {
+        return {
+            success: false,
+            reason: error instanceof WorkerFailure ? error.reason : null,
+            message:
+                error instanceof Error
+                    ? error.message
+                    : this.options.texts.text('maintenanceFailed'),
+            details: error instanceof WorkerFailure ? error.details : null,
+        };
+    }
+
+    private backupFilter(): FileFilter {
+        return {
+            name: this.options.texts.text('backupFileType'),
+            extensions: [BackupFileName.extension],
+        };
     }
 
     private cancelled(): MaintenanceFailure {

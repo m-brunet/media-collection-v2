@@ -15,3 +15,10 @@ it('pads single-digit months, days and times', () => {
 
     expect(result).toBe('Media Collection backup 2027-01-02 03-04-05.mcbackup');
 });
+it('names a backup made before an update after the version it installs', () => {
+    const date = new Date(2026, 10, 8, 14, 30, 5);
+
+    const result = BackupFileName.at(date, '2.0.1');
+
+    expect(result).toBe('Media Collection backup 2026-11-08 14-30-05 before 2.0.1.mcbackup');
+});

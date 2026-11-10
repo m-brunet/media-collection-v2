@@ -3,7 +3,13 @@
     "version": "0.1.0",
     "private": true,
     "description": "Media Collection: manage a shared household book library (Libris desktop, Leaf mobile)",
+    "homepage": "https://github.com/m-brunet/media-collection-v2",
     "license": "MIT",
+    "author": "Matthias Brunet",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/m-brunet/media-collection-v2.git"
+    },
     "workspaces": [
         "apps/*",
         "packages/*"
@@ -42,6 +48,7 @@
         "acme-client": "5.4.0",
         "better-sqlite3": "^13.0.3",
         "cookie-parser": "^1.4.7",
+        "electron-updater": "^6.8.11",
         "express": "^5.2.1",
         "fflate": "0.8.2",
         "helmet": "^8.3.0",
@@ -51,6 +58,7 @@
         "react": "^19.3.0",
         "react-dom": "^19.3.0",
         "reflect-metadata": "^0.2.2",
+        "rxjs": "^7.8.2",
         "sharp": "^0.35.5",
         "zod": "^4.6.5"
     },
@@ -107,18 +115,43 @@
             "**/node_modules/@img/**/*"
         ],
         "npmRebuild": false,
+        "publish": [
+            {
+                "provider": "github",
+                "owner": "m-brunet",
+                "repo": "media-collection-v2",
+                "releaseType": "draft"
+            }
+        ],
         "win": {
             "target": "nsis",
-            "signAndEditExecutable": false
+            "icon": "apps/desktop/assets/icons/libris.ico"
         },
-        "mac": {
-            "target": "dmg",
-            "category": "public.app-category.productivity"
+        "nsis": {
+            "oneClick": false,
+            "perMachine": true,
+            "allowElevation": true,
+            "allowToChangeInstallationDirectory": true,
+            "createDesktopShortcut": true,
+            "createStartMenuShortcut": true,
+            "shortcutName": "Media Collection",
+            "installerIcon": "apps/desktop/assets/icons/libris.ico",
+            "uninstallerIcon": "apps/desktop/assets/icons/libris.ico",
+            "include": "build/installer.nsh",
+            "artifactName": "Media-Collection-Setup-${version}.${ext}",
+            "deleteAppDataOnUninstall": false,
+            "installerLanguages": [
+                "en_US",
+                "fr_FR"
+            ],
+            "multiLanguageInstaller": true
         },
         "linux": {
             "target": "AppImage",
             "category": "Utility",
-            "executableName": "media-collection"
+            "executableName": "media-collection",
+            "icon": "apps/desktop/assets/icons/libris.png",
+            "artifactName": "Media-Collection-${version}.${ext}"
         }
     }
 }

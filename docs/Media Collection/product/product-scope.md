@@ -1,6 +1,6 @@
 # Product scope
 
-Status: product baseline reconciled after Tasks 1-7 and the application-update discussion. This is a requirements document, not a claim of implemented behavior. [Application updates](../operations/updates.md) defines GitHub Releases distribution, Windows integrated installation, and manual macOS/Linux installation with backup assistance.
+Status: product baseline reconciled after Tasks 1-7 and the application-update discussion. This is a requirements document, not a claim of implemented behavior. [Application updates](../operations/updates.md) defines GitHub Releases distribution, Windows integrated installation, and manual Linux installation with backup assistance; macOS is not supported for now.
 
 ## Purpose
 

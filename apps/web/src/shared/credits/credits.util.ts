@@ -11,6 +11,8 @@ export interface Credit {
     used: MessageKey;
     // How the work was changed for Media Collection; null when used as published.
     changes: MessageKey | null;
+    // A notice the work asks to be shown with it, such as a trademark line.
+    notice?: MessageKey;
 }
 
 export interface CreditGroup {
@@ -254,6 +256,7 @@ export class Credits {
                     licenceUrl: mit,
                     used: 'credits.qrcode.used',
                     changes: null,
+                    notice: 'credits.qrcode.trademark',
                 },
             ],
         },
