@@ -51,3 +51,12 @@ it('credits the BnF as the source of book information', async () => {
 
     expect(source).toBeInTheDocument();
 });
+it('shows the QR Code trademark notice with the QR code library', async () => {
+    await renderPage();
+
+    const library = screen.getByRole('link', { name: 'node-qrcode' }).closest('li')!;
+
+    expect(
+        within(library).getByText('QR Code is a registered trademark of DENSO WAVE INCORPORATED.'),
+    ).toBeInTheDocument();
+});

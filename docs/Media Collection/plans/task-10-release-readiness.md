@@ -297,7 +297,11 @@ Each step: tests, the relevant checks, architecture review skill on the changes,
   workspace packages no longer carry their own version. The Libris "allow in the Windows prompt" reminder is removed.
   The local build and `test:packaged` pass. **Waiting for the user:** the install itself needs the administrator
   prompt, so the install, firewall, phone and uninstall checks are done by the user.
-- [ ] **8. Credits**: QR trademark line, completeness check; component test updated.
+- [x] **8. Credits**: QR trademark line, completeness check; component test updated.
+  Done: an optional `notice` on a credit, shown under it (the QR Code trademark line with node-qrcode). Checked
+  against the KI-6 rule: no icon, font or asset was added since; the libraries listed are the ones behind a feature
+  (book data, images, barcodes, certificates, router, QR codes), so `electron-updater`, like Electron, NestJS and
+  React, is not listed. The installer ships `LICENSE.electron.txt` and `LICENSES.chromium.html`.
 - [ ] **9. Release workflow**: `release.yml`, `operations/releasing.md`, README (installation, SmartScreen steps,
   release procedure link; the "no continuous-integration pipeline" line updated). Tried with a throwaway tag
   (`v0.1.0-ci.1`, a draft that is deleted afterwards). The Linux AppImage is also started by hand once (WSL with
