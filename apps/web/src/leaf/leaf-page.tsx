@@ -6,7 +6,6 @@ import { Button } from '../shared/ui/button';
 import { Icon } from '../shared/ui/icon';
 import { Notice } from '../shared/ui/notice';
 
-// One Leaf screen: an optional way back, an optional eyebrow, the title and the content.
 export function LeafPage({
     back,
     eyebrow,
@@ -36,7 +35,6 @@ export function LeafPage({
     );
 }
 
-// A failed read with its reason and Retry.
 export function LeafLoadFailure({ error, onRetry }: { error: unknown; onRetry(): void }) {
     const { t } = useI18n();
 

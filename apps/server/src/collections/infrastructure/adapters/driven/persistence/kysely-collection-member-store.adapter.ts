@@ -4,8 +4,6 @@ import type {
 } from '../../../../application/ports/driven/collection-member-store.interface.js';
 import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
 
-// Membership rows, read together with the book information collections need. Only the books
-// feature writes books; this adapter only reads them.
 export class KyselyCollectionMemberStore implements CollectionMemberStore {
     constructor(private readonly connections: DatabaseConnections) {}
 

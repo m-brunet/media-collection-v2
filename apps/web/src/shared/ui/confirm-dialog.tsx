@@ -4,7 +4,6 @@ import { Button } from './button';
 import { Dialog } from './dialog';
 import { Notice } from './notice';
 
-// Confirms a destructive change; the dialog stays open with the reason when it fails.
 export function ConfirmDialog({
     open,
     title,

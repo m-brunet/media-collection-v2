@@ -67,7 +67,6 @@ export class AcmeCertificateAuthority implements CertificateAuthority {
         }
     }
 
-    // Null once Let's Encrypt reached the port, otherwise why it could not.
     private async prove(
         client: ReturnType<AcmeConnector['open']>,
         authorization: acme.Authorization,

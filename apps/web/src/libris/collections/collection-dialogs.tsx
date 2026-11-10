@@ -8,8 +8,6 @@ import { Notice } from '../../shared/ui/notice';
 import { TextField } from '../../shared/ui/text-field';
 import { useAction } from '../../shared/use-action';
 
-// Renames the collection for every member book and sets whether it includes volume 0. Deleting
-// the collection keeps its books, after a confirmation.
 export function EditCollectionDialog({
     collection,
     open,

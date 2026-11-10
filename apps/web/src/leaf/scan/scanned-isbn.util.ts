@@ -1,4 +1,3 @@
-// What the barcodes found in one picture amount to.
 export type BarcodeReading =
     | { kind: 'isbn'; isbn: string }
     | { kind: 'not-isbn' }
@@ -17,8 +16,6 @@ export class ScannedIsbn {
         return ScannedIsbn.checkDigitValid(digits) ? digits : null;
     }
 
-    // The first ISBN among the barcode values read in one picture; any other barcode is reported
-    // as not an ISBN.
     static reading(values: readonly string[]): BarcodeReading {
         const isbn = values.map((value) => ScannedIsbn.from(value)).find((value) => value !== null);
 

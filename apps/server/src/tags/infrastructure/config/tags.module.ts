@@ -18,7 +18,6 @@ import type { IdGenerator } from '../../../shared/application/ports/driven/id-ge
 import type { AuditedOperation } from '../../../shared/application/services/audited-operation.service.js';
 import { TagsController } from '../adapters/driving/web/tags.controller.js';
 
-// Driven adapters and shared services the tags feature is composed from.
 export interface TagsDependencies {
     tags: TagRepository;
     store: BookTagStore;
@@ -116,7 +115,6 @@ export class TagsModule {
         };
     }
 
-    // The tags the books feature applies when books are saved, and reads with them.
     static assignment(
         tags: TagRepository,
         store: BookTagStore,

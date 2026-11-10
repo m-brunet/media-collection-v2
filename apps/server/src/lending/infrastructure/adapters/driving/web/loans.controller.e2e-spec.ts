@@ -28,7 +28,6 @@ afterEach(async () => {
     await app?.teardown();
 });
 
-// Saves a book with the builders; titles of one scenario are distinct books.
 async function book(title: string, facts: BookFacts = {}) {
     const saved = await app.dependencies.builders.book({ title, ...facts });
 

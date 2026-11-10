@@ -2,14 +2,12 @@ import type { MembershipRequest } from './ports/driven/collection-membership.int
 import type { TagChoice } from './ports/driven/tag-assignment.interface.js';
 import type { BookCategory, Ownership } from '../domain/entities/book.entity.js';
 
-// One author of a book being saved: an existing author, or a name to reuse or create.
 // `distinct` confirms that a name similar to an existing author is really someone else.
 export type AuthorChoice = { id: string } | { name: string; distinct?: boolean };
 
-// Location and tags to apply to a book; an absent field keeps its current value.
+// An absent field keeps its current value.
 export type OrganisationRequest = { shelfId?: string | null; tags?: readonly TagChoice[] };
 
-// Book information as entered in the form, before validation.
 export interface BookInput {
     title: string;
     isbn: string | null;
@@ -26,11 +24,9 @@ export interface BookInput {
     price: string | null;
     // Confirms a new no-ISBN book although a similar saved book was found.
     confirmDistinct?: boolean;
-    // The collection the book belongs to, with the volumes it covers; null for none.
     collection: MembershipRequest | null;
     // Planned Not Owned books the person chose to delete because this Owned book replaces them.
     replacePlanned?: string[];
-    // The shelf the book is kept on; null when unassigned.
     shelfId: string | null;
     tags: TagChoice[];
 }

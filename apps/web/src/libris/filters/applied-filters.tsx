@@ -8,7 +8,6 @@ import type { Filter } from './book-filter.util';
 import { BookFilter } from './book-filter.util';
 import { useFilterLabels } from './use-filter-labels';
 
-// The advanced filters of a listing page (My books or Collections), read from its address.
 export function useListingFilter(listing: 'books' | 'collections') {
     const { account } = useSession();
     const navigate = useNavigate();
@@ -29,15 +28,12 @@ export function useListingFilter(listing: 'books' | 'collections') {
 
     return {
         filter,
-        // Appended to the listing request.
         query: BookFilter.write(filter).toString(),
         change,
-        // The filter page, which comes back to this listing with the same search and sorting.
         open: () => navigate('/' + listing + '/filters?' + parameters.toString()),
     };
 }
 
-// Removable chips for every applied filter value ("Owned ×", "Include: Fantasy ×").
 export function AppliedFilters({
     filter,
     onChange,

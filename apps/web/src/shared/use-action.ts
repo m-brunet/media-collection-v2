@@ -8,7 +8,6 @@ export interface Feedback {
     text: string;
 }
 
-// Runs a form action, tracks its progress, and produces translated success or error feedback.
 export function useAction() {
     const { t } = useI18n();
     const [busy, setBusy] = useState(false);

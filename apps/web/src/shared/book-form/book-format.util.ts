@@ -11,7 +11,6 @@ export interface SortChoice {
     label: MessageKey;
 }
 
-// Display rules for book information shared by the book pages.
 export class BookFormat {
     static readonly categories: BookCategory[] = ['books', 'manga', 'comics'];
     static readonly ownerships: BookOwnership[] = ['owned', 'not-owned'];
@@ -41,7 +40,6 @@ export class BookFormat {
         return read ? 'status.read' : 'status.notRead';
     }
 
-    // Euros with exactly two decimals; zero is a real (free) price, null stays unknown.
     static price(cents: number, locale: string): string {
         return new Intl.NumberFormat(locale, {
             style: 'currency',
@@ -51,7 +49,6 @@ export class BookFormat {
         }).format(cents / 100);
     }
 
-    // Price as typed in the form, using the interface language's decimal separator.
     static priceInput(cents: number, locale: string): string {
         return new Intl.NumberFormat(locale, {
             minimumFractionDigits: 2,
@@ -60,7 +57,6 @@ export class BookFormat {
         }).format(cents / 100);
     }
 
-    // "September 2020" or "2020"; never invents a day.
     static publication(year: number, month: number | null, locale: string): string {
         if (month === null) {
             return String(year);

@@ -7,7 +7,6 @@ import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 import { NameKey } from '../../../shared/domain/name-key.helper.js';
 
-// Search ignores case, accents and outer spaces, and matches any part of the name.
 export class ListTags implements ListTagsUseCase {
     constructor(
         private readonly tags: TagRepository,

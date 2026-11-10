@@ -1,4 +1,3 @@
-// One Successful, eligible audit record, as Activity reads it.
 export interface ActivityRecord {
     category: string;
     subjectId: string | null;
@@ -9,7 +8,6 @@ export interface ActivityRecord {
     currentTitle: string | null;
 }
 
-// The records of one audited operation, sharing its ID, time and acting account.
 export interface ActivityOperation {
     id: string;
     occurredAt: string;
@@ -48,7 +46,6 @@ export type RenamedEventKind =
     | 'bookcase-renamed'
     | 'tag-renamed';
 
-// What happened, with the names needed to say it. Libris writes the sentence ("You …").
 export type ActivityEvent =
     // `title` is null only for an older record of a book deleted since.
     | { kind: BookEventKind; title: string | null }

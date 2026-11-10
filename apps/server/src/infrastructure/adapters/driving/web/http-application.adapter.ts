@@ -65,7 +65,6 @@ export class HttpApplication {
         return application;
     }
 
-    // Book cover uploads: the only requests whose body is a file instead of JSON.
     static readonly coverPath = /^\/api\/books\/[^/]+\/cover$/;
     static readonly uploadPaths: readonly RegExp[] = [HttpApplication.coverPath];
     // Slightly above the 10 MB cover limit so the books feature can explain a too-large image.
@@ -96,7 +95,6 @@ export class HttpApplication {
         }
     }
 
-    // Libris (desktop) owns every page path except `/leaf`, which belongs to Leaf (mobile).
     private static page(path: string): string {
         return path === '/leaf' || path.startsWith('/leaf/') ? 'leaf/index.html' : 'index.html';
     }

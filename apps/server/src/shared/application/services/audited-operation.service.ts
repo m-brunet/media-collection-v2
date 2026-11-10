@@ -32,7 +32,6 @@ export interface BatchAuditContext {
     subjectIds: readonly string[];
 }
 
-// The before/after snapshots of one subject of a successful batch.
 export interface BatchEntry {
     subjectId: string;
     before: Record<string, unknown> | null;

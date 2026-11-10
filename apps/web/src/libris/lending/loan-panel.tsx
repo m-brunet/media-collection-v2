@@ -5,8 +5,6 @@ import { Button } from '../../shared/ui/button';
 import { Panel } from '../../shared/ui/layout';
 import { LoanLinks } from './loan-links.util';
 
-// On book details: who has a lent book and since when, with the return action for Owners and the
-// administrator. Lending state is shown apart from ownership and reading status.
 export function LoanPanel({ book, editor }: { book: BookDto; editor: boolean }) {
     const { t, dates } = useI18n();
     const navigate = useNavigate();

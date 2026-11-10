@@ -4,7 +4,7 @@ export type ErasedLibrary = { books: number; authors: number; collections: numbe
 
 // Deletes the library tables' records and the audit log in foreign-key order, joining the
 // transaction in progress. Accounts and settings stay; every session ends through the accounts'
-// token versions. Shared by the Admin data reset and the development data reset.
+// token versions.
 export class KyselyLibraryEraser {
     constructor(private readonly connections: DatabaseConnections) {}
 

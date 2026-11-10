@@ -43,7 +43,6 @@ function membership(name: string, volumeFrom: number, volumeTo = volumeFrom): Me
 
 let edition = 0;
 
-// A book without ISBN in a collection, for coverage scenarios.
 async function member(collection: MembershipDto, ownership: 'owned' | 'not-owned' = 'owned') {
     return created({
         title: 'Edition ' + ++edition,
@@ -55,7 +54,6 @@ async function member(collection: MembershipDto, ownership: 'owned' | 'not-owned
     });
 }
 
-// The same book information, saved again with other ownership or membership.
 function edited(book: BookDto, changes: Parameters<typeof BookInputFixture.of>[0]) {
     const { read: _read, ...input } = BookInputFixture.of({
         title: book.title,
@@ -753,7 +751,6 @@ describe('GET /api/books with collections', () => {
     });
 });
 
-// Creates a bookcase with one shelf through the API, as an Owner.
 async function shelfIn(bookcaseName: string, shelfName = 'Top') {
     const client = await app.authenticatedClient(owner);
     const bookcase = (await client.call<BookcaseDto>('/bookcases', 'POST', { name: bookcaseName }))
@@ -767,15 +764,12 @@ async function shelfIn(bookcaseName: string, shelfName = 'Top') {
     return { bookcase, shelf };
 }
 
-// Creates a tag through the API, as an Owner.
 async function tag(name: string) {
     const client = await app.authenticatedClient(owner);
 
     return (await client.call<TagDto>('/tags', 'POST', { name })).body;
 }
 
-// Books tagged Fantasy and/or Adventure and/or Medieval; the query includes the first two and
-// excludes Medieval.
 async function taggedBooks() {
     const fantasy = await tag('Fantasy');
     const adventure = await tag('Adventure');
@@ -813,14 +807,12 @@ async function taggedBooks() {
     return 'tag=' + fantasy.id + '&tag=' + adventure.id + '&notTag=' + medieval.id;
 }
 
-// The default book information, without the creator's reading status, for a PUT.
 function changed(overrides: Parameters<typeof BookInputFixture.of>[0]) {
     const { read: _read, ...input } = BookInputFixture.of(overrides);
 
     return input;
 }
 
-// The titles listed for a query, in listing order.
 async function titles(query: string, user = owner) {
     const client = await app.authenticatedClient(user);
     const response = await client.call<BookListPageDto>('/books?' + query);
@@ -1190,12 +1182,10 @@ describe('GET /api/books with filters', () => {
     });
 });
 
-// Lends saved books to a receiver, through the builders.
 async function lentTo(receiverName: string, ...books: BookDto[]) {
     return new LendingArrangement(app.dependencies).lend({ name: receiverName }, ...books);
 }
 
-// Records the return of loans, through the builders.
 async function returned(...loanIds: string[]) {
     await new LendingArrangement(app.dependencies).giveBack(...loanIds);
 }
@@ -1354,7 +1344,6 @@ describe('PUT /api/books/:id of a lent book', () => {
 describe('Generated titles of books', () => {
     const gunnm = () => membership('Gunnm', 3);
 
-    // A Manga of Gunnm saved without title, so its title is generated.
     async function generated() {
         return created({
             title: '',

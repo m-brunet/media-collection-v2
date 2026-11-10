@@ -24,8 +24,6 @@ import { useBookcases } from './use-bookcases';
 
 const pageSize = 24;
 
-// The bookcases whose name, or one of whose shelves' names, contains the search; a matching
-// bookcase keeps all its shelves.
 function matching(bookcases: BookcaseDto[], search: string): BookcaseDto[] {
     const key = BookDraft.nameKey(search);
 
@@ -46,7 +44,6 @@ function matching(bookcases: BookcaseDto[], search: string): BookcaseDto[] {
     });
 }
 
-// The books kept on a shelf, by title, with paging.
 function ShelfBooks({ shelf }: { shelf: ShelfDto }) {
     const { t } = useI18n();
     const [books, setBooks] = useState<{ shelf: string; items: BookListItemDto[]; total: number }>({
@@ -150,8 +147,6 @@ function ShelfBooks({ shelf }: { shelf: ShelfDto }) {
     );
 }
 
-// Physical bookcases and the shelves inside them. Owners/Admin create, rename, move and delete
-// them; deleting a location unassigns its books and never deletes them.
 export function BookshelvesPage() {
     const { t } = useI18n();
     const { account } = useSession();

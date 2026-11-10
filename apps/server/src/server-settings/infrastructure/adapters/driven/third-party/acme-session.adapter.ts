@@ -1,7 +1,5 @@
 import acme from 'acme-client';
 
-// The part of an ACME client the certificate authority uses, so tests can stand in for
-// Let's Encrypt.
 export type AcmeSession = Pick<
     acme.Client,
     | 'createAccount'

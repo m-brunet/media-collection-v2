@@ -1,6 +1,5 @@
 import { generate } from 'selfsigned';
 
-// Browser journeys replace the home router, Let's Encrypt, the public address service and DNS.
 // The router reports `externalAddress` (null: no router answers) and accepts the rule when
 // `accepts`. Every domain name points to `domainAddress` (default: the external address). The
 // certificate is self-signed for the address or name, valid 160 hours like a Let's Encrypt one.

@@ -3,7 +3,6 @@ import type { DatabaseConnections } from '../../../../../shared/infrastructure/a
 import type { AppearanceStore } from '../../../../application/ports/driven/appearance-store.interface.js';
 import { ColorScheme } from '../../../../domain/value-objects/color-scheme.value-object.js';
 
-// Saved with the other application preferences in `server_settings`, under `appearance`.
 export class KyselyAppearanceRepository implements AppearanceStore {
     constructor(
         private readonly connections: DatabaseConnections,

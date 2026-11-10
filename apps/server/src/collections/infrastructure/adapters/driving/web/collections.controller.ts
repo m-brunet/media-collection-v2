@@ -37,8 +37,6 @@ import {
     collectionNamesSchema,
 } from './collection-schemas.js';
 
-// Collections every signed-in account may read and Owners may rename, finish, reopen or delete.
-// The shopping views serve Leaf, which is for Owners and the Admin only.
 @Controller('api/collections')
 export class CollectionsController {
     constructor(

@@ -3,7 +3,6 @@ import type { GetOverviewUseCase } from '../../../../application/ports/driving/g
 import type { AuthenticatedRequest } from '../../../../../shared/infrastructure/adapters/driving/web/api-guard.js';
 import type { OverviewDto } from '../../../../../../../../packages/contracts/src/http.js';
 
-// The Overview every signed-in account reads; the reading part is the viewer's own.
 @Controller('api/overview')
 export class OverviewController {
     constructor(@Inject('OVERVIEW_GET') private readonly getOverview: GetOverviewUseCase) {}

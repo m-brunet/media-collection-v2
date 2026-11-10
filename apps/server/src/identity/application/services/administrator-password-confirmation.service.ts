@@ -4,7 +4,6 @@ import type { PasswordHasher } from '../ports/driven/password-hasher.interface.j
 import { AccountLoader } from './account-loader.service.js';
 import { CurrentPasswordConfirmation } from './current-password-confirmation.service.js';
 
-// Confirms the signed-in Admin's current password for the application data reset.
 export class AdministratorPasswordConfirmation implements AdministratorPasswordCheck {
     private readonly accounts: AccountLoader;
     private readonly confirmation: CurrentPasswordConfirmation;

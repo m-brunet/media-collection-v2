@@ -13,9 +13,6 @@ import { Isbn } from '../../domain/value-objects/isbn.value-object.js';
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// Find book (book entry rules, "Assisted lookup" and "Lookup sources"): the library is checked
-// first and an existing edition is opened rather than created again; otherwise every source is
-// asked and their answers combined for review. Nothing is saved: the person reviews and saves.
 export class LookUpBook implements LookUpBookUseCase {
     constructor(
         private readonly books: BookRepository,

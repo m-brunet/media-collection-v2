@@ -19,8 +19,6 @@ import {
 import { useFilterLabels } from './use-filter-labels';
 import { TagFilter } from './tag-filter';
 
-// Combined criteria for My books or the Collections list. The choices stay in this page until
-// "Show results", which returns to the listing with its search and sorting kept.
 export function FiltersPage({ listing }: { listing: 'books' | 'collections' }) {
     const { t } = useI18n();
     const { account } = useSession();

@@ -25,12 +25,10 @@ import type { IdGenerator } from '../../../shared/application/ports/driven/id-ge
 import type { AuditedOperation } from '../../../shared/application/services/audited-operation.service.js';
 import { CollectionsController } from '../adapters/driving/web/collections.controller.js';
 
-// Driven adapters and shared services the collections feature is composed from.
 export interface CollectionsDependencies {
     collections: CollectionRepository;
     members: CollectionMemberStore;
     search: CollectionBookSearch;
-    // Owned by the books feature, composed by the application root.
     titles: MemberTitles;
     clock: Clock;
     operations: AuditedOperation;
@@ -54,7 +52,6 @@ const serviceProviders: Provider[] = [
     },
     { provide: token.viewer, useFactory: () => new CollectionViewer() },
 ];
-// Use cases that change a collection share the same collaborators.
 const changeDependencies = [
     token.collections,
     token.members,
@@ -73,7 +70,6 @@ type ChangeUseCase = new (
     operations: AuditedOperation,
 ) => unknown;
 
-// A finish or reopen use case, both built from the same collection services.
 class ChangeProvider {
     static of(provide: string, useCase: ChangeUseCase): Provider {
         return {
@@ -184,7 +180,6 @@ export class CollectionsModule {
         };
     }
 
-    // The membership the books feature applies when books are saved or deleted, and reads with them.
     static membership(
         collections: CollectionRepository,
         members: CollectionMemberStore,

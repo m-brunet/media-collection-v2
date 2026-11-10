@@ -8,8 +8,6 @@ export interface TagState {
     updatedAt: string;
 }
 
-// A reusable label for books, independent of collections and shelves. Equivalent names are the
-// same tag; an unused tag remains until deleted.
 export class Tag {
     private state: TagState;
 

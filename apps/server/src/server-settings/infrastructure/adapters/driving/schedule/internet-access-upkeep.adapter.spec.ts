@@ -9,7 +9,6 @@ afterEach(() => {
 const kept: RuleUpkeepOutcome = { rule: 'kept', address: '82.66.118.204', problem: null };
 const failed: RuleUpkeepOutcome = { rule: 'failed', reason: 'no-router' };
 
-// Each run waits for `release`, then gives the next planned outcome (the last one repeats).
 class CountingMaintenance {
     runs = 0;
     release: (() => void) | null = null;
@@ -27,7 +26,6 @@ class CountingMaintenance {
     }
 }
 
-// 1 second after a run that kept the rules, 100 ms after each failed one.
 function delayAfter(failedRuns: number): number {
     return failedRuns === 0 ? 1000 : 100;
 }

@@ -15,8 +15,6 @@ import type { CoverChoice } from '../../shared/book-form/cover-choice';
 import { CoverPicker } from './cover-picker';
 import type { BookField } from '../../shared/book-form/use-book-save';
 
-// "01 / Main information" of the book form: ISBN (with Find book when adding), title, authors,
-// category, ownership, reading status, collection, and the cover beside them.
 export function BookMainFields({
     book,
     values,
@@ -38,17 +36,13 @@ export function BookMainFields({
     errorFor(field: BookField): string | undefined;
     // Whether the account has a reading status (not a Guest).
     personal: boolean;
-    // The saved book that already has this ISBN, linked under the field.
     existingBookId: string | null;
-    // Find book, offered when adding a book.
     find: { busy: boolean; retry: boolean; onFind(): void } | null;
     cover: CoverChoice;
     onCoverChange(choice: CoverChoice): void;
-    // Offered when editing: correct the spelling of an existing author.
     onCorrectAuthor?(author: AuthorDto): void;
 }) {
     const { t } = useI18n();
-    // A lent book stays Owned until its return is recorded.
     const lentTo = book?.loan?.receiverName ?? null;
     const titleOptional = BookDraft.titleOptional(values);
     const generatedTitle = BookDraft.generatedTitle(values);

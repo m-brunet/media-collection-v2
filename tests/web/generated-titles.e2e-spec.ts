@@ -31,7 +31,6 @@ afterEach(async () => {
     await runtime.teardown();
 });
 
-// A ready account: created by the administrator, temporary password already replaced.
 async function account(username: string, role: 'owner' | 'guest') {
     await admin.call('/users', 'POST', { username, password: 'temporary-pw', role });
     const client = new Client(base);
@@ -47,7 +46,6 @@ function membership(name: string, volume: number): MembershipDto {
     return { collection: { name }, volumeFrom: volume, volumeTo: volume };
 }
 
-// A Manga of the collection saved without title through the API, so its title is generated.
 async function generated(collection: MembershipDto): Promise<BookDto> {
     const response = await admin.call<BookDto>(
         '/books',

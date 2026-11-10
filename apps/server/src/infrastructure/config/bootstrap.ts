@@ -155,7 +155,6 @@ export class BackendRuntime {
         return [...urls];
     }
 
-    // Internal composition entry: production callers are Electron utility-process workers.
     async start(options: BackendOptions): Promise<BackendHandle> {
         const ids = new UuidGenerator();
         const database = await Database.open(options.dataDirectory, ids);

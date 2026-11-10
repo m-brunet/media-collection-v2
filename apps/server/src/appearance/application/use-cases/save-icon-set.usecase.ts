@@ -6,7 +6,6 @@ import { IconSet } from '../../domain/value-objects/icon-set.value-object.js';
 import type { IconSetStore } from '../ports/driven/icon-set-store.interface.js';
 import type { SaveIconSetUseCase } from '../ports/driving/save-icon-set-use-case.interface.js';
 
-// Changes the icon set of the whole installation.
 export class SaveIconSet implements SaveIconSetUseCase {
     constructor(
         private readonly store: IconSetStore,

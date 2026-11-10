@@ -1,8 +1,6 @@
 import type { HttpInternetAccessStore } from '../ports/driven/http-internet-access-store.interface.js';
 import type { HttpPortForwarding } from './http-port-forwarding.service.js';
 
-// Once HTTPS works from the internet, plain HTTP no longer needs to be open: its router rule is
-// removed and the panel says why.
 export class HttpInternetAccessClosing {
     constructor(
         private readonly store: HttpInternetAccessStore,

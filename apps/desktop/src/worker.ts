@@ -93,7 +93,6 @@ parent.on('message', (event) => {
                 process.exit(0);
             }
         } catch (error) {
-            // Application failures carry a stable reason the maintenance window translates.
             const failure = error as { reason?: string | null; details?: Record<string, unknown> };
 
             send({

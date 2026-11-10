@@ -1,4 +1,3 @@
-// Shared comparison of user-entered names (authors, collections, tags, receivers, titles).
 // Two names are equivalent when their keys are equal: case, accents and outer spaces are
 // ignored. The displayed spelling is always kept separately.
 export class NameKey {

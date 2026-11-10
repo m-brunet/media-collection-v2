@@ -12,7 +12,6 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// A new empty shelf inside an existing bookcase.
 export class CreateShelf implements CreateShelfUseCase {
     constructor(
         private readonly shelves: ShelfRepository,

@@ -53,7 +53,6 @@ function text(id: string) {
     return 'document.getElementById(' + JSON.stringify(id) + ').textContent';
 }
 
-// First launch in the real desktop window: create the protected administrator `admin`.
 async function readyDesktop() {
     const current = await fixture.start(undefined, { main: true });
 
@@ -70,7 +69,6 @@ async function readyDesktop() {
     return current;
 }
 
-// The maintenance window started with --maintenance on an installation with the Admin `admin`.
 async function maintenanceDesktop() {
     const previous = await readyDesktop();
 

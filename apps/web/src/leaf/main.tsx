@@ -5,7 +5,6 @@ import '../shared/ui/styles';
 import './leaf.css';
 import { LeafApp } from './leaf-app';
 
-// Start with the last known colour scheme; the installation's current one loads right after.
 ColorSchemeDocument.restore();
 
 createRoot(document.getElementById('root')!).render(

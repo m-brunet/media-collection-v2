@@ -32,7 +32,6 @@ export class Client {
             csrf?: boolean;
             origin?: string;
             headers?: Record<string, string>;
-            // Sends these bytes as the body instead of JSON (cover images).
             raw?: { bytes: Buffer; contentType: string };
         } = {},
     ): Promise<ApiResult<T>> {

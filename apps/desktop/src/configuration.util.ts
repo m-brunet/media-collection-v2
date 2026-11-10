@@ -5,11 +5,8 @@ export interface DesktopConfiguration {
     httpPort: number | undefined;
     httpPortSource: 'command-line' | 'environment' | undefined;
     dataDirectory: string;
-    // True when --data-dir or APP_DATA_DIR chose the data directory instead of the default.
     dataDirectoryOverridden: boolean;
-    // True with --maintenance: open the local maintenance window instead of the application.
     localMaintenance: boolean;
-    // A development-only data command to run instead of starting the application.
     maintenance: DevelopmentMaintenance | null;
 }
 

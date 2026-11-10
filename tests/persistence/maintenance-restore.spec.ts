@@ -21,7 +21,6 @@ function sha256(bytes: Uint8Array) {
     return createHash('sha256').update(bytes).digest('hex');
 }
 
-// Writes a backup file holding the given entries, with a manifest matching them.
 async function craftedBackup(entries: Record<string, Uint8Array>) {
     const destination = join(await directories.empty('files-'), 'crafted.mcbackup');
     const manifest = {

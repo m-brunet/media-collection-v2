@@ -6,7 +6,6 @@ import type { AuthenticatedRequest } from '../../../../../shared/infrastructure/
 import { Access } from '../../../../../shared/infrastructure/adapters/driving/web/api-guard.js';
 import type { HttpInternetAccessStatus } from '../../../../../../../../packages/contracts/src/http.js';
 
-// HTTP from the internet, the Admin's unencrypted fallback when HTTPS does not work.
 @Controller('api/server-settings/internet-access/http')
 @Access('admin')
 export class HttpInternetAccessController {

@@ -11,12 +11,10 @@ import { useChosenNames } from './use-chosen-names';
 export interface ChoiceOption {
     value: string;
     label: string;
-    // Shown indented under the previous option (a shelf under its bookcase).
     nested?: boolean;
 }
 
-// One field of the filter page: a disclosure showing the current choice, opening a list of
-// checkboxes. Several choices within the field combine with OR.
+// Several choices within the field combine with OR.
 export function ChoiceField({
     label,
     hint,
@@ -33,7 +31,6 @@ export function ChoiceField({
     options: ChoiceOption[];
     filter: Filter;
     field: FilterKey;
-    // Shown above the options (a search box).
     children?: ReactNode;
     onChange(filter: Filter): void;
 }) {
@@ -82,7 +79,6 @@ export function ChoiceField({
     );
 }
 
-// Authors or collections to choose from: the chosen ones first, then those found by the search.
 export function SearchedChoices({
     label,
     hint,
@@ -98,7 +94,6 @@ export function SearchedChoices({
     hint?: string;
     placeholder: string;
     anyLabel: string;
-    // Options always offered first ("No collection").
     fixed?: ChoiceOption[];
     field: 'author' | 'collection';
     filter: Filter;
@@ -169,7 +164,6 @@ export function SearchedChoices({
     );
 }
 
-// Bookcases (all their shelves) and individual shelves, or no physical location.
 export function locationOptions(bookcases: BookcaseDto[], noLocation: string): ChoiceOption[] {
     return [
         { value: 'none', label: noLocation },

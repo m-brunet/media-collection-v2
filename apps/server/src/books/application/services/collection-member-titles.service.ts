@@ -8,7 +8,6 @@ import type {
 import type { RelatedChange } from '../../../shared/application/ports/driven/audit-entry.interface.js';
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 
-// Keeps generated titles in line with collection-wide changes made by the collections feature.
 export class CollectionMemberTitles implements MemberTitles {
     constructor(
         private readonly books: BookRepository,

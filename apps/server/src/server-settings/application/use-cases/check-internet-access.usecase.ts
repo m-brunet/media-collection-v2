@@ -8,7 +8,6 @@ import type { CheckInternetAccessUseCase } from '../ports/driving/check-internet
 import type { InternetAccessSetup } from '../services/internet-access-setup.service.js';
 import { SettingsAudit } from '../settings-audit.js';
 
-// After the Admin created the router rule by hand: the certificate step proves it works.
 export class CheckInternetAccess implements CheckInternetAccessUseCase {
     constructor(
         private readonly store: InternetAccessStore,

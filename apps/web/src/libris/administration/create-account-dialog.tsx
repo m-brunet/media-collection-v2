@@ -11,7 +11,6 @@ import { useAction } from '../../shared/use-action';
 
 const formId = 'create-account';
 
-// The administrator chooses Owner or Guest at creation; roles never change afterwards.
 export function CreateAccountDialog({
     open,
     onClose,

@@ -39,7 +39,6 @@ interface Shelved {
     readBy?: string;
 }
 
-// A migrated library whose rows are written directly, to exercise the catalog queries alone.
 async function library() {
     const path = await mkdtemp(join(tmpdir(), 'catalog-filters-'));
 

@@ -103,7 +103,6 @@ export class RuntimeSetup {
         return port;
     }
 
-    // First launch: creates the protected administrator `admin` and leaves the client signed in.
     static async administrator(client: Client): Promise<void> {
         await client.prepare();
         const setup = await client.call(

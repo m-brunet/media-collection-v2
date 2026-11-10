@@ -1,7 +1,6 @@
 import type { InternetAccessStatus } from '../../../../../packages/contracts/src/http';
 import { useI18n } from '../../shared/i18n/i18n-context';
 
-// The router rule the Admin adds by hand when the application could not.
 export function ManualRule({ rule }: { rule: NonNullable<InternetAccessStatus['manualRule']> }) {
     const { t } = useI18n();
 

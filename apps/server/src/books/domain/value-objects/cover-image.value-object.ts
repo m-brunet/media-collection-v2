@@ -2,8 +2,7 @@ import { Failure } from '../../../shared/domain/exceptions/failure.js';
 
 export type CoverMediaType = 'image/jpeg' | 'image/png' | 'image/webp';
 
-// An uploaded cover: a JPEG, PNG or WebP image of at most 10 MB, recognised by its content
-// rather than by the type its sender claims.
+// Recognised by its content rather than by the type its sender claims.
 export class CoverImage {
     static readonly maximumBytes = 10 * 1024 * 1024;
 

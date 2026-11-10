@@ -33,7 +33,6 @@ afterEach(async () => {
     await runtime.teardown();
 });
 
-// A ready account: created by the administrator, temporary password already replaced.
 async function account(username: string, role: 'owner' | 'guest') {
     await admin.call('/users', 'POST', { username, password: 'temporary-pw', role });
     const client = new Client(base);
@@ -49,7 +48,6 @@ function membership(name: string, volumeFrom: number, volumeTo = volumeFrom): Me
     return { collection: { name }, volumeFrom, volumeTo };
 }
 
-// A saved book without ISBN in a collection, arranged through the API.
 async function member(
     collection: MembershipDto,
     overrides: Partial<NewBookDto> = {},
@@ -76,7 +74,6 @@ async function member(
     return response.body;
 }
 
-// Marks the collection of a book Finished, as an Owner would, to arrange a scenario.
 async function finish(book: BookDto) {
     const response = await admin.call('/collections/' + book.collection!.id + '/finish', 'POST');
 

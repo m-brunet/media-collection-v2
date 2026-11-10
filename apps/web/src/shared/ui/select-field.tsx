@@ -4,7 +4,6 @@ import { useId } from 'react';
 export interface SelectOption {
     value: string;
     label: string;
-    // Shown but not selectable, for a choice the current state does not allow.
     disabled?: boolean;
 }
 

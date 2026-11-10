@@ -6,7 +6,6 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// Changes the colour scheme of the whole installation.
 export class SaveAppearance implements SaveAppearanceUseCase {
     constructor(
         private readonly store: AppearanceStore,

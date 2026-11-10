@@ -20,7 +20,6 @@ import type { AuthenticatedRequest } from '../../../../../shared/infrastructure/
 import type { TagDto } from '../../../../../../../../packages/contracts/src/http.js';
 import { tagIdSchema, tagNameSchema, tagSearchSchema } from './tag-schemas.js';
 
-// Reusable tags every signed-in account reads and filters by, and Owners manage.
 @Controller('api/tags')
 export class TagsController {
     constructor(

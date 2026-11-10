@@ -9,8 +9,6 @@ export interface ShelfState {
     updatedAt: string;
 }
 
-// A shelf inside a bookcase, where books are kept. Its name is unique within its bookcase; it
-// can move to another bookcase with its books.
 export class Shelf {
     private state: ShelfState;
 

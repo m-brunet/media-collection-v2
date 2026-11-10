@@ -8,8 +8,6 @@ export interface BookcaseState {
     updatedAt: string;
 }
 
-// A piece of furniture holding shelves. Its name is unique across the installation; it stays
-// available without shelves or books.
 export class Bookcase {
     private state: BookcaseState;
 

@@ -5,7 +5,6 @@ import type {
     LookupSeries,
 } from '../value-objects/lookup-answer.value-object.js';
 
-// One value offered for a field, with the sources that gave it (equivalent values merged).
 export interface LookupChoice<T> {
     value: T;
     sources: string[];
@@ -22,10 +21,7 @@ export interface CombinedLookup {
     collection: LookupChoice<LookupSeries>[];
 }
 
-// Combines the answers of several sources, added in order of preference (book entry rules,
-// "Lookup sources"): a field missing from one source is completed by the next; different values
-// become alternatives behind the preferred one; values that differ only by case, accents,
-// punctuation or author name order count as the same.
+// Combines the answers of several sources, added in order of preference.
 export class LookupCombination {
     private readonly answers: { source: string; answer: LookupAnswer }[] = [];
 
@@ -74,14 +70,12 @@ export class LookupCombination {
         };
     }
 
-    // The edition's language, as the most preferred source that knows it says.
     private get editionLanguage(): string | null {
         const known = this.answers.find(({ answer }) => answer.editionLanguage);
 
         return known ? LookupCombination.language(known.answer.editionLanguage!) : null;
     }
 
-    // A summary is kept only in the edition's language; when either is unknown it is left out.
     private summaryInEditionLanguage(answer: LookupAnswer): string | null {
         const edition = this.editionLanguage;
 
@@ -120,7 +114,6 @@ export class LookupCombination {
         return choices.map(({ value, sources }) => ({ value, sources }));
     }
 
-    // Case, accents and punctuation ignored: "Rose hip Rose. 1" and "Rose Hip Rose 1" match.
     private static words(value: string): string {
         return NameKey.of(value)
             .replace(/[^\p{L}\p{N}]+/gu, ' ')

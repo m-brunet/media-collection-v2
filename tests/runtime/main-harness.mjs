@@ -23,7 +23,6 @@ app.setPath('documents', documents);
 const answers = { save: [], open: [], message: [] };
 
 dialog.showMessageBox = async () => ({ response: 0, checkboxChecked: false });
-// Synchronous questions (unsaved changes) take the queued button index, else the first button.
 dialog.showMessageBoxSync = () => answers.message.shift() ?? 0;
 process.on('uncaughtException', (error) => {
     process.stderr.write('Uncaught main process error: ' + (error?.stack ?? error) + '\n');

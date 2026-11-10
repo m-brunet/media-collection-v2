@@ -29,7 +29,6 @@ export class SessionSigningKey {
         return key;
     }
 
-    // A new key: every session signed with the previous one ends.
     rotate(directory: string): void {
         const file = join(directory, SessionSigningKey.fileName);
 

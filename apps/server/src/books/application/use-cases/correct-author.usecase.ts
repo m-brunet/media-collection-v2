@@ -8,8 +8,6 @@ import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { NameKey } from '../../../shared/domain/name-key.helper.js';
 
-// A shared spelling correction: every book linked to the author shows the new name. Renaming to
-// another author's equivalent name is refused (merging authors is not available).
 export class CorrectAuthor implements CorrectAuthorUseCase {
     constructor(
         private readonly authors: AuthorRepository,

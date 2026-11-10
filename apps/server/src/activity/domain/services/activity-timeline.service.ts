@@ -29,7 +29,6 @@ export class ActivityTimeline {
         });
     }
 
-    // Whether this operation is a lone cover change that an older save of the same book joins.
     private static folded(
         operation: ActivityOperation,
         older: readonly ActivityOperation[],

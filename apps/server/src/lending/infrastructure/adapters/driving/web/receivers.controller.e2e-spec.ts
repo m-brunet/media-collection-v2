@@ -17,7 +17,6 @@ afterEach(async () => {
     await app?.teardown();
 });
 
-// Saves a receiver with the builders.
 async function receiver(name: string) {
     const saved = await app.dependencies.builders.receiver(new ReceiverBuilder().withName(name));
 

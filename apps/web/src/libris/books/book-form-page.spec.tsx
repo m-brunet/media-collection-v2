@@ -1072,7 +1072,6 @@ describe('Cover helpers', () => {
         );
     });
 
-    // A paste or drop event carrying `data`, as browsers send them.
     function transfer(type: 'paste' | 'drop', data: { files?: File[]; text?: string }) {
         const event = new Event(type, { bubbles: true, cancelable: true });
         const carried = {

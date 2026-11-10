@@ -75,7 +75,6 @@ function LibraryEditorOnly({ children }: { children: ReactNode }) {
     return account?.role === 'guest' ? <PermissionDeniedPage /> : children;
 }
 
-// Session gate: nothing of the library is shown before sign-in and temporary-password replacement.
 function LibrisRoutes() {
     const { t } = useI18n();
     const { status, account } = useSession();

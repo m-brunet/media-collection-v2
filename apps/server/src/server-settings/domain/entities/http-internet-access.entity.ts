@@ -19,12 +19,9 @@ export interface HttpInternetAccessState {
     publicAddress: string | null;
     // Why the rule is by hand, why opening stopped, or the last upkeep failure.
     failure: { reason: HttpInternetAccessFailureReason; at: string } | null;
-    // Closed by a working HTTPS setup rather than by the Admin.
     closedByHttps: boolean;
 }
 
-// Plain HTTP opened to the internet at the Admin's request: a router rule from the HTTP port to
-// the same port on this computer. Not encrypted; a working HTTPS setup closes it.
 export class HttpInternetAccess {
     private state: HttpInternetAccessState;
 
@@ -54,7 +51,6 @@ export class HttpInternetAccess {
         return this.state.publicAddress;
     }
 
-    // The application created the router rule, so it also removes it.
     get automatic(): boolean {
         return this.state.mapping === 'upnp' || this.state.mapping === 'nat-pmp';
     }
@@ -63,12 +59,10 @@ export class HttpInternetAccess {
         return HttpInternetAccess.copy(this.state);
     }
 
-    // Only a public address can receive connections from the internet.
     static usable(address: string): boolean {
         return ConnectionClass.of(address).reachable;
     }
 
-    // The router accepted the rule.
     opened(mapping: Exclude<PortMapping, 'manual'>, externalAddress: string): void {
         this.state = {
             phase: 'open',
@@ -79,7 +73,6 @@ export class HttpInternetAccess {
         };
     }
 
-    // No router answered, or it refused the rule: the Admin adds it by hand.
     openedByHand(
         publicAddress: string,
         reason: Extract<HttpInternetAccessFailureReason, 'no-router' | 'port-refused'>,
@@ -94,7 +87,6 @@ export class HttpInternetAccess {
         };
     }
 
-    // Opening cannot work: the provider shares the address, a second router, no public address.
     refused(reason: HttpInternetAccessFailureReason, now: Date): void {
         this.state = {
             ...HttpInternetAccess.off().state,
@@ -102,7 +94,6 @@ export class HttpInternetAccess {
         };
     }
 
-    // Refuses a CGNAT or private address with the reason the Admin needs.
     static blockedReason(address: string): 'cgnat' | 'double-nat' {
         return ConnectionClass.of(address).kind === 'cgnat' ? 'cgnat' : 'double-nat';
     }
@@ -116,7 +107,6 @@ export class HttpInternetAccess {
         this.state = { ...this.state, publicAddress: this.reachable(publicAddress) };
     }
 
-    // The rule stays as it is; the panel shows what went wrong.
     upkeepFailed(reason: HttpInternetAccessFailureReason, now: Date): void {
         this.requireOpen();
         this.state = { ...this.state, failure: { reason, at: now.toISOString() } };

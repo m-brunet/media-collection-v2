@@ -7,7 +7,6 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// Removes the bookcase with its shelves; their books become unassigned and are kept.
 export class DeleteBookcase implements DeleteBookcaseUseCase {
     constructor(
         private readonly bookcases: BookcaseRepository,

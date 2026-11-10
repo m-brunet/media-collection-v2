@@ -8,8 +8,6 @@ import { BookOrganisationReader } from './book-organisation-reader.service.js';
 import type { Book } from '../../domain/entities/book.entity.js';
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 
-// The details of a book as one account sees them: shared information, plus that account's own
-// reading status and note (never another account's; Guests have neither).
 export class BookViewer {
     constructor(
         private readonly catalog: BookCatalog,

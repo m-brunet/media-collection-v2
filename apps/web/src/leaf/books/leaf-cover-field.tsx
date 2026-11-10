@@ -9,8 +9,7 @@ import { Button } from '../../shared/ui/button';
 import { Icon } from '../../shared/ui/icon';
 import { TextField } from '../../shared/ui/text-field';
 
-// The phone's cover helpers (Task 7 decision): covers found by Find book, a web search in a new
-// tab, an image address (with Paste), and a saved picture from the photo library. Desktop paste
+// Desktop paste
 // and drop do not work on phones; a photo of the cover is not offered.
 export function LeafCoverField({
     isbn,

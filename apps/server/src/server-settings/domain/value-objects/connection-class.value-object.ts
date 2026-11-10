@@ -2,9 +2,8 @@ import { Failure } from '../../../shared/domain/exceptions/failure.js';
 
 export type ConnectionKind = 'public' | 'cgnat' | 'private';
 
-// What the router's external IPv4 address says about the home connection. Only a public address
-// can receive connections from the internet: a CGNAT address is shared by the provider, and a
-// private one means the router sits behind another router.
+// Only a public address can receive connections from the internet: a CGNAT address is shared by
+// the provider, and a private one means the router sits behind another router.
 export class ConnectionClass {
     private constructor(
         readonly address: string,

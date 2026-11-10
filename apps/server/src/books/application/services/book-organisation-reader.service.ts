@@ -2,7 +2,6 @@ import type { BookOrganisation } from '../book-views.js';
 import type { BookLocationReader } from '../ports/driven/book-location-reader.interface.js';
 import type { BookTagReader } from '../ports/driven/book-tag-reader.interface.js';
 
-// The current location and tags of a book, read from the locations and tags features.
 export class BookOrganisationReader {
     constructor(
         private readonly locations: BookLocationReader,

@@ -25,8 +25,6 @@ afterEach(async () => {
     }
 });
 
-// The library features as an entry point registers them: the HTTP backend without options, the
-// development data commands with `developmentImport`.
 async function library(options?: {
     developmentImport?: boolean;
 }): Promise<INestApplicationContext> {

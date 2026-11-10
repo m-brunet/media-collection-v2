@@ -84,7 +84,6 @@ export class MemoryTags implements TagRepository {
 }
 
 export class TagDoubles {
-    // Tags with all doubles and services wired as in production.
     static labels() {
         const store = new MemoryBookTags();
         const tags = new MemoryTags(store);
@@ -108,7 +107,6 @@ export class TagDoubles {
         };
     }
 
-    // Saves a tag, for arranging scenarios.
     static async tagged(current: ReturnType<typeof TagDoubles.labels>, name: string): Promise<Tag> {
         const tag = new Tag({
             id: current.ids.next(),
@@ -122,7 +120,6 @@ export class TagDoubles {
         return tag;
     }
 
-    // Links tags to a book, for arranging scenarios.
     static async labelled(
         current: ReturnType<typeof TagDoubles.labels>,
         bookId: string,

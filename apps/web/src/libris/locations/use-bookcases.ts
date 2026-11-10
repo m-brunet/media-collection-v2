@@ -4,7 +4,6 @@ import { api } from '../../shared/api.util';
 import { ApiErrorMessage } from '../../shared/api-error-message.util';
 import type { MessageKey } from '../../shared/i18n/catalog-en';
 
-// The bookcases with their shelves, loaded once and reloaded after a change.
 export function useBookcases() {
     const [bookcases, setBookcases] = useState<BookcaseDto[] | null>(null);
     const [failure, setFailure] = useState<MessageKey | null>(null);

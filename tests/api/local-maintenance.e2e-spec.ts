@@ -12,7 +12,6 @@ afterEach(async () => {
     await fixture.teardown();
 });
 
-// A library with the Admin and a tag, saved to a backup by the maintenance worker.
 async function backedUpLibrary() {
     const source = await fixture.start();
 
@@ -35,7 +34,6 @@ async function backedUpLibrary() {
     return { backup, directory: source.directory, session };
 }
 
-// Another installation with its own Admin, closed for maintenance.
 async function otherInstallation() {
     const target = await fixture.start();
 

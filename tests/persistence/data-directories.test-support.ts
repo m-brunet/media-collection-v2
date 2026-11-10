@@ -277,7 +277,6 @@ export class DataDirectories {
         }
     }
 
-    // The audit categories of the database saved in a backup file.
     async backupCategories(backup: string): Promise<string[]> {
         const directory = await this.empty('backup-content-');
 

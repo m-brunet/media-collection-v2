@@ -11,7 +11,6 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// The identity and assignments stay; only the shared label changes.
 export class RenameTag implements RenameTagUseCase {
     constructor(
         private readonly tags: TagRepository,

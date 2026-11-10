@@ -5,8 +5,6 @@ import { useI18n } from '../../shared/i18n/i18n-context';
 import type { DraftTag } from '../../shared/book-form/book-draft.util';
 import { NamePicker } from './name-picker';
 
-// Chooses a book's reusable tags: existing tags are suggested while typing; a new name creates the
-// tag when the book is saved, and an equivalent name reuses the existing tag.
 export function TagPicker({
     tags,
     hint,

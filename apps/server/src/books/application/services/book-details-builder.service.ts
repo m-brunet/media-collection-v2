@@ -8,9 +8,7 @@ import { PublicationDate } from '../../domain/value-objects/publication-date.val
 import { AuthorResolver } from './author-resolver.service.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 
-// Builds validated shared book details from what was entered in the form. A blank title asks for
-// one generated from the collection, which only Manga and Comics in a collection may have; the
-// title stays provisional until the membership is applied (`GeneratedTitleSync`).
+// A generated title stays provisional until the membership is applied (`GeneratedTitleSync`).
 export class BookDetailsBuilder {
     constructor(private readonly authors: AuthorResolver) {}
 

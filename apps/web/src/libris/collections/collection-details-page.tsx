@@ -20,7 +20,6 @@ import { BookFormat } from '../../shared/book-form/book-format.util';
 import { EditCollectionDialog } from './collection-dialogs';
 import { CollectionFormat } from './collection-format.util';
 
-// One edition covering a volume: its cover, title, publisher and ISBN, and a way to open it.
 function MemberBook({ book }: { book: CollectionMemberDto }) {
     const { t } = useI18n();
     const detail = CollectionFormat.edition(book)
@@ -49,8 +48,6 @@ function MemberBook({ book }: { book: CollectionMemberDto }) {
     );
 }
 
-// One expected volume (or a run of inferred ones): expanding it lists the actual books covering
-// it, so the person can choose an edition.
 function VolumeEntry({ volume }: { volume: CollectionVolumeDto }) {
     const { t } = useI18n();
     const id = useId();
@@ -86,8 +83,6 @@ function VolumeEntry({ volume }: { volume: CollectionVolumeDto }) {
     );
 }
 
-// Coverage of one collection: whole-collection counts, the expected range, Finished/reopen and
-// the volumes in coverage order with their editions.
 export function CollectionDetailsPage() {
     const { id } = useParams();
     const { t } = useI18n();

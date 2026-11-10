@@ -25,8 +25,6 @@ const mit = 'https://opensource.org/license/mit';
 const apache = 'https://www.apache.org/licenses/LICENSE-2.0';
 const streamline = 'Streamline (streamlinehq.com)';
 
-// Every bundled icon pack, font, data source and library that needs credit (KI-6; lists from
-// Tasks 6, 7 and 9.5, the icon library's CREDITS.md and apps/desktop/assets/icons/CREDITS.md).
 export class Credits {
     static readonly groups: readonly CreditGroup[] = [
         {
