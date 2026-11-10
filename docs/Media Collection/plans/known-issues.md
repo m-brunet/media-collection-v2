@@ -28,6 +28,7 @@ design.
 | KI-13 | Bug | Internet access: the router rule lapses while the panel still shows it on | High | Done |
 | KI-14 | Improvement | Desktop dialogs, menus and window titles are only in English | Medium | Done |
 | KI-15 | Bug | Activity: a shelf change and a tag change read as the same vague entry | Low | Done |
+| KI-16 | Improvement | Internet access: the HTTP and HTTPS ports are chosen in Server settings and used outside too; 443 opens only for Let's Encrypt's check | Medium | Open |
 
 ## Open
 
@@ -143,6 +144,59 @@ design.
 - **Severity:** medium (sign-in on the phone at every session today). **Planned:** next version, after the 2.0.0
   release.
 - **Progress (checked 2026-11-10):** nothing done yet: no pairing code in the server or in Leaf.
+
+### KI-16 — Internet access: chosen HTTP and HTTPS ports used outside too; 443 opens only for Let's Encrypt's check
+
+- **Type:** Improvement.
+- **Reported:** 2026-11-10 by the user, after HTTPS from the internet worked with the domain name: phones should not
+  reach Media Collection on the default HTTPS port 443 but on a port of the Admin's choice.
+- **Wanted (the user, 2026-11-10):**
+  - The HTTP port and the HTTPS port are set in Server settings, and each is **both the port on this computer and
+    the outside port** on the router.
+  - Defaults: **34345** for HTTP (as now) and **34443** for HTTPS (today: 3443 on this computer, 443 outside).
+  - Phones open `https://<domain name or address>:<HTTPS port>`; addresses and QR codes show the port.
+  - Port 443 is open only while Let's Encrypt checks the computer (option A below, chosen by the user).
+- **Findings (checked in the code and the standards, 2026-11-10):**
+  - **The certificate does not depend on the port:** it covers a name (`kaze-d.fr`) or an address. Changing ports
+    reissues nothing.
+  - **Let's Encrypt only checks on fixed ports:** TLS-ALPN-01 (used here) always connects to port 443 (RFC 8737),
+    HTTP-01 to port 80, and DNS-01 needs the DNS provider's API. So 443 must be open at every check: each setup,
+    each Check again, and each renewal (about every 60 days for a domain name, every 3 days for an IP address
+    certificate). ARI renewals (KI-10) are still checked.
+  - Options discussed: **A.** open 443 just before each check and close it right after (automatic with UPnP/NAT-PMP;
+    with a rule added by hand, the Admin opens 443 at each renewal); **B.** keep 443 open for Let's Encrypt only;
+    **C.** the DNS check (credentials and one integration per DNS provider). The user chose **A**.
+  - **Today:** both ports are already settings, in Server settings › "Advanced: ports and manual certificate". HTTP
+    internet access (Task 9.6) already uses the same port inside and outside (`HttpPortForwarding`). HTTPS uses the
+    HTTPS port inside and the fixed `InternetAccess.externalPort = 443` outside; the address phones open is built
+    without a port (`ReadInternetAccess`: `'https://' + certificateName`).
+  - **Router rule:** the upkeep adds it again every hour with a 2-hour lease, so after an update to another outside
+    port the new rule is added by the first upkeep and the old 443 rule usually lapses within 2 hours. A router that
+    refuses leases gets a permanent rule (`ttl: 0`, `UpnpRouterGateway`): that old 443 rule must be removed
+    explicitly. A rule added by hand is changed by the Admin only.
+- **Proposed fix (to plan):**
+  - **Settings:** HTTP and HTTPS ports shown in Server settings (outside the Advanced section), with a short note that
+    the same port is opened on the router; HTTPS default 34443. Changing a port while internet access is on moves the
+    listener and the router rule; no certificate is reissued.
+  - **Router:** the permanent rule maps the HTTPS port outside to the same port on this computer. For each
+    Let's Encrypt check, a temporary rule 443 → HTTPS port is opened just before the order and closed right after,
+    success or failure (the HTTPS listener answers the TLS-ALPN-01 check as today); both logged. KI-13's router
+    retries and KI-9's attempt rules stay as they are.
+  - **Rule added by hand:** the manual rule screen gives the HTTPS port rule, and explains that 443 is needed only
+    while Let's Encrypt checks (setup, Check again, renewals), with the date of the next renewal.
+  - **Addresses:** the origin, the addresses list and the QR codes include the port when it is not 443.
+  - **After the update (existing installations):** the old 443 → 3443 rule is removed once by the app; the panel says
+    once that phones must open the new address (scan the QR code again); the saved HTTPS port is handled per open
+    question 1.
+  - **Tests:** domain rule for the outside port; the temporary 443 rule opened before and closed after a check (also
+    after a refusal or an error); no 443 rule between checks; the origin with and without port; the one-time removal
+    of the old rule; Server settings fields and texts in EN/FR.
+- **Open questions:**
+  1. **Existing installations:** move a saved HTTPS port of 3443 to 34443 on update, or keep 3443 (only new
+     installations get 34443)?
+  2. **Rule added by hand:** remind the Admin before each renewal to open 443, or advise keeping a 443 rule
+     permanently in that case (option B for manual routers only)?
+- **Severity:** medium. **Planned:** to plan with the user.
 
 ## Done
 
