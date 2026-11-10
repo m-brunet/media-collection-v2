@@ -5,7 +5,6 @@ import {
 import { IdentityDoubles, MemoryUsers } from './identity-doubles.test-support.js';
 
 export class AccountLifecycle {
-    // The protected administrator plus one Owner and one Guest, for account administration tests.
     static async household() {
         const users = new MemoryUsers();
         const trail = new MemoryAuditTrail();

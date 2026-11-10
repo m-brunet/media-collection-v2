@@ -1,4 +1,4 @@
-/* Local maintenance window. Mirrors the Libris design values (apps/web/src/shared/ui/tokens.css) in the
+/* Mirrors the Libris design values (apps/web/src/shared/ui/tokens.css) in the
    default Spring green scheme (no server is running here to read the chosen scheme);
    this page loads from disk without the web build, so the values are repeated here. */
 @font-face {

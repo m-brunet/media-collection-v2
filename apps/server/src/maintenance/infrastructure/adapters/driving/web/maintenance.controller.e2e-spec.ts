@@ -16,7 +16,6 @@ afterEach(async () => {
     await app?.teardown();
 });
 
-// A library with a lent book, a tag and a chosen colour scheme, saved by the Admin.
 async function populatedLibrary() {
     const client = await app.authenticatedClient(admin);
 

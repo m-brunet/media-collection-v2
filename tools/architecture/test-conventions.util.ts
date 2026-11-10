@@ -3,7 +3,6 @@ export interface SourceFile {
     source: string;
 }
 
-// Utility ownership is explicit when it cannot be inferred from a feature layer.
 export const utilitySources = [
     'apps/desktop/src/configuration.util.ts',
     'apps/web/src/shared/api.util.ts',

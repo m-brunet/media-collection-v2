@@ -81,7 +81,6 @@ export const SERVER_SETTINGS_READ_HTTP_INTERNET_ACCESS =
 export const SERVER_SETTINGS_MAINTAIN_HTTP_INTERNET_ACCESS =
     'SERVER_SETTINGS_MAINTAIN_HTTP_INTERNET_ACCESS';
 
-// The driven adapters the server settings feature needs; root composition supplies them.
 export interface SettingsAdapters {
     tls: TlsStore;
     certificates: CertificateValidator;

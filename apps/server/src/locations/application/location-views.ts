@@ -1,5 +1,3 @@
-// Read models returned by the locations use cases.
-
 export interface ShelfView {
     id: string;
     bookcaseId: string;
@@ -11,12 +9,10 @@ export interface ShelfView {
 export interface BookcaseView {
     id: string;
     name: string;
-    // Books on all its shelves.
     bookCount: number;
     shelves: ShelfView[];
 }
 
-// A rename, a move to another bookcase, or both.
 export interface ShelfChanges {
     name?: string;
     bookcaseId?: string;

@@ -7,15 +7,12 @@ import { useI18n } from '../../shared/i18n/i18n-context';
 import { Button } from '../../shared/ui/button';
 import { Notice } from '../../shared/ui/notice';
 
-// Why the server refused to save the name; the public address helps the Admin compare.
 const refusals: Record<string, MessageKey> = {
     'domain-unresolved': 'internet.domainRefused.unresolved',
     'domain-mismatch': 'internet.domainRefused.mismatch',
     'public-address-unknown': 'internet.domainRefused.addressUnknown',
 };
 
-// The Admin's domain name: saved only once it points to this connection, then used by every
-// internet address. It can be removed while HTTPS is off.
 export function DomainNameSection({
     domainName,
     httpsOn,
@@ -80,7 +77,6 @@ export function DomainNameSection({
                 }
             }}
         >
-            {/* The input and its buttons share one line; the hint stays under them. */}
             <div className="field">
                 <label htmlFor={id} className="field__label">
                     {t('internet.domain')}

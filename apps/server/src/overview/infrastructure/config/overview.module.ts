@@ -4,7 +4,6 @@ import type { LibrarySummaryReader } from '../../application/ports/driven/librar
 import { GetOverview } from '../../application/use-cases/get-overview.usecase.js';
 import { OverviewController } from '../adapters/driving/web/overview.controller.js';
 
-// Driven adapters the overview feature reads from.
 export interface OverviewDependencies {
     summary: LibrarySummaryReader;
 }

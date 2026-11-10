@@ -10,8 +10,6 @@ export type ColorSchemeName =
     | 'slate-orchid'
     | 'charcoal-scarlet';
 
-// The installation-wide colour scheme of Libris and Leaf (KI-6). Spring green is the default.
-// Mint, Emerald and Forest are no longer offered (migration 011 moved them to Spring green).
 export class ColorScheme {
     static readonly names: readonly ColorSchemeName[] = [
         'spring-green',

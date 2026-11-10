@@ -1,10 +1,10 @@
 // Copies the design's icon sets 01-05 (design/artifact/icons, Git-ignored) into the web app's
 // static files (apps/web/public/icon-sets, one JSON file per set: purpose -> SVG) so the
-// installation-wide icon set can switch them (KI-6). The app fetches the chosen set once.
+// installation-wide icon set can switch them. The app fetches the chosen set once.
 //
 //   node tools/import-icon-sets.mjs
 //
-// The artwork follows the text colour like Lucide (2026-11-09): grey in a normal link, the accent
+// The artwork follows the text colour like Lucide: grey in a normal link, the accent
 // in a selected one. Each icon's main colour becomes `currentColor`; its other tones (the design's
 // green highlights, gold details) become `currentColor` at 60 % opacity, which keeps the two-tone
 // drawing. Internal ids (masks, patterns) are prefixed per icon so two icons on one page never

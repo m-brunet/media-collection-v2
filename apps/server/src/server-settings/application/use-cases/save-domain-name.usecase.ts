@@ -13,8 +13,7 @@ import type { RouterRules } from '../services/router-rules.service.js';
 import { SettingsAudit } from '../settings-audit.js';
 
 // Saves the Admin's domain name once it points to this connection, so the internet addresses never
-// switch to a name that does not work. HTTPS, when on, then gets a certificate for it. The name can
-// only be removed while HTTPS is off.
+// switch to a name that does not work.
 export class SaveDomainName implements SaveDomainNameUseCase {
     constructor(
         private readonly store: DomainNameStore,

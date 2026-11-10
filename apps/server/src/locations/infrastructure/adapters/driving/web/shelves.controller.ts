@@ -6,7 +6,6 @@ import type { AuthenticatedRequest } from '../../../../../shared/infrastructure/
 import type { ShelfDto } from '../../../../../../../../packages/contracts/src/http.js';
 import { locationIdSchema, shelfChangesSchema } from './location-schemas.js';
 
-// Shelves Owners rename, move to another bookcase or delete; their books are always kept.
 @Controller('api/shelves')
 export class ShelvesController {
     constructor(

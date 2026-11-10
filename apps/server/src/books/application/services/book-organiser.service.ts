@@ -5,8 +5,6 @@ import type { TagAssignment } from '../ports/driven/tag-assignment.interface.js'
 import { BookOrganisationReader } from './book-organisation-reader.service.js';
 import type { RelatedChange } from '../../../shared/application/ports/driven/audit-entry.interface.js';
 
-// Location and tags of books, applied through the locations and tags features. A part the
-// request leaves out keeps its current value.
 export class BookOrganiser {
     constructor(
         private readonly shelves: ShelfAssignment,

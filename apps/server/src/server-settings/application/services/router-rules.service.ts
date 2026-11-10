@@ -5,7 +5,6 @@ import type { PublicAddressProbe } from '../ports/driven/public-address-probe.in
 import type { RouterConnection } from '../ports/driven/router-connection.interface.js';
 import type { RouterGateway } from '../ports/driven/router-gateway.interface.js';
 
-// The router's answer, or without a router the address the public service sees (null: unknown).
 export type RouterSearch =
     | { router: RouterConnection }
     | { router: null; publicAddress: string | null };
@@ -17,8 +16,6 @@ export type RuleUpkeep =
           reason: RouterRuleFailureReason;
       };
 
-// The home router and its port rules, with the public "what is my IP" service when no router
-// answers. Shared by HTTPS and HTTP from the internet, their upkeeps and the domain name check.
 export class RouterRules {
     constructor(
         private readonly router: RouterGateway,
@@ -31,14 +28,12 @@ export class RouterRules {
         return router ? { router } : { router: null, publicAddress: await this.probe.current() };
     }
 
-    // The connection's public address: the router's answer, else the public service's.
     async publicAddress(): Promise<string | null> {
         const search = await this.find();
 
         return search.router ? search.router.externalAddress : search.publicAddress;
     }
 
-    // False when the router refuses the rule.
     open(rule: PortRule): Promise<boolean> {
         return this.router.open(rule);
     }

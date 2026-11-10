@@ -21,7 +21,6 @@ function show(path = '/books') {
     });
 }
 
-// Filtered requests answer `filtered`; the unfiltered library size request answers `total`.
 function filteredApi(
     filtered: { total: number; items: ReturnType<typeof bookItem>[] },
     total: number,

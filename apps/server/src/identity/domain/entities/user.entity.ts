@@ -5,7 +5,6 @@ export interface UserState extends Actor {
     passwordHash: string;
     tokenVersion: number;
     createdAt: string;
-    // Deactivated accounts keep their record, data and reserved username but cannot sign in.
     active: boolean;
 }
 
@@ -125,7 +124,6 @@ export class User {
         this.state.active = true;
     }
 
-    // Accounts the administrator may manage: every account except the protected administrator.
     ensureManageable(): void {
         if (this.isProtectedAdministrator) {
             throw new Failure(

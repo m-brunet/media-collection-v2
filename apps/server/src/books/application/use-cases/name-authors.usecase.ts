@@ -4,7 +4,6 @@ import type { AuthorRepository } from '../ports/driven/author-repository.interfa
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// Names the authors chosen by id, ordered by name, so a shared filter address reads by name.
 export class NameAuthors implements NameAuthorsUseCase {
     constructor(private readonly authors: AuthorRepository) {}
 

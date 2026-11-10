@@ -4,8 +4,6 @@ import type { MaintainHttpInternetAccessUseCase } from '../ports/driving/maintai
 import type { RuleUpkeepOutcome } from '../ports/driving/maintain-internet-access-use-case.interface.js';
 import type { HttpPortForwarding } from '../services/http-port-forwarding.service.js';
 
-// The upkeep of HTTP from the internet: recreate the router rule and follow a changed
-// public address. A failure leaves the rule as it is and shows on the panel.
 export class MaintainHttpInternetAccess implements MaintainHttpInternetAccessUseCase {
     constructor(
         private readonly store: HttpInternetAccessStore,

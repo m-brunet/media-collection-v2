@@ -1,4 +1,3 @@
-// Fetching function, injectable so adapter tests replay recorded answers without the network.
 export type Fetcher = (
     url: string,
     init: { headers: Record<string, string>; signal: AbortSignal; redirect?: RequestRedirect },
@@ -8,9 +7,7 @@ export type SourceResponse =
     | { kind: 'ok'; response: Response }
     | { kind: 'limited'; retryAt: Date | null };
 
-// Requests to an outside lookup source: the application identifies itself (never a person),
-// a request gives up after `timeoutSeconds`, and "too many requests" / "unavailable" answers
-// become a "limited" reply with the time the source asked to wait, when it gave one.
+// The application identifies itself (never a person).
 export class SourceHttp {
     static readonly timeoutSeconds = 10;
     static readonly userAgent =

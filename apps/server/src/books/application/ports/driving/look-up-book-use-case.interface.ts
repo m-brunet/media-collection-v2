@@ -2,13 +2,11 @@ import type { Actor } from '../../../../shared/domain/actor.helper.js';
 import type { CombinedLookup } from '../../../domain/services/lookup-combination.service.js';
 import type { SourceUnavailability } from '../../services/source-chain.service.js';
 
-// The ISBN is already in the library: open that book instead of creating another.
 export type ExistingBookLookup = {
     kind: 'existing';
     bookId: string;
 };
 
-// A cover offered for review, behind a short-lived token (see `ReadLookupCoverUseCase`).
 export type LookupCoverView = {
     token: string;
     width: number | null;
@@ -16,7 +14,6 @@ export type LookupCoverView = {
     sources: string[];
 };
 
-// What the sources know about an ISBN not yet in the library, for the person to review.
 // `found` false with no `unavailable` source: no source knows this ISBN. Sources listed in
 // `unavailable` could not answer (rate limit or failure), which is not the same as no result.
 export type LookedUpBook = {

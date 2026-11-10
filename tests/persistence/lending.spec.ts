@@ -48,7 +48,6 @@ interface BookRow {
     authors?: string[];
 }
 
-// A migrated library whose rows are written directly, to exercise the lending tables and adapters.
 async function library() {
     const path = await mkdtemp(join(tmpdir(), 'lending-'));
 

@@ -49,7 +49,6 @@ async function sleepBlockers(runtime: ElectronRuntime, count: number) {
     return (await runtime.send({ type: 'keep-awake' })).value as string[];
 }
 
-// First launch in the real desktop window: create the protected administrator `admin`.
 async function readyDesktop() {
     const current = await fixture.start(undefined, { main: true });
 

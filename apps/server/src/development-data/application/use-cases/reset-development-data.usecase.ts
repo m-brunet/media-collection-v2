@@ -6,7 +6,6 @@ import type { CoverFileCleanup } from '../ports/driven/cover-file-cleanup.interf
 import type { LibraryEraser } from '../ports/driven/library-eraser.interface.js';
 import type { TransactionRunner } from '../../../shared/application/ports/driven/transaction-runner.interface.js';
 
-// Empties the development library in one transaction; cover files go once nothing refers to them.
 // Development tooling run by the developer on their own data directory, so no account acts.
 export class ResetDevelopmentData implements ResetDevelopmentDataUseCase {
     constructor(

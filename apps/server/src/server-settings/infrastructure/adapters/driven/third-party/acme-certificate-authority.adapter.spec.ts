@@ -19,7 +19,6 @@ afterEach(async () => {
     await Promise.all(directories.splice(0).map((directory) => rm(directory, { recursive: true })));
 });
 
-// Plays Let's Encrypt's side of one order. `validation` decides how the TLS-ALPN-01 check ends.
 class ScriptedSession {
     readonly orders: unknown[] = [];
     challengeWaiting = false;

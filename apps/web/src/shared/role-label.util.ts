@@ -1,7 +1,6 @@
 import type { AccountRole } from '../../../../packages/contracts/src/http';
 import type { MessageKey } from './i18n/catalog-en';
 
-// Interface texts for the three fixed account roles.
 export class RoleLabel {
     private static readonly names: Record<AccountRole, MessageKey> = {
         admin: 'role.admin',

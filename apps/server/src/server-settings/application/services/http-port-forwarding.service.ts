@@ -4,8 +4,7 @@ import type { HttpListener } from '../ports/driven/http-listener.interface.js';
 import type { PortRule } from '../ports/driven/port-rule.interface.js';
 import type { RouterRules, RuleUpkeep } from './router-rules.service.js';
 
-// The router rule of HTTP from the internet: the HTTP port, from outside to this computer. Opening,
-// closing and the upkeep change the entity; the caller saves it.
+// Opening, closing and the upkeep change the entity; the caller saves it.
 export class HttpPortForwarding {
     constructor(
         private readonly rules: RouterRules,
@@ -42,7 +41,6 @@ export class HttpPortForwarding {
         }
     }
 
-    // `byHttps`: a working HTTPS setup closes it, not the Admin.
     async close(access: HttpInternetAccess, byHttps: boolean): Promise<void> {
         if (access.automatic) {
             await this.rules.close(this.rule());
@@ -51,7 +49,6 @@ export class HttpPortForwarding {
         access.close(byHttps);
     }
 
-    // The upkeep of an open access: what happened to the rule.
     async refresh(access: HttpInternetAccess): Promise<RuleUpkeep> {
         const kept = await this.rules.keep(this.rule(), !access.automatic);
 
@@ -70,7 +67,6 @@ export class HttpPortForwarding {
         return kept;
     }
 
-    // The external port is the running HTTP port itself (1024-65535).
     private rule(): PortRule {
         const port = this.listener.port();
 

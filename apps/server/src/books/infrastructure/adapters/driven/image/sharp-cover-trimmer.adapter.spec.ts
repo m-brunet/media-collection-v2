@@ -5,8 +5,6 @@ import { SharpCoverTrimmer } from './sharp-cover-trimmer.adapter.js';
 
 type Format = 'jpeg' | 'png' | 'webp';
 
-// A dark cover of the given size, centred on a white canvas (a shop thumbnail) when the canvas is
-// larger.
 async function cover(format: Format, canvas: { width: number; height: number }, inner = canvas) {
     const art = await sharp({
         create: { ...inner, channels: 3, background: { r: 40, g: 60, b: 120 } },

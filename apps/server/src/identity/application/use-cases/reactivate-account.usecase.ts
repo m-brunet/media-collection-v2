@@ -7,7 +7,6 @@ import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 import { AccountAudit } from '../account-audit.js';
 import { ManagedAccountLoader } from '../services/managed-account-loader.service.js';
 
-// Restores a deactivated account with its original role and personal data.
 export class ReactivateAccount implements ReactivateAccountUseCase {
     constructor(
         private readonly users: UserWriter,

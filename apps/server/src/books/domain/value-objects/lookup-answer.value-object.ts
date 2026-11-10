@@ -1,16 +1,13 @@
-// A collection and volume a source suggests for the edition.
 export interface LookupSeries {
     name: string;
     volume: number;
 }
 
-// A summary with the language it is written in, when the source says so.
 export interface LookupSummary {
     text: string;
     language: string | null;
 }
 
-// A publication date as lookups give it: a full date is reduced to its month and year.
 export interface LookupDate {
     year: number;
     month: number | null;
@@ -28,8 +25,6 @@ export interface LookupAnswerFields {
     series?: LookupSeries | null;
 }
 
-// What one source knows about an edition, cleaned of empty or unusable values. A source that
-// gives an impossible value (a month 13, a page count of zero) simply contributes nothing for it.
 export class LookupAnswer {
     private constructor(
         readonly title: string | null,
@@ -64,7 +59,6 @@ export class LookupAnswer {
         );
     }
 
-    // Nothing usable at all: the source found a record without any of the fields we fill.
     get empty(): boolean {
         return (
             !this.title &&

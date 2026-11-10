@@ -8,13 +8,12 @@ import { NameKey } from '../../../shared/domain/name-key.helper.js';
 
 export interface ResolvedReceiver {
     receiver: Receiver;
-    // True when the receiver was created for this operation.
     created: boolean;
 }
 
-// Turns the receiver chosen in the lending form into a receiver. An equivalent name reuses the
-// existing receiver; a similar one is only created once the person confirms it is someone else.
-// A created receiver joins the operation's transaction, so a failed lending leaves none behind.
+// An equivalent name reuses the existing receiver; a similar one is only created once the person
+// confirms it is someone else. A created receiver joins the operation's transaction, so a failed
+// lending leaves none behind.
 export class ReceiverResolver {
     constructor(
         private readonly receivers: ReceiverRepository,

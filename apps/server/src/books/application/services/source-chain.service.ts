@@ -14,14 +14,9 @@ export interface SourceRecipient<T> {
     unavailable(unavailability: SourceUnavailability): void;
 }
 
-// A chain of responsibility over the lookup sources, in order of preference. Every link adds
-// what its source knows and passes the lookup on, so later sources can still complete or offer
-// alternatives; a source that is limited, failing or silent passes it on unchanged. All requests
-// start together (`begin`); the answers are then handed over in order (`handle`).
+// All requests start together (`begin`); the answers are then handed over in order (`handle`).
 export class SourceLink<T> {
-    // A source silent for this long counts as failed for this lookup.
     static readonly timeoutSeconds = 8;
-    // Pause after "too many requests" without a time given.
     static readonly defaultPauseSeconds = 60;
 
     constructor(
@@ -31,8 +26,7 @@ export class SourceLink<T> {
         private readonly next: SourceLink<T> | null = null,
     ) {}
 
-    // The chain over `sources`, in the given order of preference, each with its own budget; null
-    // when there is no source. Built once, so the budgets last across lookups.
+    // Built once, so the budgets last across lookups.
     static chain<T>(sources: readonly LookupSource<T>[], clock: Clock): SourceLink<T> | null {
         return sources.reduceRight<SourceLink<T> | null>(
             (next, source) =>
@@ -79,7 +73,6 @@ export class SourceLink<T> {
     }
 }
 
-// One link's request under way, followed by the rest of the chain.
 export class SourceStep<T> {
     constructor(
         private readonly source: string,

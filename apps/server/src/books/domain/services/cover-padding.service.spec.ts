@@ -7,7 +7,6 @@ type Colour = readonly [number, number, number];
 const white: Colour = [255, 255, 255];
 const ink: Colour = [40, 60, 120];
 
-// A synthetic image painted pixel by pixel.
 function image(
     width: number,
     height: number,
@@ -31,7 +30,6 @@ function image(
     return { width, height, channels, data };
 }
 
-// A cover filling the given box, white everywhere else.
 function padded(
     width: number,
     height: number,
@@ -78,7 +76,6 @@ describe('CoverPadding', () => {
                 return ink;
             }
 
-            // Off-white padding with one dark speck in the left bar.
             return x === 3 && y === 50 ? ink : [250 - ((x + y) % 10), 252, 247];
         });
 

@@ -21,7 +21,6 @@ type Status =
     | { kind: 'saved' }
     | { kind: 'failed'; text: string };
 
-// Where the book is kept and its tags, as read by everyone.
 function OrganisationSummary({ book }: { book: BookDto }) {
     const { t } = useI18n();
 
@@ -51,7 +50,6 @@ function OrganisationSummary({ book }: { book: BookDto }) {
     );
 }
 
-// The shelf choice of the inline editor: every shelf, grouped by bookcase.
 function ShelfSelect({
     bookcases,
     value,
@@ -97,8 +95,6 @@ function ShelfSelect({
     );
 }
 
-// Location and tags of a book, edited in place by Owners/Admin: each change is saved at once,
-// without a Save button; Guests read them.
 export function OrganisationEditor({
     book,
     editor,

@@ -5,8 +5,7 @@ import type { AuthenticatedRequest } from '../../../../../shared/infrastructure/
 import type { ReceiverDto } from '../../../../../../../../packages/contracts/src/http.js';
 import { receiverSearchSchema } from './lending-schemas.js';
 
-// Receiver name suggestions for the lending form. Receivers are created only by lending; there
-// is no receiver management.
+// Receivers are created only by lending; there is no receiver management.
 @Controller('api/receivers')
 export class ReceiversController {
     constructor(

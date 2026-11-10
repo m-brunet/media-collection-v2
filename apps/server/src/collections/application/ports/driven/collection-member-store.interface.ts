@@ -1,4 +1,3 @@
-// A book's membership with the book information collections show and reason about.
 export type MemberRecord = {
     bookId: string;
     collectionId: string;
@@ -14,7 +13,7 @@ export type MemberRecord = {
     updatedAt: string;
 };
 
-// Membership of books in collections. Members come in coverage order (first volume, then title).
+// Members come in coverage order (first volume, then title).
 export interface CollectionMemberStore {
     ofBook(bookId: string): Promise<MemberRecord | null>;
     ofCollections(collectionIds: readonly string[]): Promise<MemberRecord[]>;

@@ -21,7 +21,6 @@ export default defineConfig({
                 extends: true,
                 plugins: [react()],
                 test: {
-                    // React component tests in a simulated browser.
                     name: 'web',
                     environment: 'jsdom',
                     include: ['apps/web/src/**/*.spec.tsx'],

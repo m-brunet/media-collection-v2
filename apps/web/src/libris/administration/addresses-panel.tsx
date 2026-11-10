@@ -6,7 +6,6 @@ import { Notice } from '../../shared/ui/notice';
 import { QrCode } from '../../shared/ui/qr-code';
 import { ServerAddress } from './server-address.util';
 
-// The addresses the server answers on. The links open Libris; each QR code opens Leaf, for a phone.
 export function AddressesPanel({
     addresses,
     httpsPort,
@@ -17,7 +16,6 @@ export function AddressesPanel({
     httpsError: string | null;
 }) {
     const { t } = useI18n();
-    // Nothing is shown until the Admin picks an address.
     const [selected, setSelected] = useState<string | null>(null);
     const leaf = selected ? ServerAddress.leaf(selected) : null;
 

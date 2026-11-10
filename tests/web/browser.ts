@@ -14,7 +14,6 @@ export class BrowserFixture {
     private browser: Browser | undefined;
     private readonly contexts: BrowserContext[] = [];
 
-    // `args`: extra Chromium switches, for example a fake camera playing a video file.
     async launch(args: string[] = []): Promise<void> {
         this.browser = await chromium.launch({ args });
     }
@@ -26,9 +25,7 @@ export class BrowserFixture {
             locale?: string;
             // Behave like the Electron window (sends its setup secret) rather than a plain browser.
             desktopWindow?: boolean;
-            // Browser permissions granted to the page, for example `camera`.
             permissions?: string[];
-            // Script run before each page's own scripts, to stand in for the browser's situation.
             beforeLoad?: string;
         } = {},
     ): Promise<Page> {

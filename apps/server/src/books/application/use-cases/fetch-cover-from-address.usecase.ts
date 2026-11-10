@@ -5,9 +5,6 @@ import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// A cover from an image address the person pasted (Task 6 cover helpers): fetched from the
-// public web only, checked like an uploaded cover, and handed back for the form. Nothing is
-// stored: the cover is saved with the book like any other.
 export class FetchCoverFromAddress implements FetchCoverFromAddressUseCase {
     static readonly maximumLength = 2000;
 

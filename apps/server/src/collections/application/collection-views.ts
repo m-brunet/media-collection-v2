@@ -5,8 +5,7 @@ import type {
 import type { VolumeState } from '../domain/value-objects/collection-coverage.value-object.js';
 import type { BookFilter } from '../../shared/application/book-filter.js';
 
-// Read models returned by the collections use cases. Counts always describe the whole
-// collection, whatever search found it.
+// Counts always describe the whole collection, whatever search found it.
 
 export interface CollectionSummaryView {
     id: string;
@@ -26,7 +25,6 @@ export interface CollectionSummaryView {
     previews: CollectionPreviewView[];
 }
 
-// A book shown by its cover.
 export interface CollectionPreviewView {
     id: string;
     title: string;
@@ -71,7 +69,6 @@ export interface CollectionListPage {
     items: CollectionSummaryView[];
 }
 
-// A collection offered when choosing one for a book.
 export interface CollectionNameView {
     id: string;
     name: string;
@@ -83,7 +80,6 @@ export interface CollectionChanges {
     includesVolumeZero?: boolean;
 }
 
-// An unfinished collection in the mobile shopping list.
 export interface ShoppingCollectionView {
     id: string;
     name: string;

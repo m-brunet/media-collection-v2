@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Icon } from '../../shared/ui/icon';
 
-// A portrait cover, shown whole (never cropped), or a neutral fallback when there is none.
 export function BookCover({
     src,
     title,

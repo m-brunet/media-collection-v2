@@ -12,8 +12,6 @@ import { LoadingState } from '../../shared/ui/states';
 import { LeafPage } from '../leaf-page';
 import type { AddBookState } from './add-book-page';
 
-// Why a lookup gave nothing usable: no source knew the ISBN, some sources could not be reached,
-// or the request itself failed.
 type Failure =
     | { kind: 'not-found' }
     | { kind: 'unavailable'; sources: string[] }
@@ -26,8 +24,6 @@ type Step =
     | { kind: 'existing'; book: BookDto }
     | { kind: 'now-owned'; book: BookDto };
 
-// A mobile lookup may run twice at most: the first failure offers one Retry, pressed by the
-// person; the second ends with Back to home (overview-activity-mobile.md, example 11).
 const maxAttempts = 2;
 
 function EndActions() {
@@ -54,8 +50,6 @@ function BookLine({ book }: { book: BookDto }) {
     );
 }
 
-// An ISBN already in the library: Owned ends here; Not Owned can be marked Owned, nothing else
-// (no form and no lookup, Task 7 decision).
 function Existing({ book, onOwned }: { book: BookDto; onOwned(book: BookDto): void }) {
     const { t } = useI18n();
     const action = useAction();
@@ -238,8 +232,6 @@ function Scanned({ isbn }: { isbn: string }) {
     );
 }
 
-// The ISBN read by a successful scan, waiting for Find book. The library is checked first;
-// nothing is looked up or created before the person presses Find book.
 export function ScannedPage() {
     const location = useLocation();
     const state = location.state as { isbn?: string } | null;

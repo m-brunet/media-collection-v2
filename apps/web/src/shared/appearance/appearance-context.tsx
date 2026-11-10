@@ -12,15 +12,12 @@ import { IconSetMemory } from './icon-set-memory.util';
 interface AppearanceValue {
     colorScheme: ColorSchemeName;
     iconSet: IconSetName;
-    // Administrator only: saves the scheme for the whole installation and applies it here.
     saveColorScheme(name: ColorSchemeName): Promise<void>;
-    // Administrator only: saves the icon set for the whole installation and applies it here.
     saveIconSet(name: IconSetName): Promise<void>;
 }
 
 const AppearanceContext = createContext<AppearanceValue | null>(null);
 
-// Loads the installation-wide appearance (public, also before sign-in) and applies it.
 export function AppearanceProvider({ children }: { children: ReactNode }) {
     const [colorScheme, setColorScheme] = useState<ColorSchemeName>(
         () =>
@@ -77,7 +74,6 @@ export function useAppearance(): AppearanceValue {
     return value;
 }
 
-// The installation's icon set; Lucide outside the provider (for example in isolated component tests).
 export function useIconSet(): IconSetName {
     return useContext(AppearanceContext)?.iconSet ?? 'lucide';
 }

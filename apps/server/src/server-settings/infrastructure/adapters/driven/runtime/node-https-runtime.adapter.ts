@@ -4,9 +4,8 @@ import { createServer } from 'node:https';
 import type { HttpsRuntime } from '../../../../application/ports/driven/https-runtime.interface.js';
 import { TlsAlpnChallenges } from '../security/tls-alpn-challenges.adapter.js';
 
-// The HTTPS listener. It can run before any certificate exists: then only Let's Encrypt's
-// TLS-ALPN-01 check gets an answer, browsers get a failed handshake. Certificates are swapped
-// live, without dropping the listener.
+// It can run before any certificate exists: then only Let's Encrypt's TLS-ALPN-01 check gets an
+// answer, browsers get a failed handshake.
 export class NodeHttpsRuntime implements HttpsRuntime {
     private server: Server | undefined;
 
@@ -22,7 +21,6 @@ export class NodeHttpsRuntime implements HttpsRuntime {
         return address && typeof address !== 'string' ? address.port : null;
     }
 
-    // Startup with the saved certificate; failures are reported by the caller.
     async start(port: number, certificate: { chain: string; key: string } | null): Promise<number> {
         const server = createServer(
             {

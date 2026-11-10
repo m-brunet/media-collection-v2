@@ -20,9 +20,6 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// Edits shared book information, collection membership, location and tags. Coverage rules apply again, since
-// ownership or volumes may change. Authors no longer linked to any book disappear. A lent book
-// cannot become Not Owned.
 export class UpdateBook implements UpdateBookUseCase {
     constructor(
         private readonly books: BookRepository,

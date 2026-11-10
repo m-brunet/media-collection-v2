@@ -23,7 +23,6 @@ afterEach(async () => {
     await app?.teardown();
 });
 
-// Sends one arranging request, a second after the previous one.
 async function arrange<T>(
     path: string,
     method: string,

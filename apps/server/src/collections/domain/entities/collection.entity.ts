@@ -12,8 +12,8 @@ export interface CollectionState {
     updatedAt: string;
 }
 
-// A named group of books with volume coverage. Finished is only ever set by a person, and only
-// when every expected volume is Owned; a change leaving missing volumes reopens it.
+// Finished is only ever set by a person, and only when every expected volume is Owned; a change
+// leaving missing volumes reopens it.
 export class Collection {
     private state: CollectionState;
 
@@ -55,7 +55,6 @@ export class Collection {
         this.state.updatedAt = now;
     }
 
-    // Volume 0 cannot be switched off while a saved book still covers it.
     changeVolumeZero(enabled: boolean, members: readonly CoverageMember[], now: string): void {
         if (!enabled && this.coverage(members).coversVolumeZero) {
             throw new Failure(
@@ -87,7 +86,6 @@ export class Collection {
         this.state.updatedAt = now;
     }
 
-    // After its books or options changed: a Finished collection with missing volumes reopens.
     // Complete ownership never marks it Finished. Returns whether it reopened.
     reconcile(members: readonly CoverageMember[], now: string): boolean {
         if (!this.state.finished || this.coverage(members).missing.length === 0) {

@@ -3,7 +3,6 @@ import type { DatabaseConnections } from '../../../../../shared/infrastructure/a
 import type { IconSetStore } from '../../../../application/ports/driven/icon-set-store.interface.js';
 import { IconSet } from '../../../../domain/value-objects/icon-set.value-object.js';
 
-// Saved with the other application preferences in `server_settings`, under `icon-set`.
 export class KyselyIconSetRepository implements IconSetStore {
     private static readonly settingName = 'icon-set';
 

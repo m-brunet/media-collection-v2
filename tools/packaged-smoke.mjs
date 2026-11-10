@@ -37,7 +37,6 @@ let base = 'http://127.0.0.1:' + port;
 let child;
 let failureOutput = '';
 const launch = async (withPortOverride = true, debugging = false) => {
-    // The packaged window stays off screen while the smoke test drives it.
     // Internet access stays offline: the smoke test never reaches a router or Let's Encrypt.
     const environment = {
         ...process.env,
@@ -119,7 +118,6 @@ async function request(path, method = 'GET', body) {
     return response.status === 204 ? undefined : response.json();
 }
 
-// Completes first-launch setup from inside the real Electron window, as a person would.
 async function setUpInWindow() {
     const browser = await chromium.connectOverCDP('http://127.0.0.1:' + debugPort);
 

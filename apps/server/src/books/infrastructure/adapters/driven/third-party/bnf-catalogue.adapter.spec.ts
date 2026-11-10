@@ -7,7 +7,6 @@ function recorded(name: string): string {
     return readFileSync(new URL('./fixtures/' + name, import.meta.url), 'utf8');
 }
 
-// A catalogue answering every request with one recorded response, noting the requested URLs.
 function catalogue(body: string, status = 200, headers: Record<string, string> = {}) {
     const requests: string[] = [];
     const http = new SourceHttp(async (url) => {
@@ -19,7 +18,6 @@ function catalogue(body: string, status = 200, headers: Record<string, string> =
     return { requests, source: new BnfCatalogue(http) };
 }
 
-// A minimal UNIMARC record holding the given data fields, as the catalogue sends them.
 function record(...fields: string[]): string {
     return (
         '<srw:searchRetrieveResponse><srw:numberOfRecords>1</srw:numberOfRecords><srw:records>' +

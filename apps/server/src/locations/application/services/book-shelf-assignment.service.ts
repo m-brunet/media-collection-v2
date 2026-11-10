@@ -6,8 +6,7 @@ import type {
 } from '../../../books/application/ports/driven/book-location-reader.interface.js';
 import type { ShelfAssignment } from '../../../books/application/ports/driven/shelf-assignment.interface.js';
 
-// Places books on existing shelves for the books feature. Locations are never created from a
-// book: an unknown shelf is refused.
+// Locations are never created from a book: an unknown shelf is refused.
 export class BookShelfAssignment implements ShelfAssignment, BookLocationReader {
     constructor(
         private readonly store: BookShelfStore,

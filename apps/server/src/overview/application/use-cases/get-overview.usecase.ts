@@ -4,8 +4,6 @@ import type { GetOverviewUseCase } from '../ports/driving/get-overview-use-case.
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// Every role reads the shared counters and recently added books. Reading status is personal to
-// Owners and the Admin: a Guest gets no reading summary and no status on the recent books.
 export class GetOverview implements GetOverviewUseCase {
     static readonly recentCount = 5;
 

@@ -72,17 +72,14 @@ import { SourceHttp } from '../adapters/driven/third-party/source-http.adapter.j
 import { LookupsController } from '../adapters/driving/web/lookups.controller.js';
 import { SharpCoverTrimmer } from '../adapters/driven/image/sharp-cover-trimmer.adapter.js';
 
-// The outside sources Find book asks, and how their covers are downloaded.
 export interface BookLookupSources {
     information: LookupSource<LookupAnswer>[];
     covers: LookupSource<CoverOffer[]>[];
-    // Downloads the covers the sources offer.
     downloader: CoverDownloader;
     // Downloads an image address a person pasted: public web only.
     addressDownloader: CoverDownloader;
 }
 
-// Driven adapters and shared services the books feature is composed from.
 export interface BooksDependencies {
     books: BookRepository;
     authors: AuthorRepository;
@@ -90,18 +87,15 @@ export interface BooksDependencies {
     readings: ReadingStatusStore;
     notes: PersonalNoteStore;
     covers: CoverStorage;
-    // Owned by the collections feature, composed by the application root.
     collections: CollectionMembership;
     collectionReader: BookCollectionReader;
-    // Owned by the locations and tags features.
     shelves: ShelfAssignment;
     locationReader: BookLocationReader;
     tags: TagAssignment;
     tagReader: BookTagReader;
-    // Owned by the lending feature.
     loans: BookLoanReader;
     loanHistory: LoanHistory;
-    // Find book's outside sources, each list in order of preference (see `BooksModule.lookupSources`).
+    // Find book's outside sources, each list in order of preference.
     lookup: BookLookupSources;
     ids: IdGenerator;
     clock: Clock;
@@ -558,7 +552,6 @@ const developmentProviders: Provider[] = [
 
 @Module({})
 export class BooksModule {
-    // `developmentImport` adds `BOOKS_IMPORT`, for the development data commands only.
     static register(
         dependencies: BooksDependencies,
         options: { developmentImport?: boolean } = {},
@@ -581,8 +574,7 @@ export class BooksModule {
         };
     }
 
-    // The real outside sources, in the order of preference decided in Task 6: BnF then Open Library
-    // for book information, Open Library for covers. Addresses can be replaced (browser tests).
+    // Addresses can be replaced (browser tests).
     static lookupSources(
         addresses: { bnf?: string; openLibrary?: string } = {},
     ): BookLookupSources {
@@ -596,12 +588,10 @@ export class BooksModule {
             ],
             covers: [new OpenLibraryCovers(openLibrary)],
             downloader: new HttpCoverDownloader(),
-            // Image addresses people paste: public web only, checked at every redirect.
             addressDownloader: new HttpCoverDownloader(fetch, new PublicAddresses()),
         };
     }
 
-    // The titles of member books, kept in line by the collections feature's rename and deletion.
     static memberTitles(books: BookRepository, clock: Clock): MemberTitles {
         return new CollectionMemberTitles(books, clock);
     }

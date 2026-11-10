@@ -39,7 +39,6 @@ afterEach(async () => {
     await runtime.teardown();
 });
 
-// A ready account: created by the administrator, temporary password already replaced.
 async function account(username: string, role: 'owner' | 'guest') {
     await admin.call('/users', 'POST', { username, password: 'temporary-pw', role });
     const client = new Client(base);
@@ -51,7 +50,6 @@ async function account(username: string, role: 'owner' | 'guest') {
     });
 }
 
-// Arranges data through the API, failing loudly when the server refuses it.
 async function created<T>(path: string, body: object): Promise<T> {
     const response = await admin.call<T>(path, 'POST', body);
 
@@ -73,7 +71,6 @@ async function bookcase(name: string, shelves: string[]) {
     return { ...saved, shelves: made };
 }
 
-// A saved book without ISBN, so several can share a title pattern.
 async function book(title: string, overrides: Partial<NewBookDto> = {}): Promise<BookDto> {
     return created<BookDto>(
         '/books',
@@ -87,7 +84,6 @@ async function book(title: string, overrides: Partial<NewBookDto> = {}): Promise
     );
 }
 
-// Renames a bookcase, shelf or tag through the API, to arrange a scenario.
 async function renamed(path: string, name: string) {
     const response = await admin.call(path, 'PATCH', { name });
 
@@ -323,7 +319,6 @@ describe('Book details organisation', () => {
 });
 
 describe('Advanced filters', () => {
-    // Manga or Comics, Owned, kept in the Oak bookcase, with Fantasy and Adventure but not Medieval.
     async function library() {
         const oak = await bookcase('Oak bookcase', ['Top']);
         const hall = await bookcase('Hall bookcase', ['Top']);
@@ -429,7 +424,6 @@ describe('Advanced filters', () => {
     it('shows a collection only when one of its books matches every criterion', async () => {
         const fantasy = await created<TagDto>('/tags', { name: 'Fantasy' });
 
-        // Batman: one book by the author, another with the tag; none has both.
         await book('Batman', {
             authors: [{ name: 'Bob Kane' }],
             collection: { collection: { name: 'Batman' }, volumeFrom: 1, volumeTo: 1 },
@@ -439,7 +433,6 @@ describe('Advanced filters', () => {
             tags: [{ id: fantasy.id }],
             collection: { collection: { name: 'Batman' }, volumeFrom: 2, volumeTo: 2 },
         });
-        // Dune: one book with both, among ten expected volumes of which two are Owned.
         await book('Dune', {
             authors: [{ name: 'Bob Kane' }],
             tags: [{ id: fantasy.id }],

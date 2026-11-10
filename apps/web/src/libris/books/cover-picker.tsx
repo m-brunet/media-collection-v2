@@ -10,8 +10,6 @@ import type { CoverChoice } from '../../shared/book-form/cover-choice';
 import { CoverFile } from '../../shared/book-form/cover-file.util';
 import { BookCover } from './book-cover';
 
-// The cover of the form, chosen from a file, pasted (Ctrl+V outside text fields), dropped, or
-// fetched from an image address; a web search helps find one (Task 6 cover helpers).
 export function CoverPicker({
     title,
     savedCover,
@@ -20,9 +18,7 @@ export function CoverPicker({
     onChange,
 }: {
     title: string;
-    // Address of the book's current cover, if it has one.
     savedCover: string | null;
-    // What a web search for the cover looks for; empty when nothing identifies the book yet.
     searchTerms: string;
     choice: CoverChoice;
     onChange(choice: CoverChoice): void;
@@ -95,7 +91,6 @@ export function CoverPicker({
         }
     };
 
-    // An image pasted anywhere in the page, except into a text field, becomes the cover.
     useEffect(() => {
         const paste = (event: ClipboardEvent) => {
             const target = event.target instanceof Element ? event.target : null;
@@ -178,7 +173,6 @@ export function CoverPicker({
             {searchTerms.trim() && (
                 <a
                     className="cover-picker__search"
-                    // Google Images for the ISBN, or the title and authors without one.
                     href={
                         'https://www.google.com/search?tbm=isch&q=' +
                         encodeURIComponent(searchTerms.trim())

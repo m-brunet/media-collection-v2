@@ -1,7 +1,6 @@
 import { expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 
-// Leaf's icon (KI-6): the hand-inked Turning leaf, Spring green, as favicon and home-screen icon.
 const web = new URL('../../apps/web/', import.meta.url);
 const read = (path: string) => readFileSync(new URL(path, web), 'utf8');
 

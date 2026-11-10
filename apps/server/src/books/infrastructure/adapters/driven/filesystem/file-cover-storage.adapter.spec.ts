@@ -12,7 +12,6 @@ afterEach(() => {
     }
 });
 
-// A data directory, with files that the storage did not name already in its covers folder.
 function directory(...strayFiles: string[]) {
     const value = mkdtempSync(join(tmpdir(), 'cover-storage-'));
 

@@ -21,7 +21,6 @@ export type InternetAccessFailureReason =
     | 'domain-unresolved'
     | 'domain-mismatch'
     | 'setup-failed';
-// Why the router rule could not be kept: the router, the address or the port.
 export type RouterRuleFailureReason = Extract<
     InternetAccessFailureReason,
     'no-router' | 'public-address-unknown' | 'port-refused' | 'cgnat' | 'double-nat'
@@ -40,11 +39,8 @@ export interface InternetAccessState {
     nextAttemptAt: string | null;
 }
 
-// Automatic internet access: the router rule, the public address and the certificate that lets
-// phones reach the installation over HTTPS. A setup runs in steps; once active, the upkeep keeps
-// the certificate valid for the Admin's domain name, or else for the current public address.
 export class InternetAccess {
-    // The router's port that phones reach; Let's Encrypt's TLS-ALPN-01 check only uses 443.
+    // Let's Encrypt's TLS-ALPN-01 check only uses 443.
     static readonly externalPort = 443;
     private static readonly ruleFailures: ReadonlySet<InternetAccessFailureReason> =
         new Set<RouterRuleFailureReason>([
@@ -102,7 +98,6 @@ export class InternetAccess {
         return this.state.domain;
     }
 
-    // What the certificate covers and phones open: the domain name, else the public address.
     get certificateName(): string | null {
         return this.state.domain ?? this.state.publicAddress;
     }
@@ -135,7 +130,6 @@ export class InternetAccess {
         };
     }
 
-    // Reruns the certificate step after the Admin created the router rule by hand.
     check(): void {
         if (this.state.phase !== 'waiting-for-port' || !this.state.publicAddress) {
             throw new Failure('conflict', 'There is no router rule to check.', 'nothing-to-check');
@@ -149,7 +143,6 @@ export class InternetAccess {
         };
     }
 
-    // Records the router's answer: a CGNAT or private external address ends the setup.
     routerFound(
         mapping: Exclude<PortMapping, 'manual'>,
         externalAddress: string,
@@ -169,7 +162,6 @@ export class InternetAccess {
         return true;
     }
 
-    // Without a router that accepts rules, the Admin creates the rule by hand.
     portNeeded(publicAddress: string, reason: InternetAccessFailureReason, now: Date): void {
         this.requireSettingUp();
         const connection = ConnectionClass.of(publicAddress);
@@ -195,8 +187,6 @@ export class InternetAccess {
         this.state = { ...this.state, step: 'certificate' };
     }
 
-    // The setup cannot go further (no public address, or the provider shares it). The domain name
-    // stays for the next setup.
     stop(reason: InternetAccessFailureReason, now: Date): void {
         this.state = {
             ...InternetAccess.off().state,
@@ -205,7 +195,6 @@ export class InternetAccess {
         };
     }
 
-    // An unreachable port during the setup sends the Admin to the manual rule screen.
     certificateRefused(reason: InternetAccessFailureReason, now: Date): void {
         this.requireSettingUp();
         this.state = {
@@ -234,7 +223,6 @@ export class InternetAccess {
         };
     }
 
-    // The Admin saved another domain name (or none): the certificate must follow it.
     useDomain(domain: string | null): void {
         this.requireActive();
         const name = DomainName.optional(domain);
@@ -266,7 +254,6 @@ export class InternetAccess {
         );
     }
 
-    // The current certificate stays in use while it is valid; the next attempt waits longer.
     upkeepFailed(reason: InternetAccessFailureReason, now: Date): void {
         this.requireActive();
         const failedAttempts = this.state.failedAttempts + 1;
@@ -279,14 +266,13 @@ export class InternetAccess {
         };
     }
 
-    // The router rule could not be renewed. Shown at once, without waiting longer: the rule lapses
-    // within its lease, so the next upkeep run tries it again.
+    // Shown at once, without waiting longer: the rule lapses within its lease, so the next upkeep
+    // run tries it again.
     ruleFailed(reason: RouterRuleFailureReason, now: Date): void {
         this.requireActive();
         this.state = { ...this.state, failure: { reason, at: now.toISOString() } };
     }
 
-    // The router rule was renewed: a rule failure no longer applies; a certificate one still does.
     ruleKept(): void {
         this.requireActive();
 

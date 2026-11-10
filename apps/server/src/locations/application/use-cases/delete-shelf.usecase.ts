@@ -7,7 +7,6 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// Removes the shelf definition; its books become unassigned and are kept.
 export class DeleteShelf implements DeleteShelfUseCase {
     constructor(
         private readonly shelves: ShelfRepository,

@@ -7,8 +7,8 @@ import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { AccountAudit } from '../account-audit.js';
 
-// Sign-in attempts are technical audit records (never shown in Activity). A deactivated account
-// gets the same answer as wrong credentials, so sign-in does not reveal account states.
+// A deactivated account gets the same answer as wrong credentials, so sign-in does not reveal
+// account states.
 export class Login implements LoginUseCase {
     constructor(
         private readonly users: UserReader,

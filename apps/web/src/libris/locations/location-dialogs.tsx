@@ -6,7 +6,6 @@ import { ConfirmDialog } from '../../shared/ui/confirm-dialog';
 import { NameDialog } from '../../shared/ui/name-dialog';
 import { SelectField } from '../../shared/ui/select-field';
 
-// What the Bookshelves page is changing.
 export type LocationEditing =
     | { kind: 'create-bookcase' }
     | { kind: 'rename-bookcase'; bookcase: BookcaseDto }
@@ -16,7 +15,6 @@ export type LocationEditing =
     | { kind: 'rename-shelf'; shelf: ShelfDto }
     | { kind: 'delete-shelf'; shelf: ShelfDto };
 
-// Creates a shelf in a chosen bookcase, or moves a shelf (keeping its books) to another one.
 function ShelfDialog({
     bookcases,
     editing,
@@ -78,8 +76,7 @@ function ShelfDialog({
     );
 }
 
-// Every dialog of the Bookshelves page. `onDone` reports the change; `selected` is the shelf to
-// show afterwards, when the change produced one.
+// `selected` is the shelf to show afterwards, when the change produced one.
 export function LocationDialogs({
     bookcases,
     editing,

@@ -14,8 +14,6 @@ import { CreateAccountDialog } from './create-account-dialog';
 import { ResetPasswordDialog } from './reset-password-dialog';
 import { DataResetDialog } from './data-reset-dialog';
 
-// User management (administrator only): accounts with fixed roles, created with a temporary
-// password, and deactivated rather than deleted.
 export function AccountsPage() {
     const { t } = useI18n();
     const [accounts, setAccounts] = useState<AccountSummary[] | null>(null);

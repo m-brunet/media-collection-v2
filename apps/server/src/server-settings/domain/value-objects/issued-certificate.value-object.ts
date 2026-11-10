@@ -7,7 +7,6 @@ export interface IssuedCertificateState {
     expiresAt: string;
 }
 
-// An automatically issued certificate: the address or domain name it covers and its validity period.
 // Key material never enters the domain.
 export class IssuedCertificate {
     private readonly state: Readonly<IssuedCertificateState>;

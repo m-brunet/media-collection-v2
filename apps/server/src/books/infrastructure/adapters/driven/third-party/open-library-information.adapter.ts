@@ -8,8 +8,7 @@ import type { OpenLibraryRecord, OpenLibraryRecords } from './open-library-recor
 
 const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 
-// Book information from Open Library: title, authors, publisher, date and page count. It gives
-// no edition language and no summary in these records.
+// Open Library gives no edition language and no summary in these records.
 export class OpenLibraryInformation implements LookupSource<LookupAnswer> {
     readonly name = 'openlibrary';
     // Kept well below Open Library's published limits for identified clients.

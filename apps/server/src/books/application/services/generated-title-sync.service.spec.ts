@@ -5,7 +5,6 @@ import type { BookDetails } from '../../domain/entities/book.entity.js';
 
 const gunnm = { id: 'gunnm', name: 'Gunnm', volumeFrom: 3, volumeTo: 3 };
 
-// A saved no-ISBN Manga by one author, as a book save leaves it before its membership applies.
 async function stored(
     current: ReturnType<typeof BookDoubles.library>,
     overrides: Partial<BookDetails> = {},

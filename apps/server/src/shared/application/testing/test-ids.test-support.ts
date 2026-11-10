@@ -9,7 +9,6 @@ export class TestIds {
         return '00000000-0000-4000-8000-' + TestIds.counter.toString(16).padStart(12, '0');
     }
 
-    // A number unique within a test run, for default names that must not collide.
     static sequence(): number {
         TestIds.counter += 1;
 

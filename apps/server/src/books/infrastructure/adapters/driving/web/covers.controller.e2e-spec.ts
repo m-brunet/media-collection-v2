@@ -30,7 +30,6 @@ function upload(bytes: Buffer, contentType = 'image/png') {
     return { raw: { bytes, contentType } };
 }
 
-// A 200 × 300 cover centred on a white 300 × 300 square, as online shops serve them.
 async function shopThumbnail() {
     const art = await sharp({
         create: { width: 200, height: 300, channels: 3, background: { r: 40, g: 60, b: 120 } },

@@ -24,7 +24,6 @@ afterEach(async () => {
     }
 });
 
-// A database just before KI-6, with a saved colour scheme.
 async function savedBeforeNewSchemes(colorScheme: string) {
     const path = await mkdtemp(join(tmpdir(), 'colour-schemes-'));
 

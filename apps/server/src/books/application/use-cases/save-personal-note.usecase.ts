@@ -8,7 +8,7 @@ import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 
-// The note belongs to its author only. The audit records that a note exists, never its text.
+// The audit records that a note exists, never its text.
 export class SavePersonalNote implements SavePersonalNoteUseCase {
     constructor(
         private readonly notes: PersonalNoteStore,

@@ -13,7 +13,6 @@ import { useAction } from '../../shared/use-action';
 import { AddressesPanel } from './addresses-panel';
 import { InternetAccessPanel } from './internet-access-panel';
 
-// While a setup runs, the page follows its steps.
 const followInterval = 1500;
 
 export function ServerSettingsPage() {

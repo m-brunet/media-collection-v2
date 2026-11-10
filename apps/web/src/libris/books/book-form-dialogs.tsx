@@ -18,7 +18,6 @@ import { useAction } from '../../shared/use-action';
 import { CollectionFormat } from '../collections/collection-format.util';
 import { BookFormat } from '../../shared/book-form/book-format.util';
 
-// A typed author name is close to existing authors: reuse one, or confirm a different person.
 export function SimilarAuthorDialog({
     similar,
     onUse,
@@ -60,7 +59,6 @@ export function SimilarAuthorDialog({
     );
 }
 
-// A new book without ISBN looks like a saved one: open it, or continue with a distinct edition.
 export function PossibleDuplicateDialog({
     duplicate,
     onOpen,
@@ -108,7 +106,6 @@ export function PossibleDuplicateDialog({
     );
 }
 
-// Corrects the shared spelling of an author, everywhere it is linked, after confirmation.
 export function CorrectAuthorDialog({
     author,
     onCorrected,
@@ -184,7 +181,6 @@ function CorrectAuthorForm({
     );
 }
 
-// Leaving a form with unsaved changes asks first.
 export function DiscardChangesDialog({
     open,
     onKeep,
@@ -217,7 +213,6 @@ export function DiscardChangesDialog({
     );
 }
 
-// A typed collection name is close to existing collections: join one, or confirm a new one.
 export function SimilarCollectionDialog({
     similar,
     onUse,
@@ -259,7 +254,6 @@ export function SimilarCollectionDialog({
     );
 }
 
-// Volume 0 was entered for a collection that does not include it yet.
 export function VolumeZeroDialog({
     volumeZero,
     onEnable,
@@ -307,9 +301,6 @@ function ConflictingBook({ book }: { book: CoverageConflictBook }) {
     );
 }
 
-// The coverage of the book being saved overlaps other books of its collection. Only an Owned
-// book may replace planned Not Owned books, and only by the person's explicit choice: nothing
-// is ever trimmed or split.
 export function CoverageConflictDialog({
     conflict,
     purchased,
@@ -319,9 +310,7 @@ export function CoverageConflictDialog({
     onClose,
 }: {
     conflict: CoverageConflictDetails | null;
-    // The edition in the form: its title, ISBN and volumes.
     purchased: { title: string; isbn: string | null; volumeFrom: number; volumeTo: number };
-    // Updating the planned record instead is only offered for a new book.
     creating: boolean;
     onUpdatePlanned(bookId: string): void;
     onReplace(bookIds: string[]): void;

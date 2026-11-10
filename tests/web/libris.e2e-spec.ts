@@ -34,7 +34,6 @@ async function signIn(page: Page, username: string, password: string) {
     await page.getByRole('button', { name: 'Sign in' }).click();
 }
 
-// An installation whose administrator exists, with one Owner and one Guest account.
 async function household() {
     await RuntimeSetup.administrator(api);
     await api.call('/users', 'POST', {

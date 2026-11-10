@@ -10,7 +10,6 @@ import { idSchema } from './book-schemas.js';
 const readingSchema = z.strictObject({ read: z.boolean() });
 const noteSchema = z.strictObject({ text: z.string().max(20000) });
 
-// The signed-in account's own reading status and private note on a book.
 @Controller('api/books/:id')
 export class PersonalReadingController {
     constructor(

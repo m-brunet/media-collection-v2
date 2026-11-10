@@ -48,7 +48,6 @@ export class MemoryReceivers implements ReceiverRepository {
     }
 }
 
-// Loans with the production contract: one active loan per book.
 export class MemoryLoanStore implements LoanRepository {
     readonly loans = new Map<string, Loan>();
 
@@ -102,8 +101,6 @@ export class MemoryLoanStore implements LoanRepository {
     }
 }
 
-// The books lending reads; whether each is lent, and to whom, comes from the loan and receiver
-// stores.
 export class MemoryLendableBooks implements LendableBooks {
     readonly books = new Map<string, Omit<LendableBook, 'lentTo'>>();
 
@@ -112,7 +109,6 @@ export class MemoryLendableBooks implements LendableBooks {
         private readonly receivers: MemoryReceivers,
     ) {}
 
-    // The book as a loan records it, for building loans of it.
     lendable(id: string): LoanBook {
         const book = this.books.get(id)!;
 
@@ -142,7 +138,6 @@ export class MemoryLendableBooks implements LendableBooks {
     }
 }
 
-// Records the queries it is asked and answers with prepared groups.
 export class ActiveLoansStub implements ActiveLoans {
     readonly queries: ActiveLoansQuery[] = [];
     groups: ReceiverLoansView[] = [];
@@ -155,7 +150,6 @@ export class ActiveLoansStub implements ActiveLoans {
 }
 
 export class LendingDoubles {
-    // Lending with all doubles and services wired as in production.
     static lending() {
         const receivers = new MemoryReceivers();
         const loans = new MemoryLoanStore();

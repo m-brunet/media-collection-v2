@@ -10,7 +10,6 @@ const extensions: Record<CoverMediaType, string> = {
     'image/webp': 'webp',
 };
 
-// Cover images in `<data directory>/covers`, under random names chosen here only.
 export class FileCoverStorage implements CoverStorage {
     private static readonly fileName = /^[0-9a-f-]{36}\.(jpg|png|webp)$/;
 

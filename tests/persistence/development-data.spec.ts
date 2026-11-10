@@ -39,7 +39,6 @@ describe('development data reset', () => {
 
 const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1]).toString('base64');
 
-// A V1 book as exported by MongoDB, with the given fields.
 function v1(fields: Record<string, unknown>) {
     return {
         _id: { $oid: '587ba8f8152f33d037131950' },

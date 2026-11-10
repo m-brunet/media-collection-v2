@@ -21,7 +21,6 @@ afterEach(async () => {
     await app?.teardown();
 });
 
-// Creates a bookcase through the API, as an Owner.
 async function bookcase(name: string) {
     const client = await app.authenticatedClient(owner);
     const response = await client.call<BookcaseDto>('/bookcases', 'POST', { name });
@@ -33,7 +32,6 @@ async function bookcase(name: string) {
     return response.body;
 }
 
-// Creates a shelf inside a bookcase through the API, as an Owner.
 async function shelf(bookcaseId: string, name: string) {
     const client = await app.authenticatedClient(owner);
     const response = await client.call<ShelfDto>('/bookcases/' + bookcaseId + '/shelves', 'POST', {
@@ -47,7 +45,6 @@ async function shelf(bookcaseId: string, name: string) {
     return response.body;
 }
 
-// Saves a book kept on a shelf, as an Owner.
 async function bookOn(shelfId: string) {
     const client = await app.authenticatedClient(owner);
     const response = await client.call<BookDto>('/books', 'POST', BookInputFixture.of({ shelfId }));

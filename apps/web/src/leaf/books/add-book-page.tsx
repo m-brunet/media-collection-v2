@@ -27,7 +27,6 @@ export interface AddBookState {
     lookup: LookedUpBook;
 }
 
-// Navigation state of `/saved`.
 export interface SavedBookState {
     title: string;
     followUpFailed: boolean;
@@ -74,7 +73,6 @@ function AddBookForm({ isbn, lookup }: AddBookState) {
         saving.failure?.field === field ? saving.failure.text : undefined;
     const firstCover = lookup.covers[0]?.token;
 
-    // The first cover found is chosen at once, as the desktop review selects it first.
     useEffect(() => {
         if (!firstCover) {
             return;
@@ -178,7 +176,7 @@ function AddBookForm({ isbn, lookup }: AddBookState) {
     );
 }
 
-// Review book after a successful scan and Find book. Opened any other way (a typed address,
+// Opened any other way (a typed address,
 // a reload), it returns home: the mobile add form needs a scan.
 export function AddBookPage() {
     const state = useLocation().state as AddBookState | null;

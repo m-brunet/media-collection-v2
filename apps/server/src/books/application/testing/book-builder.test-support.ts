@@ -13,9 +13,8 @@ export type BookPorts = { books: BookRepository; authors: AuthorRepository };
 
 type BuilderAuthor = { id: string; name: string };
 
-// One edition. Defaults: an Owned Books record with a unique title ("Book 7"), no ISBN and one
-// author ("Author 8"). Saving creates its authors, reusing a saved author with an equivalent
-// name. Collection membership, location and tags belong to their features and are not set here.
+// Saving creates its authors, reusing a saved author with an equivalent name. Collection
+// membership, location and tags belong to their features and are not set here.
 export class BookBuilder extends EntityBuilder<Book, BookPorts> {
     private id: string | null = null;
     private title: string | null = null;
@@ -85,14 +84,12 @@ export class BookBuilder extends EntityBuilder<Book, BookPorts> {
         return this;
     }
 
-    // A planned book: Not Owned.
     asPlanned(): this {
         this.ownership = 'not-owned';
 
         return this;
     }
 
-    // A Manga (or the chosen Comics) whose title was generated from its collection.
     asGenerated(title: string, category: 'manga' | 'comics' = 'manga'): this {
         this.title = title;
         this.titleGenerated = true;

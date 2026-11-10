@@ -219,7 +219,6 @@ export class SettableClock implements Clock {
     }
 }
 
-// Runs the background work at once and lets the test wait for it.
 export class AwaitableBackground implements BackgroundTasks {
     private readonly tasks: Promise<void>[] = [];
 
@@ -303,7 +302,6 @@ export class InternetAccessDoubles {
         };
     }
 
-    // HTTP opened through UPnP on the public address.
     static httpOpen(): HttpInternetAccessState {
         return {
             ...HttpInternetAccess.off().snapshot,
@@ -313,7 +311,7 @@ export class InternetAccessDoubles {
         };
     }
 
-    // A state with a certificate issued at the clock's start, through UPnP.
+    // A state with a certificate issued at the clock's start.
     static active(overrides: Partial<InternetAccessState> = {}): InternetAccessState {
         return {
             ...InternetAccess.off().snapshot,

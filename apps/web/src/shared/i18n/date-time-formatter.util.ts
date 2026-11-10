@@ -1,4 +1,3 @@
-// Formats UTC timestamps in the viewer's own time zone and interface language.
 export class DateTimeFormatter {
     constructor(
         private readonly locale: string,

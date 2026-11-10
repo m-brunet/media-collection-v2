@@ -18,8 +18,6 @@ type Editing =
     | { kind: 'rename'; tag: TagDto }
     | { kind: 'delete'; tag: TagDto };
 
-// Reusable tags with the number of books carrying each. Owners/Admin create, rename and delete
-// them; deleting a tag never deletes books, and unused tags stay available.
 export function TagsPage() {
     const { t } = useI18n();
     const { account } = useSession();

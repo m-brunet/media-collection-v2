@@ -6,7 +6,6 @@ export type LeafResource<T> =
     | { status: 'ready'; data: T }
     | { status: 'failed'; error: unknown };
 
-// Reads one API resource for a Leaf screen; `reload` reads it again (Retry, or after a change).
 export function useLeafResource<T>(path: string) {
     const [resource, setResource] = useState<LeafResource<T>>({ status: 'loading' });
     const [version, setVersion] = useState(0);

@@ -8,7 +8,6 @@ interface FieldProps {
     required?: boolean;
 }
 
-// Labelled input with optional hint and error, wired for assistive technology.
 export function TextField({
     label,
     hint,

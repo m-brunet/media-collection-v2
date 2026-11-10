@@ -8,7 +8,7 @@ import type { DatabaseConnections } from '../../../../../shared/infrastructure/a
 
 // Reads Successful audit records grouped by operation, with the acting account's current
 // username (renamed and deactivated accounts keep being named) and, for records about a book,
-// the book's current title. It only reads: the audit log is written by AuditedOperation.
+// the book's current title.
 export class KyselyActivityRecordReader implements ActivityRecordReader {
     constructor(private readonly connections: DatabaseConnections) {}
 

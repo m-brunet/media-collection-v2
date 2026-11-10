@@ -1,7 +1,6 @@
 import type { Actor } from '../domain/actor.helper.js';
 import { Failure } from '../domain/exceptions/failure.js';
 
-// Book categories and ownerships as values of a filter (the books feature defines their rules).
 export type FilteredCategory = 'books' | 'manga' | 'comics';
 export type FilteredOwnership = 'owned' | 'not-owned';
 
@@ -52,7 +51,6 @@ export class BookFilter implements BookFilterCriteria {
         });
     }
 
-    // True when no field restricts the books.
     isEmpty(): boolean {
         return (
             this.categories.length === 0 &&
@@ -73,8 +71,6 @@ export class BookFilter implements BookFilterCriteria {
         return this.reading.length > 0;
     }
 
-    // The account whose reading status the filter and listing use: none for a Guest, who has no
-    // reading status and so cannot filter on it.
     readerFor(actor: Actor): string | null {
         if (actor.role !== 'guest') {
             return actor.id;

@@ -8,7 +8,6 @@ import { Notice } from '../../shared/ui/notice';
 import { TextField } from '../../shared/ui/text-field';
 import { useAction } from '../../shared/use-action';
 
-// Replaces the signed-in account's password (also used for mandatory temporary-password setup).
 export function PasswordForm({ setup = false }: { setup?: boolean }) {
     const { t } = useI18n();
     const { update } = useSession();

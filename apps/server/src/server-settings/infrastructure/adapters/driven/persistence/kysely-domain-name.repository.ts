@@ -3,7 +3,6 @@ import type { DatabaseConnections } from '../../../../../shared/infrastructure/a
 import type { DomainNameStore } from '../../../../application/ports/driven/domain-name-store.interface.js';
 import { DomainName } from '../../../../domain/value-objects/domain-name.value-object.js';
 
-// The Admin's domain name, in the `domain-name` server setting as `{ "name": string | null }`.
 export class KyselyDomainNameRepository implements DomainNameStore {
     private static readonly settingName = 'domain-name';
 

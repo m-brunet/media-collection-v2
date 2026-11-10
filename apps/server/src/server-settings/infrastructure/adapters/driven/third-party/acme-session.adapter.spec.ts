@@ -27,7 +27,6 @@ afterEach(async () => {
     await Promise.all(directories.splice(0).map((directory) => rm(directory, { recursive: true })));
 });
 
-// A local stand-in for the Let's Encrypt directory; `account` answers the account request.
 async function letsEncryptWith(account: (response: ServerResponse) => void) {
     const server = createServer((request: IncomingMessage, response: ServerResponse) => {
         const base = 'http://127.0.0.1:' + (server.address() as AddressInfo).port;

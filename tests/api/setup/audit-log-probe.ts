@@ -13,7 +13,6 @@ export interface AuditLogRecord {
     failure: string | null;
 }
 
-// Read-only view of the technical audit log for API test assertions.
 export class AuditLogProbe {
     constructor(private readonly database: Database) {}
 

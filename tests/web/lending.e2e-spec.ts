@@ -32,7 +32,6 @@ afterEach(async () => {
     await runtime.teardown();
 });
 
-// A ready account: created by the administrator, temporary password already replaced.
 async function account(username: string, role: 'owner' | 'guest') {
     await admin.call('/users', 'POST', { username, password: 'temporary-pw', role });
     const client = new Client(base);
@@ -44,7 +43,6 @@ async function account(username: string, role: 'owner' | 'guest') {
     });
 }
 
-// Arranges data through the API, failing loudly when the server refuses it.
 async function created<T>(path: string, body: object): Promise<T> {
     const response = await admin.call<T>(path, 'POST', body);
 
@@ -55,7 +53,6 @@ async function created<T>(path: string, body: object): Promise<T> {
     return response.body;
 }
 
-// A saved Owned book without ISBN.
 async function book(title: string, overrides: Partial<NewBookDto> = {}): Promise<BookDto> {
     return created<BookDto>(
         '/books',

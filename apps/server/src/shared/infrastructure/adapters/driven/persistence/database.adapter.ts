@@ -179,7 +179,6 @@ export interface DatabaseSchema {
 
 export class Database {
     readonly connection: Kysely<DatabaseSchema>;
-    // Repositories use this to join the transaction of the operation in progress.
     readonly connections: DatabaseConnections;
 
     private constructor(file: string) {
@@ -202,8 +201,6 @@ export class Database {
         this.connections = new DatabaseConnections(this.connection);
     }
 
-    // Creates the database when needed and brings its schema up to date. Migrations that
-    // assign new identities use the application's ID generator.
     static async open(directory: string, ids: IdGenerator): Promise<Database> {
         mkdirSync(directory, { recursive: true, mode: 0o700 });
         const database = new Database(join(directory, 'application.sqlite'));

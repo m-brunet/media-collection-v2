@@ -3,8 +3,7 @@ import type { CoverTrimmer } from '../../../../application/ports/driven/cover-tr
 import { CoverPadding } from '../../../../domain/services/cover-padding.service.js';
 import { CoverImage } from '../../../../domain/value-objects/cover-image.value-object.js';
 
-// Decodes covers with sharp, lets `CoverPadding` decide, and re-encodes only a trimmed cover, in
-// its own format at high quality. Anything else is returned untouched, byte for byte.
+// Anything else is returned untouched, byte for byte.
 export class SharpCoverTrimmer implements CoverTrimmer {
     static readonly quality = 90;
 
