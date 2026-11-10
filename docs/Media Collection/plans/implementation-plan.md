@@ -26,6 +26,8 @@ Bugs, improvements and features are GitHub issues in this repository, decided on
   label is removed.
 - **The issue holds the request, the findings and the decisions.** A detailed plan, when one is needed, stays a file in
   `plans/`, linked from the issue. A pull request that resolves it says `Fixes #<number>`, which closes it on merge.
+- **Board:** the [Media Collection project](https://github.com/users/m-brunet/projects/3), columns *Ideas* (not chosen
+  yet), *Next* (chosen to be done soon), *In progress* and *Done*.
 - **Design reference:** the Doop canvas `shiKEeCX2V`, as described in [resolved issues](resolved-issues.md).
 
 ## Sources of truth
