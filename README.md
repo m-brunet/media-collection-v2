@@ -164,7 +164,7 @@ Useful focused commands: `test:architecture`, `test:unit`, `test:api`, `lint`, `
 `package:dir` creates an unpacked app under `release/`; `test:packaged` starts it outside the checkout, verifies
 HTTP/web assets (Libris and Leaf)/native SQLite, closes the window, restarts, and checks a persisted account
 preference. Set `APP_PACKAGED_EXECUTABLE` to
-test a different executable. `package` produces unsigned NSIS, DMG or AppImage output on its respective platform. No
+test a different executable. `package` produces unsigned NSIS or AppImage output on its respective platform (macOS is not supported for now). No
 separate Node/npm installation is needed by the installed app. Verification and packaging run locally; the project
 includes no continuous-integration pipeline.
 

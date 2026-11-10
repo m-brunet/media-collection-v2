@@ -10,8 +10,8 @@ Created 2026-11-03. Working plan, kept with the documentation in the Obsidian va
 4. Check [known issues and feedback](known-issues.md): an open entry in the area the task touches is handled in that task.
 5. Before stopping, update the Status table and the task plan's checklist so the next thread can continue. Never leave work uncommitted between tasks without noting it here.
 
-**Next task: Task 10 — Release readiness** (decided by the user on 2026-11-10). Start by writing its detailed plan from
-the [Task 10 brief](task-10-release-readiness.md) and get it approved. Known issues in its area: KI-14 (desktop dialogs
+**Next task: Task 10 — Release readiness** (decided by the user on 2026-11-10). In progress: detailed plan
+approved on 2026-11-10 in [Task 10](task-10-release-readiness.md). Known issues in its area: KI-14 (desktop dialogs
 and menus only in English); the credits page and installer icon follow-ups of KI-4, KI-6 and KI-11.
 
 ## Sources of truth
@@ -156,7 +156,7 @@ Inserted at the user's request (2026-11-09). Owning docs: same as Task 9.5. Plan
 ### Task 10 — Release readiness
 Owning docs: `../operations/updates.md`, `../design/design-guidelines.md`. Brief with the decisions made on 2026-11-08
 (version 2.0.0, update flow from the menu, menus, About window, backup folder, builds): [task-10-release-readiness](task-10-release-readiness.md).
-- GitHub Releases update checks, Windows integrated download/install with automatic backup, macOS/Linux backup-and-open-download-page, backup folder, failure handling.
+- GitHub Releases update checks, Windows integrated download/install with automatic backup, Linux backup-and-open-download-page (macOS dropped, 2026-11-10), backup folder, failure handling.
 - Packaging/installer naming; the installer uses the Libris icon files in `apps/desktop/assets/icons`. The icon set
   choice and the credits/licences page moved to KI-6 (2026-11-09); Task 10 checks the credits page is complete.
 

@@ -32,7 +32,7 @@ Local maintenance placement and preserved passwords are confirmed. Password hash
 
 Initially allow restoration only into the same MC application version that created the backup, including on another computer. Identify the originating version and clearly reject a different version without changing current data. Broader cross-version restoration is future scope. Same-version portability must not depend on the original computer being available.
 
-Update-time full backup is approved under [application updates](updates.md): automatic before integrated Windows installation, and through Create backup and open download page for manual macOS/Linux installation. Routine scheduled backup remains future scope.
+Update-time full backup is approved under [application updates](updates.md): automatic before integrated Windows installation, and through Create backup and open download page for manual Linux installation. Routine scheduled backup remains future scope.
 
 Backups must respect established privacy requirements; exact protection/storage techniques are technical decisions after product scope is defined. A backup feature is not an implicit v1 import feature or an account-recovery replacement.
 

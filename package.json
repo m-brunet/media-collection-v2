@@ -111,10 +111,6 @@
             "target": "nsis",
             "signAndEditExecutable": false
         },
-        "mac": {
-            "target": "dmg",
-            "category": "public.app-category.productivity"
-        },
         "linux": {
             "target": "AppImage",
             "category": "Utility",
