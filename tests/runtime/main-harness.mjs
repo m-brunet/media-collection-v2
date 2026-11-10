@@ -3,8 +3,12 @@ import { fileURLToPath } from 'node:url';
 import { mkdirSync, readFileSync, unwatchFile, watchFile } from 'node:fs';
 import { join } from 'node:path';
 
-// Desktop UI assertions use English text, whatever the language of the test computer.
-app.commandLine.appendSwitch('lang', 'en-GB');
+// Desktop UI assertions use English text, whatever the language of the test computer, unless the
+// test asks for another device language.
+const language = process.env.APP_TEST_LANGUAGE || 'en-GB';
+
+app.commandLine.appendSwitch('lang', language);
+app.getPreferredSystemLanguages = () => [language];
 // Match the app directory used by `electron .`; the test entry itself lives below tests/.
 app.getAppPath = () => fileURLToPath(new URL('../../', import.meta.url));
 // `electron .` reports the package version; this harness entry would report Electron's own.
@@ -21,9 +25,21 @@ const documents = join(process.env.APP_TEST_DATA, 'test-documents');
 mkdirSync(documents, { recursive: true });
 app.setPath('documents', documents);
 const answers = { save: [], open: [], message: [] };
+// The message boxes the application asked for, read through `dialogs`.
+const shown = [];
+const record = (options) =>
+    shown.push({ title: options.title, message: options.message, buttons: options.buttons });
 
-dialog.showMessageBox = async () => ({ response: 0, checkboxChecked: false });
-dialog.showMessageBoxSync = () => answers.message.shift() ?? 0;
+dialog.showMessageBox = async (...args) => {
+    record(args.at(-1));
+
+    return { response: 0, checkboxChecked: false };
+};
+dialog.showMessageBoxSync = (...args) => {
+    record(args.at(-1));
+
+    return answers.message.shift() ?? 0;
+};
 process.on('uncaughtException', (error) => {
     process.stderr.write('Uncaught main process error: ' + (error?.stack ?? error) + '\n');
     app.exit(1);
@@ -117,6 +133,19 @@ watchFile(process.env.APP_TEST_COMMAND_FILE, { interval: 20 }, async () => {
         } else if (request.type === 'menu') {
             Menu.getApplicationMenu().getMenuItemById(request.id).click();
             send({ type: 'clicked' });
+        } else if (request.type === 'dialogs') {
+            send({ type: 'dialogs', value: shown });
+        } else if (request.type === 'menu-labels') {
+            const labels = (menu) =>
+                menu.items.map((item) => ({
+                    id: item.id,
+                    label: item.label,
+                    role: item.role,
+                    type: item.type,
+                    ...(item.submenu ? { submenu: labels(item.submenu) } : {}),
+                }));
+
+            send({ type: 'menu-labels', value: labels(Menu.getApplicationMenu()) });
         } else if (request.type === 'window') {
             send({
                 type: 'window',

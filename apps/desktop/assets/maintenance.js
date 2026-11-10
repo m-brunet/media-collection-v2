@@ -1,5 +1,6 @@
 const texts = {
     en: {
+        windowTitle: 'Media Collection · Local maintenance',
         eyebrow: 'Local maintenance',
         title: 'Local maintenance',
         intro: 'The server is stopped while this window is open: browsers and phones cannot reach Media Collection. Close this window to start it again.',
@@ -44,6 +45,7 @@ const texts = {
         failed: 'The operation failed: {message}',
     },
     fr: {
+        windowTitle: 'Media Collection · Maintenance locale',
         eyebrow: 'Maintenance locale',
         title: 'Maintenance locale',
         intro: 'Le serveur est arrêté tant que cette fenêtre est ouverte : les navigateurs et les téléphones ne peuvent pas joindre Media Collection. Fermez cette fenêtre pour le redémarrer.',
@@ -94,7 +96,7 @@ const texts = {
 class MaintenancePage {
     constructor(bridge) {
         this.bridge = bridge;
-        this.language = navigator.language.toLowerCase().startsWith('fr') ? 'fr' : 'en';
+        this.language = bridge.language === 'fr' ? 'fr' : 'en';
         this.administrator = null;
         this.chosen = null;
     }
@@ -128,6 +130,7 @@ class MaintenancePage {
 
     render() {
         document.documentElement.lang = this.language;
+        document.title = this.text('windowTitle');
 
         for (const element of document.querySelectorAll('[data-text]')) {
             element.textContent = this.text(element.dataset.text);

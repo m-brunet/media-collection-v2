@@ -9,6 +9,8 @@ import { BackendProcess } from './backend-process.adapter.js';
 import { SetupRequestSigner } from './setup-request-signer.adapter.js';
 import { MaintenanceWindow } from './maintenance-window.adapter.js';
 import { KeepAwake } from './keep-awake.adapter.js';
+import { DesktopLanguage } from './desktop-language.util.js';
+import { DesktopTexts } from './desktop-texts.util.js';
 
 const hiddenWindows = process.env.APP_HIDDEN_WINDOWS === '1';
 const directory = dirname(fileURLToPath(import.meta.url));
@@ -20,6 +22,7 @@ const windowIcon = join(
 );
 
 app.setName('Media Collection');
+const texts = new DesktopTexts(DesktopLanguage.of(app.getPreferredSystemLanguages()));
 let backend: BackendProcess | undefined;
 let quitting = false;
 let shutdownComplete = false;
@@ -59,12 +62,12 @@ const startupOptions = (() => {
 
         return options;
     } catch (error) {
-        const message = error instanceof Error ? error.message : 'Configuration failed.';
+        const message = error instanceof Error ? error.message : texts.text('configurationFailed');
 
         if (commandLine) {
             console.error(message);
         } else {
-            dialog.showErrorBox('Invalid application configuration', message);
+            dialog.showErrorBox(texts.text('invalidConfigurationTitle'), message);
         }
 
         return undefined;
@@ -144,8 +147,8 @@ if (!startupOptions) {
             }
 
             dialog.showErrorBox(
-                'Application could not start',
-                error instanceof Error ? error.message : 'Unknown startup error.',
+                texts.text('startFailedTitle'),
+                error instanceof Error ? error.message : texts.text('unknownStartupError'),
             );
             app.quit();
         }
@@ -218,10 +221,10 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
             window.webContents.on('will-prevent-unload', (event) => {
                 const choice = dialog.showMessageBoxSync(window!, {
                     type: 'question',
-                    title: 'Unsaved changes',
-                    message: 'Leave without saving?',
-                    detail: 'The changes you made on this page will be lost.',
-                    buttons: ['Leave without saving', 'Stay'],
+                    title: texts.text('unsavedTitle'),
+                    message: texts.text('unsavedMessage'),
+                    detail: texts.text('unsavedDetail'),
+                    buttons: [texts.text('unsavedLeave'), texts.text('unsavedStay')],
                     defaultId: 1,
                     cancelId: 1,
                 });
@@ -245,9 +248,9 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
                 void (async () => {
                     const result = await dialog.showMessageBox({
                         type: 'error',
-                        title: 'Server stopped',
-                        message: 'The application server stopped. Retry to start it again.',
-                        buttons: ['Retry', 'Quit'],
+                        title: texts.text('serverStoppedTitle'),
+                        message: texts.text('serverStoppedMessage'),
+                        buttons: [texts.text('retry'), texts.text('quit')],
                         defaultId: 0,
                         cancelId: 1,
                     });
@@ -268,10 +271,10 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
             await backend.close();
             const result = await dialog.showMessageBox({
                 type: 'error',
-                title: 'Server could not start',
-                message: error instanceof Error ? error.message : 'The server failed to start.',
-                detail: 'Check the configured port and data directory, then retry.',
-                buttons: ['Retry', 'Quit'],
+                title: texts.text('serverStartTitle'),
+                message: error instanceof Error ? error.message : texts.text('serverStartFallback'),
+                detail: texts.text('serverStartDetail'),
+                buttons: [texts.text('retry'), texts.text('quit')],
                 defaultId: 0,
                 cancelId: 1,
             });
@@ -324,6 +327,7 @@ function maintenanceWindow(dataDirectory: string): MaintenanceWindow {
         pagePath: join(app.getAppPath(), 'apps/desktop/assets/maintenance.html'),
         iconPath: windowIcon,
         hidden: hiddenWindows,
+        texts,
     });
 }
 
@@ -334,11 +338,11 @@ function applicationMenu(options: ReturnType<typeof DesktopConfigurationParser.p
         { role: 'editMenu' },
         { role: 'viewMenu' },
         {
-            label: 'Maintenance',
+            label: texts.text('menuMaintenance'),
             submenu: [
                 {
                     id: 'local-maintenance',
-                    label: 'Open local maintenance…',
+                    label: texts.text('menuOpenMaintenance'),
                     click: () => void openMaintenance(options),
                 },
             ],
@@ -356,10 +360,10 @@ async function openMaintenance(
 
     const answer = await dialog.showMessageBox({
         type: 'warning',
-        title: 'Local maintenance',
-        message: 'Open local maintenance?',
-        detail: 'The server stops while maintenance is open: browsers and phones lose access until you close it. Unsaved changes in this window are lost.',
-        buttons: ['Stop the server and open maintenance', 'Cancel'],
+        title: texts.text('maintenanceTitle'),
+        message: texts.text('maintenanceMessage'),
+        detail: texts.text('maintenanceDetail'),
+        buttons: [texts.text('maintenanceConfirm'), texts.text('cancel')],
         defaultId: 1,
         cancelId: 1,
     });
