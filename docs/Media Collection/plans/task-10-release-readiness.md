@@ -321,7 +321,9 @@ Each step: tests, the relevant checks, architecture review skill on the changes,
   React, is not listed. The installer ships `LICENSE.electron.txt` and `LICENSES.chromium.html`.
 - [ ] **9. Release workflow**: `release.yml`, `operations/releasing.md`, README (installation, SmartScreen steps,
   release procedure link; the "no continuous-integration pipeline" line updated). Tried with a throwaway tag
-  (`v0.1.0-ci.1`, a draft that is deleted afterwards). The Linux AppImage is also started by hand once (WSL with
+  (`v0.1.0-ci.1`, a draft that is deleted afterwards). Changed while building it: a pull request that changes the
+  packaging runs the same builds and smoke tests without publishing (and Run workflow does too), so no throwaway tag
+  or draft is needed; publishing itself is first used by `v2.0.0`, as a draft the user reads before publishing. The Linux AppImage is also started by hand once (WSL with
   WSLg or a Linux machine): it opens, the backup folder is created.
 - [ ] **10. Going public**: the four checks under Going public, with the user; the user switches the repository to
   public.
