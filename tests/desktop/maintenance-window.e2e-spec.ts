@@ -131,7 +131,9 @@ describe('local maintenance window', () => {
             contextIsolation: true,
             maintenance: true,
         });
-        expect(bridge).toBe('undefined:chooseBackup,createBackup,language,recover,restoreBackup,status');
+        expect(bridge).toBe(
+            'undefined:chooseBackup,createBackup,language,recover,restoreBackup,status',
+        );
         await expect(client.call('/health')).rejects.toThrow();
     });
     it('names the protected Admin', async () => {

@@ -11,6 +11,7 @@ import { MaintenanceWindow } from './maintenance-window.adapter.js';
 import { KeepAwake } from './keep-awake.adapter.js';
 import { DesktopLanguage } from './desktop-language.util.js';
 import { DesktopTexts } from './desktop-texts.util.js';
+import { ApplicationMenu } from './application-menu.adapter.js';
 
 const hiddenWindows = process.env.APP_HIDDEN_WINDOWS === '1';
 const directory = dirname(fileURLToPath(import.meta.url));
@@ -138,7 +139,11 @@ if (!startupOptions) {
                 await maintenanceWindow(options.dataDirectory).open();
                 app.quit();
             } else {
-                Menu.setApplicationMenu(applicationMenu(options));
+                Menu.setApplicationMenu(
+                    new ApplicationMenu(texts, {
+                        openMaintenance: () => void openMaintenance(options),
+                    }).build(),
+                );
                 await launch(options);
             }
         } catch (error) {
@@ -329,26 +334,6 @@ function maintenanceWindow(dataDirectory: string): MaintenanceWindow {
         hidden: hiddenWindows,
         texts,
     });
-}
-
-function applicationMenu(options: ReturnType<typeof DesktopConfigurationParser.parse>): Menu {
-    return Menu.buildFromTemplate([
-        ...(process.platform === 'darwin' ? [{ role: 'appMenu' as const }] : []),
-        { role: 'fileMenu' },
-        { role: 'editMenu' },
-        { role: 'viewMenu' },
-        {
-            label: texts.text('menuMaintenance'),
-            submenu: [
-                {
-                    id: 'local-maintenance',
-                    label: texts.text('menuOpenMaintenance'),
-                    click: () => void openMaintenance(options),
-                },
-            ],
-        },
-        { role: 'windowMenu' },
-    ]);
 }
 
 async function openMaintenance(

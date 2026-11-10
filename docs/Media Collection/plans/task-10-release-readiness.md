@@ -265,8 +265,10 @@ Each step: tests, the relevant checks, architecture review skill on the changes,
   English); desktop e2e test in French (one dialog, the menu labels).
   Done: the File and View labels come with the new menu in step 3; the test harness takes a device language
   (`language` runtime option) and records the message boxes and menu labels.
-- [ ] **3. Menus**: `ApplicationMenu` (File, View, Maintenance; Edit and Window removed, no macOS menu). Desktop e2e:
+- [x] **3. Menus**: `ApplicationMenu` (File, View, Maintenance; Edit and Window removed, no macOS menu). Desktop e2e:
   the labels, Exit quits, copy and paste work in a text field.
+  Done: About and Check for updates are added to File in steps 5 and 6. The keyboard check uses Ctrl+A (select all):
+  copy and paste would overwrite the clipboard of the computer running the tests.
 - [ ] **4. Backup folder and Maintenance window**: `BackupFolder`, Open backup folder, the "After a failed update"
   section. Unit test (folder created when missing), maintenance window e2e test.
 - [ ] **5. About window**: page, preload, links, Credits and licences. Desktop e2e (version shown, links reach the
