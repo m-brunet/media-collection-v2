@@ -26,7 +26,7 @@ design.
 | KI-11 | Improvement | Server settings: QR code for each address, opening Leaf, with the Libris logo | Medium | Done |
 | KI-12 | Improvement | The address QR codes also sign the phone in to Leaf (not the HTTP internet address) | Medium | Open |
 | KI-13 | Bug | Internet access: the router rule lapses while the panel still shows it on | High | Done |
-| KI-14 | Improvement | Desktop dialogs, menus and window titles are only in English | Medium | Open |
+| KI-14 | Improvement | Desktop dialogs, menus and window titles are only in English | Medium | Done |
 | KI-15 | Bug | Activity: a shelf change and a tag change read as the same vague entry | Low | Done |
 
 ## Open
