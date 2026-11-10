@@ -22,13 +22,10 @@ Bugs, improvements and features are GitHub issues in this repository, decided on
 
 - **One issue per item**, with one type label: `bug`, `improvement` or `feature`; and the `area: …` labels it touches
   (`libris`, `leaf`, `desktop`, `server`).
-- **`needs-refinement`:** an idea dropped in whose details are still to discuss and plan; it is not started before the
-  label is removed. It always matches the *Ideas* column (kept in step when an issue moves), so the plain issue list can
-  be filtered the same way as the board.
 - **The issue holds the request, the findings and the decisions.** A detailed plan, when one is needed, stays a file in
   `plans/`, linked from the issue. A pull request that resolves it says `Fixes #<number>`, which closes it on merge.
 - **Board:** the [Media Collection project](https://github.com/users/m-brunet/projects/3), columns *Ideas* (details
-  still to discuss, `needs-refinement`), *Ready* (refined: decisions recorded in the issue, can be started any time but
+  still to discuss; not started before it moves to *Ready*), *Ready* (refined: decisions recorded in the issue, can be started any time but
   not necessarily soon), *Next* (chosen to be done soon), *In progress* and *Done*.
 - **Design reference:** the Doop canvas `shiKEeCX2V`, as described in [resolved issues](resolved-issues.md).
 
