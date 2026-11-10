@@ -100,7 +100,10 @@ powerSaveBlocker.isStarted = (id) => blockers.has(id);
 
 let requestId = 0;
 let window;
-const send = (message) => process.stdout.write(JSON.stringify({ ...message, requestId }) + '\n');
+// Each answer carries the id of its own request, so a window loading or a later request meanwhile
+// cannot take it.
+const send = (message, id = requestId) =>
+    process.stdout.write(JSON.stringify({ ...message, requestId: id }) + '\n');
 
 app.on('browser-window-created', (_event, created) => {
     window = created;
@@ -108,18 +111,22 @@ app.on('browser-window-created', (_event, created) => {
         const url = new URL(created.webContents.getURL());
         const preferences = created.webContents.getLastWebPreferences();
 
-        send({
-            type: 'window-ready',
-            httpPort: Number(url.port),
-            value: {
-                nodeIntegration: preferences.nodeIntegration,
-                sandbox: preferences.sandbox,
-                contextIsolation: preferences.contextIsolation,
-                maintenance: url.protocol === 'file:',
-                minimumSize: created.getMinimumSize(),
-                applicationName: app.getName(),
+        send(
+            {
+                type: 'window-ready',
+                httpPort: Number(url.port),
+                value: {
+                    nodeIntegration: preferences.nodeIntegration,
+                    sandbox: preferences.sandbox,
+                    contextIsolation: preferences.contextIsolation,
+                    maintenance: url.protocol === 'file:',
+                    minimumSize: created.getMinimumSize(),
+                    applicationName: app.getName(),
+                },
+                // Answers the launch only (request 0); later windows are read through `windows`.
             },
-        });
+            0,
+        );
     });
 });
 watchFile(process.env.APP_TEST_COMMAND_FILE, { interval: 20 }, async () => {
@@ -136,10 +143,11 @@ watchFile(process.env.APP_TEST_COMMAND_FILE, { interval: 20 }, async () => {
     }
 
     requestId = request.requestId;
+    const reply = (message) => send(message, request.requestId);
 
     try {
         if (request.type === 'evaluate') {
-            send({
+            reply({
                 type: 'evaluated',
                 // `userGesture` gives the page the user activation some browser features need (a
                 // `beforeunload` prompt is only shown after the person has interacted with the page).
@@ -152,10 +160,10 @@ watchFile(process.env.APP_TEST_COMMAND_FILE, { interval: 20 }, async () => {
             answers.save.push(...(request.save ?? []));
             answers.open.push(...(request.open ?? []));
             answers.message.push(...(request.message ?? []));
-            send({ type: 'answered' });
+            reply({ type: 'answered' });
         } else if (request.type === 'menu') {
             Menu.getApplicationMenu().getMenuItemById(request.id).click();
-            send({ type: 'clicked' });
+            reply({ type: 'clicked' });
         } else if (request.type === 'key') {
             // A key press as the keyboard sends it, with modifiers such as `control`.
             for (const type of ['keyDown', 'char', 'keyUp']) {
@@ -166,11 +174,11 @@ watchFile(process.env.APP_TEST_COMMAND_FILE, { interval: 20 }, async () => {
                 });
             }
 
-            send({ type: 'pressed' });
+            reply({ type: 'pressed' });
         } else if (request.type === 'opened') {
-            send({ type: 'opened', value: opened });
+            reply({ type: 'opened', value: opened });
         } else if (request.type === 'dialogs') {
-            send({ type: 'dialogs', value: shown });
+            reply({ type: 'dialogs', value: shown });
         } else if (request.type === 'menu-labels') {
             const labels = (menu) =>
                 menu.items.map((item) => ({
@@ -182,9 +190,9 @@ watchFile(process.env.APP_TEST_COMMAND_FILE, { interval: 20 }, async () => {
                     ...(item.submenu ? { submenu: labels(item.submenu) } : {}),
                 }));
 
-            send({ type: 'menu-labels', value: labels(Menu.getApplicationMenu()) });
+            reply({ type: 'menu-labels', value: labels(Menu.getApplicationMenu()) });
         } else if (request.type === 'windows') {
-            send({
+            reply({
                 type: 'windows',
                 value: BrowserWindow.getAllWindows().map((each) => ({
                     title: each.getTitle(),
@@ -192,24 +200,24 @@ watchFile(process.env.APP_TEST_COMMAND_FILE, { interval: 20 }, async () => {
                 })),
             });
         } else if (request.type === 'window') {
-            send({
+            reply({
                 type: 'window',
                 value: { url: window?.isDestroyed() ? null : window?.webContents.getURL() },
             });
         } else if (request.type === 'keep-awake') {
-            send({ type: 'keep-awake', value: [...blockers.values()] });
+            reply({ type: 'keep-awake', value: [...blockers.values()] });
         } else if (request.type === 'close-window') {
             window.close();
-            send({ type: 'closed' });
+            reply({ type: 'closed' });
         } else if (request.type === 'quit') {
             // Like the application menu's Quit: answers at once, the application may stay open.
             app.quit();
-            send({ type: 'quitting' });
+            reply({ type: 'quitting' });
         } else if (request.type === 'stop') {
             app.quit();
         }
     } catch (error) {
-        send({ type: 'failed', message: error.message });
+        reply({ type: 'failed', message: error.message });
     }
 });
 app.on('will-quit', () => {
