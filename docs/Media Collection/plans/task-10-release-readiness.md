@@ -292,7 +292,7 @@ Each step: tests, the relevant checks, architecture review skill on the changes,
   GitHub. A new installation with no data skips the backup (nothing to lose). Found and fixed on the way: a quit asked
   while the server restarts (after maintenance or a failed update backup) was ignored, so the application stayed open.
   Unpackaged runs without the test script find no release information and report the version as the latest.
-- [ ] **7. Installer**: `package.json` build settings, NSIS include with the firewall rule, icons, `repository`
+- [x] **7. Installer**: `package.json` build settings, NSIS include with the firewall rule, icons, `repository`
   and `publish` fields, one version. Local Windows build: install, check the rule (`netsh advfirewall firewall show
   rule name="Media Collection"`), start, reach it from a phone, uninstall (rule gone, data kept).
   Done: per-machine assisted NSIS installer with the Libris icon (the executable's icon too: executable editing is
@@ -310,6 +310,7 @@ Each step: tests, the relevant checks, architecture review skill on the changes,
   and the backups kept) confirmed by the user. A Windows network prompt was seen; the rules it created belong to the
   smoke test's temporary copy, which listened on the network. Now the smoke test listens on 127.0.0.1 only, and the
   installer rule covers every protocol (the router discovery uses UDP), not TCP only.
+  Accepted by the user on 2026-11-10, with the uninstaller's data choice and the English and French installer.
 - Full check after step 8 (2026-11-10): `npm run check` passed 3005 of 3006 tests; the one failure was a test-harness
   race (a window finishing its load answered another request), fixed by giving each harness answer its own request
   id; the desktop and runtime suites then passed again.
