@@ -165,8 +165,10 @@ Useful focused commands: `test:architecture`, `test:unit`, `test:api`, `lint`, `
 HTTP/web assets (Libris and Leaf)/native SQLite, closes the window, restarts, and checks a persisted account
 preference. Set `APP_PACKAGED_EXECUTABLE` to
 test a different executable. `package` produces unsigned NSIS or AppImage output on its respective platform (macOS is not supported for now). No
-separate Node/npm installation is needed by the installed app. Verification and packaging run locally; the project
-includes no continuous-integration pipeline.
+separate Node/npm installation is needed by the installed app. Verification runs locally. Release builds run on
+GitHub Actions (`.github/workflows/release.yml`): a `v*` tag builds and smoke-tests the Windows installer and the Linux
+AppImage and attaches them to a draft GitHub Release; see [releasing a version](docs/Media%20Collection/operations/releasing.md),
+which also gives the installation notes (SmartScreen on Windows, AppImage on Linux).
 
 Oxlint runs selected `@stylistic/eslint-plugin` rules to require braces, multiline block bodies, one instruction per
 line, and blank lines around control statements and before returns. Consecutive declarations stay grouped; test files

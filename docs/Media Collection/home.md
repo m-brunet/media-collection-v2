@@ -36,6 +36,7 @@ Start with the [implementation plan](plans/implementation-plan.md) for task stat
 - [Configuration](operations/configuration.md): everyday settings and startup overrides.
 - [Release expectations](operations/release-expectations.md): distribution, languages, and data safety.
 - [Application updates](operations/updates.md): release checks and installation.
+- [Releasing a version](operations/releasing.md): version, tag, the release workflow, draft and publication.
 
 ## Plans
 

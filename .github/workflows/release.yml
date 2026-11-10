@@ -1,0 +1,98 @@
+# Release builds, one runner per system: better-sqlite3, sharp and Electron are native per system.
+# - A version tag (v2.0.0) builds the Windows installer and the Linux AppImage, checks each one with
+#   the packaged smoke test, and attaches them to a draft GitHub Release. The maintainer reads the
+#   draft and publishes it; only a published release is offered as an update.
+# - A pull request that changes the packaging, or Run workflow, only builds and checks, and keeps the
+#   files on the run page for a week.
+# The full `npm run check` stays local, before tagging (see docs/Media Collection/operations/releasing.md).
+name: Release
+
+on:
+    push:
+        tags: ['v*']
+    pull_request:
+        paths:
+            - '.github/workflows/release.yml'
+            - 'build/**'
+            - 'package.json'
+            - 'package-lock.json'
+            - 'tools/packaged-smoke.mjs'
+    workflow_dispatch:
+
+permissions:
+    contents: write
+
+jobs:
+    build:
+        name: ${{ matrix.name }}
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - name: Windows
+                      os: windows-latest
+                      target: --win
+                      unpacked: release/win-unpacked
+                    - name: Linux
+                      os: ubuntu-latest
+                      target: --linux
+                      unpacked: release/linux-unpacked
+        runs-on: ${{ matrix.os }}
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 24
+                  cache: npm
+
+            - name: Check that the tag is the package version
+              if: startsWith(github.ref, 'refs/tags/')
+              shell: bash
+              run: test "v$(node -p "require('./package.json').version")" = "$GITHUB_REF_NAME"
+
+            # Install scripts stay off, as locally: the native modules come as prebuilt binaries, and
+            # electron-builder downloads Electron itself.
+            - name: Install
+              run: npm ci --ignore-scripts
+
+            - name: Build
+              run: npm run build
+
+            - name: Package
+              run: npx electron-builder ${{ matrix.target }} --publish never
+
+            # Electron's sandbox needs user namespaces, which Ubuntu restricts by default; the smoke
+            # test needs a display.
+            - name: Prepare Linux for Electron
+              if: runner.os == 'Linux'
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y xvfb
+                  sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
+            - name: Packaged smoke test
+              shell: bash
+              run: |
+                  if [ "$RUNNER_OS" = "Linux" ]; then
+                      xvfb-run -a npm run test:packaged
+                  else
+                      npm run test:packaged
+                  fi
+
+            - name: Attach to the draft release
+              if: startsWith(github.ref, 'refs/tags/')
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: npx electron-builder ${{ matrix.target }} --prepackaged ${{ matrix.unpacked }} --publish always
+
+            - name: Keep the build on the run page
+              if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+              uses: actions/upload-artifact@v4
+              with:
+                  name: ${{ matrix.name }}
+                  path: |
+                      release/*.exe
+                      release/*.AppImage
+                      release/latest*.yml
+                  retention-days: 7
