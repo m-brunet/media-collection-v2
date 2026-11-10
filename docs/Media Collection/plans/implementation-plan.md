@@ -10,6 +10,10 @@ Created 2026-11-03. Working plan, kept with the documentation in the Obsidian va
 4. Check [known issues and feedback](known-issues.md): an open entry in the area the task touches is handled in that task.
 5. Before stopping, update the Status table and the task plan's checklist so the next thread can continue. Never leave work uncommitted between tasks without noting it here.
 
+**Next task: Task 10 — Release readiness** (decided by the user on 2026-11-10). Start by writing its detailed plan from
+the [Task 10 brief](task-10-release-readiness.md) and get it approved. Known issues in its area: KI-14 (desktop dialogs
+and menus only in English); the credits page and installer icon follow-ups of KI-4, KI-6 and KI-11.
+
 ## Sources of truth
 
 - Product rules: `docs/Media Collection/product/` (start with [product-scope](../product/product-scope.md), [features](../product/features.md), [decisions-and-open-questions](../product/decisions-and-open-questions.md)). Each task names its owning documents. Acceptance examples in those documents are test cases.
@@ -190,8 +194,8 @@ Implemented on 2026-11-06 as `npm run dev:reset-data` and `npm run dev:import-v1
 | 7 Leaf (mobile) | Done (2026-11-07), PR #3 merged | [task-07-leaf](task-07-leaf.md) | Shopping, mark Owned, scanning without HTTPS (live camera or barcode photo), own phone form and covers; credits listed in its plan; see its notes for later tasks |
 | 8 Overview and Activity | Done (2026-11-08), PR #4 merged | [task-08-overview-activity](task-08-overview-activity.md) | `/` opens Overview; Activity from the audit log, one entry per operation; Mark Owned audited as `book.marked-owned`; see its notes for later tasks |
 | 9 Host maintenance | Done (2026-11-08), PR #5 merged | [task-09-host-maintenance](task-09-host-maintenance.md) | Maintenance window from the desktop menu or `--maintenance`: Admin recovery (audited), `.mcbackup` backup and same-version restore; Admin data reset on the Accounts page; see its notes for later tasks |
-| 9.5 Internet access and HTTPS | In progress (plan approved 2026-11-08); branch `task-09-5-internet-access-https` | [task-09-5-internet-access-https](task-09-5-internet-access-https.md) | Inserted at the user's request; brief records the analysis, open questions and deferred options |
-| 9.6 Domain name and HTTP internet access | Implemented (2026-11-09), real-world check and pull request pending; branch `task-09-6-internet-access-domain-name` | [task-09-6-internet-access-domain-name](task-09-6-internet-access-domain-name.md) | Inserted at the user's request; no DNS provider API |
-| 10 Release readiness | Not started; decisions recorded (2026-11-08) | [task-10-release-readiness](task-10-release-readiness.md) (brief; detailed plan after 9.5) | First release 2.0.0 |
+| 9.5 Internet access and HTTPS | Done, PR #6 merged | [task-09-5-internet-access-https](task-09-5-internet-access-https.md) | Inserted at the user's request; brief records the analysis, open questions and deferred options. Its real-world check (step 11) is not ticked in its plan; KI-13 (router rule renewal) fixed, PR #13 merged |
+| 9.6 Domain name and HTTP internet access | Done (2026-11-09), PR #11 merged | [task-09-6-internet-access-domain-name](task-09-6-internet-access-domain-name.md) | Inserted at the user's request; no DNS provider API. Its real-world check (step 9) is not ticked in its plan |
+| 10 Release readiness | **Next** (2026-11-10); not started, decisions recorded (2026-11-08) | [task-10-release-readiness](task-10-release-readiness.md) (brief; detailed plan to write first) | First release 2.0.0 |
 
 Pre-implementation fixes done (2026-11-03): docs/design decisions recorded, foundation formatted with oxfmt, `whoami`/`icacls` resolved from System32, `npm run check` order fixed. Full check passes (41 files, 409 tests).
