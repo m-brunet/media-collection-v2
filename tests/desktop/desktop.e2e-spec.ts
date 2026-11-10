@@ -306,6 +306,7 @@ interface MenuLabel {
     id: string | null;
     label: string;
     role?: string;
+    enabled?: boolean;
     type: string;
     submenu?: MenuLabel[];
 }
@@ -346,6 +347,16 @@ describe('application menu', () => {
             label: 'Exit',
             role: 'quit',
             type: 'normal',
+        });
+    });
+    it('shows Check for updates disabled while the releases are not published', async () => {
+        const current = await setupPage();
+
+        const menu = await menuLabels(current.runtime);
+
+        expect(menu[0]?.submenu?.find((item) => item.id === 'updates')).toMatchObject({
+            label: 'Check for updates…',
+            enabled: false,
         });
     });
     it('labels the menus in French on a French device', async () => {

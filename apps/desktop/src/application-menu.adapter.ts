@@ -3,6 +3,9 @@ import { Menu } from 'electron';
 import type { DesktopTexts } from './desktop-texts.util.js';
 import type { UpdateState } from './application-updates.service.js';
 
+// `off`: updates are not offered yet (see UpdateChannel); the item shows, disabled.
+export type UpdateMenuState = UpdateState | { kind: 'off' };
+
 export interface ApplicationMenuActions {
     openAbout(): void;
     updates(): void;
@@ -18,11 +21,11 @@ export class ApplicationMenu {
     ) {}
 
     // The update item follows the update: checking, downloading, then ready to install.
-    build(updates: UpdateState): Menu {
+    build(updates: UpdateMenuState): Menu {
         return Menu.buildFromTemplate([this.file(updates), this.view(), this.maintenance()]);
     }
 
-    private file(updates: UpdateState): MenuItemConstructorOptions {
+    private file(updates: UpdateMenuState): MenuItemConstructorOptions {
         return {
             id: 'file',
             label: this.texts.text('menuFile'),
@@ -39,7 +42,7 @@ export class ApplicationMenu {
         };
     }
 
-    private updates(state: UpdateState): MenuItemConstructorOptions {
+    private updates(state: UpdateMenuState): MenuItemConstructorOptions {
         const label =
             state.kind === 'checking'
                 ? this.texts.text('menuChecking')
