@@ -301,3 +301,90 @@ describe('desktop lifecycle and renderer', () => {
         await expect(client.call('/health')).rejects.toThrow();
     });
 });
+
+interface MenuLabel {
+    id: string | null;
+    label: string;
+    role?: string;
+    type: string;
+    submenu?: MenuLabel[];
+}
+
+async function menuLabels(runtime: ElectronRuntime) {
+    return (await runtime.send({ type: 'menu-labels' })).value as MenuLabel[];
+}
+
+async function setupPage(language?: string) {
+    const current = await fixture.start(undefined, { main: true, language });
+
+    await waitFor(current.runtime, "Boolean(document.querySelector('[name=username]'))");
+
+    return current;
+}
+
+describe('application menu', () => {
+    it('has only the File, View and Maintenance menus', async () => {
+        const current = await setupPage();
+
+        const menu = await menuLabels(current.runtime);
+
+        expect(menu.map((item) => item.label)).toEqual(['File', 'View', 'Maintenance']);
+    });
+    it('offers Exit in the File menu', async () => {
+        const current = await setupPage();
+
+        const menu = await menuLabels(current.runtime);
+
+        expect(menu[0]?.submenu).toEqual([
+            { id: 'exit', label: 'Exit', role: 'quit', type: 'normal' },
+        ]);
+    });
+    it('labels the menus in French on a French device', async () => {
+        const current = await setupPage('fr-FR');
+
+        const menu = await menuLabels(current.runtime);
+
+        expect(menu.map((item) => item.label)).toEqual(['Fichier', 'Affichage', 'Maintenance']);
+        expect(menu[0]?.submenu?.[0]?.label).toBe('Quitter');
+        expect(menu[1]?.submenu?.map((item) => item.label)).toEqual([
+            'Actualiser',
+            'Forcer l’actualisation',
+            'Outils de développement',
+            '',
+            'Taille réelle',
+            'Zoom avant',
+            'Zoom arrière',
+            '',
+            'Plein écran',
+        ]);
+    });
+    it('quits the application from File, Exit', async () => {
+        const current = await setupPage();
+
+        await current.runtime.send({ type: 'menu', id: 'exit' });
+
+        await current.runtime.exited;
+        await expect(current.client.call('/health')).rejects.toThrow();
+    });
+    it('selects all the text of a field with Ctrl+A without an Edit menu', async () => {
+        const current = await setupPage();
+
+        await evaluate(
+            current.runtime,
+            "const field=document.querySelector('[name=username]');field.value='librarian';field.focus();field.setSelectionRange(0,0);true",
+        );
+
+        await current.runtime.send({ type: 'key', keyCode: 'A', modifiers: ['control'] });
+
+        await waitFor(
+            current.runtime,
+            "document.querySelector('[name=username]').selectionEnd === 'librarian'.length",
+        );
+        expect(
+            await evaluate(
+                current.runtime,
+                "document.querySelector('[name=username]').selectionStart",
+            ),
+        ).toBe(0);
+    });
+});

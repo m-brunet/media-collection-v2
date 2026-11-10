@@ -133,6 +133,17 @@ watchFile(process.env.APP_TEST_COMMAND_FILE, { interval: 20 }, async () => {
         } else if (request.type === 'menu') {
             Menu.getApplicationMenu().getMenuItemById(request.id).click();
             send({ type: 'clicked' });
+        } else if (request.type === 'key') {
+            // A key press as the keyboard sends it, with modifiers such as `control`.
+            for (const type of ['keyDown', 'char', 'keyUp']) {
+                window.webContents.sendInputEvent({
+                    type,
+                    keyCode: request.keyCode,
+                    modifiers: request.modifiers ?? [],
+                });
+            }
+
+            send({ type: 'pressed' });
         } else if (request.type === 'dialogs') {
             send({ type: 'dialogs', value: shown });
         } else if (request.type === 'menu-labels') {
