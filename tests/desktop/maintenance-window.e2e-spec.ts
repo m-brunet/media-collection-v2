@@ -375,7 +375,7 @@ describe('desktop texts on a French device', () => {
         await waitForWindow(current.runtime, 'file:');
         const dialogs = (await current.runtime.send({ type: 'dialogs' })).value;
 
-        expect(dialogs).toEqual([
+        expect(dialogs).toMatchObject([
             {
                 title: 'Maintenance locale',
                 message: 'Ouvrir la maintenance locale ?',

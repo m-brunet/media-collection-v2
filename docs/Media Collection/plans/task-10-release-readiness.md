@@ -277,12 +277,16 @@ Each step: tests, the relevant checks, architecture review skill on the changes,
   installer adds in step 7 (Start menu, starts the application with `--maintenance`).
 - [x] **5. About window**: page, preload, links, Credits and licences. Desktop e2e (version shown, links reach the
   stand-in `shell`, credits opens `/credits` in the Libris window).
-- [ ] **6. Update flow**: `electron-updater`, `UpdateSource` and stand-in, `ApplicationUpdates`, `UpdateDialogs`,
+- [x] **6. Update flow**: `electron-updater`, `UpdateSource` and stand-in, `ApplicationUpdates`, `UpdateDialogs`,
   `BackupBeforeUpdate`, menu item states, startup check. Unit tests of `ApplicationUpdates` (every state change and
   rule above); desktop e2e with the stand-in for each acceptance example in `updates.md`: up to date, available, check
   failed + Retry, startup silent, download while the server answers HTTP, Restart and install makes the backup before
   the install call, backup failure blocks the install and restarts the server, Linux flow opens the page only after the
   backup.
+  Done: `electron-updater` 6.8.11; `ScriptedUpdateSource` (`APP_TEST_UPDATES`, unpackaged runs only) stands in for
+  GitHub. A new installation with no data skips the backup (nothing to lose). Found and fixed on the way: a quit asked
+  while the server restarts (after maintenance or a failed update backup) was ignored, so the application stayed open.
+  Unpackaged runs without the test script find no release information and report the version as the latest.
 - [ ] **7. Installer**: `package.json` build settings, NSIS include with the firewall rule, icons, `repository`
   and `publish` fields, one version. Local Windows build: install, check the rule (`netsh advfirewall firewall show
   rule name="Media Collection"`), start, reach it from a phone, uninstall (rule gone, data kept).

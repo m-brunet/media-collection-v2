@@ -24,16 +24,26 @@ const documents = join(process.env.APP_TEST_DATA, 'test-documents');
 
 mkdirSync(documents, { recursive: true });
 app.setPath('documents', documents);
-const answers = { save: [], open: [], message: [] };
+// `APP_TEST_DIALOG_ANSWERS`: message box answers ready before the application asks anything.
+const answers = {
+    save: [],
+    open: [],
+    message: JSON.parse(process.env.APP_TEST_DIALOG_ANSWERS || '[]'),
+};
 // The message boxes the application asked for, read through `dialogs`.
 const shown = [];
 const record = (options) =>
-    shown.push({ title: options.title, message: options.message, buttons: options.buttons });
+    shown.push({
+        title: options.title,
+        message: options.message,
+        detail: options.detail,
+        buttons: options.buttons,
+    });
 
 dialog.showMessageBox = async (...args) => {
     record(args.at(-1));
 
-    return { response: 0, checkboxChecked: false };
+    return { response: answers.message.shift() ?? 0, checkboxChecked: false };
 };
 dialog.showMessageBoxSync = (...args) => {
     record(args.at(-1));
@@ -168,6 +178,7 @@ watchFile(process.env.APP_TEST_COMMAND_FILE, { interval: 20 }, async () => {
                     label: item.label,
                     role: item.role,
                     type: item.type,
+                    enabled: item.enabled,
                     ...(item.submenu ? { submenu: labels(item.submenu) } : {}),
                 }));
 

@@ -1,4 +1,10 @@
 import { app, BrowserWindow, dialog, Menu, shell } from 'electron';
+import type { UpdateSource } from './application-updates.service.js';
+import { ApplicationUpdates } from './application-updates.service.js';
+import { ElectronUpdaterSource } from './electron-updater-source.adapter.js';
+import { ScriptedUpdateSource } from './scripted-update-source.adapter.js';
+import { NativeUpdateDialogs } from './update-dialogs.adapter.js';
+import { UpdateBackup } from './update-backup.adapter.js';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { mkdirSync } from 'node:fs';
@@ -32,8 +38,11 @@ let shutdownComplete = false;
 let window: BrowserWindow | undefined;
 let restarting = false;
 let maintaining = false;
+// Quit was asked while the Libris window was open; cleared when its page keeps it open (Stay).
+let quitRequested = false;
 const setupSigner = new SetupRequestSigner();
 const keepAwake = new KeepAwake();
+const backupFolder = new BackupFolder(app.getPath('documents'));
 const aboutWindow = new AboutWindow({
     preloadPath: join(directory, 'about-preload.cjs'),
     pagePath: join(app.getAppPath(), 'apps/desktop/assets/about.html'),
@@ -105,7 +114,8 @@ if (!startupOptions) {
         }
     });
     app.on('window-all-closed', () => {
-        if (!restarting && !maintaining) {
+        // A quit asked while the server restarts (after maintenance or an update backup) goes on.
+        if (quitRequested || (!restarting && !maintaining)) {
             app.quit();
         }
     });
@@ -124,6 +134,7 @@ if (!startupOptions) {
         // (Stay), and then the server must keep running. Once it is closed, `window-all-closed`
         // quits again and the shutdown continues below.
         if (window && !window.isDestroyed()) {
+            quitRequested = true;
             window.close();
 
             return;
@@ -149,13 +160,14 @@ if (!startupOptions) {
                 await maintenanceWindow(options.dataDirectory).open();
                 app.quit();
             } else {
-                Menu.setApplicationMenu(
-                    new ApplicationMenu(texts, {
-                        openAbout: () => void aboutWindow.open(window),
-                        openMaintenance: () => void openMaintenance(options),
-                    }).build(),
-                );
+                const updates = applicationUpdates(options);
+
                 await launch(options);
+                // Never delays the window; silent unless an update is available.
+                setTimeout(
+                    () => void updates.checkAtStartup(),
+                    process.env.APP_TEST_UPDATES ? 0 : 5000,
+                );
             }
         } catch (error) {
             if (quitting) {
@@ -247,6 +259,8 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
 
                 if (choice === 0) {
                     event.preventDefault();
+                } else {
+                    quitRequested = false;
                 }
             });
             await window.loadURL(url);
@@ -344,8 +358,65 @@ function maintenanceWindow(dataDirectory: string): MaintenanceWindow {
         iconPath: windowIcon,
         hidden: hiddenWindows,
         texts,
-        backupFolder: new BackupFolder(app.getPath('documents')),
+        backupFolder,
     });
+}
+
+// The update flow from the File menu. Test launches script the releases (`APP_TEST_UPDATES`);
+// outside a packaged application electron-updater finds no release information.
+function applicationUpdates(
+    options: ReturnType<typeof DesktopConfigurationParser.parse>,
+): ApplicationUpdates {
+    const source: UpdateSource =
+        (!app.isPackaged
+            ? ScriptedUpdateSource.fromEnvironment(process.env.APP_TEST_UPDATES)
+            : undefined) ?? new ElectronUpdaterSource();
+    const backup = new UpdateBackup({
+        workerPath: join(directory, 'worker.js'),
+        dataDirectory: options.dataDirectory,
+        folder: backupFolder,
+    });
+    const menu = new ApplicationMenu(texts, {
+        openAbout: () => void aboutWindow.open(window),
+        updates: () => void updates.chooseFromMenu(),
+        openMaintenance: () => void openMaintenance(options),
+    });
+    const updates: ApplicationUpdates = new ApplicationUpdates(
+        source,
+        new NativeUpdateDialogs(texts),
+        {
+            stopServer: () => stopServerForUpdate(),
+            backup: (update) => backup.make(update),
+            startServer: () => startServerAfterUpdate(options),
+            openPage: (address) => shell.openExternal(address),
+        },
+        (state) => Menu.setApplicationMenu(menu.build(state)),
+    );
+
+    Menu.setApplicationMenu(menu.build(updates.current()));
+
+    return updates;
+}
+
+// Like opening maintenance: the server and the Libris window stop, without the unsaved-changes
+// question (the update confirmation is the only one).
+async function stopServerForUpdate(): Promise<void> {
+    maintaining = true;
+    await backend?.close();
+    backend = undefined;
+    window?.destroy();
+}
+
+async function startServerAfterUpdate(
+    options: ReturnType<typeof DesktopConfigurationParser.parse>,
+): Promise<void> {
+    try {
+        if (!quitting) {
+            await launch(options);
+        }
+    } finally {
+        maintaining = false;
+    }
 }
 
 // The credits page in the Libris window, which comes to the front.

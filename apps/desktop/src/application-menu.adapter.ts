@@ -1,9 +1,11 @@
 import type { MenuItemConstructorOptions } from 'electron';
 import { Menu } from 'electron';
 import type { DesktopTexts } from './desktop-texts.util.js';
+import type { UpdateState } from './application-updates.service.js';
 
 export interface ApplicationMenuActions {
     openAbout(): void;
+    updates(): void;
     openMaintenance(): void;
 }
 
@@ -15,11 +17,12 @@ export class ApplicationMenu {
         private readonly actions: ApplicationMenuActions,
     ) {}
 
-    build(): Menu {
-        return Menu.buildFromTemplate([this.file(), this.view(), this.maintenance()]);
+    // The update item follows the update: checking, downloading, then ready to install.
+    build(updates: UpdateState): Menu {
+        return Menu.buildFromTemplate([this.file(updates), this.view(), this.maintenance()]);
     }
 
-    private file(): MenuItemConstructorOptions {
+    private file(updates: UpdateState): MenuItemConstructorOptions {
         return {
             id: 'file',
             label: this.texts.text('menuFile'),
@@ -29,9 +32,28 @@ export class ApplicationMenu {
                     label: this.texts.text('menuAbout'),
                     click: () => this.actions.openAbout(),
                 },
+                this.updates(updates),
                 { type: 'separator' },
                 { id: 'exit', role: 'quit', label: this.texts.text('menuExit') },
             ],
+        };
+    }
+
+    private updates(state: UpdateState): MenuItemConstructorOptions {
+        const label =
+            state.kind === 'checking'
+                ? this.texts.text('menuChecking')
+                : state.kind === 'downloading'
+                  ? this.texts.text('menuDownloading', { version: state.update.version })
+                  : state.kind === 'ready'
+                    ? this.texts.text('menuInstall', { version: state.update.version })
+                    : this.texts.text('menuCheckForUpdates');
+
+        return {
+            id: 'updates',
+            label,
+            enabled: state.kind === 'idle' || state.kind === 'ready',
+            click: () => this.actions.updates(),
         };
     }
 

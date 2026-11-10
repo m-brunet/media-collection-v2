@@ -330,17 +330,18 @@ describe('application menu', () => {
 
         expect(menu.map((item) => item.label)).toEqual(['File', 'View', 'Maintenance']);
     });
-    it('offers About and Exit in the File menu', async () => {
+    it('offers About, Check for updates and Exit in the File menu', async () => {
         const current = await setupPage();
 
         const menu = await menuLabels(current.runtime);
 
         expect(menu[0]?.submenu?.map((item) => item.label)).toEqual([
             'About Media Collection',
+            'Check for updates…',
             '',
             'Exit',
         ]);
-        expect(menu[0]?.submenu?.at(-1)).toEqual({
+        expect(menu[0]?.submenu?.at(-1)).toMatchObject({
             id: 'exit',
             label: 'Exit',
             role: 'quit',
@@ -355,6 +356,7 @@ describe('application menu', () => {
         expect(menu.map((item) => item.label)).toEqual(['Fichier', 'Affichage', 'Maintenance']);
         expect(menu[0]?.submenu?.map((item) => item.label)).toEqual([
             'À propos de Media Collection',
+            'Rechercher des mises à jour…',
             '',
             'Quitter',
         ]);
@@ -406,7 +408,7 @@ describe('About window', () => {
         const current = await setupPage(language);
 
         await current.runtime.send({ type: 'menu', id: 'about' });
-        await waitFor(current.runtime, "document.getElementById('version')?.textContent !== ''");
+        await waitFor(current.runtime, "Boolean(document.getElementById('version')?.textContent)");
 
         return current;
     }

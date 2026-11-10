@@ -35,6 +35,31 @@ const english = {
     menuExit: 'Exit',
     menuAbout: 'About Media Collection',
     aboutWindowTitle: 'About Media Collection',
+    updateTitle: 'Media Collection update',
+    upToDateMessage: 'You have the latest version ({version}).',
+    ok: 'OK',
+    availableMessage: 'Version {version} is available.',
+    availableDetailIntegrated:
+        'Download it now: Media Collection keeps working while it downloads, for browsers and phones too.',
+    availableDetailManual:
+        'Media Collection first saves a full backup, then opens the download page. The server stops during the backup: browsers and phones lose access for a moment.',
+    download: 'Download',
+    backupAndOpen: 'Create backup and open download page',
+    later: 'Later',
+    checkFailedMessage: 'Media Collection could not check for updates.',
+    checkFailedDetail: 'Check the internet connection, then retry. ({message})',
+    close: 'Close',
+    downloadFailedMessage: 'Version {version} could not be downloaded.',
+    readyMessage: 'Version {version} is ready.',
+    readyDetail:
+        'Media Collection saves a full backup, then restarts to install it. Browsers and phones connected to it lose access for a moment.',
+    restartAndInstall: 'Restart and install',
+    backupFailedMessage: 'The backup before the update could not be saved.',
+    backupFailedDetail: 'Nothing is installed without this backup. ({message})',
+    menuCheckForUpdates: 'Check for updates…',
+    menuChecking: 'Checking for updates…',
+    menuDownloading: 'Downloading version {version}…',
+    menuInstall: 'Restart and install version {version}…',
     menuReload: 'Reload',
     menuForceReload: 'Force reload',
     menuDeveloperTools: 'Toggle developer tools',
@@ -81,6 +106,31 @@ const french: Record<DesktopTextKey, string> = {
     menuExit: 'Quitter',
     menuAbout: 'À propos de Media Collection',
     aboutWindowTitle: 'À propos de Media Collection',
+    updateTitle: 'Mise à jour de Media Collection',
+    upToDateMessage: 'Vous avez la dernière version ({version}).',
+    ok: 'OK',
+    availableMessage: 'La version {version} est disponible.',
+    availableDetailIntegrated:
+        'Téléchargez-la maintenant : Media Collection reste utilisable pendant le téléchargement, y compris pour les navigateurs et les téléphones.',
+    availableDetailManual:
+        'Media Collection enregistre d’abord une sauvegarde complète, puis ouvre la page de téléchargement. Le serveur s’arrête pendant la sauvegarde : les navigateurs et les téléphones perdent l’accès un instant.',
+    download: 'Télécharger',
+    backupAndOpen: 'Créer une sauvegarde et ouvrir la page de téléchargement',
+    later: 'Plus tard',
+    checkFailedMessage: 'Media Collection n’a pas pu rechercher de mises à jour.',
+    checkFailedDetail: 'Vérifiez la connexion à internet, puis réessayez. ({message})',
+    close: 'Fermer',
+    downloadFailedMessage: 'La version {version} n’a pas pu être téléchargée.',
+    readyMessage: 'La version {version} est prête.',
+    readyDetail:
+        'Media Collection enregistre une sauvegarde complète, puis redémarre pour l’installer. Les navigateurs et les téléphones connectés perdent l’accès un instant.',
+    restartAndInstall: 'Redémarrer et installer',
+    backupFailedMessage: 'La sauvegarde avant la mise à jour n’a pas pu être enregistrée.',
+    backupFailedDetail: 'Rien n’est installé sans cette sauvegarde. ({message})',
+    menuCheckForUpdates: 'Rechercher des mises à jour…',
+    menuChecking: 'Recherche de mises à jour…',
+    menuDownloading: 'Téléchargement de la version {version}…',
+    menuInstall: 'Redémarrer et installer la version {version}…',
     menuReload: 'Actualiser',
     menuForceReload: 'Forcer l’actualisation',
     menuDeveloperTools: 'Outils de développement',
@@ -98,7 +148,11 @@ export class DesktopTexts {
 
     constructor(readonly language: DesktopLanguageCode) {}
 
-    text(key: DesktopTextKey): string {
-        return DesktopTexts.catalogue[this.language][key];
+    // `{name}` placeholders take their value from `values`.
+    text(key: DesktopTextKey, values: Record<string, string> = {}): string {
+        return DesktopTexts.catalogue[this.language][key].replace(
+            /\{(\w+)\}/g,
+            (placeholder, name: string) => values[name] ?? placeholder,
+        );
     }
 }
