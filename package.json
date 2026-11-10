@@ -139,7 +139,12 @@
             "uninstallerIcon": "apps/desktop/assets/icons/libris.ico",
             "include": "build/installer.nsh",
             "artifactName": "Media-Collection-Setup-${version}.${ext}",
-            "deleteAppDataOnUninstall": false
+            "deleteAppDataOnUninstall": false,
+            "installerLanguages": [
+                "en_US",
+                "fr_FR"
+            ],
+            "multiLanguageInstaller": true
         },
         "linux": {
             "target": "AppImage",
