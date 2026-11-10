@@ -1,4 +1,4 @@
-import { app, dialog, Menu, powerSaveBlocker } from 'electron';
+import { app, dialog, Menu, powerSaveBlocker, shell } from 'electron';
 import { fileURLToPath } from 'node:url';
 import { mkdirSync, readFileSync, unwatchFile, watchFile } from 'node:fs';
 import { join } from 'node:path';
@@ -56,6 +56,19 @@ dialog.showOpenDialog = async () => {
     const filePath = answers.open.shift();
 
     return { canceled: filePath === undefined, filePaths: filePath ? [filePath] : [] };
+};
+
+// Folders and pages the application opens, read through `opened`, without opening anything on the
+// test computer.
+const opened = { paths: [], external: [] };
+
+shell.openPath = async (path) => {
+    opened.paths.push(path);
+
+    return '';
+};
+shell.openExternal = async (url) => {
+    opened.external.push(url);
 };
 
 // Records the sleep blockers the application holds, so tests can read them through `keep-awake`
@@ -144,6 +157,8 @@ watchFile(process.env.APP_TEST_COMMAND_FILE, { interval: 20 }, async () => {
             }
 
             send({ type: 'pressed' });
+        } else if (request.type === 'opened') {
+            send({ type: 'opened', value: opened });
         } else if (request.type === 'dialogs') {
             send({ type: 'dialogs', value: shown });
         } else if (request.type === 'menu-labels') {

@@ -20,6 +20,17 @@ const texts = {
             'Saves all application data in one file: books and covers, collections, bookcases, tags, accounts and passwords, reading statuses, private notes, loans, history and settings.',
         backupPrivate: 'The file holds private notes and account data: keep it somewhere private.',
         backupButton: 'Create a backup…',
+        openFolderButton: 'Open backup folder',
+        failedUpdateTitle: 'After a failed update',
+        failedUpdateIntro:
+            'Before installing an update, Media Collection saves a full backup in the backup folder. If the new version does not start or your data looks wrong:',
+        failedUpdateReinstall:
+            'Download the version you had before from the releases page and install it.',
+        failedUpdateOpen:
+            'If Media Collection does not start, open this window with the Media Collection maintenance shortcut, or by starting Media Collection with --maintenance.',
+        failedUpdateRestore:
+            'Restore the backup made before the update: its name ends with “before” and the new version number.',
+        releasesButton: 'Open the releases page',
         backedUp: 'Backup saved: {file}',
         restoreTitle: 'Restore a backup',
         restoreIntro:
@@ -66,6 +77,17 @@ const texts = {
         backupPrivate:
             'Le fichier contient des notes privées et les données des comptes : gardez-le en lieu sûr.',
         backupButton: 'Créer une sauvegarde…',
+        openFolderButton: 'Ouvrir le dossier des sauvegardes',
+        failedUpdateTitle: 'Après une mise à jour qui a échoué',
+        failedUpdateIntro:
+            'Avant d’installer une mise à jour, Media Collection enregistre une sauvegarde complète dans le dossier des sauvegardes. Si la nouvelle version ne démarre pas ou si vos données semblent incorrectes :',
+        failedUpdateReinstall:
+            'Téléchargez la version que vous aviez avant depuis la page des versions et installez-la.',
+        failedUpdateOpen:
+            'Si Media Collection ne démarre pas, ouvrez cette fenêtre avec le raccourci Media Collection maintenance, ou en lançant Media Collection avec --maintenance.',
+        failedUpdateRestore:
+            'Restaurez la sauvegarde faite avant la mise à jour : son nom se termine par « before » et le numéro de la nouvelle version.',
+        releasesButton: 'Ouvrir la page des versions',
         backedUp: 'Sauvegarde enregistrée : {file}',
         restoreTitle: 'Restaurer une sauvegarde',
         restoreIntro:
@@ -112,6 +134,8 @@ class MaintenancePage {
             void this.recover();
         });
         this.element('create-backup').addEventListener('click', () => void this.createBackup());
+        this.element('open-backup-folder').addEventListener('click', () => void this.openFolder());
+        this.element('open-releases').addEventListener('click', () => void this.openReleases());
         this.element('choose-backup').addEventListener('click', () => void this.chooseBackup());
         this.element('restore-confirm').addEventListener('change', () =>
             this.updateRestoreButton(),
@@ -180,6 +204,18 @@ class MaintenancePage {
                     : this.failure(result),
             );
         }
+    }
+
+    async openFolder() {
+        const result = await this.busy('open-backup-folder', () => this.bridge.openBackupFolder());
+
+        this.say('backup-result', result.success ? '' : this.failure(result));
+    }
+
+    async openReleases() {
+        const result = await this.busy('open-releases', () => this.bridge.openReleases());
+
+        this.say('failed-update-result', result.success ? '' : this.failure(result));
     }
 
     async chooseBackup() {

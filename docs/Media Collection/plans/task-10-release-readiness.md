@@ -219,7 +219,8 @@ keep working in text fields on Windows and Linux without the Edit menu (checked 
   never published) so there is one number.
 - **Windows (NSIS):** assisted installer (not one-click), **per machine** in Program Files (chosen by the user on 2026-11-10), Libris
   icon (`apps/desktop/assets/icons/libris.ico`) for the installer, uninstaller and shortcuts, desktop and Start menu
-  shortcuts named "Media Collection". The uninstaller keeps the application data and the backups.
+  shortcuts named "Media Collection", and a Start menu shortcut "Media Collection maintenance" that starts it with
+  `--maintenance` (named in the Maintenance window's recovery steps). The uninstaller keeps the application data and the backups.
 - **Firewall rule:** an NSIS include (`build/installer.nsh`, `customInstall` / `customUnInstall`) adds an inbound
   Windows Firewall rule **for the program** (`$INSTDIR\Media Collection.exe`, TCP, private and public profiles, chosen by the user on 2026-11-10) and
   removes it on uninstall. A program rule covers the HTTP and HTTPS ports whatever they are set to, including a later
@@ -269,8 +270,11 @@ Each step: tests, the relevant checks, architecture review skill on the changes,
   the labels, Exit quits, copy and paste work in a text field.
   Done: About and Check for updates are added to File in steps 5 and 6. The keyboard check uses Ctrl+A (select all):
   copy and paste would overwrite the clipboard of the computer running the tests.
-- [ ] **4. Backup folder and Maintenance window**: `BackupFolder`, Open backup folder, the "After a failed update"
+- [x] **4. Backup folder and Maintenance window**: `BackupFolder`, Open backup folder, the "After a failed update"
   section. Unit test (folder created when missing), maintenance window e2e test.
+  Done: `BackupFolder` (`backup-folder.adapter.ts`), `ProjectLinks` (repository, releases, licence URLs), Open the
+  releases page in the new section. The recovery steps name a **Media Collection maintenance** shortcut, which the
+  installer adds in step 7 (Start menu, starts the application with `--maintenance`).
 - [ ] **5. About window**: page, preload, links, Credits and licences. Desktop e2e (version shown, links reach the
   stand-in `shell`, credits opens `/credits` in the Libris window).
 - [ ] **6. Update flow**: `electron-updater`, `UpdateSource` and stand-in, `ApplicationUpdates`, `UpdateDialogs`,

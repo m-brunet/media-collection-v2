@@ -11,4 +11,6 @@ contextBridge.exposeInMainWorld('maintenance', {
     createBackup: () => ipcRenderer.invoke('maintenance:create-backup'),
     chooseBackup: () => ipcRenderer.invoke('maintenance:choose-backup'),
     restoreBackup: () => ipcRenderer.invoke('maintenance:restore-backup'),
+    openBackupFolder: () => ipcRenderer.invoke('maintenance:open-backup-folder'),
+    openReleases: () => ipcRenderer.invoke('maintenance:open-releases'),
 });

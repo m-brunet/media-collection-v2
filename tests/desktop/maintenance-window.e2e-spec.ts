@@ -132,7 +132,7 @@ describe('local maintenance window', () => {
             maintenance: true,
         });
         expect(bridge).toBe(
-            'undefined:chooseBackup,createBackup,language,recover,restoreBackup,status',
+            'undefined:chooseBackup,createBackup,language,openBackupFolder,openReleases,recover,restoreBackup,status',
         );
         await expect(client.call('/health')).rejects.toThrow();
     });
@@ -398,5 +398,60 @@ describe('desktop texts on a French device', () => {
         expect(await evaluate(current.runtime, 'document.title')).toBe(
             'Media Collection · Maintenance locale',
         );
+    });
+});
+
+describe('backup folder and failed updates in the maintenance window', () => {
+    async function maintenanceOnly() {
+        const current = await fixture.start(undefined, { main: true, maintenance: true });
+
+        await waitFor(current.runtime, "document.querySelector('h1').textContent !== ''");
+
+        return current;
+    }
+
+    async function opened(runtime: ElectronRuntime) {
+        return (await runtime.send({ type: 'opened' })).value as {
+            paths: string[];
+            external: string[];
+        };
+    }
+
+    it('opens the backup folder, creating it when missing', async () => {
+        const current = await maintenanceOnly();
+        const folder = join(current.directory, 'test-documents', 'Media Collection backups');
+
+        await evaluate(
+            current.runtime,
+            "document.getElementById('open-backup-folder').click();true",
+        );
+
+        await waitFor(current.runtime, "!document.getElementById('open-backup-folder').disabled");
+        expect((await opened(current.runtime)).paths).toEqual([folder]);
+        expect(existsSync(folder)).toBe(true);
+    });
+    it('opens the releases page from After a failed update', async () => {
+        const current = await maintenanceOnly();
+
+        await evaluate(current.runtime, "document.getElementById('open-releases').click();true");
+
+        await waitFor(current.runtime, "!document.getElementById('open-releases').disabled");
+        expect((await opened(current.runtime)).external).toEqual([
+            'https://github.com/m-brunet/media-collection-v2/releases',
+        ]);
+    });
+    it('lists the recovery steps after a failed update', async () => {
+        const current = await maintenanceOnly();
+
+        const steps = await evaluate(
+            current.runtime,
+            "Array.from(document.querySelectorAll('#failed-update li')).map((step) => step.textContent)",
+        );
+
+        expect(steps).toEqual([
+            'Download the version you had before from the releases page and install it.',
+            'If Media Collection does not start, open this window with the Media Collection maintenance shortcut, or by starting Media Collection with --maintenance.',
+            'Restore the backup made before the update: its name ends with “before” and the new version number.',
+        ]);
     });
 });

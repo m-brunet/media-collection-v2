@@ -12,6 +12,7 @@ import { KeepAwake } from './keep-awake.adapter.js';
 import { DesktopLanguage } from './desktop-language.util.js';
 import { DesktopTexts } from './desktop-texts.util.js';
 import { ApplicationMenu } from './application-menu.adapter.js';
+import { BackupFolder } from './backup-folder.adapter.js';
 
 const hiddenWindows = process.env.APP_HIDDEN_WINDOWS === '1';
 const directory = dirname(fileURLToPath(import.meta.url));
@@ -333,6 +334,7 @@ function maintenanceWindow(dataDirectory: string): MaintenanceWindow {
         iconPath: windowIcon,
         hidden: hiddenWindows,
         texts,
+        backupFolder: new BackupFolder(app.getPath('documents')),
     });
 }
 
