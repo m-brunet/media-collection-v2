@@ -15,7 +15,7 @@ The documentation is an [Obsidian](https://obsidian.md) vault: open the `docs/Me
 - [Accounts](docs/Media%20Collection/product/accounts.md): completed Task 5 setup, fixed-role account lifecycle, and personal-data rules.
 - [Overview, Activity, and mobile](docs/Media%20Collection/product/overview-activity-mobile.md): completed Task 6 rules, screen reconciliation, and acceptance examples.
 - [Release expectations](docs/Media%20Collection/operations/release-expectations.md): completed Task 7 languages, offline use, backup/restore, reset rules, and acceptance examples.
-- [Application updates](docs/Media%20Collection/operations/updates.md): approved GitHub Releases distribution, Windows integrated updates, manual macOS/Linux updates with backup assistance, and acceptance examples.
+- [Application updates](docs/Media%20Collection/operations/updates.md): approved GitHub Releases distribution, Windows integrated updates, manual Linux updates with backup assistance (no macOS for now), and acceptance examples.
 - [Collections and shopping](docs/Media%20Collection/product/collections.md): completed Task 1 rules and acceptance examples.
 - [Edition impact analysis](docs/Media%20Collection/product/collection-editions-impact.md): book counts versus volume coverage.
 - [Decisions and open questions](docs/Media%20Collection/product/decisions-and-open-questions.md): rationale, recommendations, and questions to resolve before implementation.

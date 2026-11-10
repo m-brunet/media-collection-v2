@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { access, mkdtemp, rm } from 'node:fs/promises';
+import { access, cp, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { basename, dirname, join, relative, resolve } from 'node:path';
 import { createServer } from 'node:net';
 import { setTimeout as delay } from 'node:timers/promises';
 import { chromium } from 'playwright';
 import { closeDesktop } from './processes.mjs';
 
-const executable = resolve(
+const built = resolve(
     process.env.APP_PACKAGED_EXECUTABLE ??
         (process.platform === 'win32'
             ? 'release/win-unpacked/Media Collection.exe'
@@ -17,8 +17,15 @@ const executable = resolve(
               : 'release/linux-unpacked/media-collection'),
 );
 
-await access(executable);
+await access(built);
 const directory = await mkdtemp(join(tmpdir(), 'electron-packaged-'));
+// The app runs from a copy outside the checkout, as installed: from inside it, Node would find a
+// package the build left out in the repository's node_modules and the smoke test would still pass.
+const installed = join(tmpdir(), 'electron-packaged-app-' + basename(directory));
+const applicationRoot = process.platform === 'darwin' ? resolve(built, '../../..') : dirname(built);
+
+await cp(applicationRoot, installed, { recursive: true, verbatimSymlinks: true });
+const executable = join(installed, relative(applicationRoot, built));
 const portReservation = createServer();
 
 await new Promise((resolve) => portReservation.listen(0, '127.0.0.1', resolve));
@@ -54,6 +61,9 @@ const launch = async (withPortOverride = true, debugging = false) => {
         [
             ...(withPortOverride ? ['--http-port', String(port)] : []),
             ...(debugging ? ['--remote-debugging-port=' + debugPort] : []),
+            // This computer only: a copy listening on the network makes Windows ask to allow it.
+            '--host',
+            '127.0.0.1',
             '--data-dir',
             directory,
         ],
@@ -195,4 +205,5 @@ try {
     // Only the unique directory returned by mkdtemp is removed. On Windows the backend process
     // can hold it (its working directory) for a moment after the window closed, so retry briefly.
     await rm(directory, { recursive: true, force: true, maxRetries: 10, retryDelay: 500 });
+    await rm(installed, { recursive: true, force: true, maxRetries: 10, retryDelay: 500 });
 }

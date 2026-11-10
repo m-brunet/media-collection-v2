@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta
+            content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self'"
+            http-equiv="Content-Security-Policy"
+        />
+        <meta content="width=device-width, initial-scale=1" name="viewport" />
+        <title>About Media Collection</title>
+        <link href="maintenance.css" rel="stylesheet" />
+        <link href="about.css" rel="stylesheet" />
+    </head>
+    <body class="about">
+        <img alt="" class="about__icon" height="96" src="icons/libris.png" width="96" />
+        <h1 class="about__name">Media Collection</h1>
+        <p class="about__version" id="version"></p>
+        <p class="muted about__summary" data-text="summary"></p>
+        <p class="about__links">
+            <a data-target="repository" data-text="repository" href="#"></a>
+            <a data-target="licence" data-text="licence" href="#"></a>
+        </p>
+        <button data-target="credits" data-text="credits" id="credits" type="button"></button>
+        <script src="about.js"></script>
+    </body>
+</html>
