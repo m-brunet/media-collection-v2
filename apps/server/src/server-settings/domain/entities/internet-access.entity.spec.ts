@@ -452,3 +452,219 @@ it('follows a domain name only while active', () => {
 
     expect(operation).toThrow('not active');
 });
+it('records a new certificate for the estimate', () => {
+    const access = active();
+
+    access.certificateIssued(false, now);
+
+    expect(access.snapshot.history).toEqual([
+        { name: '82.66.118.204', at: now.toISOString(), kind: 'certificate' },
+    ]);
+});
+it('records no ARI renewal, which Let’s Encrypt does not count', () => {
+    const access = active();
+
+    access.certificateIssued(true, now);
+
+    expect(access.snapshot.history).toEqual([]);
+});
+it('records a failed check for the estimate', () => {
+    const access = gettingCertificate();
+
+    access.authorityRefused('not-reachable', null, now);
+
+    expect(access.snapshot.history).toEqual([
+        { name: '82.66.118.204', at: now.toISOString(), kind: 'failed-check' },
+    ]);
+});
+it('forgets the attempts older than 8 days when it records one', () => {
+    const access = active();
+
+    access.certificateIssued(false, now);
+    access.certificateIssued(false, new Date('2026-11-16T10:00:00.000Z'));
+
+    expect(access.snapshot.history.map((attempt) => attempt.at)).toEqual([
+        '2026-11-16T10:00:00.000Z',
+    ]);
+});
+it('keeps Let’s Encrypt’s date after a rate limit', () => {
+    const access = gettingCertificate();
+
+    access.authorityRefused('rate-limited', '2026-11-12T23:30:00.000Z', now);
+
+    expect(access.snapshot.retryAfter).toBe('2026-11-12T23:30:00.000Z');
+});
+it('waits 6 hours after a rate limit without a date', () => {
+    const access = gettingCertificate();
+
+    access.authorityRefused('rate-limited', null, now);
+
+    expect(access.snapshot.retryAfter).toBe('2026-11-08T16:00:00.000Z');
+});
+it('forgets Let’s Encrypt’s date once a certificate is issued', () => {
+    const access = gettingCertificate();
+
+    access.authorityRefused('rate-limited', '2026-11-08T11:00:00.000Z', now);
+    access.certificateIssued(false, new Date('2026-11-08T12:00:00.000Z'));
+
+    expect(access.snapshot.retryAfter).toBeNull();
+});
+it('refuses an attempt before Let’s Encrypt’s date', () => {
+    const access = gettingCertificate();
+
+    access.authorityRefused('rate-limited', '2026-11-12T23:30:00.000Z', now);
+
+    const attempt = () => access.ensureAttemptAllowed(new Date('2026-11-12T23:29:59.000Z'));
+
+    expect(attempt).toThrow(expect.objectContaining({ reason: 'rate-limited' }));
+});
+it('allows an attempt from Let’s Encrypt’s date', () => {
+    const access = gettingCertificate();
+
+    access.authorityRefused('rate-limited', '2026-11-12T23:30:00.000Z', now);
+
+    const allowed = access.attemptAllowed(new Date('2026-11-12T23:30:00.000Z'));
+
+    expect(allowed).toBe(true);
+});
+it('keeps the attempts and Let’s Encrypt’s date through Turn off', () => {
+    const access = active();
+
+    access.certificateIssued(false, now);
+    access.authorityRefused('rate-limited', '2026-11-12T23:30:00.000Z', now);
+
+    access.turnOff();
+
+    expect([access.snapshot.history.length, access.snapshot.retryAfter]).toEqual([
+        1,
+        '2026-11-12T23:30:00.000Z',
+    ]);
+});
+it('keeps the attempts and Let’s Encrypt’s date through a stopped setup and a new one', () => {
+    const access = gettingCertificate();
+
+    access.authorityRefused('rate-limited', '2026-11-12T23:30:00.000Z', now);
+    access.authorityRefused('not-reachable', null, now);
+    access.stop('rate-limited', now);
+
+    access.start(null);
+
+    expect([access.snapshot.history.length, access.snapshot.retryAfter]).toEqual([
+        1,
+        '2026-11-12T23:30:00.000Z',
+    ]);
+});
+it('waits for the Admin after a failed check while active', () => {
+    const access = active();
+
+    access.upkeepFailed('not-reachable', now);
+
+    expect([
+        access.snapshot.awaitingCheck,
+        access.upkeepDue(new Date('2026-11-09T10:00:00.000Z')),
+    ]).toEqual([true, false]);
+});
+it('waits for Let’s Encrypt’s date after a rate-limited upkeep', () => {
+    const access = active();
+
+    access.authorityRefused('rate-limited', '2026-11-12T23:30:00.000Z', now);
+
+    access.upkeepFailed('rate-limited', now);
+
+    expect(access.snapshot.nextAttemptAt).toBe('2026-11-12T23:30:00.000Z');
+});
+it('keeps the growing delay after a failure that costs no attempt', () => {
+    const access = active();
+
+    access.upkeepFailed('authority-unavailable', now);
+
+    expect([access.snapshot.awaitingCheck, access.snapshot.nextAttemptAt]).toEqual([
+        false,
+        '2026-11-08T11:00:00.000Z',
+    ]);
+});
+it('checks again while active after a failed check, keeping the certificate', () => {
+    const access = active();
+
+    access.upkeepFailed('not-reachable', now);
+
+    access.check();
+
+    expect([access.phase, access.snapshot.step, access.certificate?.address]).toEqual([
+        'active',
+        'certificate',
+        '82.66.118.204',
+    ]);
+});
+it('has nothing to check while active without a failed check', () => {
+    const access = active();
+
+    const check = () => access.check();
+
+    expect(check).toThrow(expect.objectContaining({ reason: 'nothing-to-check' }));
+});
+it('ends a check while active cut short by a restart, still waiting for the Admin', () => {
+    const access = active();
+
+    access.upkeepFailed('not-reachable', now);
+    access.check();
+
+    access.interrupted(now);
+
+    expect([access.phase, access.snapshot.step, access.snapshot.awaitingCheck]).toEqual([
+        'active',
+        null,
+        true,
+    ]);
+});
+it('stops waiting for the Admin once a check works', () => {
+    const access = active();
+
+    access.upkeepFailed('not-reachable', now);
+    access.check();
+
+    access.upkeepSucceeded();
+
+    expect([access.snapshot.step, access.snapshot.awaitingCheck]).toEqual([null, false]);
+});
+it('gives no estimate before a failure', () => {
+    const access = active();
+
+    const allowances = access.allowances(now);
+
+    expect(allowances).toBeNull();
+});
+it('estimates what Let’s Encrypt still allows after a failure', () => {
+    const access = active();
+
+    access.certificateIssued(false, now);
+    access.authorityRefused('not-reachable', null, now);
+    access.upkeepFailed('not-reachable', now);
+
+    const allowances = access.allowances(now);
+
+    expect(allowances).toEqual({
+        certificates: { left: 4, nextAt: null },
+        checks: { left: 4, nextAt: null },
+    });
+});
+it('estimates for the last address once internet access is off', () => {
+    const access = gettingCertificate();
+
+    access.authorityRefused('not-reachable', null, now);
+    access.stop('not-reachable', now);
+
+    const allowances = access.allowances(now);
+
+    expect(allowances?.checks).toEqual({ left: 4, nextAt: null });
+});
+it('estimates for the address of a rate-limited setup once off', () => {
+    const access = gettingCertificate();
+
+    access.authorityRefused('rate-limited', '2026-11-12T23:30:00.000Z', now);
+    access.stop('rate-limited', now);
+
+    const allowances = access.allowances(now);
+
+    expect(allowances?.certificates).toEqual({ left: 5, nextAt: null });
+});

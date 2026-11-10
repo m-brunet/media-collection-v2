@@ -1,3 +1,4 @@
+import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 import { InternetAccess } from '../../domain/entities/internet-access.entity.js';
@@ -12,14 +13,21 @@ export class ReadInternetAccess implements ReadInternetAccessUseCase {
         private readonly store: InternetAccessReader,
         private readonly tls: TlsSettingsReader,
         private readonly local: LocalAddressReader,
+        private readonly clock: Clock,
     ) {}
 
     async execute(actor: Actor): Promise<InternetAccessView> {
         ActorAuthorization.requireAdmin(actor);
         const access = await this.store.read();
+        const now = this.clock.now();
+        // The attempt history stays on the server: the estimate is enough.
+        const { history: _history, ...state } = access.snapshot;
 
         return {
-            ...access.snapshot,
+            ...state,
+            // Only while it is ahead: the page then needs no clock of its own.
+            retryAfter: access.attemptAllowed(now) ? null : state.retryAfter,
+            allowances: access.allowances(now),
             origin: access.phase === 'active' ? 'https://' + access.certificateName : null,
             manualRule:
                 access.phase === 'waiting-for-port'

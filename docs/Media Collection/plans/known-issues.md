@@ -21,7 +21,7 @@ design.
 | KI-6 | Improvement | Appearance: seven new colour schemes (Mint, Emerald, Forest removed) and the icon set choice | Medium | Done |
 | KI-7 | Improvement | Interface text needs slightly wider letter spacing                                    | Low      | Done   |
 | KI-8 | Improvement | Server settings addresses need more space between them                                | Low      | Done   |
-| KI-9 | Improvement | Internet access: no automatic Let's Encrypt retries, estimated attempts left           | Medium   | Open   |
+| KI-9 | Improvement | Internet access: no automatic Let's Encrypt retries, estimated attempts left           | Medium   | Done   |
 | KI-10 | Improvement | Internet access: renew certificates through ARI so renewals escape Let's Encrypt limits | Medium | Done |
 | KI-11 | Improvement | Server settings: QR code for each address, opening Leaf, with the Libris logo | Medium | Done |
 | KI-12 | Improvement | The address QR codes also sign the phone in to Leaf (not the HTTP internet address) | Medium | Open |
@@ -31,42 +31,6 @@ design.
 | KI-16 | Improvement | Internet access: the HTTP and HTTPS ports are chosen in Server settings and used outside too; 443 opens only for Let's Encrypt's check | Medium | Open |
 
 ## Open
-
-### KI-9 — Internet access: no automatic Let's Encrypt retries, estimated attempts left
-
-- **Type:** Improvement.
-- **Reported:** 2026-11-08 by the user, after the Task 9.5 real-world check hit Let's Encrypt's limit (see Step 11 in
-  [task-09-5-internet-access-https.md](task-09-5-internet-access-https.md)).
-- **Let's Encrypt limits** ([rate limits](https://letsencrypt.org/docs/rate-limits/), updated 2026-08-05):
-  - 5 certificates per exact set of identifiers (here: the public IP) per 7 days, refilled 1 every 34 hours, counted
-    across all accounts, no override; only ARI renewals are exempt (KI-10).
-  - 5 failed checks per identifier per account per hour, refilled 1 every 12 minutes, no override.
-  - 1,152 consecutive failed checks per identifier per account (refilled 1 per day, reset by a success); then issuance
-    for the address is paused until unpaused in Let's Encrypt's self-service portal.
-- **Today:** the setup and **Check again** only try when the Admin asks. The hourly upkeep retries a failed renewal on
-  its own, 1 hour after the first failure, then doubling up to 6 hours, whatever the reason; a rate-limit refusal is
-  retried long before Let's Encrypt's `Retry-After` date. Nothing tells the Admin how many attempts remain.
-- **Since KI-13 (2026-11-10, checked in the code):** the router rule is renewed on every upkeep run whatever the
-  certificate back-off, and a router rule that is not kept is tried again after 1, 5 and 15 minutes; each outcome is
-  logged. The certificate back-off itself (`RenewalPolicy.retryAt`) is unchanged and still treats every reason alike,
-  although the ACME adapter already tells `rate-limited` from `not-reachable` (`acme-certificate-authority.adapter.ts`)
-  and turns off `acme-client`'s silent `Retry-After` wait. The `Retry-After` date is not kept and no estimate exists.
-  The fix below must keep the KI-13 router retries separate from the certificate attempts.
-- **Fix:**
-  - **No automatic retry of an attempt that cannot succeed:** after a rate-limit refusal, nothing is sent to
-    Let's Encrypt before the `Retry-After` date it gave (stored and shown: "Try again after Monday 23:30"); after a
-    failed check (port not reachable), the upkeep stops trying and waits for the Admin's **Check again**. Only
-    failures that cost nothing (Let's Encrypt or the router unreachable) keep the current growing delays.
-  - **Estimated attempts left, shown after the first failure:** from the app's own history of issued certificates and
-    failed checks for the address, apply the two refill rules above: "About N certificates left this week for this
-    address" and "About N checks left this hour". A rough estimate is enough; the panel says it is an estimate,
-    because other software or another installation using the same address also counts (as the Task 9.5 incident
-    did). At zero, the button explains when it becomes useful again instead of trying.
-  - **Turn off** warns that setting internet access up again uses a certificate.
-  - Tests: domain rules for the estimate (refill over time, zero, unknown history), the upkeep not calling the
-    authority before `Retry-After` nor after a failed check, the panel texts in EN/FR.
-- **Severity:** medium (a few retries can block internet access for days). **Planned:** next fix pass, or with
-  KI-10.
 
 ### KI-12 — The address QR codes also sign the phone in to Leaf (not the HTTP internet address)
 
@@ -180,6 +144,58 @@ design.
 - **Severity:** medium. **Planned:** to plan with the user (detailed plan to write).
 
 ## Done
+
+### KI-9 — Internet access: no automatic Let's Encrypt retries, estimated attempts left
+
+- **Type:** Improvement.
+- **Reported:** 2026-11-08 by the user, after the Task 9.5 real-world check hit Let's Encrypt's limit (see Step 11 in
+  [task-09-5-internet-access-https.md](task-09-5-internet-access-https.md)).
+- **Let's Encrypt limits** ([rate limits](https://letsencrypt.org/docs/rate-limits/), updated 2026-08-05):
+  - 5 certificates per exact set of identifiers (here: the public IP) per 7 days, refilled 1 every 34 hours, counted
+    across all accounts, no override; only ARI renewals are exempt (KI-10).
+  - 5 failed checks per identifier per account per hour, refilled 1 every 12 minutes, no override.
+  - 1,152 consecutive failed checks per identifier per account (refilled 1 per day, reset by a success); then issuance
+    for the address is paused until unpaused in Let's Encrypt's self-service portal.
+- **Today:** the setup and **Check again** only try when the Admin asks. The hourly upkeep retries a failed renewal on
+  its own, 1 hour after the first failure, then doubling up to 6 hours, whatever the reason; a rate-limit refusal is
+  retried long before Let's Encrypt's `Retry-After` date. Nothing tells the Admin how many attempts remain.
+- **Since KI-13 (2026-11-10, checked in the code):** the router rule is renewed on every upkeep run whatever the
+  certificate back-off, and a router rule that is not kept is tried again after 1, 5 and 15 minutes; each outcome is
+  logged. The certificate back-off itself (`RenewalPolicy.retryAt`) is unchanged and still treats every reason alike,
+  although the ACME adapter already tells `rate-limited` from `not-reachable` (`acme-certificate-authority.adapter.ts`)
+  and turns off `acme-client`'s silent `Retry-After` wait. The `Retry-After` date is not kept and no estimate exists.
+  The fix below must keep the KI-13 router retries separate from the certificate attempts.
+- **Fix:**
+  - **No automatic retry of an attempt that cannot succeed:** after a rate-limit refusal, nothing is sent to
+    Let's Encrypt before the `Retry-After` date it gave (stored and shown: "Try again after Monday 23:30"); after a
+    failed check (port not reachable), the upkeep stops trying and waits for the Admin's **Check again**. Only
+    failures that cost nothing (Let's Encrypt or the router unreachable) keep the current growing delays.
+  - **Estimated attempts left, shown after the first failure:** from the app's own history of issued certificates and
+    failed checks for the address, apply the two refill rules above: "About N certificates left this week for this
+    address" and "About N checks left this hour". A rough estimate is enough; the panel says it is an estimate,
+    because other software or another installation using the same address also counts (as the Task 9.5 incident
+    did). At zero, the button explains when it becomes useful again instead of trying.
+  - **Turn off** warns that setting internet access up again uses a certificate.
+  - Tests: domain rules for the estimate (refill over time, zero, unknown history), the upkeep not calling the
+    authority before `Retry-After` nor after a failed check, the panel texts in EN/FR.
+- **Severity:** medium (a few retries can block internet access for days).
+- **Done:** 2026-11-10, branch `fix/ki-9-ki-10-certificate-attempts`
+  ([plan](ki-09-ki-10-certificate-attempts.md), commit 2):
+  - `InternetAccessSetup.renew` is the one way to Let's Encrypt: it asks nothing before `retryAfter`, and records each
+    new certificate (not an ARI renewal) and each failed check in `history` (last 8 days, kept through Turn off and a
+    new setup, with `retryAfter` and `lastAttemptName`).
+  - Rate limit: `retryAfter` is the date Let's Encrypt writes in its refusal ("retry after … UTC"), else 6 hours. Set
+    up and Check again answer 409 `rate-limited` before it; the upkeep waits for it.
+  - Failed check while active: `awaitingCheck`; the upkeep keeps the router rule but no longer tries the certificate;
+    **Check again** is offered on the active panel and tries once, keeping the current certificate (the page follows
+    it like a setup). A check cut short by a restart ends, still waiting.
+  - Failures that cost no attempt keep the growing delay (1 hour, doubling, up to 6 hours).
+  - Estimate: `AttemptAllowance` (domain service) from the history; the read view gives `allowances` after a failure
+    (the history stays on the server). The panel shows the certificates left this week and the checks left this
+    hour, says it is an estimate, and at zero says until when an attempt is probably refused (the button stays
+    usable). Turn off warns that setting up again uses one of the 5 weekly certificates.
+  - Not estimated: the 1,152 consecutive failed checks (no automatic retry of a failed check any more).
+
 
 ### KI-10 — Internet access: renew certificates through ARI so renewals escape Let's Encrypt limits
 

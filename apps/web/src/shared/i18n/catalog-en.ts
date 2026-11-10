@@ -130,10 +130,19 @@ export const en = {
     'internet.validUntil': 'Certificate valid until {date}. It is renewed automatically.',
     'internet.lastFailure':
         'The last check failed: {reason} The current certificate stays in use. Next attempt: {date}.',
+    'internet.awaitingCheck':
+        'The last check failed: {reason} The current certificate stays in use. Nothing is tried again until you check again.',
+    'internet.checking': 'Checking again…',
+    'internet.retryAfter': 'Let’s Encrypt accepts a new attempt after {date}.',
+    'internet.allowanceCertificates': 'Certificates left this week for {name}: about {count}.',
+    'internet.allowanceChecks': 'Checks left this hour: about {count}.',
+    'internet.allowanceEstimate':
+        'This is an estimate: other software using the same address also counts.',
+    'internet.probablyRefused': 'Probably refused until {date}.',
     'internet.turnOff': 'Turn off internet access',
     'internet.turnOffTitle': 'Turn off internet access?',
     'internet.turnOffBody':
-        'Phones will no longer reach Libris and Leaf from outside your home. The router rule is removed. You can set it up again at any time.',
+        'Phones will no longer reach Libris and Leaf from outside your home. The router rule is removed. You can set it up again at any time; doing so uses one of the 5 certificates Let’s Encrypt allows per week for this address.',
     'internet.manualTitle': 'Add the rule in your router',
     'internet.manualIntro':
         'In your router’s settings, look for “Port forwarding” (also called “NAT/PAT” or “Port redirection”) and add this rule:',
@@ -160,7 +169,7 @@ export const en = {
     'internet.failure.public-address-unknown':
         'The public address of your connection could not be found. Check the internet connection, then try again.',
     'internet.failure.rate-limited':
-        'Let’s Encrypt has reached its limit of certificates for this address. Try again later: the wait can last from a few hours to a few days.',
+        'Let’s Encrypt refused a new attempt: too many recent attempts for this address.',
     'internet.failure.authority-unavailable':
         'Let’s Encrypt could not be reached. Check the internet connection, then try again.',
     'internet.failure.https-unavailable':

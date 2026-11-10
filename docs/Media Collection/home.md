@@ -53,6 +53,7 @@ Start with the [implementation plan](plans/implementation-plan.md) for task stat
 - [Product clarification plan](plans/product-clarification-plan.md): history of the product decisions.
 - [Collections design fixes](plans/design-fix-collections.md).
 - [Development data commands](plans/dev-data-commands.md).
+- [KI-9 and KI-10: Let's Encrypt attempts](plans/ki-09-ki-10-certificate-attempts.md).
 
 ## Reading in Obsidian
 

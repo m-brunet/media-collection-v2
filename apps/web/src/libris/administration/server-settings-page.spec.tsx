@@ -32,6 +32,9 @@ function internetAccess(overrides: Partial<InternetAccessStatus> = {}): Internet
         failure: null,
         failedAttempts: 0,
         nextAttemptAt: null,
+        retryAfter: null,
+        awaitingCheck: false,
+        allowances: null,
         origin: null,
         manualRule: null,
         ...overrides,
@@ -462,6 +465,98 @@ it('checks the rule again', async () => {
         'POST /server-settings/internet-access/check',
     );
 });
+// Active, after a check of port 443 failed: the certificate waits for Check again.
+const awaitingCheck = internetAccess({
+    ...active,
+    failure: { reason: 'not-reachable', at: '2026-11-08T10:00:00.000Z' },
+    awaitingCheck: true,
+    allowances: {
+        certificates: { left: 4, nextAt: null },
+        checks: { left: 3, nextAt: null },
+    },
+});
+
+it('waits for Check again after a failed check while internet access is on', async () => {
+    administrator(status(awaitingCheck));
+
+    renderPage();
+
+    expect(
+        await screen.findByText(/Nothing is tried again until you check again/),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Check again' })).toBeEnabled();
+});
+it('checks again while internet access is on', async () => {
+    const api = administrator(status(awaitingCheck)).on(
+        'POST /server-settings/internet-access/check',
+        () => ({ status: 202, body: { ...awaitingCheck, step: 'certificate' } }),
+    );
+
+    renderPage();
+    await userEvent.click(await screen.findByRole('button', { name: 'Check again' }));
+
+    expect(api.calls.map((call) => call.route)).toContain(
+        'POST /server-settings/internet-access/check',
+    );
+});
+it('shows a check running while internet access is on, without the button', async () => {
+    administrator(status({ ...awaitingCheck, step: 'certificate' }));
+
+    renderPage();
+
+    expect(await screen.findByText('Checking again…')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Check again' })).toBeNull();
+});
+it('estimates what Let’s Encrypt still allows after a failure', async () => {
+    administrator(status(awaitingCheck));
+
+    renderPage();
+
+    expect(
+        await screen.findByText(
+            'Certificates left this week for ' +
+                publicAddress +
+                ': about 4. Checks left this hour: about 3.',
+        ),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/This is an estimate/)).toBeInTheDocument();
+});
+it('says when an attempt is probably refused, keeping the button usable', async () => {
+    administrator(
+        status(
+            internetAccess({
+                failure: { reason: 'not-reachable', at: '2026-11-08T10:00:00.000Z' },
+                publicAddress,
+                allowances: {
+                    certificates: { left: 4, nextAt: null },
+                    checks: { left: 0, nextAt: '2026-11-08T10:12:00.000Z' },
+                },
+            }),
+        ),
+    );
+
+    renderPage();
+
+    expect(await screen.findByText(/Probably refused until/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Set up internet access' })).toBeEnabled();
+});
+it('waits for Let’s Encrypt’s date after a rate limit, with the button disabled', async () => {
+    administrator(
+        status(
+            internetAccess({
+                failure: { reason: 'rate-limited', at: '2026-11-08T10:00:00.000Z' },
+                retryAfter: '2099-11-12T23:30:00.000Z',
+            }),
+        ),
+    );
+
+    renderPage();
+
+    expect(
+        await screen.findByText(/Let’s Encrypt accepts a new attempt after/),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Set up internet access' })).toBeDisabled();
+});
 it('explains a provider sharing the address', async () => {
     administrator(
         status(internetAccess({ failure: { reason: 'cgnat', at: '2026-11-08T10:00:00.000Z' } })),
@@ -511,6 +606,18 @@ it('asks before turning internet access off', async () => {
     expect(api.calls.map((call) => call.route)).toContain(
         'DELETE /server-settings/internet-access',
     );
+});
+it('warns that setting up again uses a certificate', async () => {
+    administrator(status(active));
+
+    renderPage();
+    await userEvent.click(await screen.findByRole('button', { name: 'Turn off internet access' }));
+
+    const dialog = await screen.findByRole('dialog', { name: 'Turn off internet access?' });
+
+    expect(
+        within(dialog).getByText(/uses one of the 5 certificates Let’s Encrypt allows per week/),
+    ).toBeInTheDocument();
 });
 it('keeps the computer awake when asked', async () => {
     const api = administrator(status()).on('PUT /server-settings/keep-awake', () => ({

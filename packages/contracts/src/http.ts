@@ -63,6 +63,16 @@ export interface InternetAccessStatus {
     failure: { reason: InternetAccessFailureReason; at: string } | null;
     failedAttempts: number;
     nextAttemptAt: string | null;
+    // Let's Encrypt's own date after a rate limit, while it is ahead: no attempt is accepted before it.
+    retryAfter: string | null;
+    // Active, after a failed check: the certificate waits for Check again.
+    awaitingCheck: boolean;
+    // What Let's Encrypt probably still allows for the address or domain name, after a failure (an
+    // estimate from this installation's own attempts); `nextAt` while none is left.
+    allowances: {
+        certificates: { left: number; nextAt: string | null };
+        checks: { left: number; nextAt: string | null };
+    } | null;
     // The address phones open (domain name, else public address), once the certificate is in use.
     origin: string | null;
     // What to enter in the router when it cannot be configured automatically.

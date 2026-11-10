@@ -88,6 +88,20 @@ describe('POST /api/server-settings/internet-access', () => {
 
         expect(response.status).toBe(202);
     });
+    it('refuses a new setup before the date Let’s Encrypt gave with a rate limit', async () => {
+        const client = await app.authenticatedClient(admin);
+
+        app.dependencies.internetAccess.authority.refusal = 'rate-limited';
+        app.dependencies.internetAccess.authority.retryAfter = '2026-01-03T12:00:00.000Z';
+        await setUp(client);
+
+        const response = await client.call('/server-settings/internet-access', 'POST', {});
+
+        expect([response.status, response.body]).toEqual([
+            409,
+            expect.objectContaining({ reason: 'rate-limited' }),
+        ]);
+    });
     it('rejects a domain name in the setup request', async () => {
         const client = await app.authenticatedClient(admin);
 
@@ -211,6 +225,27 @@ describe('GET /api/server-settings after a setup', () => {
             [{ kind: 'domain', name: 'home.example.fr' }],
         ]);
     });
+    it('gives Let’s Encrypt’s date and the estimate after a rate limit, without the history', async () => {
+        const client = await app.authenticatedClient(admin);
+
+        app.dependencies.internetAccess.authority.refusal = 'rate-limited';
+        app.dependencies.internetAccess.authority.retryAfter = '2026-01-03T12:00:00.000Z';
+        await setUp(client);
+
+        const response = await client.call<ServerStatus>('/server-settings', 'GET');
+
+        expect([
+            response.body.internetAccess.failure?.reason,
+            response.body.internetAccess.retryAfter,
+            response.body.internetAccess.allowances,
+            'history' in response.body.internetAccess,
+        ]).toEqual([
+            'rate-limited',
+            '2026-01-03T12:00:00.000Z',
+            { certificates: { left: 5, nextAt: null }, checks: { left: 5, nextAt: null } },
+            false,
+        ]);
+    });
     it('explains a saved domain name that no longer points to the connection', async () => {
         const client = await app.authenticatedClient(admin);
 
@@ -245,6 +280,28 @@ describe('POST /api/server-settings/internet-access/check', () => {
             'setting-up',
             'certificate',
         ]);
+    });
+    it('checks again while active after a failed check, keeping the certificate in use', async () => {
+        const client = await app.authenticatedClient(admin);
+        const store = app.dependencies.internetAccess.store;
+
+        await setUp(client);
+        const access = await store.read();
+
+        access.upkeepFailed('not-reachable', new Date('2026-01-01T00:00:00.000Z'));
+        await store.save(access);
+
+        const response = await client.call<InternetAccessStatus>(
+            '/server-settings/internet-access/check',
+            'POST',
+        );
+
+        expect([
+            response.status,
+            response.body.phase,
+            response.body.step,
+            response.body.awaitingCheck,
+        ]).toEqual([202, 'active', 'certificate', true]);
     });
     it('has nothing to check while internet access is off', async () => {
         const client = await app.authenticatedClient(admin);

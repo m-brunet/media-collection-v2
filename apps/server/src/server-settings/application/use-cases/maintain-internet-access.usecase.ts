@@ -36,6 +36,10 @@ export class MaintainInternetAccess implements MaintainInternetAccessUseCase {
             return { rule: 'none' };
         }
 
+        if (access.checking && !this.setup.running) {
+            access.interrupted(now);
+        }
+
         if (access.phase !== 'active') {
             return { rule: 'none' };
         }
