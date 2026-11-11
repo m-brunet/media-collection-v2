@@ -189,6 +189,7 @@ function BookForm({ book }: { book: BookDto | null }) {
                     cover={cover}
                     onCoverChange={setCover}
                     onCorrectAuthor={book ? setCorrecting : undefined}
+                    authorSpellings={lookup.spellings}
                 />
                 <Panel label={t('form.organisation')}>
                     <div className="form">
