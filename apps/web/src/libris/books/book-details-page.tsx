@@ -43,7 +43,6 @@ function ReadingPanel({ book, onChange }: { book: BookDto; onChange(read: boolea
                         })
                     }
                 />
-                <span>{t('details.readingStatus', { status: t(BookFormat.reading(read)) })}</span>
             </div>
             {action.feedback && <Notice tone="error">{action.feedback.text}</Notice>}
             <p className="muted">{t('details.readingHint')}</p>

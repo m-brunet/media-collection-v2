@@ -59,12 +59,11 @@ it('marks the book read for the viewer only', async () => {
         .on('PUT /books/b1/reading', () => ({ status: 200, body: { read: true } }));
 
     show();
-    const toggle = await screen.findByRole('button', { name: 'Read' });
+    const toggle = await screen.findByRole('button', { name: 'Not read' });
 
     await userEvent.click(toggle);
 
-    expect(await screen.findByText('Your status: Read.')).toBeInTheDocument();
-    expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    expect(await screen.findByRole('button', { name: 'Read' })).toHaveClass('button--pressed');
     expect(api.calls).toContainEqual({ route: 'PUT /books/b1/reading', body: { read: true } });
 });
 

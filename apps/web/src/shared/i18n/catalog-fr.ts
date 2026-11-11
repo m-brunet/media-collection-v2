@@ -572,8 +572,6 @@ export const fr = {
     'details.pages': '{count} pages',
     'details.unknown': 'Non renseigné',
     'details.reading': 'Votre lecture uniquement',
-    'details.readingToggle': 'Lu',
-    'details.readingStatus': 'Votre statut : {status}.',
     'details.readingHint': 'Cela ne change pas le statut des autres comptes.',
     'details.note': 'Votre note privée · vous seul',
     'details.noteNone': 'Vous n’avez pas de note sur ce livre.',
