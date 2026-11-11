@@ -16,6 +16,7 @@ import type { BookLoanReader } from '../../application/ports/driven/book-loan-re
 import type { LoanHistory } from '../../application/ports/driven/loan-history.interface.js';
 import type { ShelfAssignment } from '../../application/ports/driven/shelf-assignment.interface.js';
 import type { TagAssignment } from '../../application/ports/driven/tag-assignment.interface.js';
+import { AuthorMatcher } from '../../application/services/author-matcher.service.js';
 import { AuthorResolver } from '../../application/services/author-resolver.service.js';
 import { BookDetailsBuilder } from '../../application/services/book-details-builder.service.js';
 import { BookIdentityCheck } from '../../application/services/book-identity-check.service.js';
@@ -237,7 +238,7 @@ const serviceProviders: Provider[] = [
 const useCaseProviders: Provider[] = [
     {
         provide: 'BOOKS_LOOK_UP',
-        inject: [token.books, token.lookupChains, token.lookupCovers],
+        inject: [token.books, token.lookupChains, token.lookupCovers, token.authors],
         useFactory: (
             books: BookRepository,
             chains: {
@@ -245,7 +246,15 @@ const useCaseProviders: Provider[] = [
                 covers: SourceLink<CoverOffer[]> | null;
             },
             registry: LookupCoverRegistry,
-        ) => new LookUpBook(books, chains.information, chains.covers, registry),
+            authors: AuthorRepository,
+        ) =>
+            new LookUpBook(
+                books,
+                chains.information,
+                chains.covers,
+                registry,
+                new AuthorMatcher(authors),
+            ),
     },
     {
         provide: 'BOOKS_FETCH_COVER_FROM_ADDRESS',

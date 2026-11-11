@@ -3,6 +3,7 @@ import type { CoverOffer } from '../../domain/services/cover-combination.service
 import type { LookupAnswerFields } from '../../domain/value-objects/lookup-answer.value-object.js';
 import { LookupAnswer } from '../../domain/value-objects/lookup-answer.value-object.js';
 import type { SourceReply } from '../ports/driven/lookup-source.interface.js';
+import { AuthorMatcher } from '../services/author-matcher.service.js';
 import { SourceBudget } from '../services/source-budget.service.js';
 import { SourceLink } from '../services/source-chain.service.js';
 import {
@@ -13,6 +14,7 @@ import {
     owner,
     ScriptedSource,
 } from '../testing/book-doubles.test-support.js';
+import { Author } from '../../domain/entities/author.entity.js';
 import { LookUpBook } from './look-up-book.usecase.js';
 
 const clock = new ManualClock();
@@ -47,6 +49,7 @@ describe('LookUpBook', () => {
             chain(bnf),
             null,
             new MemoryCoverRegistry(),
+            new AuthorMatcher(BookDoubles.library().authors),
         ).execute(owner, '978-1-63557-563-7');
 
         expect(result).toEqual({ kind: 'existing', bookId: book.id });
@@ -61,6 +64,7 @@ describe('LookUpBook', () => {
             chain(bnf),
             null,
             new MemoryCoverRegistry(),
+            new AuthorMatcher(BookDoubles.library().authors),
         ).execute(owner, '2253164690');
 
         expect(bnf.asked).toEqual(['9782253164692']);
@@ -82,6 +86,7 @@ describe('LookUpBook', () => {
             chain(bnf, openLibrary),
             chain(covers),
             new MemoryCoverRegistry(),
+            new AuthorMatcher(BookDoubles.library().authors),
         ).execute(owner, '9782253164692');
 
         expect(result).toMatchObject({
@@ -108,6 +113,7 @@ describe('LookUpBook', () => {
             chain(bnf),
             null,
             new MemoryCoverRegistry(),
+            new AuthorMatcher(BookDoubles.library().authors),
         ).execute(owner, '9782253164692');
 
         expect(result).toMatchObject({ kind: 'looked-up', found: false, unavailable: [] });
@@ -126,6 +132,7 @@ describe('LookUpBook', () => {
             chain(bnf, openLibrary),
             chain(covers),
             new MemoryCoverRegistry(),
+            new AuthorMatcher(BookDoubles.library().authors),
         ).execute(owner, '9782253164692');
 
         expect(result).toMatchObject({
@@ -144,6 +151,7 @@ describe('LookUpBook', () => {
             null,
             null,
             new MemoryCoverRegistry(),
+            new AuthorMatcher(BookDoubles.library().authors),
         );
 
         const result = lookup.execute(owner, '9782253164691');
@@ -159,9 +167,65 @@ describe('LookUpBook', () => {
             chain(bnf),
             null,
             new MemoryCoverRegistry(),
+            new AuthorMatcher(BookDoubles.library().authors),
         ).execute(guest, '9782253164692');
 
         await expect(result).rejects.toMatchObject({ reason: 'guest-read-only' });
         expect(bnf.asked).toEqual([]);
+    });
+
+    describe('with an existing author', () => {
+        async function lookUp(...sources: ScriptedSource<LookupAnswer>[]) {
+            const { books, authors } = BookDoubles.library();
+
+            await authors.create(
+                new Author({ id: 'a1', name: "Flipflop's", createdAt: '2026-03-01T10:00:00Z' }),
+            );
+
+            return new LookUpBook(
+                books,
+                chain(...sources),
+                null,
+                new MemoryCoverRegistry(),
+                new AuthorMatcher(authors),
+            ).execute(owner, '9782253164692');
+        }
+
+        it("fills in the existing author's name instead of a similar spelling", async () => {
+            const bnf = new ScriptedSource(
+                'bnf',
+                answer({ authors: ['Flipsflops', 'Yuki Kodama'] }),
+            );
+
+            const result = await lookUp(bnf);
+
+            expect(result).toMatchObject({
+                fields: { authors: [{ value: ["Flipflop's", 'Yuki Kodama'], sources: ['bnf'] }] },
+                authorSpellings: [{ name: "Flipflop's", spelling: 'Flipsflops', sources: ['bnf'] }],
+            });
+        });
+
+        it("merges the sources' spellings of the same existing author", async () => {
+            const bnf = new ScriptedSource('bnf', answer({ authors: ['Flipsflops'] }));
+            const openLibrary = new ScriptedSource(
+                'openlibrary',
+                answer({ authors: ["Flipflop's"] }),
+            );
+
+            const result = await lookUp(bnf, openLibrary);
+
+            expect(result).toMatchObject({
+                fields: { authors: [{ value: ["Flipflop's"], sources: ['bnf', 'openlibrary'] }] },
+                authorSpellings: [{ name: "Flipflop's", spelling: 'Flipsflops', sources: ['bnf'] }],
+            });
+        });
+
+        it('offers no other spelling for the same name', async () => {
+            const bnf = new ScriptedSource('bnf', answer({ authors: ["FLIPFLOP'S"] }));
+
+            const result = await lookUp(bnf);
+
+            expect(result).toMatchObject({ authorSpellings: [] });
+        });
     });
 });

@@ -378,6 +378,13 @@ export interface BookLookupFieldsDto {
     category: LookupChoiceDto<BookCategory>[];
 }
 
+// An existing author's name (`name`) filled in for a source's similar spelling.
+export interface AuthorSpellingDto {
+    name: string;
+    spelling: string;
+    sources: string[];
+}
+
 // A cover offered by a lookup, shown from `/api/books/lookups/covers/:token` for half an hour.
 export interface LookupCoverDto {
     token: string;
@@ -393,6 +400,8 @@ export type BookLookupDto =
           isbn13: string;
           found: boolean;
           fields: BookLookupFieldsDto;
+          // Authors filled in with an existing author's name instead of a source's spelling.
+          authorSpellings: AuthorSpellingDto[];
           covers: LookupCoverDto[];
           unavailable: { source: string; reason: 'limited' | 'failed' }[];
       };

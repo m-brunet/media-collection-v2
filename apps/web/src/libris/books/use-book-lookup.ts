@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { useState } from 'react';
-import type { BookLookupDto } from '../../../../../packages/contracts/src/http';
+import type { AuthorSpellingDto, BookLookupDto } from '../../../../../packages/contracts/src/http';
 import { api, ApiError } from '../../shared/api.util';
 import { ApiErrorMessage } from '../../shared/api-error-message.util';
 import { useI18n } from '../../shared/i18n/i18n-context';
@@ -47,6 +47,8 @@ export function useBookLookup({
     const [busy, setBusy] = useState(false);
     const [message, setMessage] = useState<LookupMessage | null>(null);
     const [review, setReview] = useState<LookedUpBook | null>(null);
+    // The sources' spellings of the existing authors the last used lookup filled in.
+    const [spellings, setSpellings] = useState<AuthorSpellingDto[]>([]);
     const [replacing, setReplacing] = useState<{
         selection: LookupSelection;
         conflicts: LookupConflict[];
@@ -103,6 +105,7 @@ export function useBookLookup({
 
         setReview(null);
         setValues(next);
+        setSpellings(result.authorSpellings);
 
         if (additional.some((value) => value !== null)) {
             showAdditional();
@@ -150,6 +153,7 @@ export function useBookLookup({
         find,
         review,
         use,
+        spellings,
         closeReview: () => setReview(null),
         replacing,
         replace,

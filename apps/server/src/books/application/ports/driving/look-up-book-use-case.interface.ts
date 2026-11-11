@@ -1,5 +1,6 @@
 import type { Actor } from '../../../../shared/domain/actor.helper.js';
 import type { CombinedLookup } from '../../../domain/services/lookup-combination.service.js';
+import type { AuthorSpelling } from '../../services/author-matcher.service.js';
 import type { SourceUnavailability } from '../../services/source-chain.service.js';
 
 export type ExistingBookLookup = {
@@ -21,6 +22,8 @@ export type LookedUpBook = {
     isbn13: string;
     found: boolean;
     fields: CombinedLookup;
+    // Authors filled in with an existing author's name instead of a source's spelling.
+    authorSpellings: AuthorSpelling[];
     covers: LookupCoverView[];
     unavailable: SourceUnavailability[];
 };

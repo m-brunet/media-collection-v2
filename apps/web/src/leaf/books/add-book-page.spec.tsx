@@ -28,6 +28,7 @@ function lookup(overrides: Partial<LookedUpBook> = {}): LookedUpBook {
             collection: [],
             category: [],
         },
+        authorSpellings: [],
         covers: [],
         unavailable: [],
         ...overrides,
@@ -83,6 +84,29 @@ it('offers another source’s value and uses it when chosen', async () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Use Bloomsbury Publishing' }));
 
     expect(screen.getByLabelText('Publisher')).toHaveValue('Bloomsbury Publishing');
+});
+
+const flipflops = lookup({
+    fields: { ...lookup().fields, authors: [{ value: ["Flipflop's"], sources: ['bnf'] }] },
+    authorSpellings: [{ name: "Flipflop's", spelling: 'Flipsflops', sources: ['bnf'] }],
+});
+
+it('tells the source’s spelling of an existing author it filled in', async () => {
+    open(flipflops);
+
+    expect(
+        await screen.findByText("BnF suggests: Flipsflops (instead of Flipflop's)"),
+    ).toBeInTheDocument();
+});
+
+it('uses the source’s spelling when chosen', async () => {
+    open(flipflops);
+
+    await userEvent.click(
+        await screen.findByRole('button', { name: 'Use the spelling Flipsflops' }),
+    );
+
+    expect(screen.getByText('Flipsflops')).toBeInTheDocument();
 });
 
 it('saves the book with the first cover found, then shows the success screen', async () => {
