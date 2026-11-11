@@ -461,7 +461,7 @@ export const en = {
     'credits.librisIcon.used':
         'The Libris icon: window, taskbar, favicon and the mark next to the Libris title.',
     'credits.librisIcon.changes':
-        'Recoloured to Spring green (#79d670) and resized into application icon files.',
+        'Recoloured to Spring green (#79d670), outlined in dark grey (#1b1d1f) to stay visible on any background, and resized into application icon files.',
     'credits.turningLeaf.used': 'The Turning leaf icon of every icon set, and Leaf’s icon.',
     'credits.turningLeaf.changes':
         'Original icons generated with GPT Astra for Media Collection, drawn in the style of each icon set; not derived from a specific icon of the packs, so no pack licence applies.',

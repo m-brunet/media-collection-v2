@@ -33,10 +33,10 @@ it('ships every icon file the Leaf page and manifest name', () => {
 
     expect(missing).toEqual([]);
 });
-it('draws the favicon in Spring green', () => {
+it('draws the favicon in Spring green with a dark grey halo', () => {
     const svg = read('public/leaf.svg');
 
     const colours = [...svg.matchAll(/#[0-9a-f]{6}/gi)].map((match) => match[0].toLowerCase());
 
-    expect([...new Set(colours)]).toEqual(['#79d670']);
+    expect([...new Set(colours)]).toEqual(['#1b1d1f', '#79d670']);
 });
