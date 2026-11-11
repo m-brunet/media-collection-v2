@@ -1,8 +1,10 @@
 import { useId, useState } from 'react';
 import type {
+    BookCategory,
     BookLookupFieldsDto,
     LookupCoverDto,
 } from '../../../../../packages/contracts/src/http';
+import { BookFormat } from '../../shared/book-form/book-format.util';
 import type { MessageKey } from '../../shared/i18n/catalog-en';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Button } from '../../shared/ui/button';
@@ -16,6 +18,7 @@ import { LookupFill } from '../../shared/book-form/lookup-fill.util';
 import { useSourceNames } from '../../shared/book-form/use-source-names';
 
 const labels: Record<LookupField, MessageKey> = {
+    category: 'form.category',
     title: 'form.title',
     authors: 'form.authors',
     publisher: 'form.publisher',
@@ -58,6 +61,7 @@ export function LookupReviewDialog({
 
         onUse(
             {
+                category: value('category'),
                 title: value('title'),
                 authors: value('authors'),
                 publisher: value('publisher'),
@@ -254,6 +258,8 @@ export function LookupConflictsDialog({
 class LookupDisplay {
     static text(field: LookupField, value: unknown, t: ReturnType<typeof useI18n>['t']): string {
         switch (field) {
+            case 'category':
+                return t(BookFormat.category(value as BookCategory));
             case 'authors':
                 return (value as string[]).join(', ');
             case 'publication': {

@@ -1,4 +1,5 @@
 import type {
+    BookCategory,
     BookLookupFieldsDto,
     LookupChoiceDto,
 } from '../../../../../packages/contracts/src/http';
@@ -6,6 +7,7 @@ import type { BookDraftValues } from './book-draft.util';
 import { BookDraft } from './book-draft.util';
 
 export type LookupField =
+    | 'category'
     | 'title'
     | 'authors'
     | 'publisher'
@@ -16,6 +18,7 @@ export type LookupField =
 
 // The value the person picked for each field in the review; null leaves the field alone.
 export interface LookupSelection {
+    category: BookCategory | null;
     title: string | null;
     authors: string[] | null;
     publisher: string | null;
@@ -33,6 +36,7 @@ export interface LookupConflict {
 
 export class LookupFill {
     static readonly fields: LookupField[] = [
+        'category',
         'title',
         'authors',
         'publisher',
@@ -48,10 +52,12 @@ export class LookupFill {
     }
 
     // A Manga or Comics in a collection with a blank title keeps its generated title unless the
-    // person picks the lookup's.
+    // person picks the lookup's. The lookup's category counts over the form's.
     static keepsGeneratedTitle(draft: BookDraftValues, fields: BookLookupFieldsDto): boolean {
+        const category = fields.category[0]?.value ?? draft.category;
+
         return (
-            (draft.category === 'manga' || draft.category === 'comics') &&
+            (category === 'manga' || category === 'comics') &&
             draft.title.trim() === '' &&
             (draft.inCollection || fields.collection.length > 0)
         );
@@ -59,6 +65,7 @@ export class LookupFill {
 
     static defaults(fields: BookLookupFieldsDto, draft: BookDraftValues): LookupSelection {
         return {
+            category: fields.category[0]?.value ?? null,
             title: LookupFill.keepsGeneratedTitle(draft, fields)
                 ? null
                 : (fields.title[0]?.value ?? null),
@@ -89,6 +96,13 @@ export class LookupFill {
                 continue;
             }
 
+            // A category is always set (Books by default): the lookup's replaces it without asking;
+            // the person sees it in the review and can change it in the form.
+            if (field === 'category') {
+                next = BookDraft.changed(next, LookupFill.write(selection, field));
+                continue;
+            }
+
             const mine = LookupFill.draftText(next, field);
 
             if (mine === '') {
@@ -114,6 +128,7 @@ export class LookupFill {
 
     static only(field: LookupField, value: unknown): LookupSelection {
         return {
+            category: null,
             title: null,
             authors: null,
             publisher: null,
@@ -141,6 +156,8 @@ export class LookupFill {
 
     private static write(selection: LookupSelection, field: LookupField): Partial<BookDraftValues> {
         switch (field) {
+            case 'category':
+                return { category: selection.category! };
             case 'title':
                 return { title: selection.title! };
             case 'authors':
@@ -179,6 +196,8 @@ export class LookupFill {
 
     private static draftText(draft: BookDraftValues, field: LookupField): string {
         switch (field) {
+            case 'category':
+                return draft.category;
             case 'title':
                 return draft.title.trim();
             case 'authors':

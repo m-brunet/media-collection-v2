@@ -121,6 +121,29 @@ describe('LookupCombination', () => {
         ]);
     });
 
+    it('suggests the category the sources give, the preferred first', () => {
+        const combination = combine(
+            ['bnf', { title: 'Claymore', category: 'manga' }],
+            ['openlibrary', { title: 'Claymore', category: 'comics' }],
+            ['google', { title: 'Claymore', category: 'manga' }],
+        );
+
+        const result = combination.result();
+
+        expect(result.category).toEqual([
+            { value: 'manga', sources: ['bnf', 'google'] },
+            { value: 'comics', sources: ['openlibrary'] },
+        ]);
+    });
+
+    it('suggests no category when no source gives one', () => {
+        const combination = combine(['bnf', { title: 'Piranesi' }]);
+
+        const result = combination.result();
+
+        expect(result.category).toEqual([]);
+    });
+
     it('found nothing when every answer is empty', () => {
         const combination = combine(['bnf', { editionLanguage: 'fre' }]);
 

@@ -2,6 +2,7 @@ import type {
     LookupSource,
     SourceReply,
 } from '../../../../application/ports/driven/lookup-source.interface.js';
+import type { BookCategory } from '../../../../domain/entities/book.entity.js';
 import { LookupAnswer } from '../../../../domain/value-objects/lookup-answer.value-object.js';
 import type { SourceHttp } from './source-http.adapter.js';
 
@@ -9,9 +10,9 @@ type Subfields = Map<string, string[]>;
 type Fields = Map<string, Subfields[]>;
 
 // The BnF general catalogue (SRU, UNIMARC records), queried by ISBN. Licence Ouverte: free
-// reuse, source credited. Fields used: 101 language, 200 title (and volume), 210/214 publisher
-// and date, 215 extent, 330 summary, 461 series and volume, 70X persons and 71X organisations
-// as authors (see `authors`).
+// reuse, source credited. Fields used: 101 language (and original language), 200 title (and
+// volume), 210/214 publisher and date, 215 extent, 330 summary, 461 series and volume, 608 and
+// 686 category (see `category`), 70X persons and 71X organisations as authors (see `authors`).
 export class BnfCatalogue implements LookupSource<LookupAnswer> {
     static readonly address = 'https://catalogue.bnf.fr/api/SRU';
 
@@ -80,8 +81,31 @@ export class BnfCatalogue implements LookupSource<LookupAnswer> {
                 seriesName && volume !== undefined
                     ? { name: seriesName, volume: Number(volume) }
                     : null,
+            category: BnfCatalogue.category(fields),
         });
     }
+
+    // A comic by its class in the Bibliographie nationale française (686 $a 805) or its form
+    // "Bandes dessinées" (608); a manga when translated from Japanese, Korean or Chinese (101 $c:
+    // manhwa and manhua count as manga). Anything else: no category, the form keeps its own.
+    private static category(fields: Fields): BookCategory | null {
+        const values = (tag: string, code: string) =>
+            (fields.get(tag) ?? []).flatMap((entry) => entry.get(code) ?? []);
+        const comic =
+            values('686', 'a').includes('805') ||
+            values('608', 'a').some((form) => /^bandes dessinées$/i.test(form));
+
+        if (!comic) {
+            return null;
+        }
+
+        return values('101', 'c').some((code) => BnfCatalogue.mangaLanguages.includes(code))
+            ? 'manga'
+            : 'comics';
+    }
+
+    // ISO 639-2 codes of the original languages that make a comic a manga.
+    private static readonly mangaLanguages = ['jpn', 'kor', 'chi', 'zho'];
 
     // Main and alternative responsibilities (700/701 persons, 710/711 organisations) are authors;
     // secondary ones (702/712) only as author, illustrator or scenarist, by role code or, in some

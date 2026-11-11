@@ -1,0 +1,100 @@
+{
+    "ISBN:9781974700523": {
+        "url": "http://openlibrary.org/books/OL47813090M/Demon_Slayer",
+        "key": "/books/OL47813090M",
+        "title": "Demon Slayer",
+        "subtitle": "Kimetsu no Yaiba, Vol. 1",
+        "authors": [
+            {
+                "url": "http://openlibrary.org/authors/OL7539763A/吾峠呼世晴",
+                "name": "吾峠呼世晴"
+            }
+        ],
+        "number_of_pages": 192,
+        "identifiers": {
+            "isbn_13": ["9781974700523"],
+            "openlibrary": ["OL47813090M"]
+        },
+        "publishers": [
+            {
+                "name": "VIZ Media LLC"
+            }
+        ],
+        "publish_date": "July 3, 2018",
+        "subjects": [
+            {
+                "name": "Brothers and sisters",
+                "url": "https://openlibrary.org/subjects/brothers_and_sisters"
+            },
+            {
+                "name": "Comic books, strips",
+                "url": "https://openlibrary.org/subjects/comic_books,_strips"
+            },
+            {
+                "name": "Demonology",
+                "url": "https://openlibrary.org/subjects/demonology"
+            },
+            {
+                "name": "Revenge",
+                "url": "https://openlibrary.org/subjects/revenge"
+            },
+            {
+                "name": "History",
+                "url": "https://openlibrary.org/subjects/history"
+            },
+            {
+                "name": "Comics & graphic novels, fantasy",
+                "url": "https://openlibrary.org/subjects/comics_&_graphic_novels,_fantasy"
+            },
+            {
+                "name": "nyt:graphic-books-and-manga=2020-09-13",
+                "url": "https://openlibrary.org/subjects/nyt:graphic-books-and-manga=2020-09-13"
+            },
+            {
+                "name": "New York Times bestseller",
+                "url": "https://openlibrary.org/subjects/new_york_times_bestseller"
+            },
+            {
+                "name": "Literature",
+                "url": "https://openlibrary.org/subjects/literature"
+            },
+            {
+                "name": "Comics & graphic novels, manga, general",
+                "url": "https://openlibrary.org/subjects/comics_&_graphic_novels,_manga,_general"
+            },
+            {
+                "name": "nyt:graphic-books-and-manga=2020-02-09",
+                "url": "https://openlibrary.org/subjects/nyt:graphic-books-and-manga=2020-02-09"
+            },
+            {
+                "name": "Comics & graphic novels, manga, media tie-in",
+                "url": "https://openlibrary.org/subjects/comics_&_graphic_novels,_manga,_media_tie-in"
+            },
+            {
+                "name": "Comics & graphic novels, manga, action & adventure",
+                "url": "https://openlibrary.org/subjects/comics_&_graphic_novels,_manga,_action_&_adventure"
+            },
+            {
+                "name": "Comics & graphic novels, manga, fantasy",
+                "url": "https://openlibrary.org/subjects/comics_&_graphic_novels,_manga,_fantasy"
+            }
+        ],
+        "subject_places": [
+            {
+                "name": "Japan",
+                "url": "https://openlibrary.org/subjects/place:japan"
+            }
+        ],
+        "subject_times": [
+            {
+                "name": "Taishō period, 1912-1926",
+                "url": "https://openlibrary.org/subjects/time:taishō_period,_1912-1926"
+            }
+        ],
+        "cover": {
+            "small": "https://covers.openlibrary.org/b/id/14323082-S.jpg",
+            "medium": "https://covers.openlibrary.org/b/id/14323082-M.jpg",
+            "large": "https://covers.openlibrary.org/b/id/14323082-L.jpg"
+        }
+    }
+}

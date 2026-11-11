@@ -9,6 +9,8 @@ export interface OpenLibraryRecord {
     publishers?: { name?: string }[];
     publish_date?: string;
     number_of_pages?: number;
+    // The work's subjects, shared by its editions.
+    subjects?: { name?: string }[];
     cover?: { large?: string; medium?: string };
 }
 

@@ -22,6 +22,7 @@ function lookedUp(overrides: Partial<Extract<BookLookupDto, { kind: 'looked-up' 
             pageCount: [],
             summary: [],
             collection: [],
+            category: [],
         },
         covers: [],
         unavailable: [],

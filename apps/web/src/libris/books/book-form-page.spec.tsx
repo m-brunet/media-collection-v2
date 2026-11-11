@@ -825,6 +825,7 @@ describe('Find book', () => {
                 pageCount: [],
                 summary: [],
                 collection: [],
+                category: [],
             },
             covers: [],
             unavailable: [],
@@ -843,6 +844,7 @@ describe('Find book', () => {
         pageCount: [{ value: 257, sources: ['bnf'] }],
         summary: [],
         collection: [{ value: { name: "La quête d'Ewilan", volume: 1 }, sources: ['bnf'] }],
+        category: [],
     };
     const ewilan = lookedUp({ fields: ewilanFields });
 
@@ -906,6 +908,38 @@ describe('Find book', () => {
         expect(api.calls.find((call) => call.route === 'POST /books/lookups')?.body).toEqual({
             isbn,
         });
+    });
+
+    const manga = lookedUp({
+        fields: { ...ewilanFields, category: [{ value: 'manga', sources: ['bnf'] }] },
+    });
+
+    it('shows the category the lookup found in the review', async () => {
+        new FakeApi()
+            .signedIn(account())
+            .on('POST /books/lookups', () => ({ status: 200, body: manga }));
+        addPage();
+
+        await findBook();
+
+        expect(
+            within(
+                await screen.findByRole('dialog', { name: 'Review the lookup result' }),
+            ).getByText('Manga'),
+        ).toBeInTheDocument();
+    });
+
+    it('sets the category the lookup found in the form', async () => {
+        new FakeApi()
+            .signedIn(account())
+            .on('POST /books/lookups', () => ({ status: 200, body: manga }));
+        addPage();
+        await findBook();
+        const review = await screen.findByRole('dialog', { name: 'Review the lookup result' });
+
+        await userEvent.click(within(review).getByRole('button', { name: 'Use these values' }));
+
+        expect(screen.getByLabelText('Category')).toHaveValue('manga');
     });
 
     it('uses an alternative value the person picks', async () => {

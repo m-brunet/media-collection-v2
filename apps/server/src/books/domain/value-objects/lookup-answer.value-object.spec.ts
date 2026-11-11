@@ -11,6 +11,7 @@ it('keeps the values a source gives, tidying spaces', () => {
         summary: { text: 'Une enquête.', language: 'FRE' },
         editionLanguage: 'fre',
         series: { name: 'Rose hip Rose', volume: 1 },
+        category: 'manga',
     });
 
     expect(answer).toMatchObject({
@@ -22,6 +23,7 @@ it('keeps the values a source gives, tidying spaces', () => {
         summary: { text: 'Une enquête.', language: 'fre' },
         editionLanguage: 'fre',
         series: { name: 'Rose hip Rose', volume: 1 },
+        category: 'manga',
     });
 });
 
@@ -45,8 +47,20 @@ it('drops values a book cannot have', () => {
     });
 });
 
+it('drops a category a book cannot have', () => {
+    const answer = LookupAnswer.of({ category: 'poems' as never });
+
+    expect(answer.category).toBeNull();
+});
+
 it('is empty when the record holds nothing the form uses', () => {
     const answer = LookupAnswer.of({ editionLanguage: 'fre' });
+
+    expect(answer.empty).toBe(true);
+});
+
+it('is empty with only a category', () => {
+    const answer = LookupAnswer.of({ category: 'manga' });
 
     expect(answer.empty).toBe(true);
 });
