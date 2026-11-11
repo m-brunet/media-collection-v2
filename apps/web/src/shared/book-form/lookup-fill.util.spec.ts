@@ -14,6 +14,7 @@ function fields(overrides: Partial<BookLookupFieldsDto> = {}): BookLookupFieldsD
         pageCount: [],
         summary: [],
         collection: [],
+        category: [],
         ...overrides,
     };
 }
@@ -27,6 +28,7 @@ function selection(overrides: Partial<LookupSelection> = {}): LookupSelection {
         pageCount: null,
         summary: null,
         collection: null,
+        category: null,
         ...overrides,
     };
 }
@@ -74,6 +76,48 @@ describe('LookupFill', () => {
         const selected = LookupFill.defaults(found, draft({ category: 'manga', title: 'Mine' }));
 
         expect(selected.title).toBe('Rose hip Rose. 1');
+    });
+
+    it("selects the preferred source's category", () => {
+        const found = fields({
+            category: [
+                { value: 'manga', sources: ['bnf'] },
+                { value: 'comics', sources: ['openlibrary'] },
+            ],
+        });
+
+        const selected = LookupFill.defaults(found, draft());
+
+        expect(selected.category).toBe('manga');
+    });
+
+    it('keeps the generated title of a book the lookup names a manga in a collection', () => {
+        const found = fields({
+            title: [{ value: 'Claymore. 15', sources: ['bnf'] }],
+            collection: [{ value: { name: 'Claymore', volume: 15 }, sources: ['bnf'] }],
+            category: [{ value: 'manga', sources: ['bnf'] }],
+        });
+
+        const selected = LookupFill.defaults(found, draft({ category: 'books' }));
+
+        expect(selected.title).toBeNull();
+    });
+
+    it("replaces the form's category with the lookup's without asking", () => {
+        const chosen = selection({ category: 'manga' });
+
+        const { next, conflicts } = LookupFill.apply(draft({ category: 'comics' }), chosen);
+
+        expect(conflicts).toEqual([]);
+        expect(next.category).toBe('manga');
+    });
+
+    it("keeps the form's category when the lookup gives none", () => {
+        const found = fields({ title: [{ value: 'Piranesi', sources: ['bnf'] }] });
+
+        const prefilled = LookupFill.prefilled(draft({ category: 'comics' }), found);
+
+        expect(prefilled.category).toBe('comics');
     });
 
     it('fills the empty fields (example 12)', () => {

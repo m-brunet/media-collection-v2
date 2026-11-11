@@ -1,0 +1,166 @@
+{
+    "ISBN:9781401248192": {
+        "url": "http://openlibrary.org/books/OL26126336M/Watchmen_TP_International_Edition",
+        "key": "/books/OL26126336M",
+        "title": "Watchmen TP International Edition",
+        "authors": [
+            {
+                "url": "http://openlibrary.org/authors/OL440715A/Alan_Moore",
+                "name": "Alan Moore"
+            },
+            {
+                "url": "http://openlibrary.org/authors/OL62672A/Dave_Gibbons",
+                "name": "Dave Gibbons"
+            },
+            {
+                "url": "http://openlibrary.org/authors/OL324142A/John_Higgins",
+                "name": "John Higgins"
+            },
+            {
+                "url": "http://openlibrary.org/authors/OL2710839A/DC_Comics",
+                "name": "DC Comics"
+            }
+        ],
+        "number_of_pages": 448,
+        "identifiers": {
+            "isbn_13": ["9781401248192"],
+            "openlibrary": ["OL26126336M"]
+        },
+        "classifications": {
+            "lc_classifications": ["PN6737.W3 2014"]
+        },
+        "publishers": [
+            {
+                "name": "DC Comics"
+            }
+        ],
+        "publish_date": "2014",
+        "subjects": [
+            {
+                "name": "Watchmen (Comic strip)",
+                "url": "https://openlibrary.org/subjects/watchmen_(comic_strip)"
+            },
+            {
+                "name": "Graphic novels",
+                "url": "https://openlibrary.org/subjects/graphic_novels"
+            },
+            {
+                "name": "Comic books, strips",
+                "url": "https://openlibrary.org/subjects/comic_books,_strips"
+            },
+            {
+                "name": "New York Times bestseller",
+                "url": "https://openlibrary.org/subjects/new_york_times_bestseller"
+            },
+            {
+                "name": "nyt:paperback_graphic_books=2009-03-15",
+                "url": "https://openlibrary.org/subjects/nyt:paperback_graphic_books=2009-03-15"
+            },
+            {
+                "name": "Comics & graphic novels, science fiction",
+                "url": "https://openlibrary.org/subjects/comics_&_graphic_novels,_science_fiction"
+            },
+            {
+                "name": "Superheroes",
+                "url": "https://openlibrary.org/subjects/superheroes"
+            },
+            {
+                "name": "Crimes against",
+                "url": "https://openlibrary.org/subjects/crimes_against"
+            },
+            {
+                "name": "Comics & graphic novels, superheroes",
+                "url": "https://openlibrary.org/subjects/comics_&_graphic_novels,_superheroes"
+            },
+            {
+                "name": "Good and evil",
+                "url": "https://openlibrary.org/subjects/good_and_evil"
+            },
+            {
+                "name": "Fiction",
+                "url": "https://openlibrary.org/subjects/fiction"
+            },
+            {
+                "name": "Bandes dessinées",
+                "url": "https://openlibrary.org/subjects/bandes_dessinées"
+            },
+            {
+                "name": "Comicroman",
+                "url": "https://openlibrary.org/subjects/comicroman"
+            },
+            {
+                "name": "Heroes",
+                "url": "https://openlibrary.org/subjects/heroes"
+            },
+            {
+                "name": "Bandes dessinees",
+                "url": "https://openlibrary.org/subjects/bandes_dessinees"
+            },
+            {
+                "name": "Comic books, strips, etc",
+                "url": "https://openlibrary.org/subjects/comic_books,_strips,_etc"
+            },
+            {
+                "name": "Pn6737.m66 w38 2005b",
+                "url": "https://openlibrary.org/subjects/pn6737.m66_w38_2005b"
+            },
+            {
+                "name": "Comics & graphic novels, science fiction, general",
+                "url": "https://openlibrary.org/subjects/comics_&_graphic_novels,_science_fiction,_general"
+            },
+            {
+                "name": "Homicide",
+                "url": "https://openlibrary.org/subjects/homicide"
+            },
+            {
+                "name": "Superhero graphic novels",
+                "url": "https://openlibrary.org/subjects/superhero_graphic_novels"
+            },
+            {
+                "name": "Comics & graphic novels, crime & mystery",
+                "url": "https://openlibrary.org/subjects/comics_&_graphic_novels,_crime_&_mystery"
+            },
+            {
+                "name": "Comics & Graphic Novels",
+                "url": "https://openlibrary.org/subjects/comics_&_graphic_novels"
+            },
+            {
+                "name": "Science fiction",
+                "url": "https://openlibrary.org/subjects/science_fiction"
+            },
+            {
+                "name": "Fantasy",
+                "url": "https://openlibrary.org/subjects/fantasy"
+            },
+            {
+                "name": "Comic books",
+                "url": "https://openlibrary.org/subjects/comic_books"
+            },
+            {
+                "name": "Classics",
+                "url": "https://openlibrary.org/subjects/classics"
+            },
+            {
+                "name": "Dystopias",
+                "url": "https://openlibrary.org/subjects/dystopias"
+            }
+        ],
+        "subject_places": [
+            {
+                "name": "New York (State)",
+                "url": "https://openlibrary.org/subjects/place:new_york_(state)"
+            }
+        ],
+        "subject_times": [
+            {
+                "name": "Cold war",
+                "url": "https://openlibrary.org/subjects/time:cold_war"
+            }
+        ],
+        "cover": {
+            "small": "https://covers.openlibrary.org/b/id/7774894-S.jpg",
+            "medium": "https://covers.openlibrary.org/b/id/7774894-M.jpg",
+            "large": "https://covers.openlibrary.org/b/id/7774894-L.jpg"
+        }
+    }
+}

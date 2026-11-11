@@ -87,6 +87,18 @@ describe('POST /api/books/lookups', () => {
         expect(JSON.stringify(response.body)).not.toContain(coverAddress);
     });
 
+    it('suggests the category a source gives', async () => {
+        sources().knows('bnf', isbn, { title: 'Claymore', category: 'manga' });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookLookupDto>('/books/lookups', 'POST', { isbn });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toMatchObject({
+            fields: { category: [{ value: 'manga', sources: ['bnf'] }] },
+        });
+    });
+
     it('says no source knows the ISBN (example 13)', async () => {
         const client = await app.authenticatedClient(owner);
 

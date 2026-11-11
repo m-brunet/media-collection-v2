@@ -1,3 +1,5 @@
+import type { BookCategory } from '../entities/book.entity.js';
+
 export interface LookupSeries {
     name: string;
     volume: number;
@@ -23,6 +25,8 @@ export interface LookupAnswerFields {
     // The language of the edition itself (ISO 639 code, two or three letters).
     editionLanguage?: string | null;
     series?: LookupSeries | null;
+    // Only when the source says so; otherwise the form keeps its own.
+    category?: BookCategory | null;
 }
 
 export class LookupAnswer {
@@ -35,6 +39,7 @@ export class LookupAnswer {
         readonly summary: LookupSummary | null,
         readonly editionLanguage: string | null,
         readonly series: LookupSeries | null,
+        readonly category: BookCategory | null,
     ) {
         Object.freeze(this);
     }
@@ -56,6 +61,7 @@ export class LookupAnswer {
                 : null,
             LookupAnswer.language(fields.editionLanguage),
             LookupAnswer.series(fields.series),
+            LookupAnswer.categories.find((category) => category === fields.category) ?? null,
         );
     }
 
@@ -70,6 +76,8 @@ export class LookupAnswer {
             !this.series
         );
     }
+
+    private static readonly categories: readonly BookCategory[] = ['books', 'manga', 'comics'];
 
     private static text(value: string | null | undefined): string | null {
         const trimmed = value?.replace(/\s+/g, ' ').trim();
