@@ -34,3 +34,26 @@ it('replaces the existing author with a new one spelt as the source does', () =>
         { id: null, name: 'Yuki Kodama', distinct: false },
     ]);
 });
+
+const taken: DraftAuthor[] = [
+    { id: null, name: 'Flipsflops', distinct: true },
+    { id: null, name: 'Yuki Kodama', distinct: false },
+];
+
+it('offers the existing author back once the source’s spelling is taken', () => {
+    const result = AuthorSpellings.taken(taken, [spelling]);
+
+    expect(result).toEqual([spelling]);
+});
+
+it('puts the existing author back instead of the source’s spelling', () => {
+    const result = AuthorSpellings.restored(taken, spelling);
+
+    expect(result).toEqual(filledIn);
+});
+
+it('names the authors as the lookup filled them in', () => {
+    const result = AuthorSpellings.asFilledIn(taken, [spelling]);
+
+    expect(result.map((author) => author.name)).toEqual(["Flipflop's", 'Yuki Kodama']);
+});
