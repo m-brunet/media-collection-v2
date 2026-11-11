@@ -6,7 +6,8 @@ https://github.com/webalys-hq/streamline-vectors), retrieved through the Iconify
 (https://github.com/iconify/icon-sets, set `streamline-freehand`), licensed under **CC BY 4.0**
 (https://creativecommons.org/licenses/by/4.0/).
 
-**Changes made:** recoloured to the Libris Spring green `#79d670` and resized into application icon files
+**Changes made:** recoloured to the Libris Spring green `#79d670`, outlined in dark grey (`#1b1d1f`) to stay visible on
+any background, and resized into application icon files
 (`tools/generate-libris-icons.mjs`).
 
 The application's credits/licences page (Task 10) must reproduce this attribution, with the licence link and the note
