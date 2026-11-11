@@ -23,9 +23,9 @@ describe('GetCollectionShopping', () => {
             ownedCount: 1,
             lastOwned: { volume: 2, title: null },
             missing: [
-                { volume: 1, saved: false, quickAdd: null },
-                { volume: 3, saved: false, quickAdd: null },
                 { volume: 4, saved: true, quickAdd: { bookId: 'four', title: 'Book four' } },
+                { volume: 3, saved: false, quickAdd: null },
+                { volume: 1, saved: false, quickAdd: null },
             ],
         });
     });
