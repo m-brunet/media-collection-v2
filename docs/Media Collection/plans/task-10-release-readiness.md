@@ -334,11 +334,11 @@ Each step: tests, the relevant checks, architecture review skill on the changes,
   Done on 2026-11-10, on pull request #18 (repository kept private):
   - Secret scan: gitleaks 8.30.1 on every commit of every branch (476 commits, 14 MB): one finding, a false
     positive: the `fileToken` of the Pencil design file `design/handoff-lending-final/media-collection-v2-final.pen`
-    (commit `ede04d6`, file removed since), a UUID naming the document, not a credential.
+    (commit `ce49f0f`, file removed since), a UUID naming the document, not a credential.
   - Version `2.0.0`; the desktop and API tests read the version from `package.json` (`tests/api/app-version.ts`).
   - Full `npm run check` passed (334 files, 3007 tests); the pull request run built and smoke-tested 2.0.0 on both
     systems.
-  - Tag `v2.0.0` on the merge commit `6d614c9`; the release run passed on Windows and Linux and made the draft with
+  - Tag `v2.0.0` on the merge commit `681a810`; the release run passed on Windows and Linux and made the draft with
     `Media-Collection-Setup-2.0.0.exe`, `Media-Collection-2.0.0.AppImage`, `latest.yml`, `latest-linux.yml` and the
     blockmap. The user added release notes (Libris and Leaf feature lists) and published it on 2026-11-10:
     <https://github.com/m-brunet/media-collection-v2/releases/tag/v2.0.0>. The repository is private, so the release

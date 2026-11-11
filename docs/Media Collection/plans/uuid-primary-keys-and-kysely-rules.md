@@ -1,7 +1,7 @@
 # UUID primary keys and Kysely SQL boundaries
 
-Status: done. Implemented in commit `5bc0aa2` and merged into `master` through PR #1
-(`768b283`). Summary recorded on 2026-11-05.
+Status: done. Implemented in commit `5ff2a06` and merged into `master` through PR #1
+(`7caf470`). Summary recorded on 2026-11-05.
 
 ## Decisions
 

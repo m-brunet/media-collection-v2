@@ -173,7 +173,7 @@ design.
   icon; both, or a record that cannot tell → the general sentence as before. Older records are split too (no new
   audit data). [Task 8](task-08-overview-activity.md) sentence table updated. Tests: projection rules (location only,
   tags only, tags reordered, both), the API listing both kinds, the Activity page sentences and icons.
-- **Severity:** low (wording). **Done:** 2026-11-10, branch `fix/known-issues-1-2-5-7`, commit `95378d3`
+- **Severity:** low (wording). **Done:** 2026-11-10, branch `fix/known-issues-1-2-5-7`, commit `88864f2`
   (cherry-picked from `385f2db`, first written 2026-11-08).
 
 ### KI-1 — The desktop window cannot be closed while the book form has unsaved changes
@@ -190,7 +190,7 @@ design.
   Also check that quitting from the tray or the application menu behaves the same.
 - **Severity:** low (the person can save or clear the form first). **Planned:** next fix pass, or the next task that
   touches the desktop shell.
-- **Done:** 2026-11-10, branch `fix/known-issues-1-2-5-7`, commit `d110e84` (cherry-picked from the stale `known-issues-fix-pass`
+- **Done:** 2026-11-10, branch `fix/known-issues-1-2-5-7`, commit `f836c95` (cherry-picked from the stale `known-issues-fix-pass`
   branch, first written 2026-11-08): the Libris window handles `will-prevent-unload` with a native
   dialog (Leave without saving / Stay, Stay by default). Quitting (application menu, signals) now closes the Libris
   window before stopping the server, so Stay keeps both the window and the server running. Desktop e2e tests: close the
@@ -214,7 +214,7 @@ design.
 - **Open question for the fix:** 24 hours since the last activity (renewed, as today), or 24 hours after sign-in
   whatever the activity. The first is assumed unless the user says otherwise.
 - **Severity:** medium (frequent sign-ins during normal use). **Planned:** next fix pass.
-- **Done:** 2026-11-10, branch `fix/known-issues-1-2-5-7`, commit `e2af329` (cherry-picked from the stale `known-issues-fix-pass`
+- **Done:** 2026-11-10, branch `fix/known-issues-1-2-5-7`, commit `083ae70` (cherry-picked from the stale `known-issues-fix-pass`
   branch, first written 2026-11-08): 24 hours since the last authenticated action (the assumed answer to
   the open question). One lifetime, `SessionLifetime` (`apps/server/src/shared/domain/session-lifetime.helper.ts`),
   sets both the token expiry and the cookie `Max-Age`; renewal, passive requests and the token version check are
@@ -235,7 +235,7 @@ design.
   keep the count from wrapping (`white-space: nowrap`). Component test not useful (layout); check it in the browser at
   1280 × 720 and 1440 wide, in English and French.
 - **Severity:** low (visual alignment). **Planned:** next fix pass, or the next task that touches the Bookshelves page.
-- **Done:** 2026-11-10, branch `fix/known-issues-1-2-5-7`, commit `31eb6cd` (cherry-picked from the stale `known-issues-fix-pass`
+- **Done:** 2026-11-10, branch `fix/known-issues-1-2-5-7`, commit `bc7fbb9` (cherry-picked from the stale `known-issues-fix-pass`
   branch, first written 2026-11-08): `.book-toolbar` centres its items; the Bookshelves count
   (`.book-toolbar__count`) stays on one line. My books and Collections are unchanged (their buttons and selects share
   the 44 px control height).
@@ -256,7 +256,7 @@ design.
   tight: the sidebar (long French labels such as "Paramètres du serveur"), buttons, table columns, the book form and
   Leaf at phone width, in English and French, at 1280 × 720 and 1440 wide.
 - **Severity:** low (typography). **Planned:** next fix pass, or the next task that touches shared styles.
-- **Done:** 2026-11-10, branch `fix/known-issues-1-2-5-7`, commits `37125e1` and `8563169` (cherry-picked from the stale `known-issues-fix-pass`
+- **Done:** 2026-11-10, branch `fix/known-issues-1-2-5-7`, commits `64829f3` and `2ac1ebe` (cherry-picked from the stale `known-issues-fix-pass`
   branch, first written 2026-11-08): token `--tracking-body: 0.01em` on `body`; buttons, fields
   and selects inherit it (browsers reset it on form controls); every rule using the heading or monospace font sets
   `letter-spacing: normal` unless it already had its own spacing, including the QR code address added since by
@@ -274,7 +274,7 @@ design.
   sections: the label itself stays the expand/collapse button (with its arrow, `aria-expanded` and the closed hint).
   Check the Edit book form too, and whether Leaf's phone form should follow.
 - **Severity:** low (visual consistency). **Planned:** next fix pass, or the next task that touches the book form.
-- **Done:** 2026-11-08, commit `9a0fed6` (branch `fix-additional-section-title`, PR #9): "03 / Additional information"
+- **Done:** 2026-11-08, commit `3b6d392` (branch `fix-additional-section-title`, PR #9): "03 / Additional information"
   ("03 / Informations complémentaires") in the green numbered label style, still the collapsible toggle; the Edit book
   form and Leaf's phone form use the same label. Confirmed in the code on 2026-11-10 (review of open entries).
 
@@ -308,8 +308,8 @@ design.
   - Tests: the upkeep schedule (quick retries, back to hourly), the HTTPS rule renewed during the back-off, the router
     search retries. No test reaches a real router or Let's Encrypt.
 - **Severity:** high (internet access silently stops working). **Planned:** now, its own fix branch.
-- **Done:** branch `fix/internet-access-renewal` (PR #13 merged): commits `47b1504` (router search), `c4e7b96` (HTTPS rule during
-  the back-off), `ccf5402` (quick retries, log).
+- **Done:** branch `fix/internet-access-renewal` (PR #13 merged): commits `0f232be` (router search), `84bea32` (HTTPS rule during
+  the back-off), `80f83fb` (quick retries, log).
 
 ### KI-6 — Appearance: seven new colour schemes (Mint, Emerald, Forest removed) and the icon set choice
 
@@ -431,10 +431,10 @@ design.
   schemes are out of scope: Libris and Leaf are dark only.
 - **Severity:** medium (visible choice, touches every screen's colours and icons). **Planned:** next fix pass,
   before Task 10.
-- **Done:** 2026-11-09, branch `ki-6-appearance`, PR #12: commits `848a7d0` (docs), `e996672` (colour schemes and
-  migration 011), `43c5a7b` and `6a434ef` (icon set setting and Appearance panel), `e65fdff` (Desna's reveries,
-  The Butterfly's Way), `b30de03` (icons in the text colour), `73d81ab` (admin links), `a43a0a0` (credits page),
-  `758d9ba` and `01e6ba8` (Leaf's icon, marks in the accent), `7887dd1` (screen-state icons), and the closing
+- **Done:** 2026-11-09, branch `ki-6-appearance`, PR #12: commits `62b8638` (docs), `e682aef` (colour schemes and
+  migration 011), `9fbafdb` and `09c94e4` (icon set setting and Appearance panel), `a3d1dd1` (Desna's reveries,
+  The Butterfly's Way), `2e384f4` (icons in the text colour), `fb1fa9e` (admin links), `2c10fdd` (credits page),
+  `cfff5e1` and `3b598b2` (Leaf's icon, marks in the accent), `8828acd` (screen-state icons), and the closing
   commit (tests, this entry). Open follow-up, outside KI-6: the Appearance artwork per icon set, when the user
   provides it.
 
@@ -485,7 +485,7 @@ design.
   the expected Leaf address, so the logo is proven not to break scanning. A manual check with two phones.
 - **Severity:** medium (main way to reach Leaf from a phone on the local network). **Planned:** next fix pass, with
   KI-8; it can follow Task 9.5's pull request.
-- **Done:** 2026-11-09, commit `9e64d1f` (branch `ki-11-address-qr-codes`): `QrCode` (`apps/web/src/shared/ui/qr-code.tsx`,
+- **Done:** 2026-11-09, commit `37999ad` (branch `ki-11-address-qr-codes`): `QrCode` (`apps/web/src/shared/ui/qr-code.tsx`,
   level H, 4-module margin, Libris mark at 20 % of the width) used by the new `AddressesPanel` and by the Internet
   access panel; `ServerAddress` (Leaf address, loopback detection). Browser tests decode the displayed codes with
   `zxing-wasm` (`tests/web/qr-reader.ts`). Still to do: the manual check with two phones; the credits line (Task 10).
@@ -503,7 +503,7 @@ design.
   (`display: grid; gap: var(--space-2)`) instead of the bare `.plain-list`. Keep the current look of the links.
   Check on the reference desktop viewport, in both languages.
 - **Severity:** low (readability). **Planned:** with KI-11, whose design gives the address rows 16 px spacing.
-- **Done:** 2026-11-09, commit `9e64d1f` (branch `ki-11-address-qr-codes`, with KI-11): address rows of at least
+- **Done:** 2026-11-09, commit `37999ad` (branch `ki-11-address-qr-codes`, with KI-11): address rows of at least
   44 px with 16 px between them, in both address lists.
 
 ### KI-4 — Libris has an application icon in the Windows taskbar
@@ -530,7 +530,7 @@ design.
   recoloured and resized; it no longer comes from Lucide. Attribution is required: add it, with the licence link and the
   note that it was modified, to the credits page planned in Task 10 (wording in `design/artifact/icons/CREDITS.md`), and
   keep a `CREDITS.md` with the same attribution next to the icon files.
-- **Done:** 2026-11-08, commit `b4e2f3d` (branch `ki-4-libris-icon`): `apps/web/public/libris.svg`, favicon, `Brand`
+- **Done:** 2026-11-08, commit `cc58f05` (branch `ki-4-libris-icon`): `apps/web/public/libris.svg`, favicon, `Brand`
   for Libris, `apps/desktop/assets/icons` (`.ico`, PNG, `CREDITS.md`, generated by `tools/generate-libris-icons.mjs`)
   on both desktop windows. Still to do in Task 10: the credits page entry and the installer icon.
 - **Severity:** low (appearance).
