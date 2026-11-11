@@ -1,6 +1,6 @@
 {
     "name": "media-collection",
-    "version": "2.1.0",
+    "version": "2.1.1",
     "private": true,
     "description": "Media Collection: manage a shared household book library (Libris desktop, Leaf mobile)",
     "homepage": "https://github.com/m-brunet/media-collection-v2",
