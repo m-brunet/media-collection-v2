@@ -565,12 +565,6 @@ body {
     white-space: pre-line;
 }
 
-.button--pressed {
-    border-color: var(--color-accent);
-    background: var(--color-selected);
-    color: var(--color-accent-strong);
-}
-
 .book-form__main {
     display: grid;
     grid-template-columns: 1fr 230px;

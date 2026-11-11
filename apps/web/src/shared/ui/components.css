@@ -444,3 +444,13 @@
     min-width: 0;
     overflow-wrap: anywhere;
 }
+
+.button--pressed {
+    border-color: var(--color-accent);
+    background: var(--color-selected);
+    color: var(--color-accent-strong);
+}
+
+.reading-field {
+    display: flex;
+}

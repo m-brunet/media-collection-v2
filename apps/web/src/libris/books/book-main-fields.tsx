@@ -18,6 +18,7 @@ import { BookFormat } from '../../shared/book-form/book-format.util';
 import { CollectionField } from './collection-field';
 import type { CoverChoice } from '../../shared/book-form/cover-choice';
 import { CoverPicker } from './cover-picker';
+import { ReadingField } from '../../shared/book-form/reading-toggle';
 import type { BookField } from '../../shared/book-form/use-book-save';
 
 export function BookMainFields({
@@ -149,15 +150,9 @@ export function BookMainFields({
                             }
                         />
                         {personal && (
-                            <SelectField
-                                label={t('form.reading')}
-                                required
-                                value={values.read ? 'read' : 'not-read'}
-                                options={[
-                                    { value: 'not-read', label: t('status.notRead') },
-                                    { value: 'read', label: t('status.read') },
-                                ]}
-                                onChange={(event) => set('read', event.target.value === 'read')}
+                            <ReadingField
+                                read={values.read}
+                                onChange={(read) => set('read', read)}
                             />
                         )}
                     </div>
