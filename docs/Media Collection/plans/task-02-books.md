@@ -2,11 +2,11 @@
 
 Status: in progress (started 2026-11-04). Global plan: [implementation plan](implementation-plan.md).
 Owning docs: [features](../product/features.md) (Books, Lists/search/sorting), [book-entry](../product/book-entry.md) (manual entry, ISBN, authors, dates, price, notes; lookup is Task 6), [collection-editions-impact](../product/collection-editions-impact.md), [locations-tags-search](../product/locations-tags-search.md) (simple search and sorting part).
-Design: `design/artifact/screens/` ceW00 (My books), L2S5Lp/v9MipE/gRcO9 (details), tr7ll/FOZxg (add/edit), I6aLY5 (no-ISBN duplicate), dp3g6 (author correction), U5T73Q (discard), WvaIi/zKGk3/BUKLy (empty, no results, loading).
+Design: `design/artifact/screens/` ceW00 (My books, now Library), L2S5Lp/v9MipE/gRcO9 (details), tr7ll/FOZxg (add/edit), I6aLY5 (no-ISBN duplicate), dp3g6 (author correction), U5T73Q (discard), WvaIi/zKGk3/BUKLy (empty, no results, loading).
 
 ## Scope
 
-In: book records with all fields except collection membership (Task 3), location and tags (Task 4), loans (Task 5) and lookup (Task 6); shared authors; covers (manual upload); personal reading status and private note; My books list with simple search, sorting and paging; details; add/edit/delete; Activity-eligible audit records.
+In: book records with all fields except collection membership (Task 3), location and tags (Task 4), loans (Task 5) and lookup (Task 6); shared authors; covers (manual upload); personal reading status and private note; Library list with simple search, sorting and paging; details; add/edit/delete; Activity-eligible audit records.
 Out (later tasks fill them in): collection controls in section 1, the whole section 2 (location & tags), "Find book", lending indicators, advanced filters.
 
 ## Decisions (technical, within the specs)
@@ -22,7 +22,7 @@ Out (later tasks fill them in): collection controls in section 1, the whole sect
 - **Audit categories**: `book.created`, `book.updated`, `book.deleted`, `book.cover-changed`, `author.corrected` (shared, Activity-eligible later); `book.reading-status-changed`, `book.note-changed` (personal, never in Activity).
 - **List**: server-side search (case/accent-insensitive partial on title and author names via stored keys; ISBN digits partial, a valid ISBN-10 also matches its ISBN-13), sort title / date added / publication date in either direction (missing publication dates last both ways), paging 48 per page with "Load more". Default title A–Z.
 - **Permissions**: Owners/Admin create, edit, delete and upload covers (`requireLibraryEditor`); every signed-in account reads.
-- **Interface**: Libris switches to a data router (`createBrowserRouter`) so unsaved-changes confirmation also covers sidebar navigation. My books opens the details page on selection (the design's side panel becomes the details route, as the design guidelines allow). "My books" becomes the landing page.
+- **Interface**: Libris switches to a data router (`createBrowserRouter`) so unsaved-changes confirmation also covers sidebar navigation. Library opens the details page on selection (the design's side panel becomes the details route, as the design guidelines allow). "Library" becomes the landing page.
 
 ## Steps
 
@@ -31,7 +31,7 @@ Out (later tasks fill them in): collection controls in section 1, the whole sect
 3. [x] Persistence: migration 005 (authors, books, book_authors, reading_statuses, personal_notes), repositories, list query, cover file storage; SQLite tests.
 4. [x] Use cases: create/update/delete/get/list books, author resolution and correction, search authors, cover replace/remove/read, reading status, personal note save/delete; unit tests.
 5. [x] HTTP: books, authors and cover endpoints (raw image body), API tests for every endpoint.
-6. [x] Libris: data router, My books (grid, search, sort, load more, empty/no-result/loading), details (reading, note, delete), add/edit form (three sections minus later parts, author picker, similar-author and duplicate dialogs, author correction, cover, additional info, discard confirmation, save failure), EN/FR; component tests.
+6. [x] Libris: data router, Library (grid, search, sort, load more, empty/no-result/loading), details (reading, note, delete), add/edit form (three sections minus later parts, author picker, similar-author and duplicate dialogs, author correction, cover, additional info, discard confirmation, save failure), EN/FR; component tests.
 7. [x] Browser e2e journeys: add a book with ISBN-10, details shows conversion; no-ISBN duplicate warning; Guest read-only; reading/note privacy between two Owners; search and sort.
 8. [x] Docs, full check, architecture review, commit, plan status.
 
@@ -48,7 +48,7 @@ Out (later tasks fill them in): collection controls in section 1, the whole sect
   `isbn-taken`: `{bookId}`).
 - Libris now uses a data router (`createBrowserRouter`), so `useBlocker` works; the book form uses it for the
   unsaved-changes dialog. Component tests render pages with `testing/render-route.test-support.tsx`.
-- `/` lands on `/books` (My books). Sections 02 (location and tags) and collection membership of the book form are
+- `/` lands on `/books` (Library). Sections 02 (location and tags) and collection membership of the book form are
   left for tasks 3 and 4; the form is built so those blocks slot in between the main and additional sections.
 - Author search (`FindAuthors`) filters the author list in memory; fine for a household library, revisit if large.
 - The global CSS rule `[hidden] { display: none !important; }` now guarantees `hidden` beats component display rules.

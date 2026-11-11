@@ -81,8 +81,8 @@ async function signedIn(username: string): Promise<Page> {
     await page.getByLabel(/^Password/).fill(username + '-password');
     await page.getByRole('button', { name: 'Sign in' }).click();
     await page.getByRole('heading', { name: 'Overview' }).waitFor();
-    await page.getByRole('link', { name: 'My books' }).click();
-    await page.getByRole('heading', { name: 'My books' }).waitFor();
+    await page.getByRole('link', { name: 'Library', exact: true }).click();
+    await page.getByRole('heading', { name: 'Library', exact: true }).waitFor();
 
     return page;
 }
@@ -207,7 +207,7 @@ describe('Returns', () => {
 });
 
 describe('Lent books in the library', () => {
-    it('marks a lent book in My books', async () => {
+    it('marks a lent book in the Library', async () => {
         await lent('Sam Taylor', await book('Piranesi'));
         const page = await signedIn('camille');
 

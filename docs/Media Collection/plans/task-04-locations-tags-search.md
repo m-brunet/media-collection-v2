@@ -6,7 +6,7 @@ Owning docs: [locations-tags-search](../product/locations-tags-search.md) (autho
 Design: `design/artifact/screens/` ZRBZB (Bookshelves), g7I2l (Bookshelves empty), ty6Jg (Create shelf, also used for
 Move shelf), q84uEO (Delete shelf), R60eQ2 (Tags), y41k8 (Delete tag), q2GzCK (Advanced book filters), FFPyb (filters,
 Guest), FOZxg/tr7ll (section "02 / Location & tags" of the book form), L2S5Lp (location and tags on book details),
-ceW00/zKGk3 (My books: Advanced filters button, applied-filter chips, "6 of 842 books", no-result state), yUD6M
+ceW00/zKGk3 (Library, designed as My books: Advanced filters button, applied-filter chips, "6 of 842 books", no-result state), yUD6M
 (Collections: Advanced filters button).
 
 ## Scope
@@ -14,7 +14,7 @@ ceW00/zKGk3 (My books: Advanced filters button, applied-filter chips, "6 of 842 
 In: bookcases and shelves (create, rename, move shelf, delete with affected-book count, empty ones kept); shelf
 assignment in the book form; tags (create inline from the book form or from the Tags page, rename, delete with
 affected-book count, unused tags kept); location and tags on book details and in the book audit; advanced filters for
-My books and the Collections list (category, authors, collection, location, ownership, own reading status, tags
+Library and the Collections list (category, authors, collection, location, ownership, own reading status, tags
 include/exclude, No location / No collection), combined with simple search and sorting; EN/FR; audit.
 Out: inline location creation from the book form (docs: not initially), clickable bookcase visualisation, tag merging,
 Overview counters (Task 8), sorting changes (already done in Tasks 2-3).
@@ -83,7 +83,7 @@ Overview counters (Task 8), sorting changes (already done in Tasks 2-3).
     URL query: Category, Authors, Collection (hidden for the Collections list), Location, Ownership, Your reading
     status (not for Guests) as multi-choice dropdowns including "No collection" / "No physical location"; tags block
     with search, All/Selected tabs, None/Include/Exclude per tag, summary chips with "+N more", Reset tags; "Show
-    results" and "Clear filters". My books and Collections show removable applied-filter chips and "6 of 842 books";
+    results" and "Clear filters". Library and Collections show removable applied-filter chips and "6 of 842 books";
     the no-result state offers "Clear filters" (zKGk3).
 
 ## Steps
@@ -97,7 +97,7 @@ Overview counters (Task 8), sorting changes (already done in Tasks 2-3).
 4. [x] HTTP: bookcases, shelves, tags controllers; list query schemas with filters; API e2e tests for every endpoint,
        roles, conflicts, audit.
 5. [x] Libris: Bookshelves and Tags pages with dialogs, book form section 02, book details, advanced filters page,
-       chips and counts on My books and Collections; EN/FR; component tests.
+       chips and counts on Library and Collections; EN/FR; component tests.
 6. [x] Browser e2e: acceptance journeys (locations lifecycle, move, delete keeps books, tag reuse/rename/delete,
        combined filters on books and collections, Guest view without reading filter).
 7. [ ] Docs (done), full check (done), architecture review (done, findings applied); remaining: commit,

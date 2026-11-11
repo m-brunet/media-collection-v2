@@ -50,7 +50,7 @@ function tagChoice(name: string, choice: 'None' | 'Include' | 'Exclude') {
     return within(screen.getByRole('radiogroup', { name })).getByRole('radio', { name: choice });
 }
 
-it('returns to My books with the combined criteria, keeping the search', async () => {
+it('returns to the Library with the combined criteria, keeping the search', async () => {
     api();
     const router = show('/books/filters?search=tolk');
 
