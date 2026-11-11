@@ -104,7 +104,10 @@ describe('Generated titles', () => {
         await page.getByLabel('This book has no ISBN').check();
         await page.getByRole('combobox', { name: 'Add author' }).fill('Yukito Kishiro');
         await page.getByRole('option', { name: 'Add “Yukito Kishiro” as a new author' }).click();
-        await page.getByLabel(/^Category/).selectOption('manga');
+        await page
+            .getByRole('group', { name: 'Category' })
+            .getByText('Manga', { exact: true })
+            .click();
         await page.getByRole('checkbox', { name: 'Part of a collection' }).check();
         await page.getByRole('combobox', { name: /Collection name/ }).fill('Gunnm');
         await page.getByRole('textbox', { name: /Volume number/ }).fill('3');

@@ -19,6 +19,7 @@ import { CollectionField } from './collection-field';
 import type { CoverChoice } from '../../shared/book-form/cover-choice';
 import { CoverPicker } from './cover-picker';
 import { ReadingField } from '../../shared/book-form/reading-toggle';
+import { ChoiceButtons } from '../../shared/ui/choice-buttons';
 import type { BookField } from '../../shared/book-form/use-book-save';
 
 export function BookMainFields({
@@ -123,18 +124,16 @@ export function BookMainFields({
                         spellings={authorSpellings}
                         onChange={(authors) => set('authors', authors)}
                     />
-                    <div className="book-form__row">
-                        <SelectField
-                            label={t('form.category')}
-                            value={values.category}
-                            options={BookFormat.categories.map((category) => ({
-                                value: category,
-                                label: t(BookFormat.category(category)),
-                            }))}
-                            onChange={(event) =>
-                                set('category', event.target.value as BookDraftValues['category'])
-                            }
-                        />
+                    <ChoiceButtons
+                        label={t('form.category')}
+                        value={values.category}
+                        choices={BookFormat.categories.map((category) => ({
+                            value: category,
+                            label: t(BookFormat.category(category)),
+                        }))}
+                        onChange={(category) => set('category', category)}
+                    />
+                    <div className="book-form__row book-form__row--two">
                         <SelectField
                             label={t('form.ownership')}
                             required
