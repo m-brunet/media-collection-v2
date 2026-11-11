@@ -1,4 +1,5 @@
 import { NameKey } from '../../../shared/domain/name-key.helper.js';
+import type { BookCategory } from '../entities/book.entity.js';
 import type {
     LookupAnswer,
     LookupDate,
@@ -19,6 +20,7 @@ export interface CombinedLookup {
     pageCount: LookupChoice<number>[];
     summary: LookupChoice<string>[];
     collection: LookupChoice<LookupSeries>[];
+    category: LookupChoice<BookCategory>[];
 }
 
 // Combines the answers of several sources, added in order of preference.
@@ -66,6 +68,10 @@ export class LookupCombination {
             collection: this.choices(
                 (answer) => answer.series,
                 (series) => LookupCombination.words(series.name) + '#' + series.volume,
+            ),
+            category: this.choices(
+                (answer) => answer.category,
+                (category) => category,
             ),
         };
     }

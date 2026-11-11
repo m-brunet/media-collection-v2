@@ -2,6 +2,7 @@ import type {
     LookupSource,
     SourceReply,
 } from '../../../../application/ports/driven/lookup-source.interface.js';
+import type { BookCategory } from '../../../../domain/entities/book.entity.js';
 import type { LookupDate } from '../../../../domain/value-objects/lookup-answer.value-object.js';
 import { LookupAnswer } from '../../../../domain/value-objects/lookup-answer.value-object.js';
 import type { OpenLibraryRecord, OpenLibraryRecords } from './open-library-records.adapter.js';
@@ -35,7 +36,25 @@ export class OpenLibraryInformation implements LookupSource<LookupAnswer> {
             publisher: record.publishers?.[0]?.name ?? null,
             publicationDate: OpenLibraryInformation.date(record.publish_date),
             pageCount: record.number_of_pages ?? null,
+            category: OpenLibraryInformation.category(record),
         });
+    }
+
+    // The work's subjects: "Comics & graphic novels, manga, …" or "Manhwa" make a manga;
+    // "Comic books, strips", "Graphic novels" or "Bandes dessinées" a comic. Anything else: no
+    // category, the form keeps its own. Publishers are not used: some publish both.
+    private static category(record: OpenLibraryRecord): BookCategory | null {
+        const subjects = (record.subjects ?? []).map((subject) => subject.name ?? '');
+
+        if (subjects.some((subject) => /\b(manga|manhwa|manhua)\b/i.test(subject))) {
+            return 'manga';
+        }
+
+        return subjects.some((subject) =>
+            /\bcomic|\bgraphic novel|\bbandes dessinées/i.test(subject),
+        )
+            ? 'comics'
+            : null;
     }
 
     // "2012", "March 2012", "Mar 1, 2012", "2012-03-01": the year, and the month when given.

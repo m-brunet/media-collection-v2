@@ -375,6 +375,7 @@ export interface BookLookupFieldsDto {
     pageCount: LookupChoiceDto<number>[];
     summary: LookupChoiceDto<string>[];
     collection: LookupChoiceDto<{ name: string; volume: number }>[];
+    category: LookupChoiceDto<BookCategory>[];
 }
 
 // A cover offered by a lookup, shown from `/api/books/lookups/covers/:token` for half an hour.

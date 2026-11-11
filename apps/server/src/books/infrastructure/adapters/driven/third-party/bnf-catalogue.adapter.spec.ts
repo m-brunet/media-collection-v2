@@ -114,6 +114,72 @@ describe('BnfCatalogue', () => {
         });
     });
 
+    it('reads a manga from its comic class and its Japanese original', async () => {
+        const { source } = catalogue(recorded('bnf-claymore-15.xml'));
+
+        const reply = await source.find('9782723471930');
+
+        expect(reply).toMatchObject({ value: { category: 'manga' } });
+    });
+
+    it('reads a manga from its comic form and its Japanese original', async () => {
+        const { source } = catalogue(recorded('bnf-rose-hip-rose-1.xml'));
+
+        const reply = await source.find('9782845998179');
+
+        expect(reply).toMatchObject({ value: { category: 'manga' } });
+    });
+
+    it('reads a comic translated from Korean as a manga', async () => {
+        const { source } = catalogue(recorded('bnf-solo-leveling-17.xml'));
+
+        const reply = await source.find('9782382884171');
+
+        expect(reply).toMatchObject({ value: { category: 'manga' } });
+    });
+
+    it('reads a comic translated from Chinese as a manga', async () => {
+        const { source } = catalogue(
+            record(field('101', { a: 'fre', c: 'chi' }), field('686', { a: '805' })),
+        );
+
+        const reply = await source.find('9782889210000');
+
+        expect(reply).toMatchObject({ value: { category: 'manga' } });
+    });
+
+    it('reads a European comic as a comic', async () => {
+        const { source } = catalogue(recorded('bnf-blacksad-1.xml'));
+
+        const reply = await source.find('9782205213287');
+
+        expect(reply).toMatchObject({ value: { category: 'comics' } });
+    });
+
+    it('reads a comic from its form alone', async () => {
+        const { source } = catalogue(record(field('608', { a: 'Bandes dessinées' })));
+
+        const reply = await source.find('9782205000000');
+
+        expect(reply).toMatchObject({ value: { category: 'comics' } });
+    });
+
+    it('gives no category for a novel of another class', async () => {
+        const { source } = catalogue(recorded('bnf-ewilan-1.xml'));
+
+        const reply = await source.find('9782253164692');
+
+        expect(reply).toMatchObject({ value: { category: null } });
+    });
+
+    it('gives no category for a novel without a class', async () => {
+        const { source } = catalogue(recorded('bnf-passe-miroir-1.xml'));
+
+        const reply = await source.find('9782075215466');
+
+        expect(reply).toMatchObject({ value: { category: null } });
+    });
+
     it('reads an organisation as author', async () => {
         const { source } = catalogue(record(field('710', { a: 'Clamp', 4: '070' })));
 

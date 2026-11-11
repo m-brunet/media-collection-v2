@@ -38,6 +38,39 @@ describe('OpenLibraryInformation', () => {
         });
     });
 
+    it('reads a manga from its subjects', async () => {
+        const body = readFileSync(
+            new URL('./fixtures/open-library-demon-slayer-1.json', import.meta.url),
+            'utf8',
+        );
+
+        const reply = await information(body).find('9781974700523');
+
+        expect(reply).toMatchObject({ value: { category: 'manga' } });
+    });
+
+    it('reads a comic from its subjects', async () => {
+        const body = readFileSync(
+            new URL('./fixtures/open-library-watchmen.json', import.meta.url),
+            'utf8',
+        );
+
+        const reply = await information(body).find('9781401248192');
+
+        expect(reply).toMatchObject({ value: { category: 'comics' } });
+    });
+
+    it('gives no category for a novel', async () => {
+        const body = readFileSync(
+            new URL('./fixtures/open-library-ewilan-1.json', import.meta.url),
+            'utf8',
+        );
+
+        const reply = await information(body).find('9782253164692');
+
+        expect(reply).toMatchObject({ value: { category: null } });
+    });
+
     it('reads a month written in words', async () => {
         const reply = await dated('March 2012').find('9781635575637');
 

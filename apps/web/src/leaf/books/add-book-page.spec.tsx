@@ -26,6 +26,7 @@ function lookup(overrides: Partial<LookedUpBook> = {}): LookedUpBook {
             pageCount: [],
             summary: [],
             collection: [],
+            category: [],
         },
         covers: [],
         unavailable: [],
@@ -198,6 +199,18 @@ it('starts with the last saved book’s shelf, category and reading status', asy
     expect(screen.getByLabelText('Shelf')).toHaveValue('top');
     expect(screen.getByLabelText('Category')).toHaveValue('manga');
     expect(screen.getByLabelText(/^Your reading/)).toHaveValue('read');
+});
+
+it('starts with the lookup’s category over the remembered one', async () => {
+    remember('alex', { category: 'books', read: false, bookcaseId: null, shelfId: null });
+
+    open(
+        lookup({
+            fields: { ...lookup().fields, category: [{ value: 'manga', sources: ['bnf'] }] },
+        }),
+    );
+
+    expect(await screen.findByLabelText('Category')).toHaveValue('manga');
 });
 
 it('drops a remembered shelf deleted since', async () => {
