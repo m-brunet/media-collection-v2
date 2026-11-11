@@ -319,6 +319,7 @@ export const fr = {
     'leaf.found.exhaustedBody':
         'La seconde tentative a échoué. Aucun livre n’a été créé. Ajoutez ce livre depuis Libris sur un ordinateur, ou réessayez plus tard.',
     'leaf.form.title': 'Vérifier le livre',
+    'leaf.form.opening': 'Ouverture du formulaire…',
     'leaf.form.intro': 'Recherche terminée. Vérifiez le résultat avant d’enregistrer.',
     'leaf.form.scannedIsbn': 'ISBN scanné',
     'leaf.form.alternative': 'Aussi trouvé : {value} ({sources})',

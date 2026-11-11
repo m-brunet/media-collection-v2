@@ -304,6 +304,7 @@ export const en = {
     'leaf.found.exhaustedBody':
         'The second attempt failed. No book has been created. Add this book from Libris on a computer, or try again later.',
     'leaf.form.title': 'Review book',
+    'leaf.form.opening': 'Opening the form…',
     'leaf.form.intro': 'Lookup complete. Review the result before saving.',
     'leaf.form.scannedIsbn': 'Scanned ISBN',
     'leaf.form.alternative': 'Also found: {value} ({sources})',
