@@ -118,6 +118,10 @@ The folder is created when missing (test it, Linux included). Update backups are
 
 ### Private repository, updates off (2026-11-10)
 
+**Superseded on 2026-11-11 ([#45](https://github.com/m-brunet/media-collection-v2/issues/45)):** the repository
+goes public with 2.1.0 and updates are on from that version. The `UpdateChannel` switch is removed: the check is now
+off only outside a packaged application. The record below is kept as it was.
+
 The repository stays private; going public is not planned (decided by the user on 2026-11-10). The in-app update
 check reads GitHub Releases without a token, which only works on a public repository, so the File menu shows Check
 for updates… disabled and nothing is checked at startup (`UpdateChannel.published` in
