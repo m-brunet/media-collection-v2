@@ -91,30 +91,30 @@ const flipflops = lookup({
     authorSpellings: [{ name: "Flipflop's", spelling: 'Flipsflops', sources: ['bnf'] }],
 });
 
-it('marks the book as read with one press of the Read button', async () => {
+it('marks the book as read with one press of the reading button', async () => {
     open();
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Read' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Not read' }));
 
-    expect(screen.getByRole('button', { name: 'Read' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Read' })).toHaveClass('button--pressed');
 });
 
-it('unmarks the book with a second press of the Read button', async () => {
+it('unmarks the book with a second press of the reading button', async () => {
     open();
-    await userEvent.click(await screen.findByRole('button', { name: 'Read' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Not read' }));
 
     await userEvent.click(screen.getByRole('button', { name: 'Read' }));
 
-    expect(screen.getByRole('button', { name: 'Read' })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: 'Not read' })).not.toHaveClass('button--pressed');
 });
 
-it('names the Read button in French', async () => {
+it('names the reading button in French', async () => {
     deviceLanguages(['fr-FR']);
 
     open();
 
     expect(await screen.findByRole('group', { name: 'Votre lecture' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Lu' })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: 'Non lu' })).toBeInTheDocument();
 });
 
 it('tells the source’s spelling of an existing author it filled in', async () => {
@@ -276,7 +276,7 @@ it('starts with the last saved book’s shelf, category and reading status', asy
     expect(screen.getByLabelText('Bookcase')).toHaveValue('salon');
     expect(screen.getByLabelText('Shelf')).toHaveValue('top');
     expect(screen.getByLabelText('Category')).toHaveValue('manga');
-    expect(screen.getByRole('button', { name: 'Read' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Read' })).toHaveClass('button--pressed');
 });
 
 it('starts with the lookup’s category over the remembered one', async () => {
@@ -307,7 +307,7 @@ it('does not use another account’s choices', async () => {
     open();
 
     expect(await screen.findByLabelText('Category')).toHaveValue('books');
-    expect(screen.getByRole('button', { name: 'Read' })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: 'Not read' })).toBeInTheDocument();
 });
 
 it('leaves without asking when only the remembered choices are filled in', async () => {
