@@ -76,7 +76,6 @@ export function CoverPicker({
         event.preventDefault();
         setDragging(false);
         const file = [...event.dataTransfer.files].find((item) => item.type.startsWith('image/'));
-        // A picture dragged from a web page usually brings its address rather than a file.
         const link = (
             event.dataTransfer.getData('text/uri-list') || event.dataTransfer.getData('text/plain')
         )
@@ -195,7 +194,6 @@ export function CoverPicker({
                     value={address}
                     onChange={(event) => setAddress(event.target.value)}
                     onKeyDown={(event) => {
-                        // Enter fetches the image instead of saving the whole form.
                         if (event.key === 'Enter') {
                             event.preventDefault();
 

@@ -6,7 +6,6 @@ import type { CoverFileCleanup } from '../ports/driven/cover-file-cleanup.interf
 import type { LibraryEraser } from '../ports/driven/library-eraser.interface.js';
 import type { TransactionRunner } from '../../../shared/application/ports/driven/transaction-runner.interface.js';
 
-// Development tooling run by the developer on their own data directory, so no account acts.
 export class ResetDevelopmentData implements ResetDevelopmentDataUseCase {
     constructor(
         private readonly eraser: LibraryEraser,

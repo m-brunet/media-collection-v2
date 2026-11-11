@@ -24,8 +24,6 @@ import { CachedCoverDownloads } from '../../development-data/infrastructure/adap
 @Module({})
 class DevelopmentDataContext {}
 
-// Composition of the development data commands, run by the Electron worker without listeners once
-// the main process has confirmed the directory is the repository's development data.
 export class DevelopmentDataCommands {
     static async reset(dataDirectory: string): Promise<string[]> {
         const database = await Database.open(dataDirectory, new UuidGenerator());
@@ -46,7 +44,6 @@ export class DevelopmentDataCommands {
         }
     }
 
-    // `source` is the V1 books.json; its corrections and the cover cache live in the same folder.
     static async importV1(dataDirectory: string, source: string): Promise<string[]> {
         const ids = new UuidGenerator();
         const clock = new SystemClock();

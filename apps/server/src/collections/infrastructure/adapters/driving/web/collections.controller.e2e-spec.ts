@@ -585,7 +585,6 @@ describe('GET /api/collections with filters', () => {
 });
 
 describe('Generated titles of member books', () => {
-    // A Manga of the collection saved without title, so its title is generated.
     async function generated(collection: MembershipDto) {
         return book(collection, { title: '', category: 'manga' });
     }

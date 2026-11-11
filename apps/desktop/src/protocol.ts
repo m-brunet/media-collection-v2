@@ -20,11 +20,9 @@ export type WorkerRequest =
     | { type: 'backup'; dataDirectory: string; version: string; destination: string }
     | { type: 'inspect-backup'; dataDirectory: string; version: string; source: string }
     | { type: 'restore-backup'; dataDirectory: string; version: string; source: string }
-    // The main process checked the directory first.
     | { type: 'dev-reset'; dataDirectory: string }
     | { type: 'dev-import-v1'; dataDirectory: string; source: string }
     | { type: 'stop' };
-// Sent by the worker on its own, outside any request: the main process applies it.
 export type WorkerNotice = { type: 'keep-awake'; enabled: boolean };
 export type WorkerResponse =
     | { type: 'ready'; httpPort: number; httpsPort: number | null; httpsError: string | null }

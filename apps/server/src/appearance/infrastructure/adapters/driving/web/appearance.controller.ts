@@ -25,7 +25,6 @@ export class AppearanceController {
         @Inject('APPEARANCE_SAVE_ICON_SET') private readonly saveIconSet: SaveIconSetUseCase,
     ) {}
 
-    // Public: every page, including sign-in, shows the installation's colours and icons.
     @Get()
     @Access('public')
     read(): Promise<Appearance> {

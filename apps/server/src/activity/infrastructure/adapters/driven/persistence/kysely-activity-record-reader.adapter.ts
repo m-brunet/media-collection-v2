@@ -6,9 +6,6 @@ import type {
 } from '../../../../domain/services/activity-projection.service.js';
 import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
 
-// Reads Successful audit records grouped by operation, with the acting account's current
-// username (renamed and deactivated accounts keep being named) and, for records about a book,
-// the book's current title.
 export class KyselyActivityRecordReader implements ActivityRecordReader {
     constructor(private readonly connections: DatabaseConnections) {}
 
@@ -74,7 +71,6 @@ export class KyselyActivityRecordReader implements ActivityRecordReader {
         });
     }
 
-    // The operations of the page, by the time of their first record, then by ID.
     private async page(query: ActivityOperationQuery) {
         const before = query.before;
         let operations = this.db

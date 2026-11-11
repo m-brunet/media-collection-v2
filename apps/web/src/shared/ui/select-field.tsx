@@ -18,7 +18,6 @@ export function SelectField({
     label: string;
     hint?: string;
     options: SelectOption[];
-    // Shown first and not selectable again, so a required choice cannot be left to a default.
     placeholder?: string;
     required?: boolean;
 } & SelectHTMLAttributes<HTMLSelectElement>) {

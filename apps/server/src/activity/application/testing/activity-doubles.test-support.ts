@@ -13,8 +13,6 @@ export class ActivityActors {
     static readonly temporaryOwner = TestActors.of('owner', 'sam', true);
 }
 
-// Audit operations held in memory with the reader's contract: only the asked categories, newest
-// first by time then ID, older than the cursor, at most `limit`.
 export class InMemoryActivityRecords implements ActivityRecordReader {
     readonly queries: ActivityOperationQuery[] = [];
 

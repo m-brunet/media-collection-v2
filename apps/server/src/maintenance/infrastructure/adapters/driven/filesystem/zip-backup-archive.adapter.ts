@@ -9,8 +9,6 @@ import { BackupManifest } from '../../../../domain/value-objects/backup-manifest
 import type { PrivateStorage } from '../../../../../shared/infrastructure/adapters/driven/filesystem/private-storage.adapter.js';
 import { Failure } from '../../../../../shared/domain/exceptions/failure.js';
 
-// A `.mcbackup` file: a ZIP archive with `manifest.json` and the data files at their data
-// directory paths. Covers are already compressed images, so only the database is compressed.
 export class ZipBackupArchive implements BackupArchive {
     constructor(private readonly storage: PrivateStorage) {}
 

@@ -1,6 +1,5 @@
 import type { Catalog } from './translator.util';
 
-// Must define exactly the same keys as catalog-en.ts; TypeScript rejects missing or extra keys.
 export const fr = {
     'brand.byline': 'par Media Collection',
     'brand.libris': 'Libris',

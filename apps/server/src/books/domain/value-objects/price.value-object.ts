@@ -1,6 +1,5 @@
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 
-// A book price in euros, kept in cents. Zero means obtained free; "unknown" is no price at all.
 export class Price {
     private constructor(readonly cents: number) {
         Object.freeze(this);

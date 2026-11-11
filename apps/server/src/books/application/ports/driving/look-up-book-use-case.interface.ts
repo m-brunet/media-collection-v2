@@ -15,14 +15,11 @@ export type LookupCoverView = {
     sources: string[];
 };
 
-// `found` false with no `unavailable` source: no source knows this ISBN. Sources listed in
-// `unavailable` could not answer (rate limit or failure), which is not the same as no result.
 export type LookedUpBook = {
     kind: 'looked-up';
     isbn13: string;
     found: boolean;
     fields: CombinedLookup;
-    // Authors filled in with an existing author's name instead of a source's spelling.
     authorSpellings: AuthorSpelling[];
     covers: LookupCoverView[];
     unavailable: SourceUnavailability[];

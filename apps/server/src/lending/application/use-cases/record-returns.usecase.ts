@@ -11,8 +11,6 @@ import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 
-// Records the books one receiver handed back together. Unselected loans stay active; if any
-// selected loan cannot be returned, none is.
 export class RecordReturns implements RecordReturnsUseCase {
     constructor(
         private readonly loans: LoanRepository,

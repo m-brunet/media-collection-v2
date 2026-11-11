@@ -9,7 +9,6 @@ import type { TlsSettingsReader } from '../ports/driven/tls-settings-reader.inte
 import type { TurnOffInternetAccessUseCase } from '../ports/driving/turn-off-internet-access-use-case.interface.js';
 import { SettingsAudit } from '../settings-audit.js';
 
-// HTTPS keeps its last certificate until a restart.
 export class TurnOffInternetAccess implements TurnOffInternetAccessUseCase {
     constructor(
         private readonly store: InternetAccessStore,

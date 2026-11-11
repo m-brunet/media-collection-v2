@@ -5,7 +5,6 @@ export interface ShelfView {
     bookCount: number;
 }
 
-// Shelves in name order, numbers compared by value ("Shelf 2" before "Shelf 10").
 export interface BookcaseView {
     id: string;
     name: string;

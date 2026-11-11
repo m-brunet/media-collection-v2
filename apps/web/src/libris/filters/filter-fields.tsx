@@ -14,7 +14,6 @@ export interface ChoiceOption {
     nested?: boolean;
 }
 
-// Several choices within the field combine with OR.
 export function ChoiceField({
     label,
     hint,

@@ -3,10 +3,6 @@ import type { Kysely } from 'kysely';
 import type { Migration } from 'kysely/migration';
 import { UuidPrimaryKeysMigration } from './006-uuid-primary-keys.js';
 
-// Receivers (name-only people books are lent to) and loans. Each loan is one occurrence, so
-// lending a book again adds a row and completed loans remain as history. A book has at most one
-// active loan. Deleting a book keeps its completed loans, identified by their title and ISBN
-// copy; a lent book cannot be deleted.
 export class LendingMigration implements Migration {
     async up(db: Kysely<unknown>): Promise<void> {
         await db.schema
@@ -36,13 +32,11 @@ export class LendingMigration implements Migration {
                 'loans_returned_at',
                 sql`(status = 'lent' and returned_at is null) or (status = 'returned' and returned_at is not null)`,
             )
-            // Only completed loans may outlive their book: deleting a lent book fails here too.
             .addCheckConstraint(
                 'loans_active_book',
                 sql`status = 'returned' or book_id is not null`,
             )
             .execute();
-        // At most one active loan per book, even for two confirmations at the same time.
         await db.schema
             .createIndex('loans_active_book_unique')
             .on('loans')

@@ -10,7 +10,6 @@ import { MaintenanceAudit } from '../maintenance-audit.js';
 import { BackupManifest } from '../../domain/value-objects/backup-manifest.value-object.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 
-// The audit record is written after the copy, so a backup never holds its own record.
 export class CreateBackup implements CreateBackupUseCase {
     constructor(
         private readonly data: ApplicationDataFiles,

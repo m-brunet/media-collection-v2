@@ -9,12 +9,9 @@ interface AboutWindowOptions {
     iconPath: string;
     hidden: boolean;
     texts: DesktopTexts;
-    // Shows the credits and licences page in the Libris window.
     openCredits(): void;
 }
 
-// The About window: version, project links and the credits page. One at a time; the page only
-// names a target, the addresses stay here.
 export class AboutWindow {
     private static readonly channel = 'about:open';
     private window: BrowserWindow | undefined;

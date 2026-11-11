@@ -4,7 +4,6 @@ import type { HttpListener } from '../ports/driven/http-listener.interface.js';
 import type { PortRule } from '../ports/driven/port-rule.interface.js';
 import type { RouterRules, RuleUpkeep } from './router-rules.service.js';
 
-// Opening, closing and the upkeep change the entity; the caller saves it.
 export class HttpPortForwarding {
     constructor(
         private readonly rules: RouterRules,

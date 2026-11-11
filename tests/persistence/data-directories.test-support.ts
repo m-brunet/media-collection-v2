@@ -9,8 +9,6 @@ import { UuidGenerator } from '../../apps/server/src/shared/infrastructure/adapt
 
 const now = '2026-01-01T00:00:00.000Z';
 
-// Temporary data directories; `populated` holds one record in every library table, an account,
-// a server setting, a cover file and a file that is not a cover.
 export class DataDirectories {
     static readonly certificate = '6f1c2b0e-7d4a-4e8b-9c3f-2a5d8e1b4c70';
     private readonly paths: string[] = [];
@@ -216,7 +214,6 @@ export class DataDirectories {
     async contents(directory: string) {
         const database = Database.openExisting(directory);
         const db = database.connection;
-        // Every table has the same count query; the single table name only satisfies the builder's types.
         const count = async (table: keyof DatabaseSchema) =>
             Number(
                 (

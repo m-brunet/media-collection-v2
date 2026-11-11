@@ -12,13 +12,11 @@ export interface LendingBook {
     edition: string | null;
     ownership: BookOwnership;
     loan: BookLoanDto | null;
-    // Set when the server refused to lend this book; it is newer than the other fields.
     refusal?: LendingRefusal;
 }
 
 export type LendingAvailability = 'selected' | 'available' | 'lent' | 'not-owned' | 'gone';
 
-// Rules the lending page applies before asking the server, which checks them again.
 export class LendingChoice {
     static availability(book: LendingBook, selected: readonly LendingBook[]): LendingAvailability {
         if (book.refusal) {
@@ -42,7 +40,6 @@ export class LendingChoice {
             : (book.loan?.receiverName ?? null);
     }
 
-    // Details: `bookIds`, and for books already lent `lentTo` (receiver name by book).
     static refused(
         selected: readonly LendingBook[],
         reason: string,

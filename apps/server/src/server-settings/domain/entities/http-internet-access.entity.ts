@@ -17,7 +17,6 @@ export interface HttpInternetAccessState {
     phase: HttpInternetAccessPhase;
     mapping: PortMapping | null;
     publicAddress: string | null;
-    // Why the rule is by hand, why opening stopped, or the last upkeep failure.
     failure: { reason: HttpInternetAccessFailureReason; at: string } | null;
     closedByHttps: boolean;
 }
@@ -112,7 +111,6 @@ export class HttpInternetAccess {
         this.state = { ...this.state, failure: { reason, at: now.toISOString() } };
     }
 
-    // A rule by hand keeps the reason it is by hand.
     upkeepSucceeded(): void {
         this.requireOpen();
 

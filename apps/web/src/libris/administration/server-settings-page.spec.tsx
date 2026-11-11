@@ -110,7 +110,6 @@ const waiting = internetAccess({
         protocol: 'TCP',
     },
 });
-// The addresses of a computer on a home network that also runs Tailscale.
 const addresses = [
     'http://127.0.0.1:34345',
     'http://100.95.86.107:34345',
@@ -127,7 +126,6 @@ function administrator(current: ServerStatus) {
         .on('GET /server-settings', () => ({ status: 200, body: current }));
 }
 
-// A button of the domain name form (other forms have their own Save buttons).
 async function domainButton(name: string) {
     return within(await screen.findByRole('form', { name: 'Domain name (optional)' })).getByRole(
         'button',
@@ -465,7 +463,6 @@ it('checks the rule again', async () => {
         'POST /server-settings/internet-access/check',
     );
 });
-// Active, after a check of port 443 failed: the certificate waits for Check again.
 const awaitingCheck = internetAccess({
     ...active,
     failure: { reason: 'not-reachable', at: '2026-11-08T10:00:00.000Z' },

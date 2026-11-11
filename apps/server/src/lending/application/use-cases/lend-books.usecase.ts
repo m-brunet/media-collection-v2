@@ -13,8 +13,6 @@ import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 
-// Hands one or several Owned books to one receiver, all together or none: a failure leaves no
-// loan and no receiver created for it. Lending changes nothing else about the books.
 export class LendBooks implements LendBooksUseCase {
     constructor(
         private readonly books: LendableBooks,

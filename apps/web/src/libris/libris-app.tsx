@@ -61,14 +61,12 @@ function PermissionDeniedPage() {
     );
 }
 
-// The server enforces every permission; this only explains why a page cannot be used.
 function AdministratorOnly({ children }: { children: ReactNode }) {
     const { account } = useSession();
 
     return account?.role === 'admin' ? children : <PermissionDeniedPage />;
 }
 
-// Guests read the library but cannot change it (the server refuses it too).
 function LibraryEditorOnly({ children }: { children: ReactNode }) {
     const { account } = useSession();
 
@@ -80,7 +78,6 @@ function LibrisRoutes() {
     const { status, account } = useSession();
     const { pathname } = useLocation();
 
-    // Credits and licences are public: shown on their own until someone signs in.
     if (pathname === '/credits' && (status !== 'signed-in' || !account)) {
         return <CreditsPage standalone />;
     }

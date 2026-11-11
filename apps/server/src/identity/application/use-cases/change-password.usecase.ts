@@ -9,7 +9,6 @@ import { AccountAudit } from '../account-audit.js';
 import { AccountLoader } from '../services/account-loader.service.js';
 import { CurrentPasswordConfirmation } from '../services/current-password-confirmation.service.js';
 
-// The audit records that the password changed, never the password or its hash.
 export class ChangePassword implements ChangePasswordUseCase {
     constructor(
         private readonly users: UserWriter,

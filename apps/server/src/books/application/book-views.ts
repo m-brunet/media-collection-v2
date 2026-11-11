@@ -31,12 +31,10 @@ export interface BookView {
     hasCover: boolean;
     collection: BookCollection | null;
     location: BookLocation | null;
-    // Ordered by name.
     tags: BookTag[];
     loan: BookLoan | null;
     createdAt: string;
     updatedAt: string;
-    // The viewer's own reading status and note; null for Guests.
     personal: { read: boolean; note: { text: string; updatedAt: string } | null } | null;
 }
 
@@ -49,7 +47,6 @@ export interface BookListQuery {
     offset: number;
     limit: number;
     filter: BookFilter;
-    // Account whose reading status is shown and filtered on; null for Guests.
     readerId: string | null;
 }
 

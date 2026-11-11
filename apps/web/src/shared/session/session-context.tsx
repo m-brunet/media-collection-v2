@@ -15,16 +15,13 @@ import { LanguageResolver } from '../i18n/language-resolver.util';
 import { LanguageStorage } from '../i18n/language-storage.util';
 import type { Language } from '../i18n/translator.util';
 
-// `setup`: first launch, the protected administrator does not exist yet.
 type SessionStatus = 'loading' | 'setup' | 'signed-out' | 'signed-in';
 
 interface SessionValue {
     status: SessionStatus;
     account: Account | null;
     language: Language;
-    // True after the server ended the session (expiry, sign-out elsewhere).
     expired: boolean;
-    // During first launch: whether this page may complete setup (the desktop window only).
     setupAllowed: boolean;
     completeSetup(username: string, password: string): Promise<void>;
     signIn(username: string, password: string): Promise<void>;
@@ -41,7 +38,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     const [expired, setExpired] = useState(false);
     const [setupAllowed, setSetupAllowed] = useState(false);
     const [stored, setStored] = useState<Language | null>(() => LanguageStorage.read());
-    // Only a session that actually existed can expire; a first visit is simply signed out.
     const signedIn = useRef(false);
 
     useEffect(() => {

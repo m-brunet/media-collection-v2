@@ -18,7 +18,6 @@ import { NameKey } from '../../../shared/domain/name-key.helper.js';
 export class LookUpBook implements LookUpBookUseCase {
     constructor(
         private readonly books: BookRepository,
-        // The book information sources and the cover sources, each in order of preference.
         private readonly information: SourceLink<LookupAnswer> | null,
         private readonly covers: SourceLink<CoverOffer[]> | null,
         private readonly registry: LookupCoverRegistry,
@@ -75,8 +74,6 @@ export class LookUpBook implements LookUpBookUseCase {
         };
     }
 
-    // The answers in order of preference, each author an existing author has a name for named
-    // that way: the form then links the book to that author instead of offering a new one.
     private async combined(answers: { source: string; answer: LookupAnswer }[]) {
         const fields = new LookupCombination();
         const names = [...new Set(answers.flatMap(({ answer }) => answer.authors))];

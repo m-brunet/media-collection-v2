@@ -12,8 +12,6 @@ export type LoanPorts = { loans: LoanRepository; receivers: ReceiverRepository }
 
 export type LoanBook = { id: string; title?: string; isbn?: string | null };
 
-// Saving creates a receiver when none was given; the book must exist already (lending never
-// creates books), so give it with `of(…)`, or let `TestLibrary` create it.
 export class LoanBuilder extends EntityBuilder<Loan, LoanPorts> {
     private id: string | null = null;
     private book: LoanBook | null = null;

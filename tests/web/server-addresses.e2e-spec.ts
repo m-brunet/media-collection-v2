@@ -5,7 +5,6 @@ import { readQrCode } from './qr-reader.js';
 
 const browser = new BrowserFixture();
 const runtime = new RuntimeFixture();
-// The test computer's own addresses vary; the page gets a fixed home network address instead.
 const homeAddress = 'http://192.168.1.99:34345';
 
 beforeAll(async () => {

@@ -14,8 +14,6 @@ import { ReceiverBuilder } from '../../../apps/server/src/lending/application/te
 
 export type LibraryPorts = BookPorts & LoanPorts;
 
-// A book described as plain facts, for tests outside the books feature, which may not use its
-// builder directly (feature boundaries apply to tests too).
 export type BookFacts = {
     title?: string;
     authors?: string[];

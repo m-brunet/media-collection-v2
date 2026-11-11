@@ -3,14 +3,11 @@ import { join, resolve } from 'node:path';
 
 export interface DevelopmentDataTarget {
     packaged: boolean;
-    // The repository root when the application runs unpackaged (`electron .`).
     appPath: string;
     dataDirectory: string;
     dataDirectoryOverridden: boolean;
 }
 
-// Development data commands delete library data. They only ever act on `<repository>/.dev-data` of an
-// unpackaged application, so an installed release's data can never be their target.
 export class DevelopmentDataGuard {
     static readonly directoryName = '.dev-data';
 

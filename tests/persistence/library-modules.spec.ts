@@ -13,7 +13,6 @@ import { SystemClock } from '../../apps/server/src/shared/infrastructure/adapter
 import { UuidGenerator } from '../../apps/server/src/shared/infrastructure/adapters/driven/runtime/uuid-generator.adapter.js';
 import { AuditedOperation } from '../../apps/server/src/shared/application/services/audited-operation.service.js';
 
-// Root of the application context (decorator syntax is not available in tests).
 class LibraryContext {}
 Module({})(LibraryContext);
 

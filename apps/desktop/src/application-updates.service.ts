@@ -1,20 +1,15 @@
 export interface AvailableUpdate {
     version: string;
-    // The release page, opened for a manual installation.
     releasePage: string;
 }
 
 export interface UpdateSource {
-    // Windows downloads and installs the update; Linux installs it by hand from the release page.
     readonly integratedInstall: boolean;
-    // `null` when this is the latest stable version.
     check(): Promise<AvailableUpdate | null>;
     download(): Promise<void>;
-    // Quits and installs the downloaded update.
     install(): void;
 }
 
-// Each dialog resolves `true` for its main action (Download, Retry, Restart and install...).
 export interface UpdateDialogs {
     upToDate(): Promise<void>;
     available(update: AvailableUpdate, integratedInstall: boolean): Promise<boolean>;
@@ -26,7 +21,6 @@ export interface UpdateDialogs {
 
 export interface UpdateHost {
     stopServer(): Promise<void>;
-    // The full backup before an update, made while the server is stopped.
     backup(update: AvailableUpdate): Promise<void>;
     startServer(): Promise<void>;
     openPage(address: string): Promise<void>;
@@ -38,8 +32,6 @@ export type UpdateState =
     | { kind: 'downloading'; update: AvailableUpdate }
     | { kind: 'ready'; update: AvailableUpdate };
 
-// The update flow from the File menu: check, download (Windows) or backup and download page (Linux),
-// and Restart and install. Nothing is downloaded or installed without the user's choice.
 export class ApplicationUpdates {
     private state: UpdateState = { kind: 'idle' };
     private offered = false;
@@ -56,7 +48,6 @@ export class ApplicationUpdates {
         return this.state;
     }
 
-    // Silent when up to date or when the check fails; offers an update at most once per start.
     async checkAtStartup(): Promise<void> {
         await this.exclusive(async () => {
             const update = await this.check().catch(() => null);
@@ -67,7 +58,6 @@ export class ApplicationUpdates {
         });
     }
 
-    // The menu item: a manual check, or the postponed installation once the update is ready.
     async chooseFromMenu(): Promise<void> {
         await this.exclusive(async () => {
             if (this.state.kind === 'ready') {
@@ -148,8 +138,6 @@ export class ApplicationUpdates {
         }
     }
 
-    // Stops the server and saves the full backup, with Retry on failure. The server starts again
-    // when the backup is given up, and after it when `restart` (Linux: the application goes on).
     private async backUp(update: AvailableUpdate, restart: boolean): Promise<boolean> {
         await this.host.stopServer();
 

@@ -23,7 +23,6 @@ export class Bookcase {
         return { ...this.state };
     }
 
-    // Equal keys mean equivalent names: case, accents and outer spaces are ignored.
     get key(): string {
         return NameKey.of(this.state.name);
     }

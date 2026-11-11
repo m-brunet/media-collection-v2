@@ -44,7 +44,6 @@ let base = 'http://127.0.0.1:' + port;
 let child;
 let failureOutput = '';
 const launch = async (withPortOverride = true, debugging = false) => {
-    // Internet access stays offline: the smoke test never reaches a router or Let's Encrypt.
     const environment = {
         ...process.env,
         APP_HIDDEN_WINDOWS: '1',

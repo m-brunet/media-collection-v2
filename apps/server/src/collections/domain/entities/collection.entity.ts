@@ -12,8 +12,6 @@ export interface CollectionState {
     updatedAt: string;
 }
 
-// Finished is only ever set by a person, and only when every expected volume is Owned; a change
-// leaving missing volumes reopens it.
 export class Collection {
     private state: CollectionState;
 
@@ -29,7 +27,6 @@ export class Collection {
         return { ...this.state };
     }
 
-    // Equal keys mean the same collection: case, accents and outer spaces are ignored.
     get key(): string {
         return NameKey.of(this.state.name);
     }
@@ -86,7 +83,6 @@ export class Collection {
         this.state.updatedAt = now;
     }
 
-    // Complete ownership never marks it Finished. Returns whether it reopened.
     reconcile(members: readonly CoverageMember[], now: string): boolean {
         if (!this.state.finished || this.coverage(members).missing.length === 0) {
             return false;

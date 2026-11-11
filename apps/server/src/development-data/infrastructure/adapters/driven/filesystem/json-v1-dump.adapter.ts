@@ -11,9 +11,6 @@ type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
 
 const categories: readonly V1Category[] = ['books', 'manga', 'comics'];
 
-// Reads the V1 `books.json` export (a MongoDB Extended JSON array) and, beside it, the optional
-// `isbn-corrections.json` ([{ record, title, isbn }]) and `category-corrections.json`
-// ({ "<collection name>": "books" | "manga" | "comics" }).
 export class JsonV1Dump implements V1Dump {
     constructor(private readonly source: string) {}
 

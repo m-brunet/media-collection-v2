@@ -8,15 +8,12 @@ import type {
 } from '../../../../../packages/contracts/src/http';
 import { BookFormat } from './book-format.util';
 
-// One author in the form: an existing identity (`id`) or a name to reuse or create.
 export interface DraftAuthor {
     id: string | null;
     name: string;
-    // Confirmed as different from a similar existing author.
     distinct: boolean;
 }
 
-// One tag in the form: an existing tag (`id`) or a name the server reuses or creates.
 export interface DraftTag {
     id: string | null;
     name: string;
@@ -25,10 +22,7 @@ export interface DraftTag {
 export interface BookDraftValues {
     isbn: string;
     noIsbn: boolean;
-    // Blank on an eligible book (Manga or Comics in a collection) to have it named from its
-    // collection; a generated title of a saved book starts blank.
     title: string;
-    // The saved generated title, offered again if the book stops being eligible.
     lastGeneratedTitle: string | null;
     authors: DraftAuthor[];
     category: BookCategory;
@@ -41,17 +35,13 @@ export interface BookDraftValues {
     pageCount: string;
     price: string;
     note: string | null;
-    // Collection membership: a collection name (joined or created by the server) and the covered
-    // volumes, one number or a consecutive omnibus range.
     inCollection: boolean;
     collectionName: string;
-    // Confirmed as a different collection from a similar existing one.
     collectionDistinct: boolean;
     omnibus: boolean;
     volumeFrom: string;
     volumeTo: string;
     enableVolumeZero: boolean;
-    // Physical location: a shelf of the chosen bookcase; a bookcase alone is not a location.
     bookcaseId: string | null;
     shelfId: string | null;
     tags: DraftTag[];
@@ -67,9 +57,7 @@ export type CollectionProblem = 'collection-name-required' | 'volume-required';
 export type LocationProblem = 'shelf-required';
 
 export interface SaveOptions {
-    // A new no-ISBN book is distinct from the similar saved ones.
     confirmDistinct?: boolean;
-    // Planned Not Owned books this Owned book replaces, deleted by the server.
     replacePlanned?: string[];
 }
 
@@ -140,7 +128,6 @@ export class BookDraft {
         };
     }
 
-    // Shared information sent to the server; blank optional fields mean "unknown".
     static toInput(values: BookDraftValues, options: SaveOptions = {}): BookInputDto {
         return {
             title: values.title,
@@ -188,8 +175,6 @@ export class BookDraft {
         return name + ' Vol. ' + (to! > from! ? from + '–' + to : String(from));
     }
 
-    // Applies changes to the draft. A blank title that stops being optional is prefilled with the
-    // last generated title, so one save keeps it as a supplied title.
     static changed(current: BookDraftValues, changes: Partial<BookDraftValues>): BookDraftValues {
         const next = { ...current, ...changes };
 
@@ -231,7 +216,6 @@ export class BookDraft {
         return values.bookcaseId && !values.shelfId ? 'shelf-required' : null;
     }
 
-    // The note to save: null removes it (an emptied note counts as removed).
     static note(values: BookDraftValues): string | null {
         return values.note?.trim() ? values.note.trim() : null;
     }
@@ -240,7 +224,6 @@ export class BookDraft {
         return JSON.stringify(BookDraft.comparable(a)) === JSON.stringify(BookDraft.comparable(b));
     }
 
-    // Same comparison as the server: case, accents and outer spaces do not matter.
     static nameKey(value: string): string {
         return value.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase().trim();
     }
@@ -282,7 +265,6 @@ export class BookDraft {
         };
     }
 
-    // Answers given in dialogs are not changes of their own.
     private static comparable(values: BookDraftValues) {
         return {
             ...values,

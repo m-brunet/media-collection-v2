@@ -2,16 +2,13 @@ import type { MessageKey } from '../i18n/catalog-en';
 
 export interface Credit {
     id: string;
-    // Proper names, shown as written in every language.
     name: string;
     author: string;
     url: string;
     licence: string;
     licenceUrl: string | null;
     used: MessageKey;
-    // How the work was changed for Media Collection; null when used as published.
     changes: MessageKey | null;
-    // A notice the work asks to be shown with it, such as a trademark line.
     notice?: MessageKey;
 }
 

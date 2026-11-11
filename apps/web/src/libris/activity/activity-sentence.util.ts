@@ -5,7 +5,6 @@ import type { MessageValues } from '../../shared/i18n/translator.util';
 type Translate = (key: MessageKey, values?: MessageValues) => string;
 type Kind = ActivityEventDto['kind'];
 
-// Writes what an Activity entry says, always with the household "You", whoever acted.
 export class ActivitySentence {
     private static readonly sentences: Record<Kind, MessageKey> = {
         'book-added': 'activity.bookAdded',

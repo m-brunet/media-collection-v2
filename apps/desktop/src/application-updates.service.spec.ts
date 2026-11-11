@@ -10,16 +10,13 @@ import { ApplicationUpdates } from './application-updates.service.js';
 
 const update: AvailableUpdate = { version: '2.0.1', releasePage: 'https://example.test/v2.0.1' };
 
-// Every call of the source, dialogs and host, in order.
 type Journal = string[];
 
 interface Script {
     integratedInstall?: boolean;
-    // One entry per check: an update, `null` (up to date) or an error.
     checks?: (AvailableUpdate | null | Error)[];
     downloads?: (Error | null)[];
     backups?: (Error | null)[];
-    // The answer of each dialog, in order, by dialog name (default: the main action).
     answers?: Partial<Record<keyof UpdateDialogs, boolean[]>>;
 }
 

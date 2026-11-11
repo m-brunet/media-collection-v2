@@ -102,7 +102,6 @@ export class KyselyUserRepository implements UserRepository {
             'code' in error &&
             error.code === 'SQLITE_CONSTRAINT_UNIQUE'
         ) {
-            // The single-administrator index guards first-launch setup against a second administrator.
             if (error.message.includes('users.role')) {
                 throw new Failure(
                     'conflict',

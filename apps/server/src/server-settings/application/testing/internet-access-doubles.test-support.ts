@@ -147,7 +147,6 @@ export class FakeAuthority implements CertificateAuthority {
     readonly replaced: (string | null)[] = [];
     refusal: Extract<CertificateIssue, { outcome: 'refused' }>['reason'] | null = null;
     failure: Error | null = null;
-    // The date given with a rate-limit refusal.
     retryAfter: string | null = null;
 
     constructor(private readonly clock: Clock) {}
@@ -325,7 +324,6 @@ export class InternetAccessDoubles {
         };
     }
 
-    // A state with a certificate issued at the clock's start.
     static active(overrides: Partial<InternetAccessState> = {}): InternetAccessState {
         return {
             ...InternetAccess.off().snapshot,

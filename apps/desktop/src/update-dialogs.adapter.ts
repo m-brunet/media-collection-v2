@@ -3,7 +3,6 @@ import { app, dialog } from 'electron';
 import type { AvailableUpdate, UpdateDialogs } from './application-updates.service.js';
 import type { DesktopTexts } from './desktop-texts.util.js';
 
-// The update dialogs, in the desktop language. The first button is the main action.
 export class NativeUpdateDialogs implements UpdateDialogs {
     constructor(private readonly texts: DesktopTexts) {}
 

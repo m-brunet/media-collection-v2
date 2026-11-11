@@ -16,7 +16,6 @@ export type LookupField =
     | 'summary'
     | 'collection';
 
-// The value the person picked for each field in the review; null leaves the field alone.
 export interface LookupSelection {
     category: BookCategory | null;
     title: string | null;
@@ -46,13 +45,10 @@ export class LookupFill {
         'collection',
     ];
 
-    // The choices offered for a field, the preferred source's first.
     static choices(fields: BookLookupFieldsDto, field: LookupField): LookupChoiceDto<unknown>[] {
         return field === 'publication' ? fields.publicationDate : fields[field];
     }
 
-    // A Manga or Comics in a collection with a blank title keeps its generated title unless the
-    // person picks the lookup's. The lookup's category counts over the form's.
     static keepsGeneratedTitle(draft: BookDraftValues, fields: BookLookupFieldsDto): boolean {
         const category = fields.category[0]?.value ?? draft.category;
 
@@ -96,8 +92,6 @@ export class LookupFill {
                 continue;
             }
 
-            // A category is always set (Books by default): the lookup's replaces it without asking;
-            // the person sees it in the review and can change it in the form.
             if (field === 'category') {
                 next = BookDraft.changed(next, LookupFill.write(selection, field));
                 continue;

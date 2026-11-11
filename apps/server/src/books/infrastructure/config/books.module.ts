@@ -77,7 +77,6 @@ export interface BookLookupSources {
     information: LookupSource<LookupAnswer>[];
     covers: LookupSource<CoverOffer[]>[];
     downloader: CoverDownloader;
-    // Downloads an image address a person pasted: public web only.
     addressDownloader: CoverDownloader;
 }
 
@@ -96,7 +95,6 @@ export interface BooksDependencies {
     tagReader: BookTagReader;
     loans: BookLoanReader;
     loanHistory: LoanHistory;
-    // Find book's outside sources, each list in order of preference.
     lookup: BookLookupSources;
     ids: IdGenerator;
     clock: Clock;
@@ -513,7 +511,6 @@ const useCaseProviders: Provider[] = [
             new DeletePersonalNote(notes, loader, operations),
     },
 ];
-// No HTTP endpoint: registered for the development V1 import only.
 const developmentProviders: Provider[] = [
     {
         provide: 'BOOKS_IMPORT',
@@ -583,7 +580,6 @@ export class BooksModule {
         };
     }
 
-    // Addresses can be replaced (browser tests).
     static lookupSources(
         addresses: { bnf?: string; openLibrary?: string } = {},
     ): BookLookupSources {

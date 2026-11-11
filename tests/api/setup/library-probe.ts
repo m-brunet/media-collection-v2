@@ -55,25 +55,21 @@ export class LibraryProbe {
         return row?.ownership ?? null;
     }
 
-    // Every loan occurrence, completed ones included, in lending order (then by title).
     async loans(): Promise<LoanRecord[]> {
-        return (
-            this.db
-                .selectFrom('loans')
-                .innerJoin('receivers', 'receivers.id', 'loans.receiver_id')
-                .select([
-                    'loans.book_id as bookId',
-                    'receivers.name as receiverName',
-                    'loans.status',
-                    'loans.book_title as bookTitle',
-                    'loans.book_isbn as bookIsbn',
-                ])
-                .orderBy('loans.lent_at')
-                // At one instant, an earlier completed occurrence comes before the active one.
-                .orderBy('loans.status', 'desc')
-                .orderBy('loans.book_title')
-                .execute()
-        );
+        return this.db
+            .selectFrom('loans')
+            .innerJoin('receivers', 'receivers.id', 'loans.receiver_id')
+            .select([
+                'loans.book_id as bookId',
+                'receivers.name as receiverName',
+                'loans.status',
+                'loans.book_title as bookTitle',
+                'loans.book_isbn as bookIsbn',
+            ])
+            .orderBy('loans.lent_at')
+            .orderBy('loans.status', 'desc')
+            .orderBy('loans.book_title')
+            .execute();
     }
 
     async receivers(): Promise<string[]> {

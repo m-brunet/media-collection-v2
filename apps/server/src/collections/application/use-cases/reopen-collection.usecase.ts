@@ -10,7 +10,6 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// Reopening is always possible, for example when a series resumes.
 export class ReopenCollection implements ReopenCollectionUseCase {
     constructor(
         private readonly collections: CollectionRepository,

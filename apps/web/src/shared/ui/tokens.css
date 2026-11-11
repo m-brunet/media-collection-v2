@@ -36,7 +36,6 @@
     --text-xl: 20px;
     --text-2xl: 27px;
     --text-3xl: 32px;
-    /* Body text tracking: Inter is a little tight at 13-14 px. Headings and monospace text keep `normal`. */
     --tracking-body: 0.01em;
     --leading: 1.5;
 
@@ -60,11 +59,6 @@
     --control-height: 40px;
 }
 
-/* Each scheme is a
-   full palette; the installation-wide choice is set on <html data-color-scheme>, and an Appearance card
-   previews its own scheme the same way. Surface, control hover, strong border, muted text, accent text and
-   text on the accent are not drawn in the design: they are derived with Spring green's ratios, and
-   tests/web/color-scheme-contrast.spec.ts checks every scheme against WCAG AA. Status colours are shared. */
 :root,
 [data-color-scheme='spring-green'] {
     --scheme-canvas: #1d1f20;

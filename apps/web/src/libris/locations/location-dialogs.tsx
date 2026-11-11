@@ -76,7 +76,6 @@ function ShelfDialog({
     );
 }
 
-// `selected` is the shelf to show afterwards, when the change produced one.
 export function LocationDialogs({
     bookcases,
     editing,

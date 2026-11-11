@@ -53,7 +53,6 @@ export class InternetAccessUpkeep {
         });
     }
 
-    // True when a router rule could not be kept.
     private async runAll(): Promise<boolean> {
         let failed = false;
 

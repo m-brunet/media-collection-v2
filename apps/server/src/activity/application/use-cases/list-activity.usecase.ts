@@ -7,9 +7,6 @@ import { ActivityTimeline } from '../../domain/services/activity-timeline.servic
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// A page holds whole operations, so a lending is never split across pages; operations that give
-// no entry (for example a cover change joined to the save before it) do not count toward the
-// page size.
 export class ListActivity implements ListActivityUseCase {
     static readonly pageSize = 20;
 

@@ -28,7 +28,6 @@ export interface LeafFieldsProps {
     update(changes: Partial<BookDraftValues>): void;
     errorFor(field: BookField): string | undefined;
     lookup: BookLookupFieldsDto | null;
-    // The sources' spellings of existing authors the lookup filled in.
     authorSpellings: AuthorSpellingDto[];
     covers: LookupCoverDto[];
     cover: CoverChoice;
@@ -53,8 +52,6 @@ function Alternatives({
     }
 
     const choices = LookupFill.choices(props.lookup, field);
-    // A source's spelling taken instead of an existing author still holds the lookup's authors:
-    // the way back to the existing author is offered by the spelling hints, from Libris.
     const filledIn =
         field === 'authors'
             ? {

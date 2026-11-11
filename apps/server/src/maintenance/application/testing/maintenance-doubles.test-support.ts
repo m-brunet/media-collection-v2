@@ -70,7 +70,6 @@ export class MemoryArchive implements BackupArchive {
     }
 }
 
-// Hexadecimal of the first 32 bytes: readable in tests and shaped like a SHA-256.
 export class HexChecksums implements Checksums {
     of(bytes: Uint8Array): string {
         return [...bytes.slice(0, 32)]

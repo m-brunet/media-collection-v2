@@ -330,8 +330,6 @@ export class TestApp {
         return client;
     }
 
-    // Puts an account into the temporary-password state (its fixture password stays valid), as
-    // after an administrator reset. Needed because only one administrator may exist.
     async requirePasswordReplacement(fixture: UserFixture): Promise<void> {
         const { users, passwords } = this.dependencies;
         const user = (await users.findById(fixture.id))!;

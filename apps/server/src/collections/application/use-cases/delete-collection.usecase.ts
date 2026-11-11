@@ -8,8 +8,6 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// Books are kept: they only lose their membership and volume coverage, and keep their last
-// generated titles as supplied titles.
 export class DeleteCollection implements DeleteCollectionUseCase {
     constructor(
         private readonly collections: CollectionRepository,

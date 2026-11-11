@@ -4,9 +4,6 @@ import type { AddressPolicy } from './http-cover-downloader.adapter.js';
 
 export type HostResolver = (hostname: string) => Promise<string[]>;
 
-// Only addresses on the public internet: an image address someone pastes must never make the
-// server reach into the home network (router, NAS, the server itself). Every address a name
-// resolves to must be public; a name that cannot be resolved is refused.
 export class PublicAddresses implements AddressPolicy {
     private static readonly reserved = PublicAddresses.ranges();
 

@@ -3,9 +3,6 @@ import type { Account } from '../../../../packages/contracts/src/http';
 
 type Handler = (body: unknown) => { status: number; body?: unknown };
 
-// Replaces `fetch` with scripted API responses, keyed by "METHOD /path" (without `/api`). A route
-// with a query string is matched first; otherwise the path alone. Uploaded files are recorded as
-// the call body.
 export class FakeApi {
     readonly calls: { route: string; body: unknown }[] = [];
     private readonly handlers = new Map<string, Handler>();
@@ -38,7 +35,6 @@ export class FakeApi {
         return this;
     }
 
-    // First launch: no account exists yet; `allowed` tells whether this page is the desktop window.
     firstLaunch(allowed = true): this {
         return this.on('GET /setup', () => ({ status: 200, body: { required: true, allowed } }));
     }

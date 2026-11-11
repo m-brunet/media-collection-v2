@@ -139,7 +139,6 @@ export class BnfCatalogue implements LookupSource<LookupAnswer> {
     // UNIMARC relator codes: 070 author, 440 illustrator, 690 scenarist.
     private static readonly authorCodes = ['070', '440', '690'];
 
-    // The data fields of the first record: tag → occurrences → subfield code → values.
     private static firstRecord(xml: string): Fields | null {
         const record = xml.split(/<(?:\w+:)?record>/)[1];
 

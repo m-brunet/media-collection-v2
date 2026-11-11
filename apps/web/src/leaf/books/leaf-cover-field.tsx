@@ -9,8 +9,6 @@ import { Button } from '../../shared/ui/button';
 import { Icon } from '../../shared/ui/icon';
 import { TextField } from '../../shared/ui/text-field';
 
-// Desktop paste
-// and drop do not work on phones; a photo of the cover is not offered.
 export function LeafCoverField({
     isbn,
     covers,
@@ -20,7 +18,6 @@ export function LeafCoverField({
     isbn: string;
     covers: LookupCoverDto[];
     choice: CoverChoice;
-    // The first cover found is chosen by the page as the form opens; this is the person's choice.
     onChange(choice: CoverChoice): void;
 }) {
     const { t } = useI18n();

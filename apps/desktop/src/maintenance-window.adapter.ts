@@ -28,8 +28,6 @@ interface MaintenanceWindowOptions {
     backupFolder: BackupFolder;
 }
 
-// The page
-// only triggers actions; file paths come from native dialogs, never from the page.
 export class MaintenanceWindow {
     private static readonly channels = [
         'maintenance:status',
@@ -49,7 +47,6 @@ export class MaintenanceWindow {
         this.worker = new BackendProcess(options.workerPath);
     }
 
-    // Resolves once the window is closed and its worker has stopped.
     async open(): Promise<void> {
         const window = new BrowserWindow({
             width: 640,
@@ -63,7 +60,6 @@ export class MaintenanceWindow {
             webPreferences: {
                 backgroundThrottling: !this.options.hidden,
                 preload: this.options.preloadPath,
-                // The page shows the same language as the dialogs and menus.
                 additionalArguments: ['--mc-language=' + this.options.texts.language],
                 contextIsolation: true,
                 sandbox: true,
@@ -82,7 +78,6 @@ export class MaintenanceWindow {
         await window.loadFile(this.options.pagePath);
         await closed;
         this.unregister();
-        // The worker may already have stopped when the application quits with the window open.
         await this.worker.close().catch(() => undefined);
     }
 

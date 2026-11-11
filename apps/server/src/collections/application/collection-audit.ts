@@ -1,9 +1,6 @@
 import type { Collection } from '../domain/entities/collection.entity.js';
 import type { RelatedChange } from '../../shared/application/ports/driven/audit-entry.interface.js';
 
-// Audit categories of the collections feature, all shared changes eligible for Activity.
-// Creating, automatically reopening and removing a collection happen inside a book
-// operation: they are recorded as its related changes, under the same operation ID.
 export const CollectionAudit = {
     collection: 'collection',
     created: 'collection.created',

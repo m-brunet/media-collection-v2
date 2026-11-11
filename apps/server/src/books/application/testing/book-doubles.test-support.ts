@@ -456,8 +456,6 @@ export class MemoryTagging implements TagAssignment, BookTagReader {
 export class MemoryMembership implements CollectionMembership, BookCollectionReader {
     readonly memberships = new Map<string, BookCollection>();
     readonly replaced: string[][] = [];
-    // Existing collections' display names, by identity or by comparison key of an equivalent
-    // typed name, as the collections feature would resolve them.
     readonly names = new Map<string, string>();
     changes: RelatedChange[] = [];
 

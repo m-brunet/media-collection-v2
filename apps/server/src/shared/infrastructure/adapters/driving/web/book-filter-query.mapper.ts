@@ -1,7 +1,6 @@
 import type { BookFilterParams } from './book-filter-query.js';
 import { BookFilter } from '../../../../application/book-filter.js';
 
-// Stored ids are lowercase, so ids are compared in lowercase whatever their case in the address.
 export class BookFilterQueryMapper {
     static toFilter(params: BookFilterParams): BookFilter {
         const id = (value: string) => value.toLowerCase();

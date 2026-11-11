@@ -5,8 +5,6 @@ import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 import { NameKey } from '../../../shared/domain/name-key.helper.js';
 
-// Suggestions for the receiver name field: case, accents and outer spaces are ignored, and any
-// part of the name matches.
 export class FindReceivers implements FindReceiversUseCase {
     private static readonly limit = 10;
 

@@ -8,7 +8,6 @@ export interface UserState extends Actor {
     active: boolean;
 }
 
-// Account information safe to show to the administrator and to record in audit entries.
 export interface AccountSummary {
     id: string;
     username: string;
@@ -45,7 +44,6 @@ export class User {
         return { id, username, role, mustChangePassword, active };
     }
 
-    // The first user: never deactivated, demoted, deleted, or managed by another account.
     get isProtectedAdministrator(): boolean {
         return this.state.role === 'admin';
     }
@@ -55,7 +53,6 @@ export class User {
     }
 
     static username(value: string): string {
-        // The spelling is kept as typed and must match exactly at sign-in. Only outer spaces go.
         const normalized = value.trim();
 
         Failure.ensure(
@@ -98,7 +95,6 @@ export class User {
         this.state.tokenVersion += 1;
     }
 
-    // Ends every session immediately (token version change) and blocks sign-in.
     deactivate(): void {
         this.ensureManageable();
 

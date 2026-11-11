@@ -117,7 +117,6 @@ export class CreateBook implements CreateBookUseCase {
             },
         );
 
-        // Only once the replacement is committed: a failed save keeps the planned covers.
         for (const file of replacedCovers) {
             await this.covers.remove(file);
         }

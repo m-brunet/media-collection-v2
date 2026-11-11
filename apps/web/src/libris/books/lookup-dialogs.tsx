@@ -44,7 +44,6 @@ export function LookupReviewDialog({
     const { t } = useI18n();
     const sources = useSourceNames();
     const id = useId();
-    // The chosen value of each field, by position; -1 keeps the generated title.
     const [chosen, setChosen] = useState<Partial<Record<LookupField, number>>>({});
     const [cover, setCover] = useState<number | null>(null);
     const coverIndex = cover ?? (covers.length > 0 ? 0 : -1);

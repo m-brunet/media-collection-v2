@@ -39,7 +39,6 @@ let shutdownComplete = false;
 let window: BrowserWindow | undefined;
 let restarting = false;
 let maintaining = false;
-// Quit was asked while the Libris window was open; cleared when its page keeps it open (Stay).
 let quitRequested = false;
 const setupSigner = new SetupRequestSigner();
 const keepAwake = new KeepAwake();
@@ -66,7 +65,6 @@ const startupOptions = (() => {
             defaultData,
         );
 
-        // Before anything is created in the data directory.
         if (options.maintenance) {
             DevelopmentDataGuard.ensure({
                 packaged: app.isPackaged,
@@ -98,7 +96,6 @@ const startupOptions = (() => {
 if (!startupOptions) {
     app.exit(1);
 } else if (!app.requestSingleInstanceLock()) {
-    // The lock follows the data directory's profile: only an instance using the same data blocks this one.
     console.error(
         'The application is already running with this data directory. Close it before using local maintenance or development data commands.',
     );
@@ -115,7 +112,6 @@ if (!startupOptions) {
         }
     });
     app.on('window-all-closed', () => {
-        // A quit asked while the server restarts (after maintenance or an update backup) goes on.
         if (quitRequested || (!restarting && !maintaining)) {
             app.quit();
         }
@@ -131,9 +127,6 @@ if (!startupOptions) {
             return;
         }
 
-        // Close the Libris window first: a page with unsaved changes can still keep it open
-        // (Stay), and then the server must keep running. Once it is closed, `window-all-closed`
-        // quits again and the shutdown continues below.
         if (window && !window.isDestroyed()) {
             quitRequested = true;
             window.close();
@@ -166,7 +159,6 @@ if (!startupOptions) {
                 await launch(options);
 
                 if (updates) {
-                    // Never delays the window; silent unless an update is available.
                     setTimeout(
                         () => void updates.checkAtStartup(),
                         process.env.APP_TEST_UPDATES ? 0 : 5000,
@@ -206,7 +198,6 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
                 throw new Error('Unexpected startup response.');
             }
 
-            // Development tooling updates its API proxy before the renderer starts requesting data.
             console.log('Application backend ready on HTTP port ' + ready.httpPort);
 
             const host = ['0.0.0.0', '::'].includes(options.host)
@@ -230,7 +221,6 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
                     contextIsolation: true,
                     sandbox: true,
                     nodeIntegration: false,
-                    // A hidden test window must keep running at full speed.
                     backgroundThrottling: !hiddenWindows,
                 },
             });
@@ -410,8 +400,6 @@ function applicationUpdates(
     return updates;
 }
 
-// Like opening maintenance: the server and the Libris window stop, without the unsaved-changes
-// question (the update confirmation is the only one).
 async function stopServerForUpdate(): Promise<void> {
     maintaining = true;
     await backend?.close();
@@ -431,7 +419,6 @@ async function startServerAfterUpdate(
     }
 }
 
-// The credits page in the Libris window, which comes to the front.
 function openCredits(): void {
     if (!window || window.isDestroyed()) {
         return;

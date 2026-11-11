@@ -3,8 +3,6 @@ import { fileURLToPath } from 'node:url';
 import { mkdirSync, readFileSync, unwatchFile, watchFile } from 'node:fs';
 import { join } from 'node:path';
 
-// Desktop UI assertions use English text, whatever the language of the test computer, unless the
-// test asks for another device language.
 const language = process.env.APP_TEST_LANGUAGE || 'en-GB';
 
 app.commandLine.appendSwitch('lang', language);
@@ -24,13 +22,11 @@ const documents = join(process.env.APP_TEST_DATA, 'test-documents');
 
 mkdirSync(documents, { recursive: true });
 app.setPath('documents', documents);
-// `APP_TEST_DIALOG_ANSWERS`: message box answers ready before the application asks anything.
 const answers = {
     save: [],
     open: [],
     message: JSON.parse(process.env.APP_TEST_DIALOG_ANSWERS || '[]'),
 };
-// The message boxes the application asked for, read through `dialogs`.
 const shown = [];
 const record = (options) =>
     shown.push({
@@ -68,8 +64,6 @@ dialog.showOpenDialog = async () => {
     return { canceled: filePath === undefined, filePaths: filePath ? [filePath] : [] };
 };
 
-// Folders and pages the application opens, read through `opened`, without opening anything on the
-// test computer.
 const opened = { paths: [], external: [] };
 
 shell.openPath = async (path) => {
@@ -81,8 +75,6 @@ shell.openExternal = async (url) => {
     opened.external.push(url);
 };
 
-// Records the sleep blockers the application holds, so tests can read them through `keep-awake`
-// without the test computer's power settings changing.
 const blockers = new Map();
 let nextBlocker = 1;
 
@@ -100,8 +92,6 @@ powerSaveBlocker.isStarted = (id) => blockers.has(id);
 
 let requestId = 0;
 let window;
-// Each answer carries the id of its own request, so a window loading or a later request meanwhile
-// cannot take it.
 const send = (message, id = requestId) =>
     process.stdout.write(JSON.stringify({ ...message, requestId: id }) + '\n');
 
@@ -123,7 +113,6 @@ app.on('browser-window-created', (_event, created) => {
                     minimumSize: created.getMinimumSize(),
                     applicationName: app.getName(),
                 },
-                // Answers the launch only (request 0); later windows are read through `windows`.
             },
             0,
         );
@@ -165,7 +154,6 @@ watchFile(process.env.APP_TEST_COMMAND_FILE, { interval: 20 }, async () => {
             Menu.getApplicationMenu().getMenuItemById(request.id).click();
             reply({ type: 'clicked' });
         } else if (request.type === 'key') {
-            // A key press as the keyboard sends it, with modifiers such as `control`.
             for (const type of ['keyDown', 'char', 'keyUp']) {
                 window.webContents.sendInputEvent({
                     type,
@@ -210,7 +198,6 @@ watchFile(process.env.APP_TEST_COMMAND_FILE, { interval: 20 }, async () => {
             window.close();
             reply({ type: 'closed' });
         } else if (request.type === 'quit') {
-            // Like the application menu's Quit: answers at once, the application may stay open.
             app.quit();
             reply({ type: 'quitting' });
         } else if (request.type === 'stop') {
