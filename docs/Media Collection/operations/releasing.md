@@ -9,10 +9,12 @@ release is public as soon as it is published, and only then.
 
 1. **Check locally**, on the commit to release: `npm run check` passes, and on Windows `npm run package` then
    `npm run test:packaged` pass (the smoke test runs a copy of the application outside the checkout).
-2. **Version commit**: set `version` in the root `package.json` (the only version number: installer, About window,
-   backups, update check), for example `2.0.1`, and commit `chore: version 2.0.1` on `master`.
-3. **Tag and push**: `git tag v2.0.1` then `git push origin master v2.0.1`. The tag must be `v` + the version: the
-   workflow stops otherwise.
+2. **Version pull request**: set `version` in the root `package.json` (the only version number: installer, About
+   window, backups, update check), for example `2.0.1`, commit `chore: version 2.0.1` on a branch and merge it through
+   a pull request. `master` accepts no direct push (ruleset "Protect master", 2026-11-11: pull request required, no
+   force push, no deletion, no bypass).
+3. **Tag and push the tag**: on the updated `master`, `git tag v2.0.1` then `git push origin v2.0.1`. The tag must be
+   `v` + the version: the workflow stops otherwise.
 4. **Wait for the workflow** (Actions tab, "Release"): the Windows and Linux jobs each build, run the packaged smoke
    test, and attach their files to a **draft** release named after the version:
    - `Media-Collection-Setup-2.0.1.exe`, its `.blockmap` and `latest.yml` (Windows);
