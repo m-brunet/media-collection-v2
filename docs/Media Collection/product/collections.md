@@ -74,7 +74,7 @@ For an Owned omnibus overlapping several planned records, offer Cancel or delete
 ## Mobile shopping
 
 - Show unfinished collections even when they have no gaps. Finished collections are hidden.
-- Missing volumes are compact 'Volume #' entries ('Tome #' in French), including saved Not Owned coverage and inferred volumes.
+- Missing volumes are compact 'Volume #' entries ('Tome #' in French), including saved Not Owned coverage and inferred volumes, listed from the highest volume number to the lowest, so the volumes closest to the last one owned come first (decided 2026-11-11).
 - Emphasize last owned: the highest number covered by any Owned book, including an omnibus range end. Manga/Comics show its volume number; Books also show its title. Do not expand Owned editions in this compact view.
 - No gaps: show 'No known missing volumes' and last owned. No Owned books: show missing entries and 'No books owned yet', without last owned.
 - An eligible saved ordinary Not Owned entry lets Owners/Admin request marking the existing book Owned. Require a confirmation modal; cancel changes nothing. An inferred volume is non-clickable and requires book creation through desktop manual entry or the mobile scan/lookup flow. Mobile has no manual-entry fallback, as clarified in Task 6.

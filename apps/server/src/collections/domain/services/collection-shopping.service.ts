@@ -28,7 +28,9 @@ export class CollectionShopping {
     static of(coverage: CollectionCoverage, members: readonly ShoppingMember[]): ShoppingList {
         return {
             lastOwned: CollectionShopping.lastOwned(coverage, members),
-            missing: coverage.missing.map((volume) => CollectionShopping.missing(volume, members)),
+            missing: [...coverage.missing]
+                .sort((first, second) => second - first)
+                .map((volume) => CollectionShopping.missing(volume, members)),
         };
     }
 
