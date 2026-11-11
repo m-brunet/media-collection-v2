@@ -109,8 +109,6 @@ export function OrganisationEditor({
     const [shelfId, setShelfId] = useState(book.location?.shelfId ?? null);
     const [tags, setTags] = useState<DraftTag[]>(book.tags);
     const [status, setStatus] = useState<Status>({ kind: 'idle' });
-    // Changes are saved one after the other; only the latest answer updates the page. A refused
-    // change returns to the last state the server confirmed, which may be newer than `book`.
     const queue = useRef(Promise.resolve());
     const latest = useRef(0);
     const confirmed = useRef(book);

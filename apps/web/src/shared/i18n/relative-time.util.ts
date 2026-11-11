@@ -1,5 +1,3 @@
-// Past the same calendar day it counts calendar days in the
-// viewer's time zone, so something done at 23:00 is "Yesterday" the next morning, not "9 hours ago".
 export class RelativeTime {
     private readonly words: Intl.RelativeTimeFormat;
 

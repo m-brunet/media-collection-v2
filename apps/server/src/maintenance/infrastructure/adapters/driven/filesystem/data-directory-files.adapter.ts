@@ -8,9 +8,6 @@ import { BackupManifest } from '../../../../domain/value-objects/backup-manifest
 import type { RestoredDataCheck } from '../persistence/restored-data-check.adapter.js';
 import { FileMoves } from './file-moves.adapter.js';
 
-// The backed-up part of the data directory: `application.sqlite`, `covers/` and `tls/`. The
-// session key and the Electron profile belong to this computer and stay out. The database must
-// be closed while its file is read or replaced.
 export class DataDirectoryFiles implements ApplicationDataFiles {
     private static readonly replaced = [
         'application.sqlite',

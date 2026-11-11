@@ -3,8 +3,6 @@ import { Tag } from '../../domain/entities/tag.entity.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { NameKey } from '../../../shared/domain/name-key.helper.js';
 
-// Tag names are unique: an equivalent name blocks a new tag or a rename, since merging tags is
-// not available. (A book save reuses the equivalent tag instead.)
 export class TagNaming {
     constructor(private readonly tags: TagRepository) {}
 

@@ -72,7 +72,6 @@ export class SaveTlsSettings implements SaveTlsSettingsUseCase {
                     supplying ? { chain: input.chain!, key: input.key! } : undefined,
                 );
 
-                // Only the enabled state, port and certificate presence are recorded.
                 return {
                     result: settings.snapshot(),
                     before: { ...previous, certificateReplaced: false },

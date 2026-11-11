@@ -1,12 +1,8 @@
-// Two names are equivalent when their keys are equal: case, accents and outer spaces are
-// ignored. The displayed spelling is always kept separately.
 export class NameKey {
     static of(value: string): string {
         return value.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase().trim();
     }
 
-    // Close but different spellings, worth asking about before creating another identity.
-    // Never used to merge automatically.
     static similar(first: string, second: string): boolean {
         const a = NameKey.of(first);
         const b = NameKey.of(second);
@@ -24,7 +20,6 @@ export class NameKey {
         return NameKey.distance(a, b, allowed) <= allowed;
     }
 
-    // "tolkien" inside "j. r. r. tolkien": the shorter key is a whole-word part of the longer.
     private static containsWords(longer: string, shorter: string): boolean {
         if (shorter.length < 4 || longer.length <= shorter.length) {
             return false;
@@ -39,7 +34,6 @@ export class NameKey {
         );
     }
 
-    // Damerau-Levenshtein (optimal string alignment) distance, stopping early above the limit.
     private static distance(a: string, b: string, limit: number): number {
         if (Math.abs(a.length - b.length) > limit) {
             return limit + 1;

@@ -7,7 +7,5 @@ export interface BackupArchive {
         manifest: BackupManifestState,
         files: readonly DataFile[],
     ): Promise<void>;
-    // The manifest is returned unchecked. Throws a `backup-invalid` failure for a file that is not
-    // a backup archive.
     read(source: string): Promise<{ manifest: unknown; files: DataFile[] }>;
 }

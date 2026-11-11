@@ -48,7 +48,6 @@ export interface TestAppContext {
     library: LibraryProbe;
     lending: { loans: LoanRepository; receivers: ReceiverRepository };
     builders: TestLibrary;
-    // `background.settled()` waits for a setup started by a request.
     internetAccess: {
         store: InternetAccessStore;
         domainName: DomainNameStore;

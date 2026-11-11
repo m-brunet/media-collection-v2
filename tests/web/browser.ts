@@ -23,7 +23,6 @@ export class BrowserFixture {
         options: {
             viewport?: { width: number; height: number };
             locale?: string;
-            // Behave like the Electron window (sends its setup secret) rather than a plain browser.
             desktopWindow?: boolean;
             permissions?: string[];
             beforeLoad?: string;
@@ -61,7 +60,6 @@ export class BrowserFixture {
     }
 }
 
-// Optional visual review: set MC_SCREENSHOT_DIR to keep screenshots of the tested pages.
 export async function capture(page: Page, name: string): Promise<void> {
     const directory = process.env.MC_SCREENSHOT_DIR;
 

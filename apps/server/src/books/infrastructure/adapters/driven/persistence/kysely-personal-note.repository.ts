@@ -1,7 +1,6 @@
 import type { PersonalNoteStore } from '../../../../application/ports/driven/personal-note-store.interface.js';
 import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
 
-// Every read and write is scoped to the note's author.
 export class KyselyPersonalNoteRepository implements PersonalNoteStore {
     constructor(private readonly connections: DatabaseConnections) {}
 

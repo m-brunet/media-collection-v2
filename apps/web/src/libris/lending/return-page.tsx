@@ -61,7 +61,6 @@ export function ReturnPage() {
         );
     }
 
-    // Unknown receivers and receivers with nothing on loan any more look the same.
     if (group === null) {
         return (
             <EmptyState

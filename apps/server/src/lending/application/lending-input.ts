@@ -1,4 +1,3 @@
-// `distinct` confirms that a name similar to an existing receiver is really someone else.
 export type ReceiverChoice = { id: string } | { name: string; distinct?: boolean };
 
 export interface LendRequest {

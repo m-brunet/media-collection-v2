@@ -7,7 +7,6 @@ export type SourceResponse =
     | { kind: 'ok'; response: Response }
     | { kind: 'limited'; retryAt: Date | null };
 
-// The application identifies itself (never a person).
 export class SourceHttp {
     static readonly timeoutSeconds = 10;
     static readonly userAgent =

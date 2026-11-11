@@ -21,7 +21,6 @@ export function Brand({
                 data-mark={app}
                 style={{ width: markSize, height: markSize }}
                 aria-hidden="true"
-                // Trusted artwork shipped with the app, never user data.
                 dangerouslySetInnerHTML={{ __html: marks[app] }}
             />
             <div className="brand__text">

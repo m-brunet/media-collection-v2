@@ -33,25 +33,17 @@ export interface InternetAccessState {
     step: SetupStep | null;
     mapping: PortMapping | null;
     publicAddress: string | null;
-    // The Admin's own domain name, kept on the public address by dynamic DNS; null to use the address.
     domain: string | null;
     certificate: IssuedCertificateState | null;
     failure: { reason: InternetAccessFailureReason; at: string } | null;
     failedAttempts: number;
     nextAttemptAt: string | null;
-    // Let's Encrypt's own date after a rate-limit refusal: nothing is asked before it. Kept through
-    // Turn off and a new setup, like the history.
     retryAfter: string | null;
-    // This installation's certificates and failed checks of the last 8 days, for the estimate.
     history: CertificateAttempt[];
-    // The address or domain name last asked of Let's Encrypt, for the estimate once off.
     lastAttemptName: string | null;
-    // Active, after a failed check: the upkeep stops trying the certificate until the Admin's Check
-    // again.
     awaitingCheck: boolean;
 }
 
-// The estimate of what Let's Encrypt still allows for the name in use.
 export interface AttemptAllowances {
     certificates: Allowance;
     checks: Allowance;
@@ -60,7 +52,6 @@ export interface AttemptAllowances {
 export class InternetAccess {
     // Let's Encrypt's TLS-ALPN-01 check only uses 443.
     static readonly externalPort = 443;
-    // Without a date in Let's Encrypt's refusal: today's longest wait between upkeep attempts.
     private static readonly defaultRetryAfterMs = 6 * 60 * 60 * 1000;
     private static readonly ruleFailures: ReadonlySet<InternetAccessFailureReason> =
         new Set<RouterRuleFailureReason>([
@@ -134,7 +125,6 @@ export class InternetAccess {
         return InternetAccess.copy(this.state);
     }
 
-    // The name the last attempts were for, also once internet access is off.
     get attemptName(): string | null {
         return this.certificateName ?? this.state.lastAttemptName;
     }
@@ -143,7 +133,6 @@ export class InternetAccess {
         return !this.state.retryAfter || now.getTime() >= Date.parse(this.state.retryAfter);
     }
 
-    // Set up and Check again ask nothing of Let's Encrypt before its own date.
     ensureAttemptAllowed(now: Date): void {
         if (!this.attemptAllowed(now)) {
             throw new Failure(
@@ -154,7 +143,6 @@ export class InternetAccess {
         }
     }
 
-    // Null before any failure: the estimate is only useful once something went wrong.
     allowances(now: Date): AttemptAllowances | null {
         const name = this.attemptName;
 
@@ -221,8 +209,6 @@ export class InternetAccess {
         };
     }
 
-    // While setting up, after the router rule; while active, after a failed check (the current
-    // certificate stays in use, `step` shows the check running).
     check(): void {
         if (this.state.phase === 'active' && this.state.awaitingCheck && this.state.step === null) {
             this.state = { ...this.state, step: 'certificate' };
@@ -351,7 +337,6 @@ export class InternetAccess {
         );
     }
 
-    // Not while a check runs or waits for the Admin, nor before Let's Encrypt's date.
     upkeepDue(now: Date): boolean {
         return (
             this.state.phase === 'active' &&
@@ -362,8 +347,6 @@ export class InternetAccess {
         );
     }
 
-    // A failed check waits for the Admin; a rate limit for Let's Encrypt's date; anything else, which
-    // costs no attempt, for the growing delay.
     upkeepFailed(reason: InternetAccessFailureReason, now: Date): void {
         this.requireActive();
         const failedAttempts = this.state.failedAttempts + 1;
@@ -383,8 +366,6 @@ export class InternetAccess {
         };
     }
 
-    // Shown at once, without waiting longer: the rule lapses within its lease, so the next upkeep
-    // run tries it again.
     ruleFailed(reason: RouterRuleFailureReason, now: Date): void {
         this.requireActive();
         this.state = { ...this.state, failure: { reason, at: now.toISOString() } };
@@ -422,8 +403,6 @@ export class InternetAccess {
         this.state = { ...this.kept(), domain: this.state.domain };
     }
 
-    // A setup cut short by a restart cannot resume; a check while active is simply over, still
-    // waiting for the Admin.
     interrupted(now: Date): void {
         if (this.state.phase === 'setting-up') {
             this.stop('setup-failed', now);
@@ -449,7 +428,6 @@ export class InternetAccess {
         };
     }
 
-    // Off, with what must outlive Turn off and a new setup: Let's Encrypt still counts.
     private kept(): InternetAccessState {
         return {
             ...InternetAccess.off().state,

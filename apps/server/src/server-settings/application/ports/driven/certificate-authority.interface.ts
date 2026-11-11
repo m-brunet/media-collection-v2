@@ -9,10 +9,8 @@ export type CertificateIssue =
           outcome: 'refused';
           reason: Extract<InternetAccessFailureReason, 'not-reachable' | 'authority-unavailable'>;
       }
-    // `retryAfter`: the date Let's Encrypt gave, when it gave one.
     | { outcome: 'refused'; reason: 'rate-limited'; retryAfter: string | null };
 
-// What the certificate covers: the home's public IPv4 address or the Admin's domain name.
 export type CertificateSubject = { kind: 'address' | 'domain'; name: string };
 
 // Let's Encrypt, proven on external port 443: a short-lived certificate for an address, a classic

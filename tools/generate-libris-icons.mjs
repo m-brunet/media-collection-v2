@@ -10,7 +10,6 @@ const source = join(root, 'apps/web/public/libris.svg');
 const output = join(root, 'apps/desktop/assets/icons');
 const icoSizes = [16, 24, 32, 48, 64, 128, 256];
 const pngSize = 512;
-// The SVG is drawn on a 24 px canvas.
 const sourceSize = 24;
 const svg = await readFile(source);
 

@@ -69,7 +69,6 @@ export class CollectionsController {
         });
     }
 
-    // Declared before `:id` so that `names` is not read as an identifier.
     @Get('names')
     names(
         @Query({ schema: collectionNamesSchema }) query: z.infer<typeof collectionNamesSchema>,
@@ -77,7 +76,6 @@ export class CollectionsController {
         return this.findCollections.execute(query.search);
     }
 
-    // Declared before `:id` so that `shopping` is not read as an identifier.
     @Get('shopping')
     shoppingList(@Req() request: AuthenticatedRequest): Promise<ShoppingCollectionDto[]> {
         return this.listShopping.execute(request.actor);

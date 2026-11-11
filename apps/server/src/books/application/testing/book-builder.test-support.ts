@@ -13,8 +13,6 @@ export type BookPorts = { books: BookRepository; authors: AuthorRepository };
 
 type BuilderAuthor = { id: string; name: string };
 
-// Saving creates its authors, reusing a saved author with an equivalent name. Collection
-// membership, location and tags belong to their features and are not set here.
 export class BookBuilder extends EntityBuilder<Book, BookPorts> {
     private id: string | null = null;
     private title: string | null = null;
@@ -41,7 +39,6 @@ export class BookBuilder extends EntityBuilder<Book, BookPorts> {
         return this;
     }
 
-    // An ISBN-10 or ISBN-13, as typed.
     withIsbn(isbn: string): this {
         this.isbn = isbn;
 

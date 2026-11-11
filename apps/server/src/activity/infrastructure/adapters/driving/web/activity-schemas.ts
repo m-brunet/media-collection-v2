@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-// `before`: the `older` value of the previous page, `<UTC time>_<operation ID>`.
 export const activityQuerySchema = z.strictObject({
     before: z
         .string()

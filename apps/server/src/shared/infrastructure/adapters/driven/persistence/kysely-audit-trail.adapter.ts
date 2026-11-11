@@ -3,8 +3,6 @@ import type { AuditEntry } from '../../../../application/ports/driven/audit-entr
 import type { AuditTrail } from '../../../../application/ports/driven/audit-trail.interface.js';
 import type { DatabaseConnections } from './database-connections.adapter.js';
 
-// As a last safeguard, any value whose key looks like a credential is removed before storage,
-// even though callers already pass credential-free snapshots.
 export class KyselyAuditTrail implements AuditTrail {
     private static readonly secret = /password|hash|token|secret|private|key|chain|credential/i;
 

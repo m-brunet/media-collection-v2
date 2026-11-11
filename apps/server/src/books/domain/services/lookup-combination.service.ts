@@ -11,7 +11,6 @@ export interface LookupChoice<T> {
     sources: string[];
 }
 
-// Every field's choices, the preferred source's value first. An empty list: no source knew it.
 export interface CombinedLookup {
     title: LookupChoice<string>[];
     authors: LookupChoice<string[]>[];
@@ -23,7 +22,6 @@ export interface CombinedLookup {
     category: LookupChoice<BookCategory>[];
 }
 
-// Combines the answers of several sources, added in order of preference.
 export class LookupCombination {
     private readonly answers: { source: string; answer: LookupAnswer }[] = [];
 
@@ -126,7 +124,6 @@ export class LookupCombination {
             .trim();
     }
 
-    // Two- and three-letter codes of the same language compare equal ("fr", "fre", "fra").
     private static language(code: string): string {
         return LookupCombination.languages[code] ?? code;
     }

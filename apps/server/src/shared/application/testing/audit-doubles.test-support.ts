@@ -3,8 +3,6 @@ import type { AuditTrail } from '../ports/driven/audit-trail.interface.js';
 import type { TransactionRunner } from '../ports/driven/transaction-runner.interface.js';
 import { AuditedOperation } from '../services/audited-operation.service.js';
 
-// In-memory audit trail with the production contract: entries written inside a transaction that
-// later fails are discarded, entries written outside a transaction are kept.
 export class MemoryAuditTrail implements AuditTrail, TransactionRunner {
     readonly entries: AuditEntry[] = [];
     private pending: AuditEntry[] | null = null;

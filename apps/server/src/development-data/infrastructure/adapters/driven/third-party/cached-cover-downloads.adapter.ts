@@ -3,9 +3,6 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { CoverDownloads } from '../../../../application/ports/driven/cover-downloads.interface.js';
 
-// Downloads V1 covers once into a local cache (`local-imports/v1/covers/`, Git-ignored), which
-// later imports reuse: re-running the import is fast, works offline and survives dead addresses.
-// Only successful downloads are cached, so failed ones are tried again next time.
 export class CachedCoverDownloads implements CoverDownloads {
     private static readonly maximumBytes = 10 * 1024 * 1024;
     private static readonly timeoutMilliseconds = 20_000;

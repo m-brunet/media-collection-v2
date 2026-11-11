@@ -8,8 +8,6 @@ interface TableSnapshot {
     rows: Record<string, unknown>[];
 }
 
-// Rebuild the related tables together inside an explicit transaction. Children
-// are dropped first so foreign keys and cascading deletes cannot discard saved data.
 export class UuidPrimaryKeysMigration implements Migration {
     private static readonly uuid =
         /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -133,7 +131,6 @@ export class UuidPrimaryKeysMigration implements Migration {
         return snapshot.definition;
     }
 
-    // The UUID format CHECK on an `id` column; later migrations reuse it for new tables.
     static uuidCheck(): string {
         return `typeof(id) = 'text' and length(id) = 36
             and substr(id, 9, 1) = '-' and substr(id, 14, 1) = '-'

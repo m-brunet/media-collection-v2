@@ -259,6 +259,17 @@ declaration or a module-level arrow function, is not allowed when a class can ho
 - Keep function forms for React functional components and hooks and for callbacks. Reusable business, helper, and
   utility behavior should still belong to classes when called through those functions.
 
+## Code Comments
+
+- No code comments in production code, tests, tool scripts or stylesheets. Names, types and tests carry the meaning;
+  do not comment a class, method, property, constant or block to explain the code's own behavior.
+- Only these comments are allowed:
+  - a fact about an external service or system the code depends on: a third-party API or record format (BnF, Open
+    Library, Let's Encrypt/ACME, UPnP routers), a standard (an RFC, UNIMARC, EAN-13), or a behavior of Electron,
+    the operating system, the browser or a library that the code works around;
+  - a `// Justified: …` note on a `catch` that deliberately swallows an error;
+  - tool directives (`@ts-expect-error`, lint suppressions, `/// <reference>`).
+
 ## Production File Naming
 
 Use kebab-case basenames and the suffix for the file's actual production role:

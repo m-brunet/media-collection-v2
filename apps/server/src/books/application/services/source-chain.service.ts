@@ -2,19 +2,16 @@ import type { Clock } from '../../../shared/application/ports/driven/clock.inter
 import type { LookupSource, SourceReply } from '../ports/driven/lookup-source.interface.js';
 import { SourceBudget } from './source-budget.service.js';
 
-// Why a source contributed nothing: its rate limit (or our budget for it), or a failure.
 export interface SourceUnavailability {
     source: string;
     reason: 'limited' | 'failed';
 }
 
-// Receives what each source contributes, in order of preference.
 export interface SourceRecipient<T> {
     found(source: string, value: T): void;
     unavailable(unavailability: SourceUnavailability): void;
 }
 
-// All requests start together (`begin`); the answers are then handed over in order (`handle`).
 export class SourceLink<T> {
     static readonly timeoutSeconds = 8;
     static readonly defaultPauseSeconds = 60;
@@ -26,7 +23,6 @@ export class SourceLink<T> {
         private readonly next: SourceLink<T> | null = null,
     ) {}
 
-    // Built once, so the budgets last across lookups.
     static chain<T>(sources: readonly LookupSource<T>[], clock: Clock): SourceLink<T> | null {
         return sources.reduceRight<SourceLink<T> | null>(
             (next, source) =>

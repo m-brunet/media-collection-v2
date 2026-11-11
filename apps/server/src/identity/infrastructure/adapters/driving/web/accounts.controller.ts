@@ -20,7 +20,6 @@ const resetSchema = z.strictObject({
     password: z.string().min(8).max(128),
 });
 
-// There is no role-change endpoint: roles are fixed at creation.
 @Controller('api/users')
 export class AccountsController {
     constructor(

@@ -41,11 +41,9 @@ async function currentChain(keyId: string | null = '69885b6b87464041e1b37b847ba0
 
 class ScriptedSession {
     readonly orders: unknown[] = [];
-    // Every order asked for, accepted or not.
     readonly requested: unknown[] = [];
     challengeWaiting = false;
     orderFailure: Error | null = null;
-    // Refuses an order that names a certificate it replaces.
     replacesFailure: Error | null = null;
     validationFailure: Error | null = null;
     challengeTypes = ['http-01', 'tls-alpn-01'];

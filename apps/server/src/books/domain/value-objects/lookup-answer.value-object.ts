@@ -22,10 +22,8 @@ export interface LookupAnswerFields {
     publicationDate?: LookupDate | null;
     pageCount?: number | null;
     summary?: LookupSummary | null;
-    // The language of the edition itself (ISO 639 code, two or three letters).
     editionLanguage?: string | null;
     series?: LookupSeries | null;
-    // Only when the source says so; otherwise the form keeps its own.
     category?: BookCategory | null;
 }
 
@@ -65,7 +63,6 @@ export class LookupAnswer {
         );
     }
 
-    // The same answer naming other authors (an existing author's spelling of a name).
     withAuthors(authors: readonly string[]): LookupAnswer {
         return LookupAnswer.of({ ...this, authors });
     }

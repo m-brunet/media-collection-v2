@@ -2,8 +2,6 @@ import type { IssuedCertificate } from '../value-objects/issued-certificate.valu
 
 export class RenewalPolicy {
     private static readonly firstRetryDelay = 60 * 60 * 1000;
-    // Share of the lifetime after which a certificate is renewed: half for a short-lived IP address
-    // certificate, two thirds for a domain name (day 60 of a 90-day certificate).
     static readonly addressShare = 1 / 2;
     static readonly domainShare = 2 / 3;
     private static readonly longestRetryDelay = 6 * 60 * 60 * 1000;

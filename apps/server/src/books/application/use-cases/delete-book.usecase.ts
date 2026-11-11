@@ -40,7 +40,6 @@ export class DeleteBook implements DeleteBookUseCase {
             },
         );
 
-        // Only once the deletion is committed: a failed deletion keeps its cover.
         if (cover) {
             await this.covers.remove(cover);
         }

@@ -8,7 +8,6 @@ export interface NamedChoice {
     name: string;
 }
 
-// A chosen value: an existing identity, or a typed name the server reuses or creates.
 export interface NamedValue {
     id: string | null;
     name: string;
@@ -54,7 +53,6 @@ export function NamePicker<T extends NamedValue>({
     const [open, setOpen] = useState(false);
     const [active, setActive] = useState(0);
     const typedKey = BookDraft.nameKey(typed);
-    // Suggestions found for an earlier text are never offered for the current one.
     const suggestions = typedKey && found.key === typedKey ? found.choices : [];
     const chosen = new Set(values.map((value) => value.id ?? BookDraft.nameKey(value.name)));
     const chosenKeys = new Set(values.map((value) => BookDraft.nameKey(value.name)));
@@ -185,7 +183,6 @@ export function NamePicker<T extends NamedValue>({
                                 role="option"
                                 aria-selected={index === active}
                                 className="name-picker__option"
-                                // Keeps focus in the input so the list does not close first.
                                 onMouseDown={(event) => event.preventDefault()}
                                 onClick={() => choose(option)}
                             >

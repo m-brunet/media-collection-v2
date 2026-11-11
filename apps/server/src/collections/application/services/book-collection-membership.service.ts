@@ -27,9 +27,6 @@ import type { IdGenerator } from '../../../shared/application/ports/driven/id-ge
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { NameKey } from '../../../shared/domain/name-key.helper.js';
 
-// Applies the collection rules to the books feature's saves: a name joins or creates its
-// collection, volume 0 needs the collection option, and coverage may overlap only between
-// Owned books. Nothing is trimmed, split or deleted without the person's explicit choice.
 export class BookCollectionMembership implements CollectionMembership, BookCollectionReader {
     constructor(
         private readonly collections: CollectionRepository,
@@ -140,8 +137,6 @@ export class BookCollectionMembership implements CollectionMembership, BookColle
             : CollectionChange.of(CollectionAudit.updated, collection.id, before, collection);
     }
 
-    // An equivalent name joins its collection; a similar one is only created once the person
-    // confirms it is another collection.
     private async resolve(
         choice: CollectionChoice,
         now: string,
@@ -191,8 +186,6 @@ export class BookCollectionMembership implements CollectionMembership, BookColle
         };
     }
 
-    // An Owned book may replace the planned (Not Owned) books it overlaps, only when the person
-    // chose to delete exactly those books.
     private ensureNoConflict(
         collection: Collection,
         records: readonly MemberRecord[],

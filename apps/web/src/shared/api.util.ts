@@ -2,9 +2,7 @@ export class ApiError extends Error {
     constructor(
         message: string,
         public readonly status: number,
-        // Stable server failure code (for example `conflict`), when the server supplied one.
         public readonly code: string | null = null,
-        // Precise stable cause (for example `username-taken`), translated by the interface.
         public readonly reason: string | null = null,
         public readonly details: Record<string, unknown> | null = null,
     ) {

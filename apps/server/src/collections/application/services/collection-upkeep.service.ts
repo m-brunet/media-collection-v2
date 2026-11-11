@@ -5,9 +5,6 @@ import type { CollectionRepository } from '../ports/driven/collection-repository
 import { Collection } from '../../domain/entities/collection.entity.js';
 import type { RelatedChange } from '../../../shared/application/ports/driven/audit-entry.interface.js';
 
-// Keeps a collection consistent after its books changed: a collection without books does not
-// exist, and a Finished collection left with missing volumes reopens. Returns the change made,
-// for the audit of the book operation.
 export class CollectionUpkeep {
     constructor(
         private readonly collections: CollectionRepository,

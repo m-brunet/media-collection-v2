@@ -89,7 +89,6 @@ function BookForm({ book }: { book: BookDto | null }) {
     const [expanded, setExpanded] = useState(false);
     const [notice, setNotice] = useState<string | null>(null);
     const [correcting, setCorrecting] = useState<AuthorDto | null>(null);
-    // Set once the book is saved or the person chose to leave, so navigation is not blocked.
     const leaving = useRef(false);
     const changed = !BookDraft.same(initial, values) || cover.file !== null || cover.removed;
     const blocker = useBlocker(

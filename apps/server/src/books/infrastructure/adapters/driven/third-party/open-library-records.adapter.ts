@@ -50,7 +50,6 @@ export class OpenLibraryRecords {
         const reply = this.fetch(isbn13);
 
         this.recent.set(isbn13, { at: now, reply });
-        // A failed request is not reused: the next lookup asks again.
         reply.catch(() => this.recent.delete(isbn13));
 
         return reply;

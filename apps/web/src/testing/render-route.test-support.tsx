@@ -5,7 +5,6 @@ import { createMemoryRouter, RouterProvider, useLocation } from 'react-router';
 import { AppearanceProvider } from '../shared/appearance/appearance-context';
 import { SessionProvider } from '../shared/session/session-context';
 
-// `routes` maps route patterns to their page; every other path shows "Elsewhere: <path>".
 export function renderRoute(path: InitialEntry, routes: Record<string, ReactNode>) {
     const router = createMemoryRouter(
         [

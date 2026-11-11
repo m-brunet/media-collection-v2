@@ -3,8 +3,6 @@ import type { Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'node:path';
 
-// Libris is served at `/` and Leaf at `/leaf/`. In development, deep links inside Leaf must load
-// Leaf's page rather than Libris's (production does the same in the backend's static fallback).
 function leafFallback(): Plugin {
     return {
         name: 'media-collection-leaf-fallback',
@@ -45,7 +43,6 @@ export default defineConfig({
         strictPort: true,
         proxy: {
             '/api': {
-                // tools/dev.mjs follows Electron's actual backend readiness port.
                 target: 'http://127.0.0.1:34345',
                 changeOrigin: false,
             },

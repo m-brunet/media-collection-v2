@@ -5,8 +5,6 @@ import type { IdGenerator } from '../ports/driven/id-generator.interface.js';
 import type { TransactionRunner } from '../ports/driven/transaction-runner.interface.js';
 import { Failure } from '../../domain/exceptions/failure.js';
 
-// What an audited operation is about. The change may fill in the actor or subject once known
-// (for example after finding the account of a sign-in attempt).
 export interface AuditContext {
     category: string;
     actorId: string | null;
@@ -14,7 +12,6 @@ export interface AuditContext {
     subjectId: string | null;
 }
 
-// The outcome of a successful change, with credential-free before/after snapshots.
 export interface AuditedChange<T> {
     result: T;
     before: Record<string, unknown> | null;
@@ -22,9 +19,6 @@ export interface AuditedChange<T> {
     related?: readonly RelatedChange[];
 }
 
-// What a multi-record operation is about: one record per subject (for example each book of a
-// lending), all sharing one operation ID. The subjects are those requested, so each one gets a
-// Failed record if the operation fails.
 export interface BatchAuditContext {
     category: string;
     actorId: string | null;
@@ -44,8 +38,6 @@ export interface AuditedBatchChange<T> {
     related?: readonly RelatedChange[];
 }
 
-// Runs a user-initiated state change atomically with its Successful audit records. If the change
-// fails, nothing of it persists and a Failed record is written after the rollback.
 export class AuditedOperation {
     constructor(
         private readonly transactions: TransactionRunner,
@@ -76,9 +68,6 @@ export class AuditedOperation {
         }
     }
 
-    // Runs a change affecting several subjects atomically, with one Successful record per subject.
-    // If it fails, nothing of it persists and every requested subject gets a Failed record, even
-    // those that were not themselves the cause: the batch as a whole was not committed.
     async runBatch<T>(
         context: BatchAuditContext,
         change: () => Promise<AuditedBatchChange<T>>,

@@ -2,8 +2,6 @@ import { Database } from '../../../../../shared/infrastructure/adapters/driven/p
 import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
 import type { IdGenerator } from '../../../../../shared/application/ports/driven/id-generator.interface.js';
 
-// Maintenance copies and replaces the database file, so each use of the database opens and
-// closes its own connection instead of keeping one open.
 export class DatabaseSession {
     constructor(
         private readonly directory: string,

@@ -23,8 +23,6 @@ import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 
-// Nobody is there to answer questions: similar author or collection names are kept as distinct,
-// and an unusable cover is left out.
 export class ImportBook implements ImportBookUseCase {
     constructor(
         private readonly books: BookRepository,
@@ -104,7 +102,6 @@ export class ImportBook implements ImportBookUseCase {
                 },
             );
         } catch (error) {
-            // The stored image is not referenced by any book after a failure.
             if (stored) {
                 await this.covers.remove(stored);
             }
@@ -138,8 +135,6 @@ export class ImportBook implements ImportBookUseCase {
         };
     }
 
-    // A Book cannot have a generated title, so an untitled one in a collection is given the
-    // collection title as a supplied title.
     private static title(imported: ImportedBook): string {
         if (imported.title.trim() || imported.category !== 'books' || !imported.collection) {
             return imported.title;

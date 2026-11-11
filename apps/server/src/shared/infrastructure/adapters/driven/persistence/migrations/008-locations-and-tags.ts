@@ -3,9 +3,6 @@ import type { Kysely } from 'kysely';
 import type { Migration } from 'kysely/migration';
 import { UuidPrimaryKeysMigration } from './006-uuid-primary-keys.js';
 
-// Physical locations (bookcases holding shelves) and reusable tags, each with its own link
-// table to books. Deleting a bookcase removes its shelves; deleting a shelf, a tag or a book
-// removes only the links, never the books.
 export class LocationsAndTagsMigration implements Migration {
     async up(db: Kysely<unknown>): Promise<void> {
         await db.schema

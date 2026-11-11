@@ -2,8 +2,6 @@ import type { BookCollection } from './ports/driven/book-collection-reader.inter
 import type { BookOrganisation } from './book-views.js';
 import type { Book } from '../domain/entities/book.entity.js';
 
-// Shared changes are eligible for the Activity view; personal reading and note changes never are,
-// and note text is never recorded.
 export const BookAudit = {
     book: 'book',
     author: 'author',
@@ -12,7 +10,6 @@ export const BookAudit = {
     deleted: 'book.deleted',
     organised: 'book.organised',
     markedOwned: 'book.marked-owned',
-    // A title changed by a collection-wide operation (rename or deletion of its collection).
     retitled: 'book.retitled',
     coverChanged: 'book.cover-changed',
     authorCorrected: 'author.corrected',

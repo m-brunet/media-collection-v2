@@ -2,7 +2,6 @@ import { z } from 'zod';
 import { bookFilterQuery } from '../../../../../shared/infrastructure/adapters/driving/web/book-filter-query.js';
 import { idSchema } from '../../../../../shared/infrastructure/adapters/driving/web/id-schema.js';
 
-// Request shapes only; the collections domain checks the actual rules and explains refusals.
 export const collectionListSchema = z.strictObject({
     search: z.string().max(400).default(''),
     direction: z.enum(['asc', 'desc']).default('asc'),

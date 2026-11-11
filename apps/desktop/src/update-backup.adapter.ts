@@ -11,8 +11,6 @@ interface UpdateBackupOptions {
     folder: BackupFolder;
 }
 
-// The full backup before an update, in the backup folder, made by a maintenance worker while the
-// server is stopped (the same backup as the Maintenance window's).
 export class UpdateBackup {
     constructor(private readonly options: UpdateBackupOptions) {}
 
@@ -21,7 +19,6 @@ export class UpdateBackup {
             this.options.folder.ensure(),
             BackupFileName.at(new Date(), update.version),
         );
-        // Started once the folder is ready, so a missing folder leaves no worker behind.
         const worker = new BackendProcess(this.options.workerPath);
 
         try {
@@ -39,7 +36,6 @@ export class UpdateBackup {
                 throw new Error('Unexpected backup response.');
             }
         } catch (error) {
-            // A new installation has no data yet: there is nothing to lose, so nothing to save.
             if (!(error instanceof WorkerFailure && error.reason === 'backup-nothing')) {
                 throw error;
             }

@@ -2,9 +2,6 @@ import { sql } from 'kysely';
 import type { Kysely } from 'kysely';
 import type { Migration } from 'kysely/migration';
 
-// Title provenance and natural title order. Existing titles were all supplied, so they keep their
-// text with `title_generated` false, even when the text looks generated. `title_sort_key` is the
-// title comparison key with every run of digits padded, so numbers sort by value.
 export class GeneratedTitlesMigration implements Migration {
     async up(db: Kysely<unknown>): Promise<void> {
         await db.schema
@@ -37,7 +34,6 @@ export class GeneratedTitlesMigration implements Migration {
             .execute();
     }
 
-    // Frozen copy of the rule at this migration's time; runtime code computes its own key.
     private static sortKey(titleKey: string): string {
         return titleKey.replace(/\d+/g, (digits) => digits.padStart(10, '0'));
     }

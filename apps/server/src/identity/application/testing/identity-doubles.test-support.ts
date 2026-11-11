@@ -35,7 +35,6 @@ export class MemoryUsers implements UserRepository {
         this.users.set(user.actor.id, new User(user.snapshot));
     }
 
-    // Same contract as the database: usernames differing only by letter case conflict.
     private takenByAnother(user: User): boolean {
         const name = user.actor.username.toLowerCase();
 

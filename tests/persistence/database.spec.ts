@@ -156,7 +156,6 @@ const user = (id: string, username = id, role: 'admin' | 'owner' | 'guest' = 'ow
         active: true,
     });
 
-// Builds a database exactly as the imported foundation left it (migration 001 only, with a Note).
 function foundationDatabase(
     directory: string,
     accounts: [string, string, string][] = [['alice', 'user', timestamp]],

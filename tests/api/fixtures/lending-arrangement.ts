@@ -11,9 +11,6 @@ export type ArrangedLending = {
     loans: { loanId: string; bookId: string; lentAt: string }[];
 };
 
-// Successive lendings are a minute apart, so the newest one comes
-// first in lists; all happen in December 2025, before anything the test application does at its
-// own clock (from 2026-01-01).
 export class LendingArrangement {
     private minutes = 0;
 

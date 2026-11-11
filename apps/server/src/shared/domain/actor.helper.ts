@@ -2,7 +2,6 @@ import { Failure } from './exceptions/failure.js';
 
 export type InterfaceLanguage = 'en' | 'fr';
 
-// `admin` is the single protected first user; `owner` manages the shared library; `guest` reads it.
 export type AccountRole = 'admin' | 'owner' | 'guest';
 
 export interface Actor {
@@ -10,7 +9,6 @@ export interface Actor {
     username: string;
     role: AccountRole;
     mustChangePassword: boolean;
-    // Personal interface language; null until the account chooses one (the device language applies).
     language: InterfaceLanguage | null;
     sessionVersion?: number;
 }

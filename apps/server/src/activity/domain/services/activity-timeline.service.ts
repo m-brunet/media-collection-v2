@@ -5,10 +5,6 @@ import type {
 } from './activity-projection.service.js';
 import { ActivityProjection } from './activity-projection.service.js';
 
-// Turns operations, newest first, into Activity entries in the same order. The book form saves
-// the cover as its own operation right after the book, so a cover change joins the creation or
-// update of the same book by the same account made at most two minutes before it, instead of
-// being a second entry.
 export class ActivityTimeline {
     static readonly coverWindowMs = 2 * 60 * 1000;
     private static readonly saveCategories: readonly string[] = [

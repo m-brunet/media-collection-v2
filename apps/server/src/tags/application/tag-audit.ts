@@ -1,7 +1,6 @@
 import type { Tag } from '../domain/entities/tag.entity.js';
 import type { RelatedChange } from '../../shared/application/ports/driven/audit-entry.interface.js';
 
-// A tag created while saving a book is a related change of that book operation.
 export const TagAudit = {
     tag: 'tag',
     created: 'tag.created',

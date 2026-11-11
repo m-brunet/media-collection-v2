@@ -24,7 +24,6 @@ void app
         let stopping = false;
 
         worker.on('message', (message) => {
-            // The keep-awake notice is for the desktop main process, not an answer to a test request.
             if (message.type === 'keep-awake') {
                 return;
             }
@@ -82,7 +81,6 @@ void app
                     : { httpPort: Number(process.env.APP_TEST_PORT) }),
                 webDirectory: fileURLToPath(new URL('../../dist/apps/web/', import.meta.url)),
                 development: false,
-                // Stands in for the per-launch secret of the Electron window (see runtime-setup.ts).
                 setupToken: 'test-setup-token',
             });
         }

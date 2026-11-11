@@ -74,8 +74,6 @@ export class HttpSessions {
         next();
     };
 
-    // JSON everywhere; upload paths also accept a raw file. Browsers cannot send these types from a
-    // cross-site form, so the check still blocks form-based forgery.
     private acceptedBody(request: Request): boolean {
         return (
             Boolean(request.is('application/json')) ||

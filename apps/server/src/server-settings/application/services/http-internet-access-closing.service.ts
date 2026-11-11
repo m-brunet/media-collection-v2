@@ -7,7 +7,6 @@ export class HttpInternetAccessClosing {
         private readonly forwarding: HttpPortForwarding,
     ) {}
 
-    // A failure to remove the router rule still closes HTTP: it never undoes the HTTPS setup.
     async becauseHttpsWorks(): Promise<void> {
         const access = await this.store.read();
 

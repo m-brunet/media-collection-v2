@@ -1,14 +1,3 @@
-// Copies the design's icon sets 01-05 (design/artifact/icons, Git-ignored) into the web app's
-// static files (apps/web/public/icon-sets, one JSON file per set: purpose -> SVG) so the
-// installation-wide icon set can switch them. The app fetches the chosen set once.
-//
-//   node tools/import-icon-sets.mjs
-//
-// The artwork follows the text colour like Lucide: grey in a normal link, the accent
-// in a selected one. Each icon's main colour becomes `currentColor`; its other tones (the design's
-// green highlights, gold details) become `currentColor` at 60 % opacity, which keeps the two-tone
-// drawing. Internal ids (masks, patterns) are prefixed per icon so two icons on one page never
-// share an id. Set 00 (Lucide) is not copied: the app draws it with lucide-react.
 import { copyFileSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -24,7 +13,6 @@ const sets = {
     '04-single-ink-risograph': 'single-ink-risograph',
     '05-quiet-editorial-monoline': 'quiet-editorial-monoline',
 };
-// Every colour the design's artwork uses; an unknown one stops the import.
 const known = [
     '#86d39a',
     '#87cf9b',
@@ -76,7 +64,6 @@ function prefixIds(svg, prefix) {
     return result;
 }
 
-// The app sizes icons itself: drop fixed sizes, descriptions and the root colour.
 function tidy(svg) {
     return svg
         .replace(/<\?xml[^>]*>\s*/g, '')

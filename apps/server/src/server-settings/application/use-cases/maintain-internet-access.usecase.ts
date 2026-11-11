@@ -12,8 +12,6 @@ import type { DomainNameCheck } from '../services/domain-name-check.service.js';
 import type { InternetAccessSetup } from '../services/internet-access-setup.service.js';
 import type { RouterRules } from '../services/router-rules.service.js';
 
-// A certificate or domain name failure keeps the current certificate and waits longer before that
-// work runs again; the router rule never waits, as it lapses at the end of its lease.
 export class MaintainInternetAccess implements MaintainInternetAccessUseCase {
     constructor(
         private readonly store: InternetAccessStore,

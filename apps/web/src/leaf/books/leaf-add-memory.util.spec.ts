@@ -7,7 +7,6 @@ afterEach(() => {
     vi.unstubAllGlobals();
 });
 
-// The browser storage, or one that refuses every access (private window, blocked site data).
 function storage(available = true) {
     const values = new Map<string, string>();
     const refuse = () => {

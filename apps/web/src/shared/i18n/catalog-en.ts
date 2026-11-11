@@ -1,4 +1,3 @@
-// Reference catalog: every interface text exists here first, then in catalog-fr.ts.
 export const en = {
     'brand.byline': 'by Media Collection',
     'brand.libris': 'Libris',

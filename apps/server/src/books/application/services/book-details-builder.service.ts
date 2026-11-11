@@ -8,7 +8,6 @@ import { PublicationDate } from '../../domain/value-objects/publication-date.val
 import { AuthorResolver } from './author-resolver.service.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 
-// A generated title stays provisional until the membership is applied (`GeneratedTitleSync`).
 export class BookDetailsBuilder {
     constructor(private readonly authors: AuthorResolver) {}
 
@@ -41,8 +40,6 @@ export class BookDetailsBuilder {
         };
     }
 
-    // The collection is only known for sure once the membership is applied: an equivalent existing
-    // collection keeps its own spelling, and a chosen one is known by its identity only.
     private static provisionalTitle(input: BookInput): string {
         const request = input.collection!;
         const name = 'name' in request.collection ? request.collection.name : '…';

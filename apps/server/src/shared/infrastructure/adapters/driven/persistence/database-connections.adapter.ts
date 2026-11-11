@@ -3,8 +3,6 @@ import type { Kysely, Transaction } from 'kysely';
 import type { TransactionRunner } from '../../../../application/ports/driven/transaction-runner.interface.js';
 import type { DatabaseSchema } from './database.adapter.js';
 
-// Gives repositories the connection to use: the open transaction of the current operation when
-// there is one, otherwise the database itself. Repositories must always ask for `current`.
 export class DatabaseConnections implements TransactionRunner {
     private readonly scope = new AsyncLocalStorage<Transaction<DatabaseSchema>>();
 

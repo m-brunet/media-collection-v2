@@ -9,8 +9,6 @@ export interface ApiResult<T> {
     headers: import('node:http').IncomingHttpHeaders;
 }
 
-// Header the test backends expect on first-launch setup, standing in for the per-launch secret
-// that the Electron window attaches (test backends are started with `test-setup-token`).
 export const desktopWindow = { 'X-Media-Collection-Setup': 'test-setup-token' };
 
 export class Client {

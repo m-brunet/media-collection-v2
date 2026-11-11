@@ -17,7 +17,6 @@ const choices: Record<TagChoice, MessageKey> = {
     exclude: 'filters.tagChoice.exclude',
 };
 
-// Every included tag must be on the book and any excluded tag rejects it, in one combined search.
 export function TagFilter({
     filter,
     onChange,

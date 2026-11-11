@@ -1,4 +1,3 @@
-// Bundled fonts (no internet needed at runtime) and the shared style layers, in order.
 import '@fontsource/inter/400.css';
 import '@fontsource/inter/500.css';
 import '@fontsource/inter/600.css';

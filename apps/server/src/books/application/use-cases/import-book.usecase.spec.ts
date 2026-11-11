@@ -66,7 +66,6 @@ describe('ImportBook', () => {
                 category: 'book.created',
                 outcome: 'successful',
                 actorId: 'alex',
-                // The audit's own clock: when the import ran, not the original creation date.
                 occurredAt: '2026-01-01T00:00:00.000Z',
                 subjectId: result.bookId,
             },

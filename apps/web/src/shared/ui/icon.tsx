@@ -93,15 +93,11 @@ const lucide = {
 
 export type IconName = keyof typeof lucide;
 
-// Names without a purpose, such as
-// close, chevrons, check, add, edit and delete, stay Lucide in every set (design guidelines).
 const purposes: Partial<Record<IconName, string>> = {
     overview: 'overview',
     activity: 'activity',
     administration: 'administration',
     settings: 'settings',
-    // Appearance stays Lucide until it has its own
-    // artwork; with Lucide chosen, every link keeps its own Lucide icon.
     accounts: 'administration',
     server: 'settings',
     'permission-denied': 'permission-denied',
@@ -126,7 +122,6 @@ const purposes: Partial<Record<IconName, string>> = {
 };
 
 function useArtwork(set: IconSetName): Map<string, string> | null {
-    // Only re-renders this icon once the set has loaded; the artwork itself comes from the cache.
     const [, setLoaded] = useState<IconSetName | null>(null);
     const [attempt, setAttempt] = useState(0);
 
@@ -160,7 +155,6 @@ function useArtwork(set: IconSetName): Map<string, string> | null {
     return set === 'lucide' ? null : IconArtwork.ready(set);
 }
 
-// Decorative by default; pass `label` when the icon alone carries meaning.
 export function Icon({
     name,
     size = 18,
@@ -189,7 +183,6 @@ export function Icon({
                 aria-hidden={label ? undefined : true}
                 aria-label={label}
                 role={label ? 'img' : undefined}
-                // Trusted artwork shipped with the app (tools/import-icon-sets.mjs), never user data.
                 dangerouslySetInnerHTML={{ __html: svg }}
             />
         );

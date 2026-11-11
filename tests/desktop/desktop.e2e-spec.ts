@@ -34,8 +34,6 @@ async function waitFor(runtime: ElectronRuntime, expression: string) {
     );
 }
 
-// The sleep blockers the main process holds, once there are `count` of them (recorded by the
-// main harness instead of reaching the test computer's power settings).
 async function sleepBlockers(runtime: ElectronRuntime, count: number) {
     for (let attempt = 0; attempt < 80; attempt++) {
         const blockers = (await runtime.send({ type: 'keep-awake' })).value as string[];
@@ -66,8 +64,6 @@ async function readyDesktop() {
     return current;
 }
 
-// Opens Add a book and types a title, as a person would: the form now has unsaved changes and
-// blocks closing through `beforeunload` (which needs a user gesture on the page).
 async function editUnsavedBook(runtime: ElectronRuntime) {
     await evaluate(
         runtime,
@@ -425,7 +421,6 @@ describe('About window', () => {
         return current;
     }
 
-    // The pages opened in the default browser, once there is at least one.
     async function opened(runtime: ElectronRuntime) {
         const read = async () =>
             ((await runtime.send({ type: 'opened' })).value as { external: string[] }).external;

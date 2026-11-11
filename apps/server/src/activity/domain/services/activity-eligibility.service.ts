@@ -1,5 +1,3 @@
-// It is an allowlist, so a new category stays out of Activity until it is chosen here. Account,
-// security, settings, personal reading status and private note events never appear.
 export class ActivityEligibility {
     static readonly categories: readonly string[] = [
         'book.created',

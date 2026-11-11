@@ -11,7 +11,6 @@ export interface BackupManifestState {
     version: string;
     createdAt: string;
     contents: BackupContents;
-    // SHA-256 of every other entry of the backup, by its path in the archive.
     checksums: Record<string, string>;
 }
 

@@ -1,6 +1,5 @@
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 
-// Only a plain host name is accepted: no scheme, port, path or wildcard, and never an IP address.
 export class DomainName {
     private static readonly longest = 253;
     private static readonly label = /^(?!-)[a-z0-9-]{1,63}(?<!-)$/;
@@ -9,7 +8,6 @@ export class DomainName {
         Object.freeze(this);
     }
 
-    // Blank means no domain name.
     static optional(value: string | null): DomainName | null {
         const trimmed = (value ?? '').trim().toLowerCase();
 
