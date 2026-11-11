@@ -108,6 +108,24 @@ it('unmarks the book with a second press of the reading button', async () => {
     expect(screen.getByRole('button', { name: 'Not read' })).not.toHaveClass('button--pressed');
 });
 
+it('changes the category with one press of its button', async () => {
+    open();
+
+    await userEvent.click(await screen.findByRole('radio', { name: 'Comics' }));
+
+    expect(screen.getByRole('radio', { name: 'Comics' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Books' })).not.toBeChecked();
+});
+
+it('names the category buttons in French', async () => {
+    deviceLanguages(['fr-FR']);
+
+    open();
+
+    expect(await screen.findByRole('group', { name: 'Catégorie' })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: 'BD et comics' })).toBeInTheDocument();
+});
+
 it('names the reading button in French', async () => {
     deviceLanguages(['fr-FR']);
 
@@ -275,7 +293,7 @@ it('starts with the last saved book’s shelf, category and reading status', asy
     expect(await screen.findByRole('option', { name: 'Top' })).toBeInTheDocument();
     expect(screen.getByLabelText('Bookcase')).toHaveValue('salon');
     expect(screen.getByLabelText('Shelf')).toHaveValue('top');
-    expect(screen.getByLabelText('Category')).toHaveValue('manga');
+    expect(screen.getByRole('radio', { name: 'Manga' })).toBeChecked();
     expect(screen.getByRole('button', { name: 'Read' })).toHaveClass('button--pressed');
 });
 
@@ -288,7 +306,7 @@ it('starts with the lookup’s category over the remembered one', async () => {
         }),
     );
 
-    expect(await screen.findByLabelText('Category')).toHaveValue('manga');
+    expect(await screen.findByRole('radio', { name: 'Manga' })).toBeChecked();
 });
 
 it('drops a remembered shelf deleted since', async () => {
@@ -298,7 +316,7 @@ it('drops a remembered shelf deleted since', async () => {
 
     expect(await screen.findByLabelText('Bookcase')).toHaveValue('');
     expect(screen.queryByLabelText('Shelf')).not.toBeInTheDocument();
-    expect(screen.getByLabelText('Category')).toHaveValue('manga');
+    expect(screen.getByRole('radio', { name: 'Manga' })).toBeChecked();
 });
 
 it('does not use another account’s choices', async () => {
@@ -306,7 +324,7 @@ it('does not use another account’s choices', async () => {
 
     open();
 
-    expect(await screen.findByLabelText('Category')).toHaveValue('books');
+    expect(await screen.findByRole('radio', { name: 'Books' })).toBeChecked();
     expect(screen.getByRole('button', { name: 'Not read' })).toBeInTheDocument();
 });
 
