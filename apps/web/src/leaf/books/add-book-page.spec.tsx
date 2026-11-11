@@ -172,3 +172,86 @@ it('asks about a similar author and saves again with the chosen one', async () =
 
     expect(retried).toMatchObject({ authors: [{ id: 'a1' }] });
 });
+
+const salon = {
+    id: 'salon',
+    name: 'Salon',
+    bookCount: 3,
+    shelves: [{ id: 'top', bookcaseId: 'salon', name: 'Top', bookCount: 3 }],
+};
+
+function remember(accountId: string, choices: object) {
+    window.localStorage.setItem(
+        'media-collection.leaf.last-add.' + accountId,
+        JSON.stringify(choices),
+    );
+}
+
+it('starts with the last saved book’s shelf, category and reading status', async () => {
+    api.on('GET /bookcases', () => ({ status: 200, body: [salon] }));
+    remember('alex', { category: 'manga', read: true, bookcaseId: 'salon', shelfId: 'top' });
+
+    open();
+
+    expect(await screen.findByRole('option', { name: 'Top' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Bookcase')).toHaveValue('salon');
+    expect(screen.getByLabelText('Shelf')).toHaveValue('top');
+    expect(screen.getByLabelText('Category')).toHaveValue('manga');
+    expect(screen.getByLabelText(/^Your reading/)).toHaveValue('read');
+});
+
+it('drops a remembered shelf deleted since', async () => {
+    remember('alex', { category: 'manga', read: false, bookcaseId: 'salon', shelfId: 'top' });
+
+    open();
+
+    expect(await screen.findByLabelText('Bookcase')).toHaveValue('');
+    expect(screen.queryByLabelText('Shelf')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Category')).toHaveValue('manga');
+});
+
+it('does not use another account’s choices', async () => {
+    remember('sam', { category: 'comics', read: true, bookcaseId: null, shelfId: null });
+
+    open();
+
+    expect(await screen.findByLabelText('Category')).toHaveValue('books');
+    expect(screen.getByLabelText(/^Your reading/)).toHaveValue('unread');
+});
+
+it('leaves without asking when only the remembered choices are filled in', async () => {
+    api.on('GET /bookcases', () => ({ status: 200, body: [salon] }));
+    remember('alex', { category: 'manga', read: true, bookcaseId: 'salon', shelfId: 'top' });
+    open();
+    await screen.findByRole('option', { name: 'Top' });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(await screen.findByText('Elsewhere: /')).toBeInTheDocument();
+});
+
+it('remembers the saved book’s choices for the next scan', async () => {
+    api.on('GET /bookcases', () => ({ status: 200, body: [salon] })).on('POST /books', () => ({
+        status: 201,
+        body: bookDto({
+            id: 'new',
+            category: 'comics',
+            personal: { read: true, note: null },
+            location: {
+                bookcaseId: 'salon',
+                bookcaseName: 'Salon',
+                shelfId: 'top',
+                shelfName: 'Top',
+            },
+        }),
+    }));
+    open();
+    await screen.findByLabelText(/^Title/);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Save book' }));
+
+    expect(await screen.findByText('Elsewhere: /saved')).toBeInTheDocument();
+    expect(JSON.parse(window.localStorage.getItem('media-collection.leaf.last-add.alex')!)).toEqual(
+        { category: 'comics', read: true, bookcaseId: 'salon', shelfId: 'top' },
+    );
+});
