@@ -47,5 +47,6 @@ The installers are then kept for a week on the run page.
 
 ## Cost
 
-While the repository is private, a release uses about 15 of the 2,000 free Actions minutes a month (first run on
-2026-11-10: Windows 4.5 minutes, counted double; Linux 1.2 minutes). Once the repository is public, standard runners are free.
+The repository is public from 2.1.0, so the standard runners are free. While it was private, a release used about 15
+of the 2,000 free Actions minutes a month (first run on 2026-11-10: Windows 4.5 minutes, counted double; Linux 1.2
+minutes).
