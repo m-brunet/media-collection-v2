@@ -189,7 +189,7 @@ Require the current Admin password and explicit confirmation explaining erased d
 
 ## Mobile
 
-The same installation serves a deliberately limited mobile interface, Leaf, at `/leaf/`, for collection shopping and adding books by barcode scanning. Its home page has Collections and Scan buttons. Mobile book entry uses the same three form sections and field rules as desktop, adapted to the phone. Successful creation offers Scan another book or Back to home. It is not automatically the full desktop application at a narrower width.
+The same installation serves a deliberately limited mobile interface, Leaf, at `/leaf/`, for collection shopping and adding books by barcode scanning. Its home page has Collections and Scan buttons. Mobile book entry uses the same three form sections and field rules as desktop, adapted to the phone. Successful creation offers Scan another book or Back to home. The next mobile form starts with the last saved book's shelf, category and reading status, remembered on the phone for each account. It is not automatically the full desktop application at a narrower width.
 
 Mobile is Owner/Admin-only; Guests have no access. Add-form access requires a successful scan, with no manual ISBN-entry fallback. Camera/scan failure offers an explanation, Retry, or Back to home. Desktop manual entry is unchanged. Unsaved changes require discard confirmation; failed saves preserve the form with error feedback/retry and do not show success navigation.
 

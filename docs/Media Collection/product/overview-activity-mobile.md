@@ -46,6 +46,8 @@ The mobile add form is accessible only after a successful scan. No manual ISBN-e
 
 After successful book creation, show success and offer Scan another book or Back to home. The latter returns to mobile home, not directly to Collections. Do not show creation success after failed saves or for an already-existing book.
 
+The next mobile add form starts with the shelf, category and reading status of the last book saved in Leaf, remembered on the phone for each account (it survives a reload and reopening Leaf). The lookup's values apply on top; a shelf deleted since is dropped; without browser storage the form starts empty. (Added by the user on 2026-11-10, issue #30.)
+
 ### Lookup and existing ISBNs after scanning
 
 After a successful scan, keep lookup explicitly user-triggered as already agreed. The library ISBN check precedes any external metadata fetch.

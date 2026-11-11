@@ -11,11 +11,14 @@ import type { BookField } from '../../shared/book-form/use-book-save';
 import { useBookSave } from '../../shared/book-form/use-book-save';
 import { useSourceNames } from '../../shared/book-form/use-source-names';
 import { useI18n } from '../../shared/i18n/i18n-context';
+import { useSession } from '../../shared/session/session-context';
 import { Button } from '../../shared/ui/button';
 import { Dialog } from '../../shared/ui/dialog';
 import { Notice } from '../../shared/ui/notice';
+import { LoadingState } from '../../shared/ui/states';
 import { LeafPage } from '../leaf-page';
 import { useLeafResource } from '../use-leaf-resource';
+import { LeafAddMemory } from './leaf-add-memory.util';
 import { LeafBookFields } from './leaf-book-fields';
 import { LeafSaveQuestions } from './leaf-save-questions';
 
@@ -32,18 +35,30 @@ export interface SavedBookState {
     followUpFailed: boolean;
 }
 
-function AddBookForm({ isbn, lookup }: AddBookState) {
+interface AddBookFormProps extends AddBookState {
+    accountId: string;
+    bookcases: BookcaseDto[];
+}
+
+function AddBookForm({ isbn, lookup, accountId, bookcases }: AddBookFormProps) {
     const { t } = useI18n();
     const navigate = useNavigate();
     const sourceNames = useSourceNames();
+    // The last saved book's shelf (if it still exists), category and reading status first, the
+    // lookup on top.
     const [initial] = useState(() =>
-        LookupFill.prefilled({ ...BookDraft.empty(), isbn }, lookup.fields),
+        LeafAddMemory.located(
+            LookupFill.prefilled(
+                { ...BookDraft.empty(), ...LeafAddMemory.read(accountId), isbn },
+                lookup.fields,
+            ),
+            bookcases,
+        ),
     );
     const [values, setValues] = useState(initial);
     const [cover, setCover] = useState<CoverChoice>({ file: null, removed: false });
     const [coverTouched, setCoverTouched] = useState(false);
     const [additionalOpen, setAdditionalOpen] = useState(() => BookDraft.hasAdditional(initial));
-    const { resource: bookcases } = useLeafResource<BookcaseDto[]>('/bookcases');
     const leaving = useRef(false);
     const changed = coverTouched || !BookDraft.same(values, initial);
     const blocker = useBlocker(
@@ -63,6 +78,9 @@ function AddBookForm({ isbn, lookup }: AddBookState) {
         showAdditional: () => setAdditionalOpen(true),
         onSaved: (saved, { followUpFailed }) => {
             leaving.current = true;
+
+            LeafAddMemory.write(accountId, saved);
+
             navigate('/saved', {
                 replace: true,
                 state: { title: saved.title, followUpFailed } satisfies SavedBookState,
@@ -137,7 +155,7 @@ function AddBookForm({ isbn, lookup }: AddBookState) {
                         setCover(choice);
                         setCoverTouched(true);
                     }}
-                    bookcases={bookcases.status === 'ready' ? bookcases.data : []}
+                    bookcases={bookcases}
                     additionalOpen={additionalOpen}
                     setAdditionalOpen={setAdditionalOpen}
                 />
@@ -179,11 +197,31 @@ function AddBookForm({ isbn, lookup }: AddBookState) {
 // Opened any other way (a typed address,
 // a reload), it returns home: the mobile add form needs a scan.
 export function AddBookPage() {
+    const { t } = useI18n();
     const state = useLocation().state as AddBookState | null;
+    const { account } = useSession();
+    const { resource: bookcases } = useLeafResource<BookcaseDto[]>('/bookcases');
 
     if (!state?.isbn || !state.lookup) {
         return <Navigate to="/" replace />;
     }
 
-    return <AddBookForm isbn={state.isbn} lookup={state.lookup} />;
+    // Leaf shows its pages once signed in; the form starts from this account's last choices.
+    if (!account) {
+        return null;
+    }
+
+    // The shelves are known before the form starts, so a remembered shelf deleted since is dropped.
+    if (bookcases.status === 'loading') {
+        return <LoadingState label={t('leaf.form.opening')} />;
+    }
+
+    return (
+        <AddBookForm
+            isbn={state.isbn}
+            lookup={state.lookup}
+            accountId={account.id}
+            bookcases={bookcases.status === 'ready' ? bookcases.data : []}
+        />
+    );
 }
