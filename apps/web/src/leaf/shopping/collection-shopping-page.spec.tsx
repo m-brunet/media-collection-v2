@@ -15,8 +15,8 @@ function shopping(overrides: Partial<CollectionShoppingDto> = {}): CollectionSho
         ownedCount: 4,
         lastOwned: { volume: 4, title: null },
         missing: [
-            { volume: 5, saved: false, quickAdd: null },
             { volume: 12, saved: true, quickAdd: { bookId: 'twelve', title: 'Batman Vol. 12' } },
+            { volume: 5, saved: false, quickAdd: null },
         ],
         ...overrides,
     };
@@ -53,6 +53,16 @@ it('shows the last Owned volume and the missing volumes', async () => {
     expect(screen.getByText('Volume 5')).toBeInTheDocument();
     expect(screen.getByText('Not registered')).toBeInTheDocument();
     expect(screen.getByText('Saved · Not Owned')).toBeInTheDocument();
+});
+
+it('lists the missing volumes highest first, as the server orders them', async () => {
+    withShopping(shopping());
+
+    open();
+
+    const volumes = (await screen.findAllByText(/^Volume \d+$/)).map((item) => item.textContent);
+
+    expect(volumes).toEqual(['Volume 12', 'Volume 5']);
 });
 
 it('names the last Owned volume of a Books collection by its title', async () => {
