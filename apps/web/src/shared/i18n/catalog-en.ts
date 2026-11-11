@@ -584,6 +584,10 @@ export const en = {
     'lookup.spelling': '{sources} suggests: {spelling} (instead of {name})',
     'lookup.useSpelling': 'Use this spelling',
     'lookup.useSpellingOf': 'Use the spelling {spelling}',
+    'lookup.existingAuthor':
+        'Libris suggests: {name}, already in your library (instead of {spelling})',
+    'lookup.useExistingAuthor': 'Use this author',
+    'lookup.useExistingAuthorOf': 'Use the existing author {name}',
     'lookup.keepGenerated': 'Keep the generated title',
     'lookup.collection': 'Collection',
     'lookup.collectionValue': '{name}, volume {volume}',

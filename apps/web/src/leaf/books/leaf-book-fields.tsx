@@ -6,6 +6,7 @@ import type {
     LookupCoverDto,
 } from '../../../../../packages/contracts/src/http';
 import { AuthorSpellingHints } from '../../shared/book-form/author-spelling-hints';
+import { AuthorSpellings } from '../../shared/book-form/author-spellings.util';
 import type { BookDraftValues, DraftFieldSetter } from '../../shared/book-form/book-draft.util';
 import { BookDraft } from '../../shared/book-form/book-draft.util';
 import { BookFormat } from '../../shared/book-form/book-format.util';
@@ -42,7 +43,7 @@ function Alternatives({
     props,
 }: {
     field: LookupField;
-    props: Pick<LeafFieldsProps, 'values' | 'update' | 'lookup'>;
+    props: Pick<LeafFieldsProps, 'values' | 'update' | 'lookup' | 'authorSpellings'>;
 }) {
     const { t } = useI18n();
     const names = useSourceNames();
@@ -52,7 +53,16 @@ function Alternatives({
     }
 
     const choices = LookupFill.choices(props.lookup, field);
-    const held = choices.find((choice) => LookupFill.holds(props.values, field, choice.value));
+    // A source's spelling taken instead of an existing author still holds the lookup's authors:
+    // the way back to the existing author is offered by the spelling hints, from Libris.
+    const filledIn =
+        field === 'authors'
+            ? {
+                  ...props.values,
+                  authors: AuthorSpellings.asFilledIn(props.values.authors, props.authorSpellings),
+              }
+            : props.values;
+    const held = choices.find((choice) => LookupFill.holds(filledIn, field, choice.value));
     const others = choices.filter((choice) => choice !== held);
 
     if (choices.length === 0) {
