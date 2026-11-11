@@ -238,8 +238,8 @@ describe('Reading the library', () => {
         const camille = await signedIn('camille');
 
         await camille.getByRole('link', { name: /Piranesi/ }).click();
-        await camille.getByRole('button', { name: 'Read' }).click();
-        await camille.getByText('Your status: Read.').waitFor();
+        await camille.getByRole('button', { name: 'Not read' }).click();
+        await camille.getByRole('button', { name: 'Read' }).waitFor();
         await camille.getByRole('button', { name: 'Add a personal note' }).click();
         await camille.getByLabel(/Personal note/).fill('Only for me.');
         await camille.getByRole('button', { name: 'Save note' }).click();
@@ -248,7 +248,7 @@ describe('Reading the library', () => {
 
         await sam.getByRole('link', { name: /Piranesi/ }).click();
 
-        await sam.getByText('Your status: Not read.').waitFor();
+        await sam.getByRole('button', { name: 'Not read' }).waitFor();
         expect(await sam.getByText('Only for me.').count()).toBe(0);
         expect(await sam.getByRole('button', { name: 'Add a personal note' }).isVisible()).toBe(
             true,

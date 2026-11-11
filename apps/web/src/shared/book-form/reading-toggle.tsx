@@ -1,5 +1,6 @@
 import { useI18n } from '../i18n/i18n-context';
 import { Button } from '../ui/button';
+import { BookFormat } from './book-format.util';
 
 export function ReadingToggle({
     read,
@@ -14,13 +15,12 @@ export function ReadingToggle({
 
     return (
         <Button
-            aria-pressed={read}
             icon={read ? 'check' : undefined}
             busy={busy}
             className={read ? 'button--pressed' : undefined}
             onClick={() => onToggle(!read)}
         >
-            {t('details.readingToggle')}
+            {t(BookFormat.reading(read))}
         </Button>
     );
 }

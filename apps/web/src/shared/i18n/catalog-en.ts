@@ -541,8 +541,6 @@ export const en = {
     'details.pages': '{count} pages',
     'details.unknown': 'Not specified',
     'details.reading': 'Only your reading',
-    'details.readingToggle': 'Read',
-    'details.readingStatus': 'Your status: {status}.',
     'details.readingHint': 'This does not change another account’s status.',
     'details.note': 'Your private note · only you',
     'details.noteNone': 'You have no note on this book.',

@@ -303,7 +303,7 @@ it('saves changes and the reading status of the viewer', async () => {
 
     await userEvent.clear(await screen.findByLabelText(/^Title/));
     await userEvent.type(screen.getByLabelText(/^Title/), 'Piranesi (2)');
-    await userEvent.click(screen.getByRole('button', { name: 'Read' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Not read' }));
 
     await userEvent.click(screen.getAllByRole('button', { name: 'Save changes' })[0]!);
 
