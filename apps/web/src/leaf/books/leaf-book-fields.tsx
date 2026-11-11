@@ -20,6 +20,7 @@ import { Button } from '../../shared/ui/button';
 import { Icon } from '../../shared/ui/icon';
 import { SelectField } from '../../shared/ui/select-field';
 import { TextAreaField, TextField } from '../../shared/ui/text-field';
+import { ReadingField } from '../../shared/book-form/reading-toggle';
 import { LeafCoverField } from './leaf-cover-field';
 
 export interface LeafFieldsProps {
@@ -245,16 +246,7 @@ function MainFields(props: LeafFieldsProps) {
                     set('ownership', event.target.value as BookDraftValues['ownership'])
                 }
             />
-            <SelectField
-                label={t('form.reading')}
-                required
-                value={values.read ? 'read' : 'unread'}
-                options={[
-                    { value: 'unread', label: t(BookFormat.reading(false)) },
-                    { value: 'read', label: t(BookFormat.reading(true)) },
-                ]}
-                onChange={(event) => set('read', event.target.value === 'read')}
-            />
+            <ReadingField read={values.read} onChange={(read) => set('read', read)} />
             <CollectionFields {...props} />
         </fieldset>
     );

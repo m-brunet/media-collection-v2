@@ -18,6 +18,7 @@ import { CollectionFormat } from '../collections/collection-format.util';
 import { BookFormat } from '../../shared/book-form/book-format.util';
 import { OrganisationEditor } from './organisation-editor';
 import { LoanPanel } from '../lending/loan-panel';
+import { ReadingToggle } from '../../shared/book-form/reading-toggle';
 import { LoanLinks } from '../lending/loan-links.util';
 
 function ReadingPanel({ book, onChange }: { book: BookDto; onChange(read: boolean): void }) {
@@ -28,24 +29,20 @@ function ReadingPanel({ book, onChange }: { book: BookDto; onChange(read: boolea
     return (
         <Panel label={t('details.reading')}>
             <div className="actions">
-                <Button
-                    aria-pressed={read}
-                    icon={read ? 'check' : undefined}
+                <ReadingToggle
+                    read={read}
                     busy={action.busy}
-                    className={read ? 'button--pressed' : undefined}
-                    onClick={() =>
+                    onToggle={(next) =>
                         void action.run(async () => {
                             const result = await api.request<{ read: boolean }>(
                                 '/books/' + book.id + '/reading',
-                                { method: 'PUT', body: { read: !read } },
+                                { method: 'PUT', body: { read: next } },
                             );
 
                             onChange(result.read);
                         })
                     }
-                >
-                    {t('details.readingToggle')}
-                </Button>
+                />
                 <span>{t('details.readingStatus', { status: t(BookFormat.reading(read)) })}</span>
             </div>
             {action.feedback && <Notice tone="error">{action.feedback.text}</Notice>}
