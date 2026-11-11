@@ -154,7 +154,7 @@ second line, for example "Also created the collection *Naruto* · reopened *Blea
 
 | Route | Screen | States |
 | --- | --- | --- |
-| `/` | Overview (`nZknF`; Guest `l2xyG`): title, "A shared view of your household library.", Add a book (not for Guests), four counters, Recently added (5 books, "View all books" → My books sorted by added), Your reading (Owner/Admin) | loading, load failure with Retry, empty library ("No books yet" with Add a book for editors) |
+| `/` | Overview (`nZknF`; Guest `l2xyG`): title, "A shared view of your household library.", Add a book (not for Guests), four counters, Recently added (5 books, "View all books" → Library sorted by added), Your reading (Owner/Admin) | loading, load failure with Retry, empty library ("No books yet" with Add a book for editors) |
 | `/activity` | Activity (`E5DS9p`): title, "What changed in your shared household library.", entries, Load older activity | loading, empty (`NRYo0`: "No shared activity yet. Successful changes to the library will appear here."), load failure with Retry, loading older, older failed (Retry beside the button), no more entries (button hidden) |
 
 ## Steps (one commit each, approved 2026-11-08)
@@ -259,7 +259,7 @@ Browser journeys (Playwright, 1280 × 720, real app)
    shelf count, "Manage physical locations") and each recent book's reading status ("Owned · Not read"). Proposed: keep
    the panel with actual bookcases (all, name order, scrolling in the panel if long) and show the viewer's own Read /
    Not read on recent books for Owners/Admin only. Alternative: counters, recently added and reading summary only.
-8. **Home page.** Proposed: `/` opens Overview (as the design's first navigation entry) instead of My books. Agree?
+8. **Home page.** Proposed: `/` opens Overview (as the design's first navigation entry) instead of Library. Agree?
 
 ## Step list
 
@@ -295,7 +295,7 @@ Browser journeys (Playwright, 1280 × 720, real app)
   Paging counts entries, not records, so a lending is never split. A cover change joins the save of the same book by
   the same account at most two minutes before it (`ActivityTimeline.coverWindowMs`).
 - **Overview:** `/` opens Overview (it used to redirect to `/books`); browser tests sign in, wait for the Overview
-  heading and click My books where they need it; the desktop tests wait for the Overview heading. The bookcases panel lists every bookcase in name order without its
+  heading and click Library where they need it; the desktop tests wait for the Overview heading. The bookcases panel lists every bookcase in name order without its
   own scrolling (an inner scroll area would need keyboard access).
 - **Activity layout (redone at the user's request, 2026-11-08)** from the design, then the Pen file
   `design/media-collection-v3.pen`, now the Doop canvas `shiKEeCX2V` (screen `E5DS9p`): a full-width feed; each entry has a category icon (Lucide stand-ins for the hand-inked set:
@@ -308,7 +308,7 @@ Browser journeys (Playwright, 1280 × 720, real app)
   `DateTimeFormatter.exact` ("1 November 2026 · 13:42 (CET)"; French uses the browser's zone
   label, for example "UTC+1"). Activity wording lives in `libris/activity/activity-sentence.util.ts`.
 - **Checks:** `npm run check` from PowerShell passes (257 files, 2285 tests); the first run found 9 desktop tests still
-  waiting for the My books heading after sign-in, fixed.
+  waiting for the Library heading after sign-in, fixed.
 - **Architecture review (step 8):** no mandatory finding: both features are read-only, their Kysely adapters read
   other features' tables without writing them (allowed for read adapters), the eligibility and grouping rules are
   pure domain services, each use case has its driving port and string token, and each controller has its API tests.

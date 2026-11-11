@@ -222,7 +222,7 @@ it('opens the Overview first', async () => {
 
     expect(await screen.findByRole('heading', { name: 'Overview' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Overview' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('link', { name: 'My books' })).not.toHaveAttribute('aria-current');
+    expect(screen.getByRole('link', { name: 'Library' })).not.toHaveAttribute('aria-current');
     expect(window.location.pathname).toBe('/');
 });
 

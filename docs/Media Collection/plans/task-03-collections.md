@@ -14,7 +14,7 @@ In: collection identity created/joined from the book form; single-volume and omn
 expected range, inferred and missing volumes, distinct Owned counts; Finished/reopen (manual and automatic); overlap
 rules on create, edit, ownership change and move, with the explicit conflict resolutions; rename, volume-0 option,
 delete; automatic removal of empty collections; Collections list (name sort, simple search) and details page with
-expandable volume entries; collection shown on book details and searchable from My books; EN/FR; audit.
+expandable volume entries; collection shown on book details and searchable from Library; EN/FR; audit.
 Out: advanced filters on collections (Task 4), Leaf shopping and mobile quick add (Task 7), Activity rendering (Task 8),
 multiple membership, merging, unnumbered specials.
 
@@ -61,7 +61,7 @@ multiple membership, merging, unnumbered specials.
   `DELETE /api/collections/:id`. Book input gains `collection: { id } | { name, distinct?, enableVolumeZero? } | null`
   with `volumeFrom`, `volumeTo`, plus `replacePlanned?: string[]`. Book views gain `collection: { id, name, from, to }`.
 - **Search**: collection listing search matches the collection name or any member book's title, author, ISBN (same
-  rules as My books). My books simple search also matches the collection name (features.md). Counts always describe
+  rules as Library). Library simple search also matches the collection name (features.md). Counts always describe
   the whole collection.
 - **Permissions**: every signed-in account reads; Owners/Admin edit, finish/reopen, delete (`requireLibraryEditor`).
 - **Audit**: `collection.updated` (rename / volume-0 option), `collection.finished`, `collection.reopened`,

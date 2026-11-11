@@ -93,8 +93,8 @@ async function signedIn(username: string, viewport = viewports.referenceDesktop)
     await page.getByLabel(/^Password/).fill(username + '-password');
     await page.getByRole('button', { name: 'Sign in' }).click();
     await page.getByRole('heading', { name: 'Overview' }).waitFor();
-    await page.getByRole('link', { name: 'My books' }).click();
-    await page.getByRole('heading', { name: 'My books' }).waitFor();
+    await page.getByRole('link', { name: 'Library', exact: true }).click();
+    await page.getByRole('heading', { name: 'Library', exact: true }).waitFor();
 
     return page;
 }

@@ -99,7 +99,7 @@ Owning docs: `../product/features.md` (books), `../product/book-entry.md`, `../p
 - Book record and all fields with validation; ISBN-10/13 validation, conversion and uniqueness; no-ISBN with overridable duplicate warning.
 - Shared authors with exact reuse and similar-name prompt; author correction/deletion rules.
 - Covers (upload, fallback), category, ownership, per-user reading status (new users/books start Not read), private per-user note.
-- Three-section form, book details (ISBN conversion indicator), deletion, My books list with simple search and sorting, discard confirmation, save failure keeps draft.
+- Three-section form, book details (ISBN conversion indicator), deletion, Library list with simple search and sorting, discard confirmation, save failure keeps draft.
 - If it grows too large, split into "records and rules" and "screens".
 
 ### Task 3 — Collections

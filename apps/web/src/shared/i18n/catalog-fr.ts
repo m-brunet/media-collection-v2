@@ -222,7 +222,7 @@ export const fr = {
         'Leaf ne fonctionne que si cet ordinateur est allumé et éveillé. L’écran peut quand même s’éteindre.',
     'notFound.title': 'Page introuvable',
     'notFound.body': 'Cette page n’existe pas dans Libris.',
-    'notFound.back': 'Retour à mes livres',
+    'notFound.back': 'Retour à la bibliothèque',
     'leaf.home.eyebrow': 'Votre bibliothèque partagée',
     'leaf.home.title': 'Vos collections, où que vous fassiez vos achats.',
     'leaf.home.intro':
@@ -443,7 +443,7 @@ export const fr = {
     'denied.title': 'Cette page n’est pas disponible',
     'denied.body':
         'Votre compte ne peut pas utiliser cette page. Les paramètres de votre compte restent disponibles.',
-    'denied.back': 'Retour à mes livres',
+    'denied.back': 'Retour à la bibliothèque',
     'leaf.guest.title': 'Propriétaire ou administrateur requis',
     'leaf.guest.body':
         'Les comptes invités ne peuvent pas utiliser l’interface mobile. Vous pouvez consulter la bibliothèque sur un ordinateur, dans Libris.',
@@ -528,8 +528,8 @@ export const fr = {
         'Jeu de couleurs enregistré. Les autres fenêtres ouvertes l’utiliseront à leur prochain chargement.',
     'reason.iconSetUnknown': 'Choisissez l’un des jeux d’icônes proposés.',
     'reason.colorSchemeUnknown': 'Choisissez l’un des jeux de couleurs proposés.',
-    'nav.books': 'Mes livres',
-    'books.title': 'Mes livres',
+    'nav.books': 'Bibliothèque',
+    'books.title': 'Bibliothèque',
     'books.countOne': '1 édition enregistrée · une bibliothèque familiale partagée',
     'books.countMany': '{count} éditions enregistrées · une bibliothèque familiale partagée',
     'books.showing': '{shown} affichés sur {total}',
@@ -544,7 +544,7 @@ export const fr = {
     'books.sort.publishedDesc': 'Publication la plus récente',
     'books.sort.publishedAsc': 'Publication la plus ancienne',
     'books.loadMore': 'Afficher plus',
-    'books.loading': 'Chargement de vos livres…',
+    'books.loading': 'Chargement de la bibliothèque…',
     'books.empty':
         'Votre bibliothèque partagée est vide. Ajoutez votre premier livre pour la commencer.',
     'books.emptyGuest': 'Aucun livre n’a encore été ajouté à la bibliothèque partagée.',
@@ -588,7 +588,7 @@ export const fr = {
         '« {title} » sera retiré de la bibliothèque partagée pour tous les comptes, avec sa couverture, les statuts de lecture et les notes personnelles. Cette action est définitive.',
     'details.missing': 'Ce livre n’existe plus',
     'details.missingBody': 'Il a peut-être été supprimé dans une autre fenêtre.',
-    'details.back': 'Retour à mes livres',
+    'details.back': 'Retour à la bibliothèque',
     'form.addTitle': 'Ajouter un livre',
     'form.addIntro': 'La saisie manuelle est toujours disponible sur ordinateur.',
     'form.editTitle': 'Modifier le livre',

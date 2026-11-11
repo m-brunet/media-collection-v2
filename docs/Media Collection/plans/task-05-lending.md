@@ -78,7 +78,7 @@ presentation and Overview counter (Task 8), data reset (Task 9).
   - **Book details** (v9MipE, gRcO9): "Lend" action for Owned, not lent books (Owners/Admin); when lent, a panel
     "Lent to Sam Taylor · Lent on …" with "Return this book before deleting it or changing it to Not Owned." and
     Record return replacing Lend; Delete stays visible but refuses with that explanation. Guests see the panel only.
-  - **My books / collection details**: compact "Lent" chip (text, not colour alone).
+  - **Library / collection details**: compact "Lent" chip (text, not colour alone).
   - **Book form**: if the book is lent, the Not Owned choice is disabled with the same explanation.
 
 ## Steps
@@ -132,7 +132,7 @@ presentation and Overview counter (Task 8), data reset (Task 9).
   tells whether the typed name is an existing receiver; the similar-name choice appears inline after the server's
   `receiver-similar` answer, and the person then confirms again. After a refused handover the selected books are
   re-read and the offending ones show why; confirming stays disabled until they are removed. A refused return
-  reloads the receiver's active loans, keeping the selection of those still lent. The Lent label appears on My books
+  reloads the receiver's active loans, keeping the selection of those still lent. The Lent label appears on Library
   cards and on shelf rows (Bookshelves); collection details show volumes, not loans. The book form disables Not Owned
   for a lent book with an explanation. Sidebar: Loans (BookUp icon).
 - Lending checks run in this order: selection (empty/duplicate) → missing books → Not Owned / already lent (every
