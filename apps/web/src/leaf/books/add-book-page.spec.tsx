@@ -109,6 +109,34 @@ it('uses the source’s spelling when chosen', async () => {
     expect(screen.getByText('Flipsflops')).toBeInTheDocument();
 });
 
+it('offers the existing author back from Libris, not from the source, once the source’s spelling is used', async () => {
+    open(flipflops);
+
+    await userEvent.click(
+        await screen.findByRole('button', { name: 'Use the spelling Flipsflops' }),
+    );
+
+    expect(
+        screen.getByText(
+            "Libris suggests: Flipflop's, already in your library (instead of Flipsflops)",
+        ),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: "Use Flipflop's" })).not.toBeInTheDocument();
+});
+
+it('puts the existing author back when chosen', async () => {
+    open(flipflops);
+    await userEvent.click(
+        await screen.findByRole('button', { name: 'Use the spelling Flipsflops' }),
+    );
+
+    await userEvent.click(
+        screen.getByRole('button', { name: "Use the existing author Flipflop's" }),
+    );
+
+    expect(screen.getByText("Flipflop's")).toBeInTheDocument();
+});
+
 it('saves the book with the first cover found, then shows the success screen', async () => {
     api.on('GET /books/lookups/covers/first', () => ({
         status: 200,
