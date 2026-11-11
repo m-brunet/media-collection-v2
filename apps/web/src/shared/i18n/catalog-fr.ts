@@ -488,7 +488,7 @@ export const fr = {
     'credits.librisIcon.used':
         'L’icône de Libris : fenêtre, barre des tâches, favicon et logo à côté du titre Libris.',
     'credits.librisIcon.changes':
-        'Recolorée en vert printemps (#79d670) et redimensionnée en fichiers d’icône d’application.',
+        'Recolorée en vert printemps (#79d670), entourée de gris foncé (#1b1d1f) pour rester visible sur tous les fonds, et redimensionnée en fichiers d’icône d’application.',
     'credits.turningLeaf.used':
         'L’icône Feuille qui tourne de chaque jeu d’icônes, et l’icône de Leaf.',
     'credits.turningLeaf.changes':
