@@ -3,9 +3,6 @@ import type { Kysely } from 'kysely';
 import type { Migration } from 'kysely/migration';
 import { UuidPrimaryKeysMigration } from './006-uuid-primary-keys.js';
 
-// Collections and the volume coverage of their books. Membership has its own table, keyed by
-// book and collection so that multiple membership stays possible; a unique book index keeps
-// the current rule of at most one collection per book.
 export class CollectionsMigration implements Migration {
     async up(db: Kysely<unknown>): Promise<void> {
         await db.schema

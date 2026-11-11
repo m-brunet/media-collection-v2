@@ -20,7 +20,6 @@ afterEach(() => {
     delete document.documentElement.dataset.colorScheme;
 });
 
-// Component tests have no server: the icon sets come straight from the app's static files.
 const iconSets = import.meta.glob<Record<string, string>>('../public/icon-sets/*.json', {
     eager: true,
     import: 'default',

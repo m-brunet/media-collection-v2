@@ -7,8 +7,6 @@ import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { AccountAudit } from '../account-audit.js';
 
-// A deactivated account gets the same answer as wrong credentials, so sign-in does not reveal
-// account states.
 export class Login implements LoginUseCase {
     constructor(
         private readonly users: UserReader,

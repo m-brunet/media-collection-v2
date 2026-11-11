@@ -96,9 +96,6 @@ export function useBookSave({
     cover: CoverChoice;
     onAttempt: () => void;
     showAdditional: () => void;
-    // Once saved: `updated` when an existing record (the edited book or a planned one) was
-    // saved rather than a new one created; `followUpFailed` when the reading status, the note or
-    // the cover could not be saved afterwards.
     onSaved: (saved: BookDto, outcome: { updated: boolean; followUpFailed: boolean }) => void;
 }) {
     const { t } = useI18n();
@@ -106,7 +103,6 @@ export function useBookSave({
     const [failure, setFailure] = useState<BookFormFailure | null>(null);
     const [question, setQuestion] = useState<SaveQuestion | null>(null);
     const answers = useRef<SaveOptions>({});
-    // `target` is a planned record a new purchased book updates instead of being added.
     const save = async (draft: BookDraftValues, given: SaveOptions = {}, target?: string) => {
         const problem = BookDraft.collectionProblem(draft);
 
@@ -177,7 +173,6 @@ export function useBookSave({
         }
 
         if (kind && error instanceof ApiError && error.details) {
-            // The reason decides the shape of the details (see the HTTP contracts).
             setQuestion({ kind, details: error.details } as unknown as SaveQuestion);
 
             return;

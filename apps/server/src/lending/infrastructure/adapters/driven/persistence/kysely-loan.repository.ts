@@ -107,7 +107,6 @@ export class KyselyLoanRepository implements LoanRepository {
         };
     }
 
-    // The partial unique index refuses a second active loan of a book.
     private rethrow(error: unknown, bookId: string | null): never {
         if (
             error instanceof Error &&

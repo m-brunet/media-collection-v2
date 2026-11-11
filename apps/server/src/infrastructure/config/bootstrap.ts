@@ -69,22 +69,15 @@ export interface BackendOptions {
     webDirectory?: string;
     development?: boolean;
     clock?: Clock;
-    // Test-only: where Find book asks BnF and Open Library (a local stand-in in browser tests).
-    // Production never sets it, so the real catalogue addresses apply.
     lookupAddresses?: LookupAddresses;
-    // Per-launch secret that the Electron window attaches to first-launch setup requests.
     setupToken?: string;
-    // Test-only: stand-ins for the router, Let's Encrypt, the public address service and DNS.
     internetAccess?: {
         router: RouterGateway;
         authority: CertificateAuthority;
         probe: PublicAddressProbe;
         resolver: DomainNameResolver;
     };
-    // Test launches (`APP_OFFLINE_INTERNET_ACCESS=1`): internet access never leaves the machine, so
-    // no test reaches a real router, Let's Encrypt, the public address service or DNS.
     offlineInternetAccess?: boolean;
-    // Called at startup and on each change of the keep-awake setting (the desktop host applies it).
     onKeepAwake?: (enabled: boolean) => void;
 }
 
@@ -182,7 +175,6 @@ export class BackendRuntime {
                 ids,
             );
             const startedHttp = await httpSettings.read();
-            // Only internal fixtures request an ephemeral listener; desktop configuration rejects zero.
             const ephemeralHttp = options.httpPort === 0 && options.httpPortSource === undefined;
             const requestedHttpPort = ephemeralHttp
                 ? 0
@@ -266,7 +258,6 @@ export class BackendRuntime {
                                 ids,
                             ),
                             ...internetAccess,
-                            // A certificate installed live is no reason to restart.
                             https: {
                                 ensureRunning: (port) => runtime.ensureRunning(port),
                                 install: async (port, certificate) => {

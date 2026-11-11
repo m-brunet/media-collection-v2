@@ -25,11 +25,8 @@ export interface RuntimeOptions {
     main?: boolean;
     environmentPort?: number;
     lookupAddresses?: { bnf: string; openLibrary: string };
-    // `domainAddress`: where every domain name points (default: the external address).
     internetAccess?: { externalAddress: string | null; accepts: boolean; domainAddress?: string };
-    // The device language the main harness reports (default `en-GB`).
     language?: string;
-    // What the releases contain (`ScriptedUpdateSource`), for the update flow.
     updates?: {
         latest: string | null;
         system: 'windows' | 'linux';
@@ -37,7 +34,6 @@ export interface RuntimeOptions {
         failDownload?: boolean;
         downloadMs?: number;
     };
-    // Message box answers (button indexes) queued before the application starts.
     dialogAnswers?: number[];
 }
 
@@ -79,7 +75,6 @@ export class ElectronRuntime {
                 ? JSON.stringify(options.dialogAnswers)
                 : undefined,
             APP_HIDDEN_WINDOWS: '1',
-            // No test may reach a real router, Let's Encrypt, the public address service or DNS.
             APP_OFFLINE_INTERNET_ACCESS: '1',
         };
 

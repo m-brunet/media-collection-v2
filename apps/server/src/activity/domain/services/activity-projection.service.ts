@@ -3,8 +3,6 @@ export interface ActivityRecord {
     subjectId: string | null;
     before: Record<string, unknown> | null;
     after: Record<string, unknown> | null;
-    // The book's current title when the record concerns a book, for older records that did not
-    // store one; null when the book no longer exists or the record is not about a book.
     currentTitle: string | null;
 }
 
@@ -12,7 +10,6 @@ export interface ActivityOperation {
     id: string;
     occurredAt: string;
     actorId: string | null;
-    // The acting account's current username; null when no account was recorded.
     actor: string | null;
     records: readonly ActivityRecord[];
 }
@@ -47,7 +44,6 @@ export type RenamedEventKind =
     | 'tag-renamed';
 
 export type ActivityEvent =
-    // `title` is null only for an older record of a book deleted since.
     | { kind: BookEventKind; title: string | null }
     | { kind: 'books-lent' | 'books-returned'; receiver: string; titles: string[] }
     | { kind: NamedEventKind; name: string }
@@ -56,7 +52,6 @@ export type ActivityEvent =
     | { kind: 'shelf-renamed'; from: string; to: string; bookcase: string }
     | { kind: 'shelf-moved'; name: string; from: string; to: string };
 
-// One Activity entry: the operation's main change and the changes it caused ("Also …").
 export interface ActivityEntry {
     id: string;
     occurredAt: string;
@@ -67,13 +62,6 @@ export interface ActivityEntry {
 
 type Values = Record<string, unknown> | null;
 
-// Turns one operation's audit records into one Activity entry. The main record is chosen by
-// category, since records of one operation have no reliable order: a person's change to a book
-// or a loan first, then their change to a collection, location or tag, then the consequences of
-// the operation (collections created, reopened or removed by a book save, a tag created from the
-// book form, a new receiver), and last the titles retitled by a collection change, which are
-// never listed. Every record of the main category joins the main change, so lending three books
-// is one entry naming three titles.
 export class ActivityProjection {
     private static readonly order: readonly (readonly string[])[] = [
         [
@@ -235,8 +223,6 @@ export class ActivityProjection {
         return { kind, title };
     }
 
-    // A location change and a tag change read as two different entries. A record that changed
-    // both (possible through the API) or that cannot tell keeps the general sentence.
     private static organised(before: Values, after: Values): BookEventKind {
         if (!before || !after) {
             return 'book-organised';
@@ -276,7 +262,6 @@ export class ActivityProjection {
         kind: 'books-lent' | 'books-returned',
         records: readonly ActivityRecord[],
     ): ActivityEvent | null {
-        // A loan record holds `{ loan: { title, receiver, … } }`; a lending's before-state is null.
         const loans = records.map(
             (record) =>
                 ActivityProjection.values(record.after?.loan) ??

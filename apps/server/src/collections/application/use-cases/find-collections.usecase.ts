@@ -3,7 +3,6 @@ import type { CollectionNameView } from '../collection-views.js';
 import type { CollectionRepository } from '../ports/driven/collection-repository.interface.js';
 import { NameKey } from '../../../shared/domain/name-key.helper.js';
 
-// Filters the household's collections in memory, like authors; revisit if libraries grow large.
 export class FindCollections implements FindCollectionsUseCase {
     private static readonly limit = 20;
 

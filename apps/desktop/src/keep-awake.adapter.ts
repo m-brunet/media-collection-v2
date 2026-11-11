@@ -1,6 +1,5 @@
 import { powerSaveBlocker } from 'electron';
 
-// The screen may still turn off.
 export class KeepAwake {
     private blocker: number | undefined;
 

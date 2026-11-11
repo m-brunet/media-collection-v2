@@ -36,7 +36,6 @@ export interface LibraryDependencies {
     ids: IdGenerator;
     clock: Clock;
     operations: AuditedOperation;
-    // Test-only override of the outside sources' addresses; absent in production.
     lookupAddresses?: LookupAddresses;
 }
 

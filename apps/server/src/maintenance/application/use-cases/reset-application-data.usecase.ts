@@ -7,7 +7,6 @@ import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 import { MaintenanceAudit } from '../maintenance-audit.js';
 
-// The audit record of the reset is written after the erase, so it is the only one left.
 export class ResetApplicationData implements ResetApplicationDataUseCase {
     constructor(
         private readonly passwords: AdministratorPasswordCheck,

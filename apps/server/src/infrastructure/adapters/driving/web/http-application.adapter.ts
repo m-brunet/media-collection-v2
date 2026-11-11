@@ -22,10 +22,7 @@ export class HttpApplication {
                     : {
                           directives: {
                               'upgrade-insecure-requests': null,
-                              // Leaf reads barcodes with a bundled WebAssembly reader; this allows
-                              // compiling WebAssembly only, not JavaScript `eval`.
                               'script-src': ["'self'", "'wasm-unsafe-eval'"],
-                              // A chosen cover is previewed locally before it is uploaded.
                               'img-src': ["'self'", 'data:', 'blob:'],
                           },
                       },
@@ -38,7 +35,6 @@ export class HttpApplication {
         });
         application.use(sessions.protect);
         application.use(express.json({ limit: '300kb' }));
-        // Cover images arrive as the raw body; the books feature checks the actual content.
         application.use(
             HttpApplication.coverPath,
             express.raw({ type: () => true, limit: HttpApplication.coverLimit }),
@@ -67,10 +63,8 @@ export class HttpApplication {
 
     static readonly coverPath = /^\/api\/books\/[^/]+\/cover$/;
     static readonly uploadPaths: readonly RegExp[] = [HttpApplication.coverPath];
-    // Slightly above the 10 MB cover limit so the books feature can explain a too-large image.
     private static readonly coverLimit = 10 * 1024 * 1024 + 1024;
 
-    // Refuses oversized bodies with the API error shape instead of the default HTML page.
     private static tooLarge(
         error: unknown,
         request: Request,

@@ -17,13 +17,10 @@ export interface AccountSummary {
 }
 
 export interface SetupStatus {
-    // True until the protected administrator exists (first launch).
     required: boolean;
-    // True only in the Media Collection desktop window, the one place where setup is allowed.
     allowed: boolean;
 }
 
-// Error body of every failed API request.
 export interface ApiFailure {
     code: string;
     reason?: string | null;
@@ -56,26 +53,18 @@ export interface InternetAccessStatus {
     step: 'router' | 'port' | 'certificate' | null;
     mapping: 'upnp' | 'nat-pmp' | 'manual' | null;
     publicAddress: string | null;
-    // The domain name the HTTPS certificate uses (follows the saved domain name).
     domain: string | null;
-    // `address` is the IP address or the domain name the certificate covers.
     certificate: { address: string; issuedAt: string; expiresAt: string } | null;
     failure: { reason: InternetAccessFailureReason; at: string } | null;
     failedAttempts: number;
     nextAttemptAt: string | null;
-    // Let's Encrypt's own date after a rate limit, while it is ahead: no attempt is accepted before it.
     retryAfter: string | null;
-    // Active, after a failed check: the certificate waits for Check again.
     awaitingCheck: boolean;
-    // What Let's Encrypt probably still allows for the address or domain name, after a failure (an
-    // estimate from this installation's own attempts); `nextAt` while none is left.
     allowances: {
         certificates: { left: number; nextAt: string | null };
         checks: { left: number; nextAt: string | null };
     } | null;
-    // The address phones open (domain name, else public address), once the certificate is in use.
     origin: string | null;
-    // What to enter in the router when it cannot be configured automatically.
     manualRule: {
         localAddress: string | null;
         internalPort: number;
@@ -100,11 +89,8 @@ export interface HttpInternetAccessStatus {
         >;
         at: string;
     } | null;
-    // Closed by a working HTTPS setup rather than by the Admin.
     closedByHttps: boolean;
-    // The address phones open while it is open (domain name, else public address).
     origin: string | null;
-    // What to enter in the router when the application could not add the rule.
     manualRule: {
         localAddress: string | null;
         internalPort: number;
@@ -120,7 +106,6 @@ export interface ServerStatus {
     };
     internetAccess: InternetAccessStatus;
     keepAwake: boolean;
-    // The Admin's domain name, used by the internet addresses; checked when saved.
     domainName: string | null;
     httpInternetAccess: HttpInternetAccessStatus;
     running: {
@@ -151,7 +136,6 @@ export type IconSetName =
     | 'single-ink-risograph'
     | 'quiet-editorial-monoline';
 
-// Installation-wide appearance, readable before sign-in.
 export interface Appearance {
     colorScheme: ColorSchemeName;
     iconSet: IconSetName;
@@ -166,16 +150,10 @@ export interface AuthorDto {
     name: string;
 }
 
-// An author of a book being saved: an existing one, or a name to reuse or create. `distinct`
-// confirms that a name similar to an existing author is really someone else.
 export type AuthorChoiceDto = { id: string } | { name: string; distinct?: boolean };
 
-// The collection of a book being saved: an existing one, or a name to join or create.
-// `distinct` confirms that a name similar to an existing collection is another collection.
 export type CollectionChoiceDto = { id: string } | { name: string; distinct?: boolean };
 
-// Membership and covered volumes (equal numbers for a single volume). `enableVolumeZero`
-// answers the request to include volume 0 in the collection.
 export interface MembershipDto {
     collection: CollectionChoiceDto;
     volumeFrom: number;
@@ -183,10 +161,8 @@ export interface MembershipDto {
     enableVolumeZero?: boolean;
 }
 
-// A tag of a book being saved: an existing tag, or a name to reuse (equivalent name) or create.
 export type TagChoiceDto = { id: string } | { name: string };
 
-// Where a book is kept: always a shelf within its bookcase.
 export interface BookLocationDto {
     bookcaseId: string;
     bookcaseName: string;
@@ -206,8 +182,6 @@ export interface BookCollectionDto {
     volumeTo: number;
 }
 
-// A blank `title` on a Manga or Comics in a collection asks for one generated from the
-// collection; any other blank title is refused (`title-required`). Typed text is always kept.
 export interface BookInputDto {
     title: string;
     isbn: string | null;
@@ -223,22 +197,17 @@ export interface BookInputDto {
     price: string | null;
     confirmDistinct?: boolean;
     collection: MembershipDto | null;
-    // Planned Not Owned books to delete because this Owned book replaces them.
     replacePlanned?: string[];
-    // An existing shelf, or null for no physical location.
     shelfId: string | null;
     tags: TagChoiceDto[];
 }
 
-// `PATCH /api/books/:id/organisation`: location and tags edited on the book details. An absent
-// field is left unchanged.
 export interface BookOrganisationDto {
     shelfId?: string | null;
     tags?: TagChoiceDto[];
 }
 
 export interface NewBookDto extends BookInputDto {
-    // The creator's own reading status.
     read: boolean;
 }
 
@@ -247,7 +216,6 @@ export interface PersonalNoteDto {
     updatedAt: string;
 }
 
-// The active loan of a book: who has it and since when (UTC).
 export interface BookLoanDto {
     id: string;
     receiverId: string;
@@ -258,7 +226,6 @@ export interface BookLoanDto {
 export interface BookDto {
     id: string;
     title: string;
-    // True when the title is generated from the book's collection (`Name - N`).
     titleGenerated: boolean;
     isbn: string | null;
     isbnConvertedFromIsbn10: boolean;
@@ -275,12 +242,10 @@ export interface BookDto {
     hasCover: boolean;
     collection: BookCollectionDto | null;
     location: BookLocationDto | null;
-    // Ordered by name.
     tags: BookTagDto[];
     loan: BookLoanDto | null;
     createdAt: string;
     updatedAt: string;
-    // The viewer's own reading status and note; null for Guests.
     personal: { read: boolean; note: PersonalNoteDto | null } | null;
 }
 
@@ -302,11 +267,6 @@ export interface BookListPageDto {
     items: BookListItemDto[];
 }
 
-// Advanced filters of `GET /api/books` and `GET /api/collections`, sent as repeated query
-// parameters (`?category=manga&category=comics`). Different parameters combine with AND, values
-// of one parameter with OR; every `tag` must be present and any `notTag` rejects a book.
-// `collection`: a collection id or `none`. `location`: `bookcase:<id>`, `shelf:<id>` or `none`.
-// `reading` is the viewer's own status and is refused for Guests (`reading-filter-unavailable`).
 export interface BookFilterParams {
     category?: BookCategory[];
     author?: string[];
@@ -318,24 +278,20 @@ export interface BookFilterParams {
     notTag?: string[];
 }
 
-// `details` of a failure with reason `author-similar`.
 export interface SimilarAuthorDetails {
     name: string;
     candidates: AuthorDto[];
 }
 
-// `details` of a failure with reason `possible-duplicate`.
 export interface PossibleDuplicateDetails {
     candidates: { id: string; title: string; authors: string[] }[];
 }
 
-// `details` of a failure with reason `collection-similar`.
 export interface SimilarCollectionDetails {
     name: string;
     candidates: { id: string; name: string }[];
 }
 
-// `details` of a failure with reason `volume-zero-disabled`.
 export interface VolumeZeroDetails {
     name: string;
 }
@@ -349,9 +305,6 @@ export interface CoverageConflictBook {
     volumeTo: number;
 }
 
-// `details` of a failure with reason `coverage-conflict`. Replaceable when the book being saved
-// is Owned and every conflicting book is a planned Not Owned record; the expected range after
-// replacing them is given so the person can see whether it shrinks.
 export interface CoverageConflictDetails {
     name: string;
     conflicts: CoverageConflictBook[];
@@ -366,7 +319,6 @@ export interface LookupChoiceDto<T> {
     sources: string[];
 }
 
-// Each field's choices, the preferred source's value first; empty when no source knew it.
 export interface BookLookupFieldsDto {
     title: LookupChoiceDto<string>[];
     authors: LookupChoiceDto<string[]>[];
@@ -378,14 +330,12 @@ export interface BookLookupFieldsDto {
     category: LookupChoiceDto<BookCategory>[];
 }
 
-// An existing author's name (`name`) filled in for a source's similar spelling.
 export interface AuthorSpellingDto {
     name: string;
     spelling: string;
     sources: string[];
 }
 
-// A cover offered by a lookup, shown from `/api/books/lookups/covers/:token` for half an hour.
 export interface LookupCoverDto {
     token: string;
     width: number | null;
@@ -400,7 +350,6 @@ export type BookLookupDto =
           isbn13: string;
           found: boolean;
           fields: BookLookupFieldsDto;
-          // Authors filled in with an existing author's name instead of a source's spelling.
           authorSpellings: AuthorSpellingDto[];
           covers: LookupCoverDto[];
           unavailable: { source: string; reason: 'limited' | 'failed' }[];
@@ -418,7 +367,6 @@ export interface CollectionSummaryDto {
     ownedCount: number;
     missingCount: number;
     lastOwned: number | null;
-    // Up to two books whose covers stand for the collection.
     previews: CollectionPreviewDto[];
 }
 
@@ -457,7 +405,6 @@ export interface CollectionListPageDto {
     items: CollectionSummaryDto[];
 }
 
-// `GET /api/collections/shopping`: an unfinished collection in Leaf's shopping list.
 export interface ShoppingCollectionDto {
     id: string;
     name: string;
@@ -467,9 +414,6 @@ export interface ShoppingCollectionDto {
     lastOwned: number | null;
 }
 
-// `GET /api/collections/:id/shopping`: the last Owned volume (with its title in the Books
-// category) and the missing volumes in order. `quickAdd`: the saved single-volume Not Owned book
-// that may be marked Owned with `POST /api/books/:id/owned`.
 export interface CollectionShoppingDto {
     id: string;
     name: string;
@@ -502,22 +446,17 @@ export interface ShelfDto {
     bookCount: number;
 }
 
-// Shelves in name order, numbers compared by value.
 export interface BookcaseDto {
     id: string;
     name: string;
-    // Books on all its shelves.
     bookCount: number;
     shelves: ShelfDto[];
 }
 
-// Body of `POST /api/bookcases`, `PATCH /api/bookcases/:id`, `POST /api/bookcases/:id/shelves`,
-// `POST /api/tags` and `PATCH /api/tags/:id`.
 export interface NameDto {
     name: string;
 }
 
-// Body of `PATCH /api/shelves/:id`: a rename, a move to another bookcase, or both.
 export interface ShelfChangesDto {
     name?: string;
     bookcaseId?: string;
@@ -534,11 +473,8 @@ export interface ReceiverDto {
     name: string;
 }
 
-// An existing receiver, or a name to reuse or create. `distinct` confirms that a name similar to
-// an existing receiver (`receiver-similar`) is really someone else.
 export type ReceiverChoiceDto = { id: string } | { name: string; distinct?: boolean };
 
-// `POST /api/loans`: lends the books together, or none of them.
 export interface LendBooksDto {
     receiver: ReceiverChoiceDto;
     bookIds: string[];
@@ -549,7 +485,6 @@ export interface LendingDto {
     loans: { loanId: string; bookId: string; lentAt: string }[];
 }
 
-// `POST /api/loans/returns`: returns loans of one receiver together, or none of them.
 export interface RecordReturnsDto {
     loanIds: string[];
 }
@@ -576,13 +511,11 @@ export interface ActiveLoanDto {
     book: LoanBookDto;
 }
 
-// `GET /api/loans`: the books currently lent, grouped by receiver in name order, newest first.
 export interface ReceiverLoansDto {
     receiver: ReceiverDto;
     loans: ActiveLoanDto[];
 }
 
-// `title` is null only for an older record of a book deleted since.
 export type ActivityEventDto =
     | {
           kind:
@@ -622,26 +555,18 @@ export type ActivityEventDto =
     | { kind: 'shelf-moved'; name: string; from: string; to: string };
 
 export interface ActivityEntryDto {
-    // The audit operation ID.
     id: string;
-    // UTC.
     occurredAt: string;
-    // The acting account's current username; null when no account was recorded.
     actor: string | null;
     event: ActivityEventDto;
     also: ActivityEventDto[];
 }
 
-// `GET /api/activity?before=`: newest first. Pass `older` as `before` for the next page; null
-// when nothing older exists.
 export interface ActivityPageDto {
     entries: ActivityEntryDto[];
     older: string | null;
 }
 
-// `GET /api/overview`: shared counters (Owned books are saved Owned editions), the five most
-// recently added Owned books, and the viewer's own reading over Owned books. A Guest gets
-// `reading: null` and `read: null` on each book.
 export interface OverviewDto {
     ownedBooks: number;
     collections: number;
@@ -657,6 +582,5 @@ export interface OverviewDto {
         read: boolean | null;
     }[];
     reading: { read: number; notRead: number } | null;
-    // In name order.
     bookcaseList: { id: string; name: string; shelfCount: number }[];
 }

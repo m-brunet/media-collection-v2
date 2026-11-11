@@ -1,12 +1,9 @@
-// What this installation asked Let's Encrypt for one name (public address or domain name): a new
-// certificate (an ARI renewal is not one) or a failed check of the port.
 export interface CertificateAttempt {
     name: string;
     at: string;
     kind: 'certificate' | 'failed-check';
 }
 
-// `nextAt`: when one more attempt comes back, given only while none is left.
 export interface Allowance {
     left: number;
     nextAt: string | null;
@@ -49,7 +46,6 @@ export class AttemptAllowance {
         return AttemptAllowance.left(AttemptAllowance.checks, history, name, now);
     }
 
-    // The attempts still worth keeping at `now`.
     static recent(history: readonly CertificateAttempt[], now: Date): CertificateAttempt[] {
         return history.filter(
             (attempt) => now.getTime() - Date.parse(attempt.at) < AttemptAllowance.keptMs,

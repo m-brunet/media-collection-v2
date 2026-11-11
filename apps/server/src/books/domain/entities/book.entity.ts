@@ -10,10 +10,7 @@ export type Ownership = 'owned' | 'not-owned';
 
 export interface BookDetails {
     title: string;
-    // True when the title was generated from the book's collection rather than supplied. Only
-    // Manga and Comics in a collection may have one; it follows the collection's name and coverage.
     titleGenerated: boolean;
-    // Exactly one of: an ISBN, or the explicit statement that the book has none.
     isbn: Isbn | null;
     noIsbn: boolean;
     authorIds: string[];
@@ -60,7 +57,6 @@ export class Book {
         return NameKey.of(this.state.details.title);
     }
 
-    // Title order that compares numbers by value: "Gunnm - 2" before "Gunnm - 10".
     get titleSortKey(): string {
         return this.titleKey.replace(/\d+/g, (digits) => digits.padStart(10, '0'));
     }
@@ -93,8 +89,6 @@ export class Book {
         return true;
     }
 
-    // When its whole collection is deleted, a book keeps its last generated title as a supplied
-    // one.
     keepTitle(now: string): boolean {
         if (!this.state.details.titleGenerated) {
             return false;

@@ -24,7 +24,6 @@ import { LeafSaveQuestions } from './leaf-save-questions';
 
 export type LookedUpBook = Extract<BookLookupDto, { kind: 'looked-up' }>;
 
-// Navigation state of `/add`: only the scanned-ISBN screen sets it, after Find book.
 export interface AddBookState {
     isbn: string;
     lookup: LookedUpBook;
@@ -44,8 +43,6 @@ function AddBookForm({ isbn, lookup, accountId, bookcases }: AddBookFormProps) {
     const { t } = useI18n();
     const navigate = useNavigate();
     const sourceNames = useSourceNames();
-    // The last saved book's shelf (if it still exists), category and reading status first, the
-    // lookup on top.
     const [initial] = useState(() =>
         LeafAddMemory.located(
             LookupFill.prefilled(
@@ -195,8 +192,6 @@ function AddBookForm({ isbn, lookup, accountId, bookcases }: AddBookFormProps) {
     );
 }
 
-// Opened any other way (a typed address,
-// a reload), it returns home: the mobile add form needs a scan.
 export function AddBookPage() {
     const { t } = useI18n();
     const state = useLocation().state as AddBookState | null;
@@ -207,12 +202,10 @@ export function AddBookPage() {
         return <Navigate to="/" replace />;
     }
 
-    // Leaf shows its pages once signed in; the form starts from this account's last choices.
     if (!account) {
         return null;
     }
 
-    // The shelves are known before the form starts, so a remembered shelf deleted since is dropped.
     if (bookcases.status === 'loading') {
         return <LoadingState label={t('leaf.form.opening')} />;
     }

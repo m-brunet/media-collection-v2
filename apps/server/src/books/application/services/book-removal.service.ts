@@ -9,7 +9,6 @@ import type { RelatedChange } from '../../../shared/application/ports/driven/aud
 
 export type BookRemoved = { book: Book; changes: RelatedChange[] };
 
-// The caller removes the cover file once the operation is committed.
 export class BookRemoval {
     constructor(
         private readonly books: BookRepository,

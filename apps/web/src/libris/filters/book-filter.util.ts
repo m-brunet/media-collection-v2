@@ -19,9 +19,6 @@ const categories: readonly BookCategory[] = ['books', 'manga', 'comics'];
 const ownerships: readonly BookOwnership[] = ['owned', 'not-owned'];
 const readings = ['read', 'unread'] as const;
 
-// Advanced book filters kept in the page address, with the same parameters as the API
-// (`?category=manga&category=comics&tag=<id>&notTag=<id>`), so a filtered list can be reloaded,
-// bookmarked and shared.
 export class BookFilter {
     static readonly keys: readonly FilterKey[] = [
         'category',
@@ -47,8 +44,6 @@ export class BookFilter {
         };
     }
 
-    // Unknown enumeration values are ignored; ids are left to the server, which matches nothing
-    // for an unknown one.
     static read(parameters: URLSearchParams): Filter {
         const all = (key: FilterKey) => [...new Set(parameters.getAll(key).filter(Boolean))];
 

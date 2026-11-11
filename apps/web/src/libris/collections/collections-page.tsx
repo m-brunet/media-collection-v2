@@ -27,7 +27,6 @@ interface Listing {
     items: CollectionSummaryDto[];
 }
 
-// The covers are decorative; the name and coverage name the link.
 function CollectionCard({ collection }: { collection: CollectionSummaryDto }) {
     const { t } = useI18n();
     const message = CollectionFormat.status(collection);
@@ -80,7 +79,6 @@ function CollectionCard({ collection }: { collection: CollectionSummaryDto }) {
     );
 }
 
-// Counts always describe the whole collection, whatever book matched the search.
 export function CollectionsPage() {
     const { t } = useI18n();
     const { account } = useSession();

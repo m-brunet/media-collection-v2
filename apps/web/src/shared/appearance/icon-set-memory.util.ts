@@ -1,7 +1,5 @@
 import type { IconSetName } from '../../../../../packages/contracts/src/http';
 
-// Remembers the installation's icon set in this browser, so the next page load draws the right
-// icons at once instead of Lucide first.
 export class IconSetMemory {
     static readonly names: readonly IconSetName[] = [
         'lucide',
@@ -30,8 +28,6 @@ export class IconSetMemory {
     static write(name: IconSetName): void {
         try {
             window.localStorage.setItem(IconSetMemory.key, name);
-        } catch {
-            // Storage unavailable: the icon set still applies to this page.
-        }
+        } catch {}
     }
 }

@@ -7,7 +7,6 @@ import type { AuthenticatedRequest } from '../../../../../shared/infrastructure/
 import type { BookDto } from '../../../../../../../../packages/contracts/src/http.js';
 import { idSchema } from './book-schemas.js';
 
-// Cover images are sent as the raw request body (see HttpApplication) and checked by content.
 @Controller('api/books/:id/cover')
 export class CoversController {
     constructor(

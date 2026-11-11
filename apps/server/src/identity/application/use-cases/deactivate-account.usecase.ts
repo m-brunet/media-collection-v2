@@ -7,7 +7,6 @@ import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 import { AccountAudit } from '../account-audit.js';
 import { ManagedAccountLoader } from '../services/managed-account-loader.service.js';
 
-// "Deleting" an account deactivates it: its record, private data and username are kept.
 export class DeactivateAccount implements DeactivateAccountUseCase {
     constructor(
         private readonly users: UserWriter,

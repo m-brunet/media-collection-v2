@@ -12,7 +12,6 @@ import type { DomainNameCheck } from './domain-name-check.service.js';
 import type { HttpInternetAccessClosing } from './http-internet-access-closing.service.js';
 import type { RouterRules } from './router-rules.service.js';
 
-// Each step is saved so the page can follow it.
 export class InternetAccessSetup {
     private active = 0;
 
@@ -40,14 +39,12 @@ export class InternetAccessSetup {
         });
     }
 
-    // While active (after a failed check), a failure keeps the current certificate.
     async check(): Promise<void> {
         await this.guarded((access) =>
             access.phase === 'active' ? this.recheck(access) : this.obtain(access),
         );
     }
 
-    // A failure keeps the current certificate, like an upkeep failure.
     async followDomain(): Promise<void> {
         const access = await this.store.read();
         const saved = await this.names.read();
@@ -61,8 +58,6 @@ export class InternetAccessSetup {
         await this.store.save(access);
     }
 
-    // The one way to Let's Encrypt: nothing is asked before its own date after a rate limit, and
-    // each certificate and failed check is recorded for the estimate.
     async renew(access: InternetAccess): Promise<InternetAccessFailureReason | null> {
         if (!access.attemptAllowed(this.clock.now())) {
             return 'rate-limited';

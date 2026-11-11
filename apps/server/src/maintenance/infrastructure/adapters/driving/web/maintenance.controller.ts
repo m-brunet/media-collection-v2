@@ -10,7 +10,6 @@ const dataResetSchema = z.strictObject({
     password: z.string().min(1).max(128),
 });
 
-// Only the data reset is an HTTP operation; backup, restore and recovery are local maintenance.
 @Controller('api/maintenance')
 export class MaintenanceController {
     constructor(

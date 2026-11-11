@@ -6,7 +6,6 @@ import type { BackupDescription } from '../backup-description.js';
 import type { BackupReader } from '../services/backup-reader.service.js';
 import { MaintenanceAudit } from '../maintenance-audit.js';
 
-// A failed restore is recorded in the data it kept; a successful one in the restored data.
 export class RestoreBackup implements RestoreBackupUseCase {
     constructor(
         private readonly backups: BackupReader,

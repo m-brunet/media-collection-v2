@@ -8,20 +8,15 @@ export interface CoverageMember {
     range: VolumeRange;
 }
 
-// Owned: an Owned book covers it. Planned: only saved Not Owned books do. Inferred: no book does.
 export type VolumeState = 'owned' | 'planned' | 'inferred';
 
 export interface VolumeEntry {
     from: number;
     to: number;
     state: VolumeState;
-    // Every book covering these volumes, in the order the members were given.
     bookIds: string[];
 }
 
-// What a collection's saved books cover. The expected sequence runs from 1 (or 0 when the
-// collection includes volume 0) to the highest saved coverage, whatever its ownership.
-// Completeness counts distinct volume numbers, never book records.
 export class CollectionCoverage {
     private constructor(
         private readonly includesVolumeZero: boolean,
@@ -36,7 +31,6 @@ export class CollectionCoverage {
         return this.includesVolumeZero ? 0 : 1;
     }
 
-    // Null without any member.
     get highest(): number | null {
         return this.members.length === 0
             ? null
@@ -57,7 +51,6 @@ export class CollectionCoverage {
         return this.expectedVolumes().filter((volume) => this.state(volume) !== 'owned');
     }
 
-    // The highest number an Owned book covers, an omnibus range end included.
     get lastOwned(): number | null {
         const owned = this.members.filter((member) => member.ownership === 'owned');
 
@@ -68,7 +61,6 @@ export class CollectionCoverage {
         return this.members.some((member) => member.range.covers(0));
     }
 
-    // Each expected volume in order, consecutive inferred volumes grouped into one entry.
     volumes(): VolumeEntry[] {
         const entries: VolumeEntry[] = [];
 
@@ -91,8 +83,6 @@ export class CollectionCoverage {
         return entries;
     }
 
-    // Overlap is allowed only between Owned books: any overlap involving a Not Owned book,
-    // on either side, conflicts. The candidate's own saved coverage is ignored.
     conflictsWith(candidate: CoverageMember): CoverageMember[] {
         return this.members.filter(
             (member) =>

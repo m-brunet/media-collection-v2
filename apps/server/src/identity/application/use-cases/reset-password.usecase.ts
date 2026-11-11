@@ -32,7 +32,6 @@ export class ResetPassword implements ResetPasswordUseCase {
                 const expectedVersion = user.snapshot.tokenVersion;
 
                 User.validatePassword(password);
-                // A temporary password ends existing sessions and must be replaced at sign-in.
                 user.replacePassword(await this.passwords.hash(password), true);
                 await this.users.save(user, expectedVersion);
 

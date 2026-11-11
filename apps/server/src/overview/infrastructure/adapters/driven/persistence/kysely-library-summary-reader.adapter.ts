@@ -134,7 +134,6 @@ export class KyselyLibrarySummaryReader implements LibrarySummaryReader {
         }));
     }
 
-    // Saved Owned edition records: an omnibus is one book; Not Owned records are not counted.
     private ownedBooks(): Promise<number> {
         return this.total(
             this.db

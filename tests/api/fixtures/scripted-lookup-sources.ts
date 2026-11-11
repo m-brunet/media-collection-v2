@@ -47,8 +47,6 @@ export class ScriptedLookupSources implements BookLookupSources {
     readonly openLibraryCovers = new ScriptedSource<CoverOffer[]>('openlibrary');
     readonly downloader = new ScriptedDownloader();
     private readonly web = new Map<string, Uint8Array>();
-    // Pasted image addresses go through the real downloader and home-network guard, over a
-    // scripted web: every host name resolves to a public address and only arranged images answer.
     readonly addressDownloader = new HttpCoverDownloader(
         async (url) => {
             const bytes = this.web.get(url);

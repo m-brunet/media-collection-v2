@@ -42,8 +42,6 @@ export class RouterRules {
         return this.router.close(rule);
     }
 
-    // The upkeep of a rule: one the application created is recreated (it follows a new local
-    // address and survives a router restart); one added by hand only follows the public address.
     async keep(rule: PortRule, byHand: boolean): Promise<RuleUpkeep> {
         const address = byHand ? await this.probe.current() : await this.reopen(rule);
 

@@ -15,10 +15,6 @@ import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { NameKey } from '../../../shared/domain/name-key.helper.js';
 
-// Renaming changes the name every member book shows, and the generated titles of its books; an
-// equivalent existing name is refused,
-// since merging collections is not available. Including volume 0 reopens a Finished
-// collection that has no volume 0 yet.
 export class UpdateCollection implements UpdateCollectionUseCase {
     constructor(
         private readonly collections: CollectionRepository,

@@ -7,8 +7,6 @@ export interface AddressPolicy {
     allows(url: URL): Promise<boolean>;
 }
 
-// Redirects are followed one by one (at most `maximumRedirects`) so that `policy` checks each
-// address: lookup sources are trusted as they are; an address a person pasted is not.
 export class HttpCoverDownloader implements CoverDownloader {
     static readonly maximumRedirects = 3;
     private static readonly anyWebAddress: AddressPolicy = { allows: async () => true };
@@ -62,7 +60,6 @@ export class HttpCoverDownloader implements CoverDownloader {
         for await (const chunk of body) {
             size += chunk.length;
 
-            // Too large for a cover: leaving the loop stops the download.
             if (size > CoverImage.maximumBytes) {
                 return null;
             }

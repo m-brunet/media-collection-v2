@@ -3,7 +3,6 @@ import type { CoverTrimmer } from '../../../../application/ports/driven/cover-tr
 import { CoverPadding } from '../../../../domain/services/cover-padding.service.js';
 import { CoverImage } from '../../../../domain/value-objects/cover-image.value-object.js';
 
-// Anything else is returned untouched, byte for byte.
 export class SharpCoverTrimmer implements CoverTrimmer {
     static readonly quality = 90;
 

@@ -17,8 +17,6 @@ import type { Clock } from '../../../shared/application/ports/driven/clock.inter
 import type { IdGenerator } from '../../../shared/application/ports/driven/id-generator.interface.js';
 import { NameKey } from '../../../shared/domain/name-key.helper.js';
 
-// Tags the books feature's saves: an equivalent name reuses its tag, keeping the tag's own
-// spelling; a new name creates the tag.
 export class BookTagAssignment implements TagAssignment, BookTagReader {
     constructor(
         private readonly tags: TagRepository,

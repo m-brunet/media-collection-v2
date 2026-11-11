@@ -2,7 +2,6 @@ import { z } from 'zod';
 import { bookFilterQuery } from '../../../../../shared/infrastructure/adapters/driving/web/book-filter-query.js';
 import { idSchema } from '../../../../../shared/infrastructure/adapters/driving/web/id-schema.js';
 
-// Request shapes only; the books domain checks the actual rules and explains refusals.
 class BookFields {
     static text(max: number) {
         return z.string().max(max).nullable();

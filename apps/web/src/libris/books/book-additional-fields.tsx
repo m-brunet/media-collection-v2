@@ -22,7 +22,6 @@ export function BookAdditionalFields({
     values: BookDraftValues;
     set: DraftFieldSetter;
     errorFor(field: BookField): string | undefined;
-    // Whether the account has personal notes (not a Guest).
     personal: boolean;
 }) {
     const { t, locale } = useI18n();

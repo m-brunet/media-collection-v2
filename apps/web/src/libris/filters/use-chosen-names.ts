@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react';
 import type { AuthorDto, CollectionDetailsDto } from '../../../../../packages/contracts/src/http';
 import { api } from '../../shared/api.util';
 
-// The address carries only their ids, so a shared or bookmarked filter is named from the API.
-// Unknown (removed) ones stay unnamed.
 export function useChosenNames(
     field: 'author' | 'collection',
     values: readonly string[],

@@ -1,4 +1,3 @@
-// A decoded image: `channels` bytes per pixel (RGB or RGBA), row after row.
 export interface CoverPixels {
     width: number;
     height: number;
@@ -13,21 +12,13 @@ export interface CropBox {
     height: number;
 }
 
-// Shop padding around a cover: online shops centre the real cover in a white square. The padding
-// is removed only when it looks like that — near-white bars of about the same width on exactly
-// one pair of opposite sides — so that a cover whose own artwork is white at an edge is never cut
-// into.
 export class CoverPadding {
     // Every colour channel at least this bright counts as white (JPEG noise is never pure white).
     static readonly whiteness = 235;
-    // Share of a row or column that must be white for it to be padding.
     static readonly whiteShare = 0.99;
-    // Each bar is at least this share of the image dimension.
     static readonly minimumBar = 0.02;
-    // Opposite bars may differ by this many pixels, or this share of the wider bar.
     static readonly barToleranceInPixels = 2;
     static readonly barToleranceShare = 0.1;
-    // The other two sides may show this many white lines (a cover's own light edge).
     static readonly strayLines = 1;
 
     static measure(pixels: CoverPixels): CropBox | null {

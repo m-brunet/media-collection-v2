@@ -15,9 +15,6 @@ import type { TransactionRunner } from '../../../shared/application/ports/driven
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { NameKey } from '../../../shared/domain/name-key.helper.js';
 
-// Replaces the development library with the V1 backup. The whole dump is checked and its covers
-// fetched before anything is written; then the library is erased and the books saved, as the
-// administrator, in one transaction, so a failure keeps the previous library.
 export class ImportV1Library implements ImportV1LibraryUseCase {
     constructor(
         private readonly dump: V1Dump,
@@ -106,8 +103,6 @@ export class ImportV1Library implements ImportV1LibraryUseCase {
                 return report;
             });
         } finally {
-            // After a failure, the covers stored for the rolled-back books; after a success, the
-            // previous library's covers.
             await this.covers.removeUnreferenced();
         }
     }

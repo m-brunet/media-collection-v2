@@ -10,9 +10,6 @@ export type RememberedChoices = Pick<
     'category' | 'read' | 'bookcaseId' | 'shelfId'
 >;
 
-// The shelf, category and reading status of the last book saved in Leaf, remembered in this
-// browser for each account, so the next scanned book starts with them (a batch is usually the
-// same shelf). The lookup's values are applied on top.
 export class LeafAddMemory {
     private static readonly categories: readonly BookCategory[] = ['books', 'manga', 'comics'];
     private static readonly prefix = 'media-collection.leaf.last-add.';
@@ -39,12 +36,9 @@ export class LeafAddMemory {
 
         try {
             window.localStorage.setItem(LeafAddMemory.prefix + accountId, JSON.stringify(choices));
-        } catch {
-            // Storage unavailable: the next form starts empty, as before.
-        }
+        } catch {}
     }
 
-    // A shelf deleted since it was remembered is dropped, without an error.
     static located<T extends Pick<BookDraftValues, 'bookcaseId' | 'shelfId'>>(
         values: T,
         bookcases: BookcaseDto[],

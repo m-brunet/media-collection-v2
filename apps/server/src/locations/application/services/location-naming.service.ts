@@ -4,8 +4,6 @@ import { LocationName } from '../../domain/value-objects/location-name.value-obj
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { NameKey } from '../../../shared/domain/name-key.helper.js';
 
-// Name uniqueness: bookcases across the installation, shelves within their bookcase. An
-// equivalent name blocks the change; locations are never merged.
 export class LocationNaming {
     constructor(
         private readonly bookcases: BookcaseRepository,

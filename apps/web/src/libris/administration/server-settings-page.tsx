@@ -28,7 +28,6 @@ export function ServerSettingsPage() {
         void run(async () => setSettings(await api.request<ServerStatus>('/server-settings')));
     }, [run]);
 
-    // A setup, or a check again while internet access is on: the page follows it until it ends.
     const settingUp =
         settings?.internetAccess.phase === 'setting-up' ||
         (settings?.internetAccess.phase === 'active' && settings.internetAccess.step !== null);

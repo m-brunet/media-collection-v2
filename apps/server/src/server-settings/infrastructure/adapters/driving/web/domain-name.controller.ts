@@ -4,7 +4,6 @@ import type { SaveDomainNameUseCase } from '../../../../application/ports/drivin
 import type { AuthenticatedRequest } from '../../../../../shared/infrastructure/adapters/driving/web/api-guard.js';
 import { Access } from '../../../../../shared/infrastructure/adapters/driving/web/api-guard.js';
 
-// The domain itself checks the name (`domain-name-invalid`); blank or null removes it.
 const domainNameSchema = z.strictObject({
     domain: z.string().max(260).nullable(),
 });

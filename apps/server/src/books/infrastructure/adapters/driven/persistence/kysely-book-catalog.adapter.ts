@@ -14,8 +14,6 @@ import { NameKey } from '../../../../../shared/domain/name-key.helper.js';
 import type { DatabaseSchema } from '../../../../../shared/infrastructure/adapters/driven/persistence/database.adapter.js';
 import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
 
-// Collection listings apply the same search and filters: a collection matches through one of
-// its books satisfying all of them.
 export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
     constructor(private readonly connections: DatabaseConnections) {}
 
@@ -57,7 +55,6 @@ export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
         if (query.sort === 'added') {
             rows = rows.orderBy('books.created_at', direction);
         } else if (query.sort === 'published') {
-            // Books without a publication date come last in both directions.
             rows = rows
                 .orderBy((eb) => eb('books.publication_year', 'is', null))
                 .orderBy('books.publication_year', direction)

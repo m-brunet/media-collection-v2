@@ -1,5 +1,3 @@
-// A cover a source offers: where to fetch it, its size when known, and a fingerprint of the
-// picture (equal fingerprints: the same cover, whatever its size or address).
 export interface CoverOffer {
     address: string;
     width: number | null;
@@ -14,7 +12,6 @@ export interface CoverChoice {
     sources: string[];
 }
 
-// Combines the covers of several sources, added in order of preference.
 export class CoverCombination {
     static readonly minimumHeight = 300;
 

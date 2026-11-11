@@ -51,7 +51,6 @@ export class LookupSourcesStub {
         return this;
     }
 
-    // Makes the source fail (500) or ask to retry later (503 with Retry-After) until `recover`.
     trouble(source: Source, trouble: Trouble): this {
         this.troubles.set(source, trouble);
 

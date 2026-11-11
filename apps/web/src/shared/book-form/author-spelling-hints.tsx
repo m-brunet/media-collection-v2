@@ -5,8 +5,6 @@ import type { DraftAuthor } from './book-draft.util';
 import { AuthorSpellings } from './author-spellings.util';
 import { useSourceNames } from './use-source-names';
 
-// Under the authors, for an existing author a lookup filled in: "BnF suggests: Flipsflops", or,
-// once that spelling is taken, "Libris suggests: Flipflop's" (the author already in the library).
 export function AuthorSpellingHints({
     authors,
     spellings,

@@ -20,12 +20,10 @@ export class ReadInternetAccess implements ReadInternetAccessUseCase {
         ActorAuthorization.requireAdmin(actor);
         const access = await this.store.read();
         const now = this.clock.now();
-        // The attempt history stays on the server: the estimate is enough.
         const { history: _history, ...state } = access.snapshot;
 
         return {
             ...state,
-            // Only while it is ahead: the page then needs no clock of its own.
             retryAfter: access.attemptAllowed(now) ? null : state.retryAfter,
             allowances: access.allowances(now),
             origin: access.phase === 'active' ? 'https://' + access.certificateName : null,

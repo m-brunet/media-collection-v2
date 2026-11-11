@@ -5,23 +5,18 @@ import type {
 import type { VolumeState } from '../domain/value-objects/collection-coverage.value-object.js';
 import type { BookFilter } from '../../shared/application/book-filter.js';
 
-// Counts always describe the whole collection, whatever search found it.
-
 export interface CollectionSummaryView {
     id: string;
     name: string;
     includesVolumeZero: boolean;
     finished: boolean;
-    // Saved editions, not volumes.
     bookCount: number;
-    // The expected sequence: from 0 or 1 to the highest saved coverage.
     expectedFrom: number;
     expectedTo: number;
     expectedCount: number;
     ownedCount: number;
     missingCount: number;
     lastOwned: number | null;
-    // Up to two books whose covers stand for the collection.
     previews: CollectionPreviewView[];
 }
 
@@ -57,7 +52,6 @@ export interface CollectionDetailsView extends CollectionSummaryView {
 
 export interface CollectionListQuery {
     search: string;
-    // Book-level criteria; counts still describe whole collections.
     filter: BookFilter;
     direction: 'asc' | 'desc';
     offset: number;
@@ -89,7 +83,6 @@ export interface ShoppingCollectionView {
     lastOwned: number | null;
 }
 
-// One collection while shopping: the last Owned volume and the missing ones, in volume order.
 export interface CollectionShoppingView {
     id: string;
     name: string;

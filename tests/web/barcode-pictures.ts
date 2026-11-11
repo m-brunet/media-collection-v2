@@ -27,8 +27,6 @@ export class BarcodePictures {
             .toBuffer();
     }
 
-    // A one-frame YUV4MPEG2 video (640 × 480) of the barcode, written in `directory`, for
-    // `--use-file-for-fake-video-capture`.
     static async video(isbn: string, directory: string): Promise<string> {
         const width = 640;
         const height = 480;
@@ -36,7 +34,6 @@ export class BarcodePictures {
             create: { width, height, channels: 3, background: '#ffffff' },
         })
             .composite([{ input: await BarcodePictures.photo(isbn), gravity: 'centre' }])
-            // Three bytes per pixel, as the conversion below reads them.
             .removeAlpha()
             .raw()
             .toBuffer();
@@ -54,7 +51,6 @@ export class BarcodePictures {
         return path;
     }
 
-    // RGB to the planar 4:2:0 YUV of the video format (BT.601, full range).
     private static i420(rgb: Buffer, width: number, height: number): Buffer {
         const luma = Buffer.alloc(width * height);
         const chroma = (width / 2) * (height / 2);

@@ -139,7 +139,6 @@ it('asks about a similar receiver and reuses the one chosen', async () => {
     await userEvent.click(screen.getByRole('button', { name: 'Lend 1 book' }));
 
     expect(await screen.findByText('Elsewhere: /loans')).toBeInTheDocument();
-    // The receiver search started by typing may answer after the submission.
     expect(api.calls.filter((call) => call.route === 'POST /loans').at(-1)).toEqual({
         route: 'POST /loans',
         body: { receiver: { id: 'r-sam' }, bookIds: ['b1'] },
@@ -173,7 +172,6 @@ it('creates a distinct receiver once the person confirms a similar name is someo
     await userEvent.click(screen.getByRole('button', { name: 'Lend 1 book' }));
 
     expect(await screen.findByText('Elsewhere: /loans')).toBeInTheDocument();
-    // The receiver search started by typing may answer after the submission.
     expect(api.calls.filter((call) => call.route === 'POST /loans').at(-1)).toEqual({
         route: 'POST /loans',
         body: { receiver: { name: 'Sam Tayler', distinct: true }, bookIds: ['b1'] },

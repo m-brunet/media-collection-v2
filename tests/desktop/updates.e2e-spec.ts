@@ -71,19 +71,16 @@ function backups(directory: string) {
 
 async function healthy(base: string) {
     try {
-        // A request made while the server restarts may never be answered.
         const response = await fetch(new URL('/api/health', base), {
             signal: AbortSignal.timeout(1000),
         });
 
         return response.ok;
     } catch {
-        // The server is stopped or restarting: no answer is an expected outcome here.
         return false;
     }
 }
 
-// A desktop with an Admin account, so a backup has data to save, started again with `options`.
 async function desktopWithData(options: RuntimeOptions) {
     const first = await fixture.start(undefined, { main: true });
 
@@ -269,9 +266,7 @@ describe('Windows integrated update', () => {
             dialogAnswers: [1],
         });
 
-        // The startup offer, answered Later, comes first.
         await until(dialogs(current.runtime), (all) => all.length > 0);
-        // A file where the backup folder should be: the backup cannot be saved.
         writeFileSync(
             join(current.directory, 'test-documents', 'Media Collection backups'),
             'not a folder',

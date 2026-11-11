@@ -240,6 +240,5 @@ export function ScannedPage() {
         return <Navigate to="/" replace />;
     }
 
-    // A new scan starts a new lookup flow, with its own retry.
     return <Scanned key={location.key} isbn={state.isbn} />;
 }

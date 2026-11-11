@@ -1,7 +1,5 @@
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 
-// The books (or loans) chosen for one lending or return operation: at least one, each once.
-// The starting book is an ordinary member and may have been removed.
 export class Selection {
     private constructor(readonly ids: readonly string[]) {}
 

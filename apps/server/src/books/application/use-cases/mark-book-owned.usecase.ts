@@ -10,8 +10,6 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
-// Collection coverage needs no new check: a Not Owned book overlaps no other book of its
-// collection, and Owned editions may overlap.
 export class MarkBookOwned implements MarkBookOwnedUseCase {
     constructor(
         private readonly books: BookRepository,

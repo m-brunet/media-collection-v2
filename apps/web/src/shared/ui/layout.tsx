@@ -1,8 +1,6 @@
 import type { ReactNode } from 'react';
 import { useEffect, useRef } from 'react';
 
-// The heading receives focus on navigation so screen-reader users hear the
-// new page, as with a full page load.
 export function PageHeader({
     title,
     intro,

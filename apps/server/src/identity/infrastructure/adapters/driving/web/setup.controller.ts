@@ -14,9 +14,6 @@ const setupSchema = z.strictObject({
     password: z.string().min(8).max(128),
 });
 
-// First-launch creation of the protected administrator. Accepted only from the Media Collection
-// desktop window, so nobody else (another device, or a browser on the same computer) can claim
-// the library before its owner.
 @Controller('api/setup')
 export class SetupController {
     constructor(

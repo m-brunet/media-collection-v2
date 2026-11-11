@@ -140,7 +140,6 @@ const french: Record<DesktopTextKey, string> = {
     menuFullScreen: 'Plein écran',
 };
 
-// Every text drawn by the Electron main process: dialogs, menus and window titles.
 export class DesktopTexts {
     static readonly catalogue: Readonly<
         Record<DesktopLanguageCode, Readonly<Record<DesktopTextKey, string>>>
@@ -148,7 +147,6 @@ export class DesktopTexts {
 
     constructor(readonly language: DesktopLanguageCode) {}
 
-    // `{name}` placeholders take their value from `values`.
     text(key: DesktopTextKey, values: Record<string, string> = {}): string {
         return DesktopTexts.catalogue[this.language][key].replace(
             /\{(\w+)\}/g,

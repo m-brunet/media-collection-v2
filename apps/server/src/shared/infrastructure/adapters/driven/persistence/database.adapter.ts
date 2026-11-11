@@ -189,7 +189,6 @@ export class Database {
             sqlite.pragma('journal_mode = WAL');
             sqlite.pragma('busy_timeout = 5000');
         } catch (error) {
-            // A file that is not a database must not stay locked.
             sqlite.close();
 
             throw error;
@@ -219,7 +218,6 @@ export class Database {
         return existsSync(join(directory, 'application.sqlite'));
     }
 
-    // Existing storage only, never migrated: used by database-boundary tests.
     static openExisting(directory: string): Database {
         const file = join(directory, 'application.sqlite');
 
@@ -230,7 +228,6 @@ export class Database {
         return new Database(file);
     }
 
-    // True when every migration of this version has run, and no other.
     async isUpToDate(ids: IdGenerator): Promise<boolean> {
         const migrations = await new Migrator({
             db: this.connection,

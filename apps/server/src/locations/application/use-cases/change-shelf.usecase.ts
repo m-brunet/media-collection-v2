@@ -32,7 +32,6 @@ export class ChangeShelf implements ChangeShelfUseCase {
                 ActorAuthorization.requireLibraryEditor(actor);
                 const shelf = await this.loader.shelf(shelfId);
 
-                // Known only once the shelf is read, within the same transaction as the change.
                 if (
                     changes.bookcaseId !== undefined &&
                     changes.bookcaseId !== shelf.snapshot.bookcaseId

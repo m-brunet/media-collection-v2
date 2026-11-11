@@ -146,7 +146,6 @@ export class MemoryMembers implements CollectionMemberStore {
     }
 }
 
-// Search results are decided by each test; the real search is covered over SQLite.
 export class FixedBookSearch implements CollectionBookSearch {
     matches: string[] = [];
     readonly calls: { search: string; filter: BookFilter; readerId: string | null }[] = [];

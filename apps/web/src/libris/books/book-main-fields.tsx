@@ -34,20 +34,17 @@ export function BookMainFields({
     onCorrectAuthor,
     authorSpellings = [],
 }: {
-    // The book being edited, or null when adding one.
     book: BookDto | null;
     values: BookDraftValues;
     set: DraftFieldSetter;
     update(changes: Partial<BookDraftValues>): void;
     errorFor(field: BookField): string | undefined;
-    // Whether the account has a reading status (not a Guest).
     personal: boolean;
     existingBookId: string | null;
     find: { busy: boolean; retry: boolean; onFind(): void } | null;
     cover: CoverChoice;
     onCoverChange(choice: CoverChoice): void;
     onCorrectAuthor?(author: AuthorDto): void;
-    // The sources' spellings of existing authors a lookup filled in.
     authorSpellings?: AuthorSpellingDto[];
 }) {
     const { t } = useI18n();

@@ -4,17 +4,13 @@ import type { AvailableUpdate, UpdateSource } from './application-updates.servic
 import { ProjectLinks } from './project-links.util.js';
 
 export interface UpdateScript {
-    // The latest published version; `null` when the running one is the latest.
     latest: string | null;
     system: 'windows' | 'linux';
     failCheck?: boolean;
     failDownload?: boolean;
-    // How long the download takes, in milliseconds.
     downloadMs?: number;
 }
 
-// Updates without GitHub, for test launches (`APP_TEST_UPDATES`): the script says what the
-// releases contain. Installing quits the application, as the real installer does.
 export class ScriptedUpdateSource implements UpdateSource {
     readonly integratedInstall: boolean;
 

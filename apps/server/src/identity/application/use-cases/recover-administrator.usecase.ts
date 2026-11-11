@@ -6,7 +6,6 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { AccountAudit } from '../account-audit.js';
 
-// Run from local host maintenance, where no account acts: the audit actor stays null.
 export class RecoverAdministrator implements RecoverAdministratorUseCase {
     constructor(
         private readonly users: UserRepository,

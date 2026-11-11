@@ -7,8 +7,6 @@ export interface ReceiverState {
     createdAt: string;
 }
 
-// A person books are lent to, known only by a name or nickname. A receiver is not an account and
-// gets no permissions. Equivalent names are the same receiver.
 export class Receiver {
     private readonly state: ReceiverState;
 
@@ -24,7 +22,6 @@ export class Receiver {
         return { ...this.state };
     }
 
-    // Equal keys mean the same receiver: case, accents and outer spaces are ignored.
     get key(): string {
         return NameKey.of(this.state.name);
     }

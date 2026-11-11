@@ -1,7 +1,5 @@
 import type { ColorSchemeName } from '../../../../../packages/contracts/src/http';
 
-// The last scheme seen is remembered in
-// this browser so the next page load starts with the right colours instead of flashing.
 export class ColorSchemeDocument {
     static readonly names: readonly ColorSchemeName[] = [
         'spring-green',
@@ -20,9 +18,7 @@ export class ColorSchemeDocument {
 
         try {
             window.localStorage.setItem(ColorSchemeDocument.key, name);
-        } catch {
-            // Storage unavailable: the scheme still applies to this page.
-        }
+        } catch {}
     }
 
     static restore(): void {

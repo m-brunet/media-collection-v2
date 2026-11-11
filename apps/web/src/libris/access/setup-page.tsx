@@ -7,8 +7,6 @@ import { TextField } from '../../shared/ui/text-field';
 import { useAction } from '../../shared/use-action';
 import { AccessLayout } from './sign-in-page';
 
-// Only the computer running Media Collection may create the first administrator; other devices
-// are asked to wait.
 export function SetupPage() {
     const { t } = useI18n();
     const { setupAllowed, completeSetup } = useSession();

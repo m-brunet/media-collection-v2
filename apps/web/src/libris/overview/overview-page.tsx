@@ -47,7 +47,6 @@ function RecentBookCard({ book }: { book: RecentBook }) {
     );
 }
 
-// The counts are written out beside it, so the bar itself is decorative.
 function ReadingBar({ read, notRead }: { read: number; notRead: number }) {
     return (
         <div className="overview-reading__bar" aria-hidden="true">

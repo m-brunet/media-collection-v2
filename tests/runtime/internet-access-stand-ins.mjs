@@ -1,8 +1,5 @@
 import { generate } from 'selfsigned';
 
-// The router reports `externalAddress` (null: no router answers) and accepts the rule when
-// `accepts`. Every domain name points to `domainAddress` (default: the external address). The
-// certificate is self-signed for the address or name, valid 160 hours like a Let's Encrypt one.
 export class InternetAccessStandIns {
     static fromEnvironment(value) {
         if (!value) {

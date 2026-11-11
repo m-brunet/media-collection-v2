@@ -20,7 +20,6 @@ export interface LookupMessage {
     tone: 'info' | 'warning' | 'success';
     text: string;
     retry: boolean;
-    // Some or all lookup sources could not be reached.
     offline?: boolean;
 }
 
@@ -38,7 +37,6 @@ export function useBookLookup({
     cover: CoverChoice;
     setCover(choice: CoverChoice): void;
     openBook(bookId: string): void;
-    // Shows a refusal of the typed ISBN beside the field, or clears the form's error with null.
     showIsbnProblem(text: string | null): void;
     showAdditional(): void;
 }) {
@@ -47,7 +45,6 @@ export function useBookLookup({
     const [busy, setBusy] = useState(false);
     const [message, setMessage] = useState<LookupMessage | null>(null);
     const [review, setReview] = useState<LookedUpBook | null>(null);
-    // The sources' spellings of the existing authors the last used lookup filled in.
     const [spellings, setSpellings] = useState<AuthorSpellingDto[]>([]);
     const [replacing, setReplacing] = useState<{
         selection: LookupSelection;

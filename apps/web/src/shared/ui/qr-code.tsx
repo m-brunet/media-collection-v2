@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 
-// A QR code drawn on this computer (the address never leaves it), with the Libris mark in the
-// centre. The highest error correction (H, about 30 % recoverable) lets phones read the modules
-// the mark covers; the white margin around the code is the quiet zone scanners need.
 export function QrCode({ value, label }: { value: string; label: string }) {
     const [picture, setPicture] = useState<string | null>(null);
 

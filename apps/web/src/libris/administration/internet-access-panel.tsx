@@ -146,7 +146,6 @@ function HttpsInternetSection({
                 throw error;
             }
         });
-    // The server sends Let's Encrypt's date only while it is ahead.
     const blocked = status.retryAfter !== null;
     const checking = status.phase === 'active' && status.step !== null;
     const check = () =>
@@ -260,8 +259,6 @@ function HttpsInternetSection({
     );
 }
 
-// The estimate of what Let's Encrypt still allows, after a failure. At zero the button stays usable
-// (it is only an estimate) and says when an attempt is likely to work.
 function Allowances({
     status,
     allowances,

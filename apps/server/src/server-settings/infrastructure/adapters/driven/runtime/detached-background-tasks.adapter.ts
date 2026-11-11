@@ -1,7 +1,5 @@
 import type { BackgroundTasks } from '../../../../application/ports/driven/background-tasks.interface.js';
 
-// The work records its own outcome; an error here only means the outcome could not be saved,
-// and must not stop the server.
 export class DetachedBackgroundTasks implements BackgroundTasks {
     private readonly running = new Set<Promise<void>>();
 

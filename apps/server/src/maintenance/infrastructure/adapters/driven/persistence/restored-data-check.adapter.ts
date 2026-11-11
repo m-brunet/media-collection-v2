@@ -4,8 +4,6 @@ import { Database } from '../../../../../shared/infrastructure/adapters/driven/p
 import type { IdGenerator } from '../../../../../shared/application/ports/driven/id-generator.interface.js';
 import { Failure } from '../../../../../shared/domain/exceptions/failure.js';
 
-// Checks a restored data directory before it replaces the current one: the database opens with
-// exactly the current schema, has a protected Admin, and every book cover it names is present.
 export class RestoredDataCheck {
     constructor(private readonly ids: IdGenerator) {}
 

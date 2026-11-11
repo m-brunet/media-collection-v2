@@ -27,7 +27,6 @@ export class BackendProcess {
         this.process.stdout?.on('data', (chunk) => process.stdout.write(chunk));
         this.process.stderr?.on('data', (chunk) => process.stderr.write(chunk));
         this.process.on('message', (message: WorkerResponse | WorkerNotice) => {
-            // Notices are not answers: they must never settle a pending request.
             if (message.type === 'keep-awake') {
                 for (const listener of this.noticeListeners) {
                     listener(message);

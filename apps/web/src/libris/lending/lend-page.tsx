@@ -80,8 +80,6 @@ export function LendPage() {
     const [startMissing, setStartMissing] = useState(false);
     const [name, setName] = useState('');
     const [decision, setDecision] = useState<ReceiverDecision>({ kind: 'typed' });
-    // Suggestions and books found are kept with the text they answer, so an answer to an
-    // earlier text is never shown for the current one.
     const [suggested, setSuggested] = useState<{ key: string; receivers: ReceiverDto[] }>({
         key: '',
         receivers: [],

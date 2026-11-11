@@ -2,9 +2,6 @@ import type { DatabaseConnections } from '../../../../../shared/infrastructure/a
 
 export type ErasedLibrary = { books: number; authors: number; collections: number; loans: number };
 
-// Deletes the library tables' records and the audit log in foreign-key order, joining the
-// transaction in progress. Accounts and settings stay; every session ends through the accounts'
-// token versions.
 export class KyselyLibraryEraser {
     constructor(private readonly connections: DatabaseConnections) {}
 

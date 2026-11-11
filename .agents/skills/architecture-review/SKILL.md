@@ -64,7 +64,11 @@ then ask; do not invent a product requirement.
     test. Controller cases make one request in Act; assertions inspect its outcome only. Fixtures prepare prerequisites
     without hiding tested journeys. No routine try/catch in callbacks; necessary exceptions need a concrete inline
     justification. Prefer rejection/throw matchers and reliable hook/fixture cleanup.
-12. Controller API suites use the shared `tests/api/setup/test-app.ts` Nest TestingModule-backed application and
+12. Apply the `AGENTS.md` code-comment rule to changed files (production, tests, tools, CSS): every comment that
+    explains the code's own classes, methods, properties or blocks is a mandatory finding, corrected by removing it.
+    Only facts about an external service or system, `// Justified: …` notes on deliberately swallowed errors, and
+    tool directives may stay.
+13. Controller API suites use the shared `tests/api/setup/test-app.ts` Nest TestingModule-backed application and
     reusable `tests/api/fixtures` for persisted prerequisites. Verify production-equivalent
     middleware/guards/validation, real isolated SQLite, typed port access, session/CSRF preparation, ordered fixture
     loading, and cleanup after failure. Preserve actual Electron lifecycle tests and direct-construction core unit

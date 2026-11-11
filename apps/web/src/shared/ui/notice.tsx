@@ -11,7 +11,6 @@ const icons: Record<Tone, IconName> = {
     warning: 'info',
 };
 
-// The icon and wording carry the meaning, never the colour alone.
 export function Notice({
     tone = 'info',
     icon,

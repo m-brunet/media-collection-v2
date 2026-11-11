@@ -6,7 +6,6 @@ import { AccountAudit } from '../account-audit.js';
 import { AccountLoader } from '../services/account-loader.service.js';
 import { CurrentPasswordConfirmation } from '../services/current-password-confirmation.service.js';
 
-// An active rename releases the former username for reuse; history stays with the account identity.
 export class ChangeUsername implements ChangeUsernameUseCase {
     constructor(
         private readonly users: UserWriter,

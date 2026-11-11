@@ -10,15 +10,10 @@ export interface BookFilterCriteria {
     collections: { ids: string[]; none: boolean };
     locations: { bookcaseIds: string[]; shelfIds: string[]; none: boolean };
     ownerships: FilteredOwnership[];
-    // The reader's own status; only for a reader (never a Guest).
     reading: ('read' | 'unread')[];
     tags: { include: string[]; exclude: string[] };
 }
 
-// Advanced criteria on single books, shared by the book and collection listings. Different
-// fields combine with AND, the choices within a field with OR; an empty field does not restrict.
-// Every included tag must be present and any excluded tag rejects the book. `none` selects
-// books without a collection or location.
 export class BookFilter implements BookFilterCriteria {
     readonly categories: FilteredCategory[];
     readonly authorIds: string[];
@@ -38,7 +33,6 @@ export class BookFilter implements BookFilterCriteria {
         this.tags = criteria.tags;
     }
 
-    // The given criteria; every field left out keeps every book.
     static of(criteria: Partial<BookFilterCriteria> = {}): BookFilter {
         return new BookFilter({
             categories: criteria.categories ?? [],

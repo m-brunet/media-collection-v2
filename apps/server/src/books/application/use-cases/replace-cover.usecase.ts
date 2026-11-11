@@ -59,7 +59,6 @@ export class ReplaceCover implements ReplaceCoverUseCase {
 
             return view;
         } catch (error) {
-            // The new image is not referenced by any book after a failure.
             if (stored) {
                 await this.covers.remove(stored);
             }

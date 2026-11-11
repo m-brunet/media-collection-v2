@@ -23,7 +23,6 @@ export class Tag {
         return { ...this.state };
     }
 
-    // Equal keys mean the same tag: case, accents and outer spaces are ignored.
     get key(): string {
         return NameKey.of(this.state.name);
     }

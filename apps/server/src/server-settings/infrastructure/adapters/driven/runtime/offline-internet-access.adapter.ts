@@ -9,9 +9,6 @@ import type { RouterGateway } from '../../../../application/ports/driven/router-
 
 type OfflinePorts = RouterGateway & PublicAddressProbe & DomainNameResolver & CertificateAuthority;
 
-// Internet access without the internet, for test launches (`APP_OFFLINE_INTERNET_ACCESS=1`): no
-// router answers, no public address or DNS answer, and Let's Encrypt is never asked. No test can
-// then reach a real router, Let's Encrypt, the public address service or DNS.
 export class OfflineInternetAccess implements OfflinePorts {
     static adapters(): {
         router: RouterGateway;

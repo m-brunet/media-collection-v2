@@ -10,15 +10,12 @@ export interface ShoppingMember extends CoverageMember {
 
 export interface LastOwnedVolume {
     volume: number;
-    // Only for the Books category; Manga and Comics are known by their number.
     title: string | null;
 }
 
 export interface MissingVolume {
     volume: number;
-    // A saved Not Owned book covers it; otherwise the volume is only inferred.
     saved: boolean;
-    // The saved ordinary Not Owned book that may be marked Owned from the shopping view.
     quickAdd: { bookId: string; title: string } | null;
 }
 
@@ -27,8 +24,6 @@ export interface ShoppingList {
     missing: MissingVolume[];
 }
 
-// Quick add is offered only for a volume covered by exactly one saved single-volume Not Owned
-// book; inferred volumes, omnibus editions and ambiguous coverage need the full book entry.
 export class CollectionShopping {
     static of(coverage: CollectionCoverage, members: readonly ShoppingMember[]): ShoppingList {
         return {

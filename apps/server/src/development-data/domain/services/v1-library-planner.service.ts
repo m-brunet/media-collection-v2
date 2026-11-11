@@ -3,7 +3,6 @@ import { NameKey } from '../../../shared/domain/name-key.helper.js';
 
 export type V1Category = 'books' | 'manga' | 'comics';
 
-// `record` is its position in the dump, from 1.
 export interface V1Book {
     record: number;
     title: string | null;
@@ -19,12 +18,9 @@ export interface V1Book {
     price: number | null;
     publisher: string | null;
     cover: string | null;
-    // ISO 8601.
     created: string;
 }
 
-// Local corrections kept beside the dump: ISBNs missing in V1 (by record, its title checked) and
-// the category of every book of a collection.
 export interface V1Corrections {
     isbns: { record: number; title: string; isbn: string }[];
     categories: { collection: string; category: V1Category }[];
@@ -32,7 +28,6 @@ export interface V1Corrections {
 
 export interface PlannedBook {
     record: number;
-    // Blank: titled from the collection by the books import.
     title: string;
     isbn: string;
     authors: string[];
@@ -47,7 +42,6 @@ export interface PlannedBook {
     coverUrl: string | null;
 }
 
-// A collection whose V1 books mark a last volume, but which V2 cannot mark Finished.
 export interface UnfinishedCollection {
     name: string;
     lastVolume: number;
@@ -57,15 +51,12 @@ export interface UnfinishedCollection {
 
 export interface V1LibraryPlan {
     books: PlannedBook[];
-    // Collection names (as first written) to mark Finished once their books are saved.
     finished: string[];
     unfinished: UnfinishedCollection[];
 }
 
 const types: Record<string, V1Category> = { book: 'books', manga: 'manga', comics: 'comics' };
 
-// Every problem of the whole dump is reported at once, before anything is written, so the
-// corrections can be completed in one go.
 export class V1LibraryPlanner {
     static plan(books: readonly V1Book[], corrections: V1Corrections): V1LibraryPlan {
         const problems: string[] = [];
@@ -173,8 +164,6 @@ export class V1LibraryPlanner {
         };
     }
 
-    // `lastElement` marks the last volume of a finished series; the highest marked volume wins.
-    // V2 only marks a collection Finished when every volume up to it is present and Owned.
     private static completion(
         books: readonly V1Book[],
         planned: readonly PlannedBook[],

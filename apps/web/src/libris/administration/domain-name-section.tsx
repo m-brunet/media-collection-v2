@@ -29,7 +29,6 @@ export function DomainNameSection({
     const [feedback, setFeedback] = useState<{ tone: 'success' | 'error'; text: string } | null>(
         null,
     );
-    // Written as the server saves it, to tell whether the field holds anything new.
     const entered = value.trim().toLowerCase().replace(/\.$/, '');
     const canSave = entered !== '' && entered !== domainName;
     const canRemove = domainName !== null && !httpsOn;

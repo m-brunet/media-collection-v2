@@ -29,8 +29,6 @@ export interface MaintenanceStatus {
     hasData: boolean;
 }
 
-// Local host maintenance, run by the Electron worker while no HTTP listener is active. An
-// installation without a database stays without one, except for a restore.
 export class LocalMaintenance {
     private readonly ids = new UuidGenerator();
     private readonly clock = new SystemClock();

@@ -23,7 +23,6 @@ export class BookFormat {
         { sort: 'published', direction: 'asc', label: 'books.sort.publishedAsc' },
     ];
 
-    // Address of a saved cover; `version` (the book's last change) defeats stale caches.
     static cover(bookId: string, version: string): string {
         return '/api/books/' + bookId + '/cover?v=' + encodeURIComponent(version);
     }

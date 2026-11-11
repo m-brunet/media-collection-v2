@@ -4,7 +4,6 @@ export type LoanStatus = 'lent' | 'returned';
 
 export interface LoanState {
     id: string;
-    // Null once the book of a completed loan has been deleted; the title and ISBN then identify it.
     bookId: string | null;
     receiverId: string;
     status: LoanStatus;
@@ -22,8 +21,6 @@ export interface LendableBook {
     lentTo: string | null;
 }
 
-// One occurrence of a book handed to a receiver. Lending the same book again is a new loan, so
-// completed loans are kept as history. Lending changes nothing else about the book.
 export class Loan {
     private readonly state: LoanState;
 
@@ -37,14 +34,10 @@ export class Loan {
         this.state = { ...state };
     }
 
-    // An active loan has its book and no return date; a returned loan has a return date and may
-    // have outlived its book.
     static restore(state: LoanState): Loan {
         return new Loan(state);
     }
 
-    // Only Owned books without an active loan can be lent. Every offending book is named, and a lent
-    // book with its receiver, so the person can correct the whole selection at once.
     static ensureLendable(books: readonly LendableBook[]): void {
         const notOwned = books.filter((book) => book.ownership !== 'owned');
 
