@@ -108,7 +108,9 @@ cut into. "Covers are shown whole, never cropped" still holds for display.
 2. Visible organisation block: optional bookcase/shelf assignment and tags.
 3. Collapsed Additional information: publisher, publication date, summary, page count, and price. An 'Add a personal note' button reveals the note field. If the user's note already exists, opening this section shows it directly instead of the Add button.
 
-The reading status in the main block (Libris add and edit forms, Leaf add form) is the same toggle button as on the book details page (decided 2026-11-10): it shows the status, "Read" (pressed) or "Not read"; one press marks the book read, another unmarks it. The details page shows no separate status sentence. In a form it only changes the form's value, saved with the book; the default stays Not read.
+The reading status in the main block (Libris add and edit forms, Leaf add form) is the same toggle button as on the book details page (decided 2026-11-10): it shows the status, "Read" (pressed) or "Not read"; one press marks the book read, another unmarks it. The details page shows no separate status sentence.
+
+The category (Books, Manga, Comics) is a row of buttons in the same forms (decided 2026-11-10): all three are visible, the selected one has the pressed look, and pressing another selects it instead (a radio group: arrow keys move the choice, screen readers announce the "Category" group). Text labels for now; icons are studied separately. The Libris filters keep their list, which also offers "any". In a form it only changes the form's value, saved with the book; the default stays Not read.
 
 ## Personal notes and Guests
 

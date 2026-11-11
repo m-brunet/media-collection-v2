@@ -21,6 +21,7 @@ import { Icon } from '../../shared/ui/icon';
 import { SelectField } from '../../shared/ui/select-field';
 import { TextAreaField, TextField } from '../../shared/ui/text-field';
 import { ReadingField } from '../../shared/book-form/reading-toggle';
+import { ChoiceButtons } from '../../shared/ui/choice-buttons';
 import { LeafCoverField } from './leaf-cover-field';
 
 export interface LeafFieldsProps {
@@ -223,16 +224,14 @@ function MainFields(props: LeafFieldsProps) {
                 spellings={props.authorSpellings}
                 onChange={(authors) => set('authors', authors)}
             />
-            <SelectField
+            <ChoiceButtons
                 label={t('form.category')}
                 value={values.category}
-                options={BookFormat.categories.map((category) => ({
+                choices={BookFormat.categories.map((category) => ({
                     value: category,
                     label: t(BookFormat.category(category)),
                 }))}
-                onChange={(event) =>
-                    update({ category: event.target.value as BookDraftValues['category'] })
-                }
+                onChange={(category) => update({ category })}
             />
             <SelectField
                 label={t('form.ownership')}

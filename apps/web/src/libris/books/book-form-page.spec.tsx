@@ -747,7 +747,7 @@ it('lets a Manga in a collection be saved without title, named from it', async (
     await userEvent.type(await screen.findByLabelText(/^ISBN/), '0-306-40615-2');
     await userEvent.type(screen.getByRole('combobox', { name: 'Add author' }), 'Yukito Kishiro');
     await userEvent.keyboard('{Enter}');
-    await userEvent.selectOptions(screen.getByLabelText(/^Category/), 'manga');
+    await userEvent.click(screen.getByRole('radio', { name: 'Manga' }));
     await joinCollection('Gunnm', '3');
 
     await userEvent.click(saveButton());
@@ -759,7 +759,7 @@ it('lets a Manga in a collection be saved without title, named from it', async (
 it('explains that a Manga in a collection may leave its title empty', async () => {
     new FakeApi().signedIn(account());
     addPage();
-    await userEvent.selectOptions(await screen.findByLabelText(/^Category/), 'manga');
+    await userEvent.click(await screen.findByRole('radio', { name: 'Manga' }));
 
     await joinCollection('Gunnm', '3');
 
@@ -940,7 +940,7 @@ describe('Find book', () => {
 
         await userEvent.click(within(review).getByRole('button', { name: 'Use these values' }));
 
-        expect(screen.getByLabelText('Category')).toHaveValue('manga');
+        expect(screen.getByRole('radio', { name: 'Manga' })).toBeChecked();
     });
 
     const flipflops = lookedUp({
@@ -1033,7 +1033,7 @@ describe('Find book', () => {
             .on('POST /books/lookups', () => ({ status: 200, body: ewilan }));
 
         addPage();
-        await userEvent.selectOptions(await screen.findByLabelText('Category'), 'manga');
+        await userEvent.click(await screen.findByRole('radio', { name: 'Manga' }));
         await findBook();
         const review = await screen.findByRole('dialog', { name: 'Review the lookup result' });
         const keep = within(review).getByRole('radio', { name: 'Keep the generated title' });
