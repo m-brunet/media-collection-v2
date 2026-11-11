@@ -302,12 +302,12 @@ describe('GET /api/collections/:id/shopping', () => {
             ownedCount: 1,
             lastOwned: { volume: 1, title: 'Dune' },
             missing: [
-                { volume: 2, saved: false, quickAdd: null },
                 {
                     volume: 3,
                     saved: true,
                     quickAdd: { bookId: planned.id, title: 'Children of Dune' },
                 },
+                { volume: 2, saved: false, quickAdd: null },
             ],
         });
     });
@@ -322,8 +322,8 @@ describe('GET /api/collections/:id/shopping', () => {
         expect(response.status).toBe(200);
         expect(response.body.lastOwned).toBeNull();
         expect(response.body.missing).toEqual([
-            { volume: 1, saved: true, quickAdd: null },
             { volume: 2, saved: true, quickAdd: null },
+            { volume: 1, saved: true, quickAdd: null },
         ]);
     });
     it('refuses a Guest', async () => {
