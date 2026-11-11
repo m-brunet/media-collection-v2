@@ -65,6 +65,11 @@ export class LookupAnswer {
         );
     }
 
+    // The same answer naming other authors (an existing author's spelling of a name).
+    withAuthors(authors: readonly string[]): LookupAnswer {
+        return LookupAnswer.of({ ...this, authors });
+    }
+
     get empty(): boolean {
         return (
             !this.title &&

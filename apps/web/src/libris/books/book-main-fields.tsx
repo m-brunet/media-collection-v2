@@ -1,5 +1,10 @@
 import { Link } from 'react-router';
-import type { AuthorDto, BookDto } from '../../../../../packages/contracts/src/http';
+import type {
+    AuthorDto,
+    AuthorSpellingDto,
+    BookDto,
+} from '../../../../../packages/contracts/src/http';
+import { AuthorSpellingHints } from '../../shared/book-form/author-spelling-hints';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Button } from '../../shared/ui/button';
 import { Icon } from '../../shared/ui/icon';
@@ -27,6 +32,7 @@ export function BookMainFields({
     cover,
     onCoverChange,
     onCorrectAuthor,
+    authorSpellings = [],
 }: {
     // The book being edited, or null when adding one.
     book: BookDto | null;
@@ -41,6 +47,8 @@ export function BookMainFields({
     cover: CoverChoice;
     onCoverChange(choice: CoverChoice): void;
     onCorrectAuthor?(author: AuthorDto): void;
+    // The sources' spellings of existing authors a lookup filled in.
+    authorSpellings?: AuthorSpellingDto[];
 }) {
     const { t } = useI18n();
     const lentTo = book?.loan?.receiverName ?? null;
@@ -111,6 +119,11 @@ export function BookMainFields({
                         error={errorFor('authors')}
                         onChange={(authors) => set('authors', authors)}
                         onCorrect={onCorrectAuthor}
+                    />
+                    <AuthorSpellingHints
+                        authors={values.authors}
+                        spellings={authorSpellings}
+                        onChange={(authors) => set('authors', authors)}
                     />
                     <div className="book-form__row">
                         <SelectField

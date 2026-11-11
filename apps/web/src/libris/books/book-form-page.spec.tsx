@@ -827,6 +827,7 @@ describe('Find book', () => {
                 collection: [],
                 category: [],
             },
+            authorSpellings: [],
             covers: [],
             unavailable: [],
             ...overrides,
@@ -940,6 +941,38 @@ describe('Find book', () => {
         await userEvent.click(within(review).getByRole('button', { name: 'Use these values' }));
 
         expect(screen.getByLabelText('Category')).toHaveValue('manga');
+    });
+
+    const flipflops = lookedUp({
+        fields: { ...ewilanFields, authors: [{ value: ["Flipflop's"], sources: ['bnf'] }] },
+        authorSpellings: [{ name: "Flipflop's", spelling: 'Flipsflops', sources: ['bnf'] }],
+    });
+
+    async function useFlipflops() {
+        new FakeApi()
+            .signedIn(account())
+            .on('POST /books/lookups', () => ({ status: 200, body: flipflops }));
+        addPage();
+        await findBook();
+        const review = await screen.findByRole('dialog', { name: 'Review the lookup result' });
+
+        await userEvent.click(within(review).getByRole('button', { name: 'Use these values' }));
+    }
+
+    it("tells the source's spelling of an existing author it filled in", async () => {
+        await useFlipflops();
+
+        const hint = screen.getByText("BnF suggests: Flipsflops (instead of Flipflop's)");
+
+        expect(hint).toBeInTheDocument();
+    });
+
+    it("uses the source's spelling when chosen", async () => {
+        await useFlipflops();
+
+        await userEvent.click(screen.getByRole('button', { name: 'Use the spelling Flipsflops' }));
+
+        expect(screen.getByText('Flipsflops')).toBeInTheDocument();
     });
 
     it('uses an alternative value the person picks', async () => {

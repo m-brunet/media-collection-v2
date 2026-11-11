@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import type {
+    AuthorSpellingDto,
     BookcaseDto,
     BookLookupFieldsDto,
     LookupCoverDto,
 } from '../../../../../packages/contracts/src/http';
+import { AuthorSpellingHints } from '../../shared/book-form/author-spelling-hints';
 import type { BookDraftValues, DraftFieldSetter } from '../../shared/book-form/book-draft.util';
 import { BookDraft } from '../../shared/book-form/book-draft.util';
 import { BookFormat } from '../../shared/book-form/book-format.util';
@@ -25,6 +27,8 @@ export interface LeafFieldsProps {
     update(changes: Partial<BookDraftValues>): void;
     errorFor(field: BookField): string | undefined;
     lookup: BookLookupFieldsDto | null;
+    // The sources' spellings of existing authors the lookup filled in.
+    authorSpellings: AuthorSpellingDto[];
     covers: LookupCoverDto[];
     cover: CoverChoice;
     setCover(choice: CoverChoice): void;
@@ -206,6 +210,11 @@ function MainFields(props: LeafFieldsProps) {
                 }
             />
             <Alternatives field="authors" props={props} />
+            <AuthorSpellingHints
+                authors={values.authors}
+                spellings={props.authorSpellings}
+                onChange={(authors) => set('authors', authors)}
+            />
             <SelectField
                 label={t('form.category')}
                 value={values.category}

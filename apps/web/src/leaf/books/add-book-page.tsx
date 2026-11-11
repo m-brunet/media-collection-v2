@@ -149,6 +149,7 @@ function AddBookForm({ isbn, lookup, accountId, bookcases }: AddBookFormProps) {
                     update={update}
                     errorFor={errorFor}
                     lookup={lookup.fields}
+                    authorSpellings={lookup.authorSpellings}
                     covers={lookup.covers}
                     cover={cover}
                     setCover={(choice) => {

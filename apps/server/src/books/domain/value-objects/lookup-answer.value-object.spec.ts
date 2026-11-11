@@ -70,3 +70,11 @@ it('is not empty with a single usable value', () => {
 
     expect(answer.empty).toBe(false);
 });
+
+it('names other authors, keeping every other value', () => {
+    const answer = LookupAnswer.of({ title: "Darwin's Game", authors: ['Flipsflops'] });
+
+    const renamed = answer.withAuthors(["Flipflop's"]);
+
+    expect(renamed).toMatchObject({ title: "Darwin's Game", authors: ["Flipflop's"] });
+});
