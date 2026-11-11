@@ -7,6 +7,7 @@ import type { ElectronRuntime } from '../api/runtime.js';
 import { appVersion } from '../api/app-version.js';
 
 let fixture: RuntimeFixture;
+const windows = process.platform === 'win32';
 
 beforeEach(() => {
     fixture = new RuntimeFixture();
@@ -248,16 +249,19 @@ describe('desktop lifecycle and renderer', () => {
         expect((await client.call('/health')).status).toBe(200);
     });
 
-    it('closes the window with unsaved book changes once Leave without saving is chosen', async () => {
-        const current = await readyDesktop();
+    it.skipIf(windows)(
+        'closes the window with unsaved book changes once Leave without saving is chosen',
+        async () => {
+            const current = await readyDesktop();
 
-        await editUnsavedBook(current.runtime);
+            await editUnsavedBook(current.runtime);
 
-        await current.runtime.send({ type: 'close-window' });
-        const code = await Promise.race([current.runtime.exited, delay(10_000, 'still open')]);
+            await current.runtime.send({ type: 'close-window' });
+            const code = await Promise.race([current.runtime.exited, delay(10_000, 'still open')]);
 
-        expect(code).toBe(0);
-    });
+            expect(code).toBe(0);
+        },
+    );
 
     it('quits and stops HTTP with unsaved book changes once Leave without saving is chosen', async () => {
         const current = await readyDesktop();
@@ -304,6 +308,7 @@ interface MenuLabel {
     label: string;
     role?: string;
     enabled?: boolean;
+    checked?: boolean;
     type: string;
     submenu?: MenuLabel[];
 }
@@ -328,7 +333,7 @@ describe('application menu', () => {
 
         expect(menu.map((item) => item.label)).toEqual(['File', 'View', 'Maintenance']);
     });
-    it('offers About, Check for updates and Exit in the File menu', async () => {
+    it('offers About, Check for updates, Launch at startup on Windows and Exit in the File menu', async () => {
         const current = await setupPage();
 
         const menu = await menuLabels(current.runtime);
@@ -336,6 +341,7 @@ describe('application menu', () => {
         expect(menu[0]?.submenu?.map((item) => item.label)).toEqual([
             'About Media Collection',
             'Check for updates…',
+            ...(windows ? ['Launch at startup'] : []),
             '',
             'Exit',
         ]);
@@ -365,6 +371,7 @@ describe('application menu', () => {
         expect(menu[0]?.submenu?.map((item) => item.label)).toEqual([
             'À propos de Media Collection',
             'Rechercher des mises à jour…',
+            ...(windows ? ['Lancer au démarrage'] : []),
             '',
             'Quitter',
         ]);
@@ -408,6 +415,156 @@ describe('application menu', () => {
                 "document.querySelector('[name=username]').selectionStart",
             ),
         ).toBe(0);
+    });
+});
+
+interface TrayState {
+    menu: MenuLabel[] | null;
+    balloons: { title: string; content: string }[];
+}
+
+async function trayState(runtime: ElectronRuntime) {
+    return (await runtime.send({ type: 'tray' })).value as TrayState;
+}
+
+async function loginItem(runtime: ElectronRuntime) {
+    return (await runtime.send({ type: 'login-item' })).value;
+}
+
+function fileItem(menu: MenuLabel[], id: string) {
+    return menu[0]?.submenu?.find((item) => item.id === id);
+}
+
+describe.runIf(windows)('tray and launch at startup', () => {
+    it('offers Open Libris, Launch at startup and Quit in the tray menu', async () => {
+        const current = await setupPage();
+
+        const tray = await trayState(current.runtime);
+
+        expect(tray.menu?.map((item) => item.label)).toEqual([
+            'Open Libris',
+            'Launch at startup',
+            '',
+            'Quit',
+        ]);
+    });
+    it('labels the tray menu in French on a French device', async () => {
+        const current = await setupPage('fr-FR');
+
+        const tray = await trayState(current.runtime);
+
+        expect(tray.menu?.map((item) => item.label)).toEqual([
+            'Ouvrir Libris',
+            'Lancer au démarrage',
+            '',
+            'Quitter',
+        ]);
+    });
+    it('starts with launch at startup turned off', async () => {
+        const current = await setupPage();
+
+        const menu = await menuLabels(current.runtime);
+
+        expect(fileItem(menu, 'launch-at-startup')).toMatchObject({
+            type: 'checkbox',
+            checked: false,
+            enabled: true,
+        });
+        expect(await loginItem(current.runtime)).toMatchObject({ openAtLogin: false });
+    });
+    it('registers a hidden start at sign-in from File, Launch at startup', async () => {
+        const current = await setupPage();
+
+        await current.runtime.send({ type: 'menu', id: 'launch-at-startup' });
+
+        expect(await loginItem(current.runtime)).toEqual({
+            openAtLogin: true,
+            args: ['--hidden'],
+            name: 'Media Collection',
+        });
+    });
+    it('ticks Launch at startup in the tray once turned on from the File menu', async () => {
+        const current = await setupPage();
+
+        await current.runtime.send({ type: 'menu', id: 'launch-at-startup' });
+
+        const tray = await trayState(current.runtime);
+
+        expect(tray.menu?.find((item) => item.id === 'launch-at-startup')?.checked).toBe(true);
+    });
+    it('turns launch at startup off again from the tray', async () => {
+        const current = await setupPage();
+
+        await current.runtime.send({ type: 'menu', id: 'launch-at-startup' });
+
+        await current.runtime.send({ type: 'tray-menu', id: 'launch-at-startup' });
+
+        expect(await loginItem(current.runtime)).toMatchObject({ openAtLogin: false });
+        expect(fileItem(await menuLabels(current.runtime), 'launch-at-startup')?.checked).toBe(
+            false,
+        );
+    });
+    it('runs the server when started hidden at sign-in', async () => {
+        const current = await fixture.start(undefined, { main: true, arguments: ['--hidden'] });
+
+        const response = await current.client.call('/health');
+
+        expect(response.status).toBe(200);
+        expect((await trayState(current.runtime)).menu).not.toBeNull();
+    });
+    it('keeps the server running in the tray when the window is closed', async () => {
+        const current = await readyDesktop();
+
+        await current.runtime.send({ type: 'close-window' });
+        const code = await Promise.race([current.runtime.exited, delay(3_000, 'still open')]);
+
+        expect(code).toBe('still open');
+        expect((await current.client.call('/health')).status).toBe(200);
+    });
+    it('tells once that Media Collection keeps running when the window is first closed', async () => {
+        const current = await readyDesktop();
+
+        await current.runtime.send({ type: 'close-window' });
+        await current.runtime.send({ type: 'tray-click' });
+
+        await current.runtime.send({ type: 'close-window' });
+
+        expect((await trayState(current.runtime)).balloons).toEqual([
+            {
+                title: 'Media Collection',
+                content: 'Media Collection keeps running for Leaf. Quit from the tray icon.',
+            },
+        ]);
+    });
+    it('does not tell again after the application starts again', async () => {
+        const current = await readyDesktop();
+
+        await current.runtime.send({ type: 'close-window' });
+        const restarted = await fixture.restart(current, { main: true });
+
+        await restarted.runtime.send({ type: 'close-window' });
+
+        expect((await trayState(restarted.runtime)).balloons).toEqual([]);
+    });
+    it('keeps unsaved book changes without asking when the window is closed to the tray', async () => {
+        const current = await readyDesktop();
+
+        await editUnsavedBook(current.runtime);
+
+        await current.runtime.send({ type: 'close-window' });
+
+        expect((await current.runtime.send({ type: 'dialogs' })).value).toEqual([]);
+        expect(await evaluate(current.runtime, "document.querySelector('h1')?.textContent")).toBe(
+            'Add a book',
+        );
+    });
+    it('quits and stops HTTP from the tray Quit', async () => {
+        const current = await readyDesktop();
+
+        await current.runtime.send({ type: 'tray-menu', id: 'quit' });
+
+        expect(await current.runtime.exited).toBe(0);
+        await expect(current.client.call('/health')).rejects.toThrow();
     });
 });
 

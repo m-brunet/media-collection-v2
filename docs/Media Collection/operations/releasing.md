@@ -33,6 +33,9 @@ The builds are not code-signed.
   choose More info, then Run anyway. The installer asks for administrator rights (installation for all users, and
   the Windows Firewall rule that lets browsers and phones reach Media Collection). Updates installed from Media
   Collection itself are not stopped by SmartScreen.
+  The last page offers "Launch Media Collection when Windows starts" (unchecked on a first install; over an existing
+  installation it shows the current choice). Media Collection then starts hidden at sign-in, in the tray, so Leaf
+  works without opening Libris; File › Launch at startup or the tray menu change it later.
 - **Linux**: make the AppImage executable (`chmod +x Media-Collection-2.0.1.AppImage`) and start it. If a firewall is
   on, allow the HTTP port shown in Server settings (and the HTTPS port when internet access is used).
 

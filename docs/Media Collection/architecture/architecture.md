@@ -257,7 +257,14 @@ adapters. Only a normal launch (including `npm run dev`) uses the real ones.
 ## Runtime and packaging
 
 Normal startup waits for utility-process readiness before loading the web app. Ports, database failures and worker
-failures produce retry/quit choices. Closing the window quits on all platforms. Shutdown stops listeners, Nest and
+failures produce retry/quit choices. On Windows a tray icon (`DesktopTray`: Open Libris, Launch at startup, Quit) stays
+while the application runs: closing the Libris window hides it and keeps the server running for Leaf, with a one-time
+balloon (`TrayNotice`, a marker file in the Electron profile); tray Quit and File › Exit quit through `before-quit`.
+`BackgroundMode` holds these rules. Launch at startup is the per-user Windows Run entry `Media Collection` =
+`"<executable>" --hidden` (`LaunchAtStartup`, Electron's login item), written by the File menu, the tray and the
+installer's finish-page checkbox, and removed by a real uninstall (not by an update). `--hidden` keeps the window
+hidden on the first launch only; maintenance and development data commands never use it. On Linux closing the window
+quits, as before. Shutdown stops listeners, Nest and
 SQLite before terminating the worker; a timeout handles an unresponsive process. A per-data-directory Electron profile
 provides the single-instance lock, shared by normal and maintenance startup.
 

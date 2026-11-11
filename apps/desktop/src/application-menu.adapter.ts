@@ -2,6 +2,7 @@ import type { MenuItemConstructorOptions } from 'electron';
 import { Menu } from 'electron';
 import type { DesktopTexts } from './desktop-texts.util.js';
 import type { UpdateState } from './application-updates.service.js';
+import type { LaunchAtStartup } from './launch-at-startup.adapter.js';
 
 export type UpdateMenuState = UpdateState | { kind: 'off' };
 
@@ -9,12 +10,14 @@ export interface ApplicationMenuActions {
     openAbout(): void;
     updates(): void;
     openMaintenance(): void;
+    setLaunchAtStartup(enabled: boolean): void;
 }
 
 export class ApplicationMenu {
     constructor(
         private readonly texts: DesktopTexts,
         private readonly actions: ApplicationMenuActions,
+        private readonly startup: LaunchAtStartup | undefined,
     ) {}
 
     build(updates: UpdateMenuState): Menu {
@@ -32,6 +35,7 @@ export class ApplicationMenu {
                     click: () => this.actions.openAbout(),
                 },
                 this.updates(updates),
+                ...this.launchAtStartup(),
                 { type: 'separator' },
                 { id: 'exit', role: 'quit', label: this.texts.text('menuExit') },
             ],
@@ -54,6 +58,23 @@ export class ApplicationMenu {
             enabled: state.kind === 'idle' || state.kind === 'ready',
             click: () => this.actions.updates(),
         };
+    }
+
+    private launchAtStartup(): MenuItemConstructorOptions[] {
+        if (!this.startup) {
+            return [];
+        }
+
+        return [
+            {
+                id: 'launch-at-startup',
+                type: 'checkbox',
+                label: this.texts.text('menuLaunchAtStartup'),
+                checked: this.startup.enabled(),
+                enabled: this.startup.available,
+                click: (item) => this.actions.setLaunchAtStartup(item.checked),
+            },
+        ];
     }
 
     private view(): MenuItemConstructorOptions {

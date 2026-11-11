@@ -1,5 +1,6 @@
 import { app, BrowserWindow, dialog, Menu, shell } from 'electron';
 import type { UpdateSource } from './application-updates.service.js';
+import type { UpdateMenuState } from './application-menu.adapter.js';
 import { ApplicationUpdates } from './application-updates.service.js';
 import { ElectronUpdaterSource } from './electron-updater-source.adapter.js';
 import { ScriptedUpdateSource } from './scripted-update-source.adapter.js';
@@ -21,6 +22,10 @@ import { DesktopTexts } from './desktop-texts.util.js';
 import { ApplicationMenu } from './application-menu.adapter.js';
 import { BackupFolder } from './backup-folder.adapter.js';
 import { AboutWindow } from './about-window.adapter.js';
+import { BackgroundMode } from './background-mode.service.js';
+import { DesktopTray } from './desktop-tray.adapter.js';
+import { LaunchAtStartup } from './launch-at-startup.adapter.js';
+import { TrayNotice } from './tray-notice.adapter.js';
 
 const hiddenWindows = process.env.APP_HIDDEN_WINDOWS === '1';
 const directory = dirname(fileURLToPath(import.meta.url));
@@ -40,6 +45,20 @@ let window: BrowserWindow | undefined;
 let restarting = false;
 let maintaining = false;
 let quitRequested = false;
+let updateMenuState: UpdateMenuState = { kind: 'off' };
+let applicationMenu: ApplicationMenu | undefined;
+const windowsTray = process.platform === 'win32';
+const background = new BackgroundMode(windowsTray, process.argv.includes(LaunchAtStartup.argument));
+const launchAtStartup = windowsTray
+    ? new LaunchAtStartup(app.isPackaged || process.env.APP_TEST_LOGIN_ITEMS === '1')
+    : undefined;
+const tray = launchAtStartup
+    ? new DesktopTray(texts, windowIcon, launchAtStartup, {
+          open: () => showWindow(),
+          setLaunchAtStartup: (enabled) => setLaunchAtStartup(enabled),
+          quit: () => app.quit(),
+      })
+    : undefined;
 const setupSigner = new SetupRequestSigner();
 const keepAwake = new KeepAwake();
 const backupFolder = new BackupFolder(app.getPath('documents'));
@@ -105,10 +124,9 @@ if (!startupOptions) {
 
     void app.whenReady().then(() => maintain(dataDirectory, maintenance));
 } else {
-    app.on('second-instance', () => {
-        if (!hiddenWindows) {
-            window?.show();
-            window?.focus();
+    app.on('second-instance', (_event, argv) => {
+        if (!argv.includes(LaunchAtStartup.argument)) {
+            showWindow();
         }
     });
     app.on('window-all-closed', () => {
@@ -144,6 +162,7 @@ if (!startupOptions) {
             }
         })();
     });
+    app.on('will-quit', () => tray?.destroy());
     process.on('SIGTERM', () => app.quit());
     process.on('SIGINT', () => app.quit());
     void app.whenReady().then(async () => {
@@ -154,6 +173,8 @@ if (!startupOptions) {
                 await maintenanceWindow(options.dataDirectory).open();
                 app.quit();
             } else {
+                tray?.show();
+
                 const updates = applicationUpdates(options);
 
                 await launch(options);
@@ -238,9 +259,25 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
                 }
             });
             window.webContents.on('will-attach-webview', (event) => event.preventDefault());
+            window.on('session-end', () => {
+                quitRequested = true;
+            });
+            window.on('close', (event) => {
+                if (!background.keepsRunningOnClose(quitRequested || quitting)) {
+                    return;
+                }
+
+                event.preventDefault();
+                window?.hide();
+                notifyKeepsRunning();
+            });
             // A page with unsaved changes (the book form) blocks closing through `beforeunload`;
             // Electron shows no prompt of its own, so ask here. The answer must be synchronous.
             window.webContents.on('will-prevent-unload', (event) => {
+                if (!hiddenWindows) {
+                    window?.show();
+                }
+
                 const choice = dialog.showMessageBoxSync(window!, {
                     type: 'question',
                     title: texts.text('unsavedTitle'),
@@ -259,7 +296,7 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
             });
             await window.loadURL(url);
 
-            if (!hiddenWindows) {
+            if (background.revealsOnLaunch() && !hiddenWindows) {
                 window.show();
             }
 
@@ -370,14 +407,20 @@ function applicationUpdates(
         dataDirectory: options.dataDirectory,
         folder: backupFolder,
     });
-    const menu = new ApplicationMenu(texts, {
-        openAbout: () => void aboutWindow.open(window),
-        updates: () => void updates.chooseFromMenu(),
-        openMaintenance: () => void openMaintenance(options),
-    });
+
+    applicationMenu = new ApplicationMenu(
+        texts,
+        {
+            openAbout: () => void aboutWindow.open(window),
+            updates: () => void updates.chooseFromMenu(),
+            openMaintenance: () => void openMaintenance(options),
+            setLaunchAtStartup: (enabled) => setLaunchAtStartup(enabled),
+        },
+        launchAtStartup,
+    );
 
     if (!UpdateChannel.published && !scripted) {
-        Menu.setApplicationMenu(menu.build({ kind: 'off' }));
+        refreshMenus();
 
         return undefined;
     }
@@ -392,12 +435,47 @@ function applicationUpdates(
             startServer: () => startServerAfterUpdate(options),
             openPage: (address) => shell.openExternal(address),
         },
-        (state) => Menu.setApplicationMenu(menu.build(state)),
+        (state) => {
+            updateMenuState = state;
+            refreshMenus();
+        },
     );
 
-    Menu.setApplicationMenu(menu.build(updates.current()));
+    updateMenuState = updates.current();
+    refreshMenus();
 
     return updates;
+}
+
+function refreshMenus(): void {
+    if (applicationMenu) {
+        Menu.setApplicationMenu(applicationMenu.build(updateMenuState));
+    }
+
+    tray?.refresh();
+}
+
+function setLaunchAtStartup(enabled: boolean): void {
+    launchAtStartup?.set(enabled);
+    refreshMenus();
+}
+
+function showWindow(): void {
+    if (!window || window.isDestroyed() || maintaining || hiddenWindows) {
+        return;
+    }
+
+    window.show();
+    window.focus();
+}
+
+function notifyKeepsRunning(): void {
+    const notice = new TrayNotice(app.getPath('userData'));
+
+    if (notice.due()) {
+        tray?.notifyKeepsRunning();
+        notice.shown();
+    }
 }
 
 async function stopServerForUpdate(): Promise<void> {
