@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, Menu, powerSaveBlocker, shell } from 'electron';
+import { app, BrowserWindow, dialog, Menu, powerSaveBlocker, shell, Tray } from 'electron';
 import { fileURLToPath } from 'node:url';
 import { mkdirSync, readFileSync, unwatchFile, watchFile } from 'node:fs';
 import { join } from 'node:path';
@@ -90,8 +90,46 @@ powerSaveBlocker.stop = (id) => {
 };
 powerSaveBlocker.isStarted = (id) => blockers.has(id);
 
+// The login item is the person's real Windows Run key: tests keep it in memory instead.
+const loginItem = { openAtLogin: false, args: [], name: null };
+
+app.getLoginItemSettings = () => ({
+    openAtLogin: loginItem.openAtLogin,
+    executableWillLaunchAtLogin: loginItem.openAtLogin,
+    launchItems: [],
+    wasOpenedAtLogin: false,
+    status: 'not-registered',
+});
+app.setLoginItemSettings = (settings) => {
+    loginItem.openAtLogin = settings.openAtLogin === true;
+    loginItem.args = settings.args ?? [];
+    loginItem.name = settings.name ?? null;
+};
+
+const trayState = { tray: null, menu: null, balloons: [] };
+const setContextMenu = Tray.prototype.setContextMenu;
+
+Tray.prototype.setContextMenu = function (menu) {
+    trayState.tray = this;
+    trayState.menu = menu;
+    setContextMenu.call(this, menu);
+};
+Tray.prototype.displayBalloon = function (options) {
+    trayState.balloons.push({ title: options.title, content: options.content });
+};
+
 let requestId = 0;
 let window;
+const labels = (menu) =>
+    menu.items.map((item) => ({
+        id: item.id,
+        label: item.label,
+        role: item.role,
+        type: item.type,
+        enabled: item.enabled,
+        ...(item.type === 'checkbox' ? { checked: item.checked } : {}),
+        ...(item.submenu ? { submenu: labels(item.submenu) } : {}),
+    }));
 const send = (message, id = requestId) =>
     process.stdout.write(JSON.stringify({ ...message, requestId: id }) + '\n');
 
@@ -168,17 +206,23 @@ watchFile(process.env.APP_TEST_COMMAND_FILE, { interval: 20 }, async () => {
         } else if (request.type === 'dialogs') {
             reply({ type: 'dialogs', value: shown });
         } else if (request.type === 'menu-labels') {
-            const labels = (menu) =>
-                menu.items.map((item) => ({
-                    id: item.id,
-                    label: item.label,
-                    role: item.role,
-                    type: item.type,
-                    enabled: item.enabled,
-                    ...(item.submenu ? { submenu: labels(item.submenu) } : {}),
-                }));
-
             reply({ type: 'menu-labels', value: labels(Menu.getApplicationMenu()) });
+        } else if (request.type === 'tray') {
+            reply({
+                type: 'tray',
+                value: {
+                    menu: trayState.menu ? labels(trayState.menu) : null,
+                    balloons: trayState.balloons,
+                },
+            });
+        } else if (request.type === 'tray-menu') {
+            trayState.menu.getMenuItemById(request.id).click();
+            reply({ type: 'clicked' });
+        } else if (request.type === 'tray-click') {
+            trayState.tray.emit('click');
+            reply({ type: 'clicked' });
+        } else if (request.type === 'login-item') {
+            reply({ type: 'login-item', value: loginItem });
         } else if (request.type === 'windows') {
             reply({
                 type: 'windows',

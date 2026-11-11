@@ -5,6 +5,12 @@
 !include "nsDialogs.nsh"
 !include "LogicLib.nsh"
 
+; Windows starts the per-user Run entries at sign-in. The application writes the same value from
+; File > Launch at startup (Electron's login item), so both always agree.
+!define MC_RUN_KEY "Software\Microsoft\Windows\CurrentVersion\Run"
+!define MC_STARTUP_APPROVED_KEY "Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"
+!define MC_RUN_NAME "Media Collection"
+
 !macro customInstall
   ; Incoming connections from browsers and phones, on whatever HTTP and HTTPS ports are set, all
   ; protocols (the router discovery uses UDP), so Windows has no reason to ask:
@@ -14,6 +20,54 @@
   ; Opens local maintenance when the application cannot start (named in its recovery steps).
   CreateShortCut "$SMPROGRAMS\Media Collection maintenance.lnk" "$INSTDIR\${APP_EXECUTABLE_FILENAME}" "--maintenance" "$INSTDIR\${APP_EXECUTABLE_FILENAME}" 0
 !macroend
+
+!ifndef BUILD_UNINSTALLER
+  !macro customFinishPage
+    !define MUI_FINISHPAGE_RUN
+    !define MUI_FINISHPAGE_RUN_FUNCTION "StartApp"
+    !define MUI_FINISHPAGE_SHOWREADME ""
+    !define MUI_FINISHPAGE_SHOWREADME_TEXT "Launch Media Collection when Windows starts"
+    !define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
+    !define MUI_FINISHPAGE_SHOWREADME_FUNCTION "mcStartupChosen"
+    !define MUI_PAGE_CUSTOMFUNCTION_SHOW "mcStartupShow"
+    !define MUI_PAGE_CUSTOMFUNCTION_LEAVE "mcStartupLeave"
+    !insertmacro MUI_PAGE_FINISH
+
+    Function StartApp
+      ${if} ${isUpdated}
+        StrCpy $1 "--updated"
+      ${else}
+        StrCpy $1 ""
+      ${endif}
+      ${StdUtils.ExecShellAsUser} $0 "$launchLink" "open" "$1"
+    FunctionEnd
+
+    Function mcStartupShow
+      ${if} $LANGUAGE == 1036
+        ${NSD_SetText} $mui.FinishPage.ShowReadme "Lancer Media Collection au démarrage de Windows"
+      ${else}
+        ${NSD_SetText} $mui.FinishPage.ShowReadme "Launch Media Collection when Windows starts"
+      ${endif}
+      ReadRegStr $0 HKCU "${MC_RUN_KEY}" "${MC_RUN_NAME}"
+      ${if} $0 != ""
+        ${NSD_Check} $mui.FinishPage.ShowReadme
+      ${endif}
+    FunctionEnd
+
+    Function mcStartupLeave
+      ${NSD_GetState} $mui.FinishPage.ShowReadme $0
+      ${if} $0 == ${BST_CHECKED}
+        WriteRegStr HKCU "${MC_RUN_KEY}" "${MC_RUN_NAME}" '"$INSTDIR\${APP_EXECUTABLE_FILENAME}" --hidden'
+        DeleteRegValue HKCU "${MC_STARTUP_APPROVED_KEY}" "${MC_RUN_NAME}"
+      ${else}
+        DeleteRegValue HKCU "${MC_RUN_KEY}" "${MC_RUN_NAME}"
+      ${endif}
+    FunctionEnd
+
+    Function mcStartupChosen
+    FunctionEnd
+  !macroend
+!endif
 
 !ifdef BUILD_UNINSTALLER
   ; The application data (library, accounts, settings, certificates) stays by default, ready for a
@@ -68,6 +122,8 @@
   ; Only when the person ticked the box, never during an update. The data lives in the person's
   ; own application data folder (Electron's userData), not in the per-machine folders.
   ${ifNot} ${isUpdated}
+    DeleteRegValue HKCU "${MC_RUN_KEY}" "${MC_RUN_NAME}"
+    DeleteRegValue HKCU "${MC_STARTUP_APPROVED_KEY}" "${MC_RUN_NAME}"
     ${if} $mcDeleteData == ${BST_CHECKED}
       SetShellVarContext current
       RMDir /r "$APPDATA\Media Collection"

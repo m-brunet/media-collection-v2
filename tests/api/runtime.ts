@@ -35,6 +35,7 @@ export interface RuntimeOptions {
         downloadMs?: number;
     };
     dialogAnswers?: number[];
+    arguments?: string[];
 }
 
 export class ElectronRuntime {
@@ -75,6 +76,7 @@ export class ElectronRuntime {
                 ? JSON.stringify(options.dialogAnswers)
                 : undefined,
             APP_HIDDEN_WINDOWS: '1',
+            APP_TEST_LOGIN_ITEMS: '1',
             APP_OFFLINE_INTERNET_ACCESS: '1',
         };
 
@@ -101,6 +103,7 @@ export class ElectronRuntime {
                       '--host',
                       '0.0.0.0',
                       ...(options.maintenance ? ['--maintenance'] : []),
+                      ...(options.arguments ?? []),
                   ]
                 : [fileURLToPath(new URL('../runtime/harness.mjs', import.meta.url))],
             { env: environment, stdio: 'pipe' },
