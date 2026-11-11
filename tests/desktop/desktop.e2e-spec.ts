@@ -352,7 +352,7 @@ describe('application menu', () => {
             type: 'normal',
         });
     });
-    it('shows Check for updates disabled while the releases are not published', async () => {
+    it('shows Check for updates disabled outside a packaged application', async () => {
         const current = await setupPage();
 
         const menu = await menuLabels(current.runtime);

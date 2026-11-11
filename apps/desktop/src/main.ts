@@ -6,7 +6,6 @@ import { ElectronUpdaterSource } from './electron-updater-source.adapter.js';
 import { ScriptedUpdateSource } from './scripted-update-source.adapter.js';
 import { NativeUpdateDialogs } from './update-dialogs.adapter.js';
 import { UpdateBackup } from './update-backup.adapter.js';
-import { UpdateChannel } from './update-channel.util.js';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { mkdirSync } from 'node:fs';
@@ -393,9 +392,8 @@ function maintenanceWindow(dataDirectory: string): MaintenanceWindow {
     });
 }
 
-// The update flow from the File menu. Test launches script the releases (`APP_TEST_UPDATES`);
-// outside a packaged application electron-updater finds no release information. Until the releases
-// are published (UpdateChannel), only the menu is set up, with its update item disabled.
+// electron-updater reads the release information embedded in a packaged application only; test
+// launches script the releases instead (`APP_TEST_UPDATES`).
 function applicationUpdates(
     options: ReturnType<typeof DesktopConfigurationParser.parse>,
 ): ApplicationUpdates | undefined {
@@ -419,7 +417,7 @@ function applicationUpdates(
         launchAtStartup,
     );
 
-    if (!UpdateChannel.published && !scripted) {
+    if (!app.isPackaged && !scripted) {
         refreshMenus();
 
         return undefined;

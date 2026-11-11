@@ -2,8 +2,7 @@
 
 Status: done (2026-11-06), committed on `master`. Inserted at the user's request after Task 5.
 Global plan: [implementation plan](implementation-plan.md). Origin: optional review point 1 of
-[Task 5](task-05-lending.md) (duplicated API test helpers) and the user's reference to the welii test builders
-(`weliihq/welii`, `apps/backend/src/_tests_/builders`, `PureTestBuilder`).
+[Task 5](task-05-lending.md) (duplicated API test helpers) and the user's reference to test builders.
 
 ## Goal
 
@@ -11,14 +10,14 @@ Build valid domain entities for tests in one readable line, and save them when a
 way in unit tests (in-memory repositories) and API/persistence tests (SQLite). Builders only arrange preconditions:
 a test about a business rule still goes through the use case or the endpoint.
 
-## What we keep from welii, and what changes
+## What we keep from test builders, and what changes
 
 Kept:
 - Fluent builders: `with…` sets one property; `as…` sets several at once to reach a coherent state
   (`asReturned(date)`, `asPlanned()`), so arranged entities respect the entities' invariants by construction.
 - `build()` returns the entity without storing it; `buildAndSave(...)` stores it, creating missing parents first
   (a loan without a book or receiver gets default ones).
-- One entry point exposing every builder (welii's `PureTestBuilder`), here `TestLibrary`.
+- One entry point exposing every builder, here `TestLibrary`.
 
 Changed (decided with the user, 2026-11-06):
 - **Save through the application's repository ports, never raw inserts.** The repository's real mapping is reused, a
