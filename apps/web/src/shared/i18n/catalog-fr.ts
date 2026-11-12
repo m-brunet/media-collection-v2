@@ -904,6 +904,7 @@ export const fr = {
     'bookshelves.bookcasesMany': '{count} bibliothèques',
     'bookshelves.shelvesOne': '1 étagère',
     'bookshelves.shelvesMany': '{count} étagères',
+    'bookshelves.toggle': 'Étagères de {name}',
     'bookshelves.treeLabel': 'Bibliothèques et étagères',
     'bookshelves.noResults': 'Aucune bibliothèque ni étagère ne correspond à « {search} ».',
     'bookshelves.noShelf':

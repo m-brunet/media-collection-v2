@@ -25,6 +25,18 @@ Deleting a shelf unassigns its books without deleting the books. Deleting a book
 
 Only Owners/Admin manage locations and book assignments; Guests view them under the shared-library permission rules. A clickable visual representation of bookcases remains future scope; this hierarchy does not require that visual feature initially.
 
+### Bookshelves page list
+
+The Bookshelves page lists the bookcases beside the detail of the selected shelf or bookcase. The selection is kept in the address, so it survives a reload and a link.
+
+- Bookcases are collapsed: each shows only its name and shelf count until opened.
+- One bookcase is open at a time. Selecting a bookcase opens it and closes the others; the bookcase holding the selection (the selected bookcase, or the bookcase of the selected shelf) is the open one.
+- A chevron beside each bookcase opens or closes it without changing the selection. Opening one with its chevron closes the others.
+- Nothing is remembered: on arrival, only the bookcase holding the selection from the address is open.
+- While the search field is filled, every bookcase shown by the search is open, so the matching shelves are visible.
+- The list never grows taller than the page: it has its own scrollbar and the detail panel beside it stays in view. The shelves of a collapsed bookcase are out of the keyboard Tab order.
+- The Libris book form is not affected: it chooses a location with two short drop-downs, bookcase then shelf.
+
 ## Tags
 
 Tags are reusable and a book can have several. Owners/Admin can create tags directly while editing a book and manage them from a dedicated interface. Guests can view and filter by tags, but cannot manage tags or assignments.

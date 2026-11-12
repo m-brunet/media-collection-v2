@@ -865,6 +865,7 @@ export const en = {
     'bookshelves.bookcasesMany': '{count} bookcases',
     'bookshelves.shelvesOne': '1 shelf',
     'bookshelves.shelvesMany': '{count} shelves',
+    'bookshelves.toggle': 'Shelves of {name}',
     'bookshelves.treeLabel': 'Bookcases and shelves',
     'bookshelves.noResults': 'No bookcase or shelf matches “{search}”.',
     'bookshelves.noShelf': 'This bookcase has no shelf yet. Add one to assign books to it.',
