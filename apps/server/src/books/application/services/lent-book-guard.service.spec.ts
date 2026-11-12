@@ -34,3 +34,14 @@ it('lets a book through once its loan is no longer active', async () => {
 
     await expect(result).resolves.toBeUndefined();
 });
+
+it('tells a lent book apart from one that is not lent', async () => {
+    const loans = new MemoryLoans();
+    const guard = new LentBookGuard(loans);
+
+    loans.lend('dune');
+
+    const result = [await guard.isLent('dune'), await guard.isLent('piranesi')];
+
+    expect(result).toEqual([true, false]);
+});

@@ -214,6 +214,47 @@ export interface NewBookDto extends BookInputDto {
     read: boolean;
 }
 
+export interface BookBatchChangesDto {
+    category?: BookCategory;
+    ownership?: BookOwnership;
+    publisher?: string | null;
+    price?: string | null;
+    shelfId?: string | null;
+    tags?: { add: string[]; remove: string[] };
+    authors?: AuthorChoiceDto[];
+    read?: boolean;
+    generatedTitles?: true;
+}
+
+export interface BookBatchInputDto {
+    collectionId: string;
+    bookIds: string[];
+    preview: boolean;
+    changes: BookBatchChangesDto;
+}
+
+export interface BookBatchFieldsDto {
+    title?: string;
+    titleGenerated?: boolean;
+    category?: BookCategory;
+    ownership?: BookOwnership;
+    publisher?: string | null;
+    priceCents?: number | null;
+    authors?: string[];
+    location?: BookLocationDto | null;
+    tags?: BookTagDto[];
+    read?: boolean;
+}
+
+export type BookBatchSkipReason = 'book-lent' | 'possible-duplicate' | 'title-not-generated';
+
+export interface BookBatchDto {
+    collection: { id: string; name: string };
+    saved: boolean;
+    books: { id: string; title: string; before: BookBatchFieldsDto; after: BookBatchFieldsDto }[];
+    skipped: { id: string; title: string; reason: BookBatchSkipReason }[];
+}
+
 export interface PersonalNoteDto {
     text: string;
     updatedAt: string;

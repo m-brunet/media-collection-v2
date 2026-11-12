@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { ValueProviders } from '../../../shared/infrastructure/config/value-providers.helper.js';
 import type { BookLocationReader } from '../../../books/application/ports/driven/book-location-reader.interface.js';
 import type { ShelfAssignment } from '../../../books/application/ports/driven/shelf-assignment.interface.js';
+import type { ShelfLocator } from '../../../books/application/ports/driven/shelf-locator.interface.js';
 import type { BookShelfStore } from '../../application/ports/driven/book-shelf-store.interface.js';
 import type { BookcaseRepository } from '../../application/ports/driven/bookcase-repository.interface.js';
 import type { ShelfRepository } from '../../application/ports/driven/shelf-repository.interface.js';
@@ -191,7 +192,7 @@ export class LocationsModule {
         bookcases: BookcaseRepository,
         shelves: ShelfRepository,
         store: BookShelfStore,
-    ): ShelfAssignment & BookLocationReader {
+    ): ShelfAssignment & BookLocationReader & ShelfLocator {
         return new BookShelfAssignment(store, new LocationLoader(bookcases, shelves));
     }
 }

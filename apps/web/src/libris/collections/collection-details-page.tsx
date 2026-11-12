@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import type {
+    BookBatchDto,
     CollectionDetailsDto,
     CollectionMemberDto,
     CollectionReadingDto,
@@ -20,6 +21,8 @@ import { useAction } from '../../shared/use-action';
 import { BookCover } from '../books/book-cover';
 import { BookFormat } from '../../shared/book-form/book-format.util';
 import { ReadingToggle } from '../../shared/book-form/reading-toggle';
+import { CollectionBatchDialog } from './collection-batch-dialog';
+import { CollectionBatch } from './collection-batch.util';
 import { EditCollectionDialog } from './collection-dialogs';
 import { CollectionFormat } from './collection-format.util';
 
@@ -83,6 +86,70 @@ function VolumeEntry({ volume }: { volume: CollectionVolumeDto }) {
                 </ul>
             )}
         </li>
+    );
+}
+
+function BatchSelection({
+    collection,
+    selected,
+    onChange,
+    onEdit,
+    onCancel,
+}: {
+    collection: CollectionDetailsDto;
+    selected: string[];
+    onChange(selected: string[]): void;
+    onEdit(): void;
+    onCancel(): void;
+}) {
+    const { t } = useI18n();
+    const books = CollectionBatch.books(collection);
+    const toggle = (bookId: string, checked: boolean) =>
+        onChange(checked ? [...selected, bookId] : selected.filter((id) => id !== bookId));
+
+    return (
+        <Panel label={t('batch.selectTitle')} className="batch-selection">
+            <div className="actions">
+                <Button onClick={() => onChange(books.map((book) => book.id))}>
+                    {t('batch.selectAll')}
+                </Button>
+                <Button onClick={() => onChange(CollectionBatch.owned(collection))}>
+                    {t('batch.selectOwned')}
+                </Button>
+                <Button variant="ghost" onClick={onCancel}>
+                    {t('common.cancel')}
+                </Button>
+                <Button
+                    variant="primary"
+                    icon="edit"
+                    disabled={selected.length === 0}
+                    onClick={onEdit}
+                >
+                    {t(selected.length === 1 ? 'batch.editOne' : 'batch.editMany', {
+                        count: selected.length,
+                    })}
+                </Button>
+            </div>
+            <ul className="batch-selection__books" aria-label={t('collection.volumesLabel')}>
+                {books.map((book) => {
+                    const volumes = CollectionFormat.volumes(book.volumeFrom, book.volumeTo);
+
+                    return (
+                        <li key={book.id}>
+                            <label className="checkbox">
+                                <input
+                                    type="checkbox"
+                                    checked={selected.includes(book.id)}
+                                    onChange={(event) => toggle(book.id, event.target.checked)}
+                                />
+                                {t(volumes.key, volumes.values)} · {book.title} ·{' '}
+                                {t(BookFormat.ownership(book.ownership))}
+                            </label>
+                        </li>
+                    );
+                })}
+            </ul>
+        </Panel>
     );
 }
 
@@ -166,6 +233,10 @@ export function CollectionDetailsPage() {
     const [collection, setCollection] = useState<CollectionDetailsDto | null>(null);
     const [failure, setFailure] = useState<{ missing: boolean; text: string } | null>(null);
     const [editing, setEditing] = useState(false);
+    const [selected, setSelected] = useState<string[] | null>(null);
+    const [batchEditing, setBatchEditing] = useState(false);
+    const [batchSaved, setBatchSaved] = useState<number | null>(null);
+    const [version, setVersion] = useState(0);
     const action = useAction();
     const editor = account?.role !== 'guest';
 
@@ -185,7 +256,7 @@ export function CollectionDetailsPage() {
         return () => {
             current = false;
         };
-    }, [id, t]);
+    }, [id, t, version]);
 
     if (failure?.missing) {
         return (
@@ -209,6 +280,12 @@ export function CollectionDetailsPage() {
     const badge = CollectionFormat.badge(collection);
     const expected = CollectionFormat.expected(collection);
     const blocked = !collection.finished && collection.missingCount > 0;
+    const batchDone = (result: BookBatchDto) => {
+        setBatchEditing(false);
+        setSelected(null);
+        setBatchSaved(result.books.filter((book) => Object.keys(book.after).length > 0).length);
+        setVersion((current) => current + 1);
+    };
     const change = (path: 'finish' | 'reopen') =>
         void action.run(async () =>
             setCollection(
@@ -276,6 +353,16 @@ export function CollectionDetailsPage() {
                             <Button icon="edit" onClick={() => setEditing(true)}>
                                 {t('collection.edit')}
                             </Button>
+                            {selected === null && (
+                                <Button
+                                    onClick={() => {
+                                        setBatchSaved(null);
+                                        setSelected([]);
+                                    }}
+                                >
+                                    {t('batch.editSeveral')}
+                                </Button>
+                            )}
                             {collection.finished ? (
                                 <Button busy={action.busy} onClick={() => change('reopen')}>
                                     {t('collection.reopen')}
@@ -310,13 +397,38 @@ export function CollectionDetailsPage() {
                         {t('collection.finishUnavailable')}
                     </p>
                 )}
-                {editor && <ReadingPanel collection={collection} />}
-                <ul className="volume-list" aria-label={t('collection.volumesLabel')}>
-                    {collection.volumes.map((volume) => (
-                        <VolumeEntry key={volume.from} volume={volume} />
-                    ))}
-                </ul>
+                {batchSaved !== null && (
+                    <Notice tone="success">
+                        {t(batchSaved === 1 ? 'batch.savedOne' : 'batch.savedMany', {
+                            count: batchSaved,
+                        })}
+                    </Notice>
+                )}
+                {editor && <ReadingPanel key={version} collection={collection} />}
+                {editor && selected !== null ? (
+                    <BatchSelection
+                        collection={collection}
+                        selected={selected}
+                        onChange={setSelected}
+                        onEdit={() => setBatchEditing(true)}
+                        onCancel={() => setSelected(null)}
+                    />
+                ) : (
+                    <ul className="volume-list" aria-label={t('collection.volumesLabel')}>
+                        {collection.volumes.map((volume) => (
+                            <VolumeEntry key={volume.from} volume={volume} />
+                        ))}
+                    </ul>
+                )}
             </div>
+            {editor && batchEditing && selected && (
+                <CollectionBatchDialog
+                    collectionId={collection.id}
+                    bookIds={selected}
+                    onClose={() => setBatchEditing(false)}
+                    onSaved={batchDone}
+                />
+            )}
             {editor && (
                 <EditCollectionDialog
                     collection={collection}

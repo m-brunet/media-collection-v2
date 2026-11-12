@@ -142,6 +142,21 @@ operation. Nothing in it writes the audit log, which stays with `AuditedOperatio
 most recently added Owned books, bookcases and the viewer's own reading through `LibrarySummaryReader`; the use case
 `GetOverview` withholds every reading value from Guests.
 
+The batch edit of a collection's books (`POST /api/books/batch-edit`) is a books use case, `EditBooksInBatch`, because
+every change is a book change. The application service `BookBatchPlanner` plans the batch without writing anything: it
+checks through `BookCollectionReader` that every chosen book belongs to the collection, then reuses the book rules
+(`Book.edit`, `Book.useGeneratedTitle`, `LentBookGuard.isLent`, `BookIdentityCheck.hasPossibleDuplicate`, the current
+organisation and reading status) to return each book's changes or its skip reason. A preview returns that plan; a save
+resolves the authors (`AuthorResolver.resolve`, where the preview only matches them), plans again and applies the plan
+in one `AuditedOperation` through the existing writers (`BookRepository`, `CollectionMembership` for an ownership
+change, `BookOrganiser`, `ReadingStatusStore`). The planner names the new shelf and the added tags through two narrow
+ports declared by `books`: `ShelfLocator`, implemented by `BookShelfAssignment`, and `TagFinder`, implemented by
+`BookTagAssignment`, wired with the other assignment ports. The operation is recorded as
+`collection.books-batch-edited` (subject: the collection), with related `book.updated`, `book.organised` and
+`book.reading-status-changed` records per changed book and the collection changes caused by an ownership change.
+`collection.books-batch-edited` is not an Activity category: Activity shows the operation through its `book.updated`
+records.
+
 Generated titles cross the books/collections boundary the other way. `books` owns titles and their provenance
 (`BookDetails.titleGenerated`, the `GeneratedTitle` format `Name Vol. N` / `Name Vol. N–M`, the Manga/Comics eligibility and
 `title-required`); a blank title asks for generation. After a book save applies its membership, `GeneratedTitleSync`

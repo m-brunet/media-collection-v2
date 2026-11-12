@@ -111,6 +111,8 @@ Audit logs are required from the first release. Each user-initiated use-case act
 
 Each record stores its category, a separate Successful/Failed outcome, who performed the action, when it happened, and before/after values as applicable. Failed use-case actions are retained for technical investigation. The actor references the user table; Activity resolves the current username, including for older events after a rename. Password values are explicitly excluded from before/after data. Other credential redaction safeguards are listed in [decisions and open questions](decisions-and-open-questions.md).
 
+A batch edit from a collection page is one record on the collection (`collection.books-batch-edited`), with each changed book's changes recorded as related records of the same operation ([collections](collections.md#batch-edit)).
+
 Technical authentication events may be retained but never appear in Activity. Technical agents define event representation, failure persistence, credential redaction, and storage/privacy enforcement under the confirmed audit rules; these are not new user-facing product workflows. Failed events must not imply that attempted changes persisted. A raw audit viewer, history purging, undo, or restore-from-audit feature is not approved merely because audit data exists.
 
 ## Activity (business feature)

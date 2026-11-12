@@ -30,7 +30,7 @@ export class BookIdentityCheck {
                 );
             }
         } else if (!confirmDistinct) {
-            const candidates = await this.duplicates(details, bookId);
+            const candidates = await this.duplicates(details, [bookId]);
 
             if (candidates.length > 0) {
                 throw new Failure(
@@ -43,13 +43,23 @@ export class BookIdentityCheck {
         }
     }
 
-    private async duplicates(details: BookDetails, bookId: string): Promise<DuplicateCandidate[]> {
+    async hasPossibleDuplicate(
+        details: BookDetails,
+        ignoredBookIds: readonly string[],
+    ): Promise<boolean> {
+        return details.isbn === null && (await this.duplicates(details, ignoredBookIds)).length > 0;
+    }
+
+    private async duplicates(
+        details: BookDetails,
+        ignoredBookIds: readonly string[],
+    ): Promise<DuplicateCandidate[]> {
         const title = NameKey.of(details.title);
         const matches = (await this.books.listWithoutIsbn()).filter((book) => {
             const other = book.details;
 
             return (
-                book.id !== bookId &&
+                !ignoredBookIds.includes(book.id) &&
                 (NameKey.of(other.title) === title ||
                     NameKey.similar(other.title, details.title)) &&
                 other.authorIds.some((id) => details.authorIds.includes(id))

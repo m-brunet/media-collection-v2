@@ -12,12 +12,13 @@ import type {
     TagChoice,
     TagOutcome,
 } from '../../../books/application/ports/driven/tag-assignment.interface.js';
+import type { TagFinder } from '../../../books/application/ports/driven/tag-finder.interface.js';
 import type { RelatedChange } from '../../../shared/application/ports/driven/audit-entry.interface.js';
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 import type { IdGenerator } from '../../../shared/application/ports/driven/id-generator.interface.js';
 import { NameKey } from '../../../shared/domain/name-key.helper.js';
 
-export class BookTagAssignment implements TagAssignment, BookTagReader {
+export class BookTagAssignment implements TagAssignment, BookTagReader, TagFinder {
     constructor(
         private readonly tags: TagRepository,
         private readonly store: BookTagStore,
@@ -46,9 +47,13 @@ export class BookTagAssignment implements TagAssignment, BookTagReader {
     }
 
     async of(bookId: string): Promise<BookTag[]> {
+        return this.find(await this.store.tagsOf(bookId));
+    }
+
+    async find(tagIds: readonly string[]): Promise<BookTag[]> {
         const tags = [];
 
-        for (const tagId of await this.store.tagsOf(bookId)) {
+        for (const tagId of new Set(tagIds)) {
             tags.push(await this.loader.load(tagId));
         }
 

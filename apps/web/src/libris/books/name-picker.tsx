@@ -20,6 +20,7 @@ export function NamePicker<T extends NamedValue>({
     hint,
     error,
     required = false,
+    allowNew = true,
     placeholder,
     values,
     search,
@@ -34,6 +35,7 @@ export function NamePicker<T extends NamedValue>({
     hint?: string;
     error?: string;
     required?: boolean;
+    allowNew?: boolean;
     placeholder: string;
     values: T[];
     search(text: string): Promise<NamedChoice[]>;
@@ -60,7 +62,8 @@ export function NamePicker<T extends NamedValue>({
         ...suggestions
             .filter((choice) => !chosen.has(choice.id))
             .map((choice): Option => ({ kind: 'existing', found: choice })),
-        ...(typedKey &&
+        ...(allowNew &&
+        typedKey &&
         !chosenKeys.has(typedKey) &&
         !suggestions.some((choice) => BookDraft.nameKey(choice.name) === typedKey)
             ? [{ kind: 'new', name: typed.trim() } as Option]

@@ -67,4 +67,37 @@ describe('BookIdentityCheck', () => {
 
         await expect(result).resolves.toBeUndefined();
     });
+    it('tells a possible duplicate apart without refusing it', async () => {
+        const current = BookDoubles.library();
+
+        await BookDoubles.saved(current, noIsbn);
+        const details = await current.builder.build(
+            BookDoubles.input({ ...noIsbn, title: 'Piranessi' }),
+        );
+
+        const result = await current.identity.hasPossibleDuplicate(details, ['new']);
+
+        expect(result).toBe(true);
+    });
+    it('ignores the given books when telling a possible duplicate apart', async () => {
+        const current = BookDoubles.library();
+        const saved = await BookDoubles.saved(current, noIsbn);
+        const details = await current.builder.build(
+            BookDoubles.input({ ...noIsbn, title: 'Piranessi' }),
+        );
+
+        const result = await current.identity.hasPossibleDuplicate(details, ['new', saved.id]);
+
+        expect(result).toBe(false);
+    });
+    it('never reports a book with an ISBN as a possible duplicate', async () => {
+        const current = BookDoubles.library();
+
+        await BookDoubles.saved(current, noIsbn);
+        const details = await current.builder.build(BookDoubles.input({ title: 'Piranessi' }));
+
+        const result = await current.identity.hasPossibleDuplicate(details, ['new']);
+
+        expect(result).toBe(false);
+    });
 });
