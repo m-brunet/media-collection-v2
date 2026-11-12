@@ -1,9 +1,17 @@
 import { resolve } from 'node:path';
+import type { ConfigurationFileValues } from './configuration-file.adapter.js';
+
+export type PortSource = 'command-line' | 'environment' | 'config-file';
+
+export interface DefaultPorts {
+    http: number;
+    https: number;
+}
 
 export interface DesktopConfiguration {
     host: string;
     httpPort: number | undefined;
-    httpPortSource: 'command-line' | 'environment' | undefined;
+    httpPortSource: PortSource | undefined;
     dataDirectory: string;
     dataDirectoryOverridden: boolean;
     localMaintenance: boolean;
@@ -17,6 +25,7 @@ export class DesktopConfigurationParser {
         args: string[],
         environment: Record<string, string | undefined>,
         defaultDataDirectory: string,
+        file: ConfigurationFileValues = {},
     ): DesktopConfiguration {
         const localMaintenance = args.includes('--maintenance');
         const maintenance = this.maintenance(args);
@@ -25,29 +34,44 @@ export class DesktopConfigurationParser {
             throw new Error('Run local maintenance and development data commands separately.');
         }
 
-        const chosenDirectory = this.value(args, '--data-dir') ?? environment.APP_DATA_DIR;
+        const chosenDirectory =
+            this.value(args, '--data-dir') ?? environment.APP_DATA_DIR ?? file.dataDirectory;
         const cliPort = this.value(args, '--http-port');
         const rawPort = cliPort ?? environment.APP_HTTP_PORT;
-        const port = rawPort === undefined ? undefined : Number(rawPort);
+        const port = rawPort === undefined ? file.httpPort : Number(rawPort);
 
         if (port !== undefined && (!Number.isInteger(port) || port < 1024 || port > 65535)) {
             throw new Error('HTTP port must be an integer between 1024 and 65535.');
         }
 
         return {
-            host: this.value(args, '--host') ?? environment.APP_HOST ?? '0.0.0.0',
+            host: this.value(args, '--host') ?? environment.APP_HOST ?? file.host ?? '0.0.0.0',
             httpPort: port,
             httpPortSource:
                 cliPort !== undefined
                     ? 'command-line'
                     : rawPort !== undefined
                       ? 'environment'
-                      : undefined,
+                      : port !== undefined
+                        ? 'config-file'
+                        : undefined,
             dataDirectory: resolve(chosenDirectory ?? defaultDataDirectory),
             dataDirectoryOverridden: chosenDirectory !== undefined,
             localMaintenance,
             maintenance,
         };
+    }
+
+    static configurationPath(
+        args: string[],
+        environment: Record<string, string | undefined>,
+        defaultPath: string,
+    ): string {
+        return resolve(this.value(args, '--config') ?? environment.APP_CONFIG ?? defaultPath);
+    }
+
+    static defaultPorts(packaged: boolean): DefaultPorts {
+        return packaged ? { http: 34345, https: 34443 } : { http: 34346, https: 34444 };
     }
 
     private static maintenance(args: string[]): DevelopmentMaintenance | null {

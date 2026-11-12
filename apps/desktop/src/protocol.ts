@@ -10,7 +10,8 @@ export type WorkerRequest =
           dataDirectory: string;
           host: string;
           httpPort?: number;
-          httpPortSource?: 'command-line' | 'environment';
+          httpPortSource?: 'command-line' | 'environment' | 'config-file';
+          defaultPorts: { http: number; https: number };
           webDirectory: string;
           development: boolean;
           setupToken: string;

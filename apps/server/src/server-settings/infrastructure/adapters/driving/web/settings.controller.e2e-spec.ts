@@ -27,7 +27,7 @@ describe('GET /api/server-settings', () => {
         expect(response.status).toBe(200);
         expect(response.body.configured.tls).toEqual({
             enabled: false,
-            port: 3443,
+            port: 34443,
             hasCertificate: false,
         });
         expect(response.body.running.httpsPort).toBeNull();
@@ -69,7 +69,7 @@ describe('PUT /api/server-settings', () => {
         });
         const input = {
             enabled: true,
-            port: 3443,
+            port: 34443,
             chain: certificate.cert,
             key: certificate.private,
         };
@@ -79,7 +79,7 @@ describe('PUT /api/server-settings', () => {
         expect(response.status).toBe(200);
         expect(response.body.configured.tls).toEqual({
             enabled: true,
-            port: 3443,
+            port: 34443,
             hasCertificate: true,
         });
         expect(response.body.restartRequired).toBe(true);
@@ -105,7 +105,7 @@ describe('PUT /api/server-settings', () => {
 
         const response = await client.call<ServerStatus>('/server-settings', 'PUT', {
             enabled: false,
-            port: 3443,
+            port: 34443,
         });
 
         expect(response.status).toBe(401);
@@ -116,7 +116,7 @@ describe('PUT /api/server-settings', () => {
 
         const response = await client.call<ServerStatus>('/server-settings', 'PUT', {
             enabled: false,
-            port: 3443,
+            port: 34443,
         });
 
         expect(response.status).toBe(403);
@@ -126,7 +126,7 @@ describe('PUT /api/server-settings', () => {
 
         const response = await client.call<ServerStatus>('/server-settings', 'PUT', {
             enabled: false,
-            port: 3443,
+            port: 34443,
         });
 
         expect(response.status).toBe(403);
@@ -137,14 +137,14 @@ describe('PUT /api/server-settings', () => {
         const response = await client.call<ServerStatus>(
             '/server-settings',
             'PUT',
-            { enabled: false, port: 3443 },
+            { enabled: false, port: 34443 },
             { csrf: false },
         );
 
         expect(response.status).toBe(403);
     });
     it('rejects enabling TLS without a certificate', async () => {
-        const input = { enabled: true, port: 3443 };
+        const input = { enabled: true, port: 34443 };
         const client = await app.authenticatedClient(admin);
 
         const response = await client.call<ServerStatus>('/server-settings', 'PUT', input);
@@ -152,7 +152,7 @@ describe('PUT /api/server-settings', () => {
         expect(response.status).toBe(400);
         expect(await app.dependencies.tls.read()).toEqual({
             enabled: false,
-            port: 3443,
+            port: 34443,
             hasCertificate: false,
         });
     });
@@ -165,7 +165,7 @@ describe('PUT /api/server-settings', () => {
         expect(response.status).toBe(400);
         expect(await app.dependencies.tls.read()).toEqual({
             enabled: false,
-            port: 3443,
+            port: 34443,
             hasCertificate: false,
         });
     });
@@ -178,12 +178,12 @@ describe('PUT /api/server-settings', () => {
         expect(response.status).toBe(400);
         expect(await app.dependencies.tls.read()).toEqual({
             enabled: false,
-            port: 3443,
+            port: 34443,
             hasCertificate: false,
         });
     });
     it('rejects an invalid certificate pair', async () => {
-        const input = { enabled: true, port: 3443, chain: 'broken', key: 'broken' };
+        const input = { enabled: true, port: 34443, chain: 'broken', key: 'broken' };
         const client = await app.authenticatedClient(admin);
 
         const response = await client.call<ServerStatus>('/server-settings', 'PUT', input);
@@ -191,12 +191,12 @@ describe('PUT /api/server-settings', () => {
         expect(response.status).toBe(400);
         expect(await app.dependencies.tls.read()).toEqual({
             enabled: false,
-            port: 3443,
+            port: 34443,
             hasCertificate: false,
         });
     });
     it('rejects an incomplete certificate pair', async () => {
-        const input = { enabled: true, port: 3443, chain: 'broken' };
+        const input = { enabled: true, port: 34443, chain: 'broken' };
         const client = await app.authenticatedClient(admin);
 
         const response = await client.call<ServerStatus>('/server-settings', 'PUT', input);
@@ -204,7 +204,7 @@ describe('PUT /api/server-settings', () => {
         expect(response.status).toBe(400);
         expect(await app.dependencies.tls.read()).toEqual({
             enabled: false,
-            port: 3443,
+            port: 34443,
             hasCertificate: false,
         });
     });
@@ -222,7 +222,7 @@ describe('PUT /api/server-settings/http', () => {
         expect(response.body.configured.http).toEqual(input);
         expect(response.body.configured.tls).toEqual({
             enabled: false,
-            port: 3443,
+            port: 34443,
             hasCertificate: false,
         });
         expect(response.body.running.httpPort).toBe(runningPort);
@@ -474,7 +474,7 @@ describe('HTTPS listening port constraints', () => {
         const response = await client.call('/server-settings', 'PUT', input);
 
         expect(response.status).toBe(400);
-        expect((await app.dependencies.tls.read()).port).toBe(3443);
+        expect((await app.dependencies.tls.read()).port).toBe(34443);
     });
 
     it('rejects a fractional HTTPS port', async () => {
@@ -484,7 +484,7 @@ describe('HTTPS listening port constraints', () => {
         const response = await client.call('/server-settings', 'PUT', input);
 
         expect(response.status).toBe(400);
-        expect((await app.dependencies.tls.read()).port).toBe(3443);
+        expect((await app.dependencies.tls.read()).port).toBe(34443);
     });
 
     it('rejects enabled HTTPS on the configured HTTP port', async () => {
@@ -505,7 +505,7 @@ describe('HTTPS listening port constraints', () => {
         expect(response.text).toContain('different ports');
         expect(await app.dependencies.tls.read()).toEqual({
             enabled: false,
-            port: 3443,
+            port: 34443,
             hasCertificate: false,
         });
     });

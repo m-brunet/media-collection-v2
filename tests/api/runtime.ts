@@ -75,6 +75,7 @@ export class ElectronRuntime {
             APP_TEST_DIALOG_ANSWERS: options.dialogAnswers
                 ? JSON.stringify(options.dialogAnswers)
                 : undefined,
+            APP_CONFIG: join(dataDirectory, 'config.json'),
             APP_HIDDEN_WINDOWS: '1',
             APP_TEST_LOGIN_ITEMS: '1',
             APP_OFFLINE_INTERNET_ACCESS: '1',

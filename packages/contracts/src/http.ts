@@ -113,7 +113,10 @@ export interface ServerStatus {
         httpsPort: number | null;
         httpsError: string | null;
         addresses: string[];
-        httpPortOverride: { port: number; source: 'command-line' | 'environment' } | null;
+        httpPortOverride: {
+            port: number;
+            source: 'command-line' | 'environment' | 'config-file';
+        } | null;
     };
     restartRequired: boolean;
 }

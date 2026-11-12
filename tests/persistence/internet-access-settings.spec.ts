@@ -280,6 +280,33 @@ it('rejects saved HTTP internet access with an unknown phase', async () => {
 
     await expect(result).rejects.toThrow('known phase');
 });
+it('reads HTTPS as off on port 34443 when nothing was saved', async () => {
+    const { path, database } = await open();
+    const tls = new FileTlsStore(
+        database.connections,
+        path,
+        new PrivateStorage(),
+        new UuidGenerator(),
+    );
+
+    const settings = await tls.read();
+
+    expect(settings).toEqual({ enabled: false, port: 34443, hasCertificate: false });
+});
+it('reads HTTPS on the default port it is given when nothing was saved', async () => {
+    const { path, database } = await open();
+    const tls = new FileTlsStore(
+        database.connections,
+        path,
+        new PrivateStorage(),
+        new UuidGenerator(),
+        34444,
+    );
+
+    const settings = await tls.read();
+
+    expect(settings.port).toBe(34444);
+});
 it('reads no current certificate chain before a certificate is saved', async () => {
     const { path, database } = await open();
     const tls = new FileTlsStore(

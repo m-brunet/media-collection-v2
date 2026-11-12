@@ -733,3 +733,35 @@ it('puts the Libris mark in the centre of the QR code', async () => {
 
     expect(code.querySelector('.qr-code__mark img')).toHaveAttribute('src', '/libris.svg');
 });
+it('tells that config.json sets the running HTTP port', async () => {
+    const current = status();
+
+    administrator({
+        ...current,
+        running: { ...current.running, httpPortOverride: { port: 4000, source: 'config-file' } },
+    });
+
+    renderPage();
+
+    expect(
+        await screen.findByText(
+            'The httpPort setting of config.json is active on port 4000. Remove it from the file, then close and reopen the desktop application to use the saved port.',
+        ),
+    ).toBeInTheDocument();
+});
+it('tells that a command-line option sets the running HTTP port', async () => {
+    const current = status();
+
+    administrator({
+        ...current,
+        running: { ...current.running, httpPortOverride: { port: 4000, source: 'command-line' } },
+    });
+
+    renderPage();
+
+    expect(
+        await screen.findByText(
+            'A command-line port override is active on port 4000. Remove it, then close and reopen the desktop application to use the saved port.',
+        ),
+    ).toBeInTheDocument();
+});

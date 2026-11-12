@@ -179,6 +179,59 @@ describe('Electron-managed runtime integration', () => {
         });
     });
 
+    it('uses the HTTP port of config.json when the desktop has no CLI or environment port', async () => {
+        const current = await fixture.start();
+
+        await RuntimeSetup.administrator(current.client);
+        const savedPort = await RuntimeSetup.availablePort();
+        const filePort = await RuntimeSetup.availablePort();
+
+        await current.client.call('/server-settings/http', 'PUT', { port: savedPort });
+        await writeFile(
+            join(current.directory, 'config.json'),
+            JSON.stringify({ httpPort: filePort }),
+        );
+        const restarted = await fixture.restart(current, { main: true, port: null });
+
+        await restarted.client.login('admin', 'administrator-new-password');
+
+        const response = await restarted.client.call<ServerStatus>('/server-settings');
+
+        expect(restarted.ready.httpPort).toBe(filePort);
+        expect(response.body.configured.http.port).toBe(savedPort);
+        expect(response.body.running.httpPortOverride).toEqual({
+            port: filePort,
+            source: 'config-file',
+        });
+    });
+    it('reads the configuration file named with --config', async () => {
+        const directory = await fixture.directory();
+        const configuration = join(directory, 'chosen.json');
+        const filePort = await RuntimeSetup.availablePort();
+
+        await writeFile(configuration, JSON.stringify({ httpPort: filePort }));
+
+        const current = await fixture.start(undefined, {
+            main: true,
+            port: null,
+            arguments: ['--config', configuration],
+        });
+
+        expect(current.ready.httpPort).toBe(filePort);
+    });
+    it('refuses to start with an unknown setting in config.json', async () => {
+        const directory = await fixture.directory();
+
+        await writeFile(join(directory, 'config.json'), JSON.stringify({ httpport: 4000 }));
+
+        const failed = fixture.launch(directory, { main: true, port: null });
+
+        await expect(failed.ready).rejects.toThrow(
+            'Invalid application configuration: ' +
+                join(directory, 'config.json') +
+                ': unknown setting "httpport".',
+        );
+    });
     it('keeps HTTP available and shows a legacy privileged HTTPS port for correction', async () => {
         const current = await fixture.start();
 

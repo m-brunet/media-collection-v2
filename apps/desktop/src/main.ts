@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { mkdirSync } from 'node:fs';
 import type { DevelopmentMaintenance } from './configuration.util.js';
 import { DesktopConfigurationParser } from './configuration.util.js';
+import { ConfigurationFile } from './configuration-file.adapter.js';
 import { DevelopmentDataGuard } from './development-data-guard.util.js';
 import { BackendProcess } from './backend-process.adapter.js';
 import { SetupRequestSigner } from './setup-request-signer.adapter.js';
@@ -47,6 +48,7 @@ let maintaining = false;
 let quitRequested = false;
 let updateMenuState: UpdateMenuState = { kind: 'off' };
 let applicationMenu: ApplicationMenu | undefined;
+let configurationFile: ConfigurationFile | undefined;
 const windowsTray = process.platform === 'win32';
 const background = new BackgroundMode(windowsTray, process.argv.includes(LaunchAtStartup.argument));
 const launchAtStartup = windowsTray
@@ -81,13 +83,23 @@ const commandLine = process.argv.some(
 );
 const startupOptions = (() => {
     try {
+        const args = process.argv.slice(1);
         const defaultData = app.isPackaged
             ? app.getPath('userData')
             : join(app.getAppPath(), DevelopmentDataGuard.directoryName);
+
+        configurationFile = new ConfigurationFile(
+            DesktopConfigurationParser.configurationPath(
+                args,
+                process.env,
+                join(app.isPackaged ? app.getPath('userData') : app.getAppPath(), 'config.json'),
+            ),
+        );
         const options = DesktopConfigurationParser.parse(
-            process.argv.slice(1),
+            args,
             process.env,
             defaultData,
+            configurationFile.read(),
         );
 
         if (options.maintenance) {
@@ -218,6 +230,7 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
                 ...options,
                 webDirectory: join(directory, '../../web'),
                 development: !app.isPackaged,
+                defaultPorts: DesktopConfigurationParser.defaultPorts(app.isPackaged),
                 setupToken: setupSigner.secret,
             });
 
@@ -419,6 +432,7 @@ function applicationUpdates(
             openAbout: () => void aboutWindow.open(window),
             updates: () => void updates.chooseFromMenu(),
             openMaintenance: () => void openMaintenance(options),
+            openConfiguration: () => void openConfiguration(),
             setLaunchAtStartup: (enabled) => setLaunchAtStartup(enabled),
         },
         launchAtStartup,
@@ -513,6 +527,32 @@ function openCredits(): void {
         window.show();
         window.focus();
     }
+}
+
+async function openConfiguration(): Promise<void> {
+    const file = configurationFile!;
+    let failure: string;
+
+    try {
+        file.ensure();
+        failure = await shell.openPath(file.path);
+    } catch (error) {
+        failure = error instanceof Error ? error.message : String(error);
+    }
+
+    if (failure) {
+        dialog.showErrorBox(texts.text('configurationOpenFailed'), failure);
+
+        return;
+    }
+
+    await dialog.showMessageBox({
+        type: 'info',
+        title: texts.text('configurationOpenedTitle'),
+        message: texts.text('configurationOpenedMessage'),
+        detail: file.path,
+        buttons: [texts.text('ok')],
+    });
 }
 
 async function openMaintenance(

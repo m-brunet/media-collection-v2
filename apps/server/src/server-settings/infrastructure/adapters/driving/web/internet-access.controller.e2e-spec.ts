@@ -63,7 +63,7 @@ describe('POST /api/server-settings/internet-access', () => {
         });
 
         await app.dependencies.tls.save(
-            new TlsSettings({ enabled: true, port: 3443, hasCertificate: true }),
+            new TlsSettings({ enabled: true, port: 34443, hasCertificate: true }),
             { chain: certificate.cert, key: certificate.private },
         );
 
@@ -78,7 +78,7 @@ describe('POST /api/server-settings/internet-access', () => {
         const client = await app.authenticatedClient(admin);
 
         await app.dependencies.tls.save(
-            new TlsSettings({ enabled: false, port: 3443, hasCertificate: true }),
+            new TlsSettings({ enabled: false, port: 34443, hasCertificate: true }),
             { chain: 'saved', key: 'saved' },
         );
 
@@ -162,8 +162,8 @@ describe('GET /api/server-settings after a setup', () => {
             response.body.configured.tls,
             app.dependencies.internetAccess.https.installed,
         ]).toEqual([
-            { enabled: true, port: 3443, hasCertificate: true },
-            [{ port: 3443, chain: 'chain for ' + publicAddress }],
+            { enabled: true, port: 34443, hasCertificate: true },
+            [{ port: 34443, chain: 'chain for ' + publicAddress }],
         ]);
     });
     it('gives the manual router rule when the router refuses the port', async () => {
@@ -181,7 +181,7 @@ describe('GET /api/server-settings after a setup', () => {
             'waiting-for-port',
             {
                 localAddress: '192.168.1.99',
-                internalPort: 3443,
+                internalPort: 34443,
                 externalPort: 443,
                 protocol: 'TCP',
             },
@@ -329,7 +329,7 @@ describe('DELETE /api/server-settings/internet-access', () => {
             response.status,
             response.body.phase,
             app.dependencies.internetAccess.router.closed,
-        ]).toEqual([200, 'off', [{ externalPort: 443, internalPort: 3443 }]]);
+        ]).toEqual([200, 'off', [{ externalPort: 443, internalPort: 34443 }]]);
     });
     it('records the change in the technical audit log', async () => {
         const client = await app.authenticatedClient(admin);
@@ -361,7 +361,7 @@ describe('PUT /api/server-settings while internet access is on', () => {
 
         const response = await client.call('/server-settings', 'PUT', {
             enabled: false,
-            port: 3443,
+            port: 34443,
         });
 
         expect([response.status, response.body]).toEqual([

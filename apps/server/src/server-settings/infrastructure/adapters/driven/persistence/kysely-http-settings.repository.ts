@@ -7,6 +7,7 @@ export class KyselyHttpSettingsRepository implements HttpSettingsStore {
     constructor(
         private readonly connections: DatabaseConnections,
         private readonly ids: IdGenerator,
+        private readonly defaultPort = 34345,
     ) {}
 
     private get db() {
@@ -21,7 +22,7 @@ export class KyselyHttpSettingsRepository implements HttpSettingsStore {
             .executeTakeFirst();
 
         if (!row) {
-            return new HttpSettings(34345);
+            return new HttpSettings(this.defaultPort);
         }
 
         const value: unknown = JSON.parse(row.value);

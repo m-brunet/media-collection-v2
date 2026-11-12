@@ -95,6 +95,8 @@ export const fr = {
         'Un port imposé en ligne de commande est actif sur le port {port}. Retirez-le, puis fermez et rouvrez l’application de bureau pour utiliser le port enregistré.',
     'server.overrideEnvironment':
         'Un port imposé par l’environnement de démarrage est actif sur le port {port}. Retirez-le, puis fermez et rouvrez l’application de bureau pour utiliser le port enregistré.',
+    'server.overrideConfigFile':
+        'Le réglage httpPort de config.json est actif sur le port {port}. Retirez-le du fichier, puis fermez et rouvrez l’application de bureau pour utiliser le port enregistré.',
     'server.httpPort': 'Port HTTP',
     'server.portRule': 'Choisissez un nombre entier de 1024 à 65535.',
     'server.nextAddresses': 'Adresses après application du port HTTP enregistré :',
