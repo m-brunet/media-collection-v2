@@ -30,7 +30,7 @@ The authenticated data reset in Admin settings is the explicit retention excepti
 
 ## Personal reading status and notes
 
-Owners/Admin have personal Read/Not read state and at most one optional private free-text note per book. Notes are author-only, including against other Owners/Admin. Creation, form placement, and note deletion are defined in [book entry](book-entry.md).
+Owners/Admin have personal Read/Not read state and at most one optional private free-text note per book. Notes are author-only, including against other Owners/Admin. Creation, form placement, and note deletion are defined in [book entry](book-entry.md). A collection's details page can also mark every Owned book of the collection read or not read at once, for the signed-in account only ([collections](collections.md#reading-a-whole-collection)).
 
 A new Owner starts with every existing book Not read. Newly added books start Not read independently for every Owner/Admin. One account's change never changes another's state. Guests have no personal reading feature. Roles never change, so no reading/notes migration between roles is required.
 

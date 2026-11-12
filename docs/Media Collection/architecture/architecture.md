@@ -110,6 +110,9 @@ the collection rules — name matching, volume 0, coverage overlap, planned-book
 empty collections — in the same transaction) and `BookCollectionReader` for the views and audit snapshots that only
 read a book's membership. `collections` declares `CollectionBookSearch`, implemented by the books catalog,
 so collection listings reuse the book search. The application root wires both (`CollectionsModule.membership`).
+`books` also declares `CollectionOwnedBooks`, implemented by the collections application service
+`OwnedCollectionBooks` (`CollectionsModule.ownedBooks`): it lists a collection's Owned books so the books feature can
+read and set the personal reading status of a whole collection without reading collection storage.
 
 An operation that changes another feature's subject as a consequence records that change too: the membership port
 returns the collection changes it caused (`collection.created`, `collection.updated` for volume 0,

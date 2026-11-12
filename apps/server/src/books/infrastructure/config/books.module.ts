@@ -5,6 +5,7 @@ import type { AuthorRepository } from '../../application/ports/driven/author-rep
 import type { BookCatalog } from '../../application/ports/driven/book-catalog.interface.js';
 import type { BookCollectionReader } from '../../application/ports/driven/book-collection-reader.interface.js';
 import type { BookRepository } from '../../application/ports/driven/book-repository.interface.js';
+import type { CollectionOwnedBooks } from '../../application/ports/driven/collection-owned-books.interface.js';
 import type { CollectionMembership } from '../../application/ports/driven/collection-membership.interface.js';
 import type { CoverStorage } from '../../application/ports/driven/cover-storage.interface.js';
 import type { CoverTrimmer } from '../../application/ports/driven/cover-trimmer.interface.js';
@@ -44,6 +45,8 @@ import { ReadCover } from '../../application/use-cases/read-cover.usecase.js';
 import { RemoveCover } from '../../application/use-cases/remove-cover.usecase.js';
 import { ReplaceCover } from '../../application/use-cases/replace-cover.usecase.js';
 import { SavePersonalNote } from '../../application/use-cases/save-personal-note.usecase.js';
+import { GetCollectionReading } from '../../application/use-cases/get-collection-reading.usecase.js';
+import { SetCollectionReading } from '../../application/use-cases/set-collection-reading.usecase.js';
 import { SetReadingStatus } from '../../application/use-cases/set-reading-status.usecase.js';
 import { UpdateBook } from '../../application/use-cases/update-book.usecase.js';
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
@@ -52,6 +55,7 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import { AuthorsController } from '../adapters/driving/web/authors.controller.js';
 import { BooksController } from '../adapters/driving/web/books.controller.js';
 import { CoversController } from '../adapters/driving/web/covers.controller.js';
+import { CollectionReadingController } from '../adapters/driving/web/collection-reading.controller.js';
 import { PersonalReadingController } from '../adapters/driving/web/personal-reading.controller.js';
 import type { LookupSource } from '../../application/ports/driven/lookup-source.interface.js';
 import type { CoverDownloader } from '../../application/ports/driven/cover-downloader.interface.js';
@@ -89,6 +93,7 @@ export interface BooksDependencies {
     covers: CoverStorage;
     collections: CollectionMembership;
     collectionReader: BookCollectionReader;
+    collectionBooks: CollectionOwnedBooks;
     shelves: ShelfAssignment;
     locationReader: BookLocationReader;
     tags: TagAssignment;
@@ -110,6 +115,7 @@ const token = {
     covers: 'BOOKS_COVER_STORAGE',
     collections: 'BOOKS_COLLECTION_MEMBERSHIP',
     collectionReader: 'BOOKS_COLLECTION_READER',
+    collectionBooks: 'BOOKS_COLLECTION_OWNED_BOOKS',
     shelves: 'BOOKS_SHELF_ASSIGNMENT',
     locationReader: 'BOOKS_LOCATION_READER',
     tags: 'BOOKS_TAG_ASSIGNMENT',
@@ -495,6 +501,21 @@ const useCaseProviders: Provider[] = [
         ) => new SetReadingStatus(readings, loader, operations),
     },
     {
+        provide: 'BOOKS_GET_COLLECTION_READING',
+        inject: [token.collectionBooks, token.readings],
+        useFactory: (collectionBooks: CollectionOwnedBooks, readings: ReadingStatusStore) =>
+            new GetCollectionReading(collectionBooks, readings),
+    },
+    {
+        provide: 'BOOKS_SET_COLLECTION_READING',
+        inject: [token.collectionBooks, token.readings, token.operations],
+        useFactory: (
+            collectionBooks: CollectionOwnedBooks,
+            readings: ReadingStatusStore,
+            operations: AuditedOperation,
+        ) => new SetCollectionReading(collectionBooks, readings, operations),
+    },
+    {
         provide: 'BOOKS_SAVE_NOTE',
         inject: [token.notes, token.loader, token.clock, token.operations],
         useFactory: (
@@ -569,6 +590,7 @@ export class BooksModule {
                 AuthorsController,
                 CoversController,
                 PersonalReadingController,
+                CollectionReadingController,
                 LookupsController,
             ],
             providers: [

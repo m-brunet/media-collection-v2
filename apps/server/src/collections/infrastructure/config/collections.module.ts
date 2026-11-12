@@ -3,10 +3,12 @@ import { Module } from '@nestjs/common';
 import { ValueProviders } from '../../../shared/infrastructure/config/value-providers.helper.js';
 import type { BookCollectionReader } from '../../../books/application/ports/driven/book-collection-reader.interface.js';
 import type { CollectionMembership } from '../../../books/application/ports/driven/collection-membership.interface.js';
+import type { CollectionOwnedBooks } from '../../../books/application/ports/driven/collection-owned-books.interface.js';
 import type { CollectionBookSearch } from '../../application/ports/driven/collection-book-search.interface.js';
 import type { CollectionMemberStore } from '../../application/ports/driven/collection-member-store.interface.js';
 import type { CollectionRepository } from '../../application/ports/driven/collection-repository.interface.js';
 import type { MemberTitles } from '../../application/ports/driven/member-titles.interface.js';
+import { OwnedCollectionBooks } from '../../application/services/owned-collection-books.service.js';
 import { BookCollectionMembership } from '../../application/services/book-collection-membership.service.js';
 import { CollectionLoader } from '../../application/services/collection-loader.service.js';
 import { CollectionUpkeep } from '../../application/services/collection-upkeep.service.js';
@@ -194,5 +196,12 @@ export class CollectionsModule {
             ids,
             clock,
         );
+    }
+
+    static ownedBooks(
+        collections: CollectionRepository,
+        members: CollectionMemberStore,
+    ): CollectionOwnedBooks {
+        return new OwnedCollectionBooks(new CollectionLoader(collections), members);
     }
 }

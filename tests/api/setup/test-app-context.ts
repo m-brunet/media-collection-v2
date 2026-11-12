@@ -36,6 +36,7 @@ export interface TestAppContext {
         | 'operations'
         | 'collections'
         | 'collectionReader'
+        | 'collectionBooks'
         | 'shelves'
         | 'locationReader'
         | 'tags'

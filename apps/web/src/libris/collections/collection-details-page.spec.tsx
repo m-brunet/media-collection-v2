@@ -280,6 +280,130 @@ it('offers a Guest no changes', async () => {
     expect(screen.queryByRole('button', { name: 'Add a book' })).not.toBeInTheDocument();
 });
 
+it('gives a Guest no reading status', async () => {
+    const api = new FakeApi()
+        .signedIn(account({ role: 'guest' }))
+        .on('GET /collections/c1', () => ({ status: 200, body: batman() }));
+
+    show();
+
+    await screen.findByRole('heading', { name: 'Batman' });
+    expect(screen.queryByText('Only your reading')).not.toBeInTheDocument();
+    expect(api.calls.map((call) => call.route)).not.toContain('GET /collections/c1/reading');
+});
+
+function reading(read: boolean, ownedCount = 3) {
+    return new FakeApi()
+        .signedIn(account())
+        .on('GET /collections/c1', () => ({ status: 200, body: batman() }))
+        .on('GET /collections/c1/reading', () => ({ status: 200, body: { read, ownedCount } }));
+}
+
+it('shows Not read while an owned book of the collection is unread', async () => {
+    reading(false);
+
+    show();
+
+    const toggle = await screen.findByRole('button', { name: 'Not read' });
+
+    expect(toggle).not.toHaveClass('button--pressed');
+    expect(
+        screen.getByText(
+            'Applies to the 3 owned books of this collection. This does not change another account’s status.',
+        ),
+    ).toBeInTheDocument();
+});
+
+it('shows Read pressed once every owned book is read', async () => {
+    reading(true, 1);
+
+    show();
+
+    expect(await screen.findByRole('button', { name: 'Read' })).toHaveClass('button--pressed');
+    expect(screen.getByText(/^Applies to the owned book of this collection\./)).toBeInTheDocument();
+});
+
+it('offers no reading status for a collection without owned books', async () => {
+    reading(false, 0);
+
+    show();
+
+    await screen.findByRole('heading', { name: 'Batman' });
+    await waitFor(() => expect(screen.queryByText('Only your reading')).not.toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'Not read' })).not.toBeInTheDocument();
+});
+
+it('marks every owned book read at once, without confirmation', async () => {
+    const api = reading(false).on('PUT /collections/c1/reading', () => ({
+        status: 200,
+        body: { read: true, ownedCount: 3 },
+    }));
+
+    show();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Not read' }));
+
+    expect(await screen.findByRole('button', { name: 'Read' })).toHaveClass('button--pressed');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(api.calls).toContainEqual({
+        route: 'PUT /collections/c1/reading',
+        body: { read: true },
+    });
+});
+
+it('asks before marking the whole collection not read', async () => {
+    const api = reading(true);
+
+    show();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Read' }));
+
+    const dialog = screen.getByRole('dialog', { name: 'Mark the whole collection as not read?' });
+
+    expect(
+        within(dialog).getByText(
+            'Your reading status of every owned book of “Batman” becomes Not read. Other accounts keep theirs.',
+        ),
+    ).toBeInTheDocument();
+    expect(api.calls.map((call) => call.route)).not.toContain('PUT /collections/c1/reading');
+});
+
+it('keeps the collection read when the confirmation is cancelled', async () => {
+    const api = reading(true);
+
+    show();
+    await userEvent.click(await screen.findByRole('button', { name: 'Read' }));
+    const dialog = screen.getByRole('dialog', { name: 'Mark the whole collection as not read?' });
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Read' })).toHaveClass('button--pressed');
+    expect(api.calls.map((call) => call.route)).not.toContain('PUT /collections/c1/reading');
+});
+
+it('marks every owned book not read once confirmed', async () => {
+    const api = reading(true).on('PUT /collections/c1/reading', () => ({
+        status: 200,
+        body: { read: false, ownedCount: 3 },
+    }));
+
+    show();
+    await userEvent.click(await screen.findByRole('button', { name: 'Read' }));
+    const dialog = screen.getByRole('dialog', { name: 'Mark the whole collection as not read?' });
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Mark as not read' }));
+
+    expect(await screen.findByRole('button', { name: 'Not read' })).not.toHaveClass(
+        'button--pressed',
+    );
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(api.calls).toContainEqual({
+        route: 'PUT /collections/c1/reading',
+        body: { read: false },
+    });
+});
+
 it('explains that a collection no longer exists', async () => {
     new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
         status: 404,

@@ -782,6 +782,12 @@ export const fr = {
     'collection.reopen': 'Rouvrir la collection',
     'collection.finishedHint':
         'Les collections terminées restent visibles sur ordinateur et sont masquées des achats sur mobile.',
+    'collection.readingScopeOne': 'S’applique au livre possédé de cette collection.',
+    'collection.readingScopeMany': 'S’applique aux {count} livres possédés de cette collection.',
+    'collection.unreadTitle': 'Marquer toute la collection comme non lue ?',
+    'collection.unreadBody':
+        'Votre statut de lecture de chaque livre possédé de « {name} » devient Non lu. Les autres comptes gardent le leur.',
+    'collection.unreadConfirm': 'Marquer comme non lu',
     'collection.volumesLabel': 'Tomes',
     'collection.state.ownedOne': 'Possédé · 1 édition',
     'collection.state.ownedMany': 'Possédé · {count} éditions',

@@ -23,6 +23,7 @@ import type { CoverImage } from '../../domain/value-objects/cover-image.value-ob
 import type { CoverTrimmer } from '../ports/driven/cover-trimmer.interface.js';
 import type { PersonalNoteStore } from '../ports/driven/personal-note-store.interface.js';
 import type { ReadingStatusStore } from '../ports/driven/reading-status-store.interface.js';
+import type { CollectionOwnedBooks } from '../ports/driven/collection-owned-books.interface.js';
 import type {
     BookLocation,
     BookLocationReader,
@@ -155,6 +156,10 @@ export class MemoryReadings implements ReadingStatusStore {
 
     async isRead(userId: string, bookId: string): Promise<boolean> {
         return this.statuses.get(userId + '/' + bookId) ?? false;
+    }
+
+    async readAmong(userId: string, bookIds: readonly string[]): Promise<Set<string>> {
+        return new Set(bookIds.filter((bookId) => this.statuses.get(userId + '/' + bookId)));
     }
 
     async set(userId: string, bookId: string, read: boolean): Promise<void> {
@@ -508,6 +513,20 @@ export class MemoryMembership implements CollectionMembership, BookCollectionRea
 
     async of(bookId: string): Promise<BookCollection | null> {
         return this.memberships.get(bookId) ?? null;
+    }
+}
+
+export class MemoryCollectionBooks implements CollectionOwnedBooks {
+    readonly owned = new Map<string, string[]>();
+
+    async of(collectionId: string): Promise<string[]> {
+        const books = this.owned.get(collectionId);
+
+        if (!books) {
+            throw new Failure('not_found', 'That collection does not exist.', 'collection-missing');
+        }
+
+        return [...books];
     }
 }
 

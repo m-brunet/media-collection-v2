@@ -5,6 +5,7 @@ import type { Book } from '../domain/entities/book.entity.js';
 export const BookAudit = {
     book: 'book',
     author: 'author',
+    collection: 'collection',
     created: 'book.created',
     updated: 'book.updated',
     deleted: 'book.deleted',
@@ -14,6 +15,7 @@ export const BookAudit = {
     coverChanged: 'book.cover-changed',
     authorCorrected: 'author.corrected',
     readingStatusChanged: 'book.reading-status-changed',
+    collectionReadingChanged: 'collection.reading-status-changed',
     noteChanged: 'book.note-changed',
 } as const;
 
