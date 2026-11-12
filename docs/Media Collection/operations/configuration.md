@@ -31,7 +31,8 @@ environment or `config.json`). Saving another port keeps it for when the overrid
 | `config.json`      | `%APPDATA%\Media Collection\config.json` (Windows), `~/.config/Media Collection/config.json` (Linux) | `config.json` at the repository root (ignored by Git) |
 
 Development and release therefore run side by side on one computer without any setting, and neither reads the other's
-file. The defaults only apply while nothing is saved: a port saved in Server settings keeps applying.
+file. To tell them apart, development adds " (dev)" to the Libris window title and to the tray icon name ("Media
+Collection (dev)"); the application name behind its folders stays "Media Collection". The defaults only apply while nothing is saved: a port saved in Server settings keeps applying.
 
 ## The configuration file
 

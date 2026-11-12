@@ -200,6 +200,7 @@ watchFile(process.env.APP_TEST_COMMAND_FILE, { interval: 20 }, async () => {
             reply({
                 type: 'tray',
                 value: {
+                    toolTip: HiddenTray.latest()?.toolTip ?? null,
                     menu: HiddenTray.latest()?.menu ? labels(HiddenTray.latest().menu) : null,
                     balloons: HiddenTray.latest()?.balloons ?? [],
                 },

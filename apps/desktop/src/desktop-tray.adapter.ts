@@ -2,6 +2,7 @@ import type { DisplayBalloonOptions } from 'electron';
 import { Menu } from 'electron';
 import type { DesktopTexts } from './desktop-texts.util.js';
 import type { LaunchAtStartup } from './launch-at-startup.adapter.js';
+import type { ApplicationLabel } from './application-label.util.js';
 
 export interface DesktopTrayActions {
     open(): void;
@@ -22,6 +23,7 @@ export class DesktopTray {
 
     constructor(
         private readonly texts: DesktopTexts,
+        private readonly label: ApplicationLabel,
         private readonly iconPath: string,
         private readonly startup: LaunchAtStartup,
         private readonly actions: DesktopTrayActions,
@@ -34,7 +36,7 @@ export class DesktopTray {
         }
 
         this.tray = this.createIcon(this.iconPath);
-        this.tray.setToolTip(this.texts.text('trayTooltip'));
+        this.tray.setToolTip(this.label.of(this.texts.text('trayTooltip')));
         this.tray.on('click', () => this.actions.open());
         this.refresh();
     }
@@ -63,7 +65,7 @@ export class DesktopTray {
 
     notifyKeepsRunning(): void {
         this.tray?.displayBalloon({
-            title: this.texts.text('trayTooltip'),
+            title: this.label.of(this.texts.text('trayTooltip')),
             content: this.texts.text('trayKeepsRunning'),
             iconType: 'info',
         });
