@@ -74,6 +74,7 @@ export class LibraryModules {
                     lookup: BooksModule.lookupSources(lookupAddresses),
                     collections: membership,
                     collectionReader: membership,
+                    collectionBooks: CollectionsModule.ownedBooks(collections, members),
                     shelves: shelving,
                     locationReader: shelving,
                     tags: tagging,

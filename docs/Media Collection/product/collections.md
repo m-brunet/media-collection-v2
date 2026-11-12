@@ -55,6 +55,17 @@ Desktop collection details group editions under expandable volume entries so the
 - Deleting the highest coverage shrinks the expected range as above; do not manufacture a gap for the deleted upper bound.
 - There is no final-volume marker determining visibility.
 
+## Reading a whole collection
+
+The desktop collection details page has the same personal **Read** toggle as a book's details page, under "Only your reading" (decided 2026-11-10, issue #25):
+
+- It is pressed only when **every Owned book** of the collection is read by the signed-in account. While one Owned book is unread, it shows "Not read".
+- Pressing "Not read" marks every Owned book of the collection read at once, without confirmation.
+- Pressing "Read" asks for confirmation first, because it erases the account's reading status for the whole collection; confirming marks every Owned book not read.
+- Not Owned books (planned or wanted volumes) are never changed. A collection without Owned books shows no toggle.
+- Like a book's reading status, it is personal: Owners/Admin only, no Guest display, and another account's status never changes. The change is one audited operation on the collection, with each changed book recorded as a related change.
+- Desktop only: Leaf does not offer it.
+
 ## Duplicate-purchase prevention
 
 Coverage overlap is allowed only between Owned books. Not Owned books cannot overlap either Owned or Not Owned coverage, including omnibus ranges. Apply this rule to additions, coverage edits, ownership changes, and collection moves. Any partial overlap blocks the entire conflicting operation unless resolved explicitly; do not silently trim or split a book.
@@ -98,6 +109,7 @@ A separate desktop page mirroring mobile ownership progression is future scope, 
 10. Delete a collection: keep all books but remove membership/coverage. Move its final book elsewhere: keep that book and remove the now-empty collection.
 11. An unfinished collection with all known volumes Owned stays visible on mobile with last owned and no known gaps.
 12. Mobile quick add of a saved ordinary Not Owned book requires confirmation; inferred volumes and omnibus books cannot use it.
+13. Owned 1 read, Owned 2 unread, Not Owned 3: the collection shows "Not read"; pressing it marks 2 read and leaves 3 unchanged, and the toggle shows "Read". Pressing "Read" and confirming marks 1 and 2 not read; another Owner's statuses are unchanged.
 
 ## Implementation references
 

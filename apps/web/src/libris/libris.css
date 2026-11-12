@@ -985,6 +985,10 @@ body {
     color: var(--color-accent-strong);
 }
 
+.collection-reading {
+    max-width: 480px;
+}
+
 .volume-list {
     gap: var(--space-3);
 }

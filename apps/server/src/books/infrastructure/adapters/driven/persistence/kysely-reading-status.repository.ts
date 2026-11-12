@@ -15,6 +15,22 @@ export class KyselyReadingStatusRepository implements ReadingStatusStore {
         return Boolean(row?.read);
     }
 
+    async readAmong(userId: string, bookIds: readonly string[]): Promise<Set<string>> {
+        if (bookIds.length === 0) {
+            return new Set();
+        }
+
+        const rows = await this.connections.current
+            .selectFrom('reading_statuses')
+            .select('book_id')
+            .where('user_id', '=', userId)
+            .where('book_id', 'in', [...bookIds])
+            .where('read', '=', 1)
+            .execute();
+
+        return new Set(rows.map((row) => row.book_id));
+    }
+
     async set(userId: string, bookId: string, read: boolean): Promise<void> {
         await this.connections.current
             .insertInto('reading_statuses')

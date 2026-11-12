@@ -745,6 +745,12 @@ export const en = {
     'collection.reopen': 'Reopen collection',
     'collection.finishedHint':
         'Finished collections remain on desktop and are hidden from mobile shopping.',
+    'collection.readingScopeOne': 'Applies to the owned book of this collection.',
+    'collection.readingScopeMany': 'Applies to the {count} owned books of this collection.',
+    'collection.unreadTitle': 'Mark the whole collection as not read?',
+    'collection.unreadBody':
+        'Your reading status of every owned book of “{name}” becomes Not read. Other accounts keep theirs.',
+    'collection.unreadConfirm': 'Mark as not read',
     'collection.volumesLabel': 'Volumes',
     'collection.state.ownedOne': 'Owned · 1 edition',
     'collection.state.ownedMany': 'Owned · {count} editions',

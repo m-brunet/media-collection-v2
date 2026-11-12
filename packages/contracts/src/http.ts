@@ -403,6 +403,11 @@ export interface CollectionDetailsDto extends CollectionSummaryDto {
     volumes: CollectionVolumeDto[];
 }
 
+export interface CollectionReadingDto {
+    read: boolean;
+    ownedCount: number;
+}
+
 export interface CollectionListPageDto {
     total: number;
     items: CollectionSummaryDto[];

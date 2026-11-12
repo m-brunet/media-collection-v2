@@ -81,3 +81,8 @@ export interface DuplicateCandidate {
     title: string;
     authors: string[];
 }
+
+export interface CollectionReadingView {
+    read: boolean;
+    ownedCount: number;
+}

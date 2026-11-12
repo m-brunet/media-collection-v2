@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 import type {
     CollectionDetailsDto,
     CollectionMemberDto,
+    CollectionReadingDto,
     CollectionVolumeDto,
 } from '../../../../../packages/contracts/src/http';
 import { api, ApiError } from '../../shared/api.util';
@@ -10,13 +11,15 @@ import { ApiErrorMessage } from '../../shared/api-error-message.util';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { useSession } from '../../shared/session/session-context';
 import { Button } from '../../shared/ui/button';
+import { Dialog } from '../../shared/ui/dialog';
 import { Icon } from '../../shared/ui/icon';
-import { PageHeader } from '../../shared/ui/layout';
+import { PageHeader, Panel } from '../../shared/ui/layout';
 import { Notice } from '../../shared/ui/notice';
 import { EmptyState, LoadingState } from '../../shared/ui/states';
 import { useAction } from '../../shared/use-action';
 import { BookCover } from '../books/book-cover';
 import { BookFormat } from '../../shared/book-form/book-format.util';
+import { ReadingToggle } from '../../shared/book-form/reading-toggle';
 import { EditCollectionDialog } from './collection-dialogs';
 import { CollectionFormat } from './collection-format.util';
 
@@ -80,6 +83,78 @@ function VolumeEntry({ volume }: { volume: CollectionVolumeDto }) {
                 </ul>
             )}
         </li>
+    );
+}
+
+function ReadingPanel({ collection }: { collection: CollectionDetailsDto }) {
+    const { t } = useI18n();
+    const action = useAction();
+    const [reading, setReading] = useState<CollectionReadingDto | null>(null);
+    const [confirming, setConfirming] = useState(false);
+    const address = '/collections/' + collection.id + '/reading';
+
+    useEffect(() => {
+        let current = true;
+
+        api.request<CollectionReadingDto>(address).then(
+            (result) => current && setReading(result),
+            () => current && setReading(null),
+        );
+
+        return () => {
+            current = false;
+        };
+    }, [address]);
+
+    if (!reading || reading.ownedCount === 0) {
+        return null;
+    }
+
+    const save = (read: boolean) =>
+        void action.run(async () => {
+            setReading(
+                await api.request<CollectionReadingDto>(address, {
+                    method: 'PUT',
+                    body: { read },
+                }),
+            );
+            setConfirming(false);
+        });
+    const scope =
+        reading.ownedCount === 1
+            ? t('collection.readingScopeOne')
+            : t('collection.readingScopeMany', { count: reading.ownedCount });
+
+    return (
+        <Panel label={t('details.reading')} className="collection-reading">
+            <div className="actions">
+                <ReadingToggle
+                    read={reading.read}
+                    busy={action.busy}
+                    onToggle={(next) => (next ? save(true) : setConfirming(true))}
+                />
+            </div>
+            {action.feedback && !confirming && <Notice tone="error">{action.feedback.text}</Notice>}
+            <p className="muted">
+                {scope} {t('details.readingHint')}
+            </p>
+            <Dialog
+                open={confirming}
+                title={t('collection.unreadTitle')}
+                onClose={() => setConfirming(false)}
+                footer={
+                    <>
+                        <Button onClick={() => setConfirming(false)}>{t('common.cancel')}</Button>
+                        <Button variant="danger" busy={action.busy} onClick={() => save(false)}>
+                            {t('collection.unreadConfirm')}
+                        </Button>
+                    </>
+                }
+            >
+                <p>{t('collection.unreadBody', { name: collection.name })}</p>
+                {action.feedback && <Notice tone="error">{action.feedback.text}</Notice>}
+            </Dialog>
+        </Panel>
     );
 }
 
@@ -235,6 +310,7 @@ export function CollectionDetailsPage() {
                         {t('collection.finishUnavailable')}
                     </p>
                 )}
+                {editor && <ReadingPanel collection={collection} />}
                 <ul className="volume-list" aria-label={t('collection.volumesLabel')}>
                     {collection.volumes.map((volume) => (
                         <VolumeEntry key={volume.from} volume={volume} />
