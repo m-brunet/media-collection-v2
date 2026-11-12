@@ -35,6 +35,20 @@ describe('BookFilter', () => {
 
         expect(result).toBe(false);
     });
+    it('restricts the books with a cover choice', () => {
+        const filter = BookFilter.of({ covers: ['without'] });
+
+        const result = filter.isEmpty();
+
+        expect(result).toBe(false);
+    });
+    it('restricts the books with a price choice', () => {
+        const filter = BookFilter.of({ prices: ['with'] });
+
+        const result = filter.isEmpty();
+
+        expect(result).toBe(false);
+    });
     it('reports a reading status choice', () => {
         const filter = BookFilter.of({ reading: ['unread'] });
 

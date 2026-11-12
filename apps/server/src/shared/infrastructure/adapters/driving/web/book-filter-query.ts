@@ -17,6 +17,8 @@ export const bookFilterQuery = {
     collection: RepeatedParameter.of(z.union([idSchema, z.literal('none')])),
     location: RepeatedParameter.of(z.union([z.literal('none'), z.string().regex(located)])),
     ownership: RepeatedParameter.of(z.enum(['owned', 'not-owned'])),
+    cover: RepeatedParameter.of(z.enum(['with', 'without'])),
+    price: RepeatedParameter.of(z.enum(['with', 'without'])),
     reading: RepeatedParameter.of(z.enum(['read', 'unread'])),
     tag: RepeatedParameter.of(idSchema),
     notTag: RepeatedParameter.of(idSchema),

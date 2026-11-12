@@ -39,7 +39,7 @@ Each tag has an independent Include or Exclude choice. Every included tag must b
 
 ## Search and ordering baseline
 
-Book and collection listings support simple search, advanced multiple-criteria filtering, and ordering. Simple search covers title, authors, ISBN, and collection name, using partial matches insensitive to case and accents (for example, 'tolk' matches 'Tolkien'). ISBN searches recognize equivalent ISBN-10/13 values. Advanced book filters initially cover category, authors, collection, bookcase/shelf, tags, ownership, and personal reading status. Guests have no reading-status filter.
+Book and collection listings support simple search, advanced multiple-criteria filtering, and ordering. Simple search covers title, authors, ISBN, and collection name, using partial matches insensitive to case and accents (for example, 'tolk' matches 'Tolkien'). ISBN searches recognize equivalent ISBN-10/13 values. Advanced book filters initially cover category, authors, collection, bookcase/shelf, tags, ownership, cover (With cover / Without cover), price (With price / Without price), and personal reading status. Guests have no reading-status filter; they do have the cover and price filters.
 
 Book sorting defaults to title A-Z, with ascending/descending directions for title, date added, and publication date. Books without publication dates appear last in either direction. Author sorting is not requested. Collection listings sort by collection name only, A-Z or Z-A, default A-Z; creation/publication-date sorting is not included for collections. Collection details keep volume/coverage order rather than confusing collection order with physical shelf order.
 
@@ -71,6 +71,7 @@ Collection ownership/completeness totals always describe the entire collection, 
 12. Search a matching book within a collection with eight of ten volumes Owned: its ownership total stays eight of ten.
 13. Books offer title/date-added/publication-date sorting in either direction; missing publication dates stay last. Collections offer name sorting only.
 14. Case/accent-insensitive partial text matches and equivalent ISBN-10/13 searches find existing records without requiring exact display spelling.
+15. Without cover plus Without price finds the books missing both, owned or not; checking both choices of one of them removes that restriction. In the collection listing, Without cover lists each collection with at least one volume without a cover, and its totals still describe the whole collection.
 
 ## Assigned follow-ups
 

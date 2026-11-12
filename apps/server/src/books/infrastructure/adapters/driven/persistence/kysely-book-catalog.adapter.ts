@@ -9,7 +9,10 @@ import type {
 import type { BookCategory, Ownership } from '../../../../domain/entities/book.entity.js';
 import { Isbn } from '../../../../domain/value-objects/isbn.value-object.js';
 import type { CollectionBookSearch } from '../../../../../collections/application/ports/driven/collection-book-search.interface.js';
-import type { BookFilter } from '../../../../../shared/application/book-filter.js';
+import type {
+    BookFilter,
+    FilteredPresence,
+} from '../../../../../shared/application/book-filter.js';
 import { NameKey } from '../../../../../shared/domain/name-key.helper.js';
 import type { DatabaseSchema } from '../../../../../shared/infrastructure/adapters/driven/persistence/database.adapter.js';
 import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
@@ -134,6 +137,8 @@ export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
             ...(filter.ownerships.length > 0
                 ? [eb('books.ownership', 'in', filter.ownerships)]
                 : []),
+            ...this.presence(eb, 'books.cover_file', filter.covers),
+            ...this.presence(eb, 'books.price_cents', filter.prices),
             ...(filter.authorIds.length > 0
                 ? [
                       eb.exists(
@@ -161,6 +166,18 @@ export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
                   ]
                 : []),
         ];
+    }
+
+    private presence(
+        eb: ExpressionBuilder<DatabaseSchema, 'books'>,
+        column: 'books.cover_file' | 'books.price_cents',
+        choices: FilteredPresence[],
+    ) {
+        if (choices.length !== 1) {
+            return [];
+        }
+
+        return [choices[0] === 'with' ? eb(column, 'is not', null) : eb(column, 'is', null)];
     }
 
     private collection(

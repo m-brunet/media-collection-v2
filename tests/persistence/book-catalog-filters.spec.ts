@@ -37,6 +37,8 @@ interface Shelved {
     shelfId?: string;
     tagIds?: string[];
     readBy?: string;
+    cover?: string;
+    priceCents?: number;
 }
 
 async function library() {
@@ -152,8 +154,8 @@ async function library() {
                     publication_month: null,
                     summary: null,
                     page_count: null,
-                    price_cents: null,
-                    cover_file: null,
+                    price_cents: book.priceCents ?? null,
+                    cover_file: book.cover ?? null,
                     created_at: now,
                     updated_at: now,
                 })
@@ -323,6 +325,72 @@ describe('KyselyBookCatalog filters', () => {
 
         expect(result).toEqual(['Read by Sam']);
     });
+    it('selects the books without a cover', async () => {
+        const current = await library();
+
+        await current.book({ title: 'Covered', cover: 'covered.jpg' });
+        await current.book({ title: 'Bare' });
+
+        const result = await titles(current, { covers: ['without'] });
+
+        expect(result).toEqual(['Bare']);
+    });
+    it('selects the books with a cover', async () => {
+        const current = await library();
+
+        await current.book({ title: 'Covered', cover: 'covered.jpg' });
+        await current.book({ title: 'Bare' });
+
+        const result = await titles(current, { covers: ['with'] });
+
+        expect(result).toEqual(['Covered']);
+    });
+    it('selects the books without a price', async () => {
+        const current = await library();
+
+        await current.book({ title: 'Priced', priceCents: 1290 });
+        await current.book({ title: 'Unpriced' });
+        await current.book({ title: 'Unpriced wish', ownership: 'not-owned' });
+
+        const result = await titles(current, { prices: ['without'] });
+
+        expect(result).toEqual(['Unpriced', 'Unpriced wish']);
+    });
+    it('selects the books with a price', async () => {
+        const current = await library();
+
+        await current.book({ title: 'Priced', priceCents: 1290 });
+        await current.book({ title: 'Unpriced' });
+
+        const result = await titles(current, { prices: ['with'] });
+
+        expect(result).toEqual(['Priced']);
+    });
+    it('keeps every book when both cover and price choices are chosen', async () => {
+        const current = await library();
+
+        await current.book({ title: 'Complete', cover: 'complete.jpg', priceCents: 990 });
+        await current.book({ title: 'Empty' });
+
+        const result = await titles(current, {
+            covers: ['with', 'without'],
+            prices: ['with', 'without'],
+        });
+
+        expect(result).toEqual(['Complete', 'Empty']);
+    });
+    it('selects the books missing both a cover and a price', async () => {
+        const current = await library();
+
+        await current.book({ title: 'Complete', cover: 'complete.jpg', priceCents: 990 });
+        await current.book({ title: 'Cover only', cover: 'cover-only.jpg' });
+        await current.book({ title: 'Price only', priceCents: 990 });
+        await current.book({ title: 'Empty' });
+
+        const result = await titles(current, { covers: ['without'], prices: ['without'] });
+
+        expect(result).toEqual(['Empty']);
+    });
     it('finds partial names ignoring case and accents (example 14)', async () => {
         const current = await library();
 
@@ -393,5 +461,22 @@ describe('KyselyBookCatalog collection matches', () => {
         );
 
         expect(result).toEqual([batman]);
+    });
+    it('matches a collection with one volume without a cover', async () => {
+        const current = await library();
+        const dune = await current.collection('Dune');
+        const batman = await current.collection('Batman');
+
+        await current.book({ title: 'Dune 1', collectionId: dune, volume: 1, cover: 'dune-1.jpg' });
+        await current.book({ title: 'Dune 2', collectionId: dune, volume: 2 });
+        await current.book({ title: 'Batman 1', collectionId: batman, cover: 'batman-1.jpg' });
+
+        const result = await current.catalog.collectionsMatching(
+            '',
+            BookFilter.of({ covers: ['without'] }),
+            null,
+        );
+
+        expect(result).toEqual([dune]);
     });
 });
