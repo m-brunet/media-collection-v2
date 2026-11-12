@@ -1,4 +1,5 @@
 {
     "host": "0.0.0.0",
-    "httpPort": 34345
+    "httpPort": 34345,
+    "dataDirectory": "D:/Media Collection data"
 }

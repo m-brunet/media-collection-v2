@@ -162,3 +162,85 @@ it('rejects a blank environment port', () => {
 
     expect(operation).toThrow('1024');
 });
+it('uses the settings of the configuration file', () => {
+    const file = { host: '127.0.0.1', httpPort: 4000, dataDirectory: resolve('library') };
+
+    const result = DesktopConfigurationParser.parse([], {}, 'data', file);
+
+    expect(result).toMatchObject({
+        host: '127.0.0.1',
+        httpPort: 4000,
+        httpPortSource: 'config-file',
+        dataDirectory: resolve('library'),
+        dataDirectoryOverridden: true,
+    });
+});
+it('gives environment settings precedence over the configuration file', () => {
+    const environment = { APP_HTTP_PORT: '5000', APP_HOST: '::', APP_DATA_DIR: 'elsewhere' };
+    const file = { host: '127.0.0.1', httpPort: 4000, dataDirectory: resolve('library') };
+
+    const result = DesktopConfigurationParser.parse([], environment, 'data', file);
+
+    expect(result).toMatchObject({
+        host: '::',
+        httpPort: 5000,
+        httpPortSource: 'environment',
+        dataDirectory: resolve('elsewhere'),
+    });
+});
+it('gives CLI settings precedence over the configuration file', () => {
+    const args = ['--http-port', '6000', '--host', '::', '--data-dir', 'custom'];
+    const file = { host: '127.0.0.1', httpPort: 4000, dataDirectory: resolve('library') };
+
+    const result = DesktopConfigurationParser.parse(args, {}, 'data', file);
+
+    expect(result).toMatchObject({
+        host: '::',
+        httpPort: 6000,
+        httpPortSource: 'command-line',
+        dataDirectory: resolve('custom'),
+    });
+});
+it('finds the configuration file at its default place', () => {
+    const defaultPath = 'data/config.json';
+
+    const result = DesktopConfigurationParser.configurationPath([], {}, defaultPath);
+
+    expect(result).toBe(resolve('data/config.json'));
+});
+it('finds the configuration file named through the environment', () => {
+    const environment = { APP_CONFIG: 'other.json' };
+
+    const result = DesktopConfigurationParser.configurationPath([], environment, 'config.json');
+
+    expect(result).toBe(resolve('other.json'));
+});
+it('gives a CLI configuration file precedence over the environment', () => {
+    const args = ['--config', 'chosen.json'];
+    const environment = { APP_CONFIG: 'other.json' };
+
+    const result = DesktopConfigurationParser.configurationPath(args, environment, 'config.json');
+
+    expect(result).toBe(resolve('chosen.json'));
+});
+it('requires a value after the configuration file option', () => {
+    const args = ['--config'];
+
+    const operation = () => DesktopConfigurationParser.configurationPath(args, {}, 'config.json');
+
+    expect(operation).toThrow('Supply a value after --config.');
+});
+it('uses the release default ports for a packaged application', () => {
+    const packaged = true;
+
+    const result = DesktopConfigurationParser.defaultPorts(packaged);
+
+    expect(result).toEqual({ http: 34345, https: 34443 });
+});
+it('uses separate default ports in development', () => {
+    const packaged = false;
+
+    const result = DesktopConfigurationParser.defaultPorts(packaged);
+
+    expect(result).toEqual({ http: 34346, https: 34444 });
+});

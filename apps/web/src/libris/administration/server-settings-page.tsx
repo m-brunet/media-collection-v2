@@ -14,6 +14,14 @@ import { AddressesPanel } from './addresses-panel';
 import { InternetAccessPanel } from './internet-access-panel';
 
 const followInterval = 1500;
+const overrideNotice: Record<
+    NonNullable<ServerStatus['running']['httpPortOverride']>['source'],
+    MessageKey
+> = {
+    'command-line': 'server.overrideCommandLine',
+    environment: 'server.overrideEnvironment',
+    'config-file': 'server.overrideConfigFile',
+};
 
 export function ServerSettingsPage() {
     const { t } = useI18n();
@@ -147,10 +155,9 @@ export function ServerSettingsPage() {
                                     {settings.running.httpPortOverride && (
                                         <Notice tone="warning">
                                             {t(
-                                                settings.running.httpPortOverride.source ===
-                                                    'command-line'
-                                                    ? 'server.overrideCommandLine'
-                                                    : 'server.overrideEnvironment',
+                                                overrideNotice[
+                                                    settings.running.httpPortOverride.source
+                                                ],
                                                 { port: settings.running.httpPortOverride.port },
                                             )}
                                         </Notice>

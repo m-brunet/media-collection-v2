@@ -17,7 +17,7 @@ Latest explicit user decisions take precedence, followed by the owning product d
 | Accounts and personal defaults, Task 5 | [Accounts](accounts.md) |
 | Overview, Activity, mobile, Task 6 | [Overview, Activity, mobile](overview-activity-mobile.md) |
 | Languages, offline use, backup/reset, Task 7 | [Release expectations](../operations/release-expectations.md) |
-| Optional startup configuration direction | [Configuration](../operations/configuration.md) |
+| Startup configuration (`config.json`, development and release defaults) | [Configuration](../operations/configuration.md) |
 | Design reference, names, icons, accessibility | [Design guidelines](../design/design-guidelines.md) |
 
 ## Key boundaries

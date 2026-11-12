@@ -88,6 +88,19 @@ it('defaults HTTP settings for an existing database without an HTTP record', asy
     ).toEqual([]);
 });
 
+it('defaults HTTP settings to the port it is given when nothing was saved', async () => {
+    const current = await open();
+    const repository = new KyselyHttpSettingsRepository(
+        current.database.connections,
+        new UuidGenerator(),
+        34346,
+    );
+
+    const settings = await repository.read();
+
+    expect(settings.snapshot()).toEqual({ port: 34346 });
+});
+
 it('persists the external web port across database reopen', async () => {
     const current = await open();
 

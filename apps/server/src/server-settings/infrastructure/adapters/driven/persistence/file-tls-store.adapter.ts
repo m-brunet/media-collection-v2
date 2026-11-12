@@ -22,6 +22,7 @@ export class FileTlsStore implements TlsStore, TlsCertificateReader {
         private readonly directory: string,
         private readonly storage: PrivateStorage,
         private readonly ids: IdGenerator,
+        private readonly defaultPort = 34443,
     ) {}
 
     async read(): Promise<TlsSettingsState> {
@@ -103,6 +104,11 @@ export class FileTlsStore implements TlsStore, TlsCertificateReader {
 
         return row
             ? (JSON.parse(row.value) as StoredSettings)
-            : { enabled: false, port: 3443, hasCertificate: false, revision: 'initial' };
+            : {
+                  enabled: false,
+                  port: this.defaultPort,
+                  hasCertificate: false,
+                  revision: 'initial',
+              };
     }
 }

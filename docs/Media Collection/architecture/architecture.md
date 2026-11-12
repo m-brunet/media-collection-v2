@@ -275,6 +275,13 @@ temporary `--http-port` override allows the administrator to reopen settings and
 read saved settings again. Internal test fixtures can bind ephemeral port `0`; desktop CLI/environment validation
 retains the production minimum.
 
+Startup settings are a desktop concern resolved before the backend exists, so the backend reads no configuration
+itself (no `@nestjs/config`). `ConfigurationFile` (`apps/desktop/src/configuration-file.adapter.ts`) reads and
+validates `config.json`, and `DesktopConfigurationParser` merges command line, environment and file into the start
+request with the source of the HTTP port. Electron also chooses the default ports from `app.isPackaged` (release
+34345/34443, development 34346/34444); `BackendRuntime` hands them to `KyselyHttpSettingsRepository` and `FileTlsStore`
+as the values read while nothing is saved. See [configuration](../operations/configuration.md).
+
 Local maintenance (Task 9) runs with no network listener: the menu **Maintenance → Open local maintenance…** stops the
 backend and replaces the Libris window with the maintenance window, and closing it starts the application again;
 `--maintenance` opens the same window without starting the application. Only that local sandboxed page gets a

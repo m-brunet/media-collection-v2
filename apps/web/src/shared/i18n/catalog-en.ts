@@ -90,6 +90,8 @@ export const en = {
         'A command-line port override is active on port {port}. Remove it, then close and reopen the desktop application to use the saved port.',
     'server.overrideEnvironment':
         'A startup environment port override is active on port {port}. Remove it, then close and reopen the desktop application to use the saved port.',
+    'server.overrideConfigFile':
+        'The httpPort setting of config.json is active on port {port}. Remove it from the file, then close and reopen the desktop application to use the saved port.',
     'server.httpPort': 'HTTP port',
     'server.portRule': 'Choose a whole number from 1024 to 65535.',
     'server.nextAddresses': 'Addresses after applying the saved HTTP port:',

@@ -65,7 +65,8 @@ export interface BackendOptions {
     dataDirectory: string;
     host: string;
     httpPort?: number;
-    httpPortSource?: 'command-line' | 'environment';
+    httpPortSource?: 'command-line' | 'environment' | 'config-file';
+    defaultPorts?: { http: number; https: number };
     webDirectory?: string;
     development?: boolean;
     clock?: Clock;
@@ -166,8 +167,18 @@ export class BackendRuntime {
             const authentication = new AuthenticateSession(accounts, tokens);
             const renewal = new RenewSession(accounts, tokens);
             const sessions = new HttpSessions(secret, HttpApplication.uploadPaths);
-            const tls = new FileTlsStore(database.connections, options.dataDirectory, storage, ids);
-            const httpSettings = new KyselyHttpSettingsRepository(database.connections, ids);
+            const tls = new FileTlsStore(
+                database.connections,
+                options.dataDirectory,
+                storage,
+                ids,
+                options.defaultPorts?.https,
+            );
+            const httpSettings = new KyselyHttpSettingsRepository(
+                database.connections,
+                ids,
+                options.defaultPorts?.http,
+            );
             const operations = new AuditedOperation(
                 database.connections,
                 new KyselyAuditTrail(database.connections, ids),
@@ -326,7 +337,7 @@ export class BackendRuntime {
                         requestedHttpPort +
                         ' (' +
                         code +
-                        '). Check whether the port is available, or start with --http-port <port> to correct the saved setting.',
+                        '). Check whether the port is available, or set httpPort in config.json (or start with --http-port <port>) to correct the saved setting.',
                     { cause: error },
                 );
             }

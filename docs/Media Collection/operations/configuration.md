@@ -1,26 +1,67 @@
 # Configuration
 
-Status: accepted technical direction. This document does not describe a completed config-file implementation.
-
-## Repository files
-
-- Root `config.sample.json` is a versioned draft showing candidate `host` and `httpPort` overrides, using the application defaults (HTTP port 34345). It contains no secrets.
-- Root `config.json` is ignored by Git. An empty local file is provided as a starting point, without overrides.
-- Neither file is currently loaded by the application. Creating or editing them does not change runtime behavior yet. The sample is a proposed shape, not an implemented configuration contract.
-- The repository location is for development preparation; the installed application's discovery location is still undecided.
+Status: implemented (#59, 2026-11-12).
 
 ## Everyday settings and startup overrides
 
-Users manage everyday settings through the application interface. Keep these settings in the existing persistent settings storage; users should not need to edit files for normal use.
+Users manage everyday settings through the application interface, stored in the SQLite settings storage of the data
+directory. Startup overrides change where and how the application starts without replacing a saved setting.
 
-Provide an optional `config.json` for startup overrides, with a `config.sample.json` documenting supported options without real secrets. Overrides do not replace saved settings. The interface should clearly identify overridden settings so changes to a saved value are not mistaken for changes to the running configuration.
+The startup settings are `host`, `httpPort` and `dataDirectory`. Each has three override sources, in this order of
+precedence:
 
-The configuration file belongs outside installed application files so application updates do not overwrite it. Its discovery location must be defined independently of any data-directory override it contains. File location, exact schema, supported options, validation/error handling, restart behavior, and precedence relative to command-line options and environment variables remain to be decided.
+1. a command-line option: `--host`, `--http-port`, `--data-dir`;
+2. an environment variable: `APP_HOST`, `APP_HTTP_PORT`, `APP_DATA_DIR`;
+3. the configuration file `config.json`.
 
-## Existing foundation
+Without an override, the HTTP port is the port saved in Server settings, otherwise the default. The host defaults to
+`0.0.0.0`, the data directory to the default one below. The HTTPS port is a Server settings value only; it has no
+override.
 
-The copied foundation reads command-line options and environment variables for host, HTTP port, and data directory. It stores server settings in SQLite. HTTP port precedence is currently command line, environment, saved setting, then default. The optional JSON file is not implemented yet; its place in that precedence is unresolved.
+Server settings says when the running HTTP port comes from an override and from which source (command line,
+environment or `config.json`). Saving another port keeps it for when the override is removed.
 
-SQLite is a local database and requires no database login credentials. The database path normally follows the application data directory. No configurable public/base URL is currently required; Electron discovers its local backend address from startup readiness information.
+## Development and release
 
-Keep generated session signing keys and TLS private keys in their existing separate protected files, not in the sample configuration. Automatically issued certificates (Task 9.5) and their Let's Encrypt account key use the same protected storage; they are never part of the configuration file. Future external-service credentials require a separate storage decision. No `.env` loading is introduced by this decision.
+|                    | Installed release                            | Development (unpackaged: `npm run dev`, `npm start`) |
+| ------------------ | -------------------------------------------- | ---------------------------------------------------- |
+| Default HTTP port  | 34345                                        | 34346                                                |
+| Default HTTPS port | 34443                                        | 34444                                                |
+| Data directory     | per-user application data folder             | `.dev-data/` in the repository                       |
+| `config.json`      | `%APPDATA%\Media Collection\config.json` (Windows), `~/.config/Media Collection/config.json` (Linux) | `config.json` at the repository root (ignored by Git) |
+
+Development and release therefore run side by side on one computer without any setting, and neither reads the other's
+file. The defaults only apply while nothing is saved: a port saved in Server settings keeps applying.
+
+## The configuration file
+
+`config.json` is a JSON object; every key is optional, and a missing key means "not set by the file". A missing file
+sets nothing. `config.sample.json` at the repository root shows every key:
+
+| Key             | Value                                                                                        |
+| --------------- | -------------------------------------------------------------------------------------------- |
+| `host`          | Listening address, for example `0.0.0.0` (every network) or `127.0.0.1` (this computer only) |
+| `httpPort`      | Whole number from 1024 to 65535                                                              |
+| `dataDirectory` | Data folder; a relative path is read from the folder of `config.json`                        |
+
+- The file is always read from the default place above, even when its `dataDirectory` moves the data elsewhere.
+  `--config <path>` or `APP_CONFIG` names another file.
+- Validation is strict. Invalid JSON, an unknown key (a typo), `null`, an empty text or a port out of range stops
+  startup with the "Invalid application configuration" dialog naming the file and the problem. A byte order mark
+  (Notepad) is accepted.
+- Changes apply the next time the application starts.
+- **File → Open configuration file…** opens the file in the default editor, creating it as `{}` when missing.
+
+The file holds no secrets. Session signing keys, TLS private keys and the Let's Encrypt account key stay in their
+protected files of the data directory. No `.env` file is read.
+
+## Implementation
+
+- `apps/desktop/src/configuration-file.adapter.ts` (`ConfigurationFile`) reads and validates the file and creates it
+  for the menu entry.
+- `DesktopConfigurationParser` (`apps/desktop/src/configuration.util.ts`) merges command line, environment and file,
+  keeps the source of the HTTP port, finds the file (`configurationPath`) and gives the default ports
+  (`defaultPorts`).
+- The Electron main process passes the result and the default ports to the backend process; `BackendRuntime` uses
+  them for the saved-setting defaults (`KyselyHttpSettingsRepository`, `FileTlsStore`) and reports the override in
+  `running.httpPortOverride`.

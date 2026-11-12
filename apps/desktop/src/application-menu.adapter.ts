@@ -10,6 +10,7 @@ export interface ApplicationMenuActions {
     openAbout(): void;
     updates(): void;
     openMaintenance(): void;
+    openConfiguration(): void;
     setLaunchAtStartup(enabled: boolean): void;
 }
 
@@ -36,6 +37,11 @@ export class ApplicationMenu {
                 },
                 this.updates(updates),
                 ...this.launchAtStartup(),
+                {
+                    id: 'open-configuration',
+                    label: this.texts.text('menuOpenConfiguration'),
+                    click: () => this.actions.openConfiguration(),
+                },
                 { type: 'separator' },
                 { id: 'exit', role: 'quit', label: this.texts.text('menuExit') },
             ],

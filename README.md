@@ -24,7 +24,8 @@ On Windows PowerShell, use `npm.cmd` if execution policy prevents `npm.ps1` from
 through the root postinstall script. SQLite 13 uses Node-API; no Electron rebuild is required.
 
 Development opens Electron with Vite at `http://127.0.0.1:5173` (Leaf at `http://127.0.0.1:5173/leaf/`). Startup also builds the web assets so remote browsers
-can use `http://<computer-address>:<HTTP-port>` immediately (default `34345`). Vite proxies `/api` to the actual backend
+can use `http://<computer-address>:<HTTP-port>` immediately (development default `34346`, so it runs beside an installed
+release on `34345`). Vite proxies `/api` to the actual backend
 port reported by Electron, including after restarts. React changes use HMR in Electron; remote browsers use the startup
 build until it is rebuilt. Successful backend/desktop compilation restarts Electron. Development data lives in
 `.dev-data/`, separately from installed application data.
@@ -44,7 +45,7 @@ chooses their own language.
 
 ## HTTP, internet access and HTTPS
 
-HTTP listens on **0.0.0.0:34345** by default. Local, LAN and remote browsers use the same application and API. Server
+HTTP listens on **0.0.0.0:34345** by default (**34346** when running from source). Local, LAN and remote browsers use the same application and API. Server
 settings show local/LAN addresses and the active and saved HTTP ports. An administrator can change the **HTTP / web
 interface** port in Server settings. Both HTTP and HTTPS ports must be integers from **1024 through 65535**, inclusive.
 Saving keeps the current listener active; close and reopen the desktop application to apply the new port. For example,
@@ -60,22 +61,30 @@ HTTPS is available when a trusted certificate is appropriate for the deployment;
 HSTS.
 
 In **Server settings**, supply a currently valid PEM certificate chain and matching unencrypted private key, choose a
-port (default **3443**), and enable HTTPS. Restart Electron to apply the saved settings. Both protocols share the
+port (default **34443**, **34444** when running from source), and enable HTTPS. Restart Electron to apply the saved settings. Both protocols share the
 database. If optional HTTPS cannot start, HTTP continues and the administrator sees the error. Private keys are never
 returned by the API.
 
-For HTTP, precedence is CLI option, environment variable, saved setting, then default `34345`. Overrides do not replace
-the saved value. Server settings show an active override; remove it and restart to apply a different saved port.
+For HTTP, precedence is CLI option, environment variable, `config.json`, saved setting, then default. Overrides do not
+replace the saved value. Server settings show an active override and its source; remove it and restart to apply a
+different saved port.
 
-| CLI option               | Environment variable | Default                                                             |
-| ------------------------ | -------------------- | ------------------------------------------------------------------- |
-| `--host <address>`       | `APP_HOST`           | `0.0.0.0`                                                           |
-| `--http-port <port>`     | `APP_HTTP_PORT`      | Saved HTTP port, otherwise `34345`                                  |
-| `--data-dir <directory>` | `APP_DATA_DIR`       | Development `.dev-data`; installed Electron per-user data directory |
+| CLI option               | Environment variable | `config.json`   | Default                                                             |
+| ------------------------ | -------------------- | --------------- | ------------------------------------------------------------------- |
+| `--host <address>`       | `APP_HOST`           | `host`          | `0.0.0.0`                                                           |
+| `--http-port <port>`     | `APP_HTTP_PORT`      | `httpPort`      | Saved HTTP port, otherwise `34345` (`34346` from source)            |
+| `--data-dir <directory>` | `APP_DATA_DIR`       | `dataDirectory` | Development `.dev-data`; installed Electron per-user data directory |
 
-CLI and environment port values must also be in `1024`–`65535`; port `0` is reserved for internal test fixtures.
+To set these once, write them in `config.json`: `%APPDATA%\Media Collection\config.json` for the installed application
+on Windows (`~/.config/Media Collection/config.json` on Linux), the repository root `config.json` when running from
+source. **File → Open configuration file…** opens it (creating it when missing); changes apply at the next start. Leave
+out a key to keep the saved setting or the default; an unknown key or an invalid value stops startup with a message
+naming the file. `config.sample.json` shows every key, `--config <path>` or `APP_CONFIG` names another file, and
+[the configuration document](docs/Media%20Collection/operations/configuration.md) gives the details.
+
+CLI, environment and `config.json` port values must also be in `1024`–`65535`; port `0` is reserved for internal test fixtures.
 For example: `npm start -- --http-port 4000 --data-dir ./local-data`. If a saved port is occupied, startup offers
-Retry/Quit and reports the port. Launch once with a valid `--http-port` override, correct the saved port in Server
+Retry/Quit and reports the port. Launch once with a valid `--http-port` override (or `httpPort` in `config.json`), correct the saved port in Server
 settings, then close and reopen without that override. Existing HTTPS settings below `1024` remain visible for
 correction
 and produce an HTTPS startup error while HTTP remains available.

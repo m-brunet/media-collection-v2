@@ -1,5 +1,7 @@
 ﻿import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { setTimeout as delay } from 'node:timers/promises';
+import { readFile, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { Client } from '../api/client.js';
 import { RuntimeFixture, RuntimeSetup } from '../api/runtime-setup.js';
 import type { ServerStatus } from '../../packages/contracts/src/http.js';
@@ -317,6 +319,25 @@ async function menuLabels(runtime: ElectronRuntime) {
     return (await runtime.send({ type: 'menu-labels' })).value as MenuLabel[];
 }
 
+interface Opened {
+    paths: string[];
+    external: string[];
+}
+
+async function shownDialogs(runtime: ElectronRuntime, count: number) {
+    for (let attempt = 0; attempt < 80; attempt++) {
+        const dialogs = (await runtime.send({ type: 'dialogs' })).value as unknown[];
+
+        if (dialogs.length >= count) {
+            return dialogs;
+        }
+
+        await delay(50);
+    }
+
+    return (await runtime.send({ type: 'dialogs' })).value as unknown[];
+}
+
 async function setupPage(language?: string) {
     const current = await fixture.start(undefined, { main: true, language });
 
@@ -333,7 +354,7 @@ describe('application menu', () => {
 
         expect(menu.map((item) => item.label)).toEqual(['File', 'View', 'Maintenance']);
     });
-    it('offers About, Check for updates, Launch at startup on Windows and Exit in the File menu', async () => {
+    it('offers About, Check for updates, Launch at startup on Windows, the configuration file and Exit in the File menu', async () => {
         const current = await setupPage();
 
         const menu = await menuLabels(current.runtime);
@@ -342,6 +363,7 @@ describe('application menu', () => {
             'About Media Collection',
             'Check for updates…',
             ...(windows ? ['Launch at startup'] : []),
+            'Open configuration file…',
             '',
             'Exit',
         ]);
@@ -372,6 +394,7 @@ describe('application menu', () => {
             'À propos de Media Collection',
             'Rechercher des mises à jour…',
             ...(windows ? ['Lancer au démarrage'] : []),
+            'Ouvrir le fichier de configuration…',
             '',
             'Quitter',
         ]);
@@ -386,6 +409,36 @@ describe('application menu', () => {
             '',
             'Plein écran',
         ]);
+    });
+    it('creates and opens the configuration file from File, Open configuration file', async () => {
+        const current = await setupPage();
+        const path = join(current.directory, 'config.json');
+
+        await current.runtime.send({ type: 'menu', id: 'open-configuration' });
+
+        expect(await shownDialogs(current.runtime, 1)).toEqual([
+            {
+                title: 'Configuration file',
+                message: 'Changes apply the next time Media Collection starts.',
+                detail: path,
+                buttons: ['OK'],
+            },
+        ]);
+        expect(((await current.runtime.send({ type: 'opened' })).value as Opened).paths).toEqual([
+            path,
+        ]);
+        expect(await readFile(path, 'utf8')).toBe('{}\n');
+    });
+    it('keeps the content of an existing configuration file when opening it', async () => {
+        const current = await setupPage();
+        const path = join(current.directory, 'config.json');
+
+        await writeFile(path, '{ "host": "0.0.0.0" }');
+
+        await current.runtime.send({ type: 'menu', id: 'open-configuration' });
+
+        await shownDialogs(current.runtime, 1);
+        expect(await readFile(path, 'utf8')).toBe('{ "host": "0.0.0.0" }');
     });
     it('quits the application from File, Exit', async () => {
         const current = await setupPage();
