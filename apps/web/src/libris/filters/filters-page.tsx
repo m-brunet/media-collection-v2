@@ -31,8 +31,10 @@ export function FiltersPage({ listing }: { listing: 'books' | 'collections' }) {
     );
     const { bookcases } = useBookcases();
     const label = useFilterLabels(filter);
-    const summary = (key: 'category' | 'location' | 'ownership' | 'reading', any: string) =>
-        filter[key].map((value) => label({ key, value })).join(' · ') || any;
+    const summary = (
+        key: 'category' | 'location' | 'ownership' | 'cover' | 'price' | 'reading',
+        any: string,
+    ) => filter[key].map((value) => label({ key, value })).join(' · ') || any;
 
     return (
         <>
@@ -108,6 +110,28 @@ export function FiltersPage({ listing }: { listing: 'books' | 'collections' }) {
                             }))}
                             filter={filter}
                             field="ownership"
+                            onChange={setFilter}
+                        />
+                        <ChoiceField
+                            label={t('filters.cover')}
+                            summary={summary('cover', t('filters.anyCover'))}
+                            options={[
+                                { value: 'with', label: t('filters.withCover') },
+                                { value: 'without', label: t('filters.withoutCover') },
+                            ]}
+                            filter={filter}
+                            field="cover"
+                            onChange={setFilter}
+                        />
+                        <ChoiceField
+                            label={t('filters.price')}
+                            summary={summary('price', t('filters.anyPrice'))}
+                            options={[
+                                { value: 'with', label: t('filters.withPrice') },
+                                { value: 'without', label: t('filters.withoutPrice') },
+                            ]}
+                            filter={filter}
+                            field="price"
                             onChange={setFilter}
                         />
                         {!guest && (

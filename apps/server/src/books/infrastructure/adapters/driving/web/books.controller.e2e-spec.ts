@@ -54,6 +54,20 @@ async function member(collection: MembershipDto, ownership: 'owned' | 'not-owned
     });
 }
 
+async function withCover(saved: BookDto) {
+    const client = await app.authenticatedClient(owner);
+    const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
+    const response = await client.call<BookDto>('/books/' + saved.id + '/cover', 'PUT', undefined, {
+        raw: { bytes: png, contentType: 'image/png' },
+    });
+
+    if (response.status !== 200) {
+        throw new Error('Arranging the scenario failed: ' + response.text);
+    }
+
+    return response.body;
+}
+
 function edited(book: BookDto, changes: Parameters<typeof BookInputFixture.of>[0]) {
     const { read: _read, ...input } = BookInputFixture.of({
         title: book.title,
@@ -1177,6 +1191,75 @@ describe('GET /api/books with filters', () => {
         const client = await app.authenticatedClient(owner);
 
         const response = await client.call('/books?location=room:kitchen');
+
+        expect(response.status).toBe(400);
+    });
+    it('selects the books without a cover', async () => {
+        await withCover(
+            await created({ title: 'Covered', isbn: null, noIsbn: true, confirmDistinct: true }),
+        );
+        await created({ title: 'Bare', isbn: null, noIsbn: true, confirmDistinct: true });
+
+        const result = await titles('cover=without');
+
+        expect(result).toEqual(['Bare']);
+    });
+    it('selects the books without a price, owned or not', async () => {
+        await created({ title: 'Priced', isbn: null, noIsbn: true, confirmDistinct: true });
+        await created({
+            title: 'Unpriced',
+            isbn: null,
+            noIsbn: true,
+            confirmDistinct: true,
+            price: null,
+        });
+        await created({
+            title: 'Unpriced wish',
+            isbn: null,
+            noIsbn: true,
+            confirmDistinct: true,
+            price: null,
+            ownership: 'not-owned',
+        });
+
+        const result = await titles('price=without');
+
+        expect(result).toEqual(['Unpriced', 'Unpriced wish']);
+    });
+    it('lets a Guest select the books missing both a cover and a price', async () => {
+        await withCover(
+            await created({
+                title: 'Covered',
+                isbn: null,
+                noIsbn: true,
+                confirmDistinct: true,
+                price: null,
+            }),
+        );
+        await created({ title: 'Priced', isbn: null, noIsbn: true, confirmDistinct: true });
+        await created({
+            title: 'Empty',
+            isbn: null,
+            noIsbn: true,
+            confirmDistinct: true,
+            price: null,
+        });
+
+        const result = await titles('cover=without&price=without', guest);
+
+        expect(result).toEqual(['Empty']);
+    });
+    it('refuses an unknown cover choice', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/books?cover=missing');
+
+        expect(response.status).toBe(400);
+    });
+    it('refuses an unknown price choice', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/books?price=free');
 
         expect(response.status).toBe(400);
     });

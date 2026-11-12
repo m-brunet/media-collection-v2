@@ -276,6 +276,8 @@ export interface BookFilterParams {
     collection?: string[];
     location?: string[];
     ownership?: BookOwnership[];
+    cover?: ('with' | 'without')[];
+    price?: ('with' | 'without')[];
     reading?: ('read' | 'unread')[];
     tag?: string[];
     notTag?: string[];

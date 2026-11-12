@@ -188,6 +188,19 @@ it('shows the applied filters as removable chips with the matching count', async
     expect(await screen.findByText('6 of 842 books')).toBeInTheDocument();
 });
 
+it('names the cover and price filters on their chips', async () => {
+    filteredApi({ total: 2, items: [bookItem()] }, 842);
+
+    show('/books?cover=without&price=with');
+
+    expect(
+        await screen.findByRole('button', { name: 'Remove the filter Without cover' }),
+    ).toBeInTheDocument();
+    expect(
+        await screen.findByRole('button', { name: 'Remove the filter With price' }),
+    ).toBeInTheDocument();
+});
+
 it('names the chosen author and collection of a bookmarked filter', async () => {
     filteredApi({ total: 1, items: [bookItem()] }, 842)
         .on('GET /authors/by-id', () => ({

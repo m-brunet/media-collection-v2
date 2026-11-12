@@ -12,6 +12,8 @@ function params(overrides: Partial<BookFilterParams> = {}): BookFilterParams {
         collection: [],
         location: [],
         ownership: [],
+        cover: [],
+        price: [],
         reading: [],
         tag: [],
         notTag: [],
@@ -74,5 +76,12 @@ describe('BookFilterQueryMapper', () => {
             ownerships: ['owned'],
             reading: ['read'],
         });
+    });
+    it('keeps cover and price choices', () => {
+        const query = params({ cover: ['without'], price: ['with', 'without'] });
+
+        const result = BookFilterQueryMapper.toFilter(query);
+
+        expect(result).toMatchObject({ covers: ['without'], prices: ['with', 'without'] });
     });
 });

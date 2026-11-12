@@ -105,6 +105,48 @@ it('clears every choice on the page', async () => {
     expect(router.state.location.search).toBe('');
 });
 
+it('writes the cover and price choices to the address', async () => {
+    api();
+    const router = show('/books/filters');
+
+    await screen.findByRole('radiogroup', { name: 'Fantasy' });
+    await userEvent.click(screen.getByText('Any cover'));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Without cover' }));
+    await userEvent.click(screen.getByText('Any price'));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Without price' }));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Show results' }));
+
+    expect(router.state.location.search).toBe('?cover=without&price=without');
+});
+
+it('offers the cover and price to an Owner', async () => {
+    api();
+
+    show('/books/filters');
+
+    expect(await screen.findByText('Cover')).toBeInTheDocument();
+    expect(screen.getByText('Price')).toBeInTheDocument();
+});
+
+it('offers the cover and price to a Guest', async () => {
+    api('guest');
+
+    show('/books/filters');
+
+    expect(await screen.findByText('Cover')).toBeInTheDocument();
+    expect(screen.getByText('Price')).toBeInTheDocument();
+});
+
+it('summarises the chosen cover and price', async () => {
+    api();
+
+    show('/books/filters?cover=with&price=without');
+
+    expect(await screen.findByText('With cover', { selector: 'summary' })).toBeInTheDocument();
+    expect(screen.getByText('Without price', { selector: 'summary' })).toBeInTheDocument();
+});
+
 it('offers the reading status to account holders only', async () => {
     api('guest');
 
