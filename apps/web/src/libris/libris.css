@@ -989,6 +989,47 @@ body {
     max-width: 480px;
 }
 
+.batch-selection__books {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: var(--space-4) 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.batch-form__choice {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.batch-summary__books {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.batch-summary__book {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.batch-summary__title {
+    font-weight: 600;
+}
+
+.batch-summary__lines {
+    margin: 0;
+    padding-left: var(--space-5);
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+}
+
 .volume-list {
     gap: var(--space-3);
 }

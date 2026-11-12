@@ -89,6 +89,26 @@ export class Book {
         return true;
     }
 
+    useGeneratedTitle(
+        collection: { name: string; volumeFrom: number; volumeTo: number },
+        now: string,
+    ): boolean {
+        const title = GeneratedTitle.of(
+            collection.name,
+            collection.volumeFrom,
+            collection.volumeTo,
+        ).text;
+
+        if (this.state.details.titleGenerated && title === this.state.details.title) {
+            return false;
+        }
+
+        this.state.details = Book.validate({ ...this.state.details, title, titleGenerated: true });
+        this.state.updatedAt = now;
+
+        return true;
+    }
+
     keepTitle(now: string): boolean {
         if (!this.state.details.titleGenerated) {
             return false;

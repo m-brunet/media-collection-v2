@@ -5,8 +5,9 @@ import type {
     BookLocationReader,
 } from '../../../books/application/ports/driven/book-location-reader.interface.js';
 import type { ShelfAssignment } from '../../../books/application/ports/driven/shelf-assignment.interface.js';
+import type { ShelfLocator } from '../../../books/application/ports/driven/shelf-locator.interface.js';
 
-export class BookShelfAssignment implements ShelfAssignment, BookLocationReader {
+export class BookShelfAssignment implements ShelfAssignment, BookLocationReader, ShelfLocator {
     constructor(
         private readonly store: BookShelfStore,
         private readonly loader: LocationLoader,
@@ -19,7 +20,7 @@ export class BookShelfAssignment implements ShelfAssignment, BookLocationReader 
             return null;
         }
 
-        const location = await this.location(shelfId);
+        const location = await this.locate(shelfId);
 
         await this.store.place(bookId, shelfId);
 
@@ -29,10 +30,10 @@ export class BookShelfAssignment implements ShelfAssignment, BookLocationReader 
     async of(bookId: string): Promise<BookLocation | null> {
         const shelfId = await this.store.shelfOf(bookId);
 
-        return shelfId === null ? null : this.location(shelfId);
+        return shelfId === null ? null : this.locate(shelfId);
     }
 
-    private async location(shelfId: string): Promise<BookLocation> {
+    async locate(shelfId: string): Promise<BookLocation> {
         const shelf = await this.loader.shelf(shelfId);
         const bookcase = await this.loader.bookcase(shelf.snapshot.bookcaseId);
 

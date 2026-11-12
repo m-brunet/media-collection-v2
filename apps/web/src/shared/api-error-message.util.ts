@@ -80,6 +80,7 @@ export class ApiErrorMessage {
         'book-not-owned': 'reason.bookNotOwned',
         'book-already-lent': 'reason.bookAlreadyLent',
         'book-lent': 'reason.bookLent',
+        'book-outside-collection': 'reason.bookOutsideCollection',
         'loan-missing': 'reason.loanMissing',
         'loan-already-returned': 'reason.loanAlreadyReturned',
         'loans-different-receivers': 'reason.loansDifferentReceivers',

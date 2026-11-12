@@ -4,6 +4,8 @@ import type { BookCategory, Ownership } from '../domain/entities/book.entity.js'
 
 export type AuthorChoice = { id: string } | { name: string; distinct?: boolean };
 
+export type AuthorMatch = { id: string | null; name: string };
+
 export type OrganisationRequest = { shelfId?: string | null; tags?: readonly TagChoice[] };
 
 export interface BookInput {

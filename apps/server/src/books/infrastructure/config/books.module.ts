@@ -17,8 +17,11 @@ import type { BookLoanReader } from '../../application/ports/driven/book-loan-re
 import type { LoanHistory } from '../../application/ports/driven/loan-history.interface.js';
 import type { ShelfAssignment } from '../../application/ports/driven/shelf-assignment.interface.js';
 import type { TagAssignment } from '../../application/ports/driven/tag-assignment.interface.js';
+import type { ShelfLocator } from '../../application/ports/driven/shelf-locator.interface.js';
+import type { TagFinder } from '../../application/ports/driven/tag-finder.interface.js';
 import { AuthorMatcher } from '../../application/services/author-matcher.service.js';
 import { AuthorResolver } from '../../application/services/author-resolver.service.js';
+import { BookBatchPlanner } from '../../application/services/book-batch-planner.service.js';
 import { BookDetailsBuilder } from '../../application/services/book-details-builder.service.js';
 import { BookIdentityCheck } from '../../application/services/book-identity-check.service.js';
 import { BookLoader } from '../../application/services/book-loader.service.js';
@@ -34,6 +37,7 @@ import { CorrectAuthor } from '../../application/use-cases/correct-author.usecas
 import { CreateBook } from '../../application/use-cases/create-book.usecase.js';
 import { ImportBook } from '../../application/use-cases/import-book.usecase.js';
 import { DeleteBook } from '../../application/use-cases/delete-book.usecase.js';
+import { EditBooksInBatch } from '../../application/use-cases/edit-books-in-batch.usecase.js';
 import { DeletePersonalNote } from '../../application/use-cases/delete-personal-note.usecase.js';
 import { NameAuthors } from '../../application/use-cases/name-authors.usecase.js';
 import { FindAuthors } from '../../application/use-cases/find-authors.usecase.js';
@@ -54,6 +58,7 @@ import type { IdGenerator } from '../../../shared/application/ports/driven/id-ge
 import type { AuditedOperation } from '../../../shared/application/services/audited-operation.service.js';
 import { AuthorsController } from '../adapters/driving/web/authors.controller.js';
 import { BooksController } from '../adapters/driving/web/books.controller.js';
+import { BookBatchController } from '../adapters/driving/web/book-batch.controller.js';
 import { CoversController } from '../adapters/driving/web/covers.controller.js';
 import { CollectionReadingController } from '../adapters/driving/web/collection-reading.controller.js';
 import { PersonalReadingController } from '../adapters/driving/web/personal-reading.controller.js';
@@ -98,6 +103,8 @@ export interface BooksDependencies {
     locationReader: BookLocationReader;
     tags: TagAssignment;
     tagReader: BookTagReader;
+    shelfLocator: ShelfLocator;
+    tagFinder: TagFinder;
     loans: BookLoanReader;
     loanHistory: LoanHistory;
     lookup: BookLookupSources;
@@ -120,12 +127,16 @@ const token = {
     locationReader: 'BOOKS_LOCATION_READER',
     tags: 'BOOKS_TAG_ASSIGNMENT',
     tagReader: 'BOOKS_TAG_READER',
+    shelfLocator: 'BOOKS_SHELF_LOCATOR',
+    tagFinder: 'BOOKS_TAG_FINDER',
     loans: 'BOOKS_LOAN_READER',
     loanHistory: 'BOOKS_LOAN_HISTORY',
     ids: 'BOOKS_IDS',
     clock: 'BOOKS_CLOCK',
     operations: 'BOOKS_AUDITED_OPERATION',
+    authorResolver: 'BOOKS_AUTHOR_RESOLVER',
     builder: 'BOOKS_DETAILS_BUILDER',
+    batchPlanner: 'BOOKS_BATCH_PLANNER',
     identity: 'BOOKS_IDENTITY_CHECK',
     loader: 'BOOKS_LOADER',
     viewer: 'BOOKS_VIEWER',
@@ -158,10 +169,15 @@ const serviceProviders: Provider[] = [
         useFactory: (): CoverTrimmer => new SharpCoverTrimmer(),
     },
     {
-        provide: token.builder,
+        provide: token.authorResolver,
         inject: [token.authors, token.ids, token.clock],
         useFactory: (authors: AuthorRepository, ids: IdGenerator, clock: Clock) =>
-            new BookDetailsBuilder(new AuthorResolver(authors, ids, clock)),
+            new AuthorResolver(authors, ids, clock),
+    },
+    {
+        provide: token.builder,
+        inject: [token.authorResolver],
+        useFactory: (resolver: AuthorResolver) => new BookDetailsBuilder(resolver),
     },
     {
         provide: token.identity,
@@ -218,6 +234,45 @@ const serviceProviders: Provider[] = [
             organisation: BookOrganisationReader,
             loans: BookLoanReader,
         ) => new BookViewer(catalog, readings, notes, collections, organisation, loans),
+    },
+    {
+        provide: token.batchPlanner,
+        inject: [
+            token.loader,
+            token.collectionReader,
+            token.authors,
+            token.organisation,
+            token.shelfLocator,
+            token.tagFinder,
+            token.readings,
+            token.guard,
+            token.identity,
+            token.clock,
+        ],
+        useFactory: (
+            loader: BookLoader,
+            memberships: BookCollectionReader,
+            authors: AuthorRepository,
+            organisation: BookOrganisationReader,
+            shelves: ShelfLocator,
+            tags: TagFinder,
+            readings: ReadingStatusStore,
+            guard: LentBookGuard,
+            identity: BookIdentityCheck,
+            clock: Clock,
+        ) =>
+            new BookBatchPlanner(
+                loader,
+                memberships,
+                authors,
+                organisation,
+                shelves,
+                tags,
+                readings,
+                guard,
+                identity,
+                clock,
+            ),
     },
     {
         provide: token.removal,
@@ -371,6 +426,39 @@ const useCaseProviders: Provider[] = [
                 guard,
                 viewer,
                 clock,
+                operations,
+            ),
+    },
+    {
+        provide: 'BOOKS_EDIT_IN_BATCH',
+        inject: [
+            token.batchPlanner,
+            token.authorResolver,
+            token.books,
+            token.authors,
+            token.collections,
+            token.organiser,
+            token.readings,
+            token.operations,
+        ],
+        useFactory: (
+            planner: BookBatchPlanner,
+            resolver: AuthorResolver,
+            books: BookRepository,
+            authors: AuthorRepository,
+            collections: CollectionMembership,
+            organiser: BookOrganiser,
+            readings: ReadingStatusStore,
+            operations: AuditedOperation,
+        ) =>
+            new EditBooksInBatch(
+                planner,
+                resolver,
+                books,
+                authors,
+                collections,
+                organiser,
+                readings,
                 operations,
             ),
     },
@@ -586,6 +674,7 @@ export class BooksModule {
         return {
             module: BooksModule,
             controllers: [
+                BookBatchController,
                 BooksController,
                 AuthorsController,
                 CoversController,

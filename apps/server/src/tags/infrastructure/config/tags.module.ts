@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { ValueProviders } from '../../../shared/infrastructure/config/value-providers.helper.js';
 import type { BookTagReader } from '../../../books/application/ports/driven/book-tag-reader.interface.js';
 import type { TagAssignment } from '../../../books/application/ports/driven/tag-assignment.interface.js';
+import type { TagFinder } from '../../../books/application/ports/driven/tag-finder.interface.js';
 import type { BookTagStore } from '../../application/ports/driven/book-tag-store.interface.js';
 import type { TagRepository } from '../../application/ports/driven/tag-repository.interface.js';
 import { BookTagAssignment } from '../../application/services/book-tag-assignment.service.js';
@@ -120,7 +121,7 @@ export class TagsModule {
         store: BookTagStore,
         ids: IdGenerator,
         clock: Clock,
-    ): TagAssignment & BookTagReader {
+    ): TagAssignment & BookTagReader & TagFinder {
         return new BookTagAssignment(tags, store, new TagLoader(tags), ids, clock);
     }
 }

@@ -67,4 +67,25 @@ describe('BookShelfAssignment', () => {
 
         expect(result).toBeNull();
     });
+    it('locates a shelf without placing any book on it', async () => {
+        const current = LocationDoubles.furniture();
+        const { bookcase, shelf } = await LocationDoubles.withShelf(current, 'Oak', 'Top');
+
+        const result = await current.assignment.locate(shelf.id);
+
+        expect(result).toEqual({
+            bookcaseId: bookcase.id,
+            bookcaseName: 'Oak',
+            shelfId: shelf.id,
+            shelfName: 'Top',
+        });
+        expect(current.store.shelves.size).toBe(0);
+    });
+    it('refuses to locate an unknown shelf', async () => {
+        const current = LocationDoubles.furniture();
+
+        const result = current.assignment.locate('unknown');
+
+        await expect(result).rejects.toMatchObject({ reason: 'shelf-missing' });
+    });
 });

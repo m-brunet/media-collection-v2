@@ -41,6 +41,8 @@ export interface TestAppContext {
         | 'locationReader'
         | 'tags'
         | 'tagReader'
+        | 'shelfLocator'
+        | 'tagFinder'
         | 'loans'
         | 'loanHistory'
         | 'lookup'

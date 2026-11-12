@@ -4,6 +4,10 @@ import { Failure } from '../../../shared/domain/exceptions/failure.js';
 export class LentBookGuard {
     constructor(private readonly loans: BookLoanReader) {}
 
+    async isLent(bookId: string): Promise<boolean> {
+        return (await this.loans.of(bookId)) !== null;
+    }
+
     async ensureNotLent(bookId: string): Promise<void> {
         const loan = await this.loans.of(bookId);
 

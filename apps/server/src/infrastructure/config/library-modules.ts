@@ -79,6 +79,8 @@ export class LibraryModules {
                     locationReader: shelving,
                     tags: tagging,
                     tagReader: tagging,
+                    shelfLocator: shelving,
+                    tagFinder: tagging,
                     loans: LendingModule.bookLoans(loans, receivers),
                     loanHistory: LendingModule.history(loans),
                     ids,

@@ -66,6 +66,34 @@ The desktop collection details page has the same personal **Read** toggle as a b
 - Like a book's reading status, it is personal: Owners/Admin only, no Guest display, and another account's status never changes. The change is one audited operation on the collection, with each changed book recorded as a related change.
 - Desktop only: Leaf does not offer it.
 
+## Batch edit
+
+The desktop collection details page lets Owners/Admin change several books of the collection at once (decided 2026-11-10 and 2026-11-11, issue #24). A batch only holds books of that one collection.
+
+- **Choosing the books:** **Edit several** turns the volume list into a list of the collection's books, each once (an omnibus is listed once), with a checkbox, **Select all** and **Select owned**. **Edit N books** opens the batch form. Guests do not see the mode.
+- **Fields:** each field starts as **Leave unchanged**. A clearable field has three states: Leave unchanged, set to a value, or an explicit **Clear**, so an empty input never clears by accident.
+
+  | Field | How the batch value applies |
+  |---|---|
+  | Category (Books, Manga, Comics) | Replaced. See "To Books" below |
+  | Ownership (Owned, Not owned) | Replaced. A lent book set to Not owned is skipped |
+  | Publisher | Replaced, or cleared |
+  | Price | Replaced, or cleared |
+  | Shelf (bookcase and shelf) | Replaced, or cleared (no physical location) |
+  | Tags | **Add these** and **remove these** (existing tags only), never a full replacement: each book's other tags stay |
+  | Authors | The whole list replaced, in the typed order. The similar-author check runs once on the typed names, as on the book form |
+  | Own reading status | Read / Not read for the **signed-in account only** |
+  | Titles | **Leave unchanged / Use the generated title** |
+
+- **Never in a batch:** ISBN, cover, title text, summary, page count, publication date, personal note, collection membership and volume numbers.
+- **Use the generated title** only changes hand-written titles of the chosen **Manga and Comics** books: they become `Name Vol. N` (`Name Vol. N–M` for an omnibus) and generated. Books are left out. Choosing the books and this option is the explicit choice; hand-written titles are never replaced by default.
+- **To Books:** changing Manga or Comics books with a generated title to Books keeps each current `Name Vol. N` as a hand-written title, as when a whole collection is deleted. No title has to be typed per book.
+- **Summary before saving:** the server plans the batch without saving it. The summary lists, per book, each change as "old → new" (including "old title → new title"), the books already as asked, and the books **left out with the reason**. Saving applies the changes to the other books in **one transaction**.
+- **A book that cannot take a change is skipped**, not the whole batch, and gets **none** of the batch's changes, so a book is never half-edited. Reasons: a lent book set to Not owned; a book without ISBN whose new authors would make it a possible duplicate of another book (the chosen books are not compared with each other); Use the generated title on a Books book.
+- **Refusals:** the whole request is refused when one chosen book is not (or no longer) in the collection, when a value is invalid (for example a price), or when a typed author looks like an existing one: the form then asks once which author is meant and plans again. A change of ownership follows the duplicate-purchase rules below; a coverage conflict refuses the save.
+- **Audit:** one audited operation on the collection (`collection.books-batch-edited`, the batch edit of that collection), with each book's changes as related changes (`book.updated`, `book.organised`, `book.reading-status-changed`), as a collection rename records retitled books.
+- Desktop only: Leaf does not offer it. The collection Read button (above) stays separate; the batch reading status is for a chosen selection.
+
 ## Duplicate-purchase prevention
 
 Coverage overlap is allowed only between Owned books. Not Owned books cannot overlap either Owned or Not Owned coverage, including omnibus ranges. Apply this rule to additions, coverage edits, ownership changes, and collection moves. Any partial overlap blocks the entire conflicting operation unless resolved explicitly; do not silently trim or split a book.
@@ -110,6 +138,12 @@ A separate desktop page mirroring mobile ownership progression is future scope, 
 11. An unfinished collection with all known volumes Owned stays visible on mobile with last owned and no known gaps.
 12. Mobile quick add of a saved ordinary Not Owned book requires confirmation; inferred volumes and omnibus books cannot use it.
 13. Owned 1 read, Owned 2 unread, Not Owned 3: the collection shows "Not read"; pressing it marks 2 read and leaves 3 unchanged, and the toggle shows "Read". Pressing "Read" and confirming marks 1 and 2 not read; another Owner's statuses are unchanged.
+14. Batch edit of Gunnm 1–3, Publisher set to Glénat, Price left unchanged: the three books get Glénat and keep their prices. Price set to Clear: the three prices become unknown.
+15. Batch edit of Gunnm 1 (lent) and 2, Ownership Not owned and Publisher Glénat: the summary lists 1 as left out ("Lent: cannot be set to Not owned"); saving changes 2 only, and 1 keeps its publisher too.
+16. Gunnm 1 titled "Gunnm, the first" (Manga) and a Books record "Gunnm, the novel", Use the generated title: the summary shows "Gunnm, the first → Gunnm Vol. 1" and lists the novel as left out.
+17. Gunnm 1–2 with generated titles changed to Books: they keep "Gunnm Vol. 1" and "Gunnm Vol. 2" as hand-written titles.
+18. Add tag Cyberpunk and remove tag Old on a book tagged History and Old: it ends with Cyberpunk and History.
+19. Saving records one operation: the collection entry plus, per changed book, its related changes. Another account's reading status never changes.
 
 ## Implementation references
 

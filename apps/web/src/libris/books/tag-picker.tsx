@@ -7,13 +7,17 @@ import { NamePicker } from './name-picker';
 
 export function TagPicker({
     tags,
+    label,
     hint,
     error,
+    existingOnly = false,
     onChange,
 }: {
     tags: DraftTag[];
+    label?: string;
     hint?: string;
     error?: string;
+    existingOnly?: boolean;
     onChange(tags: DraftTag[]): void;
 }) {
     const { t } = useI18n();
@@ -24,10 +28,11 @@ export function TagPicker({
 
     return (
         <NamePicker<DraftTag>
-            label={t('tags.field')}
+            label={label ?? t('tags.field')}
             hint={hint}
             error={error}
-            placeholder={t('tags.findOrCreate')}
+            allowNew={!existingOnly}
+            placeholder={t(existingOnly ? 'tags.find' : 'tags.findOrCreate')}
             values={tags}
             search={search}
             fromChoice={(tag) => ({ id: tag.id, name: tag.name })}

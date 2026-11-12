@@ -60,4 +60,47 @@ describe('AuthorResolver', () => {
 
         expect(current.authors.authors.size).toBe(2);
     });
+    it('matches chosen and equivalent authors with their names without creating one', async () => {
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
+        const clarke = book.authors[0]!.id;
+
+        const result = await subject(current).match([
+            { name: 'SUSANNA CLARKE' },
+            { id: clarke },
+            { name: ' Ursula K. Le Guin ' },
+        ]);
+
+        expect(result).toEqual([
+            { id: clarke, name: 'Susanna Clarke' },
+            { id: clarke, name: 'Susanna Clarke' },
+            { id: null, name: 'Ursula K. Le Guin' },
+        ]);
+        expect(current.authors.authors.size).toBe(1);
+    });
+    it('offers similar authors when matching names', async () => {
+        const current = BookDoubles.library();
+
+        await BookDoubles.saved(current);
+
+        const result = subject(current).match([{ name: 'Susana Clarke' }]);
+
+        await expect(result).rejects.toMatchObject({ reason: 'author-similar' });
+    });
+    it('matches a similar author confirmed as someone else as a new one', async () => {
+        const current = BookDoubles.library();
+
+        await BookDoubles.saved(current);
+
+        const result = await subject(current).match([{ name: 'Susana Clarke', distinct: true }]);
+
+        expect(result).toEqual([{ id: null, name: 'Susana Clarke' }]);
+    });
+    it('reports a matched author that no longer exists', async () => {
+        const current = BookDoubles.library();
+
+        const result = subject(current).match([{ id: 'gone' }]);
+
+        await expect(result).rejects.toMatchObject({ code: 'not_found', reason: 'author-missing' });
+    });
 });

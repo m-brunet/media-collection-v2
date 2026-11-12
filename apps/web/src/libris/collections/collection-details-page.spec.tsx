@@ -292,6 +292,185 @@ it('gives a Guest no reading status', async () => {
     expect(api.calls.map((call) => call.route)).not.toContain('GET /collections/c1/reading');
 });
 
+function batchApi() {
+    return new FakeApi()
+        .signedIn(account())
+        .on('GET /collections/c1', () => ({ status: 200, body: batman() }))
+        .on('POST /books/batch-edit', (body) => ({
+            status: 200,
+            body: {
+                collection: { id: 'c1', name: 'Batman' },
+                saved: !(body as { preview: boolean }).preview,
+                books: [
+                    {
+                        id: 'omnibus',
+                        title: 'Batman omnibus',
+                        before: {
+                            title: 'Batman omnibus',
+                            titleGenerated: false,
+                            priceCents: 2500,
+                        },
+                        after: { title: 'Batman Vol. 1–3', titleGenerated: true, priceCents: null },
+                    },
+                    { id: 'year-one', title: 'Year One', before: {}, after: {} },
+                ],
+                skipped: [{ id: 'twelve', title: 'Batman 12', reason: 'book-lent' }],
+            },
+        }));
+}
+
+async function chooseAllAndOpen() {
+    await userEvent.click(await screen.findByRole('button', { name: 'Edit several' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Select all' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Edit 3 books' }));
+
+    return screen.getByRole('dialog', { name: 'Edit the chosen books (3)' });
+}
+
+async function chooseGeneratedTitles(dialog: HTMLElement) {
+    await userEvent.selectOptions(
+        within(dialog).getByRole('combobox', { name: 'Titles' }),
+        'generated',
+    );
+}
+
+it('offers a Guest no Edit several mode', async () => {
+    new FakeApi().signedIn(account({ role: 'guest' })).on('GET /collections/c1', () => ({
+        status: 200,
+        body: batman(),
+    }));
+
+    show();
+
+    await screen.findByRole('heading', { name: 'Batman' });
+    expect(screen.queryByRole('button', { name: 'Edit several' })).not.toBeInTheDocument();
+});
+
+it('adds a checkbox to each book in the Edit several mode', async () => {
+    batchApi();
+    show();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Edit several' }));
+
+    expect(screen.getAllByRole('checkbox').map((box) => box.parentElement!.textContent)).toEqual([
+        'Volumes 1–3 · Batman omnibus · Owned',
+        'Volume 1 · Year One · Owned',
+        'Volume 12 · Batman 12 · Not owned',
+    ]);
+    expect(screen.getByRole('button', { name: 'Edit 0 books' })).toBeDisabled();
+});
+
+it('selects the owned books of the collection', async () => {
+    batchApi();
+    show();
+    await userEvent.click(await screen.findByRole('button', { name: 'Edit several' }));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Select owned' }));
+
+    expect(screen.getByRole('checkbox', { name: /Year One/ })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: /Batman omnibus/ })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: /Batman 12/ })).not.toBeChecked();
+    expect(screen.getByRole('button', { name: 'Edit 2 books' })).toBeEnabled();
+});
+
+it('selects every book of the collection', async () => {
+    batchApi();
+    show();
+    await userEvent.click(await screen.findByRole('button', { name: 'Edit several' }));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Select all' }));
+
+    expect(screen.getAllByRole('checkbox').map((box) => (box as HTMLInputElement).checked)).toEqual(
+        [true, true, true],
+    );
+});
+
+it('sends only the fields changed from Leave unchanged', async () => {
+    const api = batchApi();
+
+    show();
+    const dialog = await chooseAllAndOpen();
+
+    await userEvent.selectOptions(
+        within(dialog).getByRole('combobox', { name: 'Publisher' }),
+        'set',
+    );
+    await userEvent.type(
+        within(dialog).getByRole('textbox', { name: 'Publisher: new value' }),
+        'DC Comics',
+    );
+    await userEvent.selectOptions(
+        within(dialog).getByRole('combobox', { name: 'Price (€)' }),
+        'clear',
+    );
+    await chooseGeneratedTitles(dialog);
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Review changes' }));
+
+    expect(api.calls.find((call) => call.route === 'POST /books/batch-edit')?.body).toEqual({
+        collectionId: 'c1',
+        bookIds: ['omnibus', 'year-one', 'twelve'],
+        preview: true,
+        changes: { publisher: 'DC Comics', price: null, generatedTitles: true },
+    });
+});
+
+it('asks for a change before reviewing', async () => {
+    const api = batchApi();
+
+    show();
+    const dialog = await chooseAllAndOpen();
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Review changes' }));
+
+    expect(within(dialog).getByText('Choose at least one change.')).toBeInTheDocument();
+    expect(api.calls.map((call) => call.route)).not.toContain('POST /books/batch-edit');
+});
+
+it('summarises the title changes and the books left out before saving', async () => {
+    batchApi();
+    show();
+    const dialog = await chooseAllAndOpen();
+
+    await chooseGeneratedTitles(dialog);
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Review changes' }));
+
+    const changes = await within(dialog).findByRole('list', { name: 'Planned changes' });
+    const skipped = within(dialog).getByRole('list', { name: 'Left out' });
+
+    expect(
+        within(changes).getByText('Title: Batman omnibus → Batman Vol. 1–3'),
+    ).toBeInTheDocument();
+    expect(within(changes).getByText('Price: €25.00 → none')).toBeInTheDocument();
+    expect(within(changes).getByText('Already as asked: no change')).toBeInTheDocument();
+    expect(within(skipped).getByText('Lent: cannot be set to Not owned')).toBeInTheDocument();
+});
+
+it('saves the batch and refreshes the collection', async () => {
+    const api = batchApi();
+
+    show();
+    const dialog = await chooseAllAndOpen();
+
+    await chooseGeneratedTitles(dialog);
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Review changes' }));
+    await within(dialog).findByRole('list', { name: 'Planned changes' });
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save changes' }));
+
+    expect(await screen.findByText('1 book updated.')).toBeInTheDocument();
+    expect(
+        api.calls.filter((call) => call.route === 'POST /books/batch-edit').at(-1)?.body,
+    ).toMatchObject({
+        preview: false,
+        changes: { generatedTitles: true },
+    });
+    expect(api.calls.filter((call) => call.route === 'GET /collections/c1')).toHaveLength(2);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+});
+
 function reading(read: boolean, ownedCount = 3) {
     return new FakeApi()
         .signedIn(account())

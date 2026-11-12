@@ -90,4 +90,23 @@ describe('BookTagAssignment', () => {
 
         expect(result.map((tag) => tag.name)).toEqual(['Adventure', 'Fantasy']);
     });
+    it('finds tags by id, ordered by name and each once', async () => {
+        const current = TagDoubles.labels();
+        const fantasy = await TagDoubles.tagged(current, 'Fantasy');
+        const adventure = await TagDoubles.tagged(current, 'Adventure');
+
+        const result = await current.assignment.find([fantasy.id, adventure.id, fantasy.id]);
+
+        expect(result).toEqual([
+            { id: adventure.id, name: 'Adventure' },
+            { id: fantasy.id, name: 'Fantasy' },
+        ]);
+    });
+    it('refuses to find an unknown tag', async () => {
+        const current = TagDoubles.labels();
+
+        const result = current.assignment.find(['unknown']);
+
+        await expect(result).rejects.toMatchObject({ code: 'not_found', reason: 'tag-missing' });
+    });
 });

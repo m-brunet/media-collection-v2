@@ -201,6 +201,43 @@ it('changes nothing when keeping a title that was supplied', () => {
     expect(subject.snapshot.updatedAt).toBe(created);
 });
 
+it('turns a supplied title of a Manga into the generated one', () => {
+    const subject = book({ title: 'Gunnm, tome trois', category: 'manga' });
+
+    const result = subject.useGeneratedTitle({ name: 'Gunnm', volumeFrom: 3, volumeTo: 3 }, later);
+
+    expect(result).toBe(true);
+    expect(subject.details).toMatchObject({ title: 'Gunnm Vol. 3', titleGenerated: true });
+    expect(subject.snapshot.updatedAt).toBe(later);
+});
+
+it('generates the title of an omnibus from its coverage', () => {
+    const subject = book({ title: 'Gunnm intégrale', category: 'comics' });
+
+    const result = subject.useGeneratedTitle({ name: 'Gunnm', volumeFrom: 1, volumeTo: 3 }, later);
+
+    expect(result).toBe(true);
+    expect(subject.details.title).toBe('Gunnm Vol. 1–3');
+});
+
+it('leaves a title that is already the generated one unchanged', () => {
+    const subject = generated();
+
+    const result = subject.useGeneratedTitle({ name: 'Gunnm', volumeFrom: 3, volumeTo: 3 }, later);
+
+    expect(result).toBe(false);
+    expect(subject.snapshot.updatedAt).toBe(created);
+});
+
+it('refuses a generated title for a Books record when asked for one', () => {
+    const subject = book({ title: 'Gunnm Vol. 3' });
+
+    const operation = () =>
+        subject.useGeneratedTitle({ name: 'Gunnm', volumeFrom: 3, volumeTo: 3 }, later);
+
+    expect(operation).toThrow(expect.objectContaining({ reason: 'title-required' }));
+});
+
 it('orders numbered titles by the value of their numbers', () => {
     const books = ['Gunnm Vol. 10', 'Gunnm Vol. 2', 'Gunnm Vol. 1–3'].map((title) =>
         generated({ title }),

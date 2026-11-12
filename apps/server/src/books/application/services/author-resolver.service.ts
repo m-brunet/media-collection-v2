@@ -1,4 +1,4 @@
-import type { AuthorChoice } from '../book-input.js';
+import type { AuthorChoice, AuthorMatch } from '../book-input.js';
 import type { AuthorRepository } from '../ports/driven/author-repository.interface.js';
 import { Author } from '../../domain/entities/author.entity.js';
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
@@ -18,32 +18,69 @@ export class AuthorResolver {
 
         for (const choice of choices) {
             resolved.push(
-                'id' in choice ? await this.existing(choice.id) : await this.named(choice),
+                'id' in choice ? (await this.existing(choice.id)).id : await this.named(choice),
             );
         }
 
         return resolved;
     }
 
-    private async existing(id: string): Promise<string> {
+    async match(choices: AuthorChoice[]): Promise<AuthorMatch[]> {
+        const matches: AuthorMatch[] = [];
+
+        for (const choice of choices) {
+            if ('id' in choice) {
+                matches.push(await this.existing(choice.id));
+            } else {
+                const name = Author.name(choice.name);
+
+                matches.push((await this.equivalent(name, choice.distinct)) ?? { id: null, name });
+            }
+        }
+
+        return matches;
+    }
+
+    private async existing(id: string): Promise<{ id: string; name: string }> {
         const author = await this.authors.findById(id);
 
         if (!author) {
             throw new Failure('not_found', 'That author no longer exists.', 'author-missing');
         }
 
-        return id;
+        return { id, name: author.snapshot.name };
     }
 
     private async named(choice: { name: string; distinct?: boolean }): Promise<string> {
         const name = Author.name(choice.name);
+        const equivalent = await this.equivalent(name, choice.distinct);
+
+        if (equivalent) {
+            return equivalent.id;
+        }
+
+        const author = new Author({
+            id: this.ids.next(),
+            name,
+            createdAt: this.clock.now().toISOString(),
+        });
+
+        await this.authors.create(author);
+
+        return author.snapshot.id;
+    }
+
+    private async equivalent(
+        name: string,
+        distinct: boolean | undefined,
+    ): Promise<{ id: string; name: string } | null> {
         const equivalent = await this.authors.findByKey(NameKey.of(name));
 
         if (equivalent) {
-            return equivalent.snapshot.id;
+            return { id: equivalent.snapshot.id, name: equivalent.snapshot.name };
         }
 
-        if (!choice.distinct) {
+        if (!distinct) {
             const similar = (await this.authors.list()).filter((author) =>
                 NameKey.similar(author.snapshot.name, name),
             );
@@ -64,14 +101,6 @@ export class AuthorResolver {
             }
         }
 
-        const author = new Author({
-            id: this.ids.next(),
-            name,
-            createdAt: this.clock.now().toISOString(),
-        });
-
-        await this.authors.create(author);
-
-        return author.snapshot.id;
+        return null;
     }
 }

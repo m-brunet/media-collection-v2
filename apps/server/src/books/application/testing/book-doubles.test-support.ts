@@ -30,12 +30,15 @@ import type {
 } from '../ports/driven/book-location-reader.interface.js';
 import type { BookTag, BookTagReader } from '../ports/driven/book-tag-reader.interface.js';
 import type { ShelfAssignment } from '../ports/driven/shelf-assignment.interface.js';
+import type { ShelfLocator } from '../ports/driven/shelf-locator.interface.js';
+import type { TagFinder } from '../ports/driven/tag-finder.interface.js';
 import type {
     TagAssignment,
     TagChoice,
     TagOutcome,
 } from '../ports/driven/tag-assignment.interface.js';
 import { AuthorResolver } from '../services/author-resolver.service.js';
+import { BookBatchPlanner } from '../services/book-batch-planner.service.js';
 import { BookDetailsBuilder } from '../services/book-details-builder.service.js';
 import { BookIdentityCheck } from '../services/book-identity-check.service.js';
 import { BookLoader } from '../services/book-loader.service.js';
@@ -358,7 +361,7 @@ export class MemoryCatalog implements BookCatalog {
     }
 }
 
-export class MemoryShelving implements ShelfAssignment, BookLocationReader {
+export class MemoryShelving implements ShelfAssignment, BookLocationReader, ShelfLocator {
     readonly known = new Map<string, BookLocation>([
         [
             'shelf-3',
@@ -375,13 +378,19 @@ export class MemoryShelving implements ShelfAssignment, BookLocationReader {
             return null;
         }
 
+        const location = await this.locate(shelfId);
+
+        this.placed.set(bookId, shelfId);
+
+        return location;
+    }
+
+    async locate(shelfId: string): Promise<BookLocation> {
         const location = this.known.get(shelfId);
 
         if (!location) {
             throw new Failure('not_found', 'Unknown shelf', 'shelf-missing');
         }
-
-        this.placed.set(bookId, shelfId);
 
         return location;
     }
@@ -393,7 +402,7 @@ export class MemoryShelving implements ShelfAssignment, BookLocationReader {
     }
 }
 
-export class MemoryTagging implements TagAssignment, BookTagReader {
+export class MemoryTagging implements TagAssignment, BookTagReader, TagFinder {
     readonly known = new Map<string, string>([['history', 'History']]);
     readonly tags = new Map<string, BookTag[]>();
 
@@ -416,6 +425,12 @@ export class MemoryTagging implements TagAssignment, BookTagReader {
 
     async of(bookId: string): Promise<BookTag[]> {
         return this.tags.get(bookId) ?? [];
+    }
+
+    async find(tagIds: readonly string[]): Promise<BookTag[]> {
+        return [...new Set(tagIds)]
+            .map((id) => this.resolve({ id }, []))
+            .sort((a, b) => a.name.localeCompare(b.name));
     }
 
     private resolve(choice: TagChoice, changes: TagOutcome['changes']): BookTag {
@@ -552,6 +567,7 @@ export class BookDoubles {
         const ids = { next: () => 'id-' + ++counter };
         const clock = { now: () => new Date('2026-03-01T10:00:00Z') };
         const identity = new BookIdentityCheck(books, authors);
+        const resolver = new AuthorResolver(authors, ids, clock);
 
         return {
             books,
@@ -572,7 +588,20 @@ export class BookDoubles {
             ids,
             clock,
             operations: AuditDoubles.auditedOperation(trail),
-            builder: new BookDetailsBuilder(new AuthorResolver(authors, ids, clock)),
+            resolver,
+            builder: new BookDetailsBuilder(resolver),
+            planner: new BookBatchPlanner(
+                loader,
+                collections,
+                authors,
+                organisation,
+                shelving,
+                tagging,
+                readings,
+                guard,
+                identity,
+                clock,
+            ),
             identity,
             titles: new GeneratedTitleSync(books, identity, clock),
             loader,
@@ -600,6 +629,30 @@ export class BookDoubles {
             tags: [],
             ...overrides,
         };
+    }
+
+    static readonly volumeIsbns = [
+        '9782749310015',
+        '9782749310022',
+        '9782749310039',
+        '9782749310046',
+        '9782749310053',
+        '9782749310060',
+    ];
+
+    static async volume(
+        current: ReturnType<typeof BookDoubles.library>,
+        volume: number,
+        overrides: Partial<BookInput> = {},
+    ) {
+        return BookDoubles.saved(current, {
+            title: '',
+            isbn: BookDoubles.volumeIsbns[volume - 1]!,
+            category: 'manga',
+            authors: [{ name: 'Yukito Kishiro' }],
+            collection: { collection: { name: 'Gunnm' }, volumeFrom: volume, volumeTo: volume },
+            ...overrides,
+        });
     }
 
     static async saved(
