@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, Menu, shell } from 'electron';
+import { app, BrowserWindow, dialog, Menu, shell, Tray } from 'electron';
 import type { UpdateSource } from './application-updates.service.js';
 import type { UpdateMenuState } from './application-menu.adapter.js';
 import { ApplicationUpdates } from './application-updates.service.js';
@@ -23,6 +23,7 @@ import { BackupFolder } from './backup-folder.adapter.js';
 import { AboutWindow } from './about-window.adapter.js';
 import { BackgroundMode } from './background-mode.service.js';
 import { DesktopTray } from './desktop-tray.adapter.js';
+import { HiddenTray } from './hidden-tray.adapter.js';
 import { LaunchAtStartup } from './launch-at-startup.adapter.js';
 import { TrayNotice } from './tray-notice.adapter.js';
 
@@ -52,11 +53,17 @@ const launchAtStartup = windowsTray
     ? new LaunchAtStartup(app.isPackaged || process.env.APP_TEST_LOGIN_ITEMS === '1')
     : undefined;
 const tray = launchAtStartup
-    ? new DesktopTray(texts, windowIcon, launchAtStartup, {
-          open: () => showWindow(),
-          setLaunchAtStartup: (enabled) => setLaunchAtStartup(enabled),
-          quit: () => app.quit(),
-      })
+    ? new DesktopTray(
+          texts,
+          windowIcon,
+          launchAtStartup,
+          {
+              open: () => showWindow(),
+              setLaunchAtStartup: (enabled) => setLaunchAtStartup(enabled),
+              quit: () => app.quit(),
+          },
+          hiddenWindows ? () => new HiddenTray() : (iconPath) => new Tray(iconPath),
+      )
     : undefined;
 const setupSigner = new SetupRequestSigner();
 const keepAwake = new KeepAwake();

@@ -1,7 +1,8 @@
-import { app, BrowserWindow, dialog, Menu, powerSaveBlocker, shell, Tray } from 'electron';
+import { app, BrowserWindow, dialog, Menu, powerSaveBlocker, shell } from 'electron';
 import { fileURLToPath } from 'node:url';
 import { mkdirSync, readFileSync, unwatchFile, watchFile } from 'node:fs';
 import { join } from 'node:path';
+import { HiddenTray } from '../../dist/apps/desktop/src/hidden-tray.adapter.js';
 
 const language = process.env.APP_TEST_LANGUAGE || 'en-GB';
 
@@ -106,18 +107,6 @@ app.setLoginItemSettings = (settings) => {
     loginItem.name = settings.name ?? null;
 };
 
-const trayState = { tray: null, menu: null, balloons: [] };
-const setContextMenu = Tray.prototype.setContextMenu;
-
-Tray.prototype.setContextMenu = function (menu) {
-    trayState.tray = this;
-    trayState.menu = menu;
-    setContextMenu.call(this, menu);
-};
-Tray.prototype.displayBalloon = function (options) {
-    trayState.balloons.push({ title: options.title, content: options.content });
-};
-
 let requestId = 0;
 let window;
 const labels = (menu) =>
@@ -211,15 +200,15 @@ watchFile(process.env.APP_TEST_COMMAND_FILE, { interval: 20 }, async () => {
             reply({
                 type: 'tray',
                 value: {
-                    menu: trayState.menu ? labels(trayState.menu) : null,
-                    balloons: trayState.balloons,
+                    menu: HiddenTray.latest()?.menu ? labels(HiddenTray.latest().menu) : null,
+                    balloons: HiddenTray.latest()?.balloons ?? [],
                 },
             });
         } else if (request.type === 'tray-menu') {
-            trayState.menu.getMenuItemById(request.id).click();
+            HiddenTray.latest().menu.getMenuItemById(request.id).click();
             reply({ type: 'clicked' });
         } else if (request.type === 'tray-click') {
-            trayState.tray.emit('click');
+            HiddenTray.latest().emit('click');
             reply({ type: 'clicked' });
         } else if (request.type === 'login-item') {
             reply({ type: 'login-item', value: loginItem });
