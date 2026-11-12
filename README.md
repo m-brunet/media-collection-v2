@@ -28,7 +28,8 @@ can use `http://<computer-address>:<HTTP-port>` immediately (development default
 release on `34345`). Vite proxies `/api` to the actual backend
 port reported by Electron, including after restarts. React changes use HMR in Electron; remote browsers use the startup
 build until it is rebuilt. Successful backend/desktop compilation restarts Electron. Development data lives in
-`.dev-data/`, separately from installed application data.
+`.dev-data/`, separately from installed application data. The window title and tray icon end with "(dev)" so a running
+installed release is easy to tell apart.
 
 To run the compiled application:
 

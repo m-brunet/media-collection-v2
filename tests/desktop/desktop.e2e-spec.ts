@@ -240,6 +240,15 @@ describe('desktop lifecycle and renderer', () => {
         });
     });
 
+    it('marks the Libris window title when run from source', async () => {
+        const current = await setupPage();
+
+        const shown = (await current.runtime.send({ type: 'windows' })).value as {
+            title: string;
+        }[];
+
+        expect(shown.map((each) => each.title)).toEqual(['Libris (dev)']);
+    });
     it('rejects a maintenance instance while the normal desktop is running', async () => {
         const current = await readyDesktop();
         const client = new Client('http://127.0.0.1:' + current.ready.httpPort);
@@ -472,6 +481,7 @@ describe('application menu', () => {
 });
 
 interface TrayState {
+    toolTip: string | null;
     menu: MenuLabel[] | null;
     balloons: { title: string; content: string }[];
 }
@@ -500,6 +510,13 @@ describe.runIf(windows)('tray and launch at startup', () => {
             '',
             'Quit',
         ]);
+    });
+    it('marks the tray icon name when run from source', async () => {
+        const current = await setupPage();
+
+        const tray = await trayState(current.runtime);
+
+        expect(tray.toolTip).toBe('Media Collection (dev)');
     });
     it('labels the tray menu in French on a French device', async () => {
         const current = await setupPage('fr-FR');
@@ -584,7 +601,7 @@ describe.runIf(windows)('tray and launch at startup', () => {
 
         expect((await trayState(current.runtime)).balloons).toEqual([
             {
-                title: 'Media Collection',
+                title: 'Media Collection (dev)',
                 content: 'Media Collection keeps running for Leaf. Quit from the tray icon.',
             },
         ]);

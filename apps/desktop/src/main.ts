@@ -27,6 +27,7 @@ import { DesktopTray } from './desktop-tray.adapter.js';
 import { HiddenTray } from './hidden-tray.adapter.js';
 import { LaunchAtStartup } from './launch-at-startup.adapter.js';
 import { TrayNotice } from './tray-notice.adapter.js';
+import { ApplicationLabel } from './application-label.util.js';
 
 const hiddenWindows = process.env.APP_HIDDEN_WINDOWS === '1';
 const directory = dirname(fileURLToPath(import.meta.url));
@@ -39,6 +40,7 @@ const windowIcon = join(
 
 app.setName('Media Collection');
 const texts = new DesktopTexts(DesktopLanguage.of(app.getPreferredSystemLanguages()));
+const label = new ApplicationLabel(app.isPackaged);
 let backend: BackendProcess | undefined;
 let quitting = false;
 let shutdownComplete = false;
@@ -57,6 +59,7 @@ const launchAtStartup = windowsTray
 const tray = launchAtStartup
     ? new DesktopTray(
           texts,
+          label,
           windowIcon,
           launchAtStartup,
           {
@@ -263,6 +266,10 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
                     nodeIntegration: false,
                     backgroundThrottling: !hiddenWindows,
                 },
+            });
+            window.on('page-title-updated', (event, title) => {
+                event.preventDefault();
+                window?.setTitle(label.of(title));
             });
             setupSigner.attach(window, new URL(url).origin);
             window.webContents.setWindowOpenHandler(({ url: target }) => {
