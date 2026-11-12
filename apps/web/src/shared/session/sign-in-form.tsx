@@ -8,7 +8,7 @@ import { useSession } from './session-context';
 
 export function SignInForm() {
     const { t } = useI18n();
-    const { signIn, expired } = useSession();
+    const { signIn, expired, pairingExpired } = useSession();
     const action = useAction();
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -25,6 +25,9 @@ export function SignInForm() {
         <form className="form" onSubmit={submit} aria-label={t('signIn.title')}>
             {expired && !action.feedback && (
                 <Notice tone="warning">{t('errors.unauthorized')}</Notice>
+            )}
+            {pairingExpired && !action.feedback && (
+                <Notice tone="warning">{t('leaf.pairing.expired')}</Notice>
             )}
             <TextField
                 label={t('signIn.username')}

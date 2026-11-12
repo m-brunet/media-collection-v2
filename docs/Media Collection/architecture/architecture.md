@@ -224,6 +224,23 @@ server-chosen random names and are checked by content (JPEG, PNG or WebP), never
 permissive CORS. Proxy trust is disabled; a future TLS-terminating proxy needs an explicit trust/protocol design before
 changing this setting.
 
+The address QR codes of the server settings also sign a phone in to Leaf (issue #20). When the Admin shows the QR code
+of an address, Libris asks `POST /api/auth/pairing-codes` (Admin only) for a one-time pairing code: 32 random bytes in
+base64url, of which only the SHA-256 hash is stored in `pairing_codes` with the account, its token version, and an
+expiry 2 minutes later. Showing a code again replaces the account's previous one (and drops expired codes). The QR
+value is `<address>/leaf/#pair=<code>`: the code stays in the fragment, so no request, server log or `Referer` header
+carries it. The server decides which addresses are eligible through the identity-owned `PairingAddresses` port,
+implemented by `server-settings` (`PairingAddressPolicy`, composed by `SettingsModule.pairingAddresses`): an address the
+server listens on that is not loopback, or the active HTTPS internet address, but never the HTTP internet address, which
+keeps a plain QR code. Leaf reads `#pair=` before rendering, removes it with `history.replaceState`, and sends it once
+to the pre-login `POST /api/auth/pair`, which has the login's CSRF/Origin checks and shares the login's per-address
+limit (30 attempts a minute). The server refuses a code that is unknown, expired, used, issued before a change of the
+account's token version (password change, recovery, data reset), or whose account is inactive, not Admin or has a
+temporary password; otherwise it marks the code used with a conditional update (single use even for concurrent
+requests) and opens the session exactly like a login. Every refusal is the same 401 (`pairing-code-expired` to the
+browser, the precise reason in the audit). Both steps are audited: `authentication.pairing-code-created` (the address
+and expiry, never the code) and `authentication.signed-in-with-pairing-code`; neither is in Activity.
+
 HTTP starts before optional HTTPS. Both listeners use the same Express/Nest application, serving the frontend pages
 and API to external browsers. The server-settings feature stores an HTTP port under the `http` key in SQLite alongside
 the existing TLS configuration. HTTP defaults to `3000`; explicit CLI and environment overrides take precedence over the

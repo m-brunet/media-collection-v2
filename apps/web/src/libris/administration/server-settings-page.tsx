@@ -134,6 +134,7 @@ export function ServerSettingsPage() {
                                 settings.internetAccess.origin,
                             ].filter((origin): origin is string => origin !== null),
                         ]}
+                        httpInternetAddress={settings.httpInternetAccess.origin}
                         httpsPort={settings.running.httpsPort}
                         httpsError={settings.running.httpsError}
                     />

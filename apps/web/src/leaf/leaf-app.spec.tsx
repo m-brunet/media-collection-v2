@@ -97,3 +97,55 @@ it('refuses a Guest who opens a shopping link directly', async () => {
     ).toBeInTheDocument();
     expect(api.calls.map((call) => call.route)).not.toContain('GET /collections/shopping');
 });
+
+it('signs the phone in with the code of the QR code', async () => {
+    new FakeApi().on('POST /auth/pair', () => ({
+        status: 200,
+        body: account({ username: 'administrator', role: 'admin' }),
+    }));
+
+    render(<LeafApp pairing={'A'.repeat(43)} />);
+
+    expect(await screen.findByText('administrator · Administrator')).toBeInTheDocument();
+});
+
+it('sends the code of the QR code once', async () => {
+    const api = new FakeApi().on('POST /auth/pair', () => ({
+        status: 200,
+        body: account({ role: 'admin' }),
+    }));
+
+    render(<LeafApp pairing={'A'.repeat(43)} />);
+    await screen.findByRole('link', { name: /Collections/ });
+
+    expect(api.calls.filter((call) => call.route === 'POST /auth/pair')).toEqual([
+        { route: 'POST /auth/pair', body: { code: 'A'.repeat(43) } },
+    ]);
+});
+
+it('explains an expired QR code on the sign-in screen', async () => {
+    new FakeApi().on('POST /auth/pair', () => ({
+        status: 401,
+        body: {
+            message: 'This QR code has expired. Show it again on the computer.',
+            reason: 'pairing-code-expired',
+        },
+    }));
+
+    render(<LeafApp pairing={'A'.repeat(43)} />);
+
+    expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeInTheDocument();
+    expect(
+        screen.getByText('This QR code has expired. Show it again on the computer.'),
+    ).toBeInTheDocument();
+});
+
+it('keeps an existing session when the QR code has expired', async () => {
+    new FakeApi()
+        .signedIn(account())
+        .on('POST /auth/pair', () => ({ status: 401, body: { message: 'Expired' } }));
+
+    render(<LeafApp pairing={'A'.repeat(43)} />);
+
+    expect(await screen.findByRole('link', { name: /Collections/ })).toBeInTheDocument();
+});

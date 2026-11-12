@@ -21,6 +21,11 @@ export interface SetupStatus {
     allowed: boolean;
 }
 
+export interface PairingLink {
+    link: string;
+    expiresAt: string;
+}
+
 export interface ApiFailure {
     code: string;
     reason?: string | null;

@@ -36,6 +36,10 @@ The same installation serves a separate limited mobile web application, Leaf, at
 
 Follow [collection shopping rules](collections.md), [book-entry rules](book-entry.md), and [account permissions](accounts.md). These establish compact volume entries, highest Owned coverage, existing-record quick-add confirmation, no omnibus quick add, explicit scan-to-ISBN lookup button, and editable result review. Mobile access is restricted to Owners/Admin: Guests cannot access the mobile interface at all, including shopping. This supersedes the earlier Guest read-only mobile-shopping assumption; their desktop read access is unchanged. No mobile lending workflow is approved.
 
+### Signing a phone in with the address QR code
+
+Every address of the server settings that has a QR code also signs the phone in to Leaf, except the HTTP internet address (`http://<domain or public IP>:<port>`), which keeps a plain QR code that only opens Leaf. Scanning opens Leaf already signed in as the account that showed the code, without typing the password; the session is a normal sign-in (same rights, 24 idle hours, ended by a password change, a deactivation or the Admin recovery). Only the Admin sees the addresses, so only the Admin can sign a phone in this way for now. Under such a QR code Libris says "This code signs a phone in as <username>. It works once, for 2 minutes." and shows a new code when the shown one expires. A code works once, for 2 minutes; an expired or used code shows the Leaf sign-in screen with "This QR code has expired. Show it again on the computer." (Decided by the user on 2026-11-09, issue #20.)
+
 ### Mobile home and book form
 
 Provide an Owner/Admin mobile home with two main buttons: Collections and Scan. Collections opens shopping; Scan starts scanning. Do not create a Guest mobile home or grant access through a direct mobile link.

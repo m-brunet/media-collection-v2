@@ -4,11 +4,13 @@ import { ColorSchemeDocument } from '../shared/appearance/color-scheme-document.
 import '../shared/ui/styles';
 import './leaf.css';
 import { LeafApp } from './leaf-app';
+import { PairingLink } from './pairing-link.util';
 
 ColorSchemeDocument.restore();
+const pairing = PairingLink.take(window.location, window.history);
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
-        <LeafApp />
+        <LeafApp pairing={pairing} />
     </StrictMode>,
 );

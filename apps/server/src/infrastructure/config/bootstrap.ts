@@ -60,6 +60,8 @@ import { KyselyLibraryEraser } from '../../maintenance/infrastructure/adapters/d
 import { KyselyCoverFileCleanup } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-cover-file-cleanup.adapter.js';
 import { FileCoverStorage } from '../../books/infrastructure/adapters/driven/filesystem/file-cover-storage.adapter.js';
 import { SetupAccess } from '../../identity/infrastructure/adapters/driving/web/setup-access.service.js';
+import { KyselyPairingCodeRepository } from '../../identity/infrastructure/adapters/driven/persistence/kysely-pairing-code.repository.js';
+import { CryptoPairingSecrets } from '../../identity/infrastructure/adapters/driven/security/crypto-pairing-secrets.adapter.js';
 
 export interface BackendOptions {
     dataDirectory: string;
@@ -224,6 +226,16 @@ export class BackendRuntime {
             const challenges = new TlsAlpnChallenges();
             const runtime = new NodeHttpsRuntime(application, options.host, challenges);
             const keepAwake = new KyselyKeepAwakeRepository(database.connections, ids);
+            const domainName = new KyselyDomainNameRepository(database.connections, ids);
+            const httpInternetAccess = new KyselyHttpInternetAccessRepository(
+                database.connections,
+                ids,
+            );
+            const internetAccessStore = new KyselyInternetAccessRepository(
+                database.connections,
+                ids,
+            );
+            const httpListener = { port: () => httpPort };
             const internetAccess = options.internetAccess ??
                 (options.offlineInternetAccess ? OfflineInternetAccess.adapters() : undefined) ?? {
                     router: new UpnpRouterGateway(),
@@ -251,6 +263,20 @@ export class BackendRuntime {
                             sessions,
                             operations,
                             new SetupAccess(options.setupToken ?? null),
+                            {
+                                codes: new KyselyPairingCodeRepository(database.connections),
+                                secrets: new CryptoPairingSecrets(),
+                                addresses: SettingsModule.pairingAddresses({
+                                    listeners: {
+                                        current: async () =>
+                                            (await status.read()).running.addresses,
+                                    },
+                                    internetAccess: internetAccessStore,
+                                    httpInternetAccess,
+                                    domainName,
+                                    httpListener,
+                                }),
+                            },
                         ),
                         SettingsModule.register({
                             tls,
@@ -258,16 +284,10 @@ export class BackendRuntime {
                             status,
                             http: httpSettings,
                             operations,
-                            domainName: new KyselyDomainNameRepository(database.connections, ids),
-                            httpListener: { port: () => httpPort },
-                            httpInternetAccess: new KyselyHttpInternetAccessRepository(
-                                database.connections,
-                                ids,
-                            ),
-                            internetAccess: new KyselyInternetAccessRepository(
-                                database.connections,
-                                ids,
-                            ),
+                            domainName,
+                            httpListener,
+                            httpInternetAccess,
+                            internetAccess: internetAccessStore,
                             ...internetAccess,
                             https: {
                                 ensureRunning: (port) => runtime.ensureRunning(port),

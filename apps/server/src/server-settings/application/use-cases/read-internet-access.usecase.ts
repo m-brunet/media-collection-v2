@@ -26,7 +26,7 @@ export class ReadInternetAccess implements ReadInternetAccessUseCase {
             ...state,
             retryAfter: access.attemptAllowed(now) ? null : state.retryAfter,
             allowances: access.allowances(now),
-            origin: access.phase === 'active' ? 'https://' + access.certificateName : null,
+            origin: access.origin,
             manualRule:
                 access.phase === 'waiting-for-port'
                     ? {

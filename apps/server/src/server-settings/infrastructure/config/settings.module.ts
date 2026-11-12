@@ -51,6 +51,9 @@ import { InternetAccessController } from '../adapters/driving/web/internet-acces
 import { KeepAwakeController } from '../adapters/driving/web/keep-awake.controller.js';
 import type { RuntimeStatus } from '../adapters/driving/web/settings.controller.js';
 import { SettingsController } from '../adapters/driving/web/settings.controller.js';
+import type { PairingAddresses } from '../../../identity/application/ports/driven/pairing-addresses.interface.js';
+import type { ListenerAddressReader } from '../../application/ports/driven/listener-address-reader.interface.js';
+import { PairingAddressPolicy } from '../../application/services/pairing-address-policy.service.js';
 
 export const SERVER_SETTINGS_TLS_STORE = 'SERVER_SETTINGS_TLS_STORE';
 export const SERVER_SETTINGS_CERTIFICATE_VALIDATOR = 'SERVER_SETTINGS_CERTIFICATE_VALIDATOR';
@@ -306,5 +309,20 @@ export class SettingsModule {
                 },
             ],
         };
+    }
+
+    static pairingAddresses(
+        adapters: Pick<
+            SettingsAdapters,
+            'internetAccess' | 'httpInternetAccess' | 'domainName' | 'httpListener'
+        > & { listeners: ListenerAddressReader },
+    ): PairingAddresses {
+        return new PairingAddressPolicy(
+            adapters.listeners,
+            adapters.internetAccess,
+            adapters.httpInternetAccess,
+            adapters.domainName,
+            adapters.httpListener,
+        );
     }
 }

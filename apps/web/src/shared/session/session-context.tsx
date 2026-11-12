@@ -9,7 +9,7 @@ import {
     useState,
 } from 'react';
 import type { Account, SetupStatus } from '../../../../../packages/contracts/src/http';
-import { api } from '../api.util';
+import { api, ApiError } from '../api.util';
 import { I18nProvider } from '../i18n/i18n-context';
 import { LanguageResolver } from '../i18n/language-resolver.util';
 import { LanguageStorage } from '../i18n/language-storage.util';
@@ -22,6 +22,7 @@ interface SessionValue {
     account: Account | null;
     language: Language;
     expired: boolean;
+    pairingExpired: boolean;
     setupAllowed: boolean;
     completeSetup(username: string, password: string): Promise<void>;
     signIn(username: string, password: string): Promise<void>;
@@ -32,10 +33,18 @@ interface SessionValue {
 
 const SessionContext = createContext<SessionValue | null>(null);
 
-export function SessionProvider({ children }: { children: ReactNode }) {
+export function SessionProvider({
+    children,
+    pairing = null,
+}: {
+    children: ReactNode;
+    pairing?: string | null;
+}) {
     const [account, setAccount] = useState<Account | null>(null);
     const [status, setStatus] = useState<SessionStatus>('loading');
     const [expired, setExpired] = useState(false);
+    const [pairingExpired, setPairingExpired] = useState(false);
+    const startup = useRef<Promise<Account> | null>(null);
     const [setupAllowed, setSetupAllowed] = useState(false);
     const [stored, setStored] = useState<Language | null>(() => LanguageStorage.read());
     const signedIn = useRef(false);
@@ -53,8 +62,16 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         };
 
         window.addEventListener('session-expired', end);
-        void api
-            .request<Account>('/auth/me', { passive: true })
+        startup.current ??= pairing
+            ? api
+                  .request<Account>('/auth/pair', { method: 'POST', body: { code: pairing } })
+                  .catch((error: unknown) => {
+                      setPairingExpired(error instanceof ApiError && error.status === 401);
+
+                      return api.request<Account>('/auth/me', { passive: true });
+                  })
+            : api.request<Account>('/auth/me', { passive: true });
+        void startup.current
             .then((current) => {
                 signedIn.current = true;
                 setAccount(current);
@@ -70,7 +87,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
             });
 
         return () => window.removeEventListener('session-expired', end);
-    }, []);
+    }, [pairing]);
 
     const signIn = useCallback(async (username: string, password: string) => {
         const current = await api.request<Account>('/auth/login', {
@@ -82,6 +99,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         setAccount(current);
         setStatus('signed-in');
         setExpired(false);
+        setPairingExpired(false);
     }, []);
     const completeSetup = useCallback(async (username: string, password: string) => {
         const current = await api.request<Account>('/setup', {
@@ -127,6 +145,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
             account,
             language,
             expired,
+            pairingExpired,
             setupAllowed,
             completeSetup,
             signIn,
@@ -139,6 +158,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
             account,
             language,
             expired,
+            pairingExpired,
             setupAllowed,
             completeSetup,
             signIn,

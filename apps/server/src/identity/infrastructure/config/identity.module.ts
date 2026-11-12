@@ -32,6 +32,12 @@ import { AccountsController } from '../adapters/driving/web/accounts.controller.
 import { IdentityController } from '../adapters/driving/web/identity.controller.js';
 import { SetupAccess } from '../adapters/driving/web/setup-access.service.js';
 import { SetupController } from '../adapters/driving/web/setup.controller.js';
+import { PairingController } from '../adapters/driving/web/pairing.controller.js';
+import type { PairingAddresses } from '../../application/ports/driven/pairing-addresses.interface.js';
+import type { PairingCodeRepository } from '../../application/ports/driven/pairing-code-repository.interface.js';
+import type { PairingSecrets } from '../../application/ports/driven/pairing-secrets.interface.js';
+import { CreatePairingCode } from '../../application/use-cases/create-pairing-code.usecase.js';
+import { RedeemPairingCode } from '../../application/use-cases/redeem-pairing-code.usecase.js';
 
 export const IDENTITY_USER_REPOSITORY = 'IDENTITY_USER_REPOSITORY';
 export const IDENTITY_PASSWORD_HASHER = 'IDENTITY_PASSWORD_HASHER';
@@ -52,6 +58,17 @@ export const IDENTITY_COMPLETE_SETUP = 'IDENTITY_COMPLETE_SETUP';
 export const IDENTITY_RESET_PASSWORD = 'IDENTITY_RESET_PASSWORD';
 export const IDENTITY_DEACTIVATE_ACCOUNT = 'IDENTITY_DEACTIVATE_ACCOUNT';
 export const IDENTITY_REACTIVATE_ACCOUNT = 'IDENTITY_REACTIVATE_ACCOUNT';
+export const IDENTITY_PAIRING_CODES = 'IDENTITY_PAIRING_CODES';
+export const IDENTITY_PAIRING_SECRETS = 'IDENTITY_PAIRING_SECRETS';
+export const IDENTITY_PAIRING_ADDRESSES = 'IDENTITY_PAIRING_ADDRESSES';
+export const IDENTITY_CREATE_PAIRING_CODE = 'IDENTITY_CREATE_PAIRING_CODE';
+export const IDENTITY_REDEEM_PAIRING_CODE = 'IDENTITY_REDEEM_PAIRING_CODE';
+
+export interface PhonePairing {
+    codes: PairingCodeRepository;
+    secrets: PairingSecrets;
+    addresses: PairingAddresses;
+}
 
 @Module({})
 export class IdentityModule {
@@ -64,10 +81,16 @@ export class IdentityModule {
         sessions: HttpSessions,
         operations: AuditedOperation,
         setupAccess: SetupAccess,
+        pairing: PhonePairing,
     ): DynamicModule {
         return {
             module: IdentityModule,
-            controllers: [IdentityController, AccountsController, SetupController],
+            controllers: [
+                IdentityController,
+                AccountsController,
+                SetupController,
+                PairingController,
+            ],
             providers: [
                 { provide: IDENTITY_USER_REPOSITORY, useValue: users },
                 { provide: IDENTITY_PASSWORD_HASHER, useValue: passwords },
@@ -77,6 +100,9 @@ export class IdentityModule {
                 { provide: IDENTITY_HTTP_SESSIONS, useValue: sessions },
                 { provide: IDENTITY_AUDITED_OPERATION, useValue: operations },
                 { provide: SetupAccess, useValue: setupAccess },
+                { provide: IDENTITY_PAIRING_CODES, useValue: pairing.codes },
+                { provide: IDENTITY_PAIRING_SECRETS, useValue: pairing.secrets },
+                { provide: IDENTITY_PAIRING_ADDRESSES, useValue: pairing.addresses },
                 {
                     provide: ManagedAccountLoader,
                     inject: [IDENTITY_USER_REPOSITORY],
@@ -241,6 +267,55 @@ export class IdentityModule {
                     inject: [AccountLoader, IDENTITY_SESSION_TOKENS],
                     useFactory: (accounts: AccountLoader, tokens: SessionTokens) =>
                         new RenewSession(accounts, tokens),
+                },
+                {
+                    provide: IDENTITY_CREATE_PAIRING_CODE,
+                    inject: [
+                        AccountLoader,
+                        IDENTITY_PAIRING_ADDRESSES,
+                        IDENTITY_PAIRING_SECRETS,
+                        IDENTITY_PAIRING_CODES,
+                        IDENTITY_ID_GENERATOR,
+                        IDENTITY_CLOCK,
+                        IDENTITY_AUDITED_OPERATION,
+                    ],
+                    useFactory: (
+                        accounts: AccountLoader,
+                        addresses: PairingAddresses,
+                        secrets: PairingSecrets,
+                        codes: PairingCodeRepository,
+                        ids: IdGenerator,
+                        clock: Clock,
+                        operations: AuditedOperation,
+                    ) =>
+                        new CreatePairingCode(
+                            accounts,
+                            addresses,
+                            secrets,
+                            codes,
+                            ids,
+                            clock,
+                            operations,
+                        ),
+                },
+                {
+                    provide: IDENTITY_REDEEM_PAIRING_CODE,
+                    inject: [
+                        IDENTITY_PAIRING_CODES,
+                        IDENTITY_PAIRING_SECRETS,
+                        IDENTITY_USER_REPOSITORY,
+                        IDENTITY_SESSION_TOKENS,
+                        IDENTITY_CLOCK,
+                        IDENTITY_AUDITED_OPERATION,
+                    ],
+                    useFactory: (
+                        codes: PairingCodeRepository,
+                        secrets: PairingSecrets,
+                        users: UserRepository,
+                        tokens: SessionTokens,
+                        clock: Clock,
+                        operations: AuditedOperation,
+                    ) => new RedeemPairingCode(codes, secrets, users, tokens, clock, operations),
                 },
                 { provide: HttpSessions, useExisting: IDENTITY_HTTP_SESSIONS },
                 { provide: LoginLimiter, useFactory: () => new LoginLimiter() },
