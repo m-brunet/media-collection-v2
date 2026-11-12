@@ -353,11 +353,15 @@ Pull requests: steps 1 to 8 in #16, step 9 in #17, step 10 in #18.
 - The installed Windows application is reachable from a phone with no Windows Firewall prompt.
 - `v2.0.0` is published with a Windows installer and a Linux AppImage built by the workflow (from the private
   repository, 2026-11-10).
-- First real update test: 2.0.1, as decided.
+- First real update test: 2.0.1 was planned; it was done from 2.1.0 to 2.1.1 instead, since 2.0.0 cannot update
+  itself ([#45](https://github.com/m-brunet/media-collection-v2/issues/45)). Passed on Windows on 2026-11-12: 2.1.0
+  offered 2.1.1, downloaded it while staying usable, saved the "before 2.1.1" backup, installed silently after the
+  administrator prompt and restarted on 2.1.1 with the data kept.
 
 ## Known limits
 
-- The update path between two published versions is only proven by 2.0.1.
+- The update path between two published versions is proven on Windows (2.1.0 to 2.1.1). On Linux the update only
+  saves the backup and opens the download page; it has not been tried with a published release.
 - Unsigned builds: SmartScreen warning on Windows for manual installs.
 - A failed install or data upgrade is recovered by hand (reinstall the previous version, restore its backup); no
   automatic rollback.

@@ -16,7 +16,7 @@ Offer stable releases only initially. Beta/prerelease versions are excluded from
 
 Check for updates automatically at startup without delaying application access. Also provide a manual Check for updates action. Installation requires explicit user approval and can always be postponed; there is no forced installation.
 
-2.0.0 was released from the private repository with Check for updates… disabled, so it cannot update itself: install 2.1.0 by running its installer over it, which keeps the data. Outside a packaged application (development), Check for updates… stays disabled and nothing is checked, except with the test stand-in.
+2.0.0 was released from the private repository with Check for updates… disabled, so it cannot update itself: install 2.1.0 by running its installer over it, which keeps the data. The first update between two published versions, 2.1.0 to 2.1.1, was tested on Windows on 2026-11-12 and passed. Outside a packaged application (development), Check for updates… stays disabled and nothing is checked, except with the test stand-in.
 
 ## Windows
 
