@@ -9,8 +9,10 @@ import {
     FakeResolver,
     FakeRouter,
     FixedLocalAddress,
+    InternetAccessDoubles,
     MemoryKeepAwake,
 } from '../../../apps/server/src/server-settings/application/testing/internet-access-doubles.test-support.js';
+import { HttpInternetAccess } from '../../../apps/server/src/server-settings/domain/entities/http-internet-access.entity.js';
 import { HttpApplicationModule } from '../../../apps/server/src/infrastructure/config/http-application.module.js';
 import 'reflect-metadata';
 import { Test } from '@nestjs/testing';
@@ -44,6 +46,8 @@ import { AppearanceModule } from '../../../apps/server/src/appearance/infrastruc
 import { KyselyAppearanceRepository } from '../../../apps/server/src/appearance/infrastructure/adapters/driven/persistence/kysely-appearance.repository.js';
 import { KyselyIconSetRepository } from '../../../apps/server/src/appearance/infrastructure/adapters/driven/persistence/kysely-icon-set.repository.js';
 import { SetupAccess } from '../../../apps/server/src/identity/infrastructure/adapters/driving/web/setup-access.service.js';
+import { KyselyPairingCodeRepository } from '../../../apps/server/src/identity/infrastructure/adapters/driven/persistence/kysely-pairing-code.repository.js';
+import { CryptoPairingSecrets } from '../../../apps/server/src/identity/infrastructure/adapters/driven/security/crypto-pairing-secrets.adapter.js';
 import { BooksModule } from '../../../apps/server/src/books/infrastructure/config/books.module.js';
 import { CollectionsModule } from '../../../apps/server/src/collections/infrastructure/config/collections.module.js';
 import { LocationsModule } from '../../../apps/server/src/locations/infrastructure/config/locations.module.js';
@@ -85,6 +89,7 @@ export class TestApp {
     private context?: TestAppContext;
     private base?: string;
     private now = Date.parse('2026-01-01T00:00:00.000Z');
+    private readonly listenerAddresses: string[] = [];
 
     get dependencies(): TestAppContext {
         if (!this.context) {
@@ -96,6 +101,16 @@ export class TestApp {
 
     advance(milliseconds: number): void {
         this.now += milliseconds;
+    }
+
+    listenOn(address: string): void {
+        this.listenerAddresses.push(address);
+    }
+
+    async openHttpInternetAccess(): Promise<void> {
+        await this.dependencies.internetAccess.http.save(
+            new HttpInternetAccess(InternetAccessDoubles.httpOpen()),
+        );
     }
 
     async setup(): Promise<void> {
@@ -208,6 +223,22 @@ export class TestApp {
                         sessions,
                         operations,
                         new SetupAccess('test-setup-token'),
+                        {
+                            codes: new KyselyPairingCodeRepository(database.connections),
+                            secrets: new CryptoPairingSecrets(),
+                            addresses: SettingsModule.pairingAddresses({
+                                listeners: {
+                                    current: async () => [
+                                        ...(await status.read()).running.addresses,
+                                        ...this.listenerAddresses,
+                                    ],
+                                },
+                                internetAccess: internetAccess.store,
+                                httpInternetAccess: internetAccess.http,
+                                domainName: internetAccess.domainName,
+                                httpListener: { port: () => 34345 },
+                            }),
+                        },
                     ),
                     SettingsModule.register({
                         tls,

@@ -9,5 +9,7 @@ export const AccountAudit = {
     passwordChanged: 'account.password-changed',
     languageChanged: 'account.language-changed',
     signedIn: 'authentication.signed-in',
+    pairingCodeCreated: 'authentication.pairing-code-created',
+    signedInWithPairingCode: 'authentication.signed-in-with-pairing-code',
     recovered: 'account.recovered',
 } as const;

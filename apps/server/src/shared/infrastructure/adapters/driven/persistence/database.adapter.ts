@@ -19,6 +19,16 @@ interface UsersTable {
     active: number;
 }
 
+interface PairingCodesTable {
+    id: string;
+    account_id: string;
+    code_hash: string;
+    token_version: number;
+    created_at: string;
+    expires_at: string;
+    used_at: string | null;
+}
+
 interface AuditLogsTable {
     id: string;
     operation_id: string;
@@ -159,6 +169,7 @@ interface LoansTable {
 
 export interface DatabaseSchema {
     users: UsersTable;
+    pairing_codes: PairingCodesTable;
     server_settings: SettingsTable;
     audit_logs: AuditLogsTable;
     authors: AuthorsTable;

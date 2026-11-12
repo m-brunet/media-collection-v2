@@ -25,11 +25,10 @@ export class ReadHttpInternetAccess implements ReadHttpInternetAccessUseCase {
         }
 
         const port = this.listener.port();
-        const host = (await this.names.read()) ?? state.publicAddress;
 
         return {
             ...state,
-            origin: 'http://' + host + ':' + port,
+            origin: access.origin(await this.names.read(), port),
             manualRule:
                 state.mapping === 'manual'
                     ? {

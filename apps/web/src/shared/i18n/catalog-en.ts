@@ -79,6 +79,7 @@ export const en = {
     'server.qrShow': 'Show QR code',
     'server.qrShowFor': 'Show the QR code for {address}',
     'server.qrCaption': 'Scan to open Leaf at this address',
+    'server.qrPairing': 'This code signs a phone in as {username}. It works once, for 2 minutes.',
     'server.httpsRunning': 'HTTPS is running on port {port}.',
     'server.httpsStopped': 'HTTPS is not running.',
     'server.restartRequired':
@@ -326,6 +327,7 @@ export const en = {
     'leaf.saved.body': '“{title}” has been saved to your shared library.',
     'reason.bookAlreadyOwned': 'This book is already Owned.',
     'leaf.signIn.intro': 'Access your household library from your phone.',
+    'leaf.pairing.expired': 'This QR code has expired. Show it again on the computer.',
     'leaf.password.title': 'Replace your temporary password',
     'leaf.password.body':
         'Your account still uses a temporary password. Sign in to Libris on a computer to choose your own password, then come back.',

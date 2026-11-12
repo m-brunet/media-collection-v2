@@ -84,6 +84,8 @@ export const fr = {
     'server.qrShow': 'Afficher le QR code',
     'server.qrShowFor': 'Afficher le QR code pour {address}',
     'server.qrCaption': 'Scannez pour ouvrir Leaf à cette adresse',
+    'server.qrPairing':
+        'Ce code connecte un téléphone en tant que {username}. Il ne fonctionne qu’une fois, pendant 2 minutes.',
     'server.httpsRunning': 'HTTPS fonctionne sur le port {port}.',
     'server.httpsStopped': 'HTTPS n’est pas actif.',
     'server.restartRequired':
@@ -342,6 +344,7 @@ export const fr = {
     'leaf.saved.body': '« {title} » a été enregistré dans votre bibliothèque partagée.',
     'reason.bookAlreadyOwned': 'Ce livre est déjà possédé.',
     'leaf.signIn.intro': 'Accédez à la bibliothèque de votre foyer depuis votre téléphone.',
+    'leaf.pairing.expired': 'Ce QR code a expiré. Affichez-le à nouveau sur l’ordinateur.',
     'leaf.password.title': 'Remplacez votre mot de passe temporaire',
     'leaf.password.body':
         'Votre compte utilise encore un mot de passe temporaire. Connectez-vous à Libris sur un ordinateur pour choisir votre mot de passe, puis revenez.',
