@@ -51,20 +51,140 @@ function tree() {
     return screen.getByRole('navigation', { name: 'Bookcases and shelves' });
 }
 
-it('shows each bookcase with its shelves and book counts', async () => {
+function toggle(name: string) {
+    return within(tree()).getByRole('button', { name: 'Shelves of ' + name });
+}
+
+it('shows each bookcase with its shelf count and the shelves of the selected one', async () => {
     api();
 
     show();
 
     expect(await screen.findByText('2 bookcases · 3 shelves')).toBeInTheDocument();
+    expect(within(tree()).getByText('2 shelves')).toBeInTheDocument();
+    expect(within(tree()).getByText('1 shelf')).toBeInTheDocument();
     expect(within(tree()).getByRole('button', { name: 'Shelf 3 · 64 books' })).toBeInTheDocument();
+    expect(within(tree()).queryByRole('button', { name: 'Top · 1 book' })).not.toBeInTheDocument();
+});
+
+it('opens on arrival only the bookcase of the shelf in the address', async () => {
+    api();
+
+    show('/bookshelves?shelf=top');
+
+    expect(await screen.findByText('2 bookcases · 3 shelves')).toBeInTheDocument();
     expect(within(tree()).getByRole('button', { name: 'Top · 1 book' })).toBeInTheDocument();
+    expect(toggle('Study bookcase')).toHaveAttribute('aria-expanded', 'true');
+    expect(toggle('Oak bookcase')).toHaveAttribute('aria-expanded', 'false');
+    expect(
+        within(tree()).queryByRole('button', { name: 'Shelf 3 · 64 books' }),
+    ).not.toBeInTheDocument();
+});
+
+it('opens on arrival the bookcase in the address', async () => {
+    api();
+
+    show('/bookshelves?bookcase=study');
+
+    expect(await screen.findByText('2 bookcases · 3 shelves')).toBeInTheDocument();
+    expect(within(tree()).getByRole('button', { name: 'Top · 1 book' })).toBeInTheDocument();
+    expect(toggle('Oak bookcase')).toHaveAttribute('aria-expanded', 'false');
+});
+
+it('opens a selected bookcase and closes the others', async () => {
+    api();
+    show();
+    await screen.findByText('2 bookcases · 3 shelves');
+
+    await userEvent.click(within(tree()).getByRole('button', { name: 'Study bookcase' }));
+
+    expect(within(tree()).getByRole('button', { name: 'Study bookcase' })).toHaveAttribute(
+        'aria-current',
+        'true',
+    );
+    expect(within(tree()).getByRole('button', { name: 'Top · 1 book' })).toBeInTheDocument();
+    expect(
+        within(tree()).queryByRole('button', { name: 'Shelf 3 · 64 books' }),
+    ).not.toBeInTheDocument();
+});
+
+it('opens another bookcase with its chevron without changing the selection', async () => {
+    api();
+    show('/bookshelves?shelf=s3');
+    await screen.findByRole('heading', { name: '64 books on Shelf 3' });
+
+    await userEvent.click(toggle('Study bookcase'));
+
+    expect(toggle('Study bookcase')).toHaveAttribute('aria-expanded', 'true');
+    expect(within(tree()).getByRole('button', { name: 'Top · 1 book' })).toBeInTheDocument();
+    expect(toggle('Oak bookcase')).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getByRole('heading', { name: '64 books on Shelf 3' })).toBeInTheDocument();
+});
+
+it('closes the open bookcase with its chevron', async () => {
+    api();
+    show('/bookshelves?shelf=s3');
+    await screen.findByRole('heading', { name: '64 books on Shelf 3' });
+
+    await userEvent.click(toggle('Oak bookcase'));
+
+    expect(toggle('Oak bookcase')).toHaveAttribute('aria-expanded', 'false');
+    expect(
+        within(tree()).queryByRole('button', { name: 'Shelf 3 · 64 books' }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '64 books on Shelf 3' })).toBeInTheDocument();
+});
+
+it('reopens a closed bookcase when its header is selected again', async () => {
+    api();
+    show('/bookshelves?bookcase=oak');
+    await screen.findByText('2 bookcases · 3 shelves');
+    await userEvent.click(toggle('Oak bookcase'));
+
+    await userEvent.click(within(tree()).getByRole('button', { name: 'Oak bookcase' }));
+
+    expect(toggle('Oak bookcase')).toHaveAttribute('aria-expanded', 'true');
+});
+
+it('leaves the shelves of a closed bookcase out of the Tab order', async () => {
+    api();
+    show('/bookshelves?shelf=top');
+    await screen.findByText('2 bookcases · 3 shelves');
+    toggle('Study bookcase').focus();
+
+    await userEvent.tab();
+
+    expect(within(tree()).getByRole('button', { name: 'Study bookcase' })).toHaveFocus();
+});
+
+it('shows open every bookcase with a matching shelf while searching', async () => {
+    api().on('GET /bookcases', () => ({
+        status: 200,
+        body: [
+            {
+                ...bookcases[0],
+                shelves: [{ id: 's1', bookcaseId: 'oak', name: 'Upper', bookCount: 0 }],
+            },
+            {
+                ...bookcases[1],
+                shelves: [{ id: 'top', bookcaseId: 'study', name: 'Upper', bookCount: 1 }],
+            },
+        ],
+    }));
+    show();
+    await screen.findByText('2 bookcases · 2 shelves');
+
+    await userEvent.type(screen.getByLabelText('Search bookcases and shelves'), 'upper');
+
+    expect(within(tree()).getByRole('button', { name: 'Upper · 0 books' })).toBeInTheDocument();
+    expect(within(tree()).getByRole('button', { name: 'Upper · 1 book' })).toBeInTheDocument();
+    expect(toggle('Study bookcase')).toBeDisabled();
 });
 
 it('lists the books of the selected shelf', async () => {
     const calls = api();
 
-    show();
+    show('/bookshelves?bookcase=study');
     await screen.findByText('2 bookcases · 3 shelves');
 
     await userEvent.click(within(tree()).getByRole('button', { name: 'Top · 1 book' }));
