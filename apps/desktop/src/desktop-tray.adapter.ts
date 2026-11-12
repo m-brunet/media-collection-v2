@@ -1,4 +1,5 @@
-import { Menu, Tray } from 'electron';
+import type { DisplayBalloonOptions } from 'electron';
+import { Menu } from 'electron';
 import type { DesktopTexts } from './desktop-texts.util.js';
 import type { LaunchAtStartup } from './launch-at-startup.adapter.js';
 
@@ -8,14 +9,23 @@ export interface DesktopTrayActions {
     quit(): void;
 }
 
+export interface TrayIcon {
+    setToolTip(toolTip: string): void;
+    setContextMenu(menu: Menu): void;
+    displayBalloon(options: DisplayBalloonOptions): void;
+    on(event: 'click', listener: () => void): unknown;
+    destroy(): void;
+}
+
 export class DesktopTray {
-    private tray: Tray | undefined;
+    private tray: TrayIcon | undefined;
 
     constructor(
         private readonly texts: DesktopTexts,
         private readonly iconPath: string,
         private readonly startup: LaunchAtStartup,
         private readonly actions: DesktopTrayActions,
+        private readonly createIcon: (iconPath: string) => TrayIcon,
     ) {}
 
     show(): void {
@@ -23,7 +33,7 @@ export class DesktopTray {
             return;
         }
 
-        this.tray = new Tray(this.iconPath);
+        this.tray = this.createIcon(this.iconPath);
         this.tray.setToolTip(this.texts.text('trayTooltip'));
         this.tray.on('click', () => this.actions.open());
         this.refresh();

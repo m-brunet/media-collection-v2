@@ -72,7 +72,7 @@ export class RuntimeFixture {
         );
 
         for (const directory of this.directories) {
-            await rm(directory, { recursive: true, force: true });
+            await rm(directory, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
         }
 
         this.directories.clear();

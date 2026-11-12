@@ -151,7 +151,9 @@ React component tests (jsdom), real SQLite tests, controller HTTP tests through 
 tests of Libris and Leaf in real Chromium (Playwright), and Electron lifecycle/desktop tests. Electron tests require a
 graphical session. Install the test browser once with `npx playwright install chromium`; set `MC_SCREENSHOT_DIR` to a
 folder to keep screenshots of the browser tests for visual review. Browser tests run headless, and the Electron
-desktop and packaged tests set `APP_HIDDEN_WINDOWS=1`, so no test window appears on screen while you work. Controller API tests use isolated application fixtures and an injected clock; no test
+desktop and packaged tests set `APP_HIDDEN_WINDOWS=1`, so no test window or tray icon appears on screen while you
+work; the tray is then an in-memory `HiddenTray`. Vitest runs up to six test files at a time (`maxWorkers` in
+`vitest.config.ts`). Controller API tests use isolated application fixtures and an injected clock; no test
 endpoints or clock controls exist in the production app.
 
 Controller tests are colocated as `<name>.controller.e2e-spec.ts`; unit tests use matching sibling `.spec.ts` files.
