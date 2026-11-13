@@ -88,7 +88,7 @@ export class LookupAnswer {
     }
 
     private static positive(value: number | null | undefined): number | null {
-        return Number.isInteger(value) && value! > 0 ? value! : null;
+        return typeof value === 'number' && Number.isInteger(value) && value > 0 ? value : null;
     }
 
     private static date(value: LookupDate | null | undefined): LookupDate | null {
@@ -96,9 +96,13 @@ export class LookupAnswer {
             return null;
         }
 
+        const { month: candidate } = value;
         const month =
-            Number.isInteger(value.month) && value.month! >= 1 && value.month! <= 12
-                ? value.month!
+            typeof candidate === 'number' &&
+            Number.isInteger(candidate) &&
+            candidate >= 1 &&
+            candidate <= 12
+                ? candidate
                 : null;
 
         return { year: value.year, month };
@@ -113,8 +117,8 @@ export class LookupAnswer {
     private static series(value: LookupSeries | null | undefined): LookupSeries | null {
         const name = LookupAnswer.text(value?.name);
 
-        return name && Number.isInteger(value!.volume) && value!.volume >= 0
-            ? { name, volume: value!.volume }
+        return name && value && Number.isInteger(value.volume) && value.volume >= 0
+            ? { name, volume: value.volume }
             : null;
     }
 }

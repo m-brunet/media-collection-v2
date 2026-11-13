@@ -10,6 +10,7 @@ import { MemberCoverage } from '../member-coverage.helper.js';
 import type { MemberRecord } from '../ports/driven/collection-member-store.interface.js';
 import type { Collection } from '../../domain/entities/collection.entity.js';
 import { CollectionShopping } from '../../domain/services/collection-shopping.service.js';
+import { Required } from '../../../shared/domain/required.helper.js';
 
 export class CollectionViewer {
     summary(collection: Collection, records: readonly MemberRecord[]): CollectionSummaryView {
@@ -42,7 +43,9 @@ export class CollectionViewer {
                 from: entry.from,
                 to: entry.to,
                 state: entry.state,
-                books: entry.bookIds.map((bookId) => books.get(bookId)!),
+                books: entry.bookIds.map((bookId) =>
+                    Required.value(books.get(bookId), 'coverage only lists member books'),
+                ),
             })),
         };
     }

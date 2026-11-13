@@ -64,12 +64,14 @@ export class NativeUpdateDialogs implements UpdateDialogs {
         });
     }
 
-    private async ask(options: Omit<MessageBoxOptions, 'title'>): Promise<boolean> {
+    private async ask(
+        options: Omit<MessageBoxOptions, 'title'> & { buttons: string[] },
+    ): Promise<boolean> {
         const result = await dialog.showMessageBox({
             ...options,
             title: this.texts.text('updateTitle'),
             defaultId: 0,
-            cancelId: options.buttons!.length - 1,
+            cancelId: options.buttons.length - 1,
             noLink: true,
         });
 

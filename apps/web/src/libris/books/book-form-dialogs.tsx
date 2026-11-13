@@ -17,6 +17,7 @@ import { TextField } from '../../shared/ui/text-field';
 import { useAction } from '../../shared/use-action';
 import { CollectionFormat } from '../collections/collection-format.util';
 import { BookFormat } from '../../shared/book-form/book-format.util';
+import { Required } from '../../shared/required.util';
 
 export function SimilarAuthorDialog({
     similar,
@@ -318,10 +319,12 @@ export function CoverageConflictDialog({
 }) {
     const { t } = useI18n();
     const purchasedVolumes = CollectionFormat.volumes(purchased.volumeFrom, purchased.volumeTo);
+    const [only] = conflict?.conflicts ?? [];
     const single =
         conflict?.conflicts.length === 1 &&
-        conflict.conflicts[0]!.volumeFrom === purchased.volumeFrom &&
-        conflict.conflicts[0]!.volumeTo === purchased.volumeTo;
+        only !== undefined &&
+        only.volumeFrom === purchased.volumeFrom &&
+        only.volumeTo === purchased.volumeTo;
     const highest = Math.max(0, ...(conflict?.conflicts ?? []).map((book) => book.volumeTo));
     const shrinksTo = conflict?.expectedAfterReplacement?.to ?? null;
     const ids = conflict?.conflicts.map((book) => book.id) ?? [];
@@ -381,7 +384,14 @@ export function CoverageConflictDialog({
                     {single && creating && <p className="muted">{t('coverage.updateHint')}</p>}
                     <div className="dialog__choices">
                         {single && creating && (
-                            <Button variant="primary" onClick={() => onUpdatePlanned(ids[0]!)}>
+                            <Button
+                                variant="primary"
+                                onClick={() =>
+                                    onUpdatePlanned(
+                                        Required.at(ids, 0, 'a single conflict has one book'),
+                                    )
+                                }
+                            >
                                 {t('coverage.update')}
                             </Button>
                         )}

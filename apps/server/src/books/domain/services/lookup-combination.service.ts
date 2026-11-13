@@ -75,9 +75,11 @@ export class LookupCombination {
     }
 
     private get editionLanguage(): string | null {
-        const known = this.answers.find(({ answer }) => answer.editionLanguage);
+        const language = this.answers
+            .map(({ answer }) => answer.editionLanguage)
+            .find((candidate) => candidate);
 
-        return known ? LookupCombination.language(known.answer.editionLanguage!) : null;
+        return language ? LookupCombination.language(language) : null;
     }
 
     private summaryInEditionLanguage(answer: LookupAnswer): string | null {

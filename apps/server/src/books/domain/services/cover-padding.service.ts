@@ -101,6 +101,7 @@ export class CoverPadding {
         const start = (y * pixels.width + x) * pixels.channels;
 
         for (let channel = 0; channel < 3; channel++) {
+            // oxlint-disable-next-line typescript/no-non-null-assertion -- per-pixel loop; the channel lies inside the pixel buffer
             if (pixels.data[start + channel]! < CoverPadding.whiteness) {
                 return false;
             }

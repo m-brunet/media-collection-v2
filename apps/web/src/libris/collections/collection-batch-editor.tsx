@@ -18,6 +18,7 @@ import { CollectionCovers } from './collection-covers.util';
 import type { WallTile } from './collection-wall';
 import { CollectionWall } from './collection-wall';
 import { useBatchEdit } from './use-batch-edit';
+import { Required } from '../../shared/required.util';
 
 type Step = 'choose' | 'change' | 'review' | 'saved';
 
@@ -235,7 +236,11 @@ export function CollectionBatchEditor({
         setStep(next);
     };
     const answerSimilar = (choice: { id: string; name: string } | 'distinct') => {
-        const next = CollectionBatch.resolveAuthor(draft, batch.similar!.name, choice);
+        const next = CollectionBatch.resolveAuthor(
+            draft,
+            Required.value(batch.similar, 'a similar author is being answered').name,
+            choice,
+        );
 
         batch.dismissSimilar();
         setDraft(next);

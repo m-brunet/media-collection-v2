@@ -1,6 +1,7 @@
 import type { ActivityEventDto } from '../../../../../packages/contracts/src/http';
 import type { MessageKey } from '../../shared/i18n/catalog-en';
 import type { MessageValues } from '../../shared/i18n/translator.util';
+import { Required } from '../../shared/required.util';
 
 type Translate = (key: MessageKey, values?: MessageValues) => string;
 type Kind = ActivityEventDto['kind'];
@@ -60,7 +61,7 @@ export class ActivitySentence {
                       : 'activity.booksReturned';
 
             return t(key, {
-                title: event.titles[0]!,
+                title: Required.at(event.titles, 0, 'an event names at least one book'),
                 count: event.titles.length,
                 receiver: event.receiver,
             });

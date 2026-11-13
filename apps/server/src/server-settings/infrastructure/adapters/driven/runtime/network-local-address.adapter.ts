@@ -19,7 +19,7 @@ export class NetworkLocalAddress implements LocalAddressReader {
         return (
             first === 10 ||
             (first === 192 && second === 168) ||
-            (first === 172 && second! >= 16 && second! <= 31)
+            (first === 172 && second !== undefined && second >= 16 && second <= 31)
         );
     }
 }

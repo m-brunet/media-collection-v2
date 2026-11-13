@@ -6,6 +6,7 @@ import { randomUUID } from 'node:crypto';
 import type { DatabaseSchema } from '../../apps/server/src/shared/infrastructure/adapters/driven/persistence/database.adapter.js';
 import { Database } from '../../apps/server/src/shared/infrastructure/adapters/driven/persistence/database.adapter.js';
 import { UuidGenerator } from '../../apps/server/src/shared/infrastructure/adapters/driven/runtime/uuid-generator.adapter.js';
+import { Required } from '../../apps/server/src/shared/domain/required.helper.js';
 
 const now = '2026-01-01T00:00:00.000Z';
 
@@ -279,7 +280,10 @@ export class DataDirectories {
 
         await writeFile(
             join(directory, 'application.sqlite'),
-            unzipSync(await readFile(backup))['application.sqlite']!,
+            Required.value(
+                unzipSync(await readFile(backup))['application.sqlite'],
+                'the backup holds application.sqlite',
+            ),
         );
 
         return DataDirectories.categories(directory);

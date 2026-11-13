@@ -4,6 +4,7 @@ import type { ShelfAssignment } from '../ports/driven/shelf-assignment.interface
 import type { TagAssignment } from '../ports/driven/tag-assignment.interface.js';
 import { BookOrganisationReader } from './book-organisation-reader.service.js';
 import type { RelatedChange } from '../../../shared/application/ports/driven/audit-entry.interface.js';
+import { Required } from '../../../shared/domain/required.helper.js';
 
 export class BookOrganiser {
     constructor(
@@ -26,11 +27,18 @@ export class BookOrganiser {
                 : null;
         const location =
             request.shelfId === undefined
-                ? current!.location
+                ? Required.value(current, 'the organisation is read when the shelf is kept')
+                      .location
                 : await this.shelves.assign(bookId, request.shelfId);
         const outcome =
             request.tags === undefined
-                ? { tags: current!.tags, changes: [] }
+                ? {
+                      tags: Required.value(
+                          current,
+                          'the organisation is read when the tags are kept',
+                      ).tags,
+                      changes: [],
+                  }
                 : await this.tags.assign(bookId, request.tags);
 
         return { organisation: { location, tags: outcome.tags }, changes: outcome.changes };

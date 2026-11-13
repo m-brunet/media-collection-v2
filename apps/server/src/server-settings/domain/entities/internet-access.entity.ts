@@ -6,6 +6,7 @@ import { ConnectionClass } from '../value-objects/connection-class.value-object.
 import { DomainName } from '../value-objects/domain-name.value-object.js';
 import type { IssuedCertificateState } from '../value-objects/issued-certificate.value-object.js';
 import { IssuedCertificate } from '../value-objects/issued-certificate.value-object.js';
+import { Required } from '../../../shared/domain/required.helper.js';
 
 export type InternetAccessPhase = 'off' | 'setting-up' | 'waiting-for-port' | 'active';
 export type SetupStep = 'router' | 'port' | 'certificate';
@@ -334,7 +335,7 @@ export class InternetAccess {
             this.state.phase === 'active' &&
             RenewalPolicy.renewalDue(
                 this.certificate,
-                this.certificateName!,
+                Required.value(this.certificateName, 'an active access has a certificate name'),
                 this.state.domain ? RenewalPolicy.domainShare : RenewalPolicy.addressShare,
                 now,
             )

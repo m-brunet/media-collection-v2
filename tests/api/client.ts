@@ -1,5 +1,6 @@
 import { request as httpRequest } from 'node:http';
 import { request as httpsRequest } from 'node:https';
+import { Required } from '../../apps/server/src/shared/domain/required.helper.js';
 
 export interface ApiResult<T> {
     status: number;
@@ -56,7 +57,9 @@ export class Client {
                         ...(mutation
                             ? {
                                   'Content-Type': options.raw?.contentType ?? 'application/json',
-                                  'Content-Length': Buffer.byteLength(data!),
+                                  'Content-Length': Buffer.byteLength(
+                                      Required.value(data, 'a mutation sends a body'),
+                                  ),
                                   Origin: options.origin ?? this.base,
                                   ...(options.csrf === false
                                       ? {}
@@ -67,7 +70,11 @@ export class Client {
                 },
                 (response) => {
                     for (const cookie of response.headers['set-cookie'] ?? []) {
-                        const pair = cookie.split(';')[0]!;
+                        const pair = Required.at(
+                            cookie.split(';'),
+                            0,
+                            'a cookie has a name and value',
+                        );
                         const separator = pair.indexOf('=');
 
                         this.cookies.set(pair.slice(0, separator), pair.slice(separator + 1));

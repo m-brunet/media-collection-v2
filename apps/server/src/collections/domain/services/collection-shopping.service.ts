@@ -2,6 +2,7 @@ import type {
     CollectionCoverage,
     CoverageMember,
 } from '../value-objects/collection-coverage.value-object.js';
+import { Required } from '../../../shared/domain/required.helper.js';
 
 export interface ShoppingMember extends CoverageMember {
     title: string;
@@ -44,9 +45,10 @@ export class CollectionShopping {
             return null;
         }
 
-        const book = members.find(
-            (member) => member.ownership === 'owned' && member.range.covers(volume),
-        )!;
+        const book = Required.value(
+            members.find((member) => member.ownership === 'owned' && member.range.covers(volume)),
+            'an owned member covers the last owned volume',
+        );
 
         return { volume, title: book.category === 'books' ? book.title : null };
     }

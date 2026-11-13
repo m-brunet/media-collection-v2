@@ -3,6 +3,7 @@ import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { CoverStorage } from '../../../../application/ports/driven/cover-storage.interface.js';
 import type { CoverMediaType } from '../../../../domain/value-objects/cover-image.value-object.js';
+import { Required } from '../../../../../shared/domain/required.helper.js';
 
 const extensions: Record<CoverMediaType, string> = {
     'image/jpeg': 'jpg',
@@ -35,9 +36,12 @@ export class FileCoverStorage implements CoverStorage {
 
         try {
             const bytes = await readFile(join(this.directory, file));
-            const mediaType = (Object.keys(extensions) as CoverMediaType[]).find((type) =>
-                file.endsWith('.' + extensions[type]),
-            )!;
+            const mediaType = Required.value(
+                (Object.keys(extensions) as CoverMediaType[]).find((type) =>
+                    file.endsWith('.' + extensions[type]),
+                ),
+                'a stored cover file has a known extension',
+            );
 
             return { bytes, mediaType };
         } catch {

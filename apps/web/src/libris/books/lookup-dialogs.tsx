@@ -16,6 +16,7 @@ import type {
 } from '../../shared/book-form/lookup-fill.util';
 import { LookupFill } from '../../shared/book-form/lookup-fill.util';
 import { useSourceNames } from '../../shared/book-form/use-source-names';
+import { Required } from '../../shared/required.util';
 
 const labels: Record<LookupField, MessageKey> = {
     category: 'form.category',
@@ -69,7 +70,9 @@ export function LookupReviewDialog({
                 summary: value('summary'),
                 collection: value('collection'),
             },
-            coverIndex >= 0 ? covers[coverIndex]!.token : null,
+            coverIndex >= 0
+                ? Required.at(covers, coverIndex, 'the chosen cover is listed').token
+                : null,
         );
     };
 
@@ -100,14 +103,16 @@ export function LookupReviewDialog({
                     }
 
                     if (choices.length === 1 && !keepOption) {
+                        const only = Required.at(choices, 0, 'one choice is shown');
+
                         return (
                             <div key={field} className="lookup-review__field">
                                 <p className="field__label">{t(labels[field])}</p>
                                 <p className="lookup-review__value">
-                                    {LookupDisplay.text(field, choices[0]!.value, t)}{' '}
+                                    {LookupDisplay.text(field, only.value, t)}{' '}
                                     <span className="muted">
                                         {t('lookup.from', {
-                                            sources: sources(choices[0]!.sources),
+                                            sources: sources(only.sources),
                                         })}
                                     </span>
                                 </p>

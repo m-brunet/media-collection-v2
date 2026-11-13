@@ -31,7 +31,11 @@ export class ActivityTimeline {
     ): boolean {
         const [cover] = operation.records;
 
-        if (operation.records.length !== 1 || cover!.category !== 'book.cover-changed') {
+        if (
+            cover === undefined ||
+            operation.records.length !== 1 ||
+            cover.category !== 'book.cover-changed'
+        ) {
             return false;
         }
 
@@ -40,7 +44,7 @@ export class ActivityTimeline {
                 save.actorId !== null &&
                 save.actorId === operation.actorId &&
                 ActivityTimeline.within(save.occurredAt, operation.occurredAt) &&
-                save.records.some((record) => ActivityTimeline.savesBook(record, cover!)),
+                save.records.some((record) => ActivityTimeline.savesBook(record, cover)),
         );
     }
 

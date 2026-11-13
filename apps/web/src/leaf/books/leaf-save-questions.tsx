@@ -5,6 +5,7 @@ import type { SaveQuestion } from '../../shared/book-form/use-book-save';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Button } from '../../shared/ui/button';
 import { Dialog } from '../../shared/ui/dialog';
+import { Required } from '../../shared/required.util';
 
 function Question({
     title,
@@ -191,7 +192,11 @@ export function LeafSaveQuestions({
                             variant="primary"
                             onClick={() => {
                                 onClose();
-                                onSave({ ...values, ownership: 'owned' }, {}, conflicts[0]!.id);
+                                onSave(
+                                    { ...values, ownership: 'owned' },
+                                    {},
+                                    Required.at(conflicts, 0, 'a single conflict has one book').id,
+                                );
                             }}
                         >
                             {t('coverage.update')}

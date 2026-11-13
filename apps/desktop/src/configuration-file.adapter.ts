@@ -46,13 +46,15 @@ export class ConfigurationFile {
         const parsed = schema.safeParse(value);
 
         if (!parsed.success) {
-            const issue = parsed.error.issues[0]!;
+            const [issue] = parsed.error.issues;
             const problem =
-                issue.code === 'unrecognized_keys'
-                    ? 'unknown setting "' + issue.keys.join('", "') + '"'
-                    : issue.path.length
-                      ? issue.path.join('.') + ' ' + issue.message
-                      : 'must contain a JSON object';
+                issue === undefined
+                    ? 'is not a valid configuration'
+                    : issue.code === 'unrecognized_keys'
+                      ? 'unknown setting "' + issue.keys.join('", "') + '"'
+                      : issue.path.length
+                        ? issue.path.join('.') + ' ' + issue.message
+                        : 'must contain a JSON object';
 
             throw new Error(this.path + ': ' + problem + '.');
         }

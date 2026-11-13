@@ -7,6 +7,7 @@ import { Price } from '../../domain/value-objects/price.value-object.js';
 import { PublicationDate } from '../../domain/value-objects/publication-date.value-object.js';
 import { AuthorResolver } from './author-resolver.service.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
+import { Required } from '../../../shared/domain/required.helper.js';
 
 export class BookDetailsBuilder {
     constructor(private readonly authors: AuthorResolver) {}
@@ -41,7 +42,10 @@ export class BookDetailsBuilder {
     }
 
     private static provisionalTitle(input: BookInput): string {
-        const request = input.collection!;
+        const request = Required.value(
+            input.collection,
+            'a generated title belongs to a collection',
+        );
         const name = 'name' in request.collection ? request.collection.name : '…';
 
         return GeneratedTitle.of(name, request.volumeFrom, request.volumeTo).text;

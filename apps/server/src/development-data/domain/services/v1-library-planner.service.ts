@@ -1,5 +1,6 @@
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { NameKey } from '../../../shared/domain/name-key.helper.js';
+import { Required } from '../../../shared/domain/required.helper.js';
 
 export type V1Category = 'books' | 'manga' | 'comics';
 
@@ -40,6 +41,12 @@ export interface PlannedBook {
     createdAt: string;
     read: boolean;
     coverUrl: string | null;
+}
+
+interface CollectionMember {
+    record: number;
+    owned: boolean;
+    volume: number;
 }
 
 export interface UnfinishedCollection {
@@ -157,7 +164,15 @@ export class V1LibraryPlanner {
             publisher: book.publisher?.trim() || null,
             pageCount: book.pageCount === 0 ? null : book.pageCount,
             price: book.price === null ? null : String(Math.round(book.price * 100) / 100),
-            collection: collectionName ? { name: collectionName, volume: book.volume! } : null,
+            collection: collectionName
+                ? {
+                      name: collectionName,
+                      volume: Required.value(
+                          book.volume,
+                          'a collection book has a validated volume',
+                      ),
+                  }
+                : null,
             createdAt: book.created,
             read: book.read === 'READ',
             coverUrl: book.cover?.trim() || null,
@@ -169,36 +184,39 @@ export class V1LibraryPlanner {
         planned: readonly PlannedBook[],
     ): Pick<V1LibraryPlan, 'finished' | 'unfinished'> {
         const marked = new Set(books.filter((book) => book.lastElement).map((book) => book.record));
-        const groups = new Map<string, PlannedBook[]>();
+        const groups = new Map<string, { name: string; members: CollectionMember[] }>();
 
         for (const book of planned) {
             if (book.collection) {
                 const key = NameKey.of(book.collection.name);
+                const group = groups.get(key) ?? { name: book.collection.name, members: [] };
+                const member = {
+                    record: book.record,
+                    owned: book.ownership === 'owned',
+                    volume: book.collection.volume,
+                };
 
-                groups.set(key, [...(groups.get(key) ?? []), book]);
+                groups.set(key, { name: group.name, members: [...group.members, member] });
             }
         }
 
         const finished: string[] = [];
         const unfinished: UnfinishedCollection[] = [];
 
-        for (const members of groups.values()) {
+        for (const { name, members } of groups.values()) {
             const lasts = members
-                .filter((book) => marked.has(book.record))
-                .map((book) => book.collection!.volume);
+                .filter((member) => marked.has(member.record))
+                .map((member) => member.volume);
 
             if (lasts.length === 0) {
                 continue;
             }
 
-            const name = members[0]!.collection!.name;
             const lastVolume = Math.max(...lasts);
             const owned = new Set(
-                members
-                    .filter((book) => book.ownership === 'owned')
-                    .map((book) => book.collection!.volume),
+                members.filter((member) => member.owned).map((member) => member.volume),
             );
-            const first = members.some((book) => book.collection!.volume === 0) ? 0 : 1;
+            const first = members.some((member) => member.volume === 0) ? 0 : 1;
             const missing: number[] = [];
 
             for (let volume = first; volume <= lastVolume; volume++) {
@@ -209,9 +227,7 @@ export class V1LibraryPlanner {
 
             const beyond = [
                 ...new Set(
-                    members
-                        .map((book) => book.collection!.volume)
-                        .filter((volume) => volume > lastVolume),
+                    members.map((member) => member.volume).filter((volume) => volume > lastVolume),
                 ),
             ].sort((a, b) => a - b);
 

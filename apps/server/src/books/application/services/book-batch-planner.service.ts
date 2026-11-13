@@ -29,6 +29,7 @@ import { Price } from '../../domain/value-objects/price.value-object.js';
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { NameKey } from '../../../shared/domain/name-key.helper.js';
+import { Required } from '../../../shared/domain/required.helper.js';
 
 export interface PlannedBook {
     book: Book;
@@ -116,7 +117,10 @@ export class BookBatchPlanner {
         }
 
         return {
-            collection: { id: request.collectionId, name: members[0]!.collection.name },
+            collection: {
+                id: request.collectionId,
+                name: Required.at(members, 0, 'a batch has at least one book').collection.name,
+            },
             planned,
             skipped,
         };

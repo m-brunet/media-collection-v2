@@ -14,6 +14,7 @@ import type { FinishCollectionUseCase } from '../../../collections/application/p
 import type { TransactionRunner } from '../../../shared/application/ports/driven/transaction-runner.interface.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { NameKey } from '../../../shared/domain/name-key.helper.js';
+import { Required } from '../../../shared/domain/required.helper.js';
 
 export class ImportV1Library implements ImportV1LibraryUseCase {
     constructor(
@@ -95,7 +96,13 @@ export class ImportV1Library implements ImportV1LibraryUseCase {
                 }
 
                 for (const name of plan.finished) {
-                    await this.collections.execute(actor, collectionIds.get(NameKey.of(name))!);
+                    await this.collections.execute(
+                        actor,
+                        Required.value(
+                            collectionIds.get(NameKey.of(name)),
+                            'every finished collection was created',
+                        ),
+                    );
                 }
 
                 report.collections = new Set(collectionIds.values()).size;

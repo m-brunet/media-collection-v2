@@ -11,6 +11,7 @@ import type { TlsStore } from '../ports/driven/tls-store.interface.js';
 import type { DomainNameCheck } from './domain-name-check.service.js';
 import type { HttpInternetAccessClosing } from './http-internet-access-closing.service.js';
 import type { RouterRules } from './router-rules.service.js';
+import { Required } from '../../../shared/domain/required.helper.js';
 
 export class InternetAccessSetup {
     private active = 0;
@@ -75,7 +76,10 @@ export class InternetAccessSetup {
             return 'https-unavailable';
         }
 
-        const name = access.certificateName!;
+        const name = Required.value(
+            access.certificateName,
+            'an access being set up has a certificate name',
+        );
         // Same name: an ARI renewal of the certificate in use, which Let's Encrypt does not count.
         const replacing =
             access.certificate?.address === name ? await this.tls.currentChain() : null;

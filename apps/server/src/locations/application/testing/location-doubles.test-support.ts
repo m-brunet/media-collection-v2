@@ -15,6 +15,8 @@ import {
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { TestActors } from '../../../shared/application/testing/test-actors.test-support.js';
 
+type Furniture = ReturnType<typeof LocationDoubles.furniture>;
+
 export class MemoryBookcases implements BookcaseRepository {
     readonly bookcases = new Map<string, Bookcase>();
 
@@ -157,11 +159,17 @@ export class LocationDoubles {
         };
     }
 
-    static async withShelf(
-        current: ReturnType<typeof LocationDoubles.furniture>,
+    static withShelf(
+        current: Furniture,
         bookcaseName: string,
-        shelfName: string | null,
-    ) {
+        shelfName: string,
+    ): Promise<{ bookcase: Bookcase; shelf: Shelf }>;
+    static withShelf(
+        current: Furniture,
+        bookcaseName: string,
+        shelfName: null,
+    ): Promise<{ bookcase: Bookcase; shelf: null }>;
+    static async withShelf(current: Furniture, bookcaseName: string, shelfName: string | null) {
         const existing = [...current.bookcases.bookcases.values()].find(
             (value) => value.snapshot.name === bookcaseName,
         );
@@ -192,7 +200,7 @@ export class LocationDoubles {
             await current.shelves.create(shelf);
         }
 
-        return { bookcase, shelf: shelf! };
+        return { bookcase, shelf };
     }
 
     static async placed(
