@@ -486,6 +486,15 @@ export interface CollectionShoppingDto {
     }[];
 }
 
+export interface CategoryMismatchDto {
+    bookId: string;
+    title: string;
+    category: BookCategory;
+    collectionId: string;
+    collectionName: string;
+    collectionCategory: BookCategory;
+}
+
 export interface CollectionNameDto {
     id: string;
     name: string;

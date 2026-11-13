@@ -1,6 +1,8 @@
 import type { RelatedChange } from '../../../shared/application/ports/driven/audit-entry.interface.js';
 import type { MemberTitles, TitledMember } from '../ports/driven/member-titles.interface.js';
 import type { MemberCategories } from '../ports/driven/member-categories.interface.js';
+import type { CategoryMismatchReader } from '../ports/driven/category-mismatch-reader.interface.js';
+import type { CategoryMismatchView } from '../collection-views.js';
 import type { CollectionCategory } from '../../domain/entities/collection.entity.js';
 import type { CollectionBookSearch } from '../ports/driven/collection-book-search.interface.js';
 import { BookFilter } from '../../../shared/application/book-filter.js';
@@ -49,7 +51,10 @@ export class MemoryCollections implements CollectionRepository {
 
     async page(query: CollectionPageQuery): Promise<{ total: number; collections: Collection[] }> {
         const selected = (await this.list()).filter(
-            (collection) => query.ids === null || query.ids.includes(collection.id),
+            (collection) =>
+                (query.ids === null || query.ids.includes(collection.id)) &&
+                (query.categories.length === 0 ||
+                    query.categories.includes(collection.snapshot.category)),
         );
         const ordered = query.direction === 'asc' ? selected : selected.reverse();
 
@@ -149,6 +154,41 @@ export class MemoryMembers implements CollectionMemberStore {
     }
 }
 
+export class MemoryCategoryMismatches implements CategoryMismatchReader {
+    constructor(
+        private readonly collections: MemoryCollections,
+        private readonly members: MemoryMembers,
+    ) {}
+
+    async list(collectionId: string | null): Promise<CategoryMismatchView[]> {
+        const all = await this.collections.list();
+        const chosen = all.filter(
+            (collection) => collectionId === null || collection.id === collectionId,
+        );
+        const records = await this.members.ofCollections(chosen.map((collection) => collection.id));
+
+        return records.flatMap((record) => {
+            const { snapshot } = Required.value(
+                chosen.find((collection) => collection.id === record.collectionId),
+                'a record belongs to a listed collection',
+            );
+
+            return record.category === snapshot.category
+                ? []
+                : [
+                      {
+                          bookId: record.bookId,
+                          title: record.title,
+                          category: record.category,
+                          collectionId: snapshot.id,
+                          collectionName: snapshot.name,
+                          collectionCategory: snapshot.category,
+                      },
+                  ];
+        });
+    }
+}
+
 export class FixedBookSearch implements CollectionBookSearch {
     matches: string[] = [];
     readonly calls: { search: string; filter: BookFilter; readerId: string | null }[] = [];
@@ -234,6 +274,7 @@ export class CollectionDoubles {
             ids,
             clock,
             search: new FixedBookSearch(),
+            mismatches: new MemoryCategoryMismatches(collections, members),
             titles: new RecordedMemberTitles(),
             categories: new RecordedMemberCategories(),
             viewer: new CollectionViewer(),
@@ -264,6 +305,20 @@ export class CollectionDoubles {
             { collection: { name: collection }, volumeFrom, volumeTo, enableVolumeZero: true },
             [],
         );
+    }
+
+    static async markCategory(
+        current: ReturnType<typeof CollectionDoubles.shelf>,
+        collectionId: string,
+        category: CollectionCategory,
+    ) {
+        const collection = Required.value(
+            await current.collections.findById(collectionId),
+            'the collection was saved first',
+        );
+
+        collection.changeCategory(category, '2026-01-01T00:00:00.000Z');
+        await current.collections.save(collection);
     }
 
     static async markFinished(

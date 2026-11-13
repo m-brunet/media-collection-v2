@@ -23,6 +23,7 @@ import { KyselyTagRepository } from '../../tags/infrastructure/adapters/driven/p
 import { KyselyBookTagStore } from '../../tags/infrastructure/adapters/driven/persistence/kysely-book-tag-store.adapter.js';
 import { KyselyCollectionRepository } from '../../collections/infrastructure/adapters/driven/persistence/kysely-collection.repository.js';
 import { KyselyCollectionMemberStore } from '../../collections/infrastructure/adapters/driven/persistence/kysely-collection-member-store.adapter.js';
+import { KyselyCategoryMismatchReader } from '../../collections/infrastructure/adapters/driven/persistence/kysely-category-mismatch-reader.adapter.js';
 import { KyselyBookRepository } from '../../books/infrastructure/adapters/driven/persistence/kysely-book.repository.js';
 import { KyselyAuthorRepository } from '../../books/infrastructure/adapters/driven/persistence/kysely-author.repository.js';
 import { KyselyBookCatalog } from '../../books/infrastructure/adapters/driven/persistence/kysely-book-catalog.adapter.js';
@@ -95,6 +96,7 @@ export class LibraryModules {
                 search: catalog,
                 titles: BooksModule.memberTitles(books, clock),
                 categories: BooksModule.memberCategories(books, clock),
+                mismatches: new KyselyCategoryMismatchReader(connections),
                 clock,
                 operations,
             }),

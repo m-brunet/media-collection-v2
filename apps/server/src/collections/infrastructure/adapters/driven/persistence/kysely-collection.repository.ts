@@ -52,7 +52,9 @@ export class KyselyCollectionRepository implements CollectionRepository {
         }
 
         const all = this.db.selectFrom('collections');
-        const selected = query.ids === null ? all : all.where('id', 'in', query.ids);
+        const found = query.ids === null ? all : all.where('id', 'in', query.ids);
+        const selected =
+            query.categories.length === 0 ? found : found.where('category', 'in', query.categories);
         const counted = await selected
             .select((eb) => eb.fn.countAll<number>().as('total'))
             .executeTakeFirstOrThrow();

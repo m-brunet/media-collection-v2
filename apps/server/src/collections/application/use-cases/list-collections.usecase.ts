@@ -18,12 +18,14 @@ export class ListCollections implements ListCollectionsUseCase {
     async execute(actor: Actor, query: CollectionListQuery): Promise<CollectionListPage> {
         ActorAuthorization.requireReady(actor);
         const readerId = query.filter.readerFor(actor);
+        const books = query.filter.withoutCategories();
         const ids =
-            query.search.trim() || !query.filter.isEmpty()
-                ? await this.search.collectionsMatching(query.search, query.filter, readerId)
+            query.search.trim() || !books.isEmpty()
+                ? await this.search.collectionsMatching(query.search, books, readerId)
                 : null;
         const page = await this.collections.page({
             ids,
+            categories: query.filter.categories,
             direction: query.direction,
             offset: query.offset,
             limit: query.limit,

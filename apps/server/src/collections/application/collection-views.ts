@@ -64,6 +64,15 @@ export interface CollectionListPage {
     items: CollectionSummaryView[];
 }
 
+export interface CategoryMismatchView {
+    bookId: string;
+    title: string;
+    category: 'books' | 'manga' | 'comics';
+    collectionId: string;
+    collectionName: string;
+    collectionCategory: 'books' | 'manga' | 'comics';
+}
+
 export interface CollectionNameView {
     id: string;
     name: string;
