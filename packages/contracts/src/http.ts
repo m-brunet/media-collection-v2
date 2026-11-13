@@ -344,6 +344,14 @@ export interface SimilarCollectionDetails {
     candidates: { id: string; name: string }[];
 }
 
+export interface CategoryMismatchDetails {
+    collectionId: string;
+    name: string;
+    category: BookCategory;
+    bookCategory: BookCategory;
+    bookCount: number;
+}
+
 export interface VolumeZeroDetails {
     name: string;
 }

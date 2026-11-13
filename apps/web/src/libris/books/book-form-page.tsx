@@ -257,10 +257,14 @@ function BookForm({ book }: { book: BookDto | null }) {
             )}
             <BookSaveQuestions
                 question={saving.question}
+                book={book}
                 values={values}
                 creating={!book}
                 onChange={setValues}
                 onSave={(draft, answers, target) => void saving.save(draft, answers, target)}
+                onChangeCollection={(collectionId, draft) =>
+                    void saving.changeCollection(collectionId, draft)
+                }
                 onOpenBook={(bookId) => leave('/books/' + bookId)}
                 onClose={saving.dismissQuestion}
             />

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type {
+    CategoryMismatchDetails,
     AuthorDto,
     CoverageConflictBook,
     CoverageConflictDetails,
@@ -250,6 +251,77 @@ export function SimilarCollectionDialog({
                         </Button>
                     </div>
                 </div>
+            )}
+        </Dialog>
+    );
+}
+
+export function CategoryMismatchDialog({
+    mismatch,
+    wholeCollection,
+    onUseCategory,
+    onChangeCollection,
+    onClose,
+}: {
+    mismatch: CategoryMismatchDetails | null;
+    wholeCollection: boolean;
+    onUseCategory(): void;
+    onChangeCollection(): void;
+    onClose(): void;
+}) {
+    const { t } = useI18n();
+    const values = mismatch && {
+        name: mismatch.name,
+        category: t(BookFormat.category(mismatch.category)),
+        bookCategory: t(BookFormat.category(mismatch.bookCategory)),
+        count: mismatch.bookCount,
+    };
+
+    return (
+        <Dialog
+            open={mismatch !== null}
+            title={t(wholeCollection ? 'categoryMismatch.wholeTitle' : 'categoryMismatch.title')}
+            onClose={onClose}
+            footer={
+                values && (
+                    <>
+                        {wholeCollection ? (
+                            <Button variant="primary" onClick={onChangeCollection}>
+                                {t('categoryMismatch.changeCollection')}
+                            </Button>
+                        ) : (
+                            <Button variant="primary" onClick={onUseCategory}>
+                                {t('categoryMismatch.use', values)}
+                            </Button>
+                        )}
+                        <Button variant="ghost" onClick={onClose}>
+                            {t('common.cancel')}
+                        </Button>
+                    </>
+                )
+            }
+        >
+            {values && (
+                <>
+                    <p>
+                        {t(
+                            wholeCollection
+                                ? 'categoryMismatch.wholeBody'
+                                : 'categoryMismatch.body',
+                            values,
+                        )}
+                    </p>
+                    {wholeCollection && (
+                        <p className="muted">
+                            {t(
+                                values.count === 1
+                                    ? 'categoryMismatch.countOne'
+                                    : 'categoryMismatch.count',
+                                values,
+                            )}
+                        </p>
+                    )}
+                </>
             )}
         </Dialog>
     );

@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import type {
     BookDto,
+    CategoryMismatchDetails,
     CoverageConflictDetails,
     PossibleDuplicateDetails,
     SimilarAuthorDetails,
@@ -39,6 +40,7 @@ export type SaveQuestion =
     | { kind: 'possible-duplicate'; details: PossibleDuplicateDetails }
     | { kind: 'similar-collection'; details: SimilarCollectionDetails }
     | { kind: 'volume-zero'; details: VolumeZeroDetails }
+    | { kind: 'category-mismatch'; details: CategoryMismatchDetails }
     | { kind: 'coverage-conflict'; details: CoverageConflictDetails };
 
 const fieldOfReason: Record<string, BookField> = {
@@ -78,6 +80,7 @@ const questionOfReason: Record<string, SaveQuestion['kind']> = {
     'possible-duplicate': 'possible-duplicate',
     'collection-similar': 'similar-collection',
     'volume-zero-disabled': 'volume-zero',
+    'collection-category-mismatch': 'category-mismatch',
     'coverage-conflict': 'coverage-conflict',
 };
 
@@ -193,6 +196,25 @@ export function useBookSave({
                     : null,
         });
     };
+    const changeCollection = async (collectionId: string, draft: BookDraftValues) => {
+        setQuestion(null);
+        setFailure(null);
+        setSaving(true);
+
+        try {
+            await api.request('/collections/' + collectionId, {
+                method: 'PATCH',
+                body: { category: draft.category },
+            });
+        } catch (error) {
+            setSaving(false);
+            setFailure({ text: t(ApiErrorMessage.key(error)), field: null, existingBookId: null });
+
+            return;
+        }
+
+        await save(draft);
+    };
     const saveFollowUps = async (
         saved: BookDto,
         draft: BookDraftValues,
@@ -225,6 +247,7 @@ export function useBookSave({
         failure,
         setFailure,
         question,
+        changeCollection,
         dismissQuestion: () => setQuestion(null),
     };
 }

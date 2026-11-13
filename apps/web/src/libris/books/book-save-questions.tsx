@@ -1,6 +1,9 @@
 import type { BookDraftValues, SaveOptions } from '../../shared/book-form/book-draft.util';
 import { BookDraft } from '../../shared/book-form/book-draft.util';
+import type { BookDto } from '../../../../../packages/contracts/src/http';
+import { CategoryMismatch } from '../../shared/book-form/category-mismatch.util';
 import {
+    CategoryMismatchDialog,
     CoverageConflictDialog,
     PossibleDuplicateDialog,
     SimilarAuthorDialog,
@@ -12,18 +15,22 @@ import { Required } from '../../shared/required.util';
 
 export function BookSaveQuestions({
     question,
+    book,
     values,
     creating,
     onChange,
     onSave,
+    onChangeCollection,
     onOpenBook,
     onClose,
 }: {
     question: SaveQuestion | null;
+    book: BookDto | null;
     values: BookDraftValues;
     creating: boolean;
     onChange(draft: BookDraftValues): void;
     onSave(draft: BookDraftValues, answers?: SaveOptions, target?: string): void;
+    onChangeCollection(collectionId: string, draft: BookDraftValues): void;
     onOpenBook(bookId: string): void;
     onClose(): void;
 }) {
@@ -32,6 +39,7 @@ export function BookSaveQuestions({
     const similarCollection = question?.kind === 'similar-collection' ? question.details : null;
     const volumeZero = question?.kind === 'volume-zero' ? question.details : null;
     const coverage = question?.kind === 'coverage-conflict' ? question.details : null;
+    const mismatch = question?.kind === 'category-mismatch' ? question.details : null;
     const saveChanged = (next: BookDraftValues) => {
         onClose();
         onChange(next);
@@ -80,6 +88,28 @@ export function BookSaveQuestions({
                     saveChanged({ ...values, collectionName: name, collectionDistinct: false })
                 }
                 onCreate={() => saveChanged({ ...values, collectionDistinct: true })}
+            />
+            <CategoryMismatchDialog
+                mismatch={mismatch}
+                wholeCollection={
+                    mismatch !== null &&
+                    CategoryMismatch.changesWholeCollection(book, values, mismatch)
+                }
+                onClose={onClose}
+                onUseCategory={() =>
+                    saveChanged(
+                        BookDraft.changed(values, {
+                            category: Required.value(mismatch, 'a mismatch is being answered')
+                                .category,
+                        }),
+                    )
+                }
+                onChangeCollection={() =>
+                    onChangeCollection(
+                        Required.value(mismatch, 'a mismatch is being answered').collectionId,
+                        values,
+                    )
+                }
             />
             <VolumeZeroDialog
                 volumeZero={volumeZero}

@@ -364,3 +364,52 @@ it('remembers the saved book’s choices for the next scan', async () => {
         { category: 'comics', read: true, bookcaseId: 'salon', shelfId: 'top' },
     );
 });
+
+function refuseCategoryOnce() {
+    let attempts = 0;
+
+    api.on('POST /books', () =>
+        ++attempts === 1
+            ? {
+                  status: 409,
+                  body: {
+                      code: 'conflict',
+                      reason: 'collection-category-mismatch',
+                      message: 'Category',
+                      details: {
+                          collectionId: 'naruto',
+                          name: 'Naruto',
+                          category: 'manga',
+                          bookCategory: 'books',
+                          bookCount: 12,
+                      },
+                  },
+              }
+            : { status: 201, body: bookDto({ id: 'new' }) },
+    );
+}
+
+it('names the category of the collection a book does not match', async () => {
+    refuseCategoryOnce();
+    open();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Save book' }));
+
+    const dialog = await screen.findByRole('dialog', { name: 'Category of the collection' });
+
+    expect(dialog).toHaveTextContent('Naruto holds Manga. This book is Books.');
+});
+
+it('saves again with the category of the collection', async () => {
+    refuseCategoryOnce();
+    open();
+    await userEvent.click(await screen.findByRole('button', { name: 'Save book' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Category of the collection' });
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Use Manga for this book' }));
+
+    expect(await screen.findByText('Elsewhere: /saved')).toBeInTheDocument();
+    const retried = api.calls.filter((call) => call.route === 'POST /books').at(-1)!.body;
+
+    expect(retried).toMatchObject({ category: 'manga' });
+});
