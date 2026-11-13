@@ -88,20 +88,3 @@ it('gives a planned volume its saved book rather than a missing slot', () => {
 
     expect(result).toEqual([{ kind: 'book', book: seven }]);
 });
-
-it('shows the volume range of an omnibus on its cover', () => {
-    const book = member('omnibus', { volumeFrom: 4, volumeTo: 6 });
-
-    const result = CollectionCovers.volumes(book);
-
-    expect(result).toBe('4–6');
-});
-
-it('gives neighbouring volumes different placeholder colours', () => {
-    const first = member('one', { volumeFrom: 1 });
-    const second = member('two', { volumeFrom: 2 });
-
-    const [firstHue, secondHue] = [first, second].map((book) => CollectionCovers.hue(book));
-
-    expect(firstHue).not.toBe(secondHue);
-});

@@ -751,6 +751,8 @@ export const en = {
     'collection.reopen': 'Reopen collection',
     'collection.finishedHint':
         'Finished collections remain on desktop and are hidden from mobile shopping.',
+    'collection.markAllRead': 'Mark all read',
+    'collection.allRead': 'All read',
     'collection.readingScopeOne': 'Applies to the owned book of this collection.',
     'collection.readingScopeMany': 'Applies to the {count} owned books of this collection.',
     'collection.unreadTitle': 'Mark the whole collection as not read?',

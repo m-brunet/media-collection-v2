@@ -42,16 +42,6 @@ export class CollectionCovers {
         );
     }
 
-    static volumes(book: CollectionMemberDto): string {
-        return book.volumeFrom === book.volumeTo
-            ? String(book.volumeFrom)
-            : book.volumeFrom + '–' + book.volumeTo;
-    }
-
-    static hue(book: CollectionMemberDto): number {
-        return (book.volumeFrom * 47 + 200) % 360;
-    }
-
     private static position(slot: WallSlot): number {
         return slot.kind === 'book' ? slot.book.volumeFrom : slot.volume;
     }
