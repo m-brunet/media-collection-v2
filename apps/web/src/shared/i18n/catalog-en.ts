@@ -1311,6 +1311,11 @@ export const en = {
     'activity.collectionCreated': 'You created the collection {name}',
     'activity.collectionUpdated': 'You updated the collection {name}',
     'activity.collectionRenamed': 'You renamed the collection {from} to {to}',
+    'activity.collectionCategoryChanged':
+        'You changed the collection {name} and its {count} books to {category}',
+    'activity.collectionCategoryChangedOne':
+        'You changed the collection {name} and its book to {category}',
+    'activity.collectionCategoryChangedEmpty': 'You changed the collection {name} to {category}',
     'activity.collectionFinished': 'You marked {name} as finished',
     'activity.collectionReopened': 'You reopened {name}',
     'activity.collectionDeleted': 'You deleted the collection {name}',

@@ -120,6 +120,23 @@ export class Book {
         return true;
     }
 
+    changeCategory(category: BookCategory, now: string): boolean {
+        const { details } = this.state;
+
+        if (details.category === category) {
+            return false;
+        }
+
+        this.state.details = {
+            ...details,
+            category,
+            titleGenerated: details.titleGenerated && Book.generatesTitle(category),
+        };
+        this.state.updatedAt = now;
+
+        return true;
+    }
+
     edit(details: BookDetails, now: string): void {
         this.state.details = Book.validate(details);
         this.state.updatedAt = now;

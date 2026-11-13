@@ -94,6 +94,7 @@ export class LibraryModules {
                 members,
                 search: catalog,
                 titles: BooksModule.memberTitles(books, clock),
+                categories: BooksModule.memberCategories(books, clock),
                 clock,
                 operations,
             }),

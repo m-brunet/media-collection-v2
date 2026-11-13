@@ -16,7 +16,13 @@ export const collectionChangesSchema = z
     .strictObject({
         name: z.string().max(400).optional(),
         includesVolumeZero: z.boolean().optional(),
+        category: z.enum(['books', 'manga', 'comics']).optional(),
     })
-    .refine((changes) => changes.name !== undefined || changes.includesVolumeZero !== undefined);
+    .refine(
+        (changes) =>
+            changes.name !== undefined ||
+            changes.includesVolumeZero !== undefined ||
+            changes.category !== undefined,
+    );
 
 export const collectionIdSchema = idSchema;

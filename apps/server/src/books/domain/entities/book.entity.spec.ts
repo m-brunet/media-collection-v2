@@ -270,3 +270,34 @@ it('refuses to mark an Owned book Owned again', () => {
 
     expect(operation).toThrow(expect.objectContaining({ reason: 'book-already-owned' }));
 });
+
+it('changes the category and keeps a generated title of another series category', () => {
+    const subject = generated();
+
+    const result = subject.changeCategory('comics', later);
+
+    expect(result).toBe(true);
+    expect(subject.details).toMatchObject({ category: 'comics', titleGenerated: true });
+    expect(subject.snapshot.updatedAt).toBe(later);
+});
+
+it('keeps a generated title as a supplied one when changing to Books', () => {
+    const subject = generated();
+
+    subject.changeCategory('books', later);
+
+    expect(subject.details).toMatchObject({
+        category: 'books',
+        title: 'Gunnm Vol. 3',
+        titleGenerated: false,
+    });
+});
+
+it('changes nothing when the category stays the same', () => {
+    const subject = book();
+
+    const result = subject.changeCategory(subject.details.category, later);
+
+    expect(result).toBe(false);
+    expect(subject.snapshot.updatedAt).toBe(created);
+});

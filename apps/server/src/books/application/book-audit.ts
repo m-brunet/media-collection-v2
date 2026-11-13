@@ -12,6 +12,7 @@ export const BookAudit = {
     organised: 'book.organised',
     markedOwned: 'book.marked-owned',
     retitled: 'book.retitled',
+    categoryChanged: 'book.category-changed',
     coverChanged: 'book.cover-changed',
     authorCorrected: 'author.corrected',
     readingStatusChanged: 'book.reading-status-changed',

@@ -20,6 +20,32 @@ describe('ActivitySentence', () => {
 
         expect(sentence).toBe('You added Dune');
     });
+    it('says a collection and its books changed category', () => {
+        const event: ActivityEventDto = {
+            kind: 'collection-category-changed',
+            name: 'Naruto',
+            category: 'manga',
+            count: 12,
+        };
+
+        const sentence = ActivitySentence.main(event, t);
+
+        expect(sentence).toBe('You changed the collection Naruto and its 12 books to Manga');
+    });
+    it('says a collection and its single book changed category, in French', () => {
+        const event: ActivityEventDto = {
+            kind: 'collection-category-changed',
+            name: 'Naruto',
+            category: 'comics',
+            count: 1,
+        };
+
+        const sentence = ActivitySentence.main(event, tFr);
+
+        expect(sentence).toBe(
+            'Vous avez passé la collection Naruto et son livre dans la catégorie BD et comics',
+        );
+    });
     it('says a book was marked Owned', () => {
         const event: ActivityEventDto = { kind: 'book-marked-owned', title: 'Dune' };
 

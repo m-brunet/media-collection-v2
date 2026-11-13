@@ -213,6 +213,27 @@ describe('ActivityProjection', () => {
         expect(entry?.event).toEqual({ kind: 'collection-renamed', from: 'Naruto', to: 'Boruto' });
         expect(entry?.also).toEqual([]);
     });
+    it('describes a collection category change as one entry counting its books', () => {
+        const change = operation(
+            record(
+                'collection.updated',
+                { name: 'Naruto', category: 'manga' },
+                { name: 'Naruto', category: 'books' },
+            ),
+            record('book.category-changed', { title: 'Naruto Vol. 1' }, { title: 'Naruto Vol. 1' }),
+            record('book.category-changed', { title: 'Naruto Vol. 2' }, { title: 'Naruto Vol. 2' }),
+        );
+
+        const entry = ActivityProjection.entry(change);
+
+        expect(entry?.event).toEqual({
+            kind: 'collection-category-changed',
+            name: 'Naruto',
+            category: 'manga',
+            count: 2,
+        });
+        expect(entry?.also).toEqual([]);
+    });
     it('describes a collection change that kept its name as an update', () => {
         const update = operation(
             record(

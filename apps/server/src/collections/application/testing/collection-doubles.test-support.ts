@@ -1,5 +1,7 @@
 import type { RelatedChange } from '../../../shared/application/ports/driven/audit-entry.interface.js';
 import type { MemberTitles, TitledMember } from '../ports/driven/member-titles.interface.js';
+import type { MemberCategories } from '../ports/driven/member-categories.interface.js';
+import type { CollectionCategory } from '../../domain/entities/collection.entity.js';
 import type { CollectionBookSearch } from '../ports/driven/collection-book-search.interface.js';
 import { BookFilter } from '../../../shared/application/book-filter.js';
 import type {
@@ -193,6 +195,25 @@ export class RecordedMemberTitles implements MemberTitles {
     }
 }
 
+export class RecordedMemberCategories implements MemberCategories {
+    readonly changed: { category: CollectionCategory; bookIds: string[] }[] = [];
+
+    async change(
+        category: CollectionCategory,
+        bookIds: readonly string[],
+    ): Promise<RelatedChange[]> {
+        this.changed.push({ category, bookIds: [...bookIds] });
+
+        return bookIds.map((bookId) => ({
+            category: 'book.category-changed',
+            subjectType: 'book',
+            subjectId: bookId,
+            before: null,
+            after: { category },
+        }));
+    }
+}
+
 export class CollectionDoubles {
     static shelf() {
         const collections = new MemoryCollections();
@@ -214,6 +235,7 @@ export class CollectionDoubles {
             clock,
             search: new FixedBookSearch(),
             titles: new RecordedMemberTitles(),
+            categories: new RecordedMemberCategories(),
             viewer: new CollectionViewer(),
             operations: AuditDoubles.auditedOperation(trail),
             membership: new BookCollectionMembership(

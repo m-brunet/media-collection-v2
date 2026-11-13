@@ -8,6 +8,7 @@ import type { CollectionBookSearch } from '../../application/ports/driven/collec
 import type { CollectionMemberStore } from '../../application/ports/driven/collection-member-store.interface.js';
 import type { CollectionRepository } from '../../application/ports/driven/collection-repository.interface.js';
 import type { MemberTitles } from '../../application/ports/driven/member-titles.interface.js';
+import type { MemberCategories } from '../../application/ports/driven/member-categories.interface.js';
 import { OwnedCollectionBooks } from '../../application/services/owned-collection-books.service.js';
 import { BookCollectionMembership } from '../../application/services/book-collection-membership.service.js';
 import { CollectionLoader } from '../../application/services/collection-loader.service.js';
@@ -32,6 +33,7 @@ export interface CollectionsDependencies {
     members: CollectionMemberStore;
     search: CollectionBookSearch;
     titles: MemberTitles;
+    categories: MemberCategories;
     clock: Clock;
     operations: AuditedOperation;
 }
@@ -41,6 +43,7 @@ const token = {
     members: 'COLLECTIONS_MEMBERS',
     search: 'COLLECTIONS_BOOK_SEARCH',
     titles: 'COLLECTIONS_MEMBER_TITLES',
+    categories: 'COLLECTIONS_MEMBER_CATEGORIES',
     clock: 'COLLECTIONS_CLOCK',
     operations: 'COLLECTIONS_AUDITED_OPERATION',
     loader: 'COLLECTIONS_LOADER',
@@ -140,6 +143,7 @@ const useCaseProviders: Provider[] = [
             token.loader,
             token.viewer,
             token.titles,
+            token.categories,
             token.clock,
             token.operations,
         ],
@@ -149,9 +153,20 @@ const useCaseProviders: Provider[] = [
             loader: CollectionLoader,
             viewer: CollectionViewer,
             titles: MemberTitles,
+            categories: MemberCategories,
             clock: Clock,
             operations: AuditedOperation,
-        ) => new UpdateCollection(collections, members, loader, viewer, titles, clock, operations),
+        ) =>
+            new UpdateCollection(
+                collections,
+                members,
+                loader,
+                viewer,
+                titles,
+                categories,
+                clock,
+                operations,
+            ),
     },
     ChangeProvider.of('COLLECTIONS_FINISH', FinishCollection),
     ChangeProvider.of('COLLECTIONS_REOPEN', ReopenCollection),

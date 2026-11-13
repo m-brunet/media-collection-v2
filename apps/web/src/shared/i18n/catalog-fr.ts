@@ -1363,6 +1363,12 @@ export const fr = {
     'activity.collectionCreated': 'Vous avez créé la collection {name}',
     'activity.collectionUpdated': 'Vous avez modifié la collection {name}',
     'activity.collectionRenamed': 'Vous avez renommé la collection {from} en {to}',
+    'activity.collectionCategoryChanged':
+        'Vous avez passé la collection {name} et ses {count} livres dans la catégorie {category}',
+    'activity.collectionCategoryChangedOne':
+        'Vous avez passé la collection {name} et son livre dans la catégorie {category}',
+    'activity.collectionCategoryChangedEmpty':
+        'Vous avez passé la collection {name} dans la catégorie {category}',
     'activity.collectionFinished': 'Vous avez marqué {name} comme terminée',
     'activity.collectionReopened': 'Vous avez rouvert {name}',
     'activity.collectionDeleted': 'Vous avez supprimé la collection {name}',
