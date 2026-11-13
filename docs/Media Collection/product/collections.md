@@ -43,7 +43,7 @@ A normal book covers one number. An optional 'Covers several volumes' choice all
 
 One Owned omnibus remains one book for library counts, location, and lending while satisfying every covered collection volume. Collection totals count distinct numbers, never book records; overlapping Owned coverage does not increase completeness. The range end contributes to the highest saved volume even when the omnibus is Not Owned.
 
-Desktop collection details show the collection as a wall of covers in volume order, wrapping across the full width of the page. Each book is one tile: its cover, or a coloured placeholder with its volume number or range when it has none, its title and a muted line (Owned or Not owned, Omnibus with its range, Books for the Books category). Several editions of the same volume each get their own tile, side by side; an omnibus appears once, at its first volume, so the same omnibus covering several numbers never looks like several physical books. Clicking a tile opens the book's details page. Each expected volume with no saved book appears in its place as an empty dashed tile, for example **Volume 10 · Missing**; it opens nothing and cannot be chosen in **Edit books**. A planned volume shows its saved Not owned book instead (redesigned 2026-11-13; the expandable volume entries are gone).
+Desktop collection details show the collection as a wall of covers in volume order, wrapping across the full width of the page. Each book is one tile: its cover, or a **No cover** placeholder with a solid border when it has none (missing volumes have a dashed one), its title and a muted line (Owned or Not owned, Omnibus with its range, Books for the Books category). Several editions of the same volume each get their own tile, side by side; an omnibus appears once, at its first volume, so the same omnibus covering several numbers never looks like several physical books. Clicking a tile opens the book's details page. Each expected volume with no saved book appears in its place as an empty dashed tile, for example **Volume 10 · Missing**; it opens nothing and cannot be chosen in **Edit books**. A planned volume shows its saved Not owned book instead (redesigned 2026-11-13; the expandable volume entries are gone).
 
 ## Finished
 
@@ -59,11 +59,11 @@ On the desktop collection details page, a short status label follows the collect
 
 ## Reading a whole collection
 
-The desktop collection details page has the same personal **Read** toggle as a book's details page, at the right of the **Volumes** heading; hovering or focusing it explains its scope (decided 2026-11-10, issue #25; placement redesigned 2026-11-13 with alternative A of issue #24):
+The desktop collection details page has a personal reading toggle, at the right of the **Volumes** heading; hovering or focusing it explains its scope (decided 2026-11-10, issue #25; placement redesigned 2026-11-13 with alternative A of issue #24):
 
-- It is pressed only when **every Owned book** of the collection is read by the signed-in account. While one Owned book is unread, it shows "Not read".
-- Pressing "Not read" marks every Owned book of the collection read at once, without confirmation.
-- Pressing "Read" asks for confirmation first, because it erases the account's reading status for the whole collection; confirming marks every Owned book not read.
+- It is pressed only when **every Owned book** of the collection is read by the signed-in account, and then reads **All read**. While one Owned book is unread, it reads **Mark all read** (a book's own toggle keeps "Read" / "Not read"; the collection labels say it acts on every book, redesigned 2026-11-13).
+- Pressing "Mark all read" marks every Owned book of the collection read at once, without confirmation.
+- Pressing "All read" asks for confirmation first, because it erases the account's reading status for the whole collection; confirming marks every Owned book not read.
 - Not Owned books (planned or wanted volumes) are never changed. A collection without Owned books shows no toggle.
 - Like a book's reading status, it is personal: Owners/Admin only, no Guest display, and another account's status never changes. The change is one audited operation on the collection, with each changed book recorded as a related change.
 - Desktop only: Leaf does not offer it.
@@ -72,7 +72,7 @@ The desktop collection details page has the same personal **Read** toggle as a b
 
 The desktop collection details page lets Owners/Admin change several books of the collection at once (decided 2026-11-10 and 2026-11-11, issue #24). A batch only holds books of that one collection.
 
-- **Choosing the books:** **Edit books** turns the same wall of covers into a selection: each book gets a round check and clicking a cover adds or removes it instead of opening the book. Missing volumes stay in place but cannot be chosen and are not counted; a bottom bar counts the chosen books and offers **Select all**, **Select owned**, **Clear**, **Cancel** and **Edit N books**. While books are being chosen, changed and reviewed, the **Read** toggle and the **Edit books** button are hidden. Guests do not see the mode (redesigned 2026-11-13, alternative A of issue #24).
+- **Choosing the books:** **Edit books** turns the same wall of covers into a selection: each book gets a round check and clicking a cover adds or removes it instead of opening the book. Missing volumes stay in place but cannot be chosen and are not counted; a bottom bar counts the chosen books and offers **Select all**, **Select owned**, **Clear**, **Cancel** and **Edit N books**. While books are being chosen, changed and reviewed, the reading toggle and the **Edit books** button are hidden. Guests do not see the mode (redesigned 2026-11-13, alternative A of issue #24).
 - **Side drawer:** **Edit N books** opens a drawer on the right, in three steps (Choose, Change, Review). The covers stay visible and clickable beside it, so the selection can still change. Escape or the close button closes the drawer and goes back to the selection.
 - **Fields:** nothing is listed as Leave unchanged: the drawer starts empty and each field to change is added as a card (**+ Category**, **+ Publisher**…) and can be removed again. A field that is not added stays as it is on every book. Publisher, Price and Shelf cards offer **Set to** (Shelf: **Place on a shelf**), **Fill if empty** or an explicit **Clear**, so an empty input never clears by accident. Fill if empty applies the value only to the chosen books that have none for that field; the others keep theirs.
 
@@ -141,7 +141,7 @@ A separate desktop page mirroring mobile ownership progression is future scope, 
 10. Delete a collection: keep all books but remove membership/coverage. Move its final book elsewhere: keep that book and remove the now-empty collection.
 11. An unfinished collection with all known volumes Owned stays visible on mobile with last owned and no known gaps.
 12. Mobile quick add of a saved ordinary Not Owned book requires confirmation; inferred volumes and omnibus books cannot use it.
-13. Owned 1 read, Owned 2 unread, Not Owned 3: the collection shows "Not read"; pressing it marks 2 read and leaves 3 unchanged, and the toggle shows "Read". Pressing "Read" and confirming marks 1 and 2 not read; another Owner's statuses are unchanged.
+13. Owned 1 read, Owned 2 unread, Not Owned 3: the collection shows "Mark all read"; pressing it marks 2 read and leaves 3 unchanged, and the toggle shows "All read". Pressing "All read" and confirming marks 1 and 2 not read; another Owner's statuses are unchanged.
 14. Batch edit of Gunnm 1–3, Publisher set to Glénat, Price left unchanged: the three books get Glénat and keep their prices. Price set to Clear: the three prices become unknown.
 15. Batch edit of Gunnm 1 (lent) and 2, Ownership Not owned and Publisher Glénat: the summary lists 1 as left out ("Lent: cannot be set to Not owned"); saving changes 2 only, and 1 keeps its publisher too.
 16. Gunnm 1 titled "Gunnm, the first" (Manga) and a Books record "Gunnm, the novel", Use the generated title: the summary shows "Gunnm, the first → Gunnm Vol. 1" and lists the novel as left out.

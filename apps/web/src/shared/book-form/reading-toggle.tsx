@@ -6,11 +6,13 @@ import { BookFormat } from './book-format.util';
 export function ReadingToggle({
     read,
     busy,
+    label,
     onToggle,
     ...rest
 }: Pick<ComponentProps<'button'>, 'aria-describedby' | 'onFocus' | 'onBlur' | 'onKeyDown'> & {
     read: boolean;
     busy?: boolean;
+    label?: string;
     onToggle(read: boolean): void;
 }) {
     const { t } = useI18n();
@@ -23,7 +25,7 @@ export function ReadingToggle({
             className={read ? 'button--pressed' : undefined}
             onClick={() => onToggle(!read)}
         >
-            {t(BookFormat.reading(read))}
+            {label ?? t(BookFormat.reading(read))}
         </Button>
     );
 }

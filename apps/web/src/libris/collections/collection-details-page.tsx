@@ -68,6 +68,7 @@ function ReadingControl({ collection }: { collection: CollectionDetailsDto }) {
                 <ReadingToggle
                     read={reading.read}
                     busy={action.busy}
+                    label={t(reading.read ? 'collection.allRead' : 'collection.markAllRead')}
                     {...tooltip.trigger}
                     onToggle={(next) => (next ? save(true) : setConfirming(true))}
                 />

@@ -113,8 +113,8 @@ it('shows a cover of each book in volume order, with the missing volumes in thei
             .getAllByRole('listitem')
             .map((tile) => tile.textContent),
     ).toEqual([
-        '1–3Batman omnibusOwned · Omnibus 1–3',
-        '1Year OneOwned',
+        'No coverBatman omnibusOwned · Omnibus 1–3',
+        'No coverYear OneOwned',
         '4Volume 4Missing',
         '5Volume 5Missing',
         '6Volume 6Missing',
@@ -123,7 +123,7 @@ it('shows a cover of each book in volume order, with the missing volumes in thei
         '9Volume 9Missing',
         '10Volume 10Missing',
         '11Volume 11Missing',
-        '12Batman 12Not owned',
+        'No coverBatman 12Not owned',
     ]);
 });
 
@@ -525,7 +525,11 @@ it('turns the covers into a selection in the Edit books mode', async () => {
         within(wall())
             .getAllByRole('button')
             .map((tile) => tile.textContent),
-    ).toEqual(['1–3Batman omnibusOwned · Omnibus 1–3', '1Year OneOwned', '12Batman 12Not owned']);
+    ).toEqual([
+        'No coverBatman omnibusOwned · Omnibus 1–3',
+        'No coverYear OneOwned',
+        'No coverBatman 12Not owned',
+    ]);
     expect(screen.getByText('0 of 3 books chosen')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Edit 0 books' })).toBeDisabled();
     expect(screen.queryByRole('region', { name: 'Volumes' })).not.toBeInTheDocument();
@@ -902,7 +906,7 @@ it('shows Not read while an owned book of the collection is unread', async () =>
 
     show();
 
-    const toggle = await screen.findByRole('button', { name: 'Not read' });
+    const toggle = await screen.findByRole('button', { name: 'Mark all read' });
 
     expect(toggle).not.toHaveClass('button--pressed');
     expect(
@@ -915,7 +919,7 @@ it('shows Not read while an owned book of the collection is unread', async () =>
 it('hides the reading panel while books are being edited together', async () => {
     reading(false);
     show();
-    await screen.findByRole('button', { name: 'Not read' });
+    await screen.findByRole('button', { name: 'Mark all read' });
 
     await userEvent.click(screen.getByRole('button', { name: 'Edit books' }));
 
@@ -928,7 +932,7 @@ it('shows Read pressed once every owned book is read', async () => {
 
     show();
 
-    expect(await screen.findByRole('button', { name: 'Read' })).toHaveClass('button--pressed');
+    expect(await screen.findByRole('button', { name: 'All read' })).toHaveClass('button--pressed');
     expect(screen.getByText(/^Applies to the owned book of this collection\./)).toBeInTheDocument();
 });
 
@@ -939,7 +943,7 @@ it('offers no reading status for a collection without owned books', async () => 
 
     await screen.findByRole('heading', { name: 'Batman' });
     await waitFor(() => expect(screen.queryByText('Only your reading')).not.toBeInTheDocument());
-    expect(screen.queryByRole('button', { name: 'Not read' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Mark all read' })).not.toBeInTheDocument();
 });
 
 it('marks every owned book read at once, without confirmation', async () => {
@@ -950,9 +954,9 @@ it('marks every owned book read at once, without confirmation', async () => {
 
     show();
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Not read' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Mark all read' }));
 
-    expect(await screen.findByRole('button', { name: 'Read' })).toHaveClass('button--pressed');
+    expect(await screen.findByRole('button', { name: 'All read' })).toHaveClass('button--pressed');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(api.calls).toContainEqual({
         route: 'PUT /collections/c1/reading',
@@ -965,7 +969,7 @@ it('asks before marking the whole collection not read', async () => {
 
     show();
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Read' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'All read' }));
 
     const dialog = screen.getByRole('dialog', { name: 'Mark the whole collection as not read?' });
 
@@ -981,13 +985,13 @@ it('keeps the collection read when the confirmation is cancelled', async () => {
     const api = reading(true);
 
     show();
-    await userEvent.click(await screen.findByRole('button', { name: 'Read' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'All read' }));
     const dialog = screen.getByRole('dialog', { name: 'Mark the whole collection as not read?' });
 
     await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Read' })).toHaveClass('button--pressed');
+    expect(screen.getByRole('button', { name: 'All read' })).toHaveClass('button--pressed');
     expect(api.calls.map((call) => call.route)).not.toContain('PUT /collections/c1/reading');
 });
 
@@ -998,12 +1002,12 @@ it('marks every owned book not read once confirmed', async () => {
     }));
 
     show();
-    await userEvent.click(await screen.findByRole('button', { name: 'Read' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'All read' }));
     const dialog = screen.getByRole('dialog', { name: 'Mark the whole collection as not read?' });
 
     await userEvent.click(within(dialog).getByRole('button', { name: 'Mark as not read' }));
 
-    expect(await screen.findByRole('button', { name: 'Not read' })).not.toHaveClass(
+    expect(await screen.findByRole('button', { name: 'Mark all read' })).not.toHaveClass(
         'button--pressed',
     );
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();

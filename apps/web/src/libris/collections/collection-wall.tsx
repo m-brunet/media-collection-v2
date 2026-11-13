@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import type { CollectionMemberDto } from '../../../../../packages/contracts/src/http';
@@ -6,7 +6,6 @@ import { BookFormat } from '../../shared/book-form/book-format.util';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Icon } from '../../shared/ui/icon';
 import type { WallSlot } from './collection-covers.util';
-import { CollectionCovers } from './collection-covers.util';
 
 export interface WallTile {
     chosen: boolean;
@@ -20,12 +19,13 @@ export interface WallTile {
 
 function TileCover({ book, tile }: { book: CollectionMemberDto; tile: WallTile }) {
     const source = book.hasCover ? BookFormat.cover(book.id, book.updatedAt) : null;
+    const { t } = useI18n();
     const [failed, setFailed] = useState<string | null>(null);
-    const style = { '--tile-hue': CollectionCovers.hue(book) } as CSSProperties;
+    const shown = source !== null && failed !== source;
 
     return (
-        <span className="wall-tile__cover" style={style}>
-            {source && failed !== source ? (
+        <span className={'wall-tile__cover' + (shown ? '' : ' wall-tile__cover--empty')}>
+            {shown ? (
                 <img
                     className="wall-tile__image"
                     src={source}
@@ -33,8 +33,9 @@ function TileCover({ book, tile }: { book: CollectionMemberDto; tile: WallTile }
                     onError={() => setFailed(source)}
                 />
             ) : (
-                <span className="wall-tile__volume" aria-hidden="true">
-                    {CollectionCovers.volumes(book)}
+                <span className="wall-tile__empty" aria-hidden="true">
+                    <Icon name="cover-missing" size={24} />
+                    <span>{t('cover.missing')}</span>
                 </span>
             )}
             {tile.check && (
