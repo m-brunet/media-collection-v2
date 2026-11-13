@@ -910,6 +910,16 @@ export const fr = {
         'Le nouveau nom s’applique à chaque livre de la collection. Un nom équivalent existant ne peut pas être réutilisé. Le tome 0 ne peut pas être désactivé tant qu’un livre enregistré le couvre.',
     'editCollection.name': 'Nom de la collection',
     'editCollection.range': 'Option de la plage attendue',
+    'editCollection.categoryHint': 'Tous les livres de la collection ont cette catégorie.',
+    'editCollection.categoryChange':
+        'Les {count} livres de la collection passeront dans la catégorie {category}.',
+    'editCollection.categoryChangeOne':
+        'Le livre de la collection passera dans la catégorie {category}.',
+    'mismatches.summary': '{count} livres n’ont pas la catégorie de leur collection',
+    'mismatches.summaryOne': '1 livre n’a pas la catégorie de sa collection',
+    'mismatches.hint':
+        'Ouvrez chaque livre pour changer sa catégorie ou le retirer de la collection.',
+    'mismatches.line': '{category}, dans {collection} ({collectionCategory})',
     'editCollection.volumeZero': 'Inclut le tome 0',
     'editCollection.save': 'Enregistrer la collection',
     'editCollection.delete': 'Supprimer la collection',

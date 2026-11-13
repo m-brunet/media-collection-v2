@@ -100,7 +100,61 @@ it('previews a collection with the covers it was given, outside the link name', 
         '/api/books/b1/cover?v=2026-01-01T00%3A00%3A00.000Z',
         '/api/books/b2/cover?v=2026-01-02T00%3A00%3A00.000Z',
     ]);
-    expect(batman).toHaveAccessibleName('Batman, 4 / 12 volumes Owned, 8 missing · Unfinished');
+    expect(batman).toHaveAccessibleName(
+        'Batman, Comics, 4 / 12 volumes Owned, 8 missing · Unfinished',
+    );
+});
+
+it('says how many books do not match their collection, with each book and collection', async () => {
+    new FakeApi()
+        .signedIn(account())
+        .on('GET /collections', listing([summary()]))
+        .on('GET /collections/mismatches', () => ({
+            status: 200,
+            body: [
+                {
+                    bookId: 'guide',
+                    title: 'Naruto guide',
+                    category: 'books',
+                    collectionId: 'c2',
+                    collectionName: 'Naruto',
+                    collectionCategory: 'manga',
+                },
+                {
+                    bookId: 'novel',
+                    title: 'Batman novel',
+                    category: 'books',
+                    collectionId: 'c1',
+                    collectionName: 'Batman',
+                    collectionCategory: 'comics',
+                },
+            ],
+        }));
+
+    show();
+
+    await userEvent.click(
+        await screen.findByText('2 books do not match their collection’s category'),
+    );
+
+    expect(screen.getByRole('link', { name: 'Naruto guide' })).toHaveAttribute(
+        'href',
+        '/books/guide',
+    );
+    expect(screen.getByText('Books, in Naruto (Manga)')).toBeInTheDocument();
+});
+
+it('shows no mismatch notice to a Guest', async () => {
+    const api = new FakeApi()
+        .signedIn(account({ role: 'guest' }))
+        .on('GET /collections', listing([summary()]));
+
+    show();
+    await screen.findByRole('link', { name: /Batman/ });
+
+    const routes = api.calls.map((call) => call.route);
+
+    expect(routes.some((route) => route.startsWith('GET /collections/mismatches'))).toBe(false);
 });
 
 it('shows no cover for a collection without previews', async () => {
