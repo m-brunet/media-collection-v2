@@ -494,6 +494,7 @@ export interface CollectionNameDto {
 
 export interface CollectionChangesDto {
     name?: string;
+    category?: BookCategory;
     includesVolumeZero?: boolean;
 }
 
@@ -588,6 +589,7 @@ export type ActivityEventDto =
           title: string | null;
       }
     | { kind: 'books-lent' | 'books-returned'; receiver: string; titles: string[] }
+    | { kind: 'collection-category-changed'; name: string; category: BookCategory; count: number }
     | {
           kind:
               | 'collection-created'

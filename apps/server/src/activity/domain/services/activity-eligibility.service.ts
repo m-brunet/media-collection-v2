@@ -7,6 +7,7 @@ export class ActivityEligibility {
         'book.organised',
         'book.cover-changed',
         'book.retitled',
+        'book.category-changed',
         'author.corrected',
         'collection.created',
         'collection.updated',

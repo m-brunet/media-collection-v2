@@ -5,6 +5,7 @@ import { MemberCoverage } from '../member-coverage.helper.js';
 import type { CollectionMemberStore } from '../ports/driven/collection-member-store.interface.js';
 import type { CollectionRepository } from '../ports/driven/collection-repository.interface.js';
 import type { MemberTitles } from '../ports/driven/member-titles.interface.js';
+import type { MemberCategories } from '../ports/driven/member-categories.interface.js';
 import { CollectionLoader } from '../services/collection-loader.service.js';
 import { CollectionViewer } from '../services/collection-viewer.service.js';
 import type { RelatedChange } from '../../../shared/application/ports/driven/audit-entry.interface.js';
@@ -22,6 +23,7 @@ export class UpdateCollection implements UpdateCollectionUseCase {
         private readonly loader: CollectionLoader,
         private readonly viewer: CollectionViewer,
         private readonly titles: MemberTitles,
+        private readonly categories: MemberCategories,
         private readonly clock: Clock,
         private readonly operations: AuditedOperation,
     ) {}
@@ -46,6 +48,7 @@ export class UpdateCollection implements UpdateCollectionUseCase {
                 const members = MemberCoverage.of(records);
                 const now = this.clock.now().toISOString();
                 let retitled: RelatedChange[] = [];
+                let recategorised: RelatedChange[] = [];
 
                 if (changes.name !== undefined) {
                     await this.ensureAvailable(collectionId, changes.name);
@@ -65,13 +68,24 @@ export class UpdateCollection implements UpdateCollectionUseCase {
                     collection.reconcile(members, now);
                 }
 
+                if (
+                    changes.category !== undefined &&
+                    changes.category !== collection.snapshot.category
+                ) {
+                    collection.changeCategory(changes.category, now);
+                    recategorised = await this.categories.change(
+                        changes.category,
+                        records.map((record) => record.bookId),
+                    );
+                }
+
                 await this.collections.save(collection);
 
                 return {
                     result: this.viewer.details(collection, records),
                     before,
                     after: CollectionSnapshot.of(collection),
-                    related: retitled,
+                    related: [...retitled, ...recategorised],
                 };
             },
         );

@@ -30,8 +30,10 @@ import { BookOrganiser } from '../../application/services/book-organiser.service
 import { BookRemoval } from '../../application/services/book-removal.service.js';
 import { BookViewer } from '../../application/services/book-viewer.service.js';
 import { CollectionMemberTitles } from '../../application/services/collection-member-titles.service.js';
+import { CollectionMemberCategories } from '../../application/services/collection-member-categories.service.js';
 import { GeneratedTitleSync } from '../../application/services/generated-title-sync.service.js';
 import type { MemberTitles } from '../../../collections/application/ports/driven/member-titles.interface.js';
+import type { MemberCategories } from '../../../collections/application/ports/driven/member-categories.interface.js';
 import { LentBookGuard } from '../../application/services/lent-book-guard.service.js';
 import { CorrectAuthor } from '../../application/use-cases/correct-author.usecase.js';
 import { CreateBook } from '../../application/use-cases/create-book.usecase.js';
@@ -710,5 +712,9 @@ export class BooksModule {
 
     static memberTitles(books: BookRepository, clock: Clock): MemberTitles {
         return new CollectionMemberTitles(books, clock);
+    }
+
+    static memberCategories(books: BookRepository, clock: Clock): MemberCategories {
+        return new CollectionMemberCategories(books, clock);
     }
 }

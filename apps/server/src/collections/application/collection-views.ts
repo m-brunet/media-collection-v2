@@ -72,6 +72,7 @@ export interface CollectionNameView {
 
 export interface CollectionChanges {
     name?: string;
+    category?: 'books' | 'manga' | 'comics';
     includesVolumeZero?: boolean;
 }
 

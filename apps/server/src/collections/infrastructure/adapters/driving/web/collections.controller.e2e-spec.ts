@@ -1,4 +1,5 @@
 import type {
+    ActivityPageDto,
     BookDto,
     TagDto,
     CollectionDetailsDto,
@@ -367,6 +368,74 @@ describe('PATCH /api/collections/:id', () => {
         expect(await app.dependencies.library.collectionOf(saved.id)).toBe('The Batman');
         expect(await app.dependencies.audit.entries()).toContainEqual(
             expect.objectContaining({ category: 'collection.updated', outcome: 'successful' }),
+        );
+    });
+    it('changes the category of the collection and of every member book', async () => {
+        const one = await book(membership('Naruto', 1));
+        const two = await book(membership('Naruto', 2));
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<CollectionDetailsDto>(
+            '/collections/' + one.collection!.id,
+            'PATCH',
+            { category: 'manga' },
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.body.category).toBe('manga');
+        expect((await app.dependencies.books.books.findById(one.id))!.details.category).toBe(
+            'manga',
+        );
+        expect((await app.dependencies.books.books.findById(two.id))!.details.category).toBe(
+            'manga',
+        );
+    });
+    it('shows a category change as one Activity entry', async () => {
+        const one = await book(membership('Naruto', 1));
+        const client = await app.authenticatedClient(owner);
+
+        await book(membership('Naruto', 2));
+        await client.call('/collections/' + one.collection!.id, 'PATCH', { category: 'manga' });
+
+        const response = await client.call<ActivityPageDto>('/activity');
+
+        expect(response.body.entries.map((entry) => entry.event.kind).sort()).toEqual([
+            'book-added',
+            'book-added',
+            'collection-category-changed',
+        ]);
+        expect(
+            response.body.entries.find(
+                (entry) => entry.event.kind === 'collection-category-changed',
+            )?.event,
+        ).toEqual({
+            kind: 'collection-category-changed',
+            name: 'Naruto',
+            category: 'manga',
+            count: 2,
+        });
+    });
+    it('rejects an unknown category', async () => {
+        const saved = await book(membership('Naruto', 1));
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/collections/' + saved.collection!.id, 'PATCH', {
+            category: 'films',
+        });
+
+        expect(response.status).toBe(400);
+    });
+    it('refuses a category change by a Guest', async () => {
+        const saved = await book(membership('Naruto', 1));
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call('/collections/' + saved.collection!.id, 'PATCH', {
+            category: 'manga',
+        });
+
+        expect(response.status).toBe(403);
+        expect((await app.dependencies.books.books.findById(saved.id))!.details.category).toBe(
+            'books',
         );
     });
     it('refuses the name of another collection', async () => {

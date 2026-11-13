@@ -49,9 +49,17 @@ export type ActivityEvent =
     | { kind: 'books-lent' | 'books-returned'; receiver: string; titles: string[] }
     | { kind: NamedEventKind; name: string }
     | { kind: RenamedEventKind; from: string; to: string }
+    | {
+          kind: 'collection-category-changed';
+          name: string;
+          category: ActivityCategory;
+          count: number;
+      }
     | { kind: 'shelf-created' | 'shelf-deleted'; name: string; bookcase: string }
     | { kind: 'shelf-renamed'; from: string; to: string; bookcase: string }
     | { kind: 'shelf-moved'; name: string; from: string; to: string };
+
+export type ActivityCategory = 'books' | 'manga' | 'comics';
 
 export interface ActivityEntry {
     id: string;
@@ -97,7 +105,7 @@ export class ActivityProjection {
             'tag.created',
             'receiver.created',
         ],
-        ['book.retitled'],
+        ['book.retitled', 'book.category-changed'],
     ];
 
     static entry(operation: ActivityOperation): ActivityEntry | null {
@@ -111,7 +119,7 @@ export class ActivityProjection {
         }
 
         const together = readable.filter((record) => record.category === main.category);
-        const event = ActivityProjection.event(main.category, together);
+        const event = ActivityProjection.event(main.category, together, readable);
 
         if (!event) {
             return null;
@@ -125,12 +133,20 @@ export class ActivityProjection {
             also: readable
                 .filter(
                     (record) =>
-                        record.category !== main.category && record.category !== 'book.retitled',
+                        record.category !== main.category &&
+                        !ActivityProjection.consequences.includes(record.category),
                 )
-                .map((record) => ActivityProjection.event(record.category, [record]))
+                .map((record) => ActivityProjection.event(record.category, [record], readable))
                 .filter((also): also is ActivityEvent => also !== null),
         };
     }
+
+    private static readonly categories: readonly ActivityCategory[] = ['books', 'manga', 'comics'];
+
+    private static readonly consequences: readonly string[] = [
+        'book.retitled',
+        'book.category-changed',
+    ];
 
     private static main(records: readonly ActivityRecord[]): ActivityRecord | undefined {
         return [...records].sort(
@@ -146,6 +162,7 @@ export class ActivityProjection {
     private static event(
         category: string,
         records: readonly ActivityRecord[],
+        operation: readonly ActivityRecord[],
     ): ActivityEvent | null {
         const record = Required.at(records, 0, 'an event has at least one record');
         const { before, after } = record;
@@ -174,9 +191,14 @@ export class ActivityProjection {
             case 'collection.updated': {
                 const renamed = ActivityProjection.renamed('collection-renamed', before, after);
 
-                return renamed && renamed.from !== renamed.to
-                    ? renamed
-                    : ActivityProjection.named('collection-updated', current);
+                if (renamed && renamed.from !== renamed.to) {
+                    return renamed;
+                }
+
+                return (
+                    ActivityProjection.recategorised(before, after, operation) ??
+                    ActivityProjection.named('collection-updated', current)
+                );
             }
             case 'collection.created':
                 return ActivityProjection.named('collection-created', current);
@@ -295,6 +317,27 @@ export class ActivityProjection {
         const to = ActivityProjection.text(after, 'name');
 
         return from && to ? { kind, from, to } : null;
+    }
+
+    private static recategorised(
+        before: Values,
+        after: Values,
+        operation: readonly ActivityRecord[],
+    ): ActivityEvent | null {
+        const name = ActivityProjection.text(after, 'name');
+        const category = ActivityProjection.categories.find(
+            (candidate) => candidate === ActivityProjection.text(after, 'category'),
+        );
+
+        if (!name || !category || category === ActivityProjection.text(before, 'category')) {
+            return null;
+        }
+
+        const count = operation.filter(
+            (record) => record.category === 'book.category-changed',
+        ).length;
+
+        return { kind: 'collection-category-changed', name, category, count };
     }
 
     private static shelf(

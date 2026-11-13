@@ -2,6 +2,7 @@ import type { ActivityEventDto } from '../../../../../packages/contracts/src/htt
 import type { MessageKey } from '../../shared/i18n/catalog-en';
 import type { MessageValues } from '../../shared/i18n/translator.util';
 import { Required } from '../../shared/required.util';
+import { BookFormat } from '../../shared/book-form/book-format.util';
 
 type Translate = (key: MessageKey, values?: MessageValues) => string;
 type Kind = ActivityEventDto['kind'];
@@ -22,6 +23,7 @@ export class ActivitySentence {
         'collection-created': 'activity.collectionCreated',
         'collection-updated': 'activity.collectionUpdated',
         'collection-renamed': 'activity.collectionRenamed',
+        'collection-category-changed': 'activity.collectionCategoryChanged',
         'collection-finished': 'activity.collectionFinished',
         'collection-reopened': 'activity.collectionReopened',
         'collection-deleted': 'activity.collectionDeleted',
@@ -64,6 +66,21 @@ export class ActivitySentence {
                 title: Required.at(event.titles, 0, 'an event names at least one book'),
                 count: event.titles.length,
                 receiver: event.receiver,
+            });
+        }
+
+        if (event.kind === 'collection-category-changed') {
+            const key =
+                event.count === 0
+                    ? 'activity.collectionCategoryChangedEmpty'
+                    : event.count === 1
+                      ? 'activity.collectionCategoryChangedOne'
+                      : 'activity.collectionCategoryChanged';
+
+            return t(key, {
+                name: event.name,
+                category: t(BookFormat.category(event.category)),
+                count: event.count,
             });
         }
 

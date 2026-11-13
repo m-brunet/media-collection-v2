@@ -9,6 +9,7 @@ function subject(current: ReturnType<typeof CollectionDoubles.shelf>) {
         current.loader,
         current.viewer,
         current.titles,
+        current.categories,
         current.clock,
         current.operations,
     );
@@ -34,6 +35,69 @@ describe('UpdateCollection', () => {
             before: { name: 'Batman' },
             after: { name: 'The Batman' },
         });
+    });
+
+    it('changes the category of the collection and of every member book', async () => {
+        const current = CollectionDoubles.shelf();
+
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
+        await CollectionDoubles.member(current, 'two', 'owned', 'Batman', 2);
+
+        const result = await subject(current).execute(owner, 'collection-1', {
+            category: 'manga',
+        });
+
+        expect(result.category).toBe('manga');
+        expect(current.collections.collections.get('collection-1')?.snapshot.category).toBe(
+            'manga',
+        );
+        expect(current.categories.changed).toEqual([
+            { category: 'manga', bookIds: ['one', 'two'] },
+        ]);
+    });
+
+    it('records the collection and every changed book in one operation', async () => {
+        const current = CollectionDoubles.shelf();
+
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
+        await CollectionDoubles.member(current, 'two', 'owned', 'Batman', 2);
+        const recorded = current.trail.entries.length;
+
+        await subject(current).execute(owner, 'collection-1', { category: 'manga' });
+
+        const entries = current.trail.entries.slice(recorded);
+
+        expect(entries.map((entry) => [entry.category, entry.subjectId])).toEqual([
+            ['collection.updated', 'collection-1'],
+            ['book.category-changed', 'one'],
+            ['book.category-changed', 'two'],
+        ]);
+        expect(new Set(entries.map((entry) => entry.operationId)).size).toBe(1);
+        expect(entries[0]).toMatchObject({
+            before: { category: 'comics' },
+            after: { category: 'manga' },
+        });
+    });
+
+    it('leaves the books alone when the category stays the same', async () => {
+        const current = CollectionDoubles.shelf();
+
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
+
+        await subject(current).execute(owner, 'collection-1', { category: 'comics' });
+
+        expect(current.categories.changed).toEqual([]);
+    });
+
+    it('refuses a category change by a Guest', async () => {
+        const current = CollectionDoubles.shelf();
+
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
+
+        const operation = subject(current).execute(guest, 'collection-1', { category: 'manga' });
+
+        await expect(operation).rejects.toMatchObject({ reason: 'guest-read-only' });
+        expect(current.categories.changed).toEqual([]);
     });
 
     it('accepts a new spelling of the same name', async () => {

@@ -289,6 +289,7 @@ export class TestApp {
                         members,
                         search: books.catalog,
                         titles: BooksModule.memberTitles(books.books, clock),
+                        categories: BooksModule.memberCategories(books.books, clock),
                         clock,
                         operations,
                     }),
