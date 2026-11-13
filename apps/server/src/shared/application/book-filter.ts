@@ -54,6 +54,10 @@ export class BookFilter implements BookFilterCriteria {
         });
     }
 
+    withoutCategories(): BookFilter {
+        return new BookFilter({ ...this, categories: [] });
+    }
+
     isEmpty(): boolean {
         return (
             this.categories.length === 0 &&

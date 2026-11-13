@@ -1,7 +1,8 @@
-import type { Collection } from '../../../domain/entities/collection.entity.js';
+import type { Collection, CollectionCategory } from '../../../domain/entities/collection.entity.js';
 
 export type CollectionPageQuery = {
     ids: readonly string[] | null;
+    categories: readonly CollectionCategory[];
     direction: 'asc' | 'desc';
     offset: number;
     limit: number;

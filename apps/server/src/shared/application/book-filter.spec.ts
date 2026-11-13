@@ -78,3 +78,11 @@ describe('BookFilter', () => {
         expect(result).toThrow(expect.objectContaining({ reason: 'reading-filter-unavailable' }));
     });
 });
+
+it('drops the categories and keeps the other criteria', () => {
+    const filter = BookFilter.of({ categories: ['manga'], ownerships: ['owned'] });
+
+    const result = filter.withoutCategories();
+
+    expect(result).toEqual(BookFilter.of({ ownerships: ['owned'] }));
+});

@@ -98,9 +98,38 @@ describe('ListCollections', () => {
         expect(current.search.calls).toEqual([{ search: '', filter, readerId: owner.id }]);
     });
 
+    it('keeps the collections of the chosen categories', async () => {
+        const current = CollectionDoubles.shelf();
+
+        await CollectionDoubles.member(current, 'b1', 'owned', 'Dune', 1);
+        await CollectionDoubles.member(current, 'a1', 'owned', 'Batman', 1);
+        await CollectionDoubles.markCategory(current, 'collection-1', 'books');
+        const filter = BookFilter.of({ categories: ['books', 'manga'] });
+
+        const result = await subject(current).execute(owner, { ...query, filter });
+
+        expect(result.items.map((item) => item.name)).toEqual(['Dune']);
+        expect(current.search.calls).toEqual([]);
+    });
+
+    it('searches the books without the category, which belongs to the collection', async () => {
+        const current = CollectionDoubles.shelf();
+
+        await CollectionDoubles.member(current, 'b1', 'owned', 'Dune', 1);
+        current.search.matches = ['collection-1'];
+        const filter = BookFilter.of({ categories: ['comics'], ownerships: ['owned'] });
+
+        const result = await subject(current).execute(owner, { ...query, filter });
+
+        expect(result.items.map((item) => item.name)).toEqual(['Dune']);
+        expect(current.search.calls).toEqual([
+            { search: '', filter: BookFilter.of({ ownerships: ['owned'] }), readerId: owner.id },
+        ]);
+    });
+
     it('searches without a reader for a Guest', async () => {
         const current = CollectionDoubles.shelf();
-        const filter = BookFilter.of({ categories: ['manga'] });
+        const filter = BookFilter.of({ ownerships: ['owned'] });
 
         await subject(current).execute(guest, { ...query, filter });
 

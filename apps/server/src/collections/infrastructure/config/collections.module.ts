@@ -9,6 +9,8 @@ import type { CollectionMemberStore } from '../../application/ports/driven/colle
 import type { CollectionRepository } from '../../application/ports/driven/collection-repository.interface.js';
 import type { MemberTitles } from '../../application/ports/driven/member-titles.interface.js';
 import type { MemberCategories } from '../../application/ports/driven/member-categories.interface.js';
+import type { CategoryMismatchReader } from '../../application/ports/driven/category-mismatch-reader.interface.js';
+import { ListCategoryMismatches } from '../../application/use-cases/list-category-mismatches.usecase.js';
 import { OwnedCollectionBooks } from '../../application/services/owned-collection-books.service.js';
 import { BookCollectionMembership } from '../../application/services/book-collection-membership.service.js';
 import { CollectionLoader } from '../../application/services/collection-loader.service.js';
@@ -34,6 +36,7 @@ export interface CollectionsDependencies {
     search: CollectionBookSearch;
     titles: MemberTitles;
     categories: MemberCategories;
+    mismatches: CategoryMismatchReader;
     clock: Clock;
     operations: AuditedOperation;
 }
@@ -44,6 +47,7 @@ const token = {
     search: 'COLLECTIONS_BOOK_SEARCH',
     titles: 'COLLECTIONS_MEMBER_TITLES',
     categories: 'COLLECTIONS_MEMBER_CATEGORIES',
+    mismatches: 'COLLECTIONS_CATEGORY_MISMATCHES',
     clock: 'COLLECTIONS_CLOCK',
     operations: 'COLLECTIONS_AUDITED_OPERATION',
     loader: 'COLLECTIONS_LOADER',
@@ -102,6 +106,12 @@ const useCaseProviders: Provider[] = [
             search: CollectionBookSearch,
             viewer: CollectionViewer,
         ) => new ListCollections(collections, members, search, viewer),
+    },
+    {
+        provide: 'COLLECTIONS_MISMATCHES',
+        inject: [token.mismatches, token.loader],
+        useFactory: (mismatches: CategoryMismatchReader, loader: CollectionLoader) =>
+            new ListCategoryMismatches(mismatches, loader),
     },
     {
         provide: 'COLLECTIONS_FIND',

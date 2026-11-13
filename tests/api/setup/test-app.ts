@@ -64,6 +64,7 @@ import { KyselyTagRepository } from '../../../apps/server/src/tags/infrastructur
 import { KyselyBookTagStore } from '../../../apps/server/src/tags/infrastructure/adapters/driven/persistence/kysely-book-tag-store.adapter.js';
 import { KyselyCollectionRepository } from '../../../apps/server/src/collections/infrastructure/adapters/driven/persistence/kysely-collection.repository.js';
 import { KyselyCollectionMemberStore } from '../../../apps/server/src/collections/infrastructure/adapters/driven/persistence/kysely-collection-member-store.adapter.js';
+import { KyselyCategoryMismatchReader } from '../../../apps/server/src/collections/infrastructure/adapters/driven/persistence/kysely-category-mismatch-reader.adapter.js';
 import { KyselyBookRepository } from '../../../apps/server/src/books/infrastructure/adapters/driven/persistence/kysely-book.repository.js';
 import { KyselyAuthorRepository } from '../../../apps/server/src/books/infrastructure/adapters/driven/persistence/kysely-author.repository.js';
 import { KyselyBookCatalog } from '../../../apps/server/src/books/infrastructure/adapters/driven/persistence/kysely-book-catalog.adapter.js';
@@ -290,6 +291,7 @@ export class TestApp {
                         search: books.catalog,
                         titles: BooksModule.memberTitles(books.books, clock),
                         categories: BooksModule.memberCategories(books.books, clock),
+                        mismatches: new KyselyCategoryMismatchReader(database.connections),
                         clock,
                         operations,
                     }),
