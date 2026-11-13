@@ -49,6 +49,7 @@ Task 1 is complete. [Collections and shopping](collections.md) is the authoritat
 - Finished is explicit, allowed only without missing volumes, and hides the collection on mobile. Gaps automatically reopen it; users may also reopen manually.
 - Overlap is permitted only between Owned books. Rare planned-book conflicts require explicit resolution, never silent deletion/replacement.
 - Empty collections disappear; deleting a collection preserves its books and clears membership/coverage.
+- A collection has one category (Books, Manga or Comics) shared by all its books; a mismatch is refused with a one-click fix, and the collection's Category changes all its books at once. See [Category](collections.md#category).
 - Mobile uses compact missing-volume entries and emphasizes last owned. Ordinary saved Not Owned entries require confirmation for quick add; inferred volumes and omnibus books cannot use it. Guests remain read-only.
 
 See [edition impact analysis](collection-editions-impact.md) for counting implications. Shared name matching belongs to Task 2; exact screen refinements belong to Task 6. No database or implementation design is prescribed.
@@ -99,6 +100,7 @@ Book and collection listing views are simple listings with simple search, advanc
 - Books default to title A-Z; ascending/descending directions are available for title, date added, and publication date. Missing publication dates appear last in both directions.
 - Different filter fields combine with AND; multiple selections inside a non-tag field combine with OR. Tags still require every included tag and reject any excluded tag.
 - Include explicit No physical location and No collection choices. Simple text search applies together with advanced filters.
+- On the Collections page, the Category filter uses the collection's own category; the other criteria are book-level.
 - A collection matches book-level search/filters only if at least one member book satisfies the entire expression. Its ownership/completeness counts always cover the whole collection. [Task 3](locations-tags-search.md) is complete, with acceptance examples.
 
 ## Overview
