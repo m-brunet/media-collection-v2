@@ -7,14 +7,13 @@ function request(bookIds: string[], changes: BookBatchChanges): BookBatchRequest
 }
 
 describe('BookBatchPlanner', () => {
-    it('plans the replaced category, ownership, publisher and price of each book', async () => {
+    it('plans the replaced ownership, publisher and price of each book', async () => {
         const current = BookDoubles.library();
         const one = await BookDoubles.volume(current, 1, { publisher: 'Glénat' });
 
         const result = await current.planner.plan(
             owner.id,
             request([one.id], {
-                category: 'comics',
                 ownership: 'not-owned',
                 publisher: 'Delcourt',
                 price: '6,90',
@@ -26,13 +25,11 @@ describe('BookBatchPlanner', () => {
             id: one.id,
             title: 'Gunnm Vol. 1',
             before: {
-                category: 'manga',
                 ownership: 'owned',
                 publisher: 'Glénat',
                 priceCents: null,
             },
             after: {
-                category: 'comics',
                 ownership: 'not-owned',
                 publisher: 'Delcourt',
                 priceCents: 690,
@@ -118,7 +115,7 @@ describe('BookBatchPlanner', () => {
 
         const result = await current.planner.plan(
             owner.id,
-            request([one.id], { publisher: 'Glénat', category: 'manga' }),
+            request([one.id], { publisher: 'Glénat', ownership: 'owned' }),
             null,
         );
 
@@ -252,22 +249,6 @@ describe('BookBatchPlanner', () => {
         expect(result.skipped).toEqual([
             { id: one.id, title: 'Gunnm, the novel', reason: 'title-not-generated' },
         ]);
-    });
-    it('keeps a generated title as a hand-written one when changing to Books', async () => {
-        const current = BookDoubles.library();
-        const one = await BookDoubles.volume(current, 1);
-
-        const result = await current.planner.plan(
-            owner.id,
-            request([one.id], { category: 'books' }),
-            null,
-        );
-
-        expect(result.planned[0]!.entry).toMatchObject({
-            before: { titleGenerated: true, category: 'manga' },
-            after: { titleGenerated: false, category: 'books' },
-        });
-        expect(result.planned[0]!.book.details.title).toBe('Gunnm Vol. 1');
     });
     it('skips a lent book set to Not owned', async () => {
         const current = BookDoubles.library();

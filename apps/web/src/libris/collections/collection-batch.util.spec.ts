@@ -72,7 +72,7 @@ it('sends no field left unchanged', () => {
 it('sends the value of a field set to a value', () => {
     const draft = {
         ...CollectionBatch.draft(),
-        category: 'comics' as const,
+        ownership: 'not-owned' as const,
         publisher: { mode: 'set' as const, value: ' Glénat ' },
         price: { mode: 'set' as const, value: '6,90' },
         shelf: { mode: 'set' as const, bookcaseId: 'oak', shelfId: 'top' },
@@ -83,7 +83,7 @@ it('sends the value of a field set to a value', () => {
     const result = CollectionBatch.changes(draft);
 
     expect(result).toEqual({
-        category: 'comics',
+        ownership: 'not-owned',
         publisher: 'Glénat',
         price: '6,90',
         shelfId: 'top',
@@ -226,18 +226,13 @@ it('describes each changed field from its old to its new value', () => {
 });
 
 it('says that a generated title is kept as a hand-written one', () => {
-    const before = { titleGenerated: true, category: 'manga' as const };
-    const after = { titleGenerated: false, category: 'books' as const };
+    const before = { titleGenerated: true };
+    const after = { titleGenerated: false };
 
     const result = CollectionBatch.lines(before, after, 'en-GB');
 
     expect(result).toEqual([
         { label: 'form.title', before: { key: 'batch.generated' }, after: { key: 'batch.kept' } },
-        {
-            label: 'form.category',
-            before: { key: 'category.manga' },
-            after: { key: 'category.books' },
-        },
     ]);
 });
 
@@ -320,28 +315,12 @@ it('forgets the tags of a removed tags card', () => {
 it('offers the change cards not added yet, in form order', () => {
     const draft = CollectionBatch.add(
         CollectionBatch.add(CollectionBatch.draft(), 'tags'),
-        'category',
+        'ownership',
     );
 
     const result = CollectionBatch.remaining(draft);
 
-    expect(result).toEqual([
-        'ownership',
-        'publisher',
-        'price',
-        'shelf',
-        'authors',
-        'read',
-        'titles',
-    ]);
-});
-
-it('asks for a category when its card has no choice yet', () => {
-    const draft = CollectionBatch.add(CollectionBatch.draft(), 'category');
-
-    const result = CollectionBatch.problem(draft);
-
-    expect(result).toBe('category');
+    expect(result).toEqual(['publisher', 'price', 'shelf', 'authors', 'read', 'titles']);
 });
 
 it('asks for a reading status when its card has no choice yet', () => {

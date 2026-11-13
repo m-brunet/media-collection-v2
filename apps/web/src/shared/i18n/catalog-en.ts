@@ -855,7 +855,6 @@ export const en = {
     'batch.none': 'none',
     'batch.noLocation': 'no physical location',
     'batch.problem.nothing': 'Choose at least one change.',
-    'batch.problem.category': 'Choose the new category.',
     'batch.problem.ownership': 'Choose Owned or Not owned.',
     'batch.problem.read': 'Choose Read or Not read.',
     'batch.problem.publisher': 'Enter the new publisher, or choose Clear.',

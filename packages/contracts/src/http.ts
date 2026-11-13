@@ -220,7 +220,6 @@ export interface NewBookDto extends BookInputDto {
 }
 
 export interface BookBatchChangesDto {
-    category?: BookCategory;
     ownership?: BookOwnership;
     publisher?: string | null;
     price?: string | null;
@@ -244,7 +243,6 @@ export interface BookBatchInputDto {
 export interface BookBatchFieldsDto {
     title?: string;
     titleGenerated?: boolean;
-    category?: BookCategory;
     ownership?: BookOwnership;
     publisher?: string | null;
     priceCents?: number | null;

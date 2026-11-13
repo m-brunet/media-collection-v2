@@ -152,9 +152,8 @@ export class BookBatchPlanner {
 
     private async skipReason(book: Book, values: BatchValues): Promise<BookBatchSkipReason | null> {
         const { changes } = values;
-        const category = changes.category ?? book.details.category;
 
-        if (changes.generatedTitles && !Book.generatesTitle(category)) {
+        if (changes.generatedTitles && !Book.generatesTitle(book.details.category)) {
             return 'title-not-generated';
         }
 
@@ -216,12 +215,9 @@ export class BookBatchPlanner {
 
     private nextDetails(previous: BookDetails, values: BatchValues): BookDetails {
         const { changes } = values;
-        const category = changes.category ?? previous.category;
 
         return {
             ...previous,
-            category,
-            titleGenerated: previous.titleGenerated && Book.generatesTitle(category),
             ownership: changes.ownership ?? previous.ownership,
             publisher:
                 changes.publisher === undefined ||
@@ -246,7 +242,6 @@ export class BookBatchPlanner {
         return {
             title: details.title,
             titleGenerated: details.titleGenerated,
-            category: details.category,
             ownership: details.ownership,
             publisher: details.publisher,
             priceCents: details.price?.cents ?? null,

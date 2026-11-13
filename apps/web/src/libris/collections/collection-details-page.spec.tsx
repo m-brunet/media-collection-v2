@@ -739,18 +739,14 @@ it('explains that Fill if empty only reaches the books without a value', async (
     expect(within(price).getByRole('textbox', { name: 'Price: new value' })).toBeInTheDocument();
 });
 
-it('asks for the new category before reviewing', async () => {
-    const api = batchApi();
-
+it('offers no Category change, which the collection makes for all its books', async () => {
+    batchApi();
     show();
+
     const panel = await chooseAllAndOpen();
 
-    await addChange(panel, 'Category');
-
-    await userEvent.click(within(panel).getByRole('button', { name: 'Review changes' }));
-
-    expect(within(panel).getByText('Choose the new category.')).toBeInTheDocument();
-    expect(api.calls.map((call) => call.route)).not.toContain('POST /books/batch-edit');
+    expect(within(panel).getByRole('button', { name: 'Ownership' })).toBeInTheDocument();
+    expect(within(panel).queryByRole('button', { name: 'Category' })).not.toBeInTheDocument();
 });
 
 it('reviews the plan by change, with the books left out', async () => {
