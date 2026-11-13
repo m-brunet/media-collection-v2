@@ -51,8 +51,11 @@ export class SaveTlsSettings implements SaveTlsSettingsUseCase {
                     'certificate-incomplete',
                 );
 
-                if (supplying) {
-                    this.certificates.validate(input.chain!, input.key!);
+                const certificate =
+                    input.chain && input.key ? { chain: input.chain, key: input.key } : undefined;
+
+                if (certificate) {
+                    this.certificates.validate(certificate.chain, certificate.key);
                 }
 
                 const settings = new TlsSettings({
@@ -67,10 +70,7 @@ export class SaveTlsSettings implements SaveTlsSettingsUseCase {
                     'HTTP and HTTPS must use different ports.',
                     'ports-identical',
                 );
-                await this.store.save(
-                    settings,
-                    supplying ? { chain: input.chain!, key: input.key! } : undefined,
-                );
+                await this.store.save(settings, certificate);
 
                 return {
                     result: settings.snapshot(),

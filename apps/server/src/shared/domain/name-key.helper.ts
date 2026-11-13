@@ -41,6 +41,7 @@ export class NameKey {
 
         const rows: number[][] = [];
 
+        /* oxlint-disable typescript/no-non-null-assertion -- distance matrix loop; every row and column is filled before it is read */
         for (let i = 0; i <= a.length; i++) {
             rows.push([i]);
         }
@@ -67,5 +68,6 @@ export class NameKey {
         }
 
         return rows[a.length]![b.length]!;
+        /* oxlint-enable typescript/no-non-null-assertion */
     }
 }

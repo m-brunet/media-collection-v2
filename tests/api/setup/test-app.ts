@@ -82,6 +82,7 @@ import { DatabaseManager } from './database-manager.js';
 import type { ApiFixture } from './fixture.js';
 import { TestLibrary } from '../fixtures/test-library.js';
 import type { TestAppContext } from './test-app-context.js';
+import { Required } from '../../../apps/server/src/shared/domain/required.helper.js';
 
 export class TestApp {
     private readonly storage = new DatabaseManager();
@@ -366,7 +367,10 @@ export class TestApp {
 
     async requirePasswordReplacement(fixture: UserFixture): Promise<void> {
         const { users, passwords } = this.dependencies;
-        const user = (await users.findById(fixture.id))!;
+        const user = Required.value(
+            await users.findById(fixture.id),
+            'user ' + fixture.id + ' exists',
+        );
         const version = user.snapshot.tokenVersion;
 
         user.replacePassword(await passwords.hash(fixture.password), true);

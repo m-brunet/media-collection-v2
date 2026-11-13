@@ -14,6 +14,7 @@ import { BookDraft } from '../../shared/book-form/book-draft.util';
 import { BookFormat } from '../../shared/book-form/book-format.util';
 import type { MessageKey } from '../../shared/i18n/catalog-en';
 import { CollectionCovers } from './collection-covers.util';
+import { Required } from '../../shared/required.util';
 
 export type ChoiceMode = 'keep' | 'set' | 'fill' | 'clear';
 
@@ -308,7 +309,7 @@ export class CollectionBatch {
         for (const field of Object.keys(fieldLabels) as Field[]) {
             if (field in after) {
                 lines.push({
-                    label: fieldLabels[field]!,
+                    label: Required.value(fieldLabels[field], 'every listed field has a label'),
                     before: CollectionBatch.value(field, before, locale),
                     after: CollectionBatch.value(field, after, locale),
                 });
@@ -378,11 +379,23 @@ export class CollectionBatch {
     private static value(field: Field, fields: BookBatchFieldsDto, locale: string): Shown {
         switch (field) {
             case 'category':
-                return { key: BookFormat.category(fields.category!) };
+                return {
+                    key: BookFormat.category(
+                        Required.value(fields.category, 'a changed category has a value'),
+                    ),
+                };
             case 'ownership':
-                return { key: BookFormat.ownership(fields.ownership!) };
+                return {
+                    key: BookFormat.ownership(
+                        Required.value(fields.ownership, 'a changed ownership has a value'),
+                    ),
+                };
             case 'read':
-                return { key: BookFormat.reading(fields.read!) };
+                return {
+                    key: BookFormat.reading(
+                        Required.value(fields.read, 'a changed reading state has a value'),
+                    ),
+                };
             case 'publisher':
                 return fields.publisher ? { text: fields.publisher } : { key: 'batch.none' };
             case 'priceCents':

@@ -22,6 +22,7 @@ import {
 } from '../../../shared/application/testing/audit-doubles.test-support.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { TestActors } from '../../../shared/application/testing/test-actors.test-support.js';
+import { Required } from '../../../shared/domain/required.helper.js';
 
 export class MemoryCollections implements CollectionRepository {
     readonly collections = new Map<string, Collection>();
@@ -141,7 +142,7 @@ export class MemoryMembers implements CollectionMemberStore {
         return [...this.memberships].map(([bookId, membership]) => ({
             bookId,
             ...membership,
-            ...this.books.get(bookId)!,
+            ...Required.value(this.books.get(bookId), 'book ' + bookId + ' is known to the double'),
         }));
     }
 }
@@ -247,7 +248,10 @@ export class CollectionDoubles {
         current: ReturnType<typeof CollectionDoubles.shelf>,
         collectionId: string,
     ) {
-        const collection = (await current.collections.findById(collectionId))!;
+        const collection = Required.value(
+            await current.collections.findById(collectionId),
+            'collection ' + collectionId + ' exists',
+        );
         const records = await current.members.ofCollections([collectionId]);
 
         collection.finish(MemberCoverage.of(records), '2026-01-01T00:00:00.000Z');

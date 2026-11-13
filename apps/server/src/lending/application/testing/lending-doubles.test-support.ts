@@ -13,6 +13,7 @@ import {
 } from '../../../shared/application/testing/audit-doubles.test-support.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { TestActors } from '../../../shared/application/testing/test-actors.test-support.js';
+import { Required } from '../../../shared/domain/required.helper.js';
 
 export class MemoryReceivers implements ReceiverRepository {
     readonly receivers = new Map<string, Receiver>();
@@ -110,7 +111,7 @@ export class MemoryLendableBooks implements LendableBooks {
     ) {}
 
     lendable(id: string): LoanBook {
-        const book = this.books.get(id)!;
+        const book = Required.value(this.books.get(id), 'book ' + id + ' is known to the double');
 
         return { id: book.id, title: book.title, isbn: book.isbn };
     }

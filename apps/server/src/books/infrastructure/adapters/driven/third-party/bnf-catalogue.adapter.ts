@@ -5,6 +5,7 @@ import type {
 import type { BookCategory } from '../../../../domain/entities/book.entity.js';
 import { LookupAnswer } from '../../../../domain/value-objects/lookup-answer.value-object.js';
 import type { SourceHttp } from './source-http.adapter.js';
+import { Required } from '../../../../../shared/domain/required.helper.js';
 
 type Subfields = Map<string, string[]>;
 type Fields = Map<string, Subfields[]>;
@@ -148,18 +149,23 @@ export class BnfCatalogue implements LookupSource<LookupAnswer> {
 
         const fields: Fields = new Map();
 
-        for (const [, tag, body] of record.matchAll(
+        for (const field of record.matchAll(
             /<(?:\w+:)?datafield tag="(\d{3})"[^>]*>([\s\S]*?)<\/(?:\w+:)?datafield>/g,
         )) {
+            const tag = Required.at(field, 1, 'a datafield has a tag');
+            const body = Required.at(field, 2, 'a datafield has a body');
             const subfields: Subfields = new Map();
 
-            for (const [, code, value] of body!.matchAll(
+            for (const subfield of body.matchAll(
                 /<(?:\w+:)?subfield code="(.)">([\s\S]*?)<\/(?:\w+:)?subfield>/g,
             )) {
-                subfields.set(code!, [...(subfields.get(code!) ?? []), BnfCatalogue.text(value!)]);
+                const code = Required.at(subfield, 1, 'a subfield has a code');
+                const value = Required.at(subfield, 2, 'a subfield has a value');
+
+                subfields.set(code, [...(subfields.get(code) ?? []), BnfCatalogue.text(value)]);
             }
 
-            fields.set(tag!, [...(fields.get(tag!) ?? []), subfields]);
+            fields.set(tag, [...(fields.get(tag) ?? []), subfields]);
         }
 
         return fields;

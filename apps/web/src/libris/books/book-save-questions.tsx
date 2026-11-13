@@ -8,6 +8,7 @@ import {
     VolumeZeroDialog,
 } from './book-form-dialogs';
 import type { SaveQuestion } from '../../shared/book-form/use-book-save';
+import { Required } from '../../shared/required.util';
 
 export function BookSaveQuestions({
     question,
@@ -43,10 +44,24 @@ export function BookSaveQuestions({
                 similar={similarAuthor}
                 onClose={onClose}
                 onUse={(author) =>
-                    saveChanged(BookDraft.resolveAuthor(values, similarAuthor!.name, author))
+                    saveChanged(
+                        BookDraft.resolveAuthor(
+                            values,
+                            Required.value(similarAuthor, 'a similar author is being answered')
+                                .name,
+                            author,
+                        ),
+                    )
                 }
                 onCreate={() =>
-                    saveChanged(BookDraft.resolveAuthor(values, similarAuthor!.name, 'distinct'))
+                    saveChanged(
+                        BookDraft.resolveAuthor(
+                            values,
+                            Required.value(similarAuthor, 'a similar author is being answered')
+                                .name,
+                            'distinct',
+                        ),
+                    )
                 }
             />
             <PossibleDuplicateDialog

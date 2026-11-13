@@ -1,4 +1,5 @@
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
+import { Required } from '../../../shared/domain/required.helper.js';
 
 export class DomainName {
     private static readonly longest = 253;
@@ -33,7 +34,7 @@ export class DomainName {
             name.length <= DomainName.longest &&
             labels.length >= 2 &&
             labels.every((label) => DomainName.label.test(label)) &&
-            !/^\d+$/.test(labels.at(-1)!)
+            !/^\d+$/.test(Required.at(labels, labels.length - 1, 'a domain name has a last label'))
         );
     }
 }

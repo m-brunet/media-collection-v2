@@ -29,6 +29,8 @@ export default defineConfig({
             { blankLine: 'never', prev: variableDeclarations, next: variableDeclarations },
         ],
         'typescript/no-explicit-any': 'error',
+        'typescript/no-non-null-assertion': 'error',
+        'typescript/no-extra-non-null-assertion': 'error',
         'typescript/no-require-imports': 'error',
         'react-hooks/rules-of-hooks': 'error',
         'react-hooks/exhaustive-deps': 'error',
@@ -43,6 +45,12 @@ export default defineConfig({
                     ...statementPadding,
                     { blankLine: 'any', prev: variableDeclarations, next: variableDeclarations },
                 ],
+            },
+        },
+        {
+            files: ['**/*.spec.ts', '**/*.spec.tsx', '**/*.e2e-spec.ts'],
+            rules: {
+                'typescript/no-non-null-assertion': 'off',
             },
         },
     ],

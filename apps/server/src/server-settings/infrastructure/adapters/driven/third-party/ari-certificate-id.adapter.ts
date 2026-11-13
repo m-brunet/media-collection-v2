@@ -30,6 +30,6 @@ export class AriCertificateId {
     private static encodedSerial(hex: string): Buffer {
         const bytes = Buffer.from(hex, 'hex');
 
-        return bytes[0]! > 0x7f ? Buffer.concat([Buffer.from([0]), bytes]) : bytes;
+        return (bytes[0] ?? 0) > 0x7f ? Buffer.concat([Buffer.from([0]), bytes]) : bytes;
     }
 }

@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { Database } from '../../../../../shared/infrastructure/adapters/driven/persistence/database.adapter.js';
 import type { IdGenerator } from '../../../../../shared/application/ports/driven/id-generator.interface.js';
 import { Failure } from '../../../../../shared/domain/exceptions/failure.js';
+import { Required } from '../../../../../shared/domain/required.helper.js';
 
 export class RestoredDataCheck {
     constructor(private readonly ids: IdGenerator) {}
@@ -47,6 +48,14 @@ export class RestoredDataCheck {
             .where('cover_file', 'is not', null)
             .execute();
 
-        return books.every((book) => existsSync(join(directory, 'covers', book.cover_file!)));
+        return books.every((book) =>
+            existsSync(
+                join(
+                    directory,
+                    'covers',
+                    Required.value(book.cover_file, 'only books with a cover file are selected'),
+                ),
+            ),
+        );
     }
 }

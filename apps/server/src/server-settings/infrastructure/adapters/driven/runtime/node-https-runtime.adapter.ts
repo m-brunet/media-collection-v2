@@ -3,6 +3,7 @@ import type { Server } from 'node:https';
 import { createServer } from 'node:https';
 import type { HttpsRuntime } from '../../../../application/ports/driven/https-runtime.interface.js';
 import { TlsAlpnChallenges } from '../security/tls-alpn-challenges.adapter.js';
+import { Required } from '../../../../../shared/domain/required.helper.js';
 
 // It can run before any certificate exists: then only Let's Encrypt's TLS-ALPN-01 check gets an
 // answer, browsers get a failed handshake.
@@ -41,7 +42,7 @@ export class NodeHttpsRuntime implements HttpsRuntime {
         });
         this.server = server;
 
-        return this.port!;
+        return Required.value(this.port, 'a listening server has a port');
     }
 
     async ensureRunning(port: number): Promise<boolean> {

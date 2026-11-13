@@ -1,6 +1,7 @@
 import type { IdGenerator } from '../../../../../application/ports/driven/id-generator.interface.js';
 import { Kysely, sql } from 'kysely';
 import type { Migration } from 'kysely/migration';
+import { Required } from '../../../../../domain/required.helper.js';
 
 interface TableSnapshot {
     name: string;
@@ -65,7 +66,11 @@ export class UuidPrimaryKeysMigration implements Migration {
                 }
             }
 
-            snapshots.push({ name, definition: schema.rows[0]!.sql, rows: rows.rows });
+            snapshots.push({
+                name,
+                definition: Required.at(schema.rows, 0, `${name} has a table definition`).sql,
+                rows: rows.rows,
+            });
         }
 
         for (const { name } of [...snapshots].reverse()) {

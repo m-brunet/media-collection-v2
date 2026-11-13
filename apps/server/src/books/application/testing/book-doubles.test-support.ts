@@ -61,6 +61,7 @@ import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { NameKey } from '../../../shared/domain/name-key.helper.js';
 import { CreateBook } from '../use-cases/create-book.usecase.js';
 import { TestActors } from '../../../shared/application/testing/test-actors.test-support.js';
+import { Required } from '../../../shared/domain/required.helper.js';
 
 export class MemoryBooks implements BookRepository {
     readonly books = new Map<string, Book>();
@@ -398,7 +399,12 @@ export class MemoryShelving implements ShelfAssignment, BookLocationReader, Shel
     async of(bookId: string): Promise<BookLocation | null> {
         const shelfId = this.placed.get(bookId);
 
-        return shelfId ? this.known.get(shelfId)! : null;
+        return shelfId
+            ? Required.value(
+                  this.known.get(shelfId),
+                  'shelf ' + shelfId + ' is known to the double',
+              )
+            : null;
     }
 }
 
@@ -647,7 +653,11 @@ export class BookDoubles {
     ) {
         return BookDoubles.saved(current, {
             title: '',
-            isbn: BookDoubles.volumeIsbns[volume - 1]!,
+            isbn: Required.at(
+                BookDoubles.volumeIsbns,
+                volume - 1,
+                'volume ' + volume + ' has a test ISBN',
+            ),
             category: 'manga',
             authors: [{ name: 'Yukito Kishiro' }],
             collection: { collection: { name: 'Gunnm' }, volumeFrom: volume, volumeTo: volume },

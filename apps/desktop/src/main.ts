@@ -1,4 +1,5 @@
 import { app, BrowserWindow, dialog, Menu, shell, Tray } from 'electron';
+import type { MessageBoxSyncOptions } from 'electron';
 import type { UpdateSource } from './application-updates.service.js';
 import type { UpdateMenuState } from './application-menu.adapter.js';
 import { ApplicationUpdates } from './application-updates.service.js';
@@ -304,7 +305,7 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
                     window?.show();
                 }
 
-                const choice = dialog.showMessageBoxSync(window!, {
+                const question: MessageBoxSyncOptions = {
                     type: 'question',
                     title: texts.text('unsavedTitle'),
                     message: texts.text('unsavedMessage'),
@@ -312,7 +313,10 @@ async function launch(options: ReturnType<typeof DesktopConfigurationParser.pars
                     buttons: [texts.text('unsavedLeave'), texts.text('unsavedStay')],
                     defaultId: 1,
                     cancelId: 1,
-                });
+                };
+                const choice = window
+                    ? dialog.showMessageBoxSync(window, question)
+                    : dialog.showMessageBoxSync(question);
 
                 if (choice === 0) {
                     event.preventDefault();
@@ -537,7 +541,12 @@ function openCredits(): void {
 }
 
 async function openConfiguration(): Promise<void> {
-    const file = configurationFile!;
+    const file = configurationFile;
+
+    if (!file) {
+        return;
+    }
+
     let failure: string;
 
     try {

@@ -36,14 +36,14 @@ export function AuthorPicker({
             fromName={(name) => ({ id: null, name, distinct: false })}
             newLabel={(name) => t('form.authorNew', { name })}
             removeLabel={(name) => t('form.authorRemove', { name })}
-            chipActions={(author) =>
-                author.id &&
+            chipActions={({ id, name }) =>
+                id &&
                 onCorrect && (
                     <button
                         type="button"
                         className="chip__button"
-                        aria-label={t('form.authorCorrect', { name: author.name })}
-                        onClick={() => onCorrect({ id: author.id!, name: author.name })}
+                        aria-label={t('form.authorCorrect', { name })}
+                        onClick={() => onCorrect({ id, name })}
                     >
                         <Icon name="edit" size={14} />
                     </button>

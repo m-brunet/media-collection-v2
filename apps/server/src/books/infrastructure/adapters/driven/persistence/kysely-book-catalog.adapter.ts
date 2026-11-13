@@ -16,6 +16,7 @@ import type {
 import { NameKey } from '../../../../../shared/domain/name-key.helper.js';
 import type { DatabaseSchema } from '../../../../../shared/infrastructure/adapters/driven/persistence/database.adapter.js';
 import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
+import { Required } from '../../../../../shared/domain/required.helper.js';
 
 export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
     constructor(private readonly connections: DatabaseConnections) {}
@@ -86,8 +87,14 @@ export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
                         ? null
                         : {
                               name: row.collection_name,
-                              volumeFrom: row.volume_from!,
-                              volumeTo: row.volume_to!,
+                              volumeFrom: Required.value(
+                                  row.volume_from,
+                                  'a collection book has a first volume',
+                              ),
+                              volumeTo: Required.value(
+                                  row.volume_to,
+                                  'a collection book has a last volume',
+                              ),
                           },
                 updatedAt: row.updated_at,
                 read: query.readerId === null ? null : Boolean(row.read),

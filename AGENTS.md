@@ -259,6 +259,24 @@ declaration or a module-level arrow function, is not allowed when a class can ho
 - Keep function forms for React functional components and hooks and for callbacks. Reusable business, helper, and
   utility behavior should still belong to classes when called through those functions.
 
+## Non-null Assertions
+
+The `!` non-null assertion is forbidden (`typescript/no-non-null-assertion`) everywhere except spec files
+(`*.spec.ts`, `*.spec.tsx`, `*.e2e-spec.ts`), where it may state an expectation such as
+`(await repository.findById(id))!`. Test support (`*.test-support.ts`, `testing/`, `tests/`) follows the production
+rule.
+
+- Prefer making the type tell the truth: an early return or guard, a destructured constant that narrows, a type
+  predicate in `filter`, a required parameter instead of an optional one.
+- When a value is guaranteed by something TypeScript cannot see, use the `Required` class (backend:
+  `apps/server/src/shared/domain/required.helper.ts`, web: `apps/web/src/shared/required.util.ts`):
+  `Required.value(value, reason)` or `Required.at(items, index, reason)`. The reason states the guarantee and becomes
+  the error message if it is ever broken, for example `Required.at(members, 0, 'a batch has at least one book')`.
+- Only algorithms and heavily looped methods, where a call per access is unwanted (a distance matrix, a per-pixel
+  loop), may keep `!` under
+  `// oxlint-disable-next-line typescript/no-non-null-assertion -- <the guarantee>`, or a
+  `/* oxlint-disable … */` / `/* oxlint-enable … */` pair around the loop.
+
 ## Code Comments
 
 - No code comments in production code, tests, tool scripts or stylesheets. Names, types and tests carry the meaning;

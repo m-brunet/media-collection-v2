@@ -5,6 +5,7 @@ import type {
 } from '../../../../../packages/contracts/src/http';
 import type { BookDraftValues } from './book-draft.util';
 import { BookDraft } from './book-draft.util';
+import { Required } from '../required.util';
 
 export type LookupField =
     | 'category'
@@ -151,41 +152,48 @@ export class LookupFill {
     private static write(selection: LookupSelection, field: LookupField): Partial<BookDraftValues> {
         switch (field) {
             case 'category':
-                return { category: selection.category! };
+                return { category: LookupFill.held(selection.category, field) };
             case 'title':
-                return { title: selection.title! };
+                return { title: LookupFill.held(selection.title, field) };
             case 'authors':
                 return {
-                    authors: selection.authors!.map((name) => ({
+                    authors: LookupFill.held(selection.authors, field).map((name) => ({
                         id: null,
                         name,
                         distinct: false,
                     })),
                 };
             case 'publisher':
-                return { publisher: selection.publisher! };
-            case 'publication':
+                return { publisher: LookupFill.held(selection.publisher, field) };
+            case 'publication': {
+                const publication = LookupFill.held(selection.publication, field);
+
                 return {
-                    publicationYear: String(selection.publication!.year),
-                    publicationMonth:
-                        selection.publication!.month === null
-                            ? ''
-                            : String(selection.publication!.month),
+                    publicationYear: String(publication.year),
+                    publicationMonth: publication.month === null ? '' : String(publication.month),
                 };
+            }
             case 'pageCount':
-                return { pageCount: String(selection.pageCount!) };
+                return { pageCount: String(LookupFill.held(selection.pageCount, field)) };
             case 'summary':
-                return { summary: selection.summary! };
-            case 'collection':
+                return { summary: LookupFill.held(selection.summary, field) };
+            case 'collection': {
+                const collection = LookupFill.held(selection.collection, field);
+
                 return {
                     inCollection: true,
-                    collectionName: selection.collection!.name,
+                    collectionName: collection.name,
                     collectionDistinct: false,
                     omnibus: false,
-                    volumeFrom: String(selection.collection!.volume),
-                    volumeTo: String(selection.collection!.volume),
+                    volumeFrom: String(collection.volume),
+                    volumeTo: String(collection.volume),
                 };
+            }
         }
+    }
+
+    private static held<T>(value: T | null | undefined, field: LookupField): T {
+        return Required.value(value, 'the selection holds the ' + field);
     }
 
     private static draftText(draft: BookDraftValues, field: LookupField): string {

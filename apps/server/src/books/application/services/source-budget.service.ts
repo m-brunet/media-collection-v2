@@ -13,7 +13,7 @@ export class SourceBudget {
         const now = this.clock.now().getTime();
         const windowStart = now - this.limit.seconds * 1000;
 
-        while (this.spent.length > 0 && this.spent[0]! <= windowStart) {
+        while (this.spent[0] !== undefined && this.spent[0] <= windowStart) {
             this.spent.shift();
         }
 

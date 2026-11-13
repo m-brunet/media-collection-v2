@@ -21,10 +21,20 @@ import { LoanPanel } from '../lending/loan-panel';
 import { ReadingToggle } from '../../shared/book-form/reading-toggle';
 import { LoanLinks } from '../lending/loan-links.util';
 
-function ReadingPanel({ book, onChange }: { book: BookDto; onChange(read: boolean): void }) {
+type Personal = NonNullable<BookDto['personal']>;
+
+function ReadingPanel({
+    book,
+    personal,
+    onChange,
+}: {
+    book: BookDto;
+    personal: Personal;
+    onChange(read: boolean): void;
+}) {
     const { t } = useI18n();
     const action = useAction();
-    const read = book.personal!.read;
+    const { read } = personal;
 
     return (
         <Panel label={t('details.reading')}>
@@ -52,14 +62,16 @@ function ReadingPanel({ book, onChange }: { book: BookDto; onChange(read: boolea
 
 function NotePanel({
     book,
+    personal,
     onChange,
 }: {
     book: BookDto;
+    personal: Personal;
     onChange(note: PersonalNoteDto | null): void;
 }) {
     const { t } = useI18n();
     const action = useAction();
-    const note = book.personal!.note;
+    const { note } = personal;
     const [editing, setEditing] = useState(false);
     const [text, setText] = useState('');
 
@@ -248,6 +260,7 @@ function BookDetails({ id }: { id: string }) {
         );
     }
 
+    const { personal } = book;
     const volumes = book.collection
         ? CollectionFormat.volumes(book.collection.volumeFrom, book.collection.volumeTo)
         : null;
@@ -358,18 +371,20 @@ function BookDetails({ id }: { id: string }) {
                 </div>
                 <LoanPanel book={book} editor={editor} />
                 <OrganisationEditor book={book} editor={editor} onSaved={setBook} />
-                {book.personal && (
+                {personal && (
                     <div className="book-details__personal">
                         <ReadingPanel
                             book={book}
+                            personal={personal}
                             onChange={(read) =>
-                                setBook({ ...book, personal: { ...book.personal!, read } })
+                                setBook({ ...book, personal: { ...personal, read } })
                             }
                         />
                         <NotePanel
                             book={book}
+                            personal={personal}
                             onChange={(note) =>
-                                setBook({ ...book, personal: { ...book.personal!, note } })
+                                setBook({ ...book, personal: { ...personal, note } })
                             }
                         />
                     </div>

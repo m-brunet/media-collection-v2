@@ -13,6 +13,7 @@ import type {
     LookupSelection,
 } from '../../shared/book-form/lookup-fill.util';
 import { LookupFill } from '../../shared/book-form/lookup-fill.util';
+import { Required } from '../../shared/required.util';
 
 export type LookedUpBook = Extract<BookLookupDto, { kind: 'looked-up' }>;
 
@@ -91,7 +92,7 @@ export function useBookLookup({
         }
     };
     const use = async (selection: LookupSelection, coverToken: string | null) => {
-        const result = review!;
+        const result = Required.value(review, 'a looked-up book is under review');
         const { next, conflicts } = LookupFill.apply(values, selection);
         const additional = [
             selection.publisher,
@@ -138,7 +139,13 @@ export function useBookLookup({
         }
     };
     const replace = (fields: LookupField[]) => {
-        setValues((current) => LookupFill.replace(current, replacing!.selection, fields));
+        setValues((current) =>
+            LookupFill.replace(
+                current,
+                Required.value(replacing, 'a replacement is being chosen').selection,
+                fields,
+            ),
+        );
         setReplacing(null);
     };
     const unavailableNames = (result: LookedUpBook) =>

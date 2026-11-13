@@ -23,6 +23,7 @@ import { DiscardChangesDialog } from '../books/book-form-dialogs';
 import type { LendingAvailability, LendingBook } from './lending-choice.util';
 import { LendingChoice } from './lending-choice.util';
 import { LoanLinks } from './loan-links.util';
+import { Required } from '../../shared/required.util';
 
 interface SimilarReceivers {
     name: string;
@@ -215,11 +216,12 @@ export function LendPage() {
                     .filter((book) => ids.includes(book.id))
                     .map((book) => book.title)
                     .join(', ');
+                const { reason, details } = error;
 
-                setFailure(t(failures[error.reason]!, { titles }));
-                setSelected((current) =>
-                    LendingChoice.refused(current ?? [], error.reason!, error.details),
+                setFailure(
+                    t(Required.value(failures[reason], 'the refusal has a message'), { titles }),
                 );
+                setSelected((current) => LendingChoice.refused(current ?? [], reason, details));
             } else {
                 setFailure(t('lend.failedOther', { reason: t(ApiErrorMessage.key(error)) }));
             }
@@ -297,7 +299,11 @@ export function LendPage() {
                                 <p className="similar-receiver__title">
                                     {similar.candidates.length === 1
                                         ? t('lend.similarTitle', {
-                                              name: similar.candidates[0]!.name,
+                                              name: Required.at(
+                                                  similar.candidates,
+                                                  0,
+                                                  'one similar receiver is shown',
+                                              ).name,
                                           })
                                         : t('lend.similarManyTitle')}
                                 </p>

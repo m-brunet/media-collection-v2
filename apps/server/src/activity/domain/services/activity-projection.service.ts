@@ -1,3 +1,4 @@
+import { Required } from '../../../shared/domain/required.helper.js';
 export interface ActivityRecord {
     category: string;
     subjectId: string | null;
@@ -146,7 +147,7 @@ export class ActivityProjection {
         category: string,
         records: readonly ActivityRecord[],
     ): ActivityEvent | null {
-        const record = records[0]!;
+        const record = Required.at(records, 0, 'an event has at least one record');
         const { before, after } = record;
         const current = after ?? before;
 

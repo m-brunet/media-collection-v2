@@ -10,6 +10,7 @@ import type { AuditedOperation } from '../../../shared/application/services/audi
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
+import { Required } from '../../../shared/domain/required.helper.js';
 
 export class RecordReturns implements RecordReturnsUseCase {
     constructor(
@@ -54,7 +55,9 @@ export class RecordReturns implements RecordReturnsUseCase {
                     await this.loans.save(loan);
                 }
 
-                const receiver = await this.receivers.findById(loans[0]!.snapshot.receiverId);
+                const receiver = await this.receivers.findById(
+                    Required.at(loans, 0, 'at least one loan is returned').snapshot.receiverId,
+                );
 
                 if (!receiver) {
                     throw new Failure(
@@ -76,7 +79,15 @@ export class RecordReturns implements RecordReturnsUseCase {
                     entries: loans.map((loan) => ({
                         subjectId: loan.id,
                         before: {
-                            loan: LoanSnapshot.of(Loan.restore(before.get(loan.id)!), receiver),
+                            loan: LoanSnapshot.of(
+                                Loan.restore(
+                                    Required.value(
+                                        before.get(loan.id),
+                                        'every returned loan was kept as it was',
+                                    ),
+                                ),
+                                receiver,
+                            ),
                         },
                         after: { loan: LoanSnapshot.of(loan, receiver) },
                     })),

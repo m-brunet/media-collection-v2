@@ -5,6 +5,7 @@ import {
 } from '../../../apps/server/src/lending/application/testing/loan-builder.test-support.js';
 import { ReceiverBuilder } from '../../../apps/server/src/lending/application/testing/receiver-builder.test-support.js';
 import type { TestAppContext } from '../setup/test-app-context.js';
+import { Required } from '../../../apps/server/src/shared/domain/required.helper.js';
 
 export type ArrangedLending = {
     receiver: { id: string; name: string };
@@ -23,7 +24,10 @@ export class LendingArrangement {
         const { builders, lending } = this.context;
         const saved =
             'id' in receiver
-                ? (await lending.receivers.findById(receiver.id))!
+                ? Required.value(
+                      await lending.receivers.findById(receiver.id),
+                      'receiver ' + receiver.id + ' exists',
+                  )
                 : await builders.receiver(new ReceiverBuilder().withName(receiver.name));
         const lentAt = new Date(Date.UTC(2025, 11, 1, 9, this.minutes++)).toISOString();
         const loans = [];
@@ -38,7 +42,7 @@ export class LendingArrangement {
             receiver: { id: saved.id, name: saved.snapshot.name },
             loans: loans.map((loan) => ({
                 loanId: loan.id,
-                bookId: loan.snapshot.bookId!,
+                bookId: Required.value(loan.snapshot.bookId, 'a lent book is still in the library'),
                 lentAt: loan.snapshot.lentAt,
             })),
         };

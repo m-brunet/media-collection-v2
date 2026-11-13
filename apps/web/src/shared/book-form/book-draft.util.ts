@@ -166,13 +166,15 @@ export class BookDraft {
         if (
             !BookDraft.titleOptional(values) ||
             !name ||
+            from === null ||
+            to === null ||
             !Number.isInteger(from) ||
             !Number.isInteger(to)
         ) {
             return null;
         }
 
-        return name + ' Vol. ' + (to! > from! ? from + '–' + to : String(from));
+        return name + ' Vol. ' + (to > from ? from + '–' + to : String(from));
     }
 
     static changed(current: BookDraftValues, changes: Partial<BookDraftValues>): BookDraftValues {

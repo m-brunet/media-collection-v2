@@ -1,5 +1,6 @@
 import { vi } from 'vitest';
 import type { Account } from '../../../../packages/contracts/src/http';
+import { Required } from '../shared/required.util';
 
 type Handler = (body: unknown) => { status: number; body?: unknown };
 
@@ -51,7 +52,9 @@ export class FakeApi {
                 : init.body instanceof Blob
                   ? init.body
                   : undefined;
-        const handler = this.handlers.get(route) ?? this.handlers.get(route.split('?')[0]!);
+        const handler =
+            this.handlers.get(route) ??
+            this.handlers.get(Required.at(route.split('?'), 0, 'a route has a path'));
 
         this.calls.push({ route, body });
 

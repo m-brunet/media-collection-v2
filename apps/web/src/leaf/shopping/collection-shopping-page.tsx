@@ -10,6 +10,7 @@ import { Notice } from '../../shared/ui/notice';
 import { LoadingState } from '../../shared/ui/states';
 import { LeafLoadFailure, LeafPage } from '../leaf-page';
 import { useLeafResource } from '../use-leaf-resource';
+import { Required } from '../../shared/required.util';
 
 type Missing = CollectionShoppingDto['missing'][number];
 type QuickAdd = { volume: number; bookId: string; title: string };
@@ -42,9 +43,14 @@ function MarkOwnedDialog({
                         busy={action.busy}
                         onClick={() =>
                             void action.run(async () => {
-                                await api.request('/books/' + choice!.bookId + '/owned', {
-                                    method: 'POST',
-                                });
+                                await api.request(
+                                    '/books/' +
+                                        Required.value(choice, 'a volume is chosen').bookId +
+                                        '/owned',
+                                    {
+                                        method: 'POST',
+                                    },
+                                );
                                 onDone(volume);
                             })
                         }

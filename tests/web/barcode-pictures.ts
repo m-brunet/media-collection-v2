@@ -61,6 +61,7 @@ export class BarcodePictures {
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
                 const at = (y * width + x) * 3;
+                // oxlint-disable-next-line typescript/no-non-null-assertion -- per-pixel loop; the three channels lie inside the RGB buffer
                 const [r, g, b] = [rgb[at]!, rgb[at + 1]!, rgb[at + 2]!];
 
                 luma[y * width + x] = clamp(0.299 * r + 0.587 * g + 0.114 * b);

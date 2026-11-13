@@ -15,6 +15,7 @@ import { CollectionFormat } from '../collections/collection-format.util';
 import { BookFormat } from '../../shared/book-form/book-format.util';
 import { AppliedFilters, useListingFilter } from '../filters/applied-filters';
 import { BookFilter } from '../filters/book-filter.util';
+import { Required } from '../../shared/required.util';
 
 const pageSize = 48;
 
@@ -76,7 +77,7 @@ export function MyBooksPage() {
             (choice) => choice.sort + '-' + choice.direction === parameters.get('sort'),
         ),
     );
-    const sort = BookFormat.sorts[sortIndex]!;
+    const sort = Required.at(BookFormat.sorts, sortIndex, 'the sort index is a listed sort');
     const [typed, setTyped] = useState(search);
     const [listing, setListing] = useState<Listing | null>(null);
     const [loadingMore, setLoadingMore] = useState(false);
@@ -229,7 +230,11 @@ export function MyBooksPage() {
                             className="field__control field__control--select book-toolbar__sort"
                             value={sortIndex}
                             onChange={(event) => {
-                                const choice = BookFormat.sorts[Number(event.target.value)]!;
+                                const choice = Required.at(
+                                    BookFormat.sorts,
+                                    Number(event.target.value),
+                                    'the sort select lists only known sorts',
+                                );
 
                                 update({
                                     sort:

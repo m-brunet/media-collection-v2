@@ -135,8 +135,12 @@ export class MaintenanceWindow {
     private async createBackup(): Promise<
         MaintenanceResult<{ backup: BackupSummary; file: string }>
     > {
+        if (!this.window) {
+            return this.cancelled();
+        }
+
         const folder = this.options.backupFolder.ensure();
-        const choice = await dialog.showSaveDialog(this.window!, {
+        const choice = await dialog.showSaveDialog(this.window, {
             title: this.options.texts.text('createBackupTitle'),
             defaultPath: join(folder, BackupFileName.at(new Date())),
             filters: [this.backupFilter()],
@@ -157,7 +161,12 @@ export class MaintenanceWindow {
         MaintenanceResult<{ backup: BackupSummary; file: string }>
     > {
         this.chosenBackup = null;
-        const choice = await dialog.showOpenDialog(this.window!, {
+
+        if (!this.window) {
+            return this.cancelled();
+        }
+
+        const choice = await dialog.showOpenDialog(this.window, {
             title: this.options.texts.text('restoreBackupTitle'),
             defaultPath: this.options.backupFolder.path,
             properties: ['openFile'],
