@@ -323,7 +323,7 @@ async function withCollection(db: Awaited<ReturnType<typeof migrated>>) {
         ownership, created_at, updated_at) values (${book}, 'Year One', 'year one', null, 0, 1,
         'comics', 'owned', '2026-01-01', '2026-01-01')`.execute(db);
     await sql`insert into collections values (${collection}, 'Batman', 'batman', 0, 0,
-        '2026-01-01', '2026-01-01')`.execute(db);
+        '2026-01-01', '2026-01-01', 'comics')`.execute(db);
 
     return { book, collection };
 }
@@ -332,7 +332,7 @@ it('rejects non-UUID collection identities at the database boundary', async () =
     const db = await migrated();
 
     const result =
-        sql`insert into collections values ('invalid', 'Batman', 'batman', 0, 0, '2026-01-01', '2026-01-01')`.execute(
+        sql`insert into collections values ('invalid', 'Batman', 'batman', 0, 0, '2026-01-01', '2026-01-01', 'comics')`.execute(
             db,
         );
 
@@ -356,7 +356,7 @@ it('keeps a book in at most one collection', async () => {
     const other = randomUUID();
 
     await sql`insert into collections values (${other}, 'Dune', 'dune', 0, 0,
-        '2026-01-01', '2026-01-01')`.execute(db);
+        '2026-01-01', '2026-01-01', 'comics')`.execute(db);
     await sql`insert into collection_books values (${book}, ${collection}, 1, 1)`.execute(db);
 
     const result = sql`insert into collection_books values (${book}, ${other}, 1, 1)`.execute(db);

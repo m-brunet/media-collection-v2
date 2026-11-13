@@ -95,6 +95,7 @@ export class KyselyCollectionRepository implements CollectionRepository {
         return new Collection({
             id: row.id,
             name: row.name,
+            category: row.category,
             includesVolumeZero: Boolean(row.includes_volume_zero),
             finished: Boolean(row.finished),
             createdAt: row.created_at,
@@ -109,6 +110,7 @@ export class KyselyCollectionRepository implements CollectionRepository {
             id: state.id,
             name: state.name,
             name_key: collection.key,
+            category: state.category,
             includes_volume_zero: Number(state.includesVolumeZero),
             finished: Number(state.finished),
             created_at: state.createdAt,

@@ -21,6 +21,7 @@ describe('CollectionViewer', () => {
         expect(summary).toEqual({
             id: 'collection-1',
             name: 'Batman',
+            category: 'comics',
             includesVolumeZero: false,
             finished: false,
             bookCount: 2,

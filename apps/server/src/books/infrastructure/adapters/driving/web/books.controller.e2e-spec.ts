@@ -642,7 +642,12 @@ describe('POST /api/books with a collection', () => {
                 operationId: saved?.operationId,
                 category: 'collection.created',
                 subjectId: response.body.collection?.id,
-                after: { name: 'Batman', includesVolumeZero: false, finished: false },
+                after: {
+                    name: 'Batman',
+                    category: 'books',
+                    includesVolumeZero: false,
+                    finished: false,
+                },
             }),
         );
     });

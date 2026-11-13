@@ -238,7 +238,7 @@ export class CollectionDoubles {
         current.members.saveBook(bookId, ownership);
 
         return current.membership.assign(
-            { id: bookId, ownership },
+            { id: bookId, ownership, category: 'comics' },
             { collection: { name: collection }, volumeFrom, volumeTo, enableVolumeZero: true },
             [],
         );

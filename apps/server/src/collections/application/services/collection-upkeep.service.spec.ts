@@ -16,7 +16,12 @@ describe('CollectionUpkeep', () => {
             category: 'collection.removed',
             subjectType: 'collection',
             subjectId: 'collection-1',
-            before: { name: 'Batman', includesVolumeZero: false, finished: false },
+            before: {
+                name: 'Batman',
+                category: 'comics',
+                includesVolumeZero: false,
+                finished: false,
+            },
             after: null,
         });
         expect(current.collections.collections.size).toBe(0);

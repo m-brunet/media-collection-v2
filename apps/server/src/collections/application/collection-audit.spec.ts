@@ -6,6 +6,7 @@ const batman = () =>
     new Collection({
         id: 'c1',
         name: 'Batman',
+        category: 'comics',
         includesVolumeZero: false,
         finished: false,
         createdAt: '2026-01-01T00:00:00.000Z',
@@ -23,7 +24,12 @@ describe('CollectionChange', () => {
             subjectType: 'collection',
             subjectId: 'c1',
             before: null,
-            after: { name: 'Batman', includesVolumeZero: false, finished: false },
+            after: {
+                name: 'Batman',
+                category: 'comics',
+                includesVolumeZero: false,
+                finished: false,
+            },
         });
     });
     it('describes a collection that no longer exists', () => {
@@ -32,7 +38,12 @@ describe('CollectionChange', () => {
         const result = CollectionChange.of('collection.removed', 'c1', collection, null);
 
         expect(result).toMatchObject({
-            before: { name: 'Batman', includesVolumeZero: false, finished: false },
+            before: {
+                name: 'Batman',
+                category: 'comics',
+                includesVolumeZero: false,
+                finished: false,
+            },
             after: null,
         });
     });
@@ -43,6 +54,7 @@ describe('CollectionSnapshot', () => {
         const collection = new Collection({
             id: 'c1',
             name: 'Batman',
+            category: 'comics',
             includesVolumeZero: true,
             finished: false,
             createdAt: '2026-01-01T00:00:00.000Z',
@@ -51,6 +63,11 @@ describe('CollectionSnapshot', () => {
 
         const result = CollectionSnapshot.of(collection);
 
-        expect(result).toEqual({ name: 'Batman', includesVolumeZero: true, finished: false });
+        expect(result).toEqual({
+            name: 'Batman',
+            category: 'comics',
+            includesVolumeZero: true,
+            finished: false,
+        });
     });
 });

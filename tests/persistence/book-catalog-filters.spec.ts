@@ -62,6 +62,7 @@ async function library() {
                     id,
                     name,
                     name_key: key,
+                    category: 'books',
                     includes_volume_zero: 0,
                     finished: 0,
                     created_at: now,

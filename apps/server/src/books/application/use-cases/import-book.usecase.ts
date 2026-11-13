@@ -77,7 +77,7 @@ export class ImportBook implements ImportBookUseCase {
                     context.subjectId = id;
                     await this.books.create(book);
                     const membership = await this.collections.assign(
-                        { id, ownership: details.ownership },
+                        { id, ownership: details.ownership, category: details.category },
                         input.collection,
                         [],
                     );

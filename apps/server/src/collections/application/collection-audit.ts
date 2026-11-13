@@ -13,9 +13,9 @@ export const CollectionAudit = {
 
 export class CollectionSnapshot {
     static of(collection: Collection): Record<string, unknown> {
-        const { name, includesVolumeZero, finished } = collection.snapshot;
+        const { name, category, includesVolumeZero, finished } = collection.snapshot;
 
-        return { name, includesVolumeZero, finished };
+        return { name, category, includesVolumeZero, finished };
     }
 }
 

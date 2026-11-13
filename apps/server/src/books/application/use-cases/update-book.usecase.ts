@@ -67,7 +67,7 @@ export class UpdateBook implements UpdateBookUseCase {
                 await this.books.save(book);
                 await this.authors.removeUnlinked(previousAuthors);
                 const membership = await this.collections.assign(
-                    { id: bookId, ownership: details.ownership },
+                    { id: bookId, ownership: details.ownership, category: details.category },
                     input.collection,
                     replacing,
                 );

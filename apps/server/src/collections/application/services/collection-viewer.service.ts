@@ -14,12 +14,13 @@ import { Required } from '../../../shared/domain/required.helper.js';
 
 export class CollectionViewer {
     summary(collection: Collection, records: readonly MemberRecord[]): CollectionSummaryView {
-        const { id, name, includesVolumeZero, finished } = collection.snapshot;
+        const { id, name, category, includesVolumeZero, finished } = collection.snapshot;
         const coverage = collection.coverage(MemberCoverage.of(records));
 
         return {
             id,
             name,
+            category,
             includesVolumeZero,
             finished,
             bookCount: records.length,

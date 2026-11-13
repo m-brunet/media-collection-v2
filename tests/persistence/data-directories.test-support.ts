@@ -110,6 +110,7 @@ export class DataDirectories {
                     id: ids.collection,
                     name: 'Solo',
                     name_key: 'solo',
+                    category: 'books',
                     includes_volume_zero: 0,
                     finished: 0,
                     created_at: now,
