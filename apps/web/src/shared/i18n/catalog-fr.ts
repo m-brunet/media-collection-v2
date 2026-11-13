@@ -974,6 +974,15 @@ export const fr = {
     'reason.collectionNameTaken':
         'Une autre collection porte déjà ce nom. La fusion de collections n’est pas disponible.',
     'reason.collectionMissing': 'Cette collection n’existe plus.',
+    'categoryMismatch.title': 'Catégorie de la collection',
+    'categoryMismatch.body': '{name} contient des {category}. Ce livre est en {bookCategory}.',
+    'categoryMismatch.use': 'Passer ce livre en {category}',
+    'categoryMismatch.wholeTitle': 'Changer toute la collection ?',
+    'categoryMismatch.wholeBody':
+        '{name} contient des {category}. Passer toute la collection en {bookCategory} ?',
+    'categoryMismatch.count': '{count} livres vont changer.',
+    'categoryMismatch.countOne': '1 livre va changer.',
+    'categoryMismatch.changeCollection': 'Changer toute la collection',
     'reason.collectionCategoryMismatch':
         'Ce livre n’a pas la catégorie de sa collection. Modifiez la catégorie du livre ou de la collection.',
     'reason.volumeInvalid':

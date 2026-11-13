@@ -932,6 +932,15 @@ export const en = {
     'reason.collectionNameTaken':
         'Another collection already has this name. Merging collections is not available.',
     'reason.collectionMissing': 'This collection no longer exists.',
+    'categoryMismatch.title': 'Category of the collection',
+    'categoryMismatch.body': '{name} holds {category}. This book is {bookCategory}.',
+    'categoryMismatch.use': 'Use {category} for this book',
+    'categoryMismatch.wholeTitle': 'Change the whole collection?',
+    'categoryMismatch.wholeBody':
+        '{name} holds {category}. Change the whole collection to {bookCategory}?',
+    'categoryMismatch.count': '{count} books will change.',
+    'categoryMismatch.countOne': '1 book will change.',
+    'categoryMismatch.changeCollection': 'Change the whole collection',
     'reason.collectionCategoryMismatch':
         'This book does not have the category of its collection. Change the category of the book or of the collection.',
     'reason.volumeInvalid': 'Enter whole volume numbers from 0 to 9999, the range going upwards.',

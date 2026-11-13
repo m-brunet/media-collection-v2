@@ -5,6 +5,7 @@ import type { SaveQuestion } from '../../shared/book-form/use-book-save';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Button } from '../../shared/ui/button';
 import { Dialog } from '../../shared/ui/dialog';
+import { BookFormat } from '../../shared/book-form/book-format.util';
 import { Required } from '../../shared/required.util';
 
 function Question({
@@ -110,6 +111,34 @@ export function LeafSaveQuestions({
                     ))}
                     <Button onClick={() => saveChanged({ ...values, collectionDistinct: true })}>
                         {t('similarCollection.create', { name })}
+                    </Button>
+                </Question>
+            );
+        }
+        case 'category-mismatch': {
+            const words = {
+                name: question.details.name,
+                category: t(BookFormat.category(question.details.category)),
+                bookCategory: t(BookFormat.category(question.details.bookCategory)),
+            };
+
+            return (
+                <Question
+                    title={t('categoryMismatch.title')}
+                    body={<p>{t('categoryMismatch.body', words)}</p>}
+                    onClose={onClose}
+                >
+                    <Button
+                        variant="primary"
+                        onClick={() =>
+                            saveChanged(
+                                BookDraft.changed(values, {
+                                    category: question.details.category,
+                                }),
+                            )
+                        }
+                    >
+                        {t('categoryMismatch.use', words)}
                     </Button>
                 </Question>
             );

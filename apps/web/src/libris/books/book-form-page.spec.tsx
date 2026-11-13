@@ -496,6 +496,178 @@ it('includes volume 0 in the collection once the person accepts', async () => {
     );
 });
 
+function mismatch(bookCategory: 'books' | 'manga' | 'comics', bookCount = 12) {
+    return {
+        status: 409,
+        body: {
+            message: 'Category',
+            reason: 'collection-category-mismatch',
+            details: {
+                collectionId: 'naruto',
+                name: 'Naruto',
+                category: 'manga',
+                bookCategory,
+                bookCount,
+            },
+        },
+    };
+}
+
+const narutoMember = bookDto({
+    category: 'manga',
+    collection: { id: 'naruto', name: 'Naruto', volumeFrom: 3, volumeTo: 3 },
+});
+
+function puts(api: FakeApi) {
+    return api.calls.filter((call) => call.route === 'PUT /books/b1').map((call) => call.body);
+}
+
+it('names the category of the collection when a book does not match it', async () => {
+    new FakeApi().signedIn(account()).on('POST /books', () => mismatch('books'));
+
+    addPage();
+    await fillRequired();
+    await joinCollection('Naruto', '3');
+
+    await userEvent.click(saveButton());
+
+    const dialog = await screen.findByRole('dialog', { name: 'Category of the collection' });
+
+    expect(dialog).toHaveTextContent('Naruto holds Manga. This book is Books.');
+});
+
+it('uses the category of the collection for the book and saves again', async () => {
+    let attempt = 0;
+    const api = new FakeApi()
+        .signedIn(account())
+        .on('POST /books', () =>
+            ++attempt === 1 ? mismatch('books') : { status: 201, body: bookDto() },
+        );
+
+    addPage();
+    await fillRequired();
+    await joinCollection('Naruto', '3');
+    await userEvent.click(saveButton());
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Use Manga for this book' }));
+
+    await vi.waitFor(() => expect(posted(api)[1]).toMatchObject({ category: 'manga' }));
+    expect(posted(api)[0]).toMatchObject({ category: 'books' });
+});
+
+it('offers to change the whole collection when a member book gets another category', async () => {
+    new FakeApi()
+        .signedIn(account())
+        .on('GET /books/b1', () => ({ status: 200, body: narutoMember }))
+        .on('PUT /books/b1', () => mismatch('comics'));
+
+    editPage();
+    await userEvent.click(await screen.findByRole('radio', { name: 'Comics' }));
+
+    await userEvent.click(screen.getAllByRole('button', { name: 'Save changes' })[0]!);
+
+    const dialog = await screen.findByRole('dialog', { name: 'Change the whole collection?' });
+
+    expect(dialog).toHaveTextContent('Naruto holds Manga. Change the whole collection to Comics?');
+    expect(dialog).toHaveTextContent('12 books will change.');
+});
+
+it('sends nothing more and keeps the form when changing the whole collection is cancelled', async () => {
+    const api = new FakeApi()
+        .signedIn(account())
+        .on('GET /books/b1', () => ({ status: 200, body: narutoMember }))
+        .on('PUT /books/b1', () => mismatch('comics'));
+
+    editPage();
+    await userEvent.click(await screen.findByRole('radio', { name: 'Comics' }));
+    await userEvent.click(screen.getAllByRole('button', { name: 'Save changes' })[0]!);
+    const dialog = await screen.findByRole('dialog', { name: 'Change the whole collection?' });
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+
+    expect(puts(api)).toHaveLength(1);
+    expect(api.calls.map((call) => call.route)).not.toContain('PATCH /collections/naruto');
+    expect(screen.getByRole('radio', { name: 'Comics' })).toBeChecked();
+});
+
+it('changes the whole collection, then saves the book', async () => {
+    let attempt = 0;
+    const api = new FakeApi()
+        .signedIn(account())
+        .on('GET /books/b1', () => ({ status: 200, body: narutoMember }))
+        .on('PATCH /collections/naruto', () => ({ status: 200, body: {} }))
+        .on('PUT /books/b1', () =>
+            ++attempt === 1 ? mismatch('comics') : { status: 200, body: narutoMember },
+        );
+
+    editPage();
+    await userEvent.click(await screen.findByRole('radio', { name: 'Comics' }));
+    await userEvent.click(screen.getAllByRole('button', { name: 'Save changes' })[0]!);
+
+    await userEvent.click(
+        await screen.findByRole('button', { name: 'Change the whole collection' }),
+    );
+
+    await vi.waitFor(() => expect(puts(api)).toHaveLength(2));
+    const routes = api.calls.map((call) => call.route);
+
+    expect(routes.indexOf('PATCH /collections/naruto')).toBeLessThan(
+        routes.lastIndexOf('PUT /books/b1'),
+    );
+    expect(api.calls.find((call) => call.route === 'PATCH /collections/naruto')?.body).toEqual({
+        category: 'comics',
+    });
+    expect(puts(api)[1]).toMatchObject({ category: 'comics' });
+});
+
+it('shows the error and keeps the form when the collection cannot change', async () => {
+    const api = new FakeApi()
+        .signedIn(account())
+        .on('GET /books/b1', () => ({ status: 200, body: narutoMember }))
+        .on('PATCH /collections/naruto', () => ({
+            status: 403,
+            body: { message: 'Read only', reason: 'guest-read-only' },
+        }))
+        .on('PUT /books/b1', () => mismatch('comics'));
+
+    editPage();
+    await userEvent.click(await screen.findByRole('radio', { name: 'Comics' }));
+    await userEvent.click(screen.getAllByRole('button', { name: 'Save changes' })[0]!);
+
+    await userEvent.click(
+        await screen.findByRole('button', { name: 'Change the whole collection' }),
+    );
+
+    expect(await screen.findByText(/Guest accounts/)).toBeInTheDocument();
+    expect(puts(api)).toHaveLength(1);
+    expect(screen.getByRole('radio', { name: 'Comics' })).toBeChecked();
+});
+
+it('shows the error and keeps the form when the book cannot be saved after the collection changed', async () => {
+    let attempt = 0;
+    const api = new FakeApi()
+        .signedIn(account())
+        .on('GET /books/b1', () => ({ status: 200, body: narutoMember }))
+        .on('PATCH /collections/naruto', () => ({ status: 200, body: {} }))
+        .on('PUT /books/b1', () =>
+            ++attempt === 1
+                ? mismatch('comics')
+                : { status: 500, body: { message: 'Something went wrong' } },
+        );
+
+    editPage();
+    await userEvent.click(await screen.findByRole('radio', { name: 'Comics' }));
+    await userEvent.click(screen.getAllByRole('button', { name: 'Save changes' })[0]!);
+
+    await userEvent.click(
+        await screen.findByRole('button', { name: 'Change the whole collection' }),
+    );
+
+    await vi.waitFor(() => expect(puts(api)).toHaveLength(2));
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: 'Comics' })).toBeChecked();
+});
+
 const plannedConflict = {
     status: 409,
     body: {
