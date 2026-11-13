@@ -139,26 +139,24 @@ describe('Collections', () => {
 
         await page.getByRole('button', { name: 'Mark Finished' }).click();
 
-        await page.getByText('Complete · Finished').waitFor();
+        await page.getByText('Complete', { exact: true }).waitFor();
+        await page.getByText('Finished', { exact: true }).waitFor();
         expect(await page.getByText('3 of 3 expected volumes Owned').count()).toBe(1);
         await capture(page, 'collection-finished');
     });
 
-    it('lists an omnibus under each volume it covers', async () => {
+    it('shows an omnibus once among the covers of its volumes', async () => {
         await member(membership('Batman', 1, 3));
         await member(membership('Batman', 2));
         const page = await signedIn('camille');
 
         await openCollection(page, 'Batman');
 
-        await page.getByRole('button', { name: /Volume 2/ }).click();
+        const covers = page.getByRole('region', { name: 'Volumes' });
 
-        const entry = page
-            .getByRole('listitem')
-            .filter({ has: page.getByRole('button', { name: /Volume 2/ }) });
-
-        expect(await entry.getByText('Omnibus · Covers 1–3').isVisible()).toBe(true);
-        expect(await entry.getByRole('link', { name: /View this book/ }).count()).toBe(2);
+        await covers.getByRole('link', { name: /Omnibus 1–3/ }).waitFor();
+        expect(await covers.getByRole('link', { name: /Omnibus 1–3/ }).count()).toBe(1);
+        expect(await covers.getByRole('link').count()).toBe(2);
     });
 
     it('reopens a Finished collection when the person chooses to', async () => {
@@ -171,7 +169,8 @@ describe('Collections', () => {
 
         await page.getByRole('button', { name: 'Reopen collection' }).click();
 
-        await page.getByText('No known missing volumes · Unfinished').waitFor();
+        await page.getByText('No known missing volumes', { exact: true }).waitFor();
+        await page.getByText('Unfinished', { exact: true }).waitFor();
         expect(await page.getByRole('button', { name: 'Mark Finished' }).isEnabled()).toBe(true);
     });
 
@@ -185,10 +184,11 @@ describe('Collections', () => {
         const page = await signedIn('camille');
 
         await openCollection(page, 'Batman');
-        expect(await page.getByText('2 missing · Unfinished').count()).toBe(1);
+        expect(await page.getByText('2 missing', { exact: true }).count()).toBe(1);
         expect(
             await page
-                .getByRole('button', { name: /Volume 3 Missing · Saved Not Owned edition/ })
+                .getByRole('region', { name: 'Volumes' })
+                .getByRole('link', { name: /, Not owned$/ })
                 .count(),
         ).toBe(1);
     });
@@ -281,16 +281,17 @@ describe('Collections', () => {
         await capture(page, 'collections-list-1280');
     });
 
-    it('shows the editions of a volume without clipping at 1280 px', async () => {
+    it('shows the covers of a collection without clipping at 1280 px', async () => {
         await member(membership('Dune', 1));
         await member(membership('Dune', 1, 3), { publisher: 'Chilton Books' });
         const page = await signedIn('camille', viewports.minimumDesktop);
 
         await openCollection(page, 'Dune');
-        await page.getByRole('button', { name: /Volume 1 Owned/ }).click();
 
-        await page.getByText('Omnibus · Covers 1–3 · Chilton Books').first().waitFor();
-        expect(await page.getByRole('link', { name: /View this book/ }).count()).toBe(2);
+        const covers = page.getByRole('region', { name: 'Volumes' });
+
+        await covers.getByRole('link', { name: /Omnibus 1–3/ }).waitFor();
+        expect(await covers.getByRole('link').count()).toBe(2);
         expect(await page.getByRole('button', { name: 'Mark Finished' }).isVisible()).toBe(true);
         expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
             viewports.minimumDesktop.width,

@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react';
 import { useI18n } from '../i18n/i18n-context';
 import { Button } from '../ui/button';
 import { BookFormat } from './book-format.util';
@@ -6,7 +7,8 @@ export function ReadingToggle({
     read,
     busy,
     onToggle,
-}: {
+    ...rest
+}: Pick<ComponentProps<'button'>, 'aria-describedby' | 'onFocus' | 'onBlur' | 'onKeyDown'> & {
     read: boolean;
     busy?: boolean;
     onToggle(read: boolean): void;
@@ -15,6 +17,7 @@ export function ReadingToggle({
 
     return (
         <Button
+            {...rest}
             icon={read ? 'check' : undefined}
             busy={busy}
             className={read ? 'button--pressed' : undefined}
