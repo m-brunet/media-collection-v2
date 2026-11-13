@@ -55,6 +55,48 @@ describe('BookBatchPlanner', () => {
             after: { publisher: null, priceCents: null },
         });
     });
+    it('fills the publisher and the price only on the books that have none', async () => {
+        const current = BookDoubles.library();
+        const one = await BookDoubles.volume(current, 1, { publisher: 'Glénat', price: '7' });
+        const two = await BookDoubles.volume(current, 2);
+
+        const result = await current.planner.plan(
+            owner.id,
+            request([one.id, two.id], {
+                publisher: 'Delcourt',
+                price: '6,90',
+                onlyIfEmpty: ['publisher', 'price'],
+            }),
+            null,
+        );
+
+        expect(result.planned.map((planned) => planned.entry)).toEqual([
+            { id: one.id, title: 'Gunnm Vol. 1', before: {}, after: {} },
+            {
+                id: two.id,
+                title: 'Gunnm Vol. 2',
+                before: { publisher: null, priceCents: null },
+                after: { publisher: 'Delcourt', priceCents: 690 },
+            },
+        ]);
+        expect(result.planned[0]!.detailsChanged).toBe(false);
+    });
+    it('fills the shelf only on the books without a location', async () => {
+        const current = BookDoubles.library();
+        const one = await BookDoubles.volume(current, 1, { shelfId: 'top' });
+        const two = await BookDoubles.volume(current, 2);
+
+        const result = await current.planner.plan(
+            owner.id,
+            request([one.id, two.id], { shelfId: 'shelf-3', onlyIfEmpty: ['shelfId'] }),
+            null,
+        );
+
+        expect(result.planned[0]!.entry).toMatchObject({ before: {}, after: {} });
+        expect(result.planned[0]!.organisation).toBeNull();
+        expect(result.planned[1]!.entry.after.location?.shelfName).toBe('Shelf 3');
+        expect(result.planned[1]!.organisation).toEqual({ shelfId: 'shelf-3' });
+    });
     it('leaves every field absent from the batch unchanged', async () => {
         const current = BookDoubles.library();
         const one = await BookDoubles.volume(current, 1, { price: '7' });

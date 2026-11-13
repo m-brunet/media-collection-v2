@@ -71,15 +71,15 @@ The desktop collection details page has the same personal **Read** toggle as a b
 The desktop collection details page lets Owners/Admin change several books of the collection at once (decided 2026-11-10 and 2026-11-11, issue #24). A batch only holds books of that one collection.
 
 - **Choosing the books:** **Edit several** turns the volume list into a list of the collection's books, each once (an omnibus is listed once), with a checkbox, **Select all** and **Select owned**. **Edit N books** opens the batch form. Guests do not see the mode.
-- **Fields:** each field starts as **Leave unchanged**. A clearable field has three states: Leave unchanged, set to a value, or an explicit **Clear**, so an empty input never clears by accident.
+- **Fields:** each field starts as **Leave unchanged**. A clearable field has four states: Leave unchanged, set to a value, **Fill if empty**, or an explicit **Clear**, so an empty input never clears by accident. Fill if empty applies the value only to the chosen books that have none for that field; the others keep theirs and the summary shows them as already as asked.
 
   | Field | How the batch value applies |
   |---|---|
   | Category (Books, Manga, Comics) | Replaced. See "To Books" below |
   | Ownership (Owned, Not owned) | Replaced. A lent book set to Not owned is skipped |
-  | Publisher | Replaced, or cleared |
-  | Price | Replaced, or cleared |
-  | Shelf (bookcase and shelf) | Replaced, or cleared (no physical location) |
+  | Publisher | Replaced, filled if empty, or cleared |
+  | Price | Replaced, filled if empty, or cleared |
+  | Shelf (bookcase and shelf) | Replaced, filled on the books without one, or cleared (no physical location) |
   | Tags | **Add these** and **remove these** (existing tags only), never a full replacement: each book's other tags stay |
   | Authors | The whole list replaced, in the typed order. The similar-author check runs once on the typed names, as on the book form |
   | Own reading status | Read / Not read for the **signed-in account only** |
@@ -144,6 +144,7 @@ A separate desktop page mirroring mobile ownership progression is future scope, 
 17. Gunnm 1–2 with generated titles changed to Books: they keep "Gunnm Vol. 1" and "Gunnm Vol. 2" as hand-written titles.
 18. Add tag Cyberpunk and remove tag Old on a book tagged History and Old: it ends with Cyberpunk and History.
 19. Saving records one operation: the collection entry plus, per changed book, its related changes. Another account's reading status never changes.
+20. Batch edit of Gunnm 1 (publisher Glénat) and 2 (no publisher), Publisher Fill if empty with Delcourt: the summary shows 2 "none → Delcourt" and 1 as already as asked; saving gives 2 Delcourt and 1 keeps Glénat.
 
 ## Implementation references
 

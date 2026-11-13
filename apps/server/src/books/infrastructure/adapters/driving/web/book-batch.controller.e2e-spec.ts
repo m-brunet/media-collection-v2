@@ -126,6 +126,34 @@ describe('POST /api/books/batch-edit', () => {
         expect(await app.dependencies.books.readings.isRead(owner.id, first.id)).toBe(true);
         expect(await stored(second)).toMatchObject({ category: 'comics', priceCents: 690 });
     });
+    it('fills the publisher and the price only on the books that have none', async () => {
+        const first = await volume(1, { publisher: 'Glénat', price: '7' });
+        const second = await volume(2, { price: null });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookBatchDto>(
+            '/books/batch-edit',
+            'POST',
+            batch([first, second], {
+                publisher: 'Delcourt',
+                price: '6.90',
+                onlyIfEmpty: ['publisher', 'price'],
+            }),
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.body.books).toEqual([
+            { id: first.id, title: first.title, before: {}, after: {} },
+            {
+                id: second.id,
+                title: second.title,
+                before: { publisher: null, priceCents: null },
+                after: { publisher: 'Delcourt', priceCents: 690 },
+            },
+        ]);
+        expect(await stored(first)).toMatchObject({ publisher: 'Glénat', priceCents: 700 });
+        expect(await stored(second)).toMatchObject({ publisher: 'Delcourt', priceCents: 690 });
+    });
     it('saves the changes for the Admin', async () => {
         const first = await volume(1);
         const client = await app.authenticatedClient(administrator);
@@ -279,6 +307,18 @@ describe('POST /api/books/batch-edit', () => {
             ...batch([first], {}),
             changes: { isbn: '9782749310015' },
         });
+
+        expect(response.status).toBe(400);
+    });
+    it('rejects filling a field without a value', async () => {
+        const first = await volume(1);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call(
+            '/books/batch-edit',
+            'POST',
+            batch([first], { publisher: null, onlyIfEmpty: ['publisher'] }),
+        );
 
         expect(response.status).toBe(400);
     });

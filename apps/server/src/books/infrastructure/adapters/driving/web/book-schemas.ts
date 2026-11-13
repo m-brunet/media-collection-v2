@@ -57,23 +57,31 @@ export const bookBatchSchema = z.strictObject({
     collectionId: idSchema,
     bookIds: z.array(idSchema).min(1).max(1000),
     preview: z.boolean(),
-    changes: z.strictObject({
-        category: z.enum(['books', 'manga', 'comics']).optional(),
-        ownership: z.enum(['owned', 'not-owned']).optional(),
-        publisher: BookFields.text(1000).optional(),
-        price: BookFields.text(40).optional(),
-        shelfId: idSchema.nullable().optional(),
-        tags: z
-            .strictObject({
-                add: z.array(idSchema).max(100),
-                remove: z.array(idSchema).max(100),
-            })
-            .refine((tags) => !tags.add.some((id) => tags.remove.includes(id)))
-            .optional(),
-        authors: z.array(author).min(1).max(30).optional(),
-        read: z.boolean().optional(),
-        generatedTitles: z.literal(true).optional(),
-    }),
+    changes: z
+        .strictObject({
+            category: z.enum(['books', 'manga', 'comics']).optional(),
+            ownership: z.enum(['owned', 'not-owned']).optional(),
+            publisher: BookFields.text(1000).optional(),
+            price: BookFields.text(40).optional(),
+            shelfId: idSchema.nullable().optional(),
+            tags: z
+                .strictObject({
+                    add: z.array(idSchema).max(100),
+                    remove: z.array(idSchema).max(100),
+                })
+                .refine((tags) => !tags.add.some((id) => tags.remove.includes(id)))
+                .optional(),
+            authors: z.array(author).min(1).max(30).optional(),
+            read: z.boolean().optional(),
+            generatedTitles: z.literal(true).optional(),
+            onlyIfEmpty: z
+                .array(z.enum(['publisher', 'price', 'shelfId']))
+                .max(3)
+                .optional(),
+        })
+        .refine((changes) =>
+            (changes.onlyIfEmpty ?? []).every((field) => Boolean(changes[field]?.trim())),
+        ),
 });
 
 export const newBookSchema = bookInputSchema.extend({ read: z.boolean() });

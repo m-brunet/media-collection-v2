@@ -2,6 +2,7 @@ import type { AuthorMatch, OrganisationRequest } from '../book-input.js';
 import type {
     BookBatchChanges,
     BookBatchEntry,
+    BookBatchFillable,
     BookBatchFields,
     BookBatchRequest,
     BookBatchSkip,
@@ -218,8 +219,16 @@ export class BookBatchPlanner {
             category,
             titleGenerated: previous.titleGenerated && Book.generatesTitle(category),
             ownership: changes.ownership ?? previous.ownership,
-            publisher: changes.publisher === undefined ? previous.publisher : changes.publisher,
-            price: changes.price === undefined ? previous.price : values.price,
+            publisher:
+                changes.publisher === undefined ||
+                (BookBatchPlanner.fills(changes, 'publisher') && previous.publisher)
+                    ? previous.publisher
+                    : changes.publisher,
+            price:
+                changes.price === undefined ||
+                (BookBatchPlanner.fills(changes, 'price') && previous.price)
+                    ? previous.price
+                    : values.price,
             authorIds: values.authors
                 ? values.authors.map((author, index) => author.id ?? 'new-author-' + index)
                 : previous.authorIds,
@@ -261,7 +270,11 @@ export class BookBatchPlanner {
         const after: BookBatchFields = {};
         const request: OrganisationRequest = {};
 
-        if (shelfId !== undefined && (current.location?.shelfId ?? null) !== shelfId) {
+        if (
+            shelfId !== undefined &&
+            !(BookBatchPlanner.fills(values.changes, 'shelfId') && current.location) &&
+            (current.location?.shelfId ?? null) !== shelfId
+        ) {
             before.location = current.location;
             after.location = values.location;
             request.shelfId = shelfId;
@@ -315,6 +328,10 @@ export class BookBatchPlanner {
             before: Object.fromEntries(changed.map((field) => [field, before[field]])),
             after: Object.fromEntries(changed.map((field) => [field, after[field]])),
         };
+    }
+
+    private static fills(changes: BookBatchChanges, field: BookBatchFillable): boolean {
+        return changes.onlyIfEmpty?.includes(field) ?? false;
     }
 
     private static tagKey(tags: readonly BookTag[]): string {

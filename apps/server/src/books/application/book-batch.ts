@@ -3,6 +3,8 @@ import type { BookLocation } from './ports/driven/book-location-reader.interface
 import type { BookTag } from './ports/driven/book-tag-reader.interface.js';
 import type { BookCategory, Ownership } from '../domain/entities/book.entity.js';
 
+export type BookBatchFillable = 'publisher' | 'price' | 'shelfId';
+
 export interface BookBatchChanges {
     category?: BookCategory;
     ownership?: Ownership;
@@ -13,6 +15,7 @@ export interface BookBatchChanges {
     authors?: AuthorChoice[];
     read?: boolean;
     generatedTitles?: boolean;
+    onlyIfEmpty?: readonly BookBatchFillable[];
 }
 
 export interface BookBatchRequest {

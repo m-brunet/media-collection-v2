@@ -115,6 +115,26 @@ describe('EditBooksInBatch', () => {
 
         expect(current.shelving.placed.has(one.id)).toBe(false);
     });
+    it('fills the publisher and the shelf only on the books that have none', async () => {
+        const { current, useCase } = setUp();
+        const one = await BookDoubles.volume(current, 1, { publisher: 'Glénat', shelfId: 'top' });
+        const two = await BookDoubles.volume(current, 2);
+
+        const result = await useCase.execute(
+            owner,
+            batch([one.id, two.id], {
+                publisher: 'Delcourt',
+                shelfId: 'shelf-3',
+                onlyIfEmpty: ['publisher', 'shelfId'],
+            }),
+        );
+
+        expect(result.books[0]).toMatchObject({ before: {}, after: {} });
+        expect(current.books.books.get(one.id)!.details.publisher).toBe('Glénat');
+        expect(current.shelving.placed.get(one.id)).toBe('top');
+        expect(current.books.books.get(two.id)!.details.publisher).toBe('Delcourt');
+        expect(current.shelving.placed.get(two.id)).toBe('shelf-3');
+    });
     it('replaces the authors in the typed order, creating a new one', async () => {
         const { current, useCase } = setUp();
         const one = await BookDoubles.volume(current, 1);
