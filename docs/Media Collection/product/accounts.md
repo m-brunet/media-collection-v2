@@ -14,6 +14,8 @@ The protected Admin cannot be modified or deleted by other accounts, and cannot 
 
 Only Admin creates later accounts through the interface and chooses Guest or Owner at creation. Do not introduce another registration route or assume a product-level default role. Admin sets a temporary password; the user must replace it at first login before normal use. When Admin resets another user's password, the same temporary-password and mandatory-change flow applies. No email is involved. This is distinct from the first-launch Admin form and from a user's ordinary change of their own password.
 
+The Admin can also sign a phone in to Leaf without typing the password, by scanning the QR code of a server address (except the HTTP internet address); see [mobile](overview-activity-mobile.md#signing-a-phone-in-with-the-address-qr-code).
+
 Accounts have usernames/passwords, not email, real-name, or civility fields. Usernames keep the letter case chosen for them and sign-in requires that exact spelling, like passwords; outer spaces are ignored. Two accounts cannot have usernames that differ only by letter case. Users may manage their own username/password. Guests cannot change shared books and have no personal notes or reading-status display. They may be household friends in real life, but accounts and lending receivers have no application link.
 
 Each user may independently choose English or French without changing other users' language preference.

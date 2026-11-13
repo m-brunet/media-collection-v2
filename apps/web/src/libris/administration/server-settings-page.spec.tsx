@@ -1,5 +1,6 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import QRCode from 'qrcode';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type {
     HttpInternetAccessStatus,
@@ -764,4 +765,102 @@ it('tells that a command-line option sets the running HTTP port', async () => {
             'A command-line port override is active on port 4000. Remove it, then close and reopen the desktop application to use the saved port.',
         ),
     ).toBeInTheDocument();
+});
+
+const pairingCode = 'A'.repeat(43);
+
+function pairable(current: ServerStatus, expiresIn = 120_000): FakeApi {
+    return administrator(current).on('POST /auth/pairing-codes', (body) => ({
+        status: 201,
+        body: {
+            link: (body as { address: string }).address + '/leaf/#pair=' + pairingCode,
+            expiresAt: new Date(Date.now() + expiresIn).toISOString(),
+        },
+    }));
+}
+
+async function showQrCode(address: string): Promise<void> {
+    await userEvent.click(
+        await screen.findByRole('button', { name: 'Show the QR code for ' + address }),
+    );
+}
+
+it('shows a QR code that signs a phone in at a home network address', async () => {
+    const encode = vi.spyOn(QRCode, 'toString');
+
+    pairable(withAddresses(status()));
+    renderPage();
+
+    await showQrCode('http://192.168.1.99:34345');
+
+    expect(
+        await screen.findByText(
+            'This code signs a phone in as alex. It works once, for 2 minutes.',
+        ),
+    ).toBeInTheDocument();
+    expect(encode).toHaveBeenLastCalledWith(
+        'http://192.168.1.99:34345/leaf/#pair=' + pairingCode,
+        expect.anything(),
+    );
+});
+it('shows a QR code that signs a phone in at a Tailscale address', async () => {
+    const encode = vi.spyOn(QRCode, 'toString');
+
+    pairable(withAddresses(status()));
+    renderPage();
+
+    await showQrCode('http://100.95.86.107:34345');
+
+    await screen.findByText(/This code signs a phone in as alex/);
+    expect(encode).toHaveBeenLastCalledWith(
+        'http://100.95.86.107:34345/leaf/#pair=' + pairingCode,
+        expect.anything(),
+    );
+});
+it('shows a QR code that signs a phone in at the HTTPS internet address', async () => {
+    const encode = vi.spyOn(QRCode, 'toString');
+
+    pairable(status(active));
+    renderPage();
+
+    await showQrCode('https://' + publicAddress);
+
+    await screen.findByText(/This code signs a phone in as alex/);
+    expect(encode).toHaveBeenLastCalledWith(
+        'https://' + publicAddress + '/leaf/#pair=' + pairingCode,
+        expect.anything(),
+    );
+});
+it('keeps a plain QR code for the HTTP internet address', async () => {
+    const encode = vi.spyOn(QRCode, 'toString');
+    const api = pairable(status(undefined, false, { httpInternetAccess: httpOpen }));
+
+    renderPage();
+
+    await showQrCode('http://' + publicAddress + ':34345');
+
+    expect(
+        await screen.findByRole('img', {
+            name: 'QR code for http://' + publicAddress + ':34345/leaf/',
+        }),
+    ).toBeInTheDocument();
+    expect(encode).toHaveBeenLastCalledWith(
+        'http://' + publicAddress + ':34345/leaf/',
+        expect.anything(),
+    );
+    expect(screen.queryByText(/This code signs a phone in/)).not.toBeInTheDocument();
+    expect(api.calls.map((call) => call.route)).not.toContain('POST /auth/pairing-codes');
+});
+it('asks for a new code when the shown one expires', async () => {
+    const api = pairable(withAddresses(status()), 50);
+
+    renderPage();
+
+    await showQrCode('http://192.168.1.99:34345');
+
+    await waitFor(() =>
+        expect(api.calls.filter((call) => call.route === 'POST /auth/pairing-codes')).toHaveLength(
+            2,
+        ),
+    );
 });

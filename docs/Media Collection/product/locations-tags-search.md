@@ -25,6 +25,18 @@ Deleting a shelf unassigns its books without deleting the books. Deleting a book
 
 Only Owners/Admin manage locations and book assignments; Guests view them under the shared-library permission rules. A clickable visual representation of bookcases remains future scope; this hierarchy does not require that visual feature initially.
 
+### Bookshelves page list
+
+The Bookshelves page lists the bookcases beside the detail of the selected shelf or bookcase. The selection is kept in the address, so it survives a reload and a link.
+
+- Bookcases are collapsed: each shows only its name and shelf count until opened.
+- One bookcase is open at a time. Selecting a bookcase opens it and closes the others; the bookcase holding the selection (the selected bookcase, or the bookcase of the selected shelf) is the open one.
+- A chevron beside each bookcase opens or closes it without changing the selection. Opening one with its chevron closes the others.
+- Nothing is remembered: on arrival, only the bookcase holding the selection from the address is open.
+- While the search field is filled, every bookcase shown by the search is open, so the matching shelves are visible.
+- The list never grows taller than the page: it has its own scrollbar and the detail panel beside it stays in view. The shelves of a collapsed bookcase are out of the keyboard Tab order.
+- The Libris book form is not affected: it chooses a location with two short drop-downs, bookcase then shelf.
+
 ## Tags
 
 Tags are reusable and a book can have several. Owners/Admin can create tags directly while editing a book and manage them from a dedicated interface. Guests can view and filter by tags, but cannot manage tags or assignments.
@@ -39,7 +51,7 @@ Each tag has an independent Include or Exclude choice. Every included tag must b
 
 ## Search and ordering baseline
 
-Book and collection listings support simple search, advanced multiple-criteria filtering, and ordering. Simple search covers title, authors, ISBN, and collection name, using partial matches insensitive to case and accents (for example, 'tolk' matches 'Tolkien'). ISBN searches recognize equivalent ISBN-10/13 values. Advanced book filters initially cover category, authors, collection, bookcase/shelf, tags, ownership, and personal reading status. Guests have no reading-status filter.
+Book and collection listings support simple search, advanced multiple-criteria filtering, and ordering. Simple search covers title, authors, ISBN, and collection name, using partial matches insensitive to case and accents (for example, 'tolk' matches 'Tolkien'). ISBN searches recognize equivalent ISBN-10/13 values. Advanced book filters initially cover category, authors, collection, bookcase/shelf, tags, ownership, cover (With cover / Without cover), price (With price / Without price), and personal reading status. Guests have no reading-status filter; they do have the cover and price filters.
 
 Book sorting defaults to title A-Z, with ascending/descending directions for title, date added, and publication date. Books without publication dates appear last in either direction. Author sorting is not requested. Collection listings sort by collection name only, A-Z or Z-A, default A-Z; creation/publication-date sorting is not included for collections. Collection details keep volume/coverage order rather than confusing collection order with physical shelf order.
 
@@ -71,6 +83,7 @@ Collection ownership/completeness totals always describe the entire collection, 
 12. Search a matching book within a collection with eight of ten volumes Owned: its ownership total stays eight of ten.
 13. Books offer title/date-added/publication-date sorting in either direction; missing publication dates stay last. Collections offer name sorting only.
 14. Case/accent-insensitive partial text matches and equivalent ISBN-10/13 searches find existing records without requiring exact display spelling.
+15. Without cover plus Without price finds the books missing both, owned or not; checking both choices of one of them removes that restriction. In the collection listing, Without cover lists each collection with at least one volume without a cover, and its totals still describe the whole collection.
 
 ## Assigned follow-ups
 

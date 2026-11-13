@@ -95,7 +95,7 @@ Book and collection listing views are simple listings with simple search, advanc
 - Confirmed sort fields: title, date added, and publication date only.
 - Author sorting is not included in initial scope.
 - Collection details present volumes in coverage order under the confirmed collection rules. Collection listings sort by name only, A-Z or Z-A, default A-Z.
-- Advanced book filters: category, authors, collection, bookcase/shelf, tags, ownership, and personal reading status; no reading-status filter for Guests.
+- Advanced book filters: category, authors, collection, bookcase/shelf, tags, ownership, cover (with/without), price (with/without), and personal reading status; no reading-status filter for Guests.
 - Books default to title A-Z; ascending/descending directions are available for title, date added, and publication date. Missing publication dates appear last in both directions.
 - Different filter fields combine with AND; multiple selections inside a non-tag field combine with OR. Tags still require every included tag and reject any excluded tag.
 - Include explicit No physical location and No collection choices. Simple text search applies together with advanced filters.

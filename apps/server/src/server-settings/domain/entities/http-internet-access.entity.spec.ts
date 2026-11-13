@@ -158,3 +158,24 @@ it('opening again clears a previous closing by HTTPS', () => {
 
     expect(access.snapshot.closedByHttps).toBe(false);
 });
+it('gives the internet address of open access on the public address', () => {
+    const access = open();
+
+    const result = access.origin(null, 3000);
+
+    expect(result).toBe('http://82.66.118.204:3000');
+});
+it('gives the internet address of open access on the domain name', () => {
+    const access = open();
+
+    const result = access.origin('library.example.org', 3000);
+
+    expect(result).toBe('http://library.example.org:3000');
+});
+it('has no internet address while closed', () => {
+    const access = HttpInternetAccess.off();
+
+    const result = access.origin('library.example.org', 3000);
+
+    expect(result).toBeNull();
+});

@@ -18,6 +18,7 @@ export type TagChoice = 'none' | 'include' | 'exclude';
 const categories: readonly BookCategory[] = ['books', 'manga', 'comics'];
 const ownerships: readonly BookOwnership[] = ['owned', 'not-owned'];
 const readings = ['read', 'unread'] as const;
+const presences = ['with', 'without'] as const;
 
 export class BookFilter {
     static readonly keys: readonly FilterKey[] = [
@@ -26,6 +27,8 @@ export class BookFilter {
         'collection',
         'location',
         'ownership',
+        'cover',
+        'price',
         'reading',
         'tag',
         'notTag',
@@ -38,6 +41,8 @@ export class BookFilter {
             collection: [],
             location: [],
             ownership: [],
+            cover: [],
+            price: [],
             reading: [],
             tag: [],
             notTag: [],
@@ -57,12 +62,18 @@ export class BookFilter {
             ownership: all('ownership').filter((value): value is BookOwnership =>
                 ownerships.includes(value as BookOwnership),
             ),
+            cover: all('cover').filter(BookFilter.presence),
+            price: all('price').filter(BookFilter.presence),
             reading: all('reading').filter((value): value is (typeof readings)[number] =>
                 readings.includes(value as (typeof readings)[number]),
             ),
             tag: all('tag'),
             notTag: all('notTag'),
         };
+    }
+
+    private static presence(value: string): value is (typeof presences)[number] {
+        return presences.includes(value as (typeof presences)[number]);
     }
 
     static write(filter: Filter, base: URLSearchParams = new URLSearchParams()): URLSearchParams {

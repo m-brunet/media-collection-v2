@@ -24,6 +24,24 @@ describe('BookFilter.read', () => {
 
         expect(result).toEqual(BookFilter.empty());
     });
+    it('reads the cover and price choices', () => {
+        const parameters = new URLSearchParams('cover=without&price=with&price=without');
+
+        const result = BookFilter.read(parameters);
+
+        expect(result).toEqual({
+            ...BookFilter.empty(),
+            cover: ['without'],
+            price: ['with', 'without'],
+        });
+    });
+    it('ignores unknown cover and price choices', () => {
+        const parameters = new URLSearchParams('cover=missing&price=free');
+
+        const result = BookFilter.read(parameters);
+
+        expect(result).toEqual(BookFilter.empty());
+    });
     it('keeps each value once', () => {
         const parameters = new URLSearchParams('location=none&location=none');
 
@@ -53,6 +71,17 @@ describe('BookFilter.write', () => {
         const result = BookFilter.read(BookFilter.write(filter));
 
         expect(result).toEqual(filter);
+    });
+    it('writes the cover and price choices to the address', () => {
+        const filter = {
+            ...BookFilter.empty(),
+            cover: ['without' as const],
+            price: ['without' as const],
+        };
+
+        const result = BookFilter.write(filter);
+
+        expect(result.toString()).toBe('cover=without&price=without');
     });
 });
 

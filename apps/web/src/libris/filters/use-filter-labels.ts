@@ -64,6 +64,10 @@ export function useFilterLabels(filter: Filter) {
                     return t(BookFormat.category(value as BookCategory));
                 case 'ownership':
                     return t(BookFormat.ownership(value as BookOwnership));
+                case 'cover':
+                    return t(value === 'with' ? 'filters.withCover' : 'filters.withoutCover');
+                case 'price':
+                    return t(value === 'with' ? 'filters.withPrice' : 'filters.withoutPrice');
                 case 'reading':
                     return t(BookFormat.reading(value === 'read'));
                 case 'author':

@@ -117,6 +117,10 @@ export class InternetAccess {
         return this.state.domain ?? this.state.publicAddress;
     }
 
+    get origin(): string | null {
+        return this.state.phase === 'active' ? 'https://' + this.certificateName : null;
+    }
+
     get certificate(): IssuedCertificate | null {
         return this.state.certificate ? new IssuedCertificate(this.state.certificate) : null;
     }

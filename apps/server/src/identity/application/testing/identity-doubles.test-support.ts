@@ -5,6 +5,9 @@ import type { SessionClaims } from '../session-claims.js';
 import type { SessionTokens } from '../ports/driven/session-tokens.interface.js';
 import type { UserRepository } from '../ports/driven/user-repository.interface.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
+import { PairingCode } from '../../domain/entities/pairing-code.entity.js';
+import type { PairingCodeRepository } from '../ports/driven/pairing-code-repository.interface.js';
+import type { PairingSecrets } from '../ports/driven/pairing-secrets.interface.js';
 
 export class MemoryUsers implements UserRepository {
     private readonly users = new Map<string, User>();
@@ -93,5 +96,53 @@ export class IdentityDoubles {
             createdAt: clock.now().toISOString(),
             ...input,
         });
+    }
+}
+
+export class MemoryPairingCodes implements PairingCodeRepository {
+    private readonly codes = new Map<string, PairingCode>();
+
+    get all(): PairingCode[] {
+        return [...this.codes.values()].map((code) => new PairingCode(code.snapshot));
+    }
+
+    async findByHash(codeHash: string): Promise<PairingCode | null> {
+        const code = [...this.codes.values()].find((entry) => entry.snapshot.codeHash === codeHash);
+
+        return code ? new PairingCode(code.snapshot) : null;
+    }
+
+    async replace(code: PairingCode): Promise<void> {
+        for (const [id, entry] of this.codes) {
+            if (entry.accountId === code.accountId) {
+                this.codes.delete(id);
+            }
+        }
+
+        this.codes.set(code.snapshot.id, new PairingCode(code.snapshot));
+    }
+
+    async consume(code: PairingCode): Promise<boolean> {
+        const stored = this.codes.get(code.snapshot.id);
+
+        if (!stored || stored.snapshot.usedAt !== null) {
+            return false;
+        }
+
+        this.codes.set(code.snapshot.id, new PairingCode(code.snapshot));
+
+        return true;
+    }
+}
+
+export class SequentialPairingSecrets implements PairingSecrets {
+    private counter = 0;
+
+    generate(): string {
+        return 'secret-' + ++this.counter;
+    }
+
+    hash(code: string): string {
+        return 'hashed:' + code;
     }
 }

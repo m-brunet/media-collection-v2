@@ -668,3 +668,17 @@ it('estimates for the address of a rate-limited setup once off', () => {
 
     expect(allowances?.certificates).toEqual({ left: 5, nextAt: null });
 });
+it('gives the HTTPS internet address while active', () => {
+    const access = active();
+
+    const result = access.origin;
+
+    expect(result).toBe('https://82.66.118.204');
+});
+it('has no HTTPS internet address before it is active', () => {
+    const access = gettingCertificate();
+
+    const result = access.origin;
+
+    expect(result).toBeNull();
+});

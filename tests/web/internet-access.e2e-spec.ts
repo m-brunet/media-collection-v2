@@ -73,14 +73,14 @@ describe('Internet access', () => {
                 .isVisible(),
         ).toBe(true);
     });
-    it('gives a QR code that a phone reads as the Leaf address', async () => {
+    it('gives a QR code that a phone reads as the Leaf address with a sign-in code', async () => {
         const { page } = await serverSettings({ externalAddress: publicAddress, accepts: true });
 
         await page.getByRole('button', { name: 'Set up internet access' }).click();
         await page.getByText('Internet access is on.').waitFor();
 
         expect(await readQrCode(await qrCodeFor(page, 'https://' + publicAddress))).toEqual([
-            'https://' + publicAddress + '/leaf/',
+            expect.stringMatching(/^https:\/\/82\.66\.118\.204\/leaf\/#pair=[A-Za-z0-9_-]{43}$/),
         ]);
     });
     it('starts HTTPS with the new certificate without a restart', async () => {
@@ -135,7 +135,7 @@ describe('Internet access', () => {
         await capture(page, 'internet-access-domain-active');
 
         expect(await readQrCode(await qrCodeFor(page, 'https://home.example.fr'))).toEqual([
-            'https://home.example.fr/leaf/',
+            expect.stringMatching(/^https:\/\/home\.example\.fr\/leaf\/#pair=[A-Za-z0-9_-]{43}$/),
         ]);
     });
     it('refuses a domain name that does not point to the connection', async () => {

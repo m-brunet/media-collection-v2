@@ -50,6 +50,12 @@ export class HttpInternetAccess {
         return this.state.publicAddress;
     }
 
+    origin(domainName: string | null, port: number): string | null {
+        return this.state.phase === 'open'
+            ? 'http://' + (domainName ?? this.state.publicAddress) + ':' + port
+            : null;
+    }
+
     get automatic(): boolean {
         return this.state.mapping === 'upnp' || this.state.mapping === 'nat-pmp';
     }

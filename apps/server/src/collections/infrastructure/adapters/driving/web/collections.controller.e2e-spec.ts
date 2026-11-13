@@ -582,6 +582,41 @@ describe('GET /api/collections with filters', () => {
         expect(response.status).toBe(400);
         expect(response.body.reason).toBe('reading-filter-unavailable');
     });
+    it('lists a collection with one volume without a cover, keeping whole counts', async () => {
+        await withCover(await book(membership('Dune', 1)));
+        await book(membership('Dune', 2));
+        await book(membership('Dune', 3), { ownership: 'not-owned' });
+        await withCover(await book(membership('Batman', 1)));
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<CollectionListPageDto>('/collections?cover=without');
+
+        expect(response.body.items).toEqual([
+            expect.objectContaining({
+                name: 'Dune',
+                bookCount: 3,
+                ownedCount: 2,
+                expectedCount: 3,
+            }),
+        ]);
+    });
+    it('lets a Guest list the collections with a volume without a price', async () => {
+        await book(membership('Dune', 1), { price: null });
+        await book(membership('Batman', 1));
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call<CollectionListPageDto>('/collections?price=without');
+
+        expect(response.status).toBe(200);
+        expect(response.body.items.map((item) => item.name)).toEqual(['Dune']);
+    });
+    it('refuses an unknown cover choice', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/collections?cover=missing');
+
+        expect(response.status).toBe(400);
+    });
 });
 
 describe('Generated titles of member books', () => {

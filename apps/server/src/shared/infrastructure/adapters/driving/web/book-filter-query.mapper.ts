@@ -22,6 +22,8 @@ export class BookFilterQueryMapper {
                 none: params.location.includes('none'),
             },
             ownerships: params.ownership,
+            covers: params.cover,
+            prices: params.price,
             reading: params.reading,
             tags: { include: params.tag.map(id), exclude: params.notTag.map(id) },
         });

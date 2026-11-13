@@ -124,10 +124,10 @@ function LeafRoutes() {
     );
 }
 
-function LeafRoot() {
+function LeafRoot({ pairing }: { pairing: string | null }) {
     return (
         <AppearanceProvider>
-            <SessionProvider>
+            <SessionProvider pairing={pairing}>
                 <LeafLayout>
                     <LeafRoutes />
                 </LeafLayout>
@@ -137,9 +137,11 @@ function LeafRoot() {
 }
 
 // A data router, so the book form can ask before discarding unsaved changes.
-export function LeafApp() {
+export function LeafApp({ pairing = null }: { pairing?: string | null }) {
     const [router] = useState(() =>
-        createBrowserRouter([{ path: '*', element: <LeafRoot /> }], { basename: '/leaf' }),
+        createBrowserRouter([{ path: '*', element: <LeafRoot pairing={pairing} /> }], {
+            basename: '/leaf',
+        }),
     );
 
     return <RouterProvider router={router} />;

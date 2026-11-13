@@ -20,6 +20,7 @@ import { BookDraft } from '../../shared/book-form/book-draft.util';
 import { BookFormat } from '../../shared/book-form/book-format.util';
 import type { LocationEditing } from './location-dialogs';
 import { LocationDialogs } from './location-dialogs';
+import { BookcaseGroup } from './bookcase-group';
 import { useBookcases } from './use-bookcases';
 
 const pageSize = 24;
@@ -155,6 +156,7 @@ export function BookshelvesPage() {
     const [parameters, setParameters] = useSearchParams();
     const [search, setSearch] = useState('');
     const [editing, setEditing] = useState<LocationEditing | null>(null);
+    const [toggled, setToggled] = useState<{ selection: string; open: string | null } | null>(null);
     const [done, setDone] = useState<string | null>(null);
 
     if (failure) {
@@ -179,7 +181,11 @@ export function BookshelvesPage() {
             (candidate) => candidate.id === (shelf?.bookcaseId ?? parameters.get('bookcase')),
         ) ?? bookcases[0];
     const shown = matching(bookcases, search);
-    const select = (selected: { shelf?: string; bookcase?: string }) =>
+    const searching = BookDraft.nameKey(search) !== '';
+    const selection = (bookcase?.id ?? '') + '/' + (shelf?.id ?? '');
+    const open = toggled?.selection === selection ? toggled.open : bookcase?.id;
+    const select = (selected: { shelf?: string; bookcase?: string }) => {
+        setToggled(null);
         setParameters(
             selected.shelf
                 ? { shelf: selected.shelf }
@@ -188,6 +194,7 @@ export function BookshelvesPage() {
                   : {},
             { replace: true },
         );
+    };
     const dialogs = (
         <LocationDialogs
             bookcases={bookcases}
@@ -281,53 +288,22 @@ export function BookshelvesPage() {
                             <p className="muted">{t('bookshelves.noResults', { search })}</p>
                         )}
                         {shown.map((candidate) => (
-                            <section key={candidate.id} className="bookcase-group">
-                                <h2 className="bookcase-group__header">
-                                    <button
-                                        type="button"
-                                        className="bookcase-group__name"
-                                        aria-current={
-                                            !shelf && candidate.id === bookcase?.id
-                                                ? 'true'
-                                                : undefined
-                                        }
-                                        onClick={() => select({ bookcase: candidate.id })}
-                                    >
-                                        {candidate.name}
-                                    </button>
-                                    <span className="muted">
-                                        {candidate.shelves.length === 1
-                                            ? t('bookshelves.shelvesOne')
-                                            : t('bookshelves.shelvesMany', {
-                                                  count: candidate.shelves.length,
-                                              })}
-                                    </span>
-                                </h2>
-                                <ul className="shelf-list">
-                                    {candidate.shelves.map((item) => (
-                                        <li key={item.id}>
-                                            <button
-                                                type="button"
-                                                className="shelf-row"
-                                                aria-current={
-                                                    item.id === shelf?.id ? 'true' : undefined
-                                                }
-                                                onClick={() => select({ shelf: item.id })}
-                                            >
-                                                {t('shelf.row', {
-                                                    name: item.name,
-                                                    books:
-                                                        item.bookCount === 1
-                                                            ? t('tags.booksOne')
-                                                            : t('tags.booksMany', {
-                                                                  count: item.bookCount,
-                                                              }),
-                                                })}
-                                            </button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </section>
+                            <BookcaseGroup
+                                key={candidate.id}
+                                bookcase={candidate}
+                                open={searching || candidate.id === open}
+                                toggleable={!searching}
+                                current={!shelf && candidate.id === bookcase?.id}
+                                currentShelf={shelf?.id}
+                                onSelectBookcase={() => select({ bookcase: candidate.id })}
+                                onSelectShelf={(item) => select({ shelf: item })}
+                                onToggle={() =>
+                                    setToggled({
+                                        selection,
+                                        open: candidate.id === open ? null : candidate.id,
+                                    })
+                                }
+                            />
                         ))}
                     </nav>
                     <div className="bookshelves__detail">
