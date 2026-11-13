@@ -20,7 +20,7 @@ afterEach(async () => {
 });
 
 async function scannedLink(): Promise<{ address: string; link: string }> {
-    const started = await runtime.start(undefined, { main: true });
+    const started = await runtime.start();
 
     await RuntimeSetup.administrator(started.client);
     await started.client.call('/auth/login', 'POST', {
