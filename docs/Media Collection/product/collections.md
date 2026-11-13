@@ -43,7 +43,7 @@ A normal book covers one number. An optional 'Covers several volumes' choice all
 
 One Owned omnibus remains one book for library counts, location, and lending while satisfying every covered collection volume. Collection totals count distinct numbers, never book records; overlapping Owned coverage does not increase completeness. The range end contributes to the highest saved volume even when the omnibus is Not Owned.
 
-Desktop collection details group editions under expandable volume entries so the user can choose the actual book. The same omnibus can cover several numbers without implying several physical books. Exact screen labels and visual treatment will be refined during the screen-design discussion.
+Desktop collection details show the collection as a wall of covers in volume order, wrapping across the full width of the page. Each book is one tile: its cover, or a coloured placeholder with its volume number or range when it has none, its title and a muted line (Owned or Not owned, Omnibus with its range, Books for the Books category). Several editions of the same volume each get their own tile, side by side; an omnibus appears once, at its first volume, so the same omnibus covering several numbers never looks like several physical books. Clicking a tile opens the book's details page. Each expected volume with no saved book appears in its place as an empty dashed tile, for example **Volume 10 · Missing**; it opens nothing and cannot be chosen in **Edit books**. A planned volume shows its saved Not owned book instead (redesigned 2026-11-13; the expandable volume entries are gone).
 
 ## Finished
 
@@ -55,9 +55,11 @@ Desktop collection details group editions under expandable volume entries so the
 - Deleting the highest coverage shrinks the expected range as above; do not manufacture a gap for the deleted upper bound.
 - There is no final-volume marker determining visibility.
 
+On the desktop collection details page, a short status label follows the collection name: **Finished** (green) or **Unfinished** (amber). The coverage line above the expected range only counts what is missing (for example **3 missing**, **No known missing volumes**, or **Complete** on a Finished collection). Hovering or focusing the **Finished** label explains that Finished collections remain on desktop and are hidden from mobile shopping. While volumes are missing, **Mark Finished** stays unavailable, and hovering or focusing it shows the condition: own every expected volume before marking the collection Finished. These replace the full-width green and amber lines under the summary (redesigned 2026-11-13, issue #24).
+
 ## Reading a whole collection
 
-The desktop collection details page has the same personal **Read** toggle as a book's details page, under "Only your reading" (decided 2026-11-10, issue #25):
+The desktop collection details page has the same personal **Read** toggle as a book's details page, at the right of the **Volumes** heading; hovering or focusing it explains its scope (decided 2026-11-10, issue #25; placement redesigned 2026-11-13 with alternative A of issue #24):
 
 - It is pressed only when **every Owned book** of the collection is read by the signed-in account. While one Owned book is unread, it shows "Not read".
 - Pressing "Not read" marks every Owned book of the collection read at once, without confirmation.
@@ -70,8 +72,9 @@ The desktop collection details page has the same personal **Read** toggle as a b
 
 The desktop collection details page lets Owners/Admin change several books of the collection at once (decided 2026-11-10 and 2026-11-11, issue #24). A batch only holds books of that one collection.
 
-- **Choosing the books:** **Edit several** turns the volume list into a list of the collection's books, each once (an omnibus is listed once), with a checkbox, **Select all** and **Select owned**. **Edit N books** opens the batch form. Guests do not see the mode.
-- **Fields:** each field starts as **Leave unchanged**. A clearable field has four states: Leave unchanged, set to a value, **Fill if empty**, or an explicit **Clear**, so an empty input never clears by accident. Fill if empty applies the value only to the chosen books that have none for that field; the others keep theirs and the summary shows them as already as asked.
+- **Choosing the books:** **Edit books** turns the same wall of covers into a selection: each book gets a round check and clicking a cover adds or removes it instead of opening the book. Missing volumes stay in place but cannot be chosen and are not counted; a bottom bar counts the chosen books and offers **Select all**, **Select owned**, **Clear**, **Cancel** and **Edit N books**. While books are being chosen, changed and reviewed, the **Read** toggle and the **Edit books** button are hidden. Guests do not see the mode (redesigned 2026-11-13, alternative A of issue #24).
+- **Side drawer:** **Edit N books** opens a drawer on the right, in three steps (Choose, Change, Review). The covers stay visible and clickable beside it, so the selection can still change. Escape or the close button closes the drawer and goes back to the selection.
+- **Fields:** nothing is listed as Leave unchanged: the drawer starts empty and each field to change is added as a card (**+ Category**, **+ Publisher**…) and can be removed again. A field that is not added stays as it is on every book. Publisher, Price and Shelf cards offer **Set to** (Shelf: **Place on a shelf**), **Fill if empty** or an explicit **Clear**, so an empty input never clears by accident. Fill if empty applies the value only to the chosen books that have none for that field; the others keep theirs.
 
   | Field | How the batch value applies |
   |---|---|
@@ -88,7 +91,8 @@ The desktop collection details page lets Owners/Admin change several books of th
 - **Never in a batch:** ISBN, cover, title text, summary, page count, publication date, personal note, collection membership and volume numbers.
 - **Use the generated title** only changes hand-written titles of the chosen **Manga and Comics** books: they become `Name Vol. N` (`Name Vol. N–M` for an omnibus) and generated. Books are left out. Choosing the books and this option is the explicit choice; hand-written titles are never replaced by default.
 - **To Books:** changing Manga or Comics books with a generated title to Books keeps each current `Name Vol. N` as a hand-written title, as when a whole collection is deleted. No title has to be typed per book.
-- **Summary before saving:** the server plans the batch without saving it. The summary lists, per book, each change as "old → new" (including "old title → new title"), the books already as asked, and the books **left out with the reason**. Saving applies the changes to the other books in **one transaction**.
+- **Summary before saving:** the server plans the batch without saving it. The review groups the plan **by change** (for example "Publisher → Glénat, 2 books", with each book's previous value and how many other books stay as they are), with a **Left out** card per book left out and its reason; a switch groups it **by book** instead, each change as "old → new" (including "old title → new title") and the books already as asked. Each cover then shows how many changes its book gets, or that it is left out; clicking a cover shows only that book's changes. Saving applies the changes to the other books in **one transaction**.
+- **After saving:** the drawer closes and a banner gives the number of books updated and each book left out with its reason. The covers show **Updated** or **Left out**; **Edit books again** starts a new batch and **Done** goes back to the collection.
 - **A book that cannot take a change is skipped**, not the whole batch, and gets **none** of the batch's changes, so a book is never half-edited. Reasons: a lent book set to Not owned; a book without ISBN whose new authors would make it a possible duplicate of another book (the chosen books are not compared with each other); Use the generated title on a Books book.
 - **Refusals:** the whole request is refused when one chosen book is not (or no longer) in the collection, when a value is invalid (for example a price), or when a typed author looks like an existing one: the form then asks once which author is meant and plans again. A change of ownership follows the duplicate-purchase rules below; a coverage conflict refuses the save.
 - **Audit:** one audited operation on the collection (`collection.books-batch-edited`, the batch edit of that collection), with each book's changes as related changes (`book.updated`, `book.organised`, `book.reading-status-changed`), as a collection rename records retitled books.

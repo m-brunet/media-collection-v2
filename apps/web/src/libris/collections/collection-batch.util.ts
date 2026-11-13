@@ -1,24 +1,37 @@
 import type {
     AuthorChoiceDto,
     BookBatchChangesDto,
+    BookBatchDto,
     BookBatchFieldsDto,
     BookBatchFillable,
     BookBatchSkipReason,
     BookCategory,
     BookOwnership,
     CollectionDetailsDto,
-    CollectionMemberDto,
 } from '../../../../../packages/contracts/src/http';
 import type { DraftAuthor, DraftTag } from '../../shared/book-form/book-draft.util';
 import { BookDraft } from '../../shared/book-form/book-draft.util';
 import { BookFormat } from '../../shared/book-form/book-format.util';
 import type { MessageKey } from '../../shared/i18n/catalog-en';
+import { CollectionCovers } from './collection-covers.util';
 
 export type ChoiceMode = 'keep' | 'set' | 'fill' | 'clear';
 
 export type TextChoice = { mode: ChoiceMode; value: string };
 
+export type BatchField =
+    | 'category'
+    | 'ownership'
+    | 'publisher'
+    | 'price'
+    | 'shelf'
+    | 'tags'
+    | 'authors'
+    | 'read'
+    | 'titles';
+
 export interface BatchDraft {
+    fields: BatchField[];
     category: BookCategory | 'keep';
     ownership: BookOwnership | 'keep';
     publisher: TextChoice;
@@ -32,11 +45,35 @@ export interface BatchDraft {
     generatedTitles: boolean;
 }
 
-export type BatchProblem = 'nothing' | 'publisher' | 'price' | 'shelf' | 'authors';
+export type BatchProblem =
+    | 'nothing'
+    | 'category'
+    | 'ownership'
+    | 'publisher'
+    | 'price'
+    | 'shelf'
+    | 'authors'
+    | 'read';
 
 export type Shown = { text: string } | { key: MessageKey };
 
 export type ChangeLine = { label: MessageKey; before: Shown; after: Shown };
+
+export interface ChangedBook {
+    id: string;
+    title: string;
+    before: Shown;
+    after: Shown;
+}
+
+export interface ChangeGroup {
+    label: MessageKey;
+    after: Shown | null;
+    books: ChangedBook[];
+    others: number;
+}
+
+export type BookOutcome = { changes: number } | 'left-out';
 
 type Field = keyof BookBatchFieldsDto;
 
@@ -50,6 +87,23 @@ const fieldLabels: Partial<Record<Field, MessageKey>> = {
     tags: 'tags.field',
     read: 'form.reading',
 };
+const batchFieldLabels: Record<BatchField, MessageKey> = {
+    category: 'form.category',
+    ownership: 'form.ownership',
+    publisher: 'form.publisher',
+    price: 'batch.price',
+    shelf: 'batch.location',
+    tags: 'tags.field',
+    authors: 'form.authors',
+    read: 'form.reading',
+    titles: 'batch.titles',
+};
+const fieldOrder = Object.keys(batchFieldLabels) as BatchField[];
+const fillableLabels: Partial<Record<MessageKey, 'publisher' | 'price' | 'shelf'>> = {
+    'form.publisher': 'publisher',
+    'batch.price': 'price',
+    'batch.location': 'shelf',
+};
 const skipReasons: Record<BookBatchSkipReason, MessageKey> = {
     'book-lent': 'batch.skip.lent',
     'possible-duplicate': 'batch.skip.duplicate',
@@ -59,6 +113,7 @@ const skipReasons: Record<BookBatchSkipReason, MessageKey> = {
 export class CollectionBatch {
     static draft(): BatchDraft {
         return {
+            fields: [],
             category: 'keep',
             ownership: 'keep',
             publisher: { mode: 'keep', value: '' },
@@ -73,28 +128,65 @@ export class CollectionBatch {
         };
     }
 
-    static books(collection: CollectionDetailsDto): CollectionMemberDto[] {
-        const books = new Map<string, CollectionMemberDto>();
+    static fieldLabel(field: BatchField): MessageKey {
+        return batchFieldLabels[field];
+    }
 
-        for (const volume of collection.volumes) {
-            for (const book of volume.books) {
-                books.set(book.id, book);
-            }
+    static remaining(draft: BatchDraft): BatchField[] {
+        return fieldOrder.filter((field) => !draft.fields.includes(field));
+    }
+
+    static add(draft: BatchDraft, field: BatchField): BatchDraft {
+        if (draft.fields.includes(field)) {
+            return draft;
         }
 
-        return [...books.values()].sort(
-            (first, second) =>
-                first.volumeFrom - second.volumeFrom || first.title.localeCompare(second.title),
-        );
+        const added = { ...draft, fields: [...draft.fields, field] };
+
+        switch (field) {
+            case 'publisher':
+            case 'price':
+                return { ...added, [field]: { ...draft[field], mode: 'set' } };
+            case 'shelf':
+                return { ...added, shelf: { ...draft.shelf, mode: 'set' } };
+            case 'authors':
+                return { ...added, replaceAuthors: true };
+            case 'titles':
+                return { ...added, generatedTitles: true };
+            default:
+                return added;
+        }
+    }
+
+    static remove(draft: BatchDraft, field: BatchField): BatchDraft {
+        const initial = CollectionBatch.draft();
+        const removed = { ...draft, fields: draft.fields.filter((added) => added !== field) };
+
+        switch (field) {
+            case 'tags':
+                return { ...removed, addTags: [], removeTags: [] };
+            case 'authors':
+                return { ...removed, replaceAuthors: false, authors: [] };
+            case 'titles':
+                return { ...removed, generatedTitles: false };
+            default:
+                return { ...removed, [field]: initial[field] };
+        }
     }
 
     static owned(collection: CollectionDetailsDto): string[] {
-        return CollectionBatch.books(collection)
+        return CollectionCovers.books(collection)
             .filter((book) => book.ownership === 'owned')
             .map((book) => book.id);
     }
 
     static problem(draft: BatchDraft): BatchProblem | null {
+        for (const field of ['category', 'ownership', 'read'] as const) {
+            if (draft.fields.includes(field) && draft[field] === 'keep') {
+                return field;
+            }
+        }
+
         if (CollectionBatch.takesValue(draft.publisher.mode) && !draft.publisher.value.trim()) {
             return 'publisher';
         }
@@ -226,6 +318,59 @@ export class CollectionBatch {
         return lines;
     }
 
+    static byChange(summary: BookBatchDto, locale: string): ChangeGroup[] {
+        const groups = new Map<MessageKey, ChangedBook[]>();
+
+        for (const book of summary.books) {
+            for (const line of CollectionBatch.lines(book.before, book.after, locale)) {
+                const changed = { id: book.id, title: book.title, ...line };
+
+                groups.set(line.label, [...(groups.get(line.label) ?? []), changed]);
+            }
+        }
+
+        return [...groups].map(([label, books]) => ({
+            label,
+            after: CollectionBatch.common(books.map((book) => book.after)),
+            books: books.map(({ id, title, before, after }) => ({ id, title, before, after })),
+            others: summary.books.length - books.length,
+        }));
+    }
+
+    static outcomes(summary: BookBatchDto, locale: string): Map<string, BookOutcome> {
+        const outcomes = new Map<string, BookOutcome>();
+
+        for (const book of summary.books) {
+            outcomes.set(book.id, {
+                changes: CollectionBatch.lines(book.before, book.after, locale).length,
+            });
+        }
+
+        for (const skip of summary.skipped) {
+            outcomes.set(skip.id, 'left-out');
+        }
+
+        return outcomes;
+    }
+
+    static changed(summary: BookBatchDto): number {
+        return summary.books.filter((book) => Object.keys(book.after).length > 0).length;
+    }
+
+    static only(summary: BookBatchDto, bookId: string): BookBatchDto {
+        return {
+            ...summary,
+            books: summary.books.filter((book) => book.id === bookId),
+            skipped: summary.skipped.filter((skip) => skip.id === bookId),
+        };
+    }
+
+    static fillsOnly(draft: BatchDraft, label: MessageKey): boolean {
+        const field = fillableLabels[label];
+
+        return field !== undefined && draft[field].mode === 'fill';
+    }
+
     static skipReason(reason: BookBatchSkipReason): MessageKey {
         return skipReasons[reason];
     }
@@ -255,6 +400,14 @@ export class CollectionBatch {
                     ? { text: fields.tags.map((tag) => tag.name).join(', ') }
                     : { key: 'batch.none' };
         }
+    }
+
+    private static common(values: Shown[]): Shown | null {
+        const first = values[0] ?? null;
+
+        return values.every((value) => JSON.stringify(value) === JSON.stringify(first))
+            ? first
+            : null;
     }
 
     private static filled(draft: BatchDraft): BookBatchFillable[] {

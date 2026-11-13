@@ -88,34 +88,63 @@ it('shows whole-collection counts and the expected range', async () => {
 
     expect(await screen.findByRole('heading', { name: 'Batman' })).toBeInTheDocument();
     expect(screen.getByText('3 of 12 expected volumes Owned')).toBeInTheDocument();
-    expect(screen.getByText('9 missing · Unfinished')).toBeInTheDocument();
+    expect(screen.getByText('9 missing')).toBeInTheDocument();
     expect(screen.getByText('Expected coverage: volumes 1–12')).toBeInTheDocument();
     expect(
         screen.getByText('Includes volume 0: Off · Highest saved coverage: 12'),
     ).toBeInTheDocument();
 });
 
-it('expands a volume to choose one of its editions', async () => {
+function volumes() {
+    return screen.getByRole('region', { name: 'Volumes' });
+}
+
+it('shows a cover of each book in volume order, with the missing volumes in their place', async () => {
     new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
         status: 200,
         body: batman(),
     }));
 
     show();
-    const volume = await screen.findByRole('button', { name: /Volume 1 Owned · 2 editions/ });
 
-    await userEvent.click(volume);
-
-    const editions = document.getElementById(volume.getAttribute('aria-controls')!)!;
-
-    expect(volume).toHaveAttribute('aria-expanded', 'true');
+    await screen.findByRole('heading', { name: 'Batman' });
     expect(
-        within(editions).getByRole('link', { name: 'View this book · Year One' }),
-    ).toHaveAttribute('href', '/books/year-one');
-    expect(within(editions).getByText('Omnibus · Covers 1–3')).toBeVisible();
+        within(volumes())
+            .getAllByRole('listitem')
+            .map((tile) => tile.textContent),
+    ).toEqual([
+        '1–3Batman omnibusOwned · Omnibus 1–3',
+        '1Year OneOwned',
+        '4Volume 4Missing',
+        '5Volume 5Missing',
+        '6Volume 6Missing',
+        '7Volume 7Missing',
+        '8Volume 8Missing',
+        '9Volume 9Missing',
+        '10Volume 10Missing',
+        '11Volume 11Missing',
+        '12Batman 12Not owned',
+    ]);
 });
 
-it('describes an edition by its cover, publisher and ISBN', async () => {
+it('opens a book from its cover', async () => {
+    new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
+        status: 200,
+        body: batman(),
+    }));
+
+    show();
+
+    const book = await screen.findByRole('link', { name: 'Year One, Owned' });
+
+    expect(book).toHaveAttribute('href', '/books/year-one');
+    expect(screen.getByRole('link', { name: 'Batman 12, Not owned' })).toHaveAttribute(
+        'href',
+        '/books/twelve',
+    );
+});
+
+it('shows the cover image of a book that has one', async () => {
     new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
         status: 200,
         body: batman({
@@ -124,49 +153,24 @@ it('describes an edition by its cover, publisher and ISBN', async () => {
                     from: 1,
                     to: 1,
                     state: 'owned',
-                    books: [
-                        member({
-                            publisher: 'DC Comics',
-                            hasCover: true,
-                            updatedAt: '2026-02-01T00:00:00.000Z',
-                        }),
-                    ],
+                    books: [member({ hasCover: true, updatedAt: '2026-02-01T00:00:00.000Z' })],
                 },
             ],
         }),
     }));
 
     show();
-    await userEvent.click(await screen.findByRole('button', { name: /Volume 1 Owned/ }));
 
-    const edition = screen.getByText('Year One').closest('li')!;
+    const book = await screen.findByRole('link', { name: 'Year One, Owned' });
 
-    expect(within(edition).getByText('DC Comics · ISBN 9781401207526')).toBeVisible();
-    expect(within(edition).getByRole('img', { name: 'Cover of Year One' })).toHaveAttribute(
+    expect(book.querySelector('img')).toHaveAttribute(
         'src',
         '/api/books/year-one/cover?v=2026-02-01T00%3A00%3A00.000Z',
     );
+    expect(book).toHaveTextContent(/^Year One/);
 });
 
-it('explains what Finished means for a Finished collection', async () => {
-    new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
-        status: 200,
-        body: batman({ finished: true, missingCount: 0 }),
-    }));
-
-    show();
-
-    expect(
-        await screen.findByText(
-            'Finished collections remain on desktop and are hidden from mobile shopping.',
-        ),
-    ).toBeInTheDocument();
-    expect(
-        screen.queryByText('Own every expected volume before marking this collection Finished.'),
-    ).not.toBeInTheDocument();
-});
-
-it('describes inferred and planned volumes as missing', async () => {
+it('shows a missing volume as an empty slot that opens nothing', async () => {
     new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
         status: 200,
         body: batman(),
@@ -174,12 +178,75 @@ it('describes inferred and planned volumes as missing', async () => {
 
     show();
 
-    expect(
-        await screen.findByRole('button', { name: /Volumes 4–11 Missing · Inferred coverage/ }),
-    ).toBeDisabled();
-    expect(
-        screen.getByRole('button', { name: /Volume 12 Missing · Saved Not Owned edition/ }),
-    ).toBeEnabled();
+    const missing = (await screen.findByText('Volume 10')).closest('li')!;
+
+    expect(missing).toHaveTextContent('Missing');
+    expect(within(missing).queryByRole('link')).not.toBeInTheDocument();
+    expect(within(missing).queryByRole('button')).not.toBeInTheDocument();
+    expect(within(volumes()).getAllByRole('link')).toHaveLength(3);
+});
+
+it('labels an unfinished collection Unfinished by its name', async () => {
+    new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
+        status: 200,
+        body: batman(),
+    }));
+
+    show();
+
+    const label = await screen.findByText('Unfinished');
+
+    expect(label).toHaveClass('collection-label--unfinished');
+    expect(label).not.toHaveAttribute('tabindex');
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+});
+
+it('labels a Finished collection Finished by its name', async () => {
+    new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
+        status: 200,
+        body: batman({ finished: true, missingCount: 0 }),
+    }));
+
+    show();
+
+    const label = await screen.findByText('Finished');
+
+    expect(label).toHaveClass('collection-label--finished');
+    expect(label).toHaveAccessibleDescription(
+        'Finished collections remain on desktop and are hidden from mobile shopping.',
+    );
+    expect(screen.getByRole('tooltip', { hidden: true })).not.toBeVisible();
+    expect(screen.getByText('Complete')).toBeInTheDocument();
+});
+
+it('explains what Finished means on hover of the Finished label', async () => {
+    new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
+        status: 200,
+        body: batman({ finished: true, missingCount: 0 }),
+    }));
+    show();
+    const label = await screen.findByText('Finished');
+
+    await userEvent.hover(label);
+
+    expect(screen.getByRole('tooltip')).toHaveTextContent(
+        'Finished collections remain on desktop and are hidden from mobile shopping.',
+    );
+});
+
+it('explains what Finished means when the Finished label has keyboard focus', async () => {
+    new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
+        status: 200,
+        body: batman({ finished: true, missingCount: 0 }),
+    }));
+    show();
+    const label = await screen.findByText('Finished');
+
+    label.focus();
+
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+        'Finished collections remain on desktop and are hidden from mobile shopping.',
+    );
 });
 
 it('explains why an incomplete collection cannot be marked Finished', async () => {
@@ -192,10 +259,83 @@ it('explains why an incomplete collection cannot be marked Finished', async () =
 
     const finish = await screen.findByRole('button', { name: 'Mark Finished' });
 
-    expect(finish).toBeDisabled();
+    expect(finish).toHaveAttribute('aria-disabled', 'true');
     expect(finish).toHaveAccessibleDescription(
         'Own every expected volume before marking this collection Finished.',
     );
+    expect(screen.getByRole('tooltip', { hidden: true })).not.toBeVisible();
+});
+
+it('shows the condition for finishing on hover of the unavailable Mark Finished', async () => {
+    new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
+        status: 200,
+        body: batman(),
+    }));
+    show();
+    const finish = await screen.findByRole('button', { name: 'Mark Finished' });
+
+    await userEvent.hover(finish);
+
+    expect(screen.getByRole('tooltip')).toHaveTextContent(
+        'Own every expected volume before marking this collection Finished.',
+    );
+});
+
+it('shows the condition for finishing when the unavailable Mark Finished has keyboard focus', async () => {
+    new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
+        status: 200,
+        body: batman(),
+    }));
+    show();
+    const finish = await screen.findByRole('button', { name: 'Mark Finished' });
+
+    finish.focus();
+
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+        'Own every expected volume before marking this collection Finished.',
+    );
+});
+
+it('hides the condition for finishing on Escape', async () => {
+    new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
+        status: 200,
+        body: batman(),
+    }));
+    show();
+    (await screen.findByRole('button', { name: 'Mark Finished' })).focus();
+
+    await userEvent.keyboard('{Escape}');
+
+    expect(screen.getByRole('tooltip', { hidden: true })).not.toBeVisible();
+});
+
+it('does not finish an incomplete collection when Mark Finished is clicked', async () => {
+    const api = new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
+        status: 200,
+        body: batman(),
+    }));
+
+    show();
+    const finish = await screen.findByRole('button', { name: 'Mark Finished' });
+
+    await userEvent.click(finish);
+
+    expect(api.calls.map((call) => call.route)).not.toContain('POST /collections/c1/finish');
+});
+
+it('shows no condition for finishing on a complete collection', async () => {
+    new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
+        status: 200,
+        body: batman({ missingCount: 0, ownedCount: 3, expectedTo: 3, expectedCount: 3 }),
+    }));
+    show();
+    const finish = await screen.findByRole('button', { name: 'Mark Finished' });
+
+    await userEvent.hover(finish);
+
+    expect(finish).not.toHaveAttribute('aria-disabled');
+    expect(finish).not.toHaveAccessibleDescription();
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
 });
 
 it('marks a complete collection Finished', async () => {
@@ -211,7 +351,8 @@ it('marks a complete collection Finished', async () => {
     show();
     await userEvent.click(await screen.findByRole('button', { name: 'Mark Finished' }));
 
-    expect(await screen.findByText('Complete · Finished')).toBeInTheDocument();
+    expect(await screen.findByText('Complete')).toBeInTheDocument();
+    expect(screen.getByText('Finished')).toHaveClass('collection-label--finished');
     expect(screen.getByRole('button', { name: 'Reopen collection' })).toBeInTheDocument();
     expect(api.calls.map((call) => call.route)).toContain('POST /collections/c1/finish');
 });
@@ -319,22 +460,50 @@ function batchApi() {
         }));
 }
 
+function wall() {
+    return screen.getByRole('region', { name: /Choose the books to edit|books? chosen/ });
+}
+
+function drawer(name: string | RegExp) {
+    return screen.getByRole('dialog', { name });
+}
+
+function cover(title: RegExp) {
+    return screen.getByRole('button', { name: title });
+}
+
+function planned() {
+    return screen.getByRole('list', { name: 'Planned changes' });
+}
+
+function leftOut() {
+    return screen.getByRole('list', { name: 'Left out' });
+}
+
 async function chooseAllAndOpen() {
-    await userEvent.click(await screen.findByRole('button', { name: 'Edit several' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Edit books' }));
     await userEvent.click(screen.getByRole('button', { name: 'Select all' }));
     await userEvent.click(screen.getByRole('button', { name: 'Edit 3 books' }));
 
-    return screen.getByRole('dialog', { name: 'Edit the chosen books (3)' });
+    return drawer('Edit 3 books');
 }
 
-async function chooseGeneratedTitles(dialog: HTMLElement) {
-    await userEvent.selectOptions(
-        within(dialog).getByRole('combobox', { name: 'Titles' }),
-        'generated',
-    );
+async function addChange(panel: HTMLElement, field: string) {
+    await userEvent.click(within(panel).getByRole('button', { name: field }));
+
+    return within(panel).getByRole('region', { name: field });
 }
 
-it('offers a Guest no Edit several mode', async () => {
+async function reviewTitles() {
+    const panel = await chooseAllAndOpen();
+
+    await addChange(panel, 'Titles');
+    await userEvent.click(within(panel).getByRole('button', { name: 'Review changes' }));
+
+    return screen.findByRole('dialog', { name: 'Review changes' });
+}
+
+it('offers a Guest no Edit books mode', async () => {
     new FakeApi().signedIn(account({ role: 'guest' })).on('GET /collections/c1', () => ({
         status: 200,
         body: batman(),
@@ -343,69 +512,184 @@ it('offers a Guest no Edit several mode', async () => {
     show();
 
     await screen.findByRole('heading', { name: 'Batman' });
-    expect(screen.queryByRole('button', { name: 'Edit several' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Edit books' })).not.toBeInTheDocument();
 });
 
-it('adds a checkbox to each book in the Edit several mode', async () => {
+it('turns the covers into a selection in the Edit books mode', async () => {
     batchApi();
     show();
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Edit several' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Edit books' }));
 
-    expect(screen.getAllByRole('checkbox').map((box) => box.parentElement!.textContent)).toEqual([
-        'Volumes 1–3 · Batman omnibus · Owned',
-        'Volume 1 · Year One · Owned',
-        'Volume 12 · Batman 12 · Not owned',
-    ]);
+    expect(
+        within(wall())
+            .getAllByRole('button')
+            .map((tile) => tile.textContent),
+    ).toEqual(['1–3Batman omnibusOwned · Omnibus 1–3', '1Year OneOwned', '12Batman 12Not owned']);
+    expect(screen.getByText('0 of 3 books chosen')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Edit 0 books' })).toBeDisabled();
+    expect(screen.queryByRole('region', { name: 'Volumes' })).not.toBeInTheDocument();
+});
+
+it('keeps the missing volumes out of the selection', async () => {
+    batchApi();
+    show();
+    await userEvent.click(await screen.findByRole('button', { name: 'Edit books' }));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Select all' }));
+
+    const missing = within(wall()).getByText('Volume 10').closest('li')!;
+
+    expect(within(missing).queryByRole('button')).not.toBeInTheDocument();
+    expect(screen.getByText('3 of 3 books chosen')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit 3 books' })).toBeEnabled();
+});
+
+it('adds a book to the selection by clicking its cover', async () => {
+    batchApi();
+    show();
+    await userEvent.click(await screen.findByRole('button', { name: 'Edit books' }));
+
+    await userEvent.click(cover(/^Year One/));
+
+    expect(cover(/^Year One/)).toHaveAttribute('aria-pressed', 'true');
+    expect(cover(/^Batman omnibus/)).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByText('1 of 3 books chosen')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit 1 book' })).toBeEnabled();
+});
+
+it('removes a chosen book by clicking its cover again', async () => {
+    batchApi();
+    show();
+    await userEvent.click(await screen.findByRole('button', { name: 'Edit books' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Select all' }));
+
+    await userEvent.click(cover(/^Batman 12/));
+
+    expect(cover(/^Batman 12/)).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: 'Edit 2 books' })).toBeEnabled();
 });
 
 it('selects the owned books of the collection', async () => {
     batchApi();
     show();
-    await userEvent.click(await screen.findByRole('button', { name: 'Edit several' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Edit books' }));
 
     await userEvent.click(screen.getByRole('button', { name: 'Select owned' }));
 
-    expect(screen.getByRole('checkbox', { name: /Year One/ })).toBeChecked();
-    expect(screen.getByRole('checkbox', { name: /Batman omnibus/ })).toBeChecked();
-    expect(screen.getByRole('checkbox', { name: /Batman 12/ })).not.toBeChecked();
+    expect(cover(/^Year One/)).toHaveAttribute('aria-pressed', 'true');
+    expect(cover(/^Batman omnibus/)).toHaveAttribute('aria-pressed', 'true');
+    expect(cover(/^Batman 12/)).toHaveAttribute('aria-pressed', 'false');
     expect(screen.getByRole('button', { name: 'Edit 2 books' })).toBeEnabled();
 });
 
-it('selects every book of the collection', async () => {
+it('clears the selection', async () => {
     batchApi();
     show();
-    await userEvent.click(await screen.findByRole('button', { name: 'Edit several' }));
-
+    await userEvent.click(await screen.findByRole('button', { name: 'Edit books' }));
     await userEvent.click(screen.getByRole('button', { name: 'Select all' }));
 
-    expect(screen.getAllByRole('checkbox').map((box) => (box as HTMLInputElement).checked)).toEqual(
-        [true, true, true],
-    );
+    await userEvent.click(screen.getByRole('button', { name: 'Clear' }));
+
+    expect(
+        within(wall())
+            .getAllByRole('button')
+            .map((tile) => tile.getAttribute('aria-pressed')),
+    ).toEqual(['false', 'false', 'false']);
 });
 
-it('sends only the fields changed from Leave unchanged', async () => {
+it('leaves the Edit books mode on Cancel', async () => {
+    batchApi();
+    show();
+    await userEvent.click(await screen.findByRole('button', { name: 'Edit books' }));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(screen.getByRole('region', { name: 'Volumes' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit books' })).toBeInTheDocument();
+});
+
+it('opens a side drawer without a change, beside covers that stay clickable', async () => {
+    batchApi();
+    show();
+
+    const panel = await chooseAllAndOpen();
+
+    expect(panel).toHaveAttribute('aria-modal', 'false');
+    expect(within(panel).getByText('No change yet')).toBeInTheDocument();
+    expect(within(panel).getByRole('button', { name: 'Review changes' })).toBeDisabled();
+    expect(screen.getByText('3 books chosen')).toBeInTheDocument();
+    expect(cover(/^Batman 12/)).toBeEnabled();
+});
+
+it('updates the drawer when a cover is clicked while it is open', async () => {
+    batchApi();
+    show();
+    await chooseAllAndOpen();
+
+    await userEvent.click(cover(/^Batman 12/));
+
+    expect(drawer('Edit 2 books')).toBeInTheDocument();
+});
+
+it('closes the drawer with Escape and goes back to the selection', async () => {
+    batchApi();
+    show();
+    await chooseAllAndOpen();
+
+    await userEvent.keyboard('{Escape}');
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit 3 books' })).toBeInTheDocument();
+});
+
+it('turns each added field into a card and stops offering it', async () => {
+    batchApi();
+    show();
+    const panel = await chooseAllAndOpen();
+
+    await userEvent.click(within(panel).getByRole('button', { name: 'Publisher' }));
+
+    expect(
+        within(screen.getByRole('region', { name: 'Publisher' })).getByRole('radio', {
+            name: 'Set to',
+        }),
+    ).toBeChecked();
+    expect(within(panel).queryByRole('button', { name: 'Publisher' })).not.toBeInTheDocument();
+    expect(within(panel).getByText('1 change')).toBeInTheDocument();
+    expect(within(panel).getByRole('button', { name: 'Review changes' })).toBeEnabled();
+});
+
+it('removes a change card and offers its field again', async () => {
+    batchApi();
+    show();
+    const panel = await chooseAllAndOpen();
+    const price = await addChange(panel, 'Price');
+
+    await userEvent.click(within(price).getByRole('button', { name: 'Remove the change: Price' }));
+
+    expect(within(panel).queryByRole('region', { name: 'Price' })).not.toBeInTheDocument();
+    expect(within(panel).getByRole('button', { name: 'Price' })).toBeInTheDocument();
+    expect(within(panel).getByText('No change yet')).toBeInTheDocument();
+});
+
+it('sends only the changes added as cards', async () => {
     const api = batchApi();
 
     show();
-    const dialog = await chooseAllAndOpen();
+    const panel = await chooseAllAndOpen();
+    const publisher = await addChange(panel, 'Publisher');
 
-    await userEvent.selectOptions(
-        within(dialog).getByRole('combobox', { name: 'Publisher' }),
-        'set',
-    );
     await userEvent.type(
-        within(dialog).getByRole('textbox', { name: 'Publisher: new value' }),
+        within(publisher).getByRole('textbox', { name: 'Publisher: new value' }),
         'DC Comics',
     );
-    await userEvent.selectOptions(
-        within(dialog).getByRole('combobox', { name: 'Price (€)' }),
-        'clear',
+    await userEvent.click(
+        within(await addChange(panel, 'Price')).getByRole('radio', { name: 'Clear' }),
     );
-    await chooseGeneratedTitles(dialog);
+    await addChange(panel, 'Titles');
 
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Review changes' }));
+    await userEvent.click(within(panel).getByRole('button', { name: 'Review changes' }));
 
     expect(api.calls.find((call) => call.route === 'POST /books/batch-edit')?.body).toEqual({
         collectionId: 'c1',
@@ -419,18 +703,16 @@ it('sends a publisher to fill only on the books that have none', async () => {
     const api = batchApi();
 
     show();
-    const dialog = await chooseAllAndOpen();
+    const panel = await chooseAllAndOpen();
+    const publisher = await addChange(panel, 'Publisher');
 
-    await userEvent.selectOptions(
-        within(dialog).getByRole('combobox', { name: 'Publisher' }),
-        'Fill if empty',
-    );
+    await userEvent.click(within(publisher).getByRole('radio', { name: 'Fill if empty' }));
     await userEvent.type(
-        within(dialog).getByRole('textbox', { name: 'Publisher: new value' }),
+        within(publisher).getByRole('textbox', { name: 'Publisher: new value' }),
         'DC Comics',
     );
 
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Review changes' }));
+    await userEvent.click(within(panel).getByRole('button', { name: 'Review changes' }));
 
     expect(api.calls.find((call) => call.route === 'POST /books/batch-edit')?.body).toEqual({
         collectionId: 'c1',
@@ -440,51 +722,102 @@ it('sends a publisher to fill only on the books that have none', async () => {
     });
 });
 
-it('asks for a change before reviewing', async () => {
+it('explains that Fill if empty only reaches the books without a value', async () => {
+    batchApi();
+    show();
+    const panel = await chooseAllAndOpen();
+    const price = await addChange(panel, 'Price');
+
+    await userEvent.click(within(price).getByRole('radio', { name: 'Fill if empty' }));
+
+    expect(within(price).getByText('Only the books without a price get it.')).toBeVisible();
+    expect(within(price).getByRole('textbox', { name: 'Price: new value' })).toBeInTheDocument();
+});
+
+it('asks for the new category before reviewing', async () => {
     const api = batchApi();
 
     show();
-    const dialog = await chooseAllAndOpen();
+    const panel = await chooseAllAndOpen();
 
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Review changes' }));
+    await addChange(panel, 'Category');
 
-    expect(within(dialog).getByText('Choose at least one change.')).toBeInTheDocument();
+    await userEvent.click(within(panel).getByRole('button', { name: 'Review changes' }));
+
+    expect(within(panel).getByText('Choose the new category.')).toBeInTheDocument();
     expect(api.calls.map((call) => call.route)).not.toContain('POST /books/batch-edit');
 });
 
-it('summarises the title changes and the books left out before saving', async () => {
+it('reviews the plan by change, with the books left out', async () => {
     batchApi();
     show();
-    const dialog = await chooseAllAndOpen();
 
-    await chooseGeneratedTitles(dialog);
+    await reviewTitles();
 
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Review changes' }));
-
-    const changes = await within(dialog).findByRole('list', { name: 'Planned changes' });
-    const skipped = within(dialog).getByRole('list', { name: 'Left out' });
-
+    expect(within(planned()).getByText('Batman omnibus → Batman Vol. 1–3')).toBeInTheDocument();
+    expect(within(planned()).getByText('→ none')).toBeInTheDocument();
+    expect(within(planned()).getByText('Batman omnibus (€25.00)')).toBeInTheDocument();
+    expect(within(planned()).getAllByText('The other book stays as it is.')).toHaveLength(2);
     expect(
-        within(changes).getByText('Title: Batman omnibus → Batman Vol. 1–3'),
+        within(leftOut()).getByText(
+            'Lent: cannot be set to Not owned. None of the changes apply to it.',
+        ),
     ).toBeInTheDocument();
-    expect(within(changes).getByText('Price: €25.00 → none')).toBeInTheDocument();
-    expect(within(changes).getByText('Already as asked: no change')).toBeInTheDocument();
-    expect(within(skipped).getByText('Lent: cannot be set to Not owned')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save 1 book' })).toBeEnabled();
 });
 
-it('saves the batch and refreshes the collection', async () => {
+it('reviews the plan book by book', async () => {
+    batchApi();
+    show();
+    const review = await reviewTitles();
+
+    await userEvent.click(within(review).getByRole('radio', { name: 'Book' }));
+
+    expect(
+        within(planned()).getByText('Title: Batman omnibus → Batman Vol. 1–3'),
+    ).toBeInTheDocument();
+    expect(within(planned()).getByText('Price: €25.00 → none')).toBeInTheDocument();
+    expect(within(planned()).getByText('Already as asked: no change')).toBeInTheDocument();
+});
+
+it('shows on each cover how many changes it gets or that it is left out', async () => {
+    batchApi();
+    show();
+
+    await reviewTitles();
+
+    expect(screen.getByText('1 book will change · 1 left out')).toBeInTheDocument();
+    expect(cover(/^Batman omnibus/)).toHaveTextContent('2 changes');
+    expect(cover(/^Year One/)).toHaveTextContent('No change');
+    expect(cover(/^Batman 12/)).toHaveTextContent('Left out');
+});
+
+it('shows only the changes of a clicked cover', async () => {
+    batchApi();
+    show();
+    const review = await reviewTitles();
+
+    await userEvent.click(cover(/^Batman 12/));
+
+    expect(within(review).getByText('Only the changes of Batman 12')).toBeInTheDocument();
+    expect(within(review).queryByRole('list', { name: 'Planned changes' })).not.toBeInTheDocument();
+    expect(within(review).getByRole('list', { name: 'Left out' })).toBeInTheDocument();
+    expect(cover(/^Batman 12/)).toHaveAttribute('aria-pressed', 'true');
+});
+
+it('saves the batch, refreshes the collection and shows what was saved', async () => {
     const api = batchApi();
 
     show();
-    const dialog = await chooseAllAndOpen();
+    const review = await reviewTitles();
 
-    await chooseGeneratedTitles(dialog);
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Review changes' }));
-    await within(dialog).findByRole('list', { name: 'Planned changes' });
+    await userEvent.click(within(review).getByRole('button', { name: 'Save 1 book' }));
 
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Save changes' }));
-
-    expect(await screen.findByText('1 book updated.')).toBeInTheDocument();
+    expect(
+        await screen.findByText(
+            '1 book updated. Batman 12 was left out (Lent: cannot be set to Not owned).',
+        ),
+    ).toBeInTheDocument();
     expect(
         api.calls.filter((call) => call.route === 'POST /books/batch-edit').at(-1)?.body,
     ).toMatchObject({
@@ -493,7 +826,68 @@ it('saves the batch and refreshes the collection', async () => {
     });
     expect(api.calls.filter((call) => call.route === 'GET /collections/c1')).toHaveLength(2);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+    expect(screen.getByText('Batman omnibus').closest('.wall-tile')).toHaveTextContent('Updated');
+});
+
+it('goes back to the collection covers once the saved batch is Done', async () => {
+    batchApi();
+    show();
+    const review = await reviewTitles();
+
+    await userEvent.click(within(review).getByRole('button', { name: 'Save 1 book' }));
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Done' }));
+
+    expect(screen.getByRole('region', { name: 'Volumes' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit books' })).toBeInTheDocument();
+});
+
+it('asks once which author is meant and plans again with the chosen one', async () => {
+    let attempts = 0;
+    const api = new FakeApi()
+        .signedIn(account())
+        .on('GET /collections/c1', () => ({ status: 200, body: batman() }))
+        .on('POST /books/batch-edit', () =>
+            ++attempts === 1
+                ? {
+                      status: 409,
+                      body: {
+                          code: 'conflict',
+                          reason: 'author-similar',
+                          message: 'Similar',
+                          details: {
+                              name: 'Bob Kane',
+                              candidates: [{ id: 'a7', name: 'Bob Kane Jr' }],
+                          },
+                      },
+                  }
+                : {
+                      status: 200,
+                      body: {
+                          collection: { id: 'c1', name: 'Batman' },
+                          saved: false,
+                          books: [],
+                          skipped: [],
+                      },
+                  },
+        );
+
+    show();
+    const panel = await chooseAllAndOpen();
+    const authors = await addChange(panel, 'Authors');
+
+    await userEvent.type(within(authors).getByRole('combobox', { name: 'Add author' }), 'Bob Kane');
+    await userEvent.keyboard('{Enter}');
+    await userEvent.click(within(panel).getByRole('button', { name: 'Review changes' }));
+    const question = await screen.findByRole('dialog', { name: 'Use an existing author?' });
+
+    await userEvent.click(within(question).getByRole('button', { name: 'Use Bob Kane Jr' }));
+
+    await vi.waitFor(() =>
+        expect(
+            api.calls.filter((call) => call.route === 'POST /books/batch-edit')[1]?.body,
+        ).toMatchObject({ preview: true, changes: { authors: [{ id: 'a7' }] } }),
+    );
 });
 
 function reading(read: boolean, ownedCount = 3) {
@@ -516,6 +910,17 @@ it('shows Not read while an owned book of the collection is unread', async () =>
             'Applies to the 3 owned books of this collection. This does not change another account’s status.',
         ),
     ).toBeInTheDocument();
+});
+
+it('hides the reading panel while books are being edited together', async () => {
+    reading(false);
+    show();
+    await screen.findByRole('button', { name: 'Not read' });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Edit books' }));
+
+    expect(screen.queryByText('Only your reading')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Edit books' })).not.toBeInTheDocument();
 });
 
 it('shows Read pressed once every owned book is read', async () => {

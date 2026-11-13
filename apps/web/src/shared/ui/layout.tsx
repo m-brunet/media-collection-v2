@@ -6,11 +6,13 @@ export function PageHeader({
     intro,
     breadcrumb,
     actions,
+    label,
 }: {
     title: string;
     intro?: string;
     breadcrumb?: ReactNode;
     actions?: ReactNode;
+    label?: ReactNode;
 }) {
     const heading = useRef<HTMLHeadingElement>(null);
 
@@ -21,9 +23,12 @@ export function PageHeader({
     return (
         <header className="page-header">
             <div>
-                <h1 ref={heading} tabIndex={-1} className="page-header__title">
-                    {title}
-                </h1>
+                <div className="page-header__heading">
+                    <h1 ref={heading} tabIndex={-1} className="page-header__title">
+                        {title}
+                    </h1>
+                    {label}
+                </div>
                 {intro && <p className="page-header__intro">{intro}</p>}
                 {breadcrumb && <div className="page-header__intro">{breadcrumb}</div>}
             </div>

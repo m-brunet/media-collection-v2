@@ -1,11 +1,8 @@
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import type {
-    BookBatchDto,
     CollectionDetailsDto,
-    CollectionMemberDto,
     CollectionReadingDto,
-    CollectionVolumeDto,
 } from '../../../../../packages/contracts/src/http';
 import { api, ApiError } from '../../shared/api.util';
 import { ApiErrorMessage } from '../../shared/api-error-message.util';
@@ -13,149 +10,22 @@ import { useI18n } from '../../shared/i18n/i18n-context';
 import { useSession } from '../../shared/session/session-context';
 import { Button } from '../../shared/ui/button';
 import { Dialog } from '../../shared/ui/dialog';
-import { Icon } from '../../shared/ui/icon';
-import { PageHeader, Panel } from '../../shared/ui/layout';
+import { PageHeader } from '../../shared/ui/layout';
 import { Notice } from '../../shared/ui/notice';
 import { EmptyState, LoadingState } from '../../shared/ui/states';
 import { useAction } from '../../shared/use-action';
-import { BookCover } from '../books/book-cover';
-import { BookFormat } from '../../shared/book-form/book-format.util';
 import { ReadingToggle } from '../../shared/book-form/reading-toggle';
-import { CollectionBatchDialog } from './collection-batch-dialog';
-import { CollectionBatch } from './collection-batch.util';
+import { CollectionBatchEditor } from './collection-batch-editor';
+import { CollectionCovers } from './collection-covers.util';
 import { EditCollectionDialog } from './collection-dialogs';
 import { CollectionFormat } from './collection-format.util';
+import { CollectionWall } from './collection-wall';
+import { useTooltip } from './use-tooltip';
 
-function MemberBook({ book }: { book: CollectionMemberDto }) {
-    const { t } = useI18n();
-    const detail = CollectionFormat.edition(book)
-        .map((part) => (typeof part === 'string' ? part : t(part.key, part.values)))
-        .join(' · ');
-
-    return (
-        <li className="volume-entry__book">
-            <BookCover
-                src={book.hasCover ? BookFormat.cover(book.id, book.updatedAt) : null}
-                title={book.title}
-                size="small"
-            />
-            <div className="volume-entry__book-identity">
-                <span className="volume-entry__book-title">{book.title}</span>
-                <span className="volume-entry__book-detail">{detail}</span>
-                <Link
-                    to={'/books/' + book.id}
-                    className="volume-entry__book-link"
-                    aria-label={t('collection.book.view') + ' · ' + book.title}
-                >
-                    {t('collection.book.view')} <span aria-hidden="true">→</span>
-                </Link>
-            </div>
-        </li>
-    );
-}
-
-function VolumeEntry({ volume }: { volume: CollectionVolumeDto }) {
-    const { t } = useI18n();
-    const id = useId();
-    const [open, setOpen] = useState(false);
-    const label = CollectionFormat.volumes(volume.from, volume.to);
-    const state = CollectionFormat.state(volume);
-    const expandable = volume.books.length > 0;
-
-    return (
-        <li className={'volume-entry volume-entry--' + volume.state}>
-            <button
-                type="button"
-                className="volume-entry__toggle"
-                aria-expanded={expandable ? open : undefined}
-                aria-controls={expandable ? id : undefined}
-                disabled={!expandable}
-                onClick={() => setOpen(!open)}
-            >
-                <span className="volume-entry__label">
-                    <Icon name={open ? 'collapse' : 'expand'} size={16} />
-                    {t(label.key, label.values)}
-                </span>{' '}
-                <span className="volume-entry__state">{t(state.key, state.values)}</span>
-            </button>
-            {expandable && (
-                <ul id={id} className="volume-entry__books" hidden={!open}>
-                    {volume.books.map((book) => (
-                        <MemberBook key={book.id} book={book} />
-                    ))}
-                </ul>
-            )}
-        </li>
-    );
-}
-
-function BatchSelection({
-    collection,
-    selected,
-    onChange,
-    onEdit,
-    onCancel,
-}: {
-    collection: CollectionDetailsDto;
-    selected: string[];
-    onChange(selected: string[]): void;
-    onEdit(): void;
-    onCancel(): void;
-}) {
-    const { t } = useI18n();
-    const books = CollectionBatch.books(collection);
-    const toggle = (bookId: string, checked: boolean) =>
-        onChange(checked ? [...selected, bookId] : selected.filter((id) => id !== bookId));
-
-    return (
-        <Panel label={t('batch.selectTitle')} className="batch-selection">
-            <div className="actions">
-                <Button onClick={() => onChange(books.map((book) => book.id))}>
-                    {t('batch.selectAll')}
-                </Button>
-                <Button onClick={() => onChange(CollectionBatch.owned(collection))}>
-                    {t('batch.selectOwned')}
-                </Button>
-                <Button variant="ghost" onClick={onCancel}>
-                    {t('common.cancel')}
-                </Button>
-                <Button
-                    variant="primary"
-                    icon="edit"
-                    disabled={selected.length === 0}
-                    onClick={onEdit}
-                >
-                    {t(selected.length === 1 ? 'batch.editOne' : 'batch.editMany', {
-                        count: selected.length,
-                    })}
-                </Button>
-            </div>
-            <ul className="batch-selection__books" aria-label={t('collection.volumesLabel')}>
-                {books.map((book) => {
-                    const volumes = CollectionFormat.volumes(book.volumeFrom, book.volumeTo);
-
-                    return (
-                        <li key={book.id}>
-                            <label className="checkbox">
-                                <input
-                                    type="checkbox"
-                                    checked={selected.includes(book.id)}
-                                    onChange={(event) => toggle(book.id, event.target.checked)}
-                                />
-                                {t(volumes.key, volumes.values)} · {book.title} ·{' '}
-                                {t(BookFormat.ownership(book.ownership))}
-                            </label>
-                        </li>
-                    );
-                })}
-            </ul>
-        </Panel>
-    );
-}
-
-function ReadingPanel({ collection }: { collection: CollectionDetailsDto }) {
+function ReadingControl({ collection }: { collection: CollectionDetailsDto }) {
     const { t } = useI18n();
     const action = useAction();
+    const tooltip = useTooltip(true);
     const [reading, setReading] = useState<CollectionReadingDto | null>(null);
     const [confirming, setConfirming] = useState(false);
     const address = '/collections/' + collection.id + '/reading';
@@ -193,18 +63,24 @@ function ReadingPanel({ collection }: { collection: CollectionDetailsDto }) {
             : t('collection.readingScopeMany', { count: reading.ownedCount });
 
     return (
-        <Panel label={t('details.reading')} className="collection-reading">
-            <div className="actions">
+        <div className="collection-reading">
+            <span className="collection-tip collection-tip--end" {...tooltip.anchor}>
                 <ReadingToggle
                     read={reading.read}
                     busy={action.busy}
+                    {...tooltip.trigger}
                     onToggle={(next) => (next ? save(true) : setConfirming(true))}
                 />
-            </div>
+                <span
+                    role="tooltip"
+                    id={tooltip.id}
+                    className="collection-tip__text"
+                    hidden={!tooltip.open}
+                >
+                    {scope} {t('details.readingHint')}
+                </span>
+            </span>
             {action.feedback && !confirming && <Notice tone="error">{action.feedback.text}</Notice>}
-            <p className="muted">
-                {scope} {t('details.readingHint')}
-            </p>
             <Dialog
                 open={confirming}
                 title={t('collection.unreadTitle')}
@@ -221,7 +97,73 @@ function ReadingPanel({ collection }: { collection: CollectionDetailsDto }) {
                 <p>{t('collection.unreadBody', { name: collection.name })}</p>
                 {action.feedback && <Notice tone="error">{action.feedback.text}</Notice>}
             </Dialog>
-        </Panel>
+        </div>
+    );
+}
+
+function FinishButton({
+    blocked,
+    busy,
+    onFinish,
+}: {
+    blocked: boolean;
+    busy: boolean;
+    onFinish(): void;
+}) {
+    const { t } = useI18n();
+    const tooltip = useTooltip(blocked);
+
+    return (
+        <span className="collection-tip collection-tip--end" {...tooltip.anchor}>
+            <Button
+                icon="check"
+                busy={busy}
+                aria-disabled={blocked || undefined}
+                {...tooltip.trigger}
+                onClick={() => !blocked && onFinish()}
+            >
+                {t('collection.finish')}
+            </Button>
+            {blocked && (
+                <span
+                    role="tooltip"
+                    id={tooltip.id}
+                    className="collection-tip__text"
+                    hidden={!tooltip.open}
+                >
+                    {t('collection.finishUnavailable')}
+                </span>
+            )}
+        </span>
+    );
+}
+
+function StatusLabel({ finished }: { finished: boolean }) {
+    const { t } = useI18n();
+    const tooltip = useTooltip(finished);
+    const label = CollectionFormat.label(finished);
+
+    return (
+        <span className="collection-tip" {...(finished ? tooltip.anchor : {})}>
+            <span
+                className={
+                    'collection-label collection-label--' + (finished ? 'finished' : 'unfinished')
+                }
+                {...(finished ? { tabIndex: 0, ...tooltip.trigger } : {})}
+            >
+                {t(label.key)}
+            </span>
+            {finished && (
+                <span
+                    role="tooltip"
+                    id={tooltip.id}
+                    className="collection-tip__text"
+                    hidden={!tooltip.open}
+                >
+                    {t('collection.finishedHint')}
+                </span>
+            )}
+        </span>
     );
 }
 
@@ -233,9 +175,7 @@ export function CollectionDetailsPage() {
     const [collection, setCollection] = useState<CollectionDetailsDto | null>(null);
     const [failure, setFailure] = useState<{ missing: boolean; text: string } | null>(null);
     const [editing, setEditing] = useState(false);
-    const [selected, setSelected] = useState<string[] | null>(null);
-    const [batchEditing, setBatchEditing] = useState(false);
-    const [batchSaved, setBatchSaved] = useState<number | null>(null);
+    const [batching, setBatching] = useState(false);
     const [version, setVersion] = useState(0);
     const action = useAction();
     const editor = account?.role !== 'guest';
@@ -277,15 +217,9 @@ export function CollectionDetailsPage() {
         return <LoadingState label={t('common.loading')} />;
     }
 
-    const badge = CollectionFormat.badge(collection);
+    const coverage = CollectionFormat.coverage(collection);
     const expected = CollectionFormat.expected(collection);
     const blocked = !collection.finished && collection.missingCount > 0;
-    const batchDone = (result: BookBatchDto) => {
-        setBatchEditing(false);
-        setSelected(null);
-        setBatchSaved(result.books.filter((book) => Object.keys(book.after).length > 0).length);
-        setVersion((current) => current + 1);
-    };
     const change = (path: 'finish' | 'reopen') =>
         void action.run(async () =>
             setCollection(
@@ -300,6 +234,7 @@ export function CollectionDetailsPage() {
         <>
             <PageHeader
                 title={collection.name}
+                label={<StatusLabel finished={collection.finished} />}
                 breadcrumb={
                     <nav aria-label={t('details.breadcrumb')} className="breadcrumb">
                         <Link to="/collections">{t('collections.title')}</Link>
@@ -333,7 +268,7 @@ export function CollectionDetailsPage() {
             <div className="collection-page">
                 <div className="collection-summary">
                     <div className="collection-summary__coverage">
-                        <p className="eyebrow">{t(badge.key, badge.values)}</p>
+                        <p className="eyebrow">{t(coverage.key, coverage.values)}</p>
                         <p className="collection-summary__expected">
                             {t(expected.key, expected.values)}
                         </p>
@@ -353,13 +288,8 @@ export function CollectionDetailsPage() {
                             <Button icon="edit" onClick={() => setEditing(true)}>
                                 {t('collection.edit')}
                             </Button>
-                            {selected === null && (
-                                <Button
-                                    onClick={() => {
-                                        setBatchSaved(null);
-                                        setSelected([]);
-                                    }}
-                                >
+                            {!batching && (
+                                <Button onClick={() => setBatching(true)}>
                                     {t('batch.editSeveral')}
                                 </Button>
                             )}
@@ -368,67 +298,32 @@ export function CollectionDetailsPage() {
                                     {t('collection.reopen')}
                                 </Button>
                             ) : (
-                                <Button
-                                    icon="check"
+                                <FinishButton
+                                    blocked={blocked}
                                     busy={action.busy}
-                                    disabled={blocked}
-                                    aria-describedby={
-                                        blocked ? 'collection-finish-hint' : undefined
-                                    }
-                                    onClick={() => change('finish')}
-                                >
-                                    {t('collection.finish')}
-                                </Button>
+                                    onFinish={() => change('finish')}
+                                />
                             )}
                         </div>
                     )}
                 </div>
                 {action.feedback && <Notice tone="error">{action.feedback.text}</Notice>}
-                {collection.finished && (
-                    <p className="collection-callout collection-callout--finished">
-                        {t('collection.finishedHint')}
-                    </p>
-                )}
-                {blocked && (
-                    <p
-                        id="collection-finish-hint"
-                        className="collection-callout collection-callout--blocked"
-                    >
-                        {t('collection.finishUnavailable')}
-                    </p>
-                )}
-                {batchSaved !== null && (
-                    <Notice tone="success">
-                        {t(batchSaved === 1 ? 'batch.savedOne' : 'batch.savedMany', {
-                            count: batchSaved,
-                        })}
-                    </Notice>
-                )}
-                {editor && <ReadingPanel key={version} collection={collection} />}
-                {editor && selected !== null ? (
-                    <BatchSelection
+                {editor && batching ? (
+                    <CollectionBatchEditor
                         collection={collection}
-                        selected={selected}
-                        onChange={setSelected}
-                        onEdit={() => setBatchEditing(true)}
-                        onCancel={() => setSelected(null)}
+                        onSaved={() => setVersion((current) => current + 1)}
+                        onExit={() => setBatching(false)}
                     />
                 ) : (
-                    <ul className="volume-list" aria-label={t('collection.volumesLabel')}>
-                        {collection.volumes.map((volume) => (
-                            <VolumeEntry key={volume.from} volume={volume} />
-                        ))}
-                    </ul>
+                    <CollectionWall
+                        slots={CollectionCovers.slots(collection)}
+                        eyebrow={t('collection.volumesLabel')}
+                        hint={t('collection.wallHint')}
+                        action={editor && <ReadingControl key={version} collection={collection} />}
+                        link={(book) => '/books/' + book.id}
+                    />
                 )}
             </div>
-            {editor && batchEditing && selected && (
-                <CollectionBatchDialog
-                    collectionId={collection.id}
-                    bookIds={selected}
-                    onClose={() => setBatchEditing(false)}
-                    onSaved={batchDone}
-                />
-            )}
             {editor && (
                 <EditCollectionDialog
                     collection={collection}

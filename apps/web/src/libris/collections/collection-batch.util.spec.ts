@@ -1,5 +1,6 @@
 import { expect, it } from 'vitest';
 import type {
+    BookBatchDto,
     CollectionDetailsDto,
     CollectionMemberDto,
 } from '../../../../../packages/contracts/src/http';
@@ -50,14 +51,6 @@ const gunnm = collection([
         books: [member('three', { ownership: 'not-owned', volumeFrom: 3, volumeTo: 3 })],
     },
 ]);
-
-it('lists each book of the collection once, in volume order', () => {
-    const subject = gunnm;
-
-    const result = CollectionBatch.books(subject).map((book) => book.id);
-
-    expect(result).toEqual(['omnibus', 'one', 'three']);
-});
 
 it('selects the owned books only', () => {
     const subject = gunnm;
@@ -270,4 +263,217 @@ it('names the reason a book was left out', () => {
     const result = CollectionBatch.skipReason(reason);
 
     expect(result).toBe('batch.skip.lent');
+});
+
+it('adds a change card with a value to set by default', () => {
+    const draft = CollectionBatch.draft();
+
+    const result = CollectionBatch.add(draft, 'publisher');
+
+    expect(result.fields).toEqual(['publisher']);
+    expect(result.publisher).toEqual({ mode: 'set', value: '' });
+});
+
+it('replaces the authors and uses the generated titles once their cards are added', () => {
+    const draft = CollectionBatch.add(CollectionBatch.draft(), 'authors');
+
+    const result = CollectionBatch.add(draft, 'titles');
+
+    expect(result.fields).toEqual(['authors', 'titles']);
+    expect(result.replaceAuthors).toBe(true);
+    expect(result.generatedTitles).toBe(true);
+});
+
+it('adds a change card only once', () => {
+    const draft = CollectionBatch.add(CollectionBatch.draft(), 'tags');
+
+    const result = CollectionBatch.add(draft, 'tags');
+
+    expect(result.fields).toEqual(['tags']);
+});
+
+it('forgets the value of a removed change card', () => {
+    const draft = {
+        ...CollectionBatch.add(CollectionBatch.draft(), 'price'),
+        price: { mode: 'fill' as const, value: '6.90' },
+    };
+
+    const result = CollectionBatch.remove(draft, 'price');
+
+    expect(result.fields).toEqual([]);
+    expect(CollectionBatch.changes(result)).toEqual({});
+});
+
+it('forgets the tags of a removed tags card', () => {
+    const draft = {
+        ...CollectionBatch.add(CollectionBatch.draft(), 'tags'),
+        addTags: [{ id: 'shonen', name: 'Shonen' }],
+    };
+
+    const result = CollectionBatch.remove(draft, 'tags');
+
+    expect(result.addTags).toEqual([]);
+    expect(CollectionBatch.changes(result)).toEqual({});
+});
+
+it('offers the change cards not added yet, in form order', () => {
+    const draft = CollectionBatch.add(
+        CollectionBatch.add(CollectionBatch.draft(), 'tags'),
+        'category',
+    );
+
+    const result = CollectionBatch.remaining(draft);
+
+    expect(result).toEqual([
+        'ownership',
+        'publisher',
+        'price',
+        'shelf',
+        'authors',
+        'read',
+        'titles',
+    ]);
+});
+
+it('asks for a category when its card has no choice yet', () => {
+    const draft = CollectionBatch.add(CollectionBatch.draft(), 'category');
+
+    const result = CollectionBatch.problem(draft);
+
+    expect(result).toBe('category');
+});
+
+it('asks for a reading status when its card has no choice yet', () => {
+    const draft = CollectionBatch.add(CollectionBatch.draft(), 'read');
+
+    const result = CollectionBatch.problem(draft);
+
+    expect(result).toBe('read');
+});
+
+function plan(): BookBatchDto {
+    return {
+        collection: { id: 'c1', name: 'Gunnm' },
+        saved: false,
+        books: [
+            {
+                id: 'one',
+                title: 'Gunnm 1',
+                before: { publisher: null, priceCents: 690 },
+                after: { publisher: 'Glénat', priceCents: null },
+            },
+            {
+                id: 'two',
+                title: 'Gunnm 2',
+                before: { publisher: 'Kana' },
+                after: { publisher: 'Glénat' },
+            },
+            { id: 'three', title: 'Gunnm 3', before: {}, after: {} },
+        ],
+        skipped: [{ id: 'four', title: 'Gunnm 4', reason: 'book-lent' }],
+    };
+}
+
+it('groups the planned changes by field, with the books each one reaches', () => {
+    const summary = plan();
+
+    const result = CollectionBatch.byChange(summary, 'en-GB');
+
+    expect(result).toEqual([
+        {
+            label: 'form.publisher',
+            after: { text: 'Glénat' },
+            books: [
+                {
+                    id: 'one',
+                    title: 'Gunnm 1',
+                    before: { key: 'batch.none' },
+                    after: { text: 'Glénat' },
+                },
+                {
+                    id: 'two',
+                    title: 'Gunnm 2',
+                    before: { text: 'Kana' },
+                    after: { text: 'Glénat' },
+                },
+            ],
+            others: 1,
+        },
+        {
+            label: 'batch.price',
+            after: { key: 'batch.none' },
+            books: [
+                {
+                    id: 'one',
+                    title: 'Gunnm 1',
+                    before: { text: '€6.90' },
+                    after: { key: 'batch.none' },
+                },
+            ],
+            others: 2,
+        },
+    ]);
+});
+
+it('gives no common new value to a change that differs per book', () => {
+    const summary = {
+        ...plan(),
+        books: [
+            { id: 'one', title: 'a', before: { title: 'a' }, after: { title: 'Gunnm Vol. 1' } },
+            { id: 'two', title: 'b', before: { title: 'b' }, after: { title: 'Gunnm Vol. 2' } },
+        ],
+    };
+
+    const result = CollectionBatch.byChange(summary, 'en-GB');
+
+    expect(result.map((group) => group.after)).toEqual([null]);
+});
+
+it('counts the changes of each book and marks the books left out', () => {
+    const summary = plan();
+
+    const result = CollectionBatch.outcomes(summary, 'en-GB');
+
+    expect([...result]).toEqual([
+        ['one', { changes: 2 }],
+        ['two', { changes: 1 }],
+        ['three', { changes: 0 }],
+        ['four', 'left-out'],
+    ]);
+});
+
+it('counts the books that change', () => {
+    const summary = plan();
+
+    const result = CollectionBatch.changed(summary);
+
+    expect(result).toBe(2);
+});
+
+it('keeps only the plan of one book', () => {
+    const summary = plan();
+
+    const result = CollectionBatch.only(summary, 'four');
+
+    expect(result.books).toEqual([]);
+    expect(result.skipped).toEqual([{ id: 'four', title: 'Gunnm 4', reason: 'book-lent' }]);
+});
+
+it('says when a planned change only fills the books without a value', () => {
+    const draft = { ...CollectionBatch.draft(), price: { mode: 'fill' as const, value: '6.90' } };
+
+    const result = CollectionBatch.fillsOnly(draft, 'batch.price');
+
+    expect(result).toBe(true);
+});
+
+it('says when a planned change sets every book', () => {
+    const draft = {
+        ...CollectionBatch.draft(),
+        publisher: { mode: 'set' as const, value: 'Kana' },
+    };
+
+    const result = CollectionBatch.fillsOnly(draft, 'form.publisher');
+
+    expect(result).toBe(false);
 });

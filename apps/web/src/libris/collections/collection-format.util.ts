@@ -1,8 +1,4 @@
-import type {
-    CollectionMemberDto,
-    CollectionSummaryDto,
-    CollectionVolumeDto,
-} from '../../../../../packages/contracts/src/http';
+import type { CollectionSummaryDto } from '../../../../../packages/contracts/src/http';
 import type { MessageKey } from '../../shared/i18n/catalog-en';
 import type { MessageValues } from '../../shared/i18n/translator.util';
 
@@ -31,33 +27,6 @@ export class CollectionFormat {
             : { key: 'collection.expectedRange', values: { from, to } };
     }
 
-    static edition(book: CollectionMemberDto): (Message | string)[] {
-        const parts: (Message | string)[] = [];
-
-        if (book.ownership === 'not-owned') {
-            parts.push({ key: 'status.notOwned' });
-        }
-
-        if (book.volumeTo > book.volumeFrom) {
-            parts.push({
-                key: 'collection.book.omnibus',
-                values: { from: book.volumeFrom, to: book.volumeTo },
-            });
-        }
-
-        if (book.publisher) {
-            parts.push(book.publisher);
-        }
-
-        if (book.isbn) {
-            parts.push({ key: 'collection.book.isbn', values: { isbn: book.isbn } });
-        } else if (!book.publisher && book.volumeTo === book.volumeFrom) {
-            parts.push({ key: 'collection.book.noIsbn' });
-        }
-
-        return parts;
-    }
-
     static status(collection: CollectionSummaryDto): Message {
         if (collection.finished) {
             return { key: 'collections.finished' };
@@ -68,33 +37,17 @@ export class CollectionFormat {
             : { key: 'collection.statusNoGaps' };
     }
 
-    static badge(collection: CollectionSummaryDto): Message {
-        return collection.finished
-            ? { key: 'collection.statusFinished' }
-            : CollectionFormat.status(collection);
+    static coverage(collection: CollectionSummaryDto): Message {
+        if (collection.finished) {
+            return { key: 'collection.coverageComplete' };
+        }
+
+        return collection.missingCount > 0
+            ? { key: 'collection.coverageMissing', values: { count: collection.missingCount } }
+            : { key: 'collection.coverageNoGaps' };
     }
 
-    static state(volume: CollectionVolumeDto): Message {
-        if (volume.state === 'inferred') {
-            return { key: 'collection.state.inferred' };
-        }
-
-        if (volume.state === 'planned') {
-            return { key: 'collection.state.planned' };
-        }
-
-        const owned = volume.books.filter((book) => book.ownership === 'owned');
-        const only = owned.length === 1 ? owned[0]! : null;
-
-        if (only && only.volumeTo > only.volumeFrom) {
-            return {
-                key: 'collection.state.ownedBy',
-                values: { from: only.volumeFrom, to: only.volumeTo },
-            };
-        }
-
-        return volume.books.length === 1
-            ? { key: 'collection.state.ownedOne' }
-            : { key: 'collection.state.ownedMany', values: { count: volume.books.length } };
+    static label(finished: boolean): Message {
+        return { key: finished ? 'collection.labelFinished' : 'collection.labelUnfinished' };
     }
 }
