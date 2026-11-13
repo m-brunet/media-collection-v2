@@ -6,6 +6,7 @@ function summary(overrides: Partial<CollectionSummaryDto> = {}): CollectionSumma
     return {
         id: 'c1',
         name: 'Batman',
+        category: 'comics',
         includesVolumeZero: false,
         finished: false,
         bookCount: 1,

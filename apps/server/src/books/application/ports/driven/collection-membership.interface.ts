@@ -10,7 +10,11 @@ export type MembershipRequest = {
     enableVolumeZero?: boolean;
 };
 
-export type MemberBook = { id: string; ownership: 'owned' | 'not-owned' };
+export type MemberBook = {
+    id: string;
+    ownership: 'owned' | 'not-owned';
+    category: 'books' | 'manga' | 'comics';
+};
 
 export type MembershipOutcome = { collection: BookCollection | null; changes: RelatedChange[] };
 

@@ -26,6 +26,7 @@ function collection(volumes: CollectionDetailsDto['volumes']): CollectionDetails
     return {
         id: 'c1',
         name: 'Gunnm',
+        category: 'comics',
         includesVolumeZero: false,
         finished: false,
         bookCount: 3,

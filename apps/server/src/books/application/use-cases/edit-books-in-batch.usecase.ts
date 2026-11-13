@@ -104,7 +104,11 @@ export class EditBooksInBatch implements EditBooksInBatchUseCase {
 
         if (planned.ownershipChanged) {
             const membership = await this.collections.assign(
-                { id: book.id, ownership: book.details.ownership },
+                {
+                    id: book.id,
+                    ownership: book.details.ownership,
+                    category: book.details.category,
+                },
                 {
                     collection: { id: collection.id },
                     volumeFrom: collection.volumeFrom,

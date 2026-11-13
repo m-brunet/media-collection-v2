@@ -8,6 +8,7 @@ import type { BookFilter } from '../../shared/application/book-filter.js';
 export interface CollectionSummaryView {
     id: string;
     name: string;
+    category: 'books' | 'manga' | 'comics';
     includesVolumeZero: boolean;
     finished: boolean;
     bookCount: number;

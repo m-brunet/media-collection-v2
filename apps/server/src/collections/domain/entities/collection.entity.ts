@@ -3,9 +3,12 @@ import { NameKey } from '../../../shared/domain/name-key.helper.js';
 import { CollectionCoverage } from '../value-objects/collection-coverage.value-object.js';
 import type { CoverageMember } from '../value-objects/collection-coverage.value-object.js';
 
+export type CollectionCategory = 'books' | 'manga' | 'comics';
+
 export interface CollectionState {
     id: string;
     name: string;
+    category: CollectionCategory;
     includesVolumeZero: boolean;
     finished: boolean;
     createdAt: string;
@@ -49,6 +52,30 @@ export class Collection {
 
     rename(name: string, now: string): void {
         this.state.name = Collection.validName(name);
+        this.state.updatedAt = now;
+    }
+
+    admit(bookCategory: CollectionCategory, bookCount: number): void {
+        if (bookCategory === this.state.category) {
+            return;
+        }
+
+        throw new Failure(
+            'conflict',
+            'This book does not have the category of its collection.',
+            'collection-category-mismatch',
+            {
+                collectionId: this.state.id,
+                name: this.state.name,
+                category: this.state.category,
+                bookCategory,
+                bookCount,
+            },
+        );
+    }
+
+    changeCategory(category: CollectionCategory, now: string): void {
+        this.state.category = category;
         this.state.updatedAt = now;
     }
 

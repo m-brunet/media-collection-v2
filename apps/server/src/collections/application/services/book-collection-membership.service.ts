@@ -52,7 +52,7 @@ export class BookCollectionMembership implements CollectionMembership, BookColle
         }
 
         const range = VolumeRange.of(request.volumeFrom, request.volumeTo);
-        const { collection, created } = await this.resolve(request.collection, now);
+        const { collection, created } = await this.resolve(request.collection, book.category, now);
         const before = created ? null : new Collection(collection.snapshot);
 
         if (range.covers(0) && !collection.snapshot.includesVolumeZero) {
@@ -139,6 +139,7 @@ export class BookCollectionMembership implements CollectionMembership, BookColle
 
     private async resolve(
         choice: CollectionChoice,
+        category: MemberBook['category'],
         now: string,
     ): Promise<{ collection: Collection; created: boolean }> {
         if ('id' in choice) {
@@ -177,6 +178,7 @@ export class BookCollectionMembership implements CollectionMembership, BookColle
             collection: new Collection({
                 id: this.ids.next(),
                 name,
+                category,
                 includesVolumeZero: false,
                 finished: false,
                 createdAt: now,

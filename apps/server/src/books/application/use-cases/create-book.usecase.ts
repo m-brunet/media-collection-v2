@@ -63,7 +63,7 @@ export class CreateBook implements CreateBookUseCase {
                 context.subjectId = id;
                 await this.books.create(book);
                 const membership = await this.collections.assign(
-                    { id, ownership: details.ownership },
+                    { id, ownership: details.ownership, category: details.category },
                     input.collection,
                     replacing,
                 );

@@ -8,7 +8,7 @@ describe('BookCollectionMembership', () => {
         current.members.saveBook('year-one', 'owned');
 
         const result = await current.membership.assign(
-            { id: 'year-one', ownership: 'owned' },
+            { id: 'year-one', ownership: 'owned', category: 'comics' },
             { collection: { name: ' Batman ' }, volumeFrom: 1, volumeTo: 1 },
             [],
         );
@@ -21,6 +21,7 @@ describe('BookCollectionMembership', () => {
         });
         expect(current.collections.collections.get('collection-1')?.snapshot).toMatchObject({
             name: 'Batman',
+            category: 'comics',
             includesVolumeZero: false,
             finished: false,
         });
@@ -33,7 +34,7 @@ describe('BookCollectionMembership', () => {
         current.members.saveBook('two', 'owned');
 
         const result = await current.membership.assign(
-            { id: 'two', ownership: 'owned' },
+            { id: 'two', ownership: 'owned', category: 'comics' },
             { collection: { name: 'asterix' }, volumeFrom: 2, volumeTo: 2 },
             [],
         );
@@ -49,7 +50,7 @@ describe('BookCollectionMembership', () => {
         current.members.saveBook('two', 'owned');
 
         const operation = current.membership.assign(
-            { id: 'two', ownership: 'owned' },
+            { id: 'two', ownership: 'owned', category: 'comics' },
             { collection: { name: 'Batmen' }, volumeFrom: 2, volumeTo: 2 },
             [],
         );
@@ -67,7 +68,7 @@ describe('BookCollectionMembership', () => {
         current.members.saveBook('two', 'owned');
 
         const result = await current.membership.assign(
-            { id: 'two', ownership: 'owned' },
+            { id: 'two', ownership: 'owned', category: 'comics' },
             { collection: { name: 'Batmen', distinct: true }, volumeFrom: 1, volumeTo: 1 },
             [],
         );
@@ -82,7 +83,7 @@ describe('BookCollectionMembership', () => {
         current.members.saveBook('one', 'owned');
 
         const operation = current.membership.assign(
-            { id: 'one', ownership: 'owned' },
+            { id: 'one', ownership: 'owned', category: 'comics' },
             { collection: { id: 'gone' }, volumeFrom: 1, volumeTo: 1 },
             [],
         );
@@ -97,7 +98,7 @@ describe('BookCollectionMembership', () => {
         current.members.saveBook('zero', 'owned');
 
         const operation = current.membership.assign(
-            { id: 'zero', ownership: 'owned' },
+            { id: 'zero', ownership: 'owned', category: 'comics' },
             { collection: { id: 'collection-1' }, volumeFrom: 0, volumeTo: 0 },
             [],
         );
@@ -115,7 +116,7 @@ describe('BookCollectionMembership', () => {
         current.members.saveBook('zero', 'owned');
 
         await current.membership.assign(
-            { id: 'zero', ownership: 'owned' },
+            { id: 'zero', ownership: 'owned', category: 'comics' },
             {
                 collection: { name: 'Batman' },
                 volumeFrom: 0,
@@ -137,7 +138,7 @@ describe('BookCollectionMembership', () => {
         current.members.saveBook('two', 'not-owned', 'Batman 2');
 
         const operation = current.membership.assign(
-            { id: 'two', ownership: 'not-owned' },
+            { id: 'two', ownership: 'not-owned', category: 'comics' },
             { collection: { id: 'collection-1' }, volumeFrom: 2, volumeTo: 2 },
             [],
         );
@@ -159,7 +160,7 @@ describe('BookCollectionMembership', () => {
         current.members.saveBook('omnibus', 'not-owned');
 
         const operation = current.membership.assign(
-            { id: 'omnibus', ownership: 'not-owned' },
+            { id: 'omnibus', ownership: 'not-owned', category: 'comics' },
             { collection: { id: 'collection-1' }, volumeFrom: 1, volumeTo: 3 },
             [],
         );
@@ -174,7 +175,7 @@ describe('BookCollectionMembership', () => {
         await CollectionDoubles.member(current, 'hardcover', 'owned', 'Batman', 3);
 
         const operation = current.membership.assign(
-            { id: 'hardcover', ownership: 'not-owned' },
+            { id: 'hardcover', ownership: 'not-owned', category: 'comics' },
             { collection: { id: 'collection-1' }, volumeFrom: 3, volumeTo: 3 },
             [],
         );
@@ -190,7 +191,7 @@ describe('BookCollectionMembership', () => {
         current.members.saveBook('omnibus', 'owned');
 
         const operation = current.membership.assign(
-            { id: 'omnibus', ownership: 'owned' },
+            { id: 'omnibus', ownership: 'owned', category: 'comics' },
             { collection: { id: 'collection-1' }, volumeFrom: 1, volumeTo: 3 },
             [],
         );
@@ -215,7 +216,7 @@ describe('BookCollectionMembership', () => {
         current.members.saveBook('omnibus', 'owned');
 
         const result = await current.membership.assign(
-            { id: 'omnibus', ownership: 'owned' },
+            { id: 'omnibus', ownership: 'owned', category: 'comics' },
             { collection: { id: 'collection-1' }, volumeFrom: 1, volumeTo: 3 },
             ['three', 'one', 'two'],
         );
@@ -234,7 +235,7 @@ describe('BookCollectionMembership', () => {
         current.members.saveBook('omnibus', 'owned');
 
         const operation = current.membership.assign(
-            { id: 'omnibus', ownership: 'owned' },
+            { id: 'omnibus', ownership: 'owned', category: 'comics' },
             { collection: { id: 'collection-1' }, volumeFrom: 1, volumeTo: 2 },
             ['one'],
         );
@@ -249,7 +250,7 @@ describe('BookCollectionMembership', () => {
         current.members.saveBook('two', 'owned');
 
         const operation = current.membership.assign(
-            { id: 'two', ownership: 'owned' },
+            { id: 'two', ownership: 'owned', category: 'comics' },
             { collection: { id: 'collection-1' }, volumeFrom: 2, volumeTo: 2 },
             ['one'],
         );
@@ -265,7 +266,7 @@ describe('BookCollectionMembership', () => {
         current.members.saveBook('three', 'not-owned');
 
         await current.membership.assign(
-            { id: 'three', ownership: 'not-owned' },
+            { id: 'three', ownership: 'not-owned', category: 'comics' },
             { collection: { id: 'collection-1' }, volumeFrom: 3, volumeTo: 3 },
             [],
         );
@@ -279,7 +280,7 @@ describe('BookCollectionMembership', () => {
         await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
 
         await current.membership.assign(
-            { id: 'one', ownership: 'owned' },
+            { id: 'one', ownership: 'owned', category: 'comics' },
             { collection: { name: 'Superman' }, volumeFrom: 1, volumeTo: 1 },
             [],
         );
@@ -294,7 +295,11 @@ describe('BookCollectionMembership', () => {
 
         await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
 
-        const result = await current.membership.assign({ id: 'one', ownership: 'owned' }, null, []);
+        const result = await current.membership.assign(
+            { id: 'one', ownership: 'owned', category: 'comics' },
+            null,
+            [],
+        );
 
         expect(result.collection).toBeNull();
         expect(current.collections.collections.size).toBe(0);
@@ -354,7 +359,12 @@ describe('BookCollectionMembership', () => {
                 subjectType: 'collection',
                 subjectId: 'collection-1',
                 before: null,
-                after: { name: 'Batman', includesVolumeZero: false, finished: false },
+                after: {
+                    name: 'Batman',
+                    category: 'comics',
+                    includesVolumeZero: false,
+                    finished: false,
+                },
             },
         ]);
     });
@@ -428,7 +438,11 @@ describe('BookCollectionMembership', () => {
 
         await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
 
-        const result = await current.membership.assign({ id: 'one', ownership: 'owned' }, null, []);
+        const result = await current.membership.assign(
+            { id: 'one', ownership: 'owned', category: 'comics' },
+            null,
+            [],
+        );
 
         expect(result.changes).toEqual([
             expect.objectContaining({ category: 'collection.removed', subjectId: 'collection-1' }),

@@ -12,6 +12,7 @@ function collection(changes: { finished?: boolean; includesVolumeZero?: boolean 
     return new Collection({
         id: 'collection',
         name: ' Batman ',
+        category: 'comics',
         includesVolumeZero: changes.includesVolumeZero ?? false,
         finished: changes.finished ?? false,
         createdAt: '2026-01-01T00:00:00.000Z',
@@ -144,4 +145,40 @@ it('disables volume 0 when no book covers it', () => {
     subject.changeVolumeZero(false, [member('a', 'owned', 1)], now);
 
     expect(subject.snapshot.includesVolumeZero).toBe(false);
+});
+
+it('admits a book of its category', () => {
+    const subject = collection();
+
+    const operation = () => subject.admit('comics', 4);
+
+    expect(operation).not.toThrow();
+});
+
+it('refuses a book of another category with the collection details', () => {
+    const subject = collection();
+
+    const operation = () => subject.admit('manga', 4);
+
+    expect(operation).toThrow(
+        expect.objectContaining({
+            code: 'conflict',
+            reason: 'collection-category-mismatch',
+            details: {
+                collectionId: 'collection',
+                name: 'Batman',
+                category: 'comics',
+                bookCategory: 'manga',
+                bookCount: 4,
+            },
+        }),
+    );
+});
+
+it('changes the category of the collection', () => {
+    const subject = collection();
+
+    subject.changeCategory('manga', now);
+
+    expect(subject.snapshot).toMatchObject({ category: 'manga', updatedAt: now });
 });

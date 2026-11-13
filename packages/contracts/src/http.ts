@@ -412,6 +412,7 @@ export type BookLookupDto =
 export interface CollectionSummaryDto {
     id: string;
     name: string;
+    category: BookCategory;
     includesVolumeZero: boolean;
     finished: boolean;
     bookCount: number;

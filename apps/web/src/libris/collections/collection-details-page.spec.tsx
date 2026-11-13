@@ -39,6 +39,7 @@ function batman(overrides: Partial<CollectionDetailsDto> = {}): CollectionDetail
     return {
         id: 'c1',
         name: 'Batman',
+        category: 'comics',
         includesVolumeZero: false,
         finished: false,
         bookCount: 3,
