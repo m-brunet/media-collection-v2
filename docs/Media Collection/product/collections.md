@@ -19,6 +19,25 @@ A book belongs to at most one collection initially. Future multiple membership s
 
 Task 5.5 adds [collection-based titles](book-entry.md#collection-based-titles): renaming a collection updates generated member-book titles as well as the collection label; supplied titles remain unchanged. Moving a generated-title book or editing coverage regenerates its title. Individual unlinking requires a supplied title, prefilled with the last generated value for one-click acceptance. Deleting an entire collection instead keeps the last generated titles and clears their `titleGenerated` flags automatically along with membership/coverage; it does not require title entry for every book.
 
+## Category
+
+A collection follows the volumes of one series, so all its books have the same category: Books, Manga or Comics (decided 2026-11-13, issue #74). A guide book for a manga, for example, is not part of that manga's collection.
+
+- **Stored on the collection:** a new collection takes the category of the book that creates it. The category shows on the collection page and on each card of the Collections page. **Add a book** from a collection page starts the form with that category.
+- **Every way of joining is checked:** creating or editing a book (Libris and Leaf), the v1 import and the future bulk add of volumes. A book of another category is refused with the collection's name and category ("Naruto holds Manga. This book is Books."). The book form offers **Use Manga for this book**, which changes the book's category and saves again. Nothing changes silently.
+- **Changing a member book's category** opens a dialog instead: "Naruto holds Manga. Change the whole collection to Comics?", with the number of books that will change. **Cancel** keeps the form as it is; **Change the whole collection** changes the collection and all its books, then saves the rest of the form. Taking the book out of the collection stays possible.
+- **Changing a whole collection:** the **Category** choice of the Edit collection dialog changes the collection and every book in it in one step, and says how many books change. Owners/Admin only. It is one audited operation on the collection (`collection.updated`) with each changed book as a related record (`book.category-changed`); Activity shows a single entry ("You changed the collection Naruto and its 12 books to Manga").
+- **To Books:** changing Manga or Comics books with a generated title to Books keeps each current `Name Vol. N` as a hand-written title, as when a whole collection is deleted.
+- **Batch edit** has no Category field: the collection's Category does that job for every book at once.
+- **Collections filter:** the Category filter of the Collections page uses the collection's own category, combined (AND) with the book criteria.
+
+### Collections created before the rule
+
+The upgrade gives each existing collection the category most of its books have; a tie goes to Books, then Comics, then Manga, and an empty collection takes Books. Books of another category **stay in their collection, unchanged**, for the person to fix by hand:
+
+- A notice at the top of the Collections page, "N books do not match their collection's category", opens the list: each book with its category, its collection and the collection's category, linking to the book. The collection page shows the same notice for its own books. The notice disappears when the list is empty and is not shown to Guests.
+- From then on the rule applies to every change: editing a listed book without fixing the mismatch is refused like any other mismatch.
+
 ## Coverage and ownership vocabulary
 
 - Owned / Not Owned: the two saved ownership statuses. Defaults are defined in the book rules.
@@ -74,11 +93,10 @@ The desktop collection details page lets Owners/Admin change several books of th
 
 - **Choosing the books:** **Edit books** turns the same wall of covers into a selection: each book gets a round check and clicking a cover adds or removes it instead of opening the book. Missing volumes stay in place but cannot be chosen and are not counted; a bottom bar counts the chosen books and offers **Select all**, **Select owned**, **Clear**, **Cancel** and **Edit N books**. While books are being chosen, changed and reviewed, the reading toggle and the **Edit books** button are hidden. Guests do not see the mode (redesigned 2026-11-13, alternative A of issue #24).
 - **Side drawer:** **Edit N books** opens a drawer on the right, in three steps (Choose, Change, Review). The covers stay visible and clickable beside it, so the selection can still change. Escape or the close button closes the drawer and goes back to the selection.
-- **Fields:** nothing is listed as Leave unchanged: the drawer starts empty and each field to change is added as a card (**+ Category**, **+ Publisher**…) and can be removed again. A field that is not added stays as it is on every book. Publisher, Price and Shelf cards offer **Set to** (Shelf: **Place on a shelf**), **Fill if empty** or an explicit **Clear**, so an empty input never clears by accident. Fill if empty applies the value only to the chosen books that have none for that field; the others keep theirs.
+- **Fields:** nothing is listed as Leave unchanged: the drawer starts empty and each field to change is added as a card (**+ Ownership**, **+ Publisher**…) and can be removed again. A field that is not added stays as it is on every book. Publisher, Price and Shelf cards offer **Set to** (Shelf: **Place on a shelf**), **Fill if empty** or an explicit **Clear**, so an empty input never clears by accident. Fill if empty applies the value only to the chosen books that have none for that field; the others keep theirs.
 
   | Field | How the batch value applies |
   |---|---|
-  | Category (Books, Manga, Comics) | Replaced. See "To Books" below |
   | Ownership (Owned, Not owned) | Replaced. A lent book set to Not owned is skipped |
   | Publisher | Replaced, filled if empty, or cleared |
   | Price | Replaced, filled if empty, or cleared |
@@ -88,9 +106,8 @@ The desktop collection details page lets Owners/Admin change several books of th
   | Own reading status | Read / Not read for the **signed-in account only** |
   | Titles | **Leave unchanged / Use the generated title** |
 
-- **Never in a batch:** ISBN, cover, title text, summary, page count, publication date, personal note, collection membership and volume numbers.
+- **Never in a batch:** category (see [Category](#category)), ISBN, cover, title text, summary, page count, publication date, personal note, collection membership and volume numbers.
 - **Use the generated title** only changes hand-written titles of the chosen **Manga and Comics** books: they become `Name Vol. N` (`Name Vol. N–M` for an omnibus) and generated. Books are left out. Choosing the books and this option is the explicit choice; hand-written titles are never replaced by default.
-- **To Books:** changing Manga or Comics books with a generated title to Books keeps each current `Name Vol. N` as a hand-written title, as when a whole collection is deleted. No title has to be typed per book.
 - **Summary before saving:** the server plans the batch without saving it. The review groups the plan **by change** (for example "Publisher → Glénat, 2 books", with each book's previous value and how many other books stay as they are), with a **Left out** card per book left out and its reason; a switch groups it **by book** instead, each change as "old → new" (including "old title → new title") and the books already as asked. Each cover then shows how many changes its book gets, or that it is left out; clicking a cover shows only that book's changes. Saving applies the changes to the other books in **one transaction**.
 - **After saving:** the drawer closes and a banner gives the number of books updated and each book left out with its reason. The covers show **Updated** or **Left out**; **Edit books again** starts a new batch and **Done** goes back to the collection.
 - **A book that cannot take a change is skipped**, not the whole batch, and gets **none** of the batch's changes, so a book is never half-edited. Reasons: a lent book set to Not owned; a book without ISBN whose new authors would make it a possible duplicate of another book (the chosen books are not compared with each other); Use the generated title on a Books book.
@@ -145,10 +162,14 @@ A separate desktop page mirroring mobile ownership progression is future scope, 
 14. Batch edit of Gunnm 1–3, Publisher set to Glénat, Price left unchanged: the three books get Glénat and keep their prices. Price set to Clear: the three prices become unknown.
 15. Batch edit of Gunnm 1 (lent) and 2, Ownership Not owned and Publisher Glénat: the summary lists 1 as left out ("Lent: cannot be set to Not owned"); saving changes 2 only, and 1 keeps its publisher too.
 16. Gunnm 1 titled "Gunnm, the first" (Manga) and a Books record "Gunnm, the novel", Use the generated title: the summary shows "Gunnm, the first → Gunnm Vol. 1" and lists the novel as left out.
-17. Gunnm 1–2 with generated titles changed to Books: they keep "Gunnm Vol. 1" and "Gunnm Vol. 2" as hand-written titles.
+17. The Gunnm collection with generated titles 1–2 changed to Books: they keep "Gunnm Vol. 1" and "Gunnm Vol. 2" as hand-written titles.
 18. Add tag Cyberpunk and remove tag Old on a book tagged History and Old: it ends with Cyberpunk and History.
 19. Saving records one operation: the collection entry plus, per changed book, its related changes. Another account's reading status never changes.
 20. Batch edit of Gunnm 1 (publisher Glénat) and 2 (no publisher), Publisher Fill if empty with Delcourt: the summary shows 2 "none → Delcourt" and 1 as already as asked; saving gives 2 Delcourt and 1 keeps Glénat.
+
+21. Naruto (Manga): saving a new Books guide into it is refused with "Naruto holds Manga. This book is Books."; **Use Manga for this book** saves it as Manga.
+22. Naruto volume 3 changed to Comics on its form: the dialog offers to change the whole collection (12 books); confirming makes Naruto and its 12 books Comics, then saves volume 3.
+23. Upgrade of a collection holding two Manga and one Books guide: the collection becomes Manga, the guide stays Books and in the collection, and the notice lists it until it is fixed.
 
 ## Implementation references
 

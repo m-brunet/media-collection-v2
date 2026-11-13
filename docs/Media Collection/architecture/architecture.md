@@ -166,6 +166,15 @@ For collection-wide changes `collections` declares `MemberTitles`, implemented b
 whole-collection deletion keeps them as supplied titles, each change recorded as a related `book.retitled` entry of
 the collection operation.
 
+A collection has one category (`Collection.category`). `BookCollectionMembership.assign` receives the book's category
+in `MemberBook` and calls `Collection.admit`, which refuses another category (`collection-category-mismatch`, with the
+collection id, name, category, book count and the book's category); a new collection takes the first book's category.
+Changing the collection's category goes through `UpdateCollection` and the `MemberCategories` port declared by
+`collections`, implemented by the books service `CollectionMemberCategories` (`BooksModule.memberCategories`): each
+changed book is a related `book.category-changed` entry of the collection operation, which Activity shows as one
+entry. Books left with another category by the upgrade are listed through the `CategoryMismatchReader` port
+(`KyselyCategoryMismatchReader`) behind `GET /api/collections/mismatches`.
+
 Books and lending collaborate through two ports declared by `books`, both implemented in the lending application
 layer and built at the root (`LendingModule.bookLoans`, `LendingModule.history`): `BookLoanReader` (`BookLoanLookup`)
 gives book details and list items their active loan and feeds `LentBookGuard`, which refuses (`book-lent`) to delete a
