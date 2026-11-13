@@ -15,6 +15,7 @@ import { BookFormat } from '../../shared/book-form/book-format.util';
 import { PageHeader } from '../../shared/ui/layout';
 import { Notice } from '../../shared/ui/notice';
 import { EmptyState, LoadingState } from '../../shared/ui/states';
+import { CategoryMismatchNotice } from './category-mismatch-notice';
 import { CollectionFormat } from './collection-format.util';
 import { AppliedFilters, useListingFilter } from '../filters/applied-filters';
 import { BookFilter } from '../filters/book-filter.util';
@@ -31,6 +32,7 @@ function CollectionCard({ collection }: { collection: CollectionSummaryDto }) {
     const { t } = useI18n();
     const message = CollectionFormat.status(collection);
     const status = t(message.key, message.values);
+    const category = t(BookFormat.category(collection.category));
     const owned = t('collections.owned', {
         owned: collection.ownedCount,
         expected: collection.expectedCount,
@@ -41,10 +43,13 @@ function CollectionCard({ collection }: { collection: CollectionSummaryDto }) {
             <Link
                 to={'/collections/' + collection.id}
                 className="collection-card"
-                aria-label={[collection.name, owned, status].join(', ')}
+                aria-label={[collection.name, category, owned, status].join(', ')}
             >
                 <div className="collection-card__identity">
-                    <span className="collection-card__name">{collection.name}</span>
+                    <span className="collection-card__title">
+                        <span className="collection-card__name">{collection.name}</span>
+                        <span className="collection-card__category">{category}</span>
+                    </span>
                     <span className="collection-card__open">
                         {t('collections.open')} <span aria-hidden="true">→</span>
                     </span>
@@ -193,6 +198,7 @@ export function CollectionsPage() {
                 {deleted && (
                     <Notice tone="success">{t('collections.deleted', { name: deleted })}</Notice>
                 )}
+                {account && editor && <CategoryMismatchNotice />}
                 {!none && (
                     <div className="book-toolbar">
                         <div className="search-field">

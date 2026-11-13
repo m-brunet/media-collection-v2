@@ -15,6 +15,8 @@ import { Notice } from '../../shared/ui/notice';
 import { EmptyState, LoadingState } from '../../shared/ui/states';
 import { useAction } from '../../shared/use-action';
 import { ReadingToggle } from '../../shared/book-form/reading-toggle';
+import { BookFormat } from '../../shared/book-form/book-format.util';
+import { CategoryMismatchNotice } from './category-mismatch-notice';
 import { CollectionBatchEditor } from './collection-batch-editor';
 import { CollectionCovers } from './collection-covers.util';
 import { EditCollectionDialog } from './collection-dialogs';
@@ -242,6 +244,8 @@ export function CollectionDetailsPage() {
                         <span aria-hidden="true"> / </span>
                         <span>{collection.name}</span>
                         <span aria-hidden="true"> · </span>
+                        <span>{t(BookFormat.category(collection.category))}</span>
+                        <span aria-hidden="true"> · </span>
                         <span>
                             {t('collection.ownedOf', {
                                 owned: collection.ownedCount,
@@ -270,6 +274,13 @@ export function CollectionDetailsPage() {
                 }
             />
             <div className="collection-page">
+                {account && editor && (
+                    <CategoryMismatchNotice
+                        key={collection.category}
+                        collectionId={collection.id}
+                        version={version}
+                    />
+                )}
                 <div className="collection-summary">
                     <div className="collection-summary__coverage">
                         <p className="eyebrow">{t(coverage.key, coverage.values)}</p>

@@ -389,6 +389,118 @@ it('renames the collection and includes volume 0', async () => {
     });
 });
 
+it('shows the category of the collection', async () => {
+    new FakeApi()
+        .signedIn(account())
+        .on('GET /collections/c1', () => ({ status: 200, body: batman() }));
+
+    show();
+
+    const breadcrumb = await screen.findByRole('navigation', { name: 'Breadcrumb' });
+
+    expect(breadcrumb).toHaveTextContent('Comics');
+});
+
+it('changes the category of the whole collection', async () => {
+    const api = new FakeApi()
+        .signedIn(account())
+        .on('GET /collections/c1', () => ({ status: 200, body: batman() }))
+        .on('PATCH /collections/c1', () => ({
+            status: 200,
+            body: batman({ category: 'manga' }),
+        }));
+
+    show();
+    await userEvent.click(await screen.findByRole('button', { name: 'Edit collection' }));
+    const dialog = screen.getByRole('dialog', { name: 'Edit collection' });
+
+    await userEvent.selectOptions(
+        within(dialog).getByRole('combobox', { name: 'Category' }),
+        'manga',
+    );
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save collection' }));
+
+    await waitFor(() =>
+        expect(screen.queryByRole('dialog', { name: 'Edit collection' })).not.toBeInTheDocument(),
+    );
+    expect(api.calls.find((call) => call.route === 'PATCH /collections/c1')?.body).toEqual({
+        name: 'Batman',
+        includesVolumeZero: false,
+        category: 'manga',
+    });
+});
+
+it('says how many books change with the category of the collection', async () => {
+    new FakeApi()
+        .signedIn(account())
+        .on('GET /collections/c1', () => ({ status: 200, body: batman() }));
+
+    show();
+    await userEvent.click(await screen.findByRole('button', { name: 'Edit collection' }));
+    const dialog = screen.getByRole('dialog', { name: 'Edit collection' });
+
+    await userEvent.selectOptions(
+        within(dialog).getByRole('combobox', { name: 'Category' }),
+        'manga',
+    );
+
+    expect(
+        within(dialog).getByText('The 3 books of the collection will change to Manga.'),
+    ).toBeInTheDocument();
+});
+
+it('lists the books of another category than the collection', async () => {
+    const api = new FakeApi()
+        .signedIn(account())
+        .on('GET /collections/c1', () => ({ status: 200, body: batman() }))
+        .on('GET /collections/mismatches', () => ({
+            status: 200,
+            body: [
+                {
+                    bookId: 'guide',
+                    title: 'Batman guide',
+                    category: 'books',
+                    collectionId: 'c1',
+                    collectionName: 'Batman',
+                    collectionCategory: 'comics',
+                },
+            ],
+        }));
+
+    show();
+
+    const summary = await screen.findByText('1 book does not match its collection’s category');
+
+    await userEvent.click(summary);
+
+    expect(screen.getByRole('link', { name: 'Batman guide' })).toHaveAttribute(
+        'href',
+        '/books/guide',
+    );
+    expect(screen.getByText('Books, in Batman (Comics)')).toBeInTheDocument();
+    expect(api.calls.map((call) => call.route)).toContain(
+        'GET /collections/mismatches?collection=c1',
+    );
+});
+
+it('shows no mismatch notice when every book matches', async () => {
+    const api = new FakeApi()
+        .signedIn(account())
+        .on('GET /collections/c1', () => ({ status: 200, body: batman() }))
+        .on('GET /collections/mismatches', () => ({ status: 200, body: [] }));
+
+    show();
+    await screen.findByRole('heading', { name: 'Batman' });
+
+    await waitFor(() =>
+        expect(api.calls.map((call) => call.route)).toContain(
+            'GET /collections/mismatches?collection=c1',
+        ),
+    );
+    expect(screen.queryByText(/match (its|their) collection’s category/)).not.toBeInTheDocument();
+});
+
 it('deletes the collection after confirming that its books are kept', async () => {
     const api = new FakeApi()
         .signedIn(account())

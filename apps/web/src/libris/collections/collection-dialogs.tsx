@@ -1,10 +1,16 @@
 import { useState } from 'react';
-import type { CollectionDetailsDto } from '../../../../../packages/contracts/src/http';
+import type {
+    BookCategory,
+    CollectionChangesDto,
+    CollectionDetailsDto,
+} from '../../../../../packages/contracts/src/http';
+import { BookFormat } from '../../shared/book-form/book-format.util';
 import { api } from '../../shared/api.util';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Button } from '../../shared/ui/button';
 import { Dialog } from '../../shared/ui/dialog';
 import { Notice } from '../../shared/ui/notice';
+import { SelectField } from '../../shared/ui/select-field';
 import { TextField } from '../../shared/ui/text-field';
 import { useAction } from '../../shared/use-action';
 
@@ -33,7 +39,12 @@ export function EditCollectionDialog({
             >
                 {open && (
                     <EditCollectionForm
-                        key={collection.id + collection.name + collection.includesVolumeZero}
+                        key={
+                            collection.id +
+                            collection.name +
+                            collection.includesVolumeZero +
+                            collection.category
+                        }
                         collection={collection}
                         onSaved={onSaved}
                         onDelete={() => setConfirmingDelete(true)}
@@ -65,7 +76,14 @@ function EditCollectionForm({
     const { t } = useI18n();
     const [name, setName] = useState(collection.name);
     const [volumeZero, setVolumeZero] = useState(collection.includesVolumeZero);
+    const [category, setCategory] = useState<BookCategory>(collection.category);
     const action = useAction();
+    const recategorised = category !== collection.category;
+    const changes: CollectionChangesDto = {
+        name,
+        includesVolumeZero: volumeZero,
+        ...(recategorised ? { category } : {}),
+    };
 
     return (
         <form
@@ -76,7 +94,7 @@ function EditCollectionForm({
                     onSaved(
                         await api.request<CollectionDetailsDto>('/collections/' + collection.id, {
                             method: 'PATCH',
-                            body: { name, includesVolumeZero: volumeZero },
+                            body: changes,
                         }),
                     ),
                 );
@@ -90,6 +108,33 @@ function EditCollectionForm({
                 maxLength={200}
                 autoFocus
                 onChange={(event) => setName(event.target.value)}
+            />
+            <SelectField
+                label={t('form.category')}
+                value={category}
+                hint={
+                    recategorised
+                        ? t(
+                              collection.bookCount === 1
+                                  ? 'editCollection.categoryChangeOne'
+                                  : 'editCollection.categoryChange',
+                              {
+                                  count: collection.bookCount,
+                                  category: t(BookFormat.category(category)),
+                              },
+                          )
+                        : t('editCollection.categoryHint')
+                }
+                options={BookFormat.categories.map((choice) => ({
+                    value: choice,
+                    label: t(BookFormat.category(choice)),
+                }))}
+                onChange={(event) =>
+                    setCategory(
+                        BookFormat.categories.find((choice) => choice === event.target.value) ??
+                            collection.category,
+                    )
+                }
             />
             <fieldset className="form">
                 <legend className="field__label">{t('editCollection.range')}</legend>
