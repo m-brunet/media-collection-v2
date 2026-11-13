@@ -82,7 +82,9 @@ function BookForm({ book }: { book: BookDto | null }) {
             return BookDraft.fromBook(book, locale);
         }
 
-        return collection ? BookDraft.inCollection(collection) : BookDraft.empty();
+        return collection
+            ? BookDraft.inCollection(collection, parameters.get('category'))
+            : BookDraft.empty();
     });
     const [values, setValues] = useState<BookDraftValues>(initial);
     const [cover, setCover] = useState<CoverChoice>({ file: null, removed: false });

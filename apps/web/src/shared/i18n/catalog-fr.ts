@@ -965,6 +965,8 @@ export const fr = {
     'reason.collectionNameTaken':
         'Une autre collection porte déjà ce nom. La fusion de collections n’est pas disponible.',
     'reason.collectionMissing': 'Cette collection n’existe plus.',
+    'reason.collectionCategoryMismatch':
+        'Ce livre n’a pas la catégorie de sa collection. Modifiez la catégorie du livre ou de la collection.',
     'reason.volumeInvalid':
         'Saisissez des numéros de tome entiers de 0 à 9999, en ordre croissant.',
     'reason.volumeZeroInUse':

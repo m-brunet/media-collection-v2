@@ -27,6 +27,80 @@ describe('BookCollectionMembership', () => {
         });
     });
 
+    it('gives a new collection the category of its first book', async () => {
+        const current = CollectionDoubles.shelf();
+
+        current.members.saveBook('one', 'owned');
+
+        await current.membership.assign(
+            { id: 'one', ownership: 'owned', category: 'manga' },
+            { collection: { name: 'Naruto' }, volumeFrom: 1, volumeTo: 1 },
+            [],
+        );
+
+        expect(current.collections.collections.get('collection-1')?.snapshot.category).toBe(
+            'manga',
+        );
+    });
+
+    it('refuses a book of another category joining the collection', async () => {
+        const current = CollectionDoubles.shelf();
+
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
+        current.members.saveBook('guide', 'owned');
+
+        const operation = current.membership.assign(
+            { id: 'guide', ownership: 'owned', category: 'books' },
+            { collection: { id: 'collection-1' }, volumeFrom: 2, volumeTo: 2 },
+            [],
+        );
+
+        await expect(operation).rejects.toMatchObject({
+            code: 'conflict',
+            reason: 'collection-category-mismatch',
+            details: {
+                collectionId: 'collection-1',
+                name: 'Batman',
+                category: 'comics',
+                bookCategory: 'books',
+                bookCount: 1,
+            },
+        });
+        expect(current.members.memberships.has('guide')).toBe(false);
+    });
+
+    it('refuses a book of another category joining by an equivalent name', async () => {
+        const current = CollectionDoubles.shelf();
+
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
+        current.members.saveBook('guide', 'owned');
+
+        const operation = current.membership.assign(
+            { id: 'guide', ownership: 'owned', category: 'manga' },
+            { collection: { name: 'batman' }, volumeFrom: 2, volumeTo: 2 },
+            [],
+        );
+
+        await expect(operation).rejects.toMatchObject({ reason: 'collection-category-mismatch' });
+    });
+
+    it('refuses a member changing to another category', async () => {
+        const current = CollectionDoubles.shelf();
+
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
+
+        const operation = current.membership.assign(
+            { id: 'one', ownership: 'owned', category: 'manga' },
+            { collection: { id: 'collection-1' }, volumeFrom: 1, volumeTo: 1 },
+            [],
+        );
+
+        await expect(operation).rejects.toMatchObject({
+            reason: 'collection-category-mismatch',
+            details: { bookCount: 1 },
+        });
+    });
+
     it('joins the collection of an equivalent name', async () => {
         const current = CollectionDoubles.shelf();
 

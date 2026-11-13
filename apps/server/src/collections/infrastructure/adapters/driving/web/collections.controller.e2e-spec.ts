@@ -564,11 +564,13 @@ describe('GET /api/collections with filters', () => {
             await book(membership('Akira', volume));
         }
 
-        await book(membership('Akira', 9), { ownership: 'not-owned', category: 'manga' });
+        await book(membership('Akira', 9), { ownership: 'not-owned' });
         await book(membership('Akira', 10), { ownership: 'not-owned' });
         const client = await app.authenticatedClient(owner);
 
-        const response = await client.call<CollectionListPageDto>('/collections?category=manga');
+        const response = await client.call<CollectionListPageDto>(
+            '/collections?ownership=not-owned',
+        );
 
         expect(response.body.items).toEqual([
             expect.objectContaining({ name: 'Akira', ownedCount: 8, expectedCount: 10 }),

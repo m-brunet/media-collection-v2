@@ -146,6 +146,25 @@ describe('UpdateBook', () => {
             after: { collection: { name: 'Superman' } },
         });
     });
+    it('refuses a new category while the book stays in a collection of another category', async () => {
+        const current = BookDoubles.library();
+        const membership = { collection: { name: 'Naruto' }, volumeFrom: 1, volumeTo: 1 };
+        const book = await BookDoubles.saved(current, {
+            category: 'manga',
+            collection: membership,
+        });
+
+        const result = subject(current).execute(
+            owner,
+            book.id,
+            BookDoubles.input({ category: 'comics', collection: membership }),
+        );
+
+        await expect(result).rejects.toMatchObject({
+            reason: 'collection-category-mismatch',
+            details: { name: 'Naruto', category: 'manga', bookCategory: 'comics' },
+        });
+    });
     it('deletes the planned books the edited Owned book replaces', async () => {
         const current = BookDoubles.library();
         const book = await BookDoubles.saved(current);

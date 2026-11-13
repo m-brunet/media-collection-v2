@@ -214,6 +214,28 @@ describe('CreateBook', () => {
             after: { collection: { name: 'Batman', volumeFrom: 1, volumeTo: 3 } },
         });
     });
+    it('refuses a book joining a collection of another category', async () => {
+        const current = BookDoubles.library();
+        const membership = { collection: { name: 'Naruto' }, volumeFrom: 1, volumeTo: 1 };
+
+        await BookDoubles.saved(current, { category: 'manga', collection: membership });
+
+        const result = subject(current).execute(
+            owner,
+            BookDoubles.input({
+                isbn: null,
+                noIsbn: true,
+                title: 'Naruto guide',
+                collection: { ...membership, volumeFrom: 2, volumeTo: 2 },
+            }),
+            false,
+        );
+
+        await expect(result).rejects.toMatchObject({
+            reason: 'collection-category-mismatch',
+            details: { name: 'Naruto', category: 'manga', bookCategory: 'books', bookCount: 1 },
+        });
+    });
     it('deletes the planned books a purchased book replaces, with their covers', async () => {
         const current = BookDoubles.library();
         const planned = await BookDoubles.saved(current, {
