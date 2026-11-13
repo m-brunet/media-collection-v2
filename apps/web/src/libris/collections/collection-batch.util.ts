@@ -2,6 +2,7 @@ import type {
     AuthorChoiceDto,
     BookBatchChangesDto,
     BookBatchFieldsDto,
+    BookBatchFillable,
     BookBatchSkipReason,
     BookCategory,
     BookOwnership,
@@ -13,14 +14,16 @@ import { BookDraft } from '../../shared/book-form/book-draft.util';
 import { BookFormat } from '../../shared/book-form/book-format.util';
 import type { MessageKey } from '../../shared/i18n/catalog-en';
 
-export type TextChoice = { mode: 'keep' | 'set' | 'clear'; value: string };
+export type ChoiceMode = 'keep' | 'set' | 'fill' | 'clear';
+
+export type TextChoice = { mode: ChoiceMode; value: string };
 
 export interface BatchDraft {
     category: BookCategory | 'keep';
     ownership: BookOwnership | 'keep';
     publisher: TextChoice;
     price: TextChoice;
-    shelf: { mode: 'keep' | 'set' | 'clear'; bookcaseId: string | null; shelfId: string | null };
+    shelf: { mode: ChoiceMode; bookcaseId: string | null; shelfId: string | null };
     addTags: DraftTag[];
     removeTags: DraftTag[];
     replaceAuthors: boolean;
@@ -92,15 +95,15 @@ export class CollectionBatch {
     }
 
     static problem(draft: BatchDraft): BatchProblem | null {
-        if (draft.publisher.mode === 'set' && !draft.publisher.value.trim()) {
+        if (CollectionBatch.takesValue(draft.publisher.mode) && !draft.publisher.value.trim()) {
             return 'publisher';
         }
 
-        if (draft.price.mode === 'set' && !draft.price.value.trim()) {
+        if (CollectionBatch.takesValue(draft.price.mode) && !draft.price.value.trim()) {
             return 'price';
         }
 
-        if (draft.shelf.mode === 'set' && !draft.shelf.shelfId) {
+        if (CollectionBatch.takesValue(draft.shelf.mode) && !draft.shelf.shelfId) {
             return 'shelf';
         }
 
@@ -157,7 +160,17 @@ export class CollectionBatch {
             changes.generatedTitles = true;
         }
 
+        const filled = CollectionBatch.filled(draft);
+
+        if (filled.length > 0) {
+            changes.onlyIfEmpty = filled;
+        }
+
         return changes;
+    }
+
+    static takesValue(mode: ChoiceMode): boolean {
+        return mode === 'set' || mode === 'fill';
     }
 
     static resolveAuthor(
@@ -242,6 +255,16 @@ export class CollectionBatch {
                     ? { text: fields.tags.map((tag) => tag.name).join(', ') }
                     : { key: 'batch.none' };
         }
+    }
+
+    private static filled(draft: BatchDraft): BookBatchFillable[] {
+        const modes: [BookBatchFillable, ChoiceMode][] = [
+            ['publisher', draft.publisher.mode],
+            ['price', draft.price.mode],
+            ['shelfId', draft.shelf.mode],
+        ];
+
+        return modes.filter(([, mode]) => mode === 'fill').map(([field]) => field);
     }
 
     private static text(choice: TextChoice): string | null {

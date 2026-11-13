@@ -415,6 +415,31 @@ it('sends only the fields changed from Leave unchanged', async () => {
     });
 });
 
+it('sends a publisher to fill only on the books that have none', async () => {
+    const api = batchApi();
+
+    show();
+    const dialog = await chooseAllAndOpen();
+
+    await userEvent.selectOptions(
+        within(dialog).getByRole('combobox', { name: 'Publisher' }),
+        'Fill if empty',
+    );
+    await userEvent.type(
+        within(dialog).getByRole('textbox', { name: 'Publisher: new value' }),
+        'DC Comics',
+    );
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Review changes' }));
+
+    expect(api.calls.find((call) => call.route === 'POST /books/batch-edit')?.body).toEqual({
+        collectionId: 'c1',
+        bookIds: ['omnibus', 'year-one', 'twelve'],
+        preview: true,
+        changes: { publisher: 'DC Comics', onlyIfEmpty: ['publisher'] },
+    });
+});
+
 it('asks for a change before reviewing', async () => {
     const api = batchApi();
 

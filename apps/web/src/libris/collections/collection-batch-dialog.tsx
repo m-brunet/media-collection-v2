@@ -51,13 +51,14 @@ function TextChoiceField({
                 options={[
                     { value: 'keep', label: t('batch.keep') },
                     { value: 'set', label: t('batch.set') },
+                    { value: 'fill', label: t('batch.fill') },
                     { value: 'clear', label: t('batch.clear') },
                 ]}
                 onChange={(event) =>
                     onChange({ ...choice, mode: event.target.value as TextChoice['mode'] })
                 }
             />
-            {choice.mode === 'set' && (
+            {CollectionBatch.takesValue(choice.mode) && (
                 <TextField
                     label={t('batch.newValue', { field: label })}
                     hint={hint}
@@ -128,6 +129,7 @@ function BatchForm({ draft, onChange }: { draft: BatchDraft; onChange(draft: Bat
                     options={[
                         { value: 'keep', label: t('batch.keep') },
                         { value: 'set', label: t('batch.setShelf') },
+                        { value: 'fill', label: t('batch.fillShelf') },
                         { value: 'clear', label: t('batch.clearShelf') },
                     ]}
                     onChange={(event) =>
@@ -137,7 +139,7 @@ function BatchForm({ draft, onChange }: { draft: BatchDraft; onChange(draft: Bat
                         })
                     }
                 />
-                {draft.shelf.mode === 'set' && bookcases && (
+                {CollectionBatch.takesValue(draft.shelf.mode) && bookcases && (
                     <LocationField
                         bookcases={bookcases}
                         bookcaseId={draft.shelf.bookcaseId}

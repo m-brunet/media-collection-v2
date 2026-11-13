@@ -229,7 +229,10 @@ export interface BookBatchChangesDto {
     authors?: AuthorChoiceDto[];
     read?: boolean;
     generatedTitles?: true;
+    onlyIfEmpty?: BookBatchFillable[];
 }
+
+export type BookBatchFillable = 'publisher' | 'price' | 'shelfId';
 
 export interface BookBatchInputDto {
     collectionId: string;

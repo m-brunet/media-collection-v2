@@ -111,6 +111,24 @@ it('sends an explicit null for a cleared field', () => {
     expect(result).toEqual({ publisher: null, price: null, shelfId: null });
 });
 
+it('sends the value of a field filled if empty and names it as filled only', () => {
+    const draft = {
+        ...CollectionBatch.draft(),
+        publisher: { mode: 'fill' as const, value: ' Glénat ' },
+        price: { mode: 'set' as const, value: '6.90' },
+        shelf: { mode: 'fill' as const, bookcaseId: 'case', shelfId: 'top' },
+    };
+
+    const result = CollectionBatch.changes(draft);
+
+    expect(result).toEqual({
+        publisher: 'Glénat',
+        price: '6.90',
+        shelfId: 'top',
+        onlyIfEmpty: ['publisher', 'shelfId'],
+    });
+});
+
 it('sends the tags to add and to remove by identifier', () => {
     const draft = {
         ...CollectionBatch.draft(),
@@ -152,6 +170,25 @@ it('asks for a value when a field is set to an empty one', () => {
     const result = CollectionBatch.problem(draft);
 
     expect(result).toBe('publisher');
+});
+
+it('asks for a value when a field is filled with an empty one', () => {
+    const draft = { ...CollectionBatch.draft(), price: { mode: 'fill' as const, value: ' ' } };
+
+    const result = CollectionBatch.problem(draft);
+
+    expect(result).toBe('price');
+});
+
+it('asks for a shelf when filling the shelf without choosing one', () => {
+    const draft = {
+        ...CollectionBatch.draft(),
+        shelf: { mode: 'fill' as const, bookcaseId: null, shelfId: null },
+    };
+
+    const result = CollectionBatch.problem(draft);
+
+    expect(result).toBe('shelf');
 });
 
 it('asks for authors when replacing them with none', () => {
