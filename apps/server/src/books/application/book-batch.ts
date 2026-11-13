@@ -1,12 +1,11 @@
 import type { AuthorChoice } from './book-input.js';
 import type { BookLocation } from './ports/driven/book-location-reader.interface.js';
 import type { BookTag } from './ports/driven/book-tag-reader.interface.js';
-import type { BookCategory, Ownership } from '../domain/entities/book.entity.js';
+import type { Ownership } from '../domain/entities/book.entity.js';
 
 export type BookBatchFillable = 'publisher' | 'price' | 'shelfId';
 
 export interface BookBatchChanges {
-    category?: BookCategory;
     ownership?: Ownership;
     publisher?: string | null;
     price?: string | null;
@@ -28,7 +27,6 @@ export interface BookBatchRequest {
 export interface BookBatchFields {
     title?: string;
     titleGenerated?: boolean;
-    category?: BookCategory;
     ownership?: Ownership;
     publisher?: string | null;
     priceCents?: number | null;
@@ -41,7 +39,6 @@ export interface BookBatchFields {
 export const bookBatchDetailFields: readonly (keyof BookBatchFields)[] = [
     'title',
     'titleGenerated',
-    'category',
     'ownership',
     'publisher',
     'priceCents',

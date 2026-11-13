@@ -895,7 +895,6 @@ export const fr = {
     'batch.none': 'aucun',
     'batch.noLocation': 'aucun emplacement physique',
     'batch.problem.nothing': 'Choisissez au moins une modification.',
-    'batch.problem.category': 'Choisissez la nouvelle catégorie.',
     'batch.problem.ownership': 'Choisissez Possédé ou Non possédé.',
     'batch.problem.read': 'Choisissez Lu ou Non lu.',
     'batch.problem.publisher': 'Saisissez le nouvel éditeur, ou choisissez Effacer.',

@@ -117,14 +117,14 @@ describe('POST /api/books/batch-edit', () => {
         const response = await client.call<BookBatchDto>(
             '/books/batch-edit',
             'POST',
-            batch([first, second], { category: 'comics', price: '6.90', read: true }),
+            batch([first, second], { publisher: 'Delcourt', price: '6.90', read: true }),
         );
 
         expect(response.status).toBe(200);
         expect(response.body.saved).toBe(true);
-        expect(await stored(first)).toMatchObject({ category: 'comics', priceCents: 690 });
+        expect(await stored(first)).toMatchObject({ publisher: 'Delcourt', priceCents: 690 });
         expect(await app.dependencies.books.readings.isRead(owner.id, first.id)).toBe(true);
-        expect(await stored(second)).toMatchObject({ category: 'comics', priceCents: 690 });
+        expect(await stored(second)).toMatchObject({ publisher: 'Delcourt', priceCents: 690 });
     });
     it('fills the publisher and the price only on the books that have none', async () => {
         const first = await volume(1, { publisher: 'Glénat', price: '7' });
@@ -306,6 +306,17 @@ describe('POST /api/books/batch-edit', () => {
         const response = await client.call('/books/batch-edit', 'POST', {
             ...batch([first], {}),
             changes: { isbn: '9782749310015' },
+        });
+
+        expect(response.status).toBe(400);
+    });
+    it('rejects a category, which the collection changes for all its books', async () => {
+        const first = await volume(1);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/books/batch-edit', 'POST', {
+            ...batch([first], {}),
+            changes: { category: 'comics' },
         });
 
         expect(response.status).toBe(400);

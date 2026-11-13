@@ -143,18 +143,6 @@ function FieldChange({
         onChange({ ...draft, [key]: value });
 
     switch (field) {
-        case 'category':
-            return (
-                <BatchChoice
-                    labelledBy={titleId}
-                    value={draft.category === 'keep' ? null : draft.category}
-                    choices={BookFormat.categories.map((category) => ({
-                        value: category,
-                        label: t(BookFormat.category(category)),
-                    }))}
-                    onChange={(category) => set('category', category)}
-                />
-            );
         case 'ownership':
             return (
                 <BatchChoice

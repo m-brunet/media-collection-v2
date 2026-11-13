@@ -5,7 +5,6 @@ import type {
     BookBatchFieldsDto,
     BookBatchFillable,
     BookBatchSkipReason,
-    BookCategory,
     BookOwnership,
     CollectionDetailsDto,
 } from '../../../../../packages/contracts/src/http';
@@ -21,7 +20,6 @@ export type ChoiceMode = 'keep' | 'set' | 'fill' | 'clear';
 export type TextChoice = { mode: ChoiceMode; value: string };
 
 export type BatchField =
-    | 'category'
     | 'ownership'
     | 'publisher'
     | 'price'
@@ -33,7 +31,6 @@ export type BatchField =
 
 export interface BatchDraft {
     fields: BatchField[];
-    category: BookCategory | 'keep';
     ownership: BookOwnership | 'keep';
     publisher: TextChoice;
     price: TextChoice;
@@ -48,7 +45,6 @@ export interface BatchDraft {
 
 export type BatchProblem =
     | 'nothing'
-    | 'category'
     | 'ownership'
     | 'publisher'
     | 'price'
@@ -79,7 +75,6 @@ export type BookOutcome = { changes: number } | 'left-out';
 type Field = keyof BookBatchFieldsDto;
 
 const fieldLabels: Partial<Record<Field, MessageKey>> = {
-    category: 'form.category',
     ownership: 'form.ownership',
     publisher: 'form.publisher',
     priceCents: 'batch.price',
@@ -89,7 +84,6 @@ const fieldLabels: Partial<Record<Field, MessageKey>> = {
     read: 'form.reading',
 };
 const batchFieldLabels: Record<BatchField, MessageKey> = {
-    category: 'form.category',
     ownership: 'form.ownership',
     publisher: 'form.publisher',
     price: 'batch.price',
@@ -115,7 +109,6 @@ export class CollectionBatch {
     static draft(): BatchDraft {
         return {
             fields: [],
-            category: 'keep',
             ownership: 'keep',
             publisher: { mode: 'keep', value: '' },
             price: { mode: 'keep', value: '' },
@@ -182,7 +175,7 @@ export class CollectionBatch {
     }
 
     static problem(draft: BatchDraft): BatchProblem | null {
-        for (const field of ['category', 'ownership', 'read'] as const) {
+        for (const field of ['ownership', 'read'] as const) {
             if (draft.fields.includes(field) && draft[field] === 'keep') {
                 return field;
             }
@@ -209,10 +202,6 @@ export class CollectionBatch {
 
     static changes(draft: BatchDraft): BookBatchChangesDto {
         const changes: BookBatchChangesDto = {};
-
-        if (draft.category !== 'keep') {
-            changes.category = draft.category;
-        }
 
         if (draft.ownership !== 'keep') {
             changes.ownership = draft.ownership;
@@ -378,12 +367,6 @@ export class CollectionBatch {
 
     private static value(field: Field, fields: BookBatchFieldsDto, locale: string): Shown {
         switch (field) {
-            case 'category':
-                return {
-                    key: BookFormat.category(
-                        Required.value(fields.category, 'a changed category has a value'),
-                    ),
-                };
             case 'ownership':
                 return {
                     key: BookFormat.ownership(

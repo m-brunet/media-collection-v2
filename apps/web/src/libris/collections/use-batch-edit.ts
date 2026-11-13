@@ -12,7 +12,6 @@ import { CollectionBatch } from './collection-batch.util';
 
 const problems: Record<BatchProblem, MessageKey> = {
     nothing: 'batch.problem.nothing',
-    category: 'batch.problem.category',
     ownership: 'batch.problem.ownership',
     publisher: 'batch.problem.publisher',
     price: 'batch.problem.price',

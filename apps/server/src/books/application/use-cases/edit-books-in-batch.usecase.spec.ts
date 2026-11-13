@@ -39,18 +39,18 @@ describe('EditBooksInBatch', () => {
 
         const result = await useCase.execute(
             owner,
-            batch([one.id, two.id], { category: 'comics', publisher: 'Glénat', price: null }),
+            batch([one.id, two.id], { ownership: 'not-owned', publisher: 'Glénat', price: null }),
         );
 
         expect(result.saved).toBe(true);
         expect(result.books.map((book) => book.id)).toEqual([one.id, two.id]);
         expect(current.books.books.get(one.id)!.details).toMatchObject({
-            category: 'comics',
+            ownership: 'not-owned',
             publisher: 'Glénat',
             price: null,
         });
         expect(current.books.books.get(two.id)!.details).toMatchObject({
-            category: 'comics',
+            ownership: 'not-owned',
             publisher: 'Glénat',
             price: null,
         });
@@ -195,18 +195,6 @@ describe('EditBooksInBatch', () => {
         expect(current.books.books.get(one.id)!.details).toMatchObject({
             title: 'Gunnm Vol. 1',
             titleGenerated: true,
-        });
-    });
-    it('keeps the generated title as a hand-written one when changing to Books', async () => {
-        const { current, useCase } = setUp();
-        const one = await BookDoubles.volume(current, 1);
-
-        await useCase.execute(owner, batch([one.id], { category: 'books' }));
-
-        expect(current.books.books.get(one.id)!.details).toMatchObject({
-            title: 'Gunnm Vol. 1',
-            titleGenerated: false,
-            category: 'books',
         });
     });
     it('gives a skipped book none of the changes', async () => {

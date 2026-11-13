@@ -59,7 +59,6 @@ export const bookBatchSchema = z.strictObject({
     preview: z.boolean(),
     changes: z
         .strictObject({
-            category: z.enum(['books', 'manga', 'comics']).optional(),
             ownership: z.enum(['owned', 'not-owned']).optional(),
             publisher: BookFields.text(1000).optional(),
             price: BookFields.text(40).optional(),
