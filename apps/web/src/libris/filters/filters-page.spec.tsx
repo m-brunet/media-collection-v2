@@ -110,9 +110,9 @@ it('writes the cover and price choices to the address', async () => {
     const router = show('/books/filters');
 
     await screen.findByRole('radiogroup', { name: 'Fantasy' });
-    await userEvent.click(screen.getByText('Any cover'));
+    await userEvent.click(within(screen.getByRole('group', { name: 'Cover' })).getByText('Any'));
     await userEvent.click(screen.getByRole('checkbox', { name: 'Without cover' }));
-    await userEvent.click(screen.getByText('Any price'));
+    await userEvent.click(within(screen.getByRole('group', { name: 'Price' })).getByText('Any'));
     await userEvent.click(screen.getByRole('checkbox', { name: 'Without price' }));
 
     await userEvent.click(screen.getByRole('button', { name: 'Show results' }));

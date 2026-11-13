@@ -358,7 +358,7 @@ describe('Advanced filters', () => {
         await page.getByText('Any category').click();
         await page.getByRole('checkbox', { name: 'Manga' }).check();
         await page.getByRole('checkbox', { name: 'Comics' }).check();
-        await page.getByText('Owned or Not Owned').click();
+        await page.getByRole('group', { name: 'Ownership' }).getByText('Any').click();
         await page.getByRole('checkbox', { name: 'Owned', exact: true }).check();
         await page.getByText('Any bookcase / shelf').click();
         await page.getByRole('checkbox', { name: 'Oak bookcase' }).check();

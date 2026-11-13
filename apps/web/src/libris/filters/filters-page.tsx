@@ -101,52 +101,54 @@ export function FiltersPage({ listing }: { listing: 'books' | 'collections' }) {
                         <h2 id="other-criteria" className="eyebrow">
                             {guest ? t('filters.otherCriteriaGuest') : t('filters.otherCriteria')}
                         </h2>
-                        <ChoiceField
-                            label={t('filters.ownership')}
-                            summary={summary('ownership', t('filters.anyOwnership'))}
-                            options={BookFormat.ownerships.map((ownership: BookOwnership) => ({
-                                value: ownership,
-                                label: t(BookFormat.ownership(ownership)),
-                            }))}
-                            filter={filter}
-                            field="ownership"
-                            onChange={setFilter}
-                        />
-                        <ChoiceField
-                            label={t('filters.cover')}
-                            summary={summary('cover', t('filters.anyCover'))}
-                            options={[
-                                { value: 'with', label: t('filters.withCover') },
-                                { value: 'without', label: t('filters.withoutCover') },
-                            ]}
-                            filter={filter}
-                            field="cover"
-                            onChange={setFilter}
-                        />
-                        <ChoiceField
-                            label={t('filters.price')}
-                            summary={summary('price', t('filters.anyPrice'))}
-                            options={[
-                                { value: 'with', label: t('filters.withPrice') },
-                                { value: 'without', label: t('filters.withoutPrice') },
-                            ]}
-                            filter={filter}
-                            field="price"
-                            onChange={setFilter}
-                        />
-                        {!guest && (
+                        <div className="choice-field-pairs">
                             <ChoiceField
-                                label={t('filters.reading')}
-                                summary={summary('reading', t('filters.anyReading'))}
-                                options={[
-                                    { value: 'read', label: t('status.read') },
-                                    { value: 'unread', label: t('status.notRead') },
-                                ]}
+                                label={t('filters.ownership')}
+                                summary={summary('ownership', t('filters.anyOwnership'))}
+                                options={BookFormat.ownerships.map((ownership: BookOwnership) => ({
+                                    value: ownership,
+                                    label: t(BookFormat.ownership(ownership)),
+                                }))}
                                 filter={filter}
-                                field="reading"
+                                field="ownership"
                                 onChange={setFilter}
                             />
-                        )}
+                            <ChoiceField
+                                label={t('filters.cover')}
+                                summary={summary('cover', t('filters.anyCover'))}
+                                options={[
+                                    { value: 'with', label: t('filters.withCover') },
+                                    { value: 'without', label: t('filters.withoutCover') },
+                                ]}
+                                filter={filter}
+                                field="cover"
+                                onChange={setFilter}
+                            />
+                            <ChoiceField
+                                label={t('filters.price')}
+                                summary={summary('price', t('filters.anyPrice'))}
+                                options={[
+                                    { value: 'with', label: t('filters.withPrice') },
+                                    { value: 'without', label: t('filters.withoutPrice') },
+                                ]}
+                                filter={filter}
+                                field="price"
+                                onChange={setFilter}
+                            />
+                            {!guest && (
+                                <ChoiceField
+                                    label={t('filters.reading')}
+                                    summary={summary('reading', t('filters.anyReading'))}
+                                    options={[
+                                        { value: 'read', label: t('status.read') },
+                                        { value: 'unread', label: t('status.notRead') },
+                                    ]}
+                                    filter={filter}
+                                    field="reading"
+                                    onChange={setFilter}
+                                />
+                            )}
+                        </div>
                         <TagFilter filter={filter} onChange={setFilter} />
                     </section>
                 </div>
