@@ -925,6 +925,8 @@ export const en = {
     'reason.collectionNameTaken':
         'Another collection already has this name. Merging collections is not available.',
     'reason.collectionMissing': 'This collection no longer exists.',
+    'reason.collectionCategoryMismatch':
+        'This book does not have the category of its collection. Change the category of the book or of the collection.',
     'reason.volumeInvalid': 'Enter whole volume numbers from 0 to 9999, the range going upwards.',
     'reason.volumeZeroInUse':
         'A saved book covers volume 0, so the collection must keep including it.',

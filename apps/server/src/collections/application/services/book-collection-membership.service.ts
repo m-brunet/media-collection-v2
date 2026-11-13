@@ -54,6 +54,9 @@ export class BookCollectionMembership implements CollectionMembership, BookColle
         const range = VolumeRange.of(request.volumeFrom, request.volumeTo);
         const { collection, created } = await this.resolve(request.collection, book.category, now);
         const before = created ? null : new Collection(collection.snapshot);
+        const records = created ? [] : await this.members.ofCollections([collection.id]);
+
+        collection.admit(book.category, records.length);
 
         if (range.covers(0) && !collection.snapshot.includesVolumeZero) {
             if (!request.enableVolumeZero) {
@@ -67,8 +70,6 @@ export class BookCollectionMembership implements CollectionMembership, BookColle
 
             collection.changeVolumeZero(true, [], now);
         }
-
-        const records = created ? [] : await this.members.ofCollections([collection.id]);
 
         this.ensureNoConflict(
             collection,

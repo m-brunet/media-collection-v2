@@ -541,6 +541,28 @@ describe('POST /api/books with a collection', () => {
             details: { name: 'Batmen', candidates: [{ name: 'Batman' }] },
         });
     });
+    it('refuses a book of another category than its collection', async () => {
+        await member(membership('Batman', 1));
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call(
+            '/books',
+            'POST',
+            BookInputFixture.of({ category: 'manga', collection: membership('Batman', 2) }),
+        );
+
+        expect(response.status).toBe(409);
+        expect(response.body).toMatchObject({
+            reason: 'collection-category-mismatch',
+            details: {
+                collectionId: expect.any(String),
+                name: 'Batman',
+                category: 'books',
+                bookCategory: 'manga',
+                bookCount: 1,
+            },
+        });
+    });
     it('asks to include volume 0 before saving its coverage', async () => {
         const client = await app.authenticatedClient(owner);
 

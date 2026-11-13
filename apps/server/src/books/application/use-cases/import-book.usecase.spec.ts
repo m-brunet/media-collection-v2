@@ -103,6 +103,24 @@ describe('ImportBook', () => {
             titleGenerated: true,
         });
     });
+    it('refuses a book joining a collection of another category', async () => {
+        const current = BookDoubles.library();
+
+        await subject(current).execute(
+            administrator,
+            imported({ category: 'manga', collection: { name: 'Gunnm', volume: 1 } }),
+        );
+
+        const result = subject(current).execute(
+            administrator,
+            imported({ isbn: null, collection: { name: 'Gunnm', volume: 2 } }),
+        );
+
+        await expect(result).rejects.toMatchObject({
+            reason: 'collection-category-mismatch',
+            details: { name: 'Gunnm', category: 'manga', bookCategory: 'books' },
+        });
+    });
     it('gives an untitled Book in a collection its collection title, as supplied', async () => {
         const current = BookDoubles.library();
         const book = imported({ title: '', collection: { name: 'Gunnm', volume: 3 } });

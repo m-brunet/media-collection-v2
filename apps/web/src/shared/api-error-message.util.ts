@@ -62,6 +62,7 @@ export class ApiErrorMessage {
         'collection-missing': 'reason.collectionMissing',
         'volume-invalid': 'reason.volumeInvalid',
         'volume-zero-in-use': 'reason.volumeZeroInUse',
+        'collection-category-mismatch': 'reason.collectionCategoryMismatch',
         'collection-incomplete': 'reason.collectionIncomplete',
         'replacement-outdated': 'reason.replacementOutdated',
         'bookcase-name-invalid': 'reason.bookcaseNameInvalid',

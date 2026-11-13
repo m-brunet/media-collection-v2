@@ -350,3 +350,21 @@ describe('BookDraft.hasAdditional', () => {
         expect(result).toBe(false);
     });
 });
+
+describe('BookDraft.inCollection', () => {
+    it('starts with the category of the collection', () => {
+        const values = BookDraft.inCollection('Naruto', 'manga');
+
+        expect(values).toMatchObject({
+            inCollection: true,
+            collectionName: 'Naruto',
+            category: 'manga',
+        });
+    });
+
+    it('keeps the usual category for an unknown one', () => {
+        const values = BookDraft.inCollection('Naruto', 'films');
+
+        expect(values.category).toBe(BookDraft.empty().category);
+    });
+});

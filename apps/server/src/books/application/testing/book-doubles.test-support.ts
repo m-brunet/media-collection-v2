@@ -11,6 +11,7 @@ import type {
 } from '../ports/driven/book-collection-reader.interface.js';
 import type {
     CollectionMembership,
+    MemberBook,
     MembershipOutcome,
     MembershipRequest,
 } from '../ports/driven/collection-membership.interface.js';
@@ -483,10 +484,11 @@ export class MemoryMembership implements CollectionMembership, BookCollectionRea
     readonly memberships = new Map<string, BookCollection>();
     readonly replaced: string[][] = [];
     readonly names = new Map<string, string>();
+    readonly categories = new Map<string, MemberBook['category']>();
     changes: RelatedChange[] = [];
 
     async assign(
-        book: { id: string },
+        book: MemberBook,
         request: MembershipRequest | null,
         replacing: readonly string[],
     ): Promise<MembershipOutcome> {
@@ -512,7 +514,26 @@ export class MemoryMembership implements CollectionMembership, BookCollectionRea
             volumeFrom: request.volumeFrom,
             volumeTo: request.volumeTo,
         };
+        const category = this.categories.get(membership.id) ?? book.category;
 
+        if (category !== book.category) {
+            throw new Failure(
+                'conflict',
+                'This book does not have the category of its collection.',
+                'collection-category-mismatch',
+                {
+                    collectionId: membership.id,
+                    name: membership.name,
+                    category,
+                    bookCategory: book.category,
+                    bookCount: [...this.memberships.values()].filter(
+                        (member) => member.id === membership.id,
+                    ).length,
+                },
+            );
+        }
+
+        this.categories.set(membership.id, category);
         this.memberships.set(book.id, membership);
 
         return { collection: membership, changes: this.report() };

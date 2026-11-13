@@ -92,8 +92,16 @@ export class BookDraft {
         };
     }
 
-    static inCollection(name: string): BookDraftValues {
-        return { ...BookDraft.empty(), inCollection: true, collectionName: name };
+    static inCollection(name: string, category: string | null = null): BookDraftValues {
+        const empty = BookDraft.empty();
+        const known = BookFormat.categories.find((candidate) => candidate === category);
+
+        return {
+            ...empty,
+            category: known ?? empty.category,
+            inCollection: true,
+            collectionName: name,
+        };
     }
 
     static fromBook(book: BookDto, locale: string): BookDraftValues {

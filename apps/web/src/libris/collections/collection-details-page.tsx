@@ -257,7 +257,10 @@ export function CollectionDetailsPage() {
                             icon="add"
                             onClick={() =>
                                 navigate(
-                                    '/books/new?collection=' + encodeURIComponent(collection.name),
+                                    '/books/new?collection=' +
+                                        encodeURIComponent(collection.name) +
+                                        '&category=' +
+                                        collection.category,
                                 )
                             }
                         >
