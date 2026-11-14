@@ -2,7 +2,7 @@ import { Ranking } from './ranking.service.js';
 
 export type StatisticsCategory = 'books' | 'manga' | 'comics';
 
-export interface CollectionTally {
+export interface CollectionProgressEntry {
     id: string;
     name: string;
     category: StatisticsCategory;
@@ -11,18 +11,18 @@ export interface CollectionTally {
     missingVolumes: number;
 }
 
-export interface CollectionProgressSummary {
+export interface CollectionProgressSummary<T extends CollectionProgressEntry> {
     finished: number;
     unfinished: number;
     missingVolumes: number;
-    biggest: CollectionTally | null;
+    biggest: T | null;
 }
 
 export class CollectionProgress {
-    static of(
-        tallies: readonly CollectionTally[],
+    static of<T extends CollectionProgressEntry>(
+        tallies: readonly T[],
         category: StatisticsCategory | null,
-    ): CollectionProgressSummary {
+    ): CollectionProgressSummary<T> {
         const chosen = tallies.filter((tally) => category === null || tally.category === category);
         const finished = chosen.filter((tally) => tally.finished).length;
         const [biggest] = Ranking.top(
