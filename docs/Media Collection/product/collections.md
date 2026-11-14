@@ -113,6 +113,23 @@ The desktop collection details page lets Owners/Admin change several books of th
 - **Audit:** one audited operation on the collection (`collection.books-batch-edited`, the batch edit of that collection), with each book's changes as related changes (`book.updated`, `book.organised`, `book.reading-status-changed`), as a collection rename records retitled books.
 - Desktop only: Leaf does not offer it. The collection Read button (above) stays separate; the batch reading status is for a chosen selection.
 
+## Add missing volumes
+
+The desktop collection details page lets Owners/Admin add the missing volumes of a series from the BnF catalogue instead of scanning or typing each one, mainly at first use (decided 2026-11-11, issue #31). Leaf does not offer it.
+
+- **Entry point:** **Add volumes up to…** asks for the last volume number X. Every **missing** number from the start of the collection (1, or 0 when it includes a volume 0) up to X is looked up, gaps included: owning 1, 2 and 5, "up to 8" looks up 3, 4, 6, 7 and 8. A number already covered by any book (Owned or Not owned, an omnibus range included) is not missing. At most 200 volumes per request.
+- **Anchor:** the edition comes from a volume already in the collection. One BnF request asks for every member's ISBN at once; the highest-numbered volume the BnF knows is the anchor, and its record gives the series name and the publisher. When none is known, nothing is added and the page says the edition was not found in the BnF catalogue.
+- **Series lookup:** one more BnF request asks for the series by name and publisher (a thousand records per request, more pages only for longer series). A record is a candidate when it has an ISBN, a volume number (series field, `T. 5`, `[106]`, or a title such as "One Piece 113") and exactly the anchor's series name (case and accents ignored). Spin-offs under another series name are left out.
+- **Editions:** the candidates of one number are ranked by closeness to the anchor: the same subtitle first (so Mars Chronicle or Color Walk volumes filed under the main series come last), then the most ISBN digits in common (publisher block), then the nearest publication year. The best one is preselected; the others can be picked in a list. An ISBN already in the library is shown as **Already in your library** and cannot be added.
+- **Review before saving:** one row per missing volume, ticked by default, with its number, cover, title, ISBN and year. A row can be unticked. A number the BnF does not list shows **Not found in the BnF catalogue**; it is not created and stays an inferred missing volume. Nothing is saved before the review is confirmed.
+- **Ownership:** Owned by default, changeable per row, with a control to set every row at once (Not owned makes a shopping list).
+- **What each new volume gets:** from the anchor, its category, publisher, bookcase and shelf, tags, and the signed-in account's own reading status; from its BnF record, ISBN, publication year, page count, summary and authors (an author already in the library keeps its existing name; the anchor's authors when the record has none); its collection and volume number from the row.
+- **Titles:** Manga and Comics get the generated title (`Name Vol. N`). The row also shows the BnF's title as a suggestion ("BnF suggests: OK, let's stand up !") with **Use as title**, and the generated title can be taken back. Books get the BnF's title.
+- **Covers:** fetched during the review, one at a time in the background, and filling the rows as they arrive. They use at most half of Open Library's request budget (one every 6 seconds), shared with single lookups, so a single lookup made meanwhile still works. When Open Library asks to wait, the queue waits; closing the review stops it. A volume whose cover has not arrived is saved without one (the "Without cover" filter finds it later).
+- **Saving:** all ticked rows in one operation. A row whose number or ISBN was taken meanwhile is left out and reported; the others are saved. The banner gives the number of volumes added and each one left out.
+- **Audit and Activity:** one audited operation on the collection (`collection.volumes-added`, listing the books created and the rows left out), with each new book as a related `book.created`. Activity shows a single entry: "You added 4 volumes to the collection Gunnm".
+- **Credit:** the review names its source, the BnF catalogue (Licence Ouverte).
+
 ## Duplicate-purchase prevention
 
 Coverage overlap is allowed only between Owned books. Not Owned books cannot overlap either Owned or Not Owned coverage, including omnibus ranges. Apply this rule to additions, coverage edits, ownership changes, and collection moves. Any partial overlap blocks the entire conflicting operation unless resolved explicitly; do not silently trim or split a book.
@@ -168,6 +185,11 @@ A separate desktop page mirroring mobile ownership progression is future scope, 
 21. Naruto (Manga): saving a new Books guide into it is refused with "Naruto holds Manga. This book is Books."; **Use Manga for this book** saves it as Manga.
 22. Naruto volume 3 changed to Comics on its form: the dialog offers to change the whole collection (12 books); confirming makes Naruto and its 12 books Comics, then saves volume 3.
 23. Upgrade of a collection holding two Manga and one Comics book: the collection becomes Manga and no book changes.
+24. Gunnm owns 1, 2 and 5, Add volumes up to 8: the review lists 3, 4, 6, 7 and 8; saving the ticked rows adds them in the edition of volume 5, with the publisher, shelf and tags of volume 5.
+25. Gunnm's anchor is the 2000 edition (`2-7234-…`): volume 1 offers the 2000 edition first, then the 2016 edition, then Mars Chronicle volume 1; the 1995 edition (series "Gunnm.") is not offered.
+26. One Piece volume 10 is catalogued as "OK, let's stand up !": the row offers it with the title One Piece Vol. 10 and "BnF suggests: OK, let's stand up !".
+27. No volume of the collection is known to the BnF: nothing is added and the page says the edition was not found in the BnF catalogue.
+28. Volume 3 is added by someone else while the review is open: saving leaves volume 3 out with its reason and adds the other ticked volumes.
 
 ## Implementation references
 

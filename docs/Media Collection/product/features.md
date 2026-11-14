@@ -50,6 +50,7 @@ Task 1 is complete. [Collections and shopping](collections.md) is the authoritat
 - Overlap is permitted only between Owned books. Rare planned-book conflicts require explicit resolution, never silent deletion/replacement.
 - Empty collections disappear; deleting a collection preserves its books and clears membership/coverage.
 - A collection has one category (Books, Manga or Comics) shared by all its books; a mismatch is refused with a one-click fix, and the collection's Category changes all its books at once. See [Category](collections.md#category).
+- On desktop, **Add volumes up to…** adds a collection's missing volumes from the BnF catalogue, in the edition of a volume already owned, after a row-by-row review. See [Add missing volumes](collections.md#add-missing-volumes).
 - Mobile uses compact missing-volume entries and emphasizes last owned. Ordinary saved Not Owned entries require confirmation for quick add; inferred volumes and omnibus books cannot use it. Guests remain read-only.
 
 See [edition impact analysis](collection-editions-impact.md) for counting implications. Shared name matching belongs to Task 2; exact screen refinements belong to Task 6. No database or implementation design is prescribed.
@@ -114,6 +115,8 @@ Audit logs are required from the first release. Each user-initiated use-case act
 Each record stores its category, a separate Successful/Failed outcome, who performed the action, when it happened, and before/after values as applicable. Failed use-case actions are retained for technical investigation. The actor references the user table; Activity resolves the current username, including for older events after a rename. Password values are explicitly excluded from before/after data. Other credential redaction safeguards are listed in [decisions and open questions](decisions-and-open-questions.md).
 
 A batch edit from a collection page is one record on the collection (`collection.books-batch-edited`), with each changed book's changes recorded as related records of the same operation ([collections](collections.md#batch-edit)).
+
+Adding missing volumes is one record on the collection (`collection.volumes-added`), with each new book as a related `book.created`; Activity shows it as a single entry ([collections](collections.md#add-missing-volumes)).
 
 Technical authentication events may be retained but never appear in Activity. Technical agents define event representation, failure persistence, credential redaction, and storage/privacy enforcement under the confirmed audit rules; these are not new user-facing product workflows. Failed events must not imply that attempted changes persisted. A raw audit viewer, history purging, undo, or restore-from-audit feature is not approved merely because audit data exists.
 
