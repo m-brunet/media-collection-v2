@@ -49,7 +49,7 @@ export class SetUpInternetAccess implements SetUpInternetAccessUseCase {
                 }
 
                 access.ensureAttemptAllowed(this.clock.now());
-                access.start(await this.names.read(), tls.port);
+                access.start(await this.names.read(), await this.setup.httpsPort());
                 await this.store.save(access);
 
                 return {

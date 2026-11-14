@@ -50,6 +50,20 @@ it('uses the saved HTTPS port as the port outside', async () => {
 
     expect(state.routerPort).toBe(34500);
 });
+it('uses the running HTTPS port while a saved one waits for the restart', async () => {
+    const doubles = InternetAccessDoubles.setup(undefined, {
+        enabled: false,
+        port: 34500,
+        hasCertificate: false,
+    });
+    const subject = subjectFor(doubles);
+
+    doubles.https.running = 34443;
+
+    const state = await subject.execute(admin, { replaceCertificate: false });
+
+    expect(state.routerPort).toBe(34443);
+});
 it('runs the setup steps in the background', async () => {
     const doubles = InternetAccessDoubles.setup();
     const subject = subjectFor(doubles);

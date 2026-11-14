@@ -683,6 +683,20 @@ it('leaves the port out of the HTTPS internet address when the router port is 44
 
     expect(result).toBe('https://82.66.118.204');
 });
+it('opens its router rules itself when the router answers UPnP', () => {
+    const access = active();
+
+    const automatic = access.automatic;
+
+    expect(automatic).toBe(true);
+});
+it('leaves router rules to the Admin when they were added by hand', () => {
+    const access = new InternetAccess({ ...active().snapshot, mapping: 'manual' });
+
+    const automatic = access.automatic;
+
+    expect(automatic).toBe(false);
+});
 it('keeps the HTTPS port as the router port of a setup', () => {
     const access = InternetAccess.off();
 
