@@ -56,6 +56,7 @@ Start with the [implementation plan](plans/implementation-plan.md) for task stat
 - [Collections design fixes](plans/design-fix-collections.md).
 - [Development data commands](plans/dev-data-commands.md).
 - [KI-9 and KI-10: Let's Encrypt attempts](plans/ki-09-ki-10-certificate-attempts.md).
+- [Issue #21: internet ports, 443 only for Let's Encrypt's check](plans/issue-21-internet-ports.md).
 
 ## Reading in Obsidian
 
