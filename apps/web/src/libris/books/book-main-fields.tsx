@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import type {
+    CollectionNameDto,
     AuthorDto,
     AuthorSpellingDto,
     BookDto,
@@ -19,7 +20,8 @@ import { CollectionField } from './collection-field';
 import type { CoverChoice } from '../../shared/book-form/cover-choice';
 import { CoverPicker } from './cover-picker';
 import { ReadingField } from '../../shared/book-form/reading-toggle';
-import { ChoiceButtons } from '../../shared/ui/choice-buttons';
+import { CategoryField } from '../../shared/book-form/category-field';
+import type { CategoryRule } from '../../shared/book-form/category-lock.util';
 import type { BookField } from '../../shared/book-form/use-book-save';
 
 export function BookMainFields({
@@ -35,6 +37,8 @@ export function BookMainFields({
     onCoverChange,
     onCorrectAuthor,
     authorSpellings = [],
+    collections,
+    categoryRule,
 }: {
     book: BookDto | null;
     values: BookDraftValues;
@@ -48,6 +52,8 @@ export function BookMainFields({
     onCoverChange(choice: CoverChoice): void;
     onCorrectAuthor?(author: AuthorDto): void;
     authorSpellings?: AuthorSpellingDto[];
+    collections: readonly CollectionNameDto[];
+    categoryRule: CategoryRule;
 }) {
     const { t } = useI18n();
     const lentTo = book?.loan?.receiverName ?? null;
@@ -124,13 +130,9 @@ export function BookMainFields({
                         spellings={authorSpellings}
                         onChange={(authors) => set('authors', authors)}
                     />
-                    <ChoiceButtons
-                        label={t('form.category')}
+                    <CategoryField
                         value={values.category}
-                        choices={BookFormat.categories.map((category) => ({
-                            value: category,
-                            label: t(BookFormat.category(category)),
-                        }))}
+                        rule={categoryRule}
                         onChange={(category) => set('category', category)}
                     />
                     <div className="book-form__row book-form__row--two">
@@ -157,6 +159,7 @@ export function BookMainFields({
                     </div>
                     <CollectionField
                         values={values}
+                        suggestions={collections}
                         error={errorFor('collection')}
                         onChange={(changes) => update(changes)}
                     />

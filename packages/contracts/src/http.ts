@@ -497,6 +497,7 @@ export interface CollectionShoppingDto {
 export interface CollectionNameDto {
     id: string;
     name: string;
+    category: BookCategory;
     includesVolumeZero: boolean;
 }
 

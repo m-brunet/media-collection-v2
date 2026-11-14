@@ -26,6 +26,9 @@ import { TagPicker } from './tag-picker';
 import { useBookLookup } from './use-book-lookup';
 import type { BookField } from '../../shared/book-form/use-book-save';
 import { useBookSave } from '../../shared/book-form/use-book-save';
+import { CategoryLock } from '../../shared/book-form/category-lock.util';
+import { useCategoryLock } from '../../shared/book-form/use-category-lock';
+import { useCollectionNames } from '../../shared/book-form/use-collection-names';
 
 export function BookFormPage() {
     const { id } = useParams();
@@ -87,6 +90,10 @@ function BookForm({ book }: { book: BookDto | null }) {
             : BookDraft.empty();
     });
     const [values, setValues] = useState<BookDraftValues>(initial);
+    const collections = useCollectionNames(values);
+    const categoryRule = CategoryLock.of(book, values, collections);
+
+    useCategoryLock(categoryRule, values.category, setValues);
     const [cover, setCover] = useState<CoverChoice>({ file: null, removed: false });
     const [expanded, setExpanded] = useState(false);
     const [notice, setNotice] = useState<string | null>(null);
@@ -191,6 +198,8 @@ function BookForm({ book }: { book: BookDto | null }) {
                     onCoverChange={setCover}
                     onCorrectAuthor={book ? setCorrecting : undefined}
                     authorSpellings={lookup.spellings}
+                    collections={collections}
+                    categoryRule={categoryRule}
                 />
                 <Panel label={t('form.organisation')}>
                     <div className="form">

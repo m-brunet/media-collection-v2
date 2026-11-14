@@ -629,6 +629,9 @@ export const en = {
     'form.authorNew': 'Add “{name}” as a new author',
     'form.authorRemove': 'Remove {name}',
     'form.authorCorrect': 'Correct the spelling of {name}',
+    'form.categoryLocked':
+        'Set by the collection {name} ({category}). To change it, edit the collection.',
+    'form.categoryMember': 'Changing the category offers to change the whole collection {name}.',
     'form.category': 'Category',
     'form.ownership': 'Ownership',
     'form.reading': 'Your reading',

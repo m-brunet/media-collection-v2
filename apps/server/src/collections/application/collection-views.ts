@@ -67,6 +67,7 @@ export interface CollectionListPage {
 export interface CollectionNameView {
     id: string;
     name: string;
+    category: 'books' | 'manga' | 'comics';
     includesVolumeZero: boolean;
 }
 

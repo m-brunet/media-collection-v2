@@ -496,6 +496,71 @@ it('includes volume 0 in the collection once the person accepts', async () => {
     );
 });
 
+const aynikName = {
+    id: 'aynik',
+    name: 'All You Need Is Kill',
+    category: 'manga',
+    includesVolumeZero: false,
+};
+
+it('takes and locks the category of an existing collection', async () => {
+    new FakeApi()
+        .signedIn(account())
+        .on('GET /collections/names', () => ({ status: 200, body: [aynikName] }));
+
+    addPage();
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Part of a collection' }));
+
+    await userEvent.type(
+        screen.getByRole('combobox', { name: /Collection name/ }),
+        'all you need is kill',
+    );
+
+    expect(
+        await screen.findByText(/Set by the collection All You Need Is Kill \(Manga\)/),
+    ).toBeVisible();
+    expect(screen.getByRole('radio', { name: 'Manga' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Books' })).toBeDisabled();
+});
+
+it('gives back the chosen category once the collection name matches no collection', async () => {
+    new FakeApi()
+        .signedIn(account())
+        .on('GET /collections/names', () => ({ status: 200, body: [aynikName] }));
+
+    addPage();
+    await userEvent.click(screen.getByRole('radio', { name: 'Comics' }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Part of a collection' }));
+    const name = screen.getByRole('combobox', { name: /Collection name/ });
+
+    await userEvent.type(name, 'All You Need Is Kill');
+    await screen.findByText(/Set by the collection/);
+
+    await userEvent.type(name, ' 2');
+
+    await vi.waitFor(() => expect(screen.getByRole('radio', { name: 'Comics' })).toBeChecked());
+    expect(screen.getByRole('radio', { name: 'Books' })).toBeEnabled();
+});
+
+it('leaves the category of a member book free, saying it changes the whole collection', async () => {
+    new FakeApi()
+        .signedIn(account())
+        .on('GET /books/b1', () => ({ status: 200, body: narutoMember }))
+        .on('GET /collections/names', () => ({
+            status: 200,
+            body: [{ ...aynikName, id: 'naruto', name: 'Naruto' }],
+        }));
+
+    editPage();
+
+    expect(
+        await screen.findByText(
+            'Changing the category offers to change the whole collection Naruto.',
+        ),
+    ).toBeVisible();
+    expect(screen.getByRole('radio', { name: 'Comics' })).toBeEnabled();
+});
+
 function mismatch(bookCategory: 'books' | 'manga' | 'comics', bookCount = 12) {
     return {
         status: 409,

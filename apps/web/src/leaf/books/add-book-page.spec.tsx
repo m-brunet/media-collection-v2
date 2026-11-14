@@ -413,3 +413,28 @@ it('saves again with the category of the collection', async () => {
 
     expect(retried).toMatchObject({ category: 'manga' });
 });
+
+it('takes and locks the category of an existing collection', async () => {
+    api.on('GET /collections/names', () => ({
+        status: 200,
+        body: [
+            {
+                id: 'aynik',
+                name: 'All You Need Is Kill',
+                category: 'manga',
+                includesVolumeZero: false,
+            },
+        ],
+    }));
+    open();
+    await userEvent.click(await screen.findByRole('checkbox', { name: 'Part of a collection' }));
+
+    await userEvent.type(
+        screen.getByRole('textbox', { name: /Collection name/ }),
+        'All You Need Is Kill',
+    );
+
+    expect(await screen.findByText(/Set by the collection All You Need Is Kill/)).toBeVisible();
+    expect(screen.getByRole('radio', { name: 'Manga' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Books' })).toBeDisabled();
+});

@@ -9,17 +9,25 @@ export function ChoiceButtons<T extends string>({
     label,
     value,
     choices,
+    disabled = false,
+    hint,
     onChange,
 }: {
     label: string;
     value: T;
     choices: readonly Choice<T>[];
+    disabled?: boolean;
+    hint?: string;
     onChange(value: T): void;
 }) {
     const name = useId();
 
     return (
-        <fieldset className="field choice-buttons">
+        <fieldset
+            className="field choice-buttons"
+            disabled={disabled}
+            aria-describedby={hint ? name + '-hint' : undefined}
+        >
             <legend className="field__label">{label}</legend>
             <div className="choice-buttons__options">
                 {choices.map((choice) => (
@@ -46,6 +54,11 @@ export function ChoiceButtons<T extends string>({
                     </label>
                 ))}
             </div>
+            {hint && (
+                <p id={name + '-hint'} className="field__hint">
+                    {hint}
+                </p>
+            )}
         </fieldset>
     );
 }

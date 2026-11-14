@@ -1,6 +1,5 @@
-import { useEffect, useId, useState } from 'react';
+import { useId } from 'react';
 import type { CollectionNameDto } from '../../../../../packages/contracts/src/http';
-import { api } from '../../shared/api.util';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { SelectField } from '../../shared/ui/select-field';
 import { TextField } from '../../shared/ui/text-field';
@@ -14,38 +13,17 @@ type CollectionValues = Pick<
 
 export function CollectionField({
     values,
+    suggestions,
     error,
     onChange,
 }: {
     values: CollectionValues;
+    suggestions: readonly CollectionNameDto[];
     error?: string;
     onChange(changes: Partial<BookDraftValues>): void;
 }) {
     const { t } = useI18n();
     const id = useId();
-    const [suggestions, setSuggestions] = useState<CollectionNameDto[]>([]);
-    const typed = values.collectionName.trim();
-
-    useEffect(() => {
-        if (!values.inCollection) {
-            return;
-        }
-
-        let current = true;
-        const timer = setTimeout(() => {
-            api.request<CollectionNameDto[]>(
-                '/collections/names?search=' + encodeURIComponent(typed),
-            ).then(
-                (found) => current && setSuggestions(found),
-                () => current && setSuggestions([]),
-            );
-        }, 200);
-
-        return () => {
-            current = false;
-            clearTimeout(timer);
-        };
-    }, [typed, values.inCollection]);
 
     return (
         <div className="form collection-field">
