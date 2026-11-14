@@ -69,6 +69,7 @@ import type { RelatedChange } from '../../../shared/application/ports/driven/aud
 import { BookFilter } from '../../../shared/application/book-filter.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { NameKey } from '../../../shared/domain/name-key.helper.js';
+import { BookCreation } from '../services/book-creation.service.js';
 import { CreateBook } from '../use-cases/create-book.usecase.js';
 import { TestActors } from '../../../shared/application/testing/test-actors.test-support.js';
 import { Required } from '../../../shared/domain/required.helper.js';
@@ -609,6 +610,52 @@ export class MemoryCollectionVolumes implements CollectionVolumes {
     }
 }
 
+export class MembershipVolumes implements CollectionVolumes {
+    constructor(
+        private readonly membership: MemoryMembership,
+        private readonly books: MemoryBooks,
+    ) {}
+
+    async of(collectionId: string, upTo: number): Promise<CollectionVolumesView> {
+        const members = [...this.membership.memberships]
+            .filter(([, collection]) => collection.id === collectionId)
+            .map(([bookId, collection]) => ({ bookId, collection }));
+        const first = members[0];
+
+        if (!first) {
+            throw new Failure('not_found', 'That collection does not exist.', 'collection-missing');
+        }
+
+        const uncovered = [];
+
+        for (let volume = 1; volume <= upTo; volume++) {
+            if (
+                !members.some(
+                    ({ collection }) =>
+                        collection.volumeFrom <= volume && volume <= collection.volumeTo,
+                )
+            ) {
+                uncovered.push(volume);
+            }
+        }
+
+        return {
+            id: collectionId,
+            name: first.collection.name,
+            category: this.membership.categories.get(collectionId) ?? 'books',
+            members: await Promise.all(
+                members.map(async ({ bookId, collection }) => ({
+                    bookId,
+                    volumeFrom: collection.volumeFrom,
+                    volumeTo: collection.volumeTo,
+                    isbn: (await this.books.findById(bookId))?.details.isbn?.isbn13 ?? null,
+                })),
+            ),
+            uncovered,
+        };
+    }
+}
+
 export class ScriptedSeries implements SeriesCatalogue {
     readonly name = 'bnf';
     readonly asked: string[] = [];
@@ -665,6 +712,9 @@ export class BookDoubles {
         const clock = { now: () => new Date('2026-03-01T10:00:00Z') };
         const identity = new BookIdentityCheck(books, authors);
         const resolver = new AuthorResolver(authors, ids, clock);
+        const builder = new BookDetailsBuilder(resolver);
+        const titles = new GeneratedTitleSync(books, identity, clock);
+        const removal = new BookRemoval(books, authors, collections, loader, guard, loans);
 
         return {
             books,
@@ -686,7 +736,7 @@ export class BookDoubles {
             clock,
             operations: AuditDoubles.auditedOperation(trail),
             resolver,
-            builder: new BookDetailsBuilder(resolver),
+            builder,
             planner: new BookBatchPlanner(
                 loader,
                 collections,
@@ -700,9 +750,20 @@ export class BookDoubles {
                 clock,
             ),
             identity,
-            titles: new GeneratedTitleSync(books, identity, clock),
+            titles,
             loader,
-            removal: new BookRemoval(books, authors, collections, loader, guard, loans),
+            removal,
+            creation: new BookCreation(
+                books,
+                builder,
+                identity,
+                titles,
+                collections,
+                removal,
+                organiser,
+                readings,
+                clock,
+            ),
             viewer: new BookViewer(catalog, readings, notes, collections, organisation, loans),
         };
     }
@@ -762,18 +823,10 @@ export class BookDoubles {
         read = false,
     ) {
         return new CreateBook(
-            current.books,
-            current.builder,
-            current.identity,
-            current.titles,
-            current.collections,
-            current.removal,
-            current.organiser,
-            current.readings,
+            current.creation,
             current.covers,
             current.viewer,
             current.ids,
-            current.clock,
             current.operations,
         ).execute(owner, BookDoubles.input(overrides), read);
     }

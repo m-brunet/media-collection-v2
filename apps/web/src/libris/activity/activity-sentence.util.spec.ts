@@ -46,6 +46,20 @@ describe('ActivitySentence', () => {
             'Vous avez passé la collection Naruto et son livre dans la catégorie BD et comics',
         );
     });
+    it('says volumes were added to a collection', () => {
+        const event: ActivityEventDto = { kind: 'volumes-added', name: 'Gunnm', count: 4 };
+
+        const sentence = ActivitySentence.main(event, t);
+
+        expect(sentence).toBe('You added 4 volumes to the collection Gunnm');
+    });
+    it('says a single volume was added to a collection, in French', () => {
+        const event: ActivityEventDto = { kind: 'volumes-added', name: 'Gunnm', count: 1 };
+
+        const sentence = ActivitySentence.main(event, tFr);
+
+        expect(sentence).toBe('Vous avez ajouté un tome à la collection Gunnm');
+    });
     it('says a book was marked Owned', () => {
         const event: ActivityEventDto = { kind: 'book-marked-owned', title: 'Dune' };
 

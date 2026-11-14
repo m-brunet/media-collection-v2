@@ -100,6 +100,26 @@ export const bookLookupSchema = z.strictObject({ isbn: z.string().max(40) });
 
 export const coverAddressSchema = z.strictObject({ address: z.string().max(2000) });
 
+export const addVolumesSchema = z.strictObject({
+    collectionId: idSchema,
+    anchorBookId: idSchema,
+    volumes: z
+        .array(
+            z.strictObject({
+                volume: z.number().int().min(0).max(9999),
+                isbn: z.string().max(40),
+                ownership: z.enum(['owned', 'not-owned']),
+                title: BookFields.text(1000),
+                authors: z.array(z.string().max(400)).max(30),
+                publicationYear: z.number().int().nullable(),
+                pageCount: z.number().int().nullable(),
+                summary: BookFields.text(20000),
+            }),
+        )
+        .min(1)
+        .max(200),
+});
+
 export const missingVolumesSearchSchema = z.strictObject({
     upTo: z.number().int().min(0).max(9999),
 });

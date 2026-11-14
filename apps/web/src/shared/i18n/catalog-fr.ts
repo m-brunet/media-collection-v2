@@ -1386,6 +1386,8 @@ export const fr = {
         'Vous avez passé la collection {name} et son livre dans la catégorie {category}',
     'activity.collectionCategoryChangedEmpty':
         'Vous avez passé la collection {name} dans la catégorie {category}',
+    'activity.volumesAdded': 'Vous avez ajouté {count} tomes à la collection {name}',
+    'activity.volumeAdded': 'Vous avez ajouté un tome à la collection {name}',
     'activity.collectionFinished': 'Vous avez marqué {name} comme terminée',
     'activity.collectionReopened': 'Vous avez rouvert {name}',
     'activity.collectionDeleted': 'Vous avez supprimé la collection {name}',

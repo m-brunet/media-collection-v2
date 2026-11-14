@@ -49,6 +49,7 @@ export type ActivityEvent =
     | { kind: 'books-lent' | 'books-returned'; receiver: string; titles: string[] }
     | { kind: NamedEventKind; name: string }
     | { kind: RenamedEventKind; from: string; to: string }
+    | { kind: 'volumes-added'; name: string; count: number }
     | {
           kind: 'collection-category-changed';
           name: string;
@@ -74,6 +75,7 @@ type Values = Record<string, unknown> | null;
 export class ActivityProjection {
     private static readonly order: readonly (readonly string[])[] = [
         [
+            'collection.volumes-added',
             'book.created',
             'book.updated',
             'book.marked-owned',
@@ -119,6 +121,7 @@ export class ActivityProjection {
         }
 
         const together = readable.filter((record) => record.category === main.category);
+        const absorbed = ActivityProjection.absorbs[main.category] ?? [];
         const event = ActivityProjection.event(main.category, together, readable);
 
         if (!event) {
@@ -134,6 +137,7 @@ export class ActivityProjection {
                 .filter(
                     (record) =>
                         record.category !== main.category &&
+                        !absorbed.includes(record.category) &&
                         !ActivityProjection.consequences.includes(record.category),
                 )
                 .map((record) => ActivityProjection.event(record.category, [record], readable))
@@ -147,6 +151,10 @@ export class ActivityProjection {
         'book.retitled',
         'book.category-changed',
     ];
+
+    private static readonly absorbs: Readonly<Record<string, readonly string[]>> = {
+        'collection.volumes-added': ['book.created'],
+    };
 
     private static main(records: readonly ActivityRecord[]): ActivityRecord | undefined {
         return [...records].sort(
@@ -171,6 +179,8 @@ export class ActivityProjection {
         switch (category) {
             case 'book.created':
                 return ActivityProjection.book('book-added', record);
+            case 'collection.volumes-added':
+                return ActivityProjection.volumesAdded(after);
             case 'book.updated':
             case 'book.retitled':
                 return ActivityProjection.book('book-updated', record);
@@ -235,6 +245,15 @@ export class ActivityProjection {
             default:
                 return null;
         }
+    }
+
+    private static volumesAdded(after: Values): ActivityEvent | null {
+        const name = ActivityProjection.text(after, 'name');
+        const added = after?.added;
+
+        return name && Array.isArray(added) && added.length > 0
+            ? { kind: 'volumes-added', name, count: added.length }
+            : null;
     }
 
     private static book(kind: BookEventKind, record: ActivityRecord): ActivityEvent {

@@ -24,6 +24,7 @@ export class ActivitySentence {
         'collection-updated': 'activity.collectionUpdated',
         'collection-renamed': 'activity.collectionRenamed',
         'collection-category-changed': 'activity.collectionCategoryChanged',
+        'volumes-added': 'activity.volumesAdded',
         'collection-finished': 'activity.collectionFinished',
         'collection-reopened': 'activity.collectionReopened',
         'collection-deleted': 'activity.collectionDeleted',
@@ -66,6 +67,13 @@ export class ActivitySentence {
                 title: Required.at(event.titles, 0, 'an event names at least one book'),
                 count: event.titles.length,
                 receiver: event.receiver,
+            });
+        }
+
+        if (event.kind === 'volumes-added') {
+            return t(event.count === 1 ? 'activity.volumeAdded' : 'activity.volumesAdded', {
+                name: event.name,
+                count: event.count,
             });
         }
 

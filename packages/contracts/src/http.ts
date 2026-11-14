@@ -415,6 +415,28 @@ export type BookLookupDto =
           unavailable: { source: string; reason: 'limited' | 'failed' }[];
       };
 
+export interface NewVolumeDto {
+    volume: number;
+    isbn: string;
+    ownership: BookOwnership;
+    title: string | null;
+    authors: string[];
+    publicationYear: number | null;
+    pageCount: number | null;
+    summary: string | null;
+}
+
+export interface NewVolumesDto {
+    collectionId: string;
+    anchorBookId: string;
+    volumes: NewVolumeDto[];
+}
+
+export interface VolumesAddedDto {
+    added: { bookId: string; volume: number; title: string }[];
+    skipped: { volume: number; isbn: string; reason: 'volume-taken' | 'isbn-taken' }[];
+}
+
 export type VolumeCoverDto =
     | { kind: 'found'; token: string }
     | { kind: 'none' }
@@ -633,6 +655,7 @@ export type ActivityEventDto =
       }
     | { kind: 'books-lent' | 'books-returned'; receiver: string; titles: string[] }
     | { kind: 'collection-category-changed'; name: string; category: BookCategory; count: number }
+    | { kind: 'volumes-added'; name: string; count: number }
     | {
           kind:
               | 'collection-created'

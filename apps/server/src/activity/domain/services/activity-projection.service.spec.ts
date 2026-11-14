@@ -234,6 +234,27 @@ describe('ActivityProjection', () => {
         });
         expect(entry?.also).toEqual([]);
     });
+    it('describes volumes added to a collection as one entry counting them', () => {
+        const added = operation(
+            record('collection.volumes-added', {
+                name: 'Gunnm',
+                added: [
+                    { bookId: 'book-2', volume: 2, title: 'Gunnm Vol. 2' },
+                    { bookId: 'book-3', volume: 3, title: 'Gunnm Vol. 3' },
+                ],
+                skipped: [],
+            }),
+            record('book.created', { title: 'Gunnm Vol. 2' }),
+            record('book.created', { title: 'Gunnm Vol. 3' }),
+            record('tag.created', { name: 'Seinen' }),
+        );
+
+        const entry = ActivityProjection.entry(added);
+
+        expect(entry?.event).toEqual({ kind: 'volumes-added', name: 'Gunnm', count: 2 });
+        expect(entry?.also).toEqual([{ kind: 'tag-created', name: 'Seinen' }]);
+    });
+
     it('describes a collection change that kept its name as an update', () => {
         const update = operation(
             record(
