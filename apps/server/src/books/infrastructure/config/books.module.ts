@@ -73,6 +73,7 @@ import { SeriesLookup } from '../../application/services/series-lookup.service.j
 import type { SeriesCatalogue } from '../../application/ports/driven/series-catalogue.interface.js';
 import type { CollectionVolumes } from '../../application/ports/driven/collection-volumes.interface.js';
 import { FindMissingVolumes } from '../../application/use-cases/find-missing-volumes.usecase.js';
+import { FindVolumeCover } from '../../application/use-cases/find-volume-cover.usecase.js';
 import { BnfSeries } from '../adapters/driven/third-party/bnf-series.adapter.js';
 import { MissingVolumesController } from '../adapters/driving/web/missing-volumes.controller.js';
 import { LookUpBook } from '../../application/use-cases/look-up-book.usecase.js';
@@ -335,6 +336,22 @@ const useCaseProviders: Provider[] = [
                 chains.covers,
                 registry,
                 new AuthorMatcher(authors),
+            ),
+    },
+    {
+        provide: 'BOOKS_FIND_VOLUME_COVER',
+        inject: [token.lookupChains, token.lookupCovers, token.clock, token.lookup],
+        useFactory: (
+            chains: LookupChains,
+            registry: LookupCoverRegistry,
+            clock: Clock,
+            lookup: BookLookupSources,
+        ) =>
+            new FindVolumeCover(
+                chains.covers,
+                registry,
+                clock,
+                FindVolumeCover.half(lookup.covers[0]?.limit ?? { requests: 2, seconds: 60 }),
             ),
     },
     {

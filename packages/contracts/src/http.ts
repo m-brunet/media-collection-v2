@@ -415,6 +415,11 @@ export type BookLookupDto =
           unavailable: { source: string; reason: 'limited' | 'failed' }[];
       };
 
+export type VolumeCoverDto =
+    | { kind: 'found'; token: string }
+    | { kind: 'none' }
+    | { kind: 'limited'; retryAt: string };
+
 export interface MissingVolumeEditionDto {
     isbn13: string;
     title: string | null;
