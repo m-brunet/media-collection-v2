@@ -248,6 +248,74 @@ it('saves the cover that arrived with its volume', async () => {
     expect(api.calls.map((call) => call.route)).toContain('PUT /books/book-2/cover');
 });
 
+function stubPreviews() {
+    vi.stubGlobal(
+        'URL',
+        Object.assign(URL, { createObjectURL: () => 'blob:cover', revokeObjectURL: () => {} }),
+    );
+}
+
+const picked = new File([new Uint8Array([0xff, 0xd8, 0xff])], 'cover.jpg', { type: 'image/jpeg' });
+
+async function pickCover(volume: number) {
+    await userEvent.click(
+        await within(rowOf(volume)).findByRole('button', {
+            name: 'Find a cover for volume ' + volume,
+        }),
+    );
+    await userEvent.upload(
+        Required.value(
+            screen.getByRole('dialog').querySelector<HTMLInputElement>('input[type="file"]'),
+            'the cover picker has a file input',
+        ),
+        picked,
+    );
+}
+
+it('offers a web search by ISBN for a volume without a cover', async () => {
+    await review();
+
+    await userEvent.click(
+        await within(rowOf(2)).findByRole('button', { name: 'Find a cover for volume 2' }),
+    );
+
+    expect(
+        within(screen.getByRole('dialog')).getByRole('link', {
+            name: /Search this cover on the web/,
+        }),
+    ).toHaveAttribute('href', 'https://www.google.com/search?tbm=isch&q=9782723434324');
+});
+
+it('shows the cover picked for a volume in its row', async () => {
+    stubPreviews();
+    await review();
+
+    await pickCover(2);
+
+    expect(within(rowOf(2)).getByRole('img', { name: 'Cover of volume 2' })).toHaveAttribute(
+        'src',
+        'blob:cover',
+    );
+});
+
+it('saves the cover picked for a volume', async () => {
+    stubPreviews();
+    const api = library()
+        .on('POST /books/volumes', () => ({
+            status: 201,
+            body: { added: [{ bookId: 'book-2', volume: 2, title: 'Gunnm Vol. 2' }], skipped: [] },
+        }))
+        .on('PUT /books/book-2/cover', () => ({ status: 200, body: {} }));
+
+    await review(api);
+    await pickCover(2);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add 1 volume' }));
+
+    await screen.findByText('A volume was added to Gunnm.');
+    expect(api.calls.find((call) => call.route === 'PUT /books/book-2/cover')?.body).toBe(picked);
+});
+
 it('reports a volume left out at save time', async () => {
     const api = library().on('POST /books/volumes', () => ({
         status: 201,

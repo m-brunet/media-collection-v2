@@ -1003,6 +1003,13 @@ body {
     object-fit: cover;
 }
 
+.volume-review__no-cover {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
+}
+
 .volume-review__book {
     display: flex;
     flex-direction: column;
