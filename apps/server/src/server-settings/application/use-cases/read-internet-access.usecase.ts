@@ -32,7 +32,7 @@ export class ReadInternetAccess implements ReadInternetAccessUseCase {
                     ? {
                           localAddress: await this.local.current(),
                           internalPort: (await this.tls.read()).port,
-                          externalPort: InternetAccess.externalPort,
+                          externalPort: InternetAccess.checkPort,
                           protocol: 'TCP',
                       }
                     : null,

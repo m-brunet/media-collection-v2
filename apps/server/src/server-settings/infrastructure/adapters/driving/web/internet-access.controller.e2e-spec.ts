@@ -149,7 +149,7 @@ describe('GET /api/server-settings after a setup', () => {
             response.body.internetAccess.phase,
             response.body.internetAccess.origin,
             response.body.internetAccess.certificate?.address,
-        ]).toEqual(['active', 'https://' + publicAddress, publicAddress]);
+        ]).toEqual(['active', 'https://' + publicAddress + ':34443', publicAddress]);
     });
     it('switches HTTPS on with the issued certificate', async () => {
         const client = await app.authenticatedClient(admin);
@@ -220,7 +220,7 @@ describe('GET /api/server-settings after a setup', () => {
             app.dependencies.internetAccess.authority.subjects,
         ]).toEqual([
             'active',
-            'https://home.example.fr',
+            'https://home.example.fr:34443',
             'home.example.fr',
             [{ kind: 'domain', name: 'home.example.fr' }],
         ]);

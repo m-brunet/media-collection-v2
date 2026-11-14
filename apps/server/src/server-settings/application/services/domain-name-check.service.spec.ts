@@ -6,7 +6,7 @@ import { DomainNameCheck } from './domain-name-check.service.js';
 function accessFor(domain: string | null): InternetAccess {
     const access = InternetAccess.off();
 
-    access.start(domain);
+    access.start(domain, 3443);
     access.routerFound('upnp', publicAddress, new Date('2026-11-08T10:00:00.000Z'));
 
     return access;

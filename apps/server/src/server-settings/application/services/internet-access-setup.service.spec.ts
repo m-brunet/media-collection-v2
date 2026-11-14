@@ -9,7 +9,7 @@ import {
 function startedDoubles() {
     const access = InternetAccess.off();
 
-    access.start(null);
+    access.start(null, 3443);
 
     return InternetAccessDoubles.setup(access.snapshot);
 }
@@ -153,7 +153,7 @@ it('is no longer running once the setup ended', async () => {
 it('checks a manual rule by getting the certificate only', async () => {
     const access = InternetAccess.off();
 
-    access.start(null);
+    access.start(null, 3443);
     access.portNeeded(publicAddress, 'no-router', new Date('2026-11-08T10:00:00.000Z'));
     access.check();
     const { setup, store, router } = InternetAccessDoubles.setup(access.snapshot);
@@ -170,7 +170,7 @@ it('checks a manual rule by getting the certificate only', async () => {
 function startedWithDomain() {
     const access = InternetAccess.off();
 
-    access.start('home.example.fr');
+    access.start('home.example.fr', 3443);
 
     return InternetAccessDoubles.setup(access.snapshot);
 }

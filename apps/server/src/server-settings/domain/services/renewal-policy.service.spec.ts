@@ -33,6 +33,13 @@ it('renews a certificate at half of its lifetime', () => {
 
     expect(due).toBe(true);
 });
+it('dates the renewal at the given share of the lifetime', () => {
+    const share = RenewalPolicy.domainShare;
+
+    const renewal = RenewalPolicy.renewalAt(certificate, share);
+
+    expect(renewal.toISOString()).toBe('2026-11-12T10:00:00.000Z');
+});
 it('renews at once when the public address changed', () => {
     const now = new Date('2026-11-08T11:00:00.000Z');
 

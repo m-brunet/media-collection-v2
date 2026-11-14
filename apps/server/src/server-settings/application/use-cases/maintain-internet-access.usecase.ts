@@ -56,7 +56,7 @@ export class MaintainInternetAccess implements MaintainInternetAccessUseCase {
     private async upkeep(access: InternetAccess, now: Date): Promise<RuleUpkeepOutcome> {
         const { port } = await this.tls.read();
         const kept = await this.rules.keep(
-            { externalPort: InternetAccess.externalPort, internalPort: port },
+            { externalPort: InternetAccess.checkPort, internalPort: port },
             access.mapping === 'manual',
         );
 

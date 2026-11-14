@@ -35,7 +35,7 @@ function activeAccess(): InternetAccess {
     const access = InternetAccess.off();
     const now = new Date('2026-11-08T10:00:00.000Z');
 
-    access.start(null);
+    access.start(null, 34443);
     access.routerFound('upnp', '82.66.118.204', now);
     access.portOpened();
     access.activate({
@@ -178,7 +178,7 @@ it('saves the domain name', async () => {
     );
     const access = InternetAccess.off();
 
-    access.start('home.example.fr');
+    access.start('home.example.fr', 34443);
     access.stop('domain-mismatch', new Date('2026-11-08T10:00:00.000Z'));
     await repository.save(access);
 

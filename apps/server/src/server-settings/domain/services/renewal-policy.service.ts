@@ -16,10 +16,13 @@ export class RenewalPolicy {
             return true;
         }
 
-        const issued = certificate.issuedAt.getTime();
-        const renewal = issued + (certificate.expiresAt.getTime() - issued) * share;
+        return now.getTime() >= RenewalPolicy.renewalAt(certificate, share).getTime();
+    }
 
-        return now.getTime() >= renewal;
+    static renewalAt(certificate: IssuedCertificate, share: number): Date {
+        const issued = certificate.issuedAt.getTime();
+
+        return new Date(issued + (certificate.expiresAt.getTime() - issued) * share);
     }
 
     static retryAt(failedAttempts: number, now: Date): Date {

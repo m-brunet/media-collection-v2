@@ -37,7 +37,7 @@ export class TurnOffInternetAccess implements TurnOffInternetAccessUseCase {
                     const { port } = await this.tls.read();
 
                     await this.router.close({
-                        externalPort: InternetAccess.externalPort,
+                        externalPort: InternetAccess.checkPort,
                         internalPort: port,
                     });
                 }

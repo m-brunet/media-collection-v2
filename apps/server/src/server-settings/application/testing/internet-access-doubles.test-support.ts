@@ -330,6 +330,7 @@ export class InternetAccessDoubles {
             phase: 'active',
             mapping: 'upnp',
             publicAddress,
+            routerPort: 3443,
             certificate: {
                 address: publicAddress,
                 issuedAt: '2026-11-08T10:00:00.000Z',

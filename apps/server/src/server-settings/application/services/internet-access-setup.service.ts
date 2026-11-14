@@ -163,7 +163,7 @@ export class InternetAccessSetup {
         await this.store.save(access);
         const { port } = await this.tls.read();
         const opened = await this.rules.open({
-            externalPort: InternetAccess.externalPort,
+            externalPort: InternetAccess.checkPort,
             internalPort: port,
         });
 
