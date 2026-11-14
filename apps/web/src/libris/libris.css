@@ -1010,6 +1010,38 @@ body {
     gap: var(--space-1);
 }
 
+.dialog[open]:has(.volume-review__picker) {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100dvh - 32px);
+}
+
+.dialog:has(.volume-review__picker) .dialog__body,
+.volume-review__picker,
+.volume-review__picker .cover-picker {
+    display: flex;
+    flex: 0 1 auto;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.volume-review__picker .cover-picker__drop {
+    container-type: size;
+    flex: 0 1 calc(1.5 * (min(520px, 100vw - 32px) - 2 * var(--space-6)));
+    min-height: 0;
+}
+
+.volume-review__picker .cover-picker__empty {
+    width: auto;
+    height: 100%;
+}
+
+.volume-review__picker .book-cover {
+    width: auto;
+    height: min(100cqh, 150cqw);
+    margin-inline: auto;
+}
+
 .volume-review__book {
     display: flex;
     flex-direction: column;

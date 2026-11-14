@@ -173,19 +173,21 @@ function CoverCell({
                         </Button>
                     }
                 >
-                    <CoverPicker
-                        title={VolumeReview.title(row, choice)}
-                        savedCover={null}
-                        searchTerms={isbn13}
-                        choice={{ file: choice.cover, removed: false }}
-                        onChange={(picked) => {
-                            onChange({ cover: picked.file });
+                    <div className="volume-review__picker">
+                        <CoverPicker
+                            title={VolumeReview.title(row, choice)}
+                            savedCover={null}
+                            searchTerms={isbn13}
+                            choice={{ file: choice.cover, removed: false }}
+                            onChange={(picked) => {
+                                onChange({ cover: picked.file });
 
-                            if (picked.file) {
-                                setPicking(false);
-                            }
-                        }}
-                    />
+                                if (picked.file) {
+                                    setPicking(false);
+                                }
+                            }}
+                        />
+                    </div>
                 </Dialog>
             )}
         </div>
