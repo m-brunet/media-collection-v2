@@ -14,7 +14,6 @@ import {
 import type { z } from 'zod';
 import type { DeleteCollectionUseCase } from '../../../../application/ports/driving/delete-collection-use-case.interface.js';
 import type { FindCollectionsUseCase } from '../../../../application/ports/driving/find-collections-use-case.interface.js';
-import type { ListCategoryMismatchesUseCase } from '../../../../application/ports/driving/list-category-mismatches-use-case.interface.js';
 import type { FinishCollectionUseCase } from '../../../../application/ports/driving/finish-collection-use-case.interface.js';
 import type { GetCollectionUseCase } from '../../../../application/ports/driving/get-collection-use-case.interface.js';
 import type { GetCollectionShoppingUseCase } from '../../../../application/ports/driving/get-collection-shopping-use-case.interface.js';
@@ -25,7 +24,6 @@ import type { UpdateCollectionUseCase } from '../../../../application/ports/driv
 import type { AuthenticatedRequest } from '../../../../../shared/infrastructure/adapters/driving/web/api-guard.js';
 import { BookFilterQueryMapper } from '../../../../../shared/infrastructure/adapters/driving/web/book-filter-query.mapper.js';
 import type {
-    CategoryMismatchDto,
     CollectionDetailsDto,
     CollectionListPageDto,
     CollectionNameDto,
@@ -33,7 +31,6 @@ import type {
     ShoppingCollectionDto,
 } from '../../../../../../../../packages/contracts/src/http.js';
 import {
-    categoryMismatchesSchema,
     collectionChangesSchema,
     collectionIdSchema,
     collectionListSchema,
@@ -45,8 +42,6 @@ export class CollectionsController {
     constructor(
         @Inject('COLLECTIONS_LIST') private readonly listCollections: ListCollectionsUseCase,
         @Inject('COLLECTIONS_FIND') private readonly findCollections: FindCollectionsUseCase,
-        @Inject('COLLECTIONS_MISMATCHES')
-        private readonly listMismatches: ListCategoryMismatchesUseCase,
         @Inject('COLLECTIONS_GET') private readonly getCollection: GetCollectionUseCase,
         @Inject('COLLECTIONS_UPDATE') private readonly updateCollection: UpdateCollectionUseCase,
         @Inject('COLLECTIONS_FINISH') private readonly finishCollection: FinishCollectionUseCase,
@@ -79,14 +74,6 @@ export class CollectionsController {
         @Query({ schema: collectionNamesSchema }) query: z.infer<typeof collectionNamesSchema>,
     ): Promise<CollectionNameDto[]> {
         return this.findCollections.execute(query.search);
-    }
-
-    @Get('mismatches')
-    mismatches(
-        @Query({ schema: categoryMismatchesSchema })
-        query: z.infer<typeof categoryMismatchesSchema>,
-    ): Promise<CategoryMismatchDto[]> {
-        return this.listMismatches.execute(query.collection ?? null);
     }
 
     @Get('shopping')

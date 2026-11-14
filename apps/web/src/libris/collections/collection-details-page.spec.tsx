@@ -450,57 +450,6 @@ it('says how many books change with the category of the collection', async () =>
     ).toBeInTheDocument();
 });
 
-it('lists the books of another category than the collection', async () => {
-    const api = new FakeApi()
-        .signedIn(account())
-        .on('GET /collections/c1', () => ({ status: 200, body: batman() }))
-        .on('GET /collections/mismatches', () => ({
-            status: 200,
-            body: [
-                {
-                    bookId: 'guide',
-                    title: 'Batman guide',
-                    category: 'books',
-                    collectionId: 'c1',
-                    collectionName: 'Batman',
-                    collectionCategory: 'comics',
-                },
-            ],
-        }));
-
-    show();
-
-    const summary = await screen.findByText('1 book does not match its collection’s category');
-
-    await userEvent.click(summary);
-
-    expect(screen.getByRole('link', { name: 'Batman guide' })).toHaveAttribute(
-        'href',
-        '/books/guide',
-    );
-    expect(screen.getByText('Books, in Batman (Comics)')).toBeInTheDocument();
-    expect(api.calls.map((call) => call.route)).toContain(
-        'GET /collections/mismatches?collection=c1',
-    );
-});
-
-it('shows no mismatch notice when every book matches', async () => {
-    const api = new FakeApi()
-        .signedIn(account())
-        .on('GET /collections/c1', () => ({ status: 200, body: batman() }))
-        .on('GET /collections/mismatches', () => ({ status: 200, body: [] }));
-
-    show();
-    await screen.findByRole('heading', { name: 'Batman' });
-
-    await waitFor(() =>
-        expect(api.calls.map((call) => call.route)).toContain(
-            'GET /collections/mismatches?collection=c1',
-        ),
-    );
-    expect(screen.queryByText(/match (its|their) collection’s category/)).not.toBeInTheDocument();
-});
-
 it('deletes the collection after confirming that its books are kept', async () => {
     const api = new FakeApi()
         .signedIn(account())

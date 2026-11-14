@@ -172,8 +172,7 @@ collection id, name, category, book count and the book's category); a new collec
 Changing the collection's category goes through `UpdateCollection` and the `MemberCategories` port declared by
 `collections`, implemented by the books service `CollectionMemberCategories` (`BooksModule.memberCategories`): each
 changed book is a related `book.category-changed` entry of the collection operation, which Activity shows as one
-entry. Books left with another category by the upgrade are listed through the `CategoryMismatchReader` port
-(`KyselyCategoryMismatchReader`) behind `GET /api/collections/mismatches`.
+entry.
 
 Books and lending collaborate through two ports declared by `books`, both implemented in the lending application
 layer and built at the root (`LendingModule.bookLoans`, `LendingModule.history`): `BookLoanReader` (`BookLoanLookup`)
