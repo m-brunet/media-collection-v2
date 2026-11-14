@@ -78,6 +78,21 @@ it('serves the saved certificate to browsers over HTTP/1.1', async () => {
 
     expect(answer).toEqual({ subject: 'CN=saved', protocol: 'http/1.1' });
 });
+it('gives the port it listens on', async () => {
+    const subject = runtime();
+    const port = await subject.start(await freePort(), await certificate('saved'));
+
+    const running = subject.runningPort();
+
+    expect(running).toBe(port);
+});
+it('gives no port before it listens', () => {
+    const subject = runtime();
+
+    const running = subject.runningPort();
+
+    expect(running).toBeNull();
+});
 it('swaps the certificate without stopping the listener', async () => {
     const subject = runtime();
     const port = await subject.start(await freePort(), await certificate('old'));
