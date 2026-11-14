@@ -23,6 +23,7 @@ const libraryItems: NavigationItem[] = [
     { to: '/tags', label: 'nav.tags', icon: 'tag' },
     { to: '/loans', label: 'nav.loans', icon: 'lend' },
     { to: '/activity', label: 'nav.activity', icon: 'activity' },
+    { to: '/statistics', label: 'nav.statistics', icon: 'statistics' },
 ];
 const administrationItems: NavigationItem[] = [
     { to: '/admin/accounts', label: 'nav.accounts', icon: 'accounts' },

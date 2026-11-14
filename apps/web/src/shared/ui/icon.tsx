@@ -31,6 +31,7 @@ import {
     CircleCheck,
     History,
     Info,
+    ChartColumn,
     LayoutDashboard,
     Layers,
     Palette,
@@ -50,6 +51,7 @@ import {
 const lucide = {
     overview: LayoutDashboard,
     activity: History,
+    statistics: ChartColumn,
     account: UserRound,
     administration: ShieldCheck,
     accounts: Users,

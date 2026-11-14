@@ -24,6 +24,10 @@
     --color-warning-surface: #3a3227;
     --color-success-surface: var(--scheme-accent-background);
     --color-focus: var(--scheme-accent-text);
+    --color-chart-1: var(--scheme-accent);
+    --color-chart-2: #d5b66f;
+    --color-chart-3: var(--scheme-text-secondary);
+    --color-chart-track: var(--scheme-border-strong);
 
     --font-body: 'Inter', system-ui, sans-serif;
     --font-heading: 'Space Grotesk', 'Inter', system-ui, sans-serif;

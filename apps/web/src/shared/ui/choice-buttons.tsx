@@ -1,8 +1,11 @@
 import { useId } from 'react';
+import type { IconName } from './icon';
+import { Icon } from './icon';
 
 export interface Choice<T extends string> {
     value: T;
     label: string;
+    icon?: IconName;
 }
 
 export function ChoiceButtons<T extends string>({
@@ -50,6 +53,7 @@ export function ChoiceButtons<T extends string>({
                             checked={choice.value === value}
                             onChange={() => onChange(choice.value)}
                         />
+                        {choice.icon && <Icon name={choice.icon} />}
                         <span>{choice.label}</span>
                     </label>
                 ))}
