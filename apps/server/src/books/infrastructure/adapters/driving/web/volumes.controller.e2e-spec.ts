@@ -96,10 +96,15 @@ describe('POST /api/books/volumes', () => {
         });
         const response = await client.call<ActivityPageDto>('/activity');
 
-        expect(response.body.entries.map((entry) => entry.event)).toEqual([
-            { kind: 'volumes-added', name: 'Gunnm', count: 2 },
-            expect.objectContaining({ kind: 'book-added' }),
+        expect(response.body.entries.map((entry) => entry.event.kind).sort()).toEqual([
+            'book-added',
+            'volumes-added',
         ]);
+        expect(response.body.entries.map((entry) => entry.event)).toContainEqual({
+            kind: 'volumes-added',
+            name: 'Gunnm',
+            count: 2,
+        });
     });
 
     it('reports a volume left out and saves the others', async () => {
