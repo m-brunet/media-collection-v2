@@ -47,6 +47,7 @@ Bugs, improvements and features are GitHub issues in this repository, decided on
 - Internet access (2026-11-08, Task 9.5): one Admin action opens the router port (UPnP/NAT-PMP) and gets a Let's Encrypt IP address certificate on external port 443; only HTTPS is exposed; manual PEM import stays advanced; dynamic DNS names deferred.
 - Domain name and HTTP from the internet (2026-11-09, Task 9.6): a saved domain name, checked on save, used by every internet address; the certificate then covers the name (`classic` profile, renewed at two thirds of its lifetime), still proven on external port 443; no DNS provider API. HTTP may be opened to the internet at the Admin's explicit request (reverses "only HTTPS is exposed"); a working HTTPS closes it.
 - Internet ports (2026-11-10, issue #21): the HTTP and HTTPS ports are also the outside ports on the router and appear in the internet addresses; router port 443 is opened only around each Let's Encrypt check. Plan: [issue-21-internet-ports](issue-21-internet-ports.md).
+- Statistics page (2026-11-13, issue #34): a read-only `/statistics` page over owned books, narrowed by category, Dashboard view first. Plan: [issue-34-statistics](issue-34-statistics.md).
 - Markdown excluded from oxfmt. `npm run check` builds before lint.
 
 ## Testing strategy (applies to every task)
