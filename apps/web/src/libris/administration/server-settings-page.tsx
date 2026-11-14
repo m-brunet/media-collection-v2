@@ -87,7 +87,6 @@ export function ServerSettingsPage() {
                     method: 'PUT',
                     body: {
                         enabled: form.get('enabled') === 'on',
-                        port: Number(form.get('port')),
                         ...(chain || key ? { chain, key } : {}),
                     },
                 }),

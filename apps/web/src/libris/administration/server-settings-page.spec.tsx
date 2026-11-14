@@ -35,9 +35,13 @@ function internetAccess(overrides: Partial<InternetAccessStatus> = {}): Internet
         nextAttemptAt: null,
         retryAfter: null,
         awaitingCheck: false,
+        routerPort: null,
+        addressMoved: false,
+        renewalAt: null,
         allowances: null,
         origin: null,
         manualRule: null,
+        checkRule: null,
         ...overrides,
     };
 }

@@ -7,5 +7,7 @@ import type { ManualPortRule } from './manual-port-rule.interface.js';
 export interface InternetAccessView extends Omit<InternetAccessState, 'history'> {
     allowances: AttemptAllowances | null;
     origin: string | null;
+    renewalAt: string | null;
     manualRule: ManualPortRule | null;
+    checkRule: ManualPortRule | null;
 }

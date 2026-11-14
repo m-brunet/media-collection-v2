@@ -291,6 +291,7 @@ export class BackendRuntime {
                             internetAccess: internetAccessStore,
                             ...internetAccess,
                             https: {
+                                runningPort: () => runtime.runningPort(),
                                 ensureRunning: (port) => runtime.ensureRunning(port),
                                 install: async (port, certificate) => {
                                     const installed = await runtime.install(port, certificate);

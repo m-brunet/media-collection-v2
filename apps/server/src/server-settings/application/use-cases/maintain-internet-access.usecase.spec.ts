@@ -12,7 +12,6 @@ function subjectFor(doubles: ReturnType<typeof InternetAccessDoubles.setup>) {
     return new MaintainInternetAccess(
         doubles.store,
         doubles.rules,
-        doubles.tls,
         doubles.setup,
         doubles.domains,
         doubles.names,
@@ -319,6 +318,35 @@ it('moves the rule an Admin waits to add by hand to the new HTTPS port', async (
     await subject.execute();
 
     expect([doubles.store.current.routerPort, doubles.router.closed]).toEqual([3443, []]);
+});
+it('keeps the rule on the running HTTPS port until the restart', async () => {
+    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active(), {
+        enabled: true,
+        port: 34500,
+        hasCertificate: true,
+    });
+    const subject = subjectFor(doubles);
+
+    doubles.https.running = 3443;
+
+    await subject.execute();
+
+    expect([doubles.journal, doubles.store.current.routerPort]).toEqual([
+        ['open 3443 -> 3443'],
+        3443,
+    ]);
+});
+it('moves the rule to the saved HTTPS port after the restart', async () => {
+    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active(), {
+        enabled: true,
+        port: 34500,
+        hasCertificate: true,
+    });
+    const subject = subjectFor(doubles);
+
+    await subject.execute();
+
+    expect(doubles.journal).toEqual(['close 3443', 'open 34500 -> 34500']);
 });
 it('does nothing while internet access is off', async () => {
     const doubles = InternetAccessDoubles.setup();

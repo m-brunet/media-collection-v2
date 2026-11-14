@@ -34,7 +34,7 @@ async function serverSettings(internetAccess: NonNullable<RuntimeOptions['intern
     const httpsPort = await RuntimeSetup.availablePort();
 
     await RuntimeSetup.administrator(started.client);
-    await started.client.call('/server-settings', 'PUT', { enabled: false, port: httpsPort });
+    await started.client.call('/server-settings/https-port', 'PUT', { port: httpsPort });
     const page = await browser.page(started.client.base, {
         viewport: viewports.referenceDesktop,
     });
@@ -115,7 +115,9 @@ describe('Internet access', () => {
         await capture(page, 'internet-access-manual-rule');
 
         expect(await page.getByText(/refused to open port 443/).isVisible()).toBe(true);
-        expect(await page.getByText(String(httpsPort), { exact: true }).isVisible()).toBe(true);
+        expect(await page.getByText(String(httpsPort), { exact: true }).first().isVisible()).toBe(
+            true,
+        );
         expect(await page.getByRole('button', { name: 'Check again' }).isVisible()).toBe(true);
     });
     it('explains a provider that shares the public address', async () => {

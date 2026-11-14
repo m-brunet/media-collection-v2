@@ -4,6 +4,6 @@ import type { TlsSettingsState } from '../../../domain/value-objects/tls-setting
 export interface SaveTlsSettingsUseCase {
     execute(
         actor: Actor,
-        input: { enabled: boolean; port: number; chain?: string; key?: string },
+        input: { enabled: boolean; chain?: string; key?: string },
     ): Promise<TlsSettingsState>;
 }

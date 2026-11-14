@@ -209,6 +209,11 @@ export class FakeHttpsRuntime implements HttpsRuntime {
     readonly started: number[] = [];
     readonly installed: { port: number; chain: string }[] = [];
     available = true;
+    running: number | null = null;
+
+    runningPort(): number | null {
+        return this.running;
+    }
 
     async ensureRunning(port: number): Promise<boolean> {
         this.started.push(port);
