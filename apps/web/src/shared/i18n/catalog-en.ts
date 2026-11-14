@@ -1332,6 +1332,8 @@ export const en = {
     'activity.collectionCategoryChangedOne':
         'You changed the collection {name} and its book to {category}',
     'activity.collectionCategoryChangedEmpty': 'You changed the collection {name} to {category}',
+    'activity.volumesAdded': 'You added {count} volumes to the collection {name}',
+    'activity.volumeAdded': 'You added a volume to the collection {name}',
     'activity.collectionFinished': 'You marked {name} as finished',
     'activity.collectionReopened': 'You reopened {name}',
     'activity.collectionDeleted': 'You deleted the collection {name}',

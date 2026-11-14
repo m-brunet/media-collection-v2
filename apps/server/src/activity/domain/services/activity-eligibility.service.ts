@@ -15,6 +15,7 @@ export class ActivityEligibility {
         'collection.reopened',
         'collection.deleted',
         'collection.removed',
+        'collection.volumes-added',
         'bookcase.created',
         'bookcase.renamed',
         'bookcase.deleted',

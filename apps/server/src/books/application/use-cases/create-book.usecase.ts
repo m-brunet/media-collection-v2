@@ -1,19 +1,10 @@
 import type { CreateBookUseCase } from '../ports/driving/create-book-use-case.interface.js';
 import type { BookInput } from '../book-input.js';
 import type { BookView } from '../book-views.js';
-import { BookAudit, BookSnapshot } from '../book-audit.js';
-import type { BookRepository } from '../ports/driven/book-repository.interface.js';
-import type { CollectionMembership } from '../ports/driven/collection-membership.interface.js';
+import { BookAudit } from '../book-audit.js';
 import type { CoverStorage } from '../ports/driven/cover-storage.interface.js';
-import type { ReadingStatusStore } from '../ports/driven/reading-status-store.interface.js';
-import { BookDetailsBuilder } from '../services/book-details-builder.service.js';
-import { BookIdentityCheck } from '../services/book-identity-check.service.js';
-import { BookOrganiser } from '../services/book-organiser.service.js';
-import { BookRemoval } from '../services/book-removal.service.js';
-import { BookViewer } from '../services/book-viewer.service.js';
-import { GeneratedTitleSync } from '../services/generated-title-sync.service.js';
-import { Book } from '../../domain/entities/book.entity.js';
-import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
+import type { BookCreation } from '../services/book-creation.service.js';
+import type { BookViewer } from '../services/book-viewer.service.js';
 import type { IdGenerator } from '../../../shared/application/ports/driven/id-generator.interface.js';
 import type { AuditedOperation } from '../../../shared/application/services/audited-operation.service.js';
 import type { Actor } from '../../../shared/domain/actor.helper.js';
@@ -21,18 +12,10 @@ import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
 export class CreateBook implements CreateBookUseCase {
     constructor(
-        private readonly books: BookRepository,
-        private readonly builder: BookDetailsBuilder,
-        private readonly identity: BookIdentityCheck,
-        private readonly titles: GeneratedTitleSync,
-        private readonly collections: CollectionMembership,
-        private readonly removal: BookRemoval,
-        private readonly organiser: BookOrganiser,
-        private readonly readings: ReadingStatusStore,
+        private readonly creation: BookCreation,
         private readonly covers: CoverStorage,
         private readonly viewer: BookViewer,
         private readonly ids: IdGenerator,
-        private readonly clock: Clock,
         private readonly operations: AuditedOperation,
     ) {}
 
@@ -47,72 +30,20 @@ export class CreateBook implements CreateBookUseCase {
             async (context) => {
                 ActorAuthorization.requireLibraryEditor(actor);
                 const id = this.ids.next();
-                const now = this.clock.now().toISOString();
-                const details = await this.builder.build(input);
-                const replacing = input.replacePlanned ?? [];
-
-                await this.identity.ensureUnique(details, id, input.confirmDistinct ?? false);
-                const book = new Book({
-                    id,
-                    details,
-                    coverFile: null,
-                    createdAt: now,
-                    updatedAt: now,
-                });
 
                 context.subjectId = id;
-                await this.books.create(book);
-                const membership = await this.collections.assign(
-                    { id, ownership: details.ownership, category: details.category },
-                    input.collection,
-                    replacing,
-                );
-
-                await this.titles.apply(
-                    book,
-                    membership.collection,
-                    input.confirmDistinct ?? false,
-                );
-                const organised = await this.organiser.apply(id, {
-                    shelfId: input.shelfId,
-                    tags: input.tags,
-                });
-                const replaced = [];
-
-                for (const plannedId of replacing) {
-                    replaced.push(await this.removal.remove(plannedId));
-                }
-
-                if (read) {
-                    await this.readings.set(actor.id, id, true);
-                }
+                const created = await this.creation.create(actor, id, input, read);
 
                 return {
                     result: {
-                        view: await this.viewer.view(book, actor),
-                        replacedCovers: replaced.flatMap(
+                        view: await this.viewer.view(created.book, actor),
+                        replacedCovers: created.replaced.flatMap(
                             (planned) => planned.book.snapshot.coverFile ?? [],
                         ),
                     },
                     before: null,
-                    after: {
-                        ...BookSnapshot.of(book, {
-                            collection: membership.collection,
-                            organisation: organised.organisation,
-                        }),
-                        ...(replaced.length > 0
-                            ? {
-                                  replacedPlanned: replaced.map((planned) =>
-                                      BookSnapshot.of(planned.book),
-                                  ),
-                              }
-                            : {}),
-                    },
-                    related: [
-                        ...membership.changes,
-                        ...organised.changes,
-                        ...replaced.flatMap((planned) => planned.changes),
-                    ],
+                    after: created.after,
+                    related: created.related,
                 };
             },
         );

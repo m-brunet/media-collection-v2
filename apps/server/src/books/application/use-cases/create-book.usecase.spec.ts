@@ -4,18 +4,10 @@ import { CreateBook } from './create-book.usecase.js';
 
 function subject(current = BookDoubles.library()) {
     return new CreateBook(
-        current.books,
-        current.builder,
-        current.identity,
-        current.titles,
-        current.collections,
-        current.removal,
-        current.organiser,
-        current.readings,
+        current.creation,
         current.covers,
         current.viewer,
         current.ids,
-        current.clock,
         current.operations,
     );
 }

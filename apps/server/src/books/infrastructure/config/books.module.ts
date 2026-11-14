@@ -73,6 +73,9 @@ import { SeriesLookup } from '../../application/services/series-lookup.service.j
 import type { SeriesCatalogue } from '../../application/ports/driven/series-catalogue.interface.js';
 import type { CollectionVolumes } from '../../application/ports/driven/collection-volumes.interface.js';
 import { FindMissingVolumes } from '../../application/use-cases/find-missing-volumes.usecase.js';
+import { AddVolumes } from '../../application/use-cases/add-volumes.usecase.js';
+import { VolumesController } from '../adapters/driving/web/volumes.controller.js';
+import { BookCreation } from '../../application/services/book-creation.service.js';
 import { FindVolumeCover } from '../../application/use-cases/find-volume-cover.usecase.js';
 import { BnfSeries } from '../adapters/driven/third-party/bnf-series.adapter.js';
 import { MissingVolumesController } from '../adapters/driving/web/missing-volumes.controller.js';
@@ -169,6 +172,7 @@ const token = {
     lookup: 'BOOKS_LOOKUP_SOURCES',
     lookupCovers: 'BOOKS_LOOKUP_COVERS',
     lookupChains: 'BOOKS_LOOKUP_CHAINS',
+    creation: 'BOOKS_CREATION',
 } as const;
 const serviceProviders: Provider[] = [
     {
@@ -189,6 +193,42 @@ const serviceProviders: Provider[] = [
                 budgets,
             };
         },
+    },
+    {
+        provide: token.creation,
+        inject: [
+            token.books,
+            token.builder,
+            token.identity,
+            token.titles,
+            token.collections,
+            token.removal,
+            token.organiser,
+            token.readings,
+            token.clock,
+        ],
+        useFactory: (
+            books: BookRepository,
+            builder: BookDetailsBuilder,
+            identity: BookIdentityCheck,
+            titles: GeneratedTitleSync,
+            collections: CollectionMembership,
+            removal: BookRemoval,
+            organiser: BookOrganiser,
+            readings: ReadingStatusStore,
+            clock: Clock,
+        ) =>
+            new BookCreation(
+                books,
+                builder,
+                identity,
+                titles,
+                collections,
+                removal,
+                organiser,
+                readings,
+                clock,
+            ),
     },
     {
         provide: token.trimmer,
@@ -339,6 +379,39 @@ const useCaseProviders: Provider[] = [
             ),
     },
     {
+        provide: 'BOOKS_ADD_VOLUMES',
+        inject: [
+            token.collectionVolumes,
+            token.loader,
+            token.organisation,
+            token.readings,
+            token.books,
+            token.creation,
+            token.ids,
+            token.operations,
+        ],
+        useFactory: (
+            collections: CollectionVolumes,
+            loader: BookLoader,
+            organisation: BookOrganisationReader,
+            readings: ReadingStatusStore,
+            books: BookRepository,
+            creation: BookCreation,
+            ids: IdGenerator,
+            operations: AuditedOperation,
+        ) =>
+            new AddVolumes(
+                collections,
+                loader,
+                organisation,
+                readings,
+                books,
+                creation,
+                ids,
+                operations,
+            ),
+    },
+    {
         provide: 'BOOKS_FIND_VOLUME_COVER',
         inject: [token.lookupChains, token.lookupCovers, token.clock, token.lookup],
         useFactory: (
@@ -378,51 +451,14 @@ const useCaseProviders: Provider[] = [
     },
     {
         provide: 'BOOKS_CREATE',
-        inject: [
-            token.books,
-            token.builder,
-            token.identity,
-            token.titles,
-            token.collections,
-            token.removal,
-            token.organiser,
-            token.readings,
-            token.covers,
-            token.viewer,
-            token.ids,
-            token.clock,
-            token.operations,
-        ],
+        inject: [token.creation, token.covers, token.viewer, token.ids, token.operations],
         useFactory: (
-            books: BookRepository,
-            builder: BookDetailsBuilder,
-            identity: BookIdentityCheck,
-            titles: GeneratedTitleSync,
-            collections: CollectionMembership,
-            removal: BookRemoval,
-            organiser: BookOrganiser,
-            readings: ReadingStatusStore,
+            creation: BookCreation,
             covers: CoverStorage,
             viewer: BookViewer,
             ids: IdGenerator,
-            clock: Clock,
             operations: AuditedOperation,
-        ) =>
-            new CreateBook(
-                books,
-                builder,
-                identity,
-                titles,
-                collections,
-                removal,
-                organiser,
-                readings,
-                covers,
-                viewer,
-                ids,
-                clock,
-                operations,
-            ),
+        ) => new CreateBook(creation, covers, viewer, ids, operations),
     },
     {
         provide: 'BOOKS_UPDATE',
@@ -731,6 +767,7 @@ export class BooksModule {
                 CollectionReadingController,
                 LookupsController,
                 MissingVolumesController,
+                VolumesController,
             ],
             providers: [
                 ...ValueProviders.of(dependencies, token),
