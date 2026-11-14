@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { account, deviceLanguages, FakeApi } from '../testing/fake-api.test-support';
@@ -267,4 +267,19 @@ it('shows the credits and licences inside the app once signed in', async () => {
     expect(
         screen.getByRole('heading', { name: 'Credits and licences', level: 1 }),
     ).toBeInTheDocument();
+});
+it('opens the statistics from the menu, after Activity', async () => {
+    new FakeApi().signedIn(account({ role: 'owner' }));
+    render(<LibrisApp />);
+    const menu = await screen.findByRole('navigation', { name: 'Main navigation' });
+    const names = within(menu)
+        .getAllByRole('link')
+        .map((link) => link.textContent);
+
+    await userEvent.click(within(menu).getByRole('link', { name: 'Statistics' }));
+
+    expect([
+        names.indexOf('Statistics') - names.indexOf('Activity'),
+        await screen.findByRole('heading', { name: 'Statistics', level: 1 }),
+    ]).toEqual([1, expect.anything()]);
 });
