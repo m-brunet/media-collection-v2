@@ -201,7 +201,17 @@ export function MyBooksPage() {
             />
             <div className="stack">
                 {deleted && (
-                    <Notice tone="success">{t('books.deleted', { title: deleted })}</Notice>
+                    <Notice
+                        tone="success"
+                        onClose={() =>
+                            navigate(
+                                { pathname: location.pathname, search: location.search },
+                                { replace: true, state: null },
+                            )
+                        }
+                    >
+                        {t('books.deleted', { title: deleted })}
+                    </Notice>
                 )}
                 {!libraryEmpty && (
                     <div className="book-toolbar">

@@ -112,7 +112,9 @@ function Shopping({ shopping, reload }: { shopping: CollectionShoppingDto; reloa
             </p>
             {shopping.finished && <Notice tone="info">{t('leaf.collection.finished')}</Notice>}
             {done !== null && (
-                <Notice tone="success">{t('leaf.markOwned.done', { volume: done })}</Notice>
+                <Notice tone="success" onClose={() => setDone(null)}>
+                    {t('leaf.markOwned.done', { volume: done })}
+                </Notice>
             )}
             <div className="leaf-shopping__last">
                 {shopping.lastOwned ? (

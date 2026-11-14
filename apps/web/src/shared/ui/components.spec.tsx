@@ -29,10 +29,10 @@ it('prevents repeated submission while busy', () => {
 
 it('announces errors immediately and other feedback politely', () => {
     render(
-        <>
+        <I18nProvider language="en">
             <Notice tone="error">Failed</Notice>
             <Notice tone="success">Saved</Notice>
-        </>,
+        </I18nProvider>,
     );
 
     const alert = screen.getByRole('alert');
@@ -91,13 +91,41 @@ it('shows the fixed Libris and Leaf marks, drawn in the text colour', () => {
 
 it('shows the situation icon of a notice instead of its tone icon', () => {
     const { container } = render(
-        <Notice tone="error" icon="camera-unavailable">
-            The camera cannot be used.
-        </Notice>,
+        <I18nProvider language="en">
+            <Notice tone="error" icon="camera-unavailable">
+                The camera cannot be used.
+            </Notice>
+        </I18nProvider>,
     );
 
     expect([
         container.querySelector('svg.lucide-camera-off'),
         container.querySelector('svg.lucide-circle-alert'),
     ]).toEqual([expect.anything(), null]);
+});
+
+it('offers no way to close a message that has no close action', () => {
+    render(
+        <I18nProvider language="en">
+            <Notice tone="success">Saved</Notice>
+        </I18nProvider>,
+    );
+
+    expect(screen.queryByRole('button', { name: 'Close message' })).not.toBeInTheDocument();
+});
+
+it('closes a message from its close button', async () => {
+    const close = vi.fn();
+
+    render(
+        <I18nProvider language="en">
+            <Notice tone="success" onClose={close}>
+                Saved
+            </Notice>
+        </I18nProvider>,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Close message' }));
+
+    expect(close).toHaveBeenCalledOnce();
 });

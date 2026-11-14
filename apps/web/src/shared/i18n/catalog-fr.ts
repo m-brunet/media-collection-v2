@@ -349,6 +349,7 @@ export const fr = {
     'leaf.password.body':
         'Votre compte utilise encore un mot de passe temporaire. Connectez-vous à Libris sur un ordinateur pour choisir votre mot de passe, puis revenez.',
     'dialog.close': 'Fermer',
+    'notice.close': 'Fermer le message',
     'common.cancel': 'Annuler',
     'role.owner': 'Propriétaire',
     'role.guest': 'Invité',

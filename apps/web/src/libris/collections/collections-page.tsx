@@ -195,7 +195,17 @@ export function CollectionsPage() {
             <PageHeader title={t('collections.title')} intro={t('collections.intro')} />
             <div className="stack">
                 {deleted && (
-                    <Notice tone="success">{t('collections.deleted', { name: deleted })}</Notice>
+                    <Notice
+                        tone="success"
+                        onClose={() =>
+                            navigate(
+                                { pathname: location.pathname, search: location.search },
+                                { replace: true, state: null },
+                            )
+                        }
+                    >
+                        {t('collections.deleted', { name: deleted })}
+                    </Notice>
                 )}
                 {!none && (
                     <div className="book-toolbar">

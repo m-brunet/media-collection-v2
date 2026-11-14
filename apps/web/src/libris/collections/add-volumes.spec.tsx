@@ -316,6 +316,21 @@ it('saves the cover picked for a volume', async () => {
     expect(api.calls.find((call) => call.route === 'PUT /books/book-2/cover')?.body).toBe(picked);
 });
 
+it('closes the report of the volumes added', async () => {
+    const api = library().on('POST /books/volumes', () => ({
+        status: 201,
+        body: { added: [{ bookId: 'book-2', volume: 2, title: 'Gunnm Vol. 2' }], skipped: [] },
+    }));
+
+    await review(api);
+    await userEvent.click(screen.getByRole('button', { name: 'Add 1 volume' }));
+    await screen.findByText('A volume was added to Gunnm.');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Close message' }));
+
+    expect(screen.queryByText('A volume was added to Gunnm.')).not.toBeInTheDocument();
+});
+
 it('reports a volume left out at save time', async () => {
     const api = library().on('POST /books/volumes', () => ({
         status: 201,
