@@ -15,7 +15,6 @@ import { BookFormat } from '../../shared/book-form/book-format.util';
 import { PageHeader } from '../../shared/ui/layout';
 import { Notice } from '../../shared/ui/notice';
 import { EmptyState, LoadingState } from '../../shared/ui/states';
-import { CategoryMismatchNotice } from './category-mismatch-notice';
 import { CollectionFormat } from './collection-format.util';
 import { AppliedFilters, useListingFilter } from '../filters/applied-filters';
 import { BookFilter } from '../filters/book-filter.util';
@@ -198,7 +197,6 @@ export function CollectionsPage() {
                 {deleted && (
                     <Notice tone="success">{t('collections.deleted', { name: deleted })}</Notice>
                 )}
-                {account && editor && <CategoryMismatchNotice />}
                 {!none && (
                     <div className="book-toolbar">
                         <div className="search-field">

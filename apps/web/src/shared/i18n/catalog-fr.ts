@@ -915,11 +915,6 @@ export const fr = {
         'Les {count} livres de la collection passeront dans la catégorie {category}.',
     'editCollection.categoryChangeOne':
         'Le livre de la collection passera dans la catégorie {category}.',
-    'mismatches.summary': '{count} livres n’ont pas la catégorie de leur collection',
-    'mismatches.summaryOne': '1 livre n’a pas la catégorie de sa collection',
-    'mismatches.hint':
-        'Ouvrez chaque livre pour changer sa catégorie ou le retirer de la collection.',
-    'mismatches.line': '{category}, dans {collection} ({collectionCategory})',
     'editCollection.volumeZero': 'Inclut le tome 0',
     'editCollection.save': 'Enregistrer la collection',
     'editCollection.delete': 'Supprimer la collection',

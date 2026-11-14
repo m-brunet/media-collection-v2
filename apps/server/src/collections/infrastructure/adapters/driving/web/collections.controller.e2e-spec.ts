@@ -1,7 +1,6 @@
 import type {
     ActivityPageDto,
     BookCategory,
-    CategoryMismatchDto,
     BookDto,
     TagDto,
     CollectionDetailsDto,
@@ -158,81 +157,6 @@ describe('GET /api/collections', () => {
         const client = app.client();
 
         const response = await client.call('/collections');
-
-        expect(response.status).toBe(401);
-    });
-});
-
-describe('GET /api/collections/mismatches', () => {
-    it('lists exactly the books of another category than their collection', async () => {
-        const naruto = await book(membership('Naruto', 1), { category: 'manga' });
-        const guide = await book(membership('Naruto', 2), {
-            category: 'manga',
-            title: 'Naruto guide',
-        });
-        const client = await app.authenticatedClient(owner);
-
-        await book(membership('Batman', 1));
-        await recategorised(guide, 'books');
-
-        const response = await client.call<CategoryMismatchDto[]>('/collections/mismatches');
-
-        expect(response.status).toBe(200);
-        expect(response.body).toEqual([
-            {
-                bookId: guide.id,
-                title: 'Naruto guide',
-                category: 'books',
-                collectionId: naruto.collection!.id,
-                collectionName: 'Naruto',
-                collectionCategory: 'manga',
-            },
-        ]);
-    });
-    it('lists the mismatched books of one collection', async () => {
-        const naruto = await book(membership('Naruto', 1));
-        const batman = await book(membership('Batman', 1));
-
-        await recategorised(naruto, 'manga');
-        await recategorised(batman, 'comics');
-        const client = await app.authenticatedClient(owner);
-
-        const response = await client.call<CategoryMismatchDto[]>(
-            '/collections/mismatches?collection=' + batman.collection!.id,
-        );
-
-        expect(response.body.map((mismatch) => mismatch.bookId)).toEqual([batman.id]);
-    });
-    it('answers an empty list when every book matches', async () => {
-        await book(membership('Naruto', 1));
-        const client = await app.authenticatedClient(guest);
-
-        const response = await client.call<CategoryMismatchDto[]>('/collections/mismatches');
-
-        expect(response.status).toBe(200);
-        expect(response.body).toEqual([]);
-    });
-    it('reports an unknown collection', async () => {
-        const client = await app.authenticatedClient(owner);
-
-        const response = await client.call(
-            '/collections/mismatches?collection=' + crypto.randomUUID(),
-        );
-
-        expect(response.status).toBe(404);
-        expect(response.body.reason).toBe('collection-missing');
-    });
-    it('rejects a collection identifier that is not a UUID', async () => {
-        const client = await app.authenticatedClient(owner);
-
-        const response = await client.call('/collections/mismatches?collection=naruto');
-
-        expect(response.status).toBe(400);
-    });
-    it('requires a signed-in account', async () => {
-        const client = app.client();
-
-        const response = await client.call('/collections/mismatches');
 
         expect(response.status).toBe(401);
     });

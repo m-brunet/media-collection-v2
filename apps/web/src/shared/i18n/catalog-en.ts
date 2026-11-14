@@ -875,10 +875,6 @@ export const en = {
     'editCollection.categoryChange':
         'The {count} books of the collection will change to {category}.',
     'editCollection.categoryChangeOne': 'The book of the collection will change to {category}.',
-    'mismatches.summary': '{count} books do not match their collection’s category',
-    'mismatches.summaryOne': '1 book does not match its collection’s category',
-    'mismatches.hint': 'Open each book to change its category or take it out of the collection.',
-    'mismatches.line': '{category}, in {collection} ({collectionCategory})',
     'editCollection.save': 'Save collection',
     'editCollection.delete': 'Delete collection',
     'deleteCollection.title': 'Delete this collection?',

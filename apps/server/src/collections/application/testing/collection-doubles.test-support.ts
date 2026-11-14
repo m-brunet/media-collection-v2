@@ -1,8 +1,6 @@
 import type { RelatedChange } from '../../../shared/application/ports/driven/audit-entry.interface.js';
 import type { MemberTitles, TitledMember } from '../ports/driven/member-titles.interface.js';
 import type { MemberCategories } from '../ports/driven/member-categories.interface.js';
-import type { CategoryMismatchReader } from '../ports/driven/category-mismatch-reader.interface.js';
-import type { CategoryMismatchView } from '../collection-views.js';
 import type { CollectionCategory } from '../../domain/entities/collection.entity.js';
 import type { CollectionBookSearch } from '../ports/driven/collection-book-search.interface.js';
 import { BookFilter } from '../../../shared/application/book-filter.js';
@@ -154,41 +152,6 @@ export class MemoryMembers implements CollectionMemberStore {
     }
 }
 
-export class MemoryCategoryMismatches implements CategoryMismatchReader {
-    constructor(
-        private readonly collections: MemoryCollections,
-        private readonly members: MemoryMembers,
-    ) {}
-
-    async list(collectionId: string | null): Promise<CategoryMismatchView[]> {
-        const all = await this.collections.list();
-        const chosen = all.filter(
-            (collection) => collectionId === null || collection.id === collectionId,
-        );
-        const records = await this.members.ofCollections(chosen.map((collection) => collection.id));
-
-        return records.flatMap((record) => {
-            const { snapshot } = Required.value(
-                chosen.find((collection) => collection.id === record.collectionId),
-                'a record belongs to a listed collection',
-            );
-
-            return record.category === snapshot.category
-                ? []
-                : [
-                      {
-                          bookId: record.bookId,
-                          title: record.title,
-                          category: record.category,
-                          collectionId: snapshot.id,
-                          collectionName: snapshot.name,
-                          collectionCategory: snapshot.category,
-                      },
-                  ];
-        });
-    }
-}
-
 export class FixedBookSearch implements CollectionBookSearch {
     matches: string[] = [];
     readonly calls: { search: string; filter: BookFilter; readerId: string | null }[] = [];
@@ -274,7 +237,6 @@ export class CollectionDoubles {
             ids,
             clock,
             search: new FixedBookSearch(),
-            mismatches: new MemoryCategoryMismatches(collections, members),
             titles: new RecordedMemberTitles(),
             categories: new RecordedMemberCategories(),
             viewer: new CollectionViewer(),

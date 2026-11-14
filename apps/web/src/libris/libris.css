@@ -878,18 +878,6 @@ body {
     font-size: var(--text-sm);
 }
 
-.mismatch-notice summary {
-    cursor: pointer;
-    font-weight: 600;
-}
-
-.mismatch-notice__list {
-    margin: var(--space-2) 0 0;
-    padding-left: var(--space-5);
-    display: grid;
-    gap: var(--space-1);
-}
-
 .collection-card__name {
     font-family: var(--font-heading);
     letter-spacing: normal;

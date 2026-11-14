@@ -26,5 +26,3 @@ export const collectionChangesSchema = z
     );
 
 export const collectionIdSchema = idSchema;
-
-export const categoryMismatchesSchema = z.strictObject({ collection: idSchema.optional() });

@@ -33,10 +33,7 @@ A collection follows the volumes of one series, so all its books have the same c
 
 ### Collections created before the rule
 
-The upgrade gives each existing collection the category most of its books have; a tie goes to Books, then Comics, then Manga, and an empty collection takes Books. Books of another category **stay in their collection, unchanged**, for the person to fix by hand:
-
-- A notice at the top of the Collections page, "N books do not match their collection's category", opens the list: each book with its category, its collection and the collection's category, linking to the book. The collection page shows the same notice for its own books. The notice disappears when the list is empty and is not shown to Guests.
-- From then on the rule applies to every change: editing a listed book without fixing the mismatch is refused like any other mismatch.
+The upgrade gives each existing collection the category most of its books have; a tie goes to Books, then Comics, then Manga, and an empty collection takes Books. Books are not changed. The existing databases were checked before the upgrade and hold no book of another category than its collection, so no list of mismatched books is offered (decided 2026-11-14). From then on the rule applies to every change.
 
 ## Coverage and ownership vocabulary
 
@@ -169,7 +166,7 @@ A separate desktop page mirroring mobile ownership progression is future scope, 
 
 21. Naruto (Manga): saving a new Books guide into it is refused with "Naruto holds Manga. This book is Books."; **Use Manga for this book** saves it as Manga.
 22. Naruto volume 3 changed to Comics on its form: the dialog offers to change the whole collection (12 books); confirming makes Naruto and its 12 books Comics, then saves volume 3.
-23. Upgrade of a collection holding two Manga and one Books guide: the collection becomes Manga, the guide stays Books and in the collection, and the notice lists it until it is fixed.
+23. Upgrade of a collection holding two Manga and one Comics book: the collection becomes Manga and no book changes.
 
 ## Implementation references
 
