@@ -332,6 +332,7 @@ export const en = {
     'leaf.password.body':
         'Your account still uses a temporary password. Sign in to Libris on a computer to choose your own password, then come back.',
     'dialog.close': 'Close',
+    'notice.close': 'Close message',
     'common.cancel': 'Cancel',
     'role.owner': 'Owner',
     'role.guest': 'Guest',

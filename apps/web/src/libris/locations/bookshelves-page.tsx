@@ -253,7 +253,11 @@ export function BookshelvesPage() {
                 }
             />
             <div className="stack">
-                {done && <Notice tone="success">{done}</Notice>}
+                {done && (
+                    <Notice tone="success" onClose={() => setDone(null)}>
+                        {done}
+                    </Notice>
+                )}
                 <div className="book-toolbar">
                     <div className="search-field">
                         <Icon name="search" className="search-field__icon" />

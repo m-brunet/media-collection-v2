@@ -75,7 +75,19 @@ export function LoansPage() {
                 }
             />
             <div className="stack">
-                {done && <Notice tone="success">{done}</Notice>}
+                {done && (
+                    <Notice
+                        tone="success"
+                        onClose={() =>
+                            navigate(
+                                { pathname: location.pathname, search: location.search },
+                                { replace: true, state: null },
+                            )
+                        }
+                    >
+                        {done}
+                    </Notice>
+                )}
                 {failure && (
                     <Notice tone="error">
                         {failure}{' '}

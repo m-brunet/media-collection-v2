@@ -331,7 +331,11 @@ export function CollectionDetailsPage() {
                     )}
                 </div>
                 {action.feedback && <Notice tone="error">{action.feedback.text}</Notice>}
-                {report && <Notice tone="success">{report}</Notice>}
+                {report && (
+                    <Notice tone="success" onClose={() => setReport(null)}>
+                        {report}
+                    </Notice>
+                )}
                 {editor && review ? (
                     <VolumeReviewPanel
                         found={review}

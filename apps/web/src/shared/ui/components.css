@@ -212,6 +212,16 @@
     margin-top: 2px;
 }
 
+.notice__body {
+    flex: 1;
+    min-width: 0;
+}
+
+.notice__close {
+    flex: none;
+    margin: -4px -8px -4px 0;
+}
+
 .notice--success {
     background: var(--color-success-surface);
     border-color: var(--color-accent);

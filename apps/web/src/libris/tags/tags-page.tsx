@@ -70,7 +70,11 @@ export function TagsPage() {
                 }
             />
             <div className="stack">
-                {done && <Notice tone="success">{done}</Notice>}
+                {done && (
+                    <Notice tone="success" onClose={() => setDone(null)}>
+                        {done}
+                    </Notice>
+                )}
                 {failure && <Notice tone="error">{failure}</Notice>}
                 {!tags && !failure && <LoadingState label={t('tags.loading')} />}
                 {tags && tags.length === 0 && (
