@@ -3,7 +3,6 @@ import type { InternetAccess } from '../../domain/entities/internet-access.entit
 import type { InternetAccessFailureReason } from '../../domain/entities/internet-access.entity.js';
 import type { DomainNameReader } from '../ports/driven/domain-name-reader.interface.js';
 import type { InternetAccessStore } from '../ports/driven/internet-access-store.interface.js';
-import type { TlsSettingsReader } from '../ports/driven/tls-settings-reader.interface.js';
 import type {
     MaintainInternetAccessUseCase,
     RuleUpkeepOutcome,
@@ -18,7 +17,6 @@ export class MaintainInternetAccess implements MaintainInternetAccessUseCase {
     constructor(
         private readonly store: InternetAccessStore,
         private readonly rules: RouterRules,
-        private readonly tls: TlsSettingsReader,
         private readonly setup: InternetAccessSetup,
         private readonly domains: DomainNameCheck,
         private readonly names: DomainNameReader,
@@ -30,7 +28,7 @@ export class MaintainInternetAccess implements MaintainInternetAccessUseCase {
     async execute(): Promise<RuleUpkeepOutcome> {
         const access = await this.store.read();
         const now = this.clock.now();
-        const { port } = await this.tls.read();
+        const port = await this.setup.httpsPort();
         const interrupted =
             (access.phase === 'setting-up' || access.checking) && !this.setup.running;
 

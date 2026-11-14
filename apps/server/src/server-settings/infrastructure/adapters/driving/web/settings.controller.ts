@@ -4,6 +4,7 @@ import type { ReadTlsSettingsUseCase } from '../../../../application/ports/drivi
 import type { SaveTlsSettingsUseCase } from '../../../../application/ports/driving/save-tls-settings-use-case.interface.js';
 import type { ReadHttpSettingsUseCase } from '../../../../application/ports/driving/read-http-settings-use-case.interface.js';
 import type { SaveHttpSettingsUseCase } from '../../../../application/ports/driving/save-http-settings-use-case.interface.js';
+import type { SaveHttpsPortUseCase } from '../../../../application/ports/driving/save-https-port-use-case.interface.js';
 import type { ReadInternetAccessUseCase } from '../../../../application/ports/driving/read-internet-access-use-case.interface.js';
 import type { ReadKeepAwakeUseCase } from '../../../../application/ports/driving/read-keep-awake-use-case.interface.js';
 import type { ReadDomainNameUseCase } from '../../../../application/ports/driving/read-domain-name-use-case.interface.js';
@@ -18,11 +19,13 @@ export interface RuntimeStatus {
 
 const settingsSchema = z.strictObject({
     enabled: z.boolean(),
-    port: z.number().int().min(1024).max(65535),
     chain: z.string().min(1).max(128000).optional(),
     key: z.string().min(1).max(128000).optional(),
 });
 const httpSettingsSchema = z.strictObject({
+    port: z.number().int().min(1024).max(65535),
+});
+const httpsPortSchema = z.strictObject({
     port: z.number().int().min(1024).max(65535),
 });
 
@@ -36,6 +39,8 @@ export class SettingsController {
         private readonly readHttp: ReadHttpSettingsUseCase,
         @Inject('SERVER_SETTINGS_SAVE_HTTP_SETTINGS')
         private readonly saveHttp: SaveHttpSettingsUseCase,
+        @Inject('SERVER_SETTINGS_SAVE_HTTPS_PORT')
+        private readonly saveHttpsPort: SaveHttpsPortUseCase,
         @Inject('SERVER_SETTINGS_RUNTIME_STATUS') private readonly runtime: RuntimeStatus,
         @Inject('SERVER_SETTINGS_READ_INTERNET_ACCESS')
         private readonly internetAccess: ReadInternetAccessUseCase,
@@ -73,6 +78,17 @@ export class SettingsController {
         return this.status(request, {
             http: await this.saveHttp.execute(request.actor, input),
             tls: await this.read.execute(request.actor),
+        });
+    }
+
+    @Put('https-port')
+    async updateHttpsPort(
+        @Body({ schema: httpsPortSchema }) input: z.infer<typeof httpsPortSchema>,
+        @Req() request: AuthenticatedRequest,
+    ): Promise<ServerStatus> {
+        return this.status(request, {
+            tls: await this.saveHttpsPort.execute(request.actor, input),
+            http: await this.readHttp.execute(request.actor),
         });
     }
 

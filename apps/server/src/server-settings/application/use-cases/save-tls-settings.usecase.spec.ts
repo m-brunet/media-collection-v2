@@ -19,7 +19,7 @@ it('validates and saves supplied material', async () => {
         internetAccess,
         AuditDoubles.auditedOperation(new MemoryAuditTrail()),
     );
-    const input = { enabled: true, port: 3443, chain: 'certificate', key: 'private' };
+    const input = { enabled: true, chain: 'certificate', key: 'private' };
 
     const result = await subject.execute(actor, input);
 
@@ -40,15 +40,15 @@ it('retains saved material when fields are omitted', async () => {
         internetAccess,
         AuditDoubles.auditedOperation(new MemoryAuditTrail()),
     );
-    const input = { enabled: false, port: 4000 };
+    const input = { enabled: false };
 
     const result = await subject.execute(actor, input);
 
-    expect(result).toEqual({ enabled: false, port: 4000, hasCertificate: true });
+    expect(result).toEqual({ enabled: false, port: 3443, hasCertificate: true });
     expect(validations()).toBe(0);
 });
 it('rejects enabling TLS without a certificate', async () => {
-    const input = { enabled: true, port: 3443 };
+    const input = { enabled: true };
     const { store, validator, http, internetAccess } = SettingsDoubles.setup();
     const subject = new SaveTlsSettings(
         store,
@@ -64,7 +64,7 @@ it('rejects enabling TLS without a certificate', async () => {
     expect(await store.read()).toEqual({ enabled: false, port: 3443, hasCertificate: false });
 });
 it('rejects an incomplete certificate pair', async () => {
-    const input = { enabled: true, port: 3443, chain: 'certificate' };
+    const input = { enabled: true, chain: 'certificate' };
     const { store, validator, http, internetAccess } = SettingsDoubles.setup();
     const subject = new SaveTlsSettings(
         store,
@@ -80,23 +80,7 @@ it('rejects an incomplete certificate pair', async () => {
     expect(await store.read()).toEqual({ enabled: false, port: 3443, hasCertificate: false });
 });
 it('rejects an invalid certificate pair', async () => {
-    const input = { enabled: true, port: 3443, chain: 'wrong', key: 'private' };
-    const { store, validator, http, internetAccess } = SettingsDoubles.setup();
-    const subject = new SaveTlsSettings(
-        store,
-        validator,
-        http,
-        internetAccess,
-        AuditDoubles.auditedOperation(new MemoryAuditTrail()),
-    );
-
-    const result = subject.execute(actor, input);
-
-    await expect(result).rejects.toThrow();
-    expect(await store.read()).toEqual({ enabled: false, port: 3443, hasCertificate: false });
-});
-it('rejects port zero', async () => {
-    const input = { enabled: false, port: 0 };
+    const input = { enabled: true, chain: 'wrong', key: 'private' };
     const { store, validator, http, internetAccess } = SettingsDoubles.setup();
     const subject = new SaveTlsSettings(
         store,
@@ -121,7 +105,7 @@ it('rejects a non-administrator', async () => {
         internetAccess,
         AuditDoubles.auditedOperation(new MemoryAuditTrail()),
     );
-    const input = { enabled: false, port: 3443 };
+    const input = { enabled: false };
 
     const result = subject.execute(forbidden, input);
 
@@ -137,7 +121,7 @@ it('rejects incomplete password setup', async () => {
         internetAccess,
         AuditDoubles.auditedOperation(new MemoryAuditTrail()),
     );
-    const input = { enabled: false, port: 3443 };
+    const input = { enabled: false };
 
     const result = subject.execute(forbidden, input);
 
@@ -145,7 +129,7 @@ it('rejects incomplete password setup', async () => {
 });
 it('rejects an enabled HTTPS port matching saved HTTP', async () => {
     const { store, validator, http, internetAccess } = SettingsDoubles.setup(
-        { enabled: false, port: 3443, hasCertificate: true },
+        { enabled: false, port: 36000, hasCertificate: true },
         { port: 36000 },
     );
     const subject = new SaveTlsSettings(
@@ -155,29 +139,12 @@ it('rejects an enabled HTTPS port matching saved HTTP', async () => {
         internetAccess,
         AuditDoubles.auditedOperation(new MemoryAuditTrail()),
     );
-    const input = { enabled: true, port: 36000 };
+    const input = { enabled: true };
 
     const result = subject.execute(actor, input);
 
     await expect(result).rejects.toThrow('different ports');
-    expect(await store.read()).toEqual({ enabled: false, port: 3443, hasCertificate: true });
-});
-it('allows matching saved ports when HTTPS is disabled', async () => {
-    const { store, validator, http, internetAccess } = SettingsDoubles.setup(undefined, {
-        port: 36000,
-    });
-    const subject = new SaveTlsSettings(
-        store,
-        validator,
-        http,
-        internetAccess,
-        AuditDoubles.auditedOperation(new MemoryAuditTrail()),
-    );
-    const input = { enabled: false, port: 36000 };
-
-    const result = await subject.execute(actor, input);
-
-    expect(result).toEqual({ ...input, hasCertificate: false });
+    expect(await store.read()).toEqual({ enabled: false, port: 36000, hasCertificate: true });
 });
 it('refuses any HTTPS change while internet access is on', async () => {
     const { store, validator, http } = SettingsDoubles.setup();
@@ -188,7 +155,7 @@ it('refuses any HTTPS change while internet access is on', async () => {
         new MemoryInternetAccessStore(InternetAccessDoubles.active()),
         AuditDoubles.auditedOperation(new MemoryAuditTrail()),
     );
-    const input = { enabled: true, port: 3443, chain: 'certificate', key: 'private' };
+    const input = { enabled: true, chain: 'certificate', key: 'private' };
 
     const result = subject.execute(actor, input);
 

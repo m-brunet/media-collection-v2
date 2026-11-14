@@ -72,7 +72,7 @@ export class InternetAccessSetup {
             return problem;
         }
 
-        const { port } = await this.tls.read();
+        const port = await this.httpsPort();
 
         if (!(await this.https.ensureRunning(port))) {
             return 'https-unavailable';
@@ -114,6 +114,10 @@ export class InternetAccessSetup {
         access.activate({ address: name, issuedAt, expiresAt });
 
         return null;
+    }
+
+    async httpsPort(): Promise<number> {
+        return this.https.runningPort() ?? (await this.tls.read()).port;
     }
 
     private async recheck(access: InternetAccess): Promise<void> {

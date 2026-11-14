@@ -5,6 +5,8 @@ import { UserFixture } from '../../../../../../../../tests/api/fixtures/user.fix
 import { generate } from 'selfsigned';
 import { HttpSettings } from '../../../../domain/value-objects/http-settings.value-object.js';
 import { TlsSettings } from '../../../../domain/value-objects/tls-settings.value-object.js';
+import { InternetAccess } from '../../../../domain/entities/internet-access.entity.js';
+import { InternetAccessDoubles } from '../../../../application/testing/internet-access-doubles.test-support.js';
 
 let app: TestApp;
 const admin = new UserFixture({ username: 'administrator', role: 'admin' });
@@ -69,7 +71,6 @@ describe('PUT /api/server-settings', () => {
         });
         const input = {
             enabled: true,
-            port: 34443,
             chain: certificate.cert,
             key: certificate.private,
         };
@@ -91,12 +92,11 @@ describe('PUT /api/server-settings', () => {
 
         const response = await client.call<ServerStatus>('/server-settings', 'PUT', {
             enabled: false,
-            port: 4000,
         });
 
         expect(response.status).toBe(200);
         expect(response.body.configured.tls.enabled).toBe(false);
-        expect(response.body.configured.tls.port).toBe(4000);
+        expect(response.body.configured.tls.port).toBe(34443);
     });
     it('rejects unauthenticated access', async () => {
         const client = app.client();
@@ -105,7 +105,6 @@ describe('PUT /api/server-settings', () => {
 
         const response = await client.call<ServerStatus>('/server-settings', 'PUT', {
             enabled: false,
-            port: 34443,
         });
 
         expect(response.status).toBe(401);
@@ -116,7 +115,6 @@ describe('PUT /api/server-settings', () => {
 
         const response = await client.call<ServerStatus>('/server-settings', 'PUT', {
             enabled: false,
-            port: 34443,
         });
 
         expect(response.status).toBe(403);
@@ -126,7 +124,6 @@ describe('PUT /api/server-settings', () => {
 
         const response = await client.call<ServerStatus>('/server-settings', 'PUT', {
             enabled: false,
-            port: 34443,
         });
 
         expect(response.status).toBe(403);
@@ -137,14 +134,14 @@ describe('PUT /api/server-settings', () => {
         const response = await client.call<ServerStatus>(
             '/server-settings',
             'PUT',
-            { enabled: false, port: 34443 },
+            { enabled: false },
             { csrf: false },
         );
 
         expect(response.status).toBe(403);
     });
     it('rejects enabling TLS without a certificate', async () => {
-        const input = { enabled: true, port: 34443 };
+        const input = { enabled: true };
         const client = await app.authenticatedClient(admin);
 
         const response = await client.call<ServerStatus>('/server-settings', 'PUT', input);
@@ -156,34 +153,17 @@ describe('PUT /api/server-settings', () => {
             hasCertificate: false,
         });
     });
-    it('rejects port zero', async () => {
-        const input = { enabled: false, port: 0 };
+    it('rejects a port, now saved on its own', async () => {
+        const input = { enabled: false, port: 36000 };
         const client = await app.authenticatedClient(admin);
 
         const response = await client.call<ServerStatus>('/server-settings', 'PUT', input);
 
         expect(response.status).toBe(400);
-        expect(await app.dependencies.tls.read()).toEqual({
-            enabled: false,
-            port: 34443,
-            hasCertificate: false,
-        });
-    });
-    it('rejects a port above the maximum', async () => {
-        const input = { enabled: false, port: 65536 };
-        const client = await app.authenticatedClient(admin);
-
-        const response = await client.call<ServerStatus>('/server-settings', 'PUT', input);
-
-        expect(response.status).toBe(400);
-        expect(await app.dependencies.tls.read()).toEqual({
-            enabled: false,
-            port: 34443,
-            hasCertificate: false,
-        });
+        expect((await app.dependencies.tls.read()).port).toBe(34443);
     });
     it('rejects an invalid certificate pair', async () => {
-        const input = { enabled: true, port: 34443, chain: 'broken', key: 'broken' };
+        const input = { enabled: true, chain: 'broken', key: 'broken' };
         const client = await app.authenticatedClient(admin);
 
         const response = await client.call<ServerStatus>('/server-settings', 'PUT', input);
@@ -196,7 +176,7 @@ describe('PUT /api/server-settings', () => {
         });
     });
     it('rejects an incomplete certificate pair', async () => {
-        const input = { enabled: true, port: 34443, chain: 'broken' };
+        const input = { enabled: true, chain: 'broken' };
         const client = await app.authenticatedClient(admin);
 
         const response = await client.call<ServerStatus>('/server-settings', 'PUT', input);
@@ -207,6 +187,25 @@ describe('PUT /api/server-settings', () => {
             port: 34443,
             hasCertificate: false,
         });
+    });
+    it('rejects enabled HTTPS on the configured HTTP port', async () => {
+        const client = await app.authenticatedClient(admin);
+        const certificate = await generate([{ name: 'commonName', value: 'localhost' }], {
+            keySize: 2048,
+        });
+
+        await app.dependencies.tls.save(
+            new TlsSettings({ enabled: false, port: 34345, hasCertificate: false }),
+        );
+
+        const response = await client.call('/server-settings', 'PUT', {
+            enabled: true,
+            chain: certificate.cert,
+            key: certificate.private,
+        });
+
+        expect(response.status).toBe(400);
+        expect(response.text).toContain('different ports');
     });
 });
 
@@ -446,67 +445,160 @@ describe('PUT /api/server-settings/http', () => {
     });
 });
 
-describe('HTTPS listening port constraints', () => {
-    it('accepts the inclusive minimum HTTPS port', async () => {
+describe('PUT /api/server-settings/https-port', () => {
+    it('saves the HTTPS port and reports a pending restart', async () => {
         const client = await app.authenticatedClient(admin);
-        const input = { enabled: false, port: 1024 };
 
-        const response = await client.call<ServerStatus>('/server-settings', 'PUT', input);
+        const response = await client.call<ServerStatus>('/server-settings/https-port', 'PUT', {
+            port: 36000,
+        });
 
         expect(response.status).toBe(200);
-        expect(response.body.configured.tls.port).toBe(1024);
+        expect(response.body.configured.tls).toEqual({
+            enabled: false,
+            port: 36000,
+            hasCertificate: false,
+        });
+        expect(response.body.restartRequired).toBe(true);
     });
 
-    it('accepts the inclusive maximum HTTPS port', async () => {
+    it('saves the HTTPS port while internet access is on', async () => {
         const client = await app.authenticatedClient(admin);
-        const input = { enabled: false, port: 65535 };
 
-        const response = await client.call<ServerStatus>('/server-settings', 'PUT', input);
+        await app.dependencies.internetAccess.store.save(
+            new InternetAccess(InternetAccessDoubles.active({ routerPort: 34443 })),
+        );
 
-        expect(response.status).toBe(200);
-        expect(response.body.configured.tls.port).toBe(65535);
+        const response = await client.call<ServerStatus>('/server-settings/https-port', 'PUT', {
+            port: 36000,
+        });
+
+        expect([response.status, response.body.configured.tls.port]).toEqual([200, 36000]);
     });
 
-    it('rejects a HTTPS port below the minimum', async () => {
-        const client = await app.authenticatedClient(admin);
-        const input = { enabled: false, port: 1023 };
-
-        const response = await client.call('/server-settings', 'PUT', input);
-
-        expect(response.status).toBe(400);
-        expect((await app.dependencies.tls.read()).port).toBe(34443);
-    });
-
-    it('rejects a fractional HTTPS port', async () => {
-        const client = await app.authenticatedClient(admin);
-        const input = { enabled: false, port: 36000.5 };
-
-        const response = await client.call('/server-settings', 'PUT', input);
-
-        expect(response.status).toBe(400);
-        expect((await app.dependencies.tls.read()).port).toBe(34443);
-    });
-
-    it('rejects enabled HTTPS on the configured HTTP port', async () => {
+    it('keeps the certificate settings', async () => {
         const client = await app.authenticatedClient(admin);
         const certificate = await generate([{ name: 'commonName', value: 'localhost' }], {
             keySize: 2048,
         });
-        const input = {
-            enabled: true,
-            port: 34345,
-            chain: certificate.cert,
-            key: certificate.private,
-        };
 
-        const response = await client.call('/server-settings', 'PUT', input);
+        await app.dependencies.tls.save(
+            new TlsSettings({ enabled: true, port: 34443, hasCertificate: true }),
+            { chain: certificate.cert, key: certificate.private },
+        );
+
+        const response = await client.call<ServerStatus>('/server-settings/https-port', 'PUT', {
+            port: 36000,
+        });
+
+        expect(response.body.configured.tls).toEqual({
+            enabled: true,
+            port: 36000,
+            hasCertificate: true,
+        });
+    });
+
+    it('accepts the inclusive minimum HTTPS port', async () => {
+        const client = await app.authenticatedClient(admin);
+
+        const response = await client.call<ServerStatus>('/server-settings/https-port', 'PUT', {
+            port: 1024,
+        });
+
+        expect([response.status, response.body.configured.tls.port]).toEqual([200, 1024]);
+    });
+
+    it('accepts the inclusive maximum HTTPS port', async () => {
+        const client = await app.authenticatedClient(admin);
+
+        const response = await client.call<ServerStatus>('/server-settings/https-port', 'PUT', {
+            port: 65535,
+        });
+
+        expect([response.status, response.body.configured.tls.port]).toEqual([200, 65535]);
+    });
+
+    it('rejects port 443', async () => {
+        const client = await app.authenticatedClient(admin);
+
+        const response = await client.call('/server-settings/https-port', 'PUT', { port: 443 });
+
+        expect(response.status).toBe(400);
+        expect((await app.dependencies.tls.read()).port).toBe(34443);
+    });
+
+    it('rejects a port above the maximum', async () => {
+        const client = await app.authenticatedClient(admin);
+
+        const response = await client.call('/server-settings/https-port', 'PUT', { port: 65536 });
+
+        expect(response.status).toBe(400);
+        expect((await app.dependencies.tls.read()).port).toBe(34443);
+    });
+
+    it('rejects a fractional port', async () => {
+        const client = await app.authenticatedClient(admin);
+
+        const response = await client.call('/server-settings/https-port', 'PUT', {
+            port: 36000.5,
+        });
+
+        expect(response.status).toBe(400);
+        expect((await app.dependencies.tls.read()).port).toBe(34443);
+    });
+
+    it('rejects fields outside the HTTPS port contract', async () => {
+        const client = await app.authenticatedClient(admin);
+
+        const response = await client.call('/server-settings/https-port', 'PUT', {
+            port: 36000,
+            enabled: true,
+        });
+
+        expect(response.status).toBe(400);
+        expect((await app.dependencies.tls.read()).port).toBe(34443);
+    });
+
+    it('rejects the HTTP port', async () => {
+        const client = await app.authenticatedClient(admin);
+
+        const response = await client.call('/server-settings/https-port', 'PUT', { port: 34345 });
 
         expect(response.status).toBe(400);
         expect(response.text).toContain('different ports');
-        expect(await app.dependencies.tls.read()).toEqual({
-            enabled: false,
-            port: 34443,
-            hasCertificate: false,
-        });
+        expect((await app.dependencies.tls.read()).port).toBe(34443);
+    });
+
+    it('rejects unauthenticated changes', async () => {
+        const client = app.client();
+
+        await client.prepare();
+
+        const response = await client.call('/server-settings/https-port', 'PUT', { port: 36000 });
+
+        expect(response.status).toBe(401);
+    });
+
+    it('rejects non-administrators', async () => {
+        const client = await app.authenticatedClient(member);
+
+        const response = await client.call('/server-settings/https-port', 'PUT', { port: 36000 });
+
+        expect(response.status).toBe(403);
+        expect((await app.dependencies.tls.read()).port).toBe(34443);
+    });
+
+    it('rejects missing CSRF protection', async () => {
+        const client = await app.authenticatedClient(admin);
+
+        const response = await client.call(
+            '/server-settings/https-port',
+            'PUT',
+            { port: 36000 },
+            { csrf: false },
+        );
+
+        expect(response.status).toBe(403);
+        expect((await app.dependencies.tls.read()).port).toBe(34443);
     });
 });
