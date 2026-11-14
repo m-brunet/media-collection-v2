@@ -10,13 +10,17 @@ export class FindCollections implements FindCollectionsUseCase {
 
     async execute(search: string): Promise<CollectionNameView[]> {
         const key = NameKey.of(search);
+        const found = (await this.collections.list()).filter((collection) =>
+            collection.key.includes(key),
+        );
+        const exact = found.filter((collection) => collection.key === key);
 
-        return (await this.collections.list())
-            .filter((collection) => collection.key.includes(key))
+        return [...exact, ...found.filter((collection) => collection.key !== key)]
             .slice(0, FindCollections.limit)
             .map((collection) => ({
                 id: collection.id,
                 name: collection.snapshot.name,
+                category: collection.snapshot.category,
                 includesVolumeZero: collection.snapshot.includesVolumeZero,
             }));
     }

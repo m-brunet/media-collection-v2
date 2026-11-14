@@ -666,6 +666,9 @@ export const fr = {
     'form.authorNew': 'Ajouter « {name} » comme nouvel auteur',
     'form.authorRemove': 'Retirer {name}',
     'form.authorCorrect': 'Corriger l’orthographe de {name}',
+    'form.categoryLocked':
+        'Fixée par la collection {name} ({category}). Pour la changer, modifiez la collection.',
+    'form.categoryMember': 'Changer la catégorie proposera de changer toute la collection {name}.',
     'form.category': 'Catégorie',
     'form.ownership': 'Possession',
     'form.reading': 'Votre lecture',

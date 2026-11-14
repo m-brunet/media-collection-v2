@@ -9,6 +9,9 @@ import type { CoverChoice } from '../../shared/book-form/cover-choice';
 import { LookupFill } from '../../shared/book-form/lookup-fill.util';
 import type { BookField } from '../../shared/book-form/use-book-save';
 import { useBookSave } from '../../shared/book-form/use-book-save';
+import { CategoryLock } from '../../shared/book-form/category-lock.util';
+import { useCategoryLock } from '../../shared/book-form/use-category-lock';
+import { useCollectionNames } from '../../shared/book-form/use-collection-names';
 import { useSourceNames } from '../../shared/book-form/use-source-names';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { useSession } from '../../shared/session/session-context';
@@ -53,6 +56,9 @@ function AddBookForm({ isbn, lookup, accountId, bookcases }: AddBookFormProps) {
         ),
     );
     const [values, setValues] = useState(initial);
+    const categoryRule = CategoryLock.of(null, values, useCollectionNames(values));
+
+    useCategoryLock(categoryRule, values.category, setValues);
     const [cover, setCover] = useState<CoverChoice>({ file: null, removed: false });
     const [coverTouched, setCoverTouched] = useState(false);
     const [additionalOpen, setAdditionalOpen] = useState(() => BookDraft.hasAdditional(initial));
@@ -156,6 +162,7 @@ function AddBookForm({ isbn, lookup, accountId, bookcases }: AddBookFormProps) {
                     bookcases={bookcases}
                     additionalOpen={additionalOpen}
                     setAdditionalOpen={setAdditionalOpen}
+                    categoryRule={categoryRule}
                 />
                 {saving.failure && <Notice tone="error">{saving.failure.text}</Notice>}
                 <Button type="submit" variant="primary" busy={saving.saving}>

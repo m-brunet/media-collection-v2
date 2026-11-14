@@ -21,7 +21,8 @@ import { Icon } from '../../shared/ui/icon';
 import { SelectField } from '../../shared/ui/select-field';
 import { TextAreaField, TextField } from '../../shared/ui/text-field';
 import { ReadingField } from '../../shared/book-form/reading-toggle';
-import { ChoiceButtons } from '../../shared/ui/choice-buttons';
+import { CategoryField } from '../../shared/book-form/category-field';
+import type { CategoryRule } from '../../shared/book-form/category-lock.util';
 import { LeafCoverField } from './leaf-cover-field';
 
 export interface LeafFieldsProps {
@@ -37,6 +38,7 @@ export interface LeafFieldsProps {
     bookcases: BookcaseDto[];
     additionalOpen: boolean;
     setAdditionalOpen(open: boolean): void;
+    categoryRule: CategoryRule;
 }
 
 function Alternatives({
@@ -224,13 +226,9 @@ function MainFields(props: LeafFieldsProps) {
                 spellings={props.authorSpellings}
                 onChange={(authors) => set('authors', authors)}
             />
-            <ChoiceButtons
-                label={t('form.category')}
+            <CategoryField
                 value={values.category}
-                choices={BookFormat.categories.map((category) => ({
-                    value: category,
-                    label: t(BookFormat.category(category)),
-                }))}
+                rule={props.categoryRule}
                 onChange={(category) => update({ category })}
             />
             <SelectField

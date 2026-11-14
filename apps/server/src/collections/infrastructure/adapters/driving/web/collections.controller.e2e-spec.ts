@@ -171,7 +171,12 @@ describe('GET /api/collections/names', () => {
         const response = await client.call<CollectionNameDto[]>('/collections/names?search=bat');
 
         expect(response.body).toEqual([
-            { id: expect.any(String), name: 'Batman', includesVolumeZero: false },
+            {
+                id: expect.any(String),
+                name: 'Batman',
+                category: 'books',
+                includesVolumeZero: false,
+            },
         ]);
     });
     it('requires a signed-in account', async () => {

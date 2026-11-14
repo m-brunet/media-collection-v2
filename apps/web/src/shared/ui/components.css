@@ -480,6 +480,14 @@
     cursor: pointer;
 }
 
+.choice-buttons:disabled .choice-buttons__option {
+    cursor: not-allowed;
+}
+
+.choice-buttons:disabled .choice-buttons__option:not(.button--pressed) {
+    opacity: 0.5;
+}
+
 .choice-buttons__option:has(input:focus-visible) {
     box-shadow: var(--focus-ring);
 }
