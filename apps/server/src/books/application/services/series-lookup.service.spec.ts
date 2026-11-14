@@ -23,19 +23,31 @@ describe('SeriesLookup', () => {
         expect(series.asked).toEqual(['volumes:Gunnm/Glénat@1']);
     });
 
-    it('pauses the source until the time it asks to wait', async () => {
-        const { clock, series, budget, lookup } = setup();
+    it('asks nothing more before the time the catalogue asks to wait', async () => {
+        const { clock, series, lookup } = setup();
 
         series.editionsReply = { kind: 'limited', retryAt: new Date('2026-03-01T10:02:00Z') };
-
         await lookup.editions(['9782723434799']);
         clock.advance(60);
-        const during = budget.take();
 
-        clock.advance(61);
+        const reply = await lookup.editions(['9782723434799']);
 
-        expect(during).toBe(false);
-        expect(budget.take()).toBe(true);
+        expect(reply).toEqual({ kind: 'limited', retryAt: null });
+        expect(series.asked).toHaveLength(1);
+    });
+
+    it('asks again once that time has passed', async () => {
+        const { clock, series, lookup } = setup();
+
+        series.editionsReply = { kind: 'limited', retryAt: new Date('2026-03-01T10:02:00Z') };
+        await lookup.editions(['9782723434799']);
+        clock.advance(121);
+        series.editionsReply = { kind: 'none' };
+
+        const reply = await lookup.editions(['9782723434799']);
+
+        expect(reply).toEqual({ kind: 'none' });
+        expect(series.asked).toHaveLength(2);
     });
 
     it('reports an unreachable catalogue as failed', async () => {

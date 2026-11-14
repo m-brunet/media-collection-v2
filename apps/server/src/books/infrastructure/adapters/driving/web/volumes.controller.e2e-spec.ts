@@ -58,7 +58,7 @@ function volume(number: number, isbn: string, changes: Partial<NewVolumeDto> = {
 }
 
 describe('POST /api/books/volumes', () => {
-    it('adds the volumes to the collection with the fields of the anchor', async () => {
+    it('adds the volumes to the collection with their generated titles', async () => {
         const first = await anchor();
         const client = await app.authenticatedClient(owner);
 
@@ -70,14 +70,26 @@ describe('POST /api/books/volumes', () => {
                 volume(3, '9782723434775', { ownership: 'not-owned' }),
             ],
         });
-        const second = await client.call<BookDto>('/books/' + response.body.added[0]!.bookId);
 
         expect(response.status).toBe(201);
         expect(response.body.added.map((added) => [added.volume, added.title])).toEqual([
             [2, 'Gunnm Vol. 2'],
             [3, 'Gunnm Vol. 3'],
         ]);
-        expect(second.body).toMatchObject({
+    });
+
+    it('gives a new volume the category and publisher of the anchor', async () => {
+        const first = await anchor();
+        const client = await app.authenticatedClient(owner);
+        const added = await client.call<VolumesAddedDto>('/books/volumes', 'POST', {
+            collectionId: first.collection!.id,
+            anchorBookId: first.id,
+            volumes: [volume(2, '9782723434324')],
+        });
+
+        const response = await client.call<BookDto>('/books/' + added.body.added[0]!.bookId);
+
+        expect(response.body).toMatchObject({
             category: 'manga',
             publisher: 'Glénat',
             isbn: '9782723434324',

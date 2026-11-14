@@ -8,6 +8,7 @@ import type {
 } from '../../../../../packages/contracts/src/http';
 import { account, deviceLanguages, FakeApi } from '../../testing/fake-api.test-support';
 import { renderRoute } from '../../testing/render-route.test-support';
+import { Required } from '../../shared/required.util';
 import { CollectionDetailsPage } from './collection-details-page';
 
 beforeEach(() => {
@@ -119,19 +120,12 @@ async function review(api = library()) {
 }
 
 function rowOf(volume: number) {
-    return Required(
+    return Required.value(
         screen
             .getAllByRole('row')
             .find((row) => within(row).queryByRole('checkbox', { name: 'Add volume ' + volume })),
+        'volume ' + volume + ' has a row',
     );
-}
-
-function Required<T>(value: T | undefined): T {
-    if (value === undefined) {
-        throw new Error('The row is shown');
-    }
-
-    return value;
 }
 
 it('looks up the missing volumes up to the number asked', async () => {

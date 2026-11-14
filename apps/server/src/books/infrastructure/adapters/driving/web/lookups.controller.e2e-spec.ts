@@ -321,19 +321,29 @@ describe('POST /api/books/lookups/covers', () => {
 });
 
 describe('POST /api/books/lookups/volume-cover', () => {
-    it("gives a token for a volume's cover, to read like a looked-up cover", async () => {
+    it("gives a token for a volume's cover", async () => {
         sources().cover(isbn, coverAddress, jpeg);
         const client = await app.authenticatedClient(owner);
 
         const response = await client.call<VolumeCoverDto>('/books/lookups/volume-cover', 'POST', {
             isbn,
         });
-        const token = response.body.kind === 'found' ? response.body.token : '';
-        const image = await client.call('/books/lookups/covers/' + token);
 
         expect(response.status).toBe(200);
-        expect(response.body.kind).toBe('found');
-        expect(image.status).toBe(200);
+        expect(response.body).toEqual({ kind: 'found', token: expect.any(String) });
+    });
+
+    it("reads a volume's cover by its token, like a looked-up cover", async () => {
+        sources().cover(isbn, coverAddress, jpeg);
+        const client = await app.authenticatedClient(owner);
+        const found = await client.call<VolumeCoverDto>('/books/lookups/volume-cover', 'POST', {
+            isbn,
+        });
+        const token = found.body.kind === 'found' ? found.body.token : '';
+
+        const response = await client.call('/books/lookups/covers/' + token);
+
+        expect(response.status).toBe(200);
     });
 
     it('finds nothing for a volume without a cover', async () => {
