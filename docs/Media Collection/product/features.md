@@ -108,6 +108,10 @@ Book and collection listing views are simple listings with simple search, advanc
 
 Overview shows Owned-book, collection, bookcase/shelf, and currently-lent-book counters, plus recently-added Owned books ordered by record-added date and linking to details. Book counts count saved editions, not collection volumes. Owners/Admin have their own Owned-book Read/Not read summary; Guests have none. Reading goals/in-progress widgets are excluded. Count values derive from actual data. Remaining interaction details are tracked in [Task 6](overview-activity-mobile.md).
 
+## Statistics
+
+Statistics (`/statistics`, Libris menu after Activity) shows fun numbers about the **owned** books: owned books (in N collections and K single books), total pages and total price (each "on N of M books", the books without a price linking to the Library filters), the reader's own Read count, the split by category, the reader's own reading, finished / unfinished collections with the missing volumes, the top 10 publishers (by books or by pages) and authors, and three records (longest book, most expensive book, biggest collection). A category choice (All / Books / Manga / Comics, kept in the address) narrows every number. Guests see everything but the reading. The page opens on the Dashboard view; Story (#72) and Topics (#73) views come later. Rules and acceptance examples: [issue #34](../plans/issue-34-statistics.md).
+
 ## Audit logs (technical)
 
 Audit logs are required from the first release. Each user-initiated use-case action that changes application state produces a record in the audit logs table: for example, creating a book, updating a book, deleting a tag, or deleting a shelf.
