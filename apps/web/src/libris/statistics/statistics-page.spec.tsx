@@ -140,7 +140,7 @@ it('leaves out the reading of a Guest', async () => {
         screen.queryByRole('heading', { name: 'Your reading' }),
     ]).toEqual([null, null]);
 });
-it('ranks the publishers by books, then by pages', async () => {
+it('ranks the publishers by pages once chosen', async () => {
     library();
     show();
     await screen.findByRole('list', { name: 'Top publishers' });
