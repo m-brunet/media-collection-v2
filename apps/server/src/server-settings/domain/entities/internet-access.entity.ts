@@ -43,6 +43,8 @@ export interface InternetAccessState {
     history: CertificateAttempt[];
     lastAttemptName: string | null;
     awaitingCheck: boolean;
+    routerPort: number | null;
+    addressMoved: boolean;
 }
 
 export interface AttemptAllowances {
@@ -51,8 +53,9 @@ export interface AttemptAllowances {
 }
 
 export class InternetAccess {
-    // Let's Encrypt's TLS-ALPN-01 check only uses 443.
-    static readonly externalPort = 443;
+    // Let's Encrypt's TLS-ALPN-01 check only connects to port 443 (RFC 8737).
+    static readonly checkPort = 443;
+    private static readonly standardHttpsPort = 443;
     private static readonly defaultRetryAfterMs = 6 * 60 * 60 * 1000;
     private static readonly ruleFailures: ReadonlySet<InternetAccessFailureReason> =
         new Set<RouterRuleFailureReason>([
@@ -77,6 +80,10 @@ export class InternetAccess {
             state.phase !== 'active' || (state.certificate !== null && state.mapping !== null),
             'Active internet access needs a certificate and a port rule.',
         );
+        Failure.ensure(
+            state.phase === 'off' || state.routerPort !== null,
+            'Internet access needs the router port.',
+        );
         this.state = InternetAccess.copy(state);
     }
 
@@ -95,6 +102,8 @@ export class InternetAccess {
             history: [],
             lastAttemptName: null,
             awaitingCheck: false,
+            routerPort: null,
+            addressMoved: false,
         });
     }
 
@@ -118,8 +127,30 @@ export class InternetAccess {
         return this.state.domain ?? this.state.publicAddress;
     }
 
+    get routerPort(): number | null {
+        return this.state.routerPort;
+    }
+
     get origin(): string | null {
-        return this.state.phase === 'active' ? 'https://' + this.certificateName : null;
+        if (this.state.phase !== 'active') {
+            return null;
+        }
+
+        const port = this.state.routerPort;
+
+        return (
+            'https://' +
+            this.certificateName +
+            (port === InternetAccess.standardHttpsPort ? '' : ':' + port)
+        );
+    }
+
+    get renewalAt(): Date | null {
+        const certificate = this.certificate;
+
+        return this.state.phase === 'active' && certificate
+            ? RenewalPolicy.renewalAt(certificate, this.renewalShare)
+            : null;
     }
 
     get certificate(): IssuedCertificate | null {
@@ -194,7 +225,7 @@ export class InternetAccess {
         }
     }
 
-    start(domain: string | null): void {
+    start(domain: string | null, routerPort: number): void {
         if (this.state.phase === 'setting-up') {
             throw new Failure(
                 'conflict',
@@ -211,6 +242,7 @@ export class InternetAccess {
             step: 'router',
             domain: name ? name.value : null,
             certificate: this.state.certificate,
+            routerPort,
         };
     }
 
@@ -336,10 +368,26 @@ export class InternetAccess {
             RenewalPolicy.renewalDue(
                 this.certificate,
                 Required.value(this.certificateName, 'an active access has a certificate name'),
-                this.state.domain ? RenewalPolicy.domainShare : RenewalPolicy.addressShare,
+                this.renewalShare,
                 now,
             )
         );
+    }
+
+    ruleMoved(routerPort: number): void {
+        Failure.ensure(
+            this.state.phase === 'active' || this.state.phase === 'waiting-for-port',
+            'Only an active or awaited router rule can move.',
+        );
+        this.state = {
+            ...this.state,
+            routerPort,
+            addressMoved: this.state.phase === 'active' || this.state.addressMoved,
+        };
+    }
+
+    addressNoticeSeen(): void {
+        this.state = { ...this.state, addressMoved: false };
     }
 
     upkeepDue(now: Date): boolean {
@@ -414,6 +462,10 @@ export class InternetAccess {
         } else if (this.checking) {
             this.state = { ...this.state, step: null };
         }
+    }
+
+    private get renewalShare(): number {
+        return this.state.domain ? RenewalPolicy.domainShare : RenewalPolicy.addressShare;
     }
 
     private attempted(kind: CertificateAttempt['kind'], now: Date): void {

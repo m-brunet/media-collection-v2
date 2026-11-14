@@ -19,17 +19,17 @@ function subjectFor(doubles: ReturnType<typeof InternetAccessDoubles.setup>) {
     );
 }
 
-it('gives the address phones open once active', async () => {
+it('gives the address phones open, with its port, once active', async () => {
     const subject = subjectFor(InternetAccessDoubles.setup(InternetAccessDoubles.active()));
 
     const view = await subject.execute(admin);
 
-    expect([view.origin, view.manualRule]).toEqual(['https://' + publicAddress, null]);
+    expect([view.origin, view.manualRule]).toEqual(['https://' + publicAddress + ':3443', null]);
 });
 it('gives the values for a manual router rule while waiting for it', async () => {
     const access = InternetAccess.off();
 
-    access.start(null);
+    access.start(null, 3443);
     access.portNeeded(publicAddress, 'no-router', new Date('2026-11-08T10:00:00.000Z'));
     const subject = subjectFor(InternetAccessDoubles.setup(access.snapshot));
 
@@ -67,7 +67,7 @@ it('gives the domain name as the address phones open', async () => {
 
     const view = await subject.execute(admin);
 
-    expect([view.origin, view.domain]).toEqual(['https://home.example.fr', 'home.example.fr']);
+    expect([view.origin, view.domain]).toEqual(['https://home.example.fr:3443', 'home.example.fr']);
 });
 it('gives what Let’s Encrypt probably still allows after a failure', async () => {
     const subject = subjectFor(

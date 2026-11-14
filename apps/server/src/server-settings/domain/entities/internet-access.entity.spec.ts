@@ -12,7 +12,7 @@ const certificate = {
 function settingUp(): InternetAccess {
     const access = InternetAccess.off();
 
-    access.start(null);
+    access.start(null, 34443);
 
     return access;
 }
@@ -37,14 +37,14 @@ function active(): InternetAccess {
 it('starts a setup by looking for the router', () => {
     const access = InternetAccess.off();
 
-    access.start(null);
+    access.start(null, 34443);
 
     expect([access.phase, access.snapshot.step]).toEqual(['setting-up', 'router']);
 });
 it('refuses a second setup while one runs', () => {
     const access = settingUp();
 
-    const operation = () => access.start(null);
+    const operation = () => access.start(null, 34443);
 
     expect(operation).toThrow('already being set up');
 });
@@ -172,6 +172,7 @@ it('refuses an active state without a certificate', () => {
         mapping: 'upnp',
         publicAddress: '82.66.118.204',
         domain: null,
+        routerPort: 34443,
     };
 
     const operation = () => new InternetAccess(state);
@@ -281,7 +282,7 @@ it('forgets everything when turned off', () => {
 it('keeps the current certificate while a new setup runs', () => {
     const access = active();
 
-    access.start(null);
+    access.start(null, 34443);
 
     expect([access.phase, access.certificate?.address]).toEqual(['setting-up', '82.66.118.204']);
 });
@@ -316,7 +317,7 @@ const domainCertificate = {
 function activeWithDomain(): InternetAccess {
     const access = InternetAccess.off();
 
-    access.start('Home.Example.fr');
+    access.start('Home.Example.fr', 34443);
     access.routerFound('upnp', '82.66.118.204', now);
     access.portOpened();
     access.activate(domainCertificate);
@@ -327,21 +328,21 @@ function activeWithDomain(): InternetAccess {
 it('starts a setup with the domain name', () => {
     const access = InternetAccess.off();
 
-    access.start(' Home.Example.FR ');
+    access.start(' Home.Example.FR ', 34443);
 
     expect([access.phase, access.domain]).toEqual(['setting-up', 'home.example.fr']);
 });
 it('starts a setup without a domain name when the field is blank', () => {
     const access = InternetAccess.off();
 
-    access.start('');
+    access.start('', 34443);
 
     expect(access.domain).toBeNull();
 });
 it('refuses an invalid domain name', () => {
     const access = InternetAccess.off();
 
-    const operation = () => access.start('https://home.example.fr');
+    const operation = () => access.start('https://home.example.fr', 34443);
 
     expect(operation).toThrow(expect.objectContaining({ reason: 'domain-name-invalid' }));
 });
@@ -376,7 +377,7 @@ it('becomes active with a certificate for the domain name', () => {
 it('refuses an address certificate when a domain name is set', () => {
     const access = InternetAccess.off();
 
-    access.start('home.example.fr');
+    access.start('home.example.fr', 34443);
     access.routerFound('upnp', '82.66.118.204', now);
     access.portOpened();
 
@@ -421,7 +422,7 @@ it('keeps the domain name when turned off', () => {
 it('keeps the domain name when the setup stops', () => {
     const access = InternetAccess.off();
 
-    access.start('home.example.fr');
+    access.start('home.example.fr', 34443);
 
     access.stop('domain-mismatch', now);
 
@@ -547,7 +548,7 @@ it('keeps the attempts and Let’s Encrypt’s date through a stopped setup and 
     access.authorityRefused('not-reachable', null, now);
     access.stop('rate-limited', now);
 
-    access.start(null);
+    access.start(null, 34443);
 
     expect([access.snapshot.history.length, access.snapshot.retryAfter]).toEqual([
         1,
@@ -668,12 +669,100 @@ it('estimates for the address of a rate-limited setup once off', () => {
 
     expect(allowances?.certificates).toEqual({ left: 5, nextAt: null });
 });
-it('gives the HTTPS internet address while active', () => {
+it('gives the HTTPS internet address with the router port while active', () => {
     const access = active();
 
     const result = access.origin;
 
+    expect(result).toBe('https://82.66.118.204:34443');
+});
+it('leaves the port out of the HTTPS internet address when the router port is 443', () => {
+    const access = new InternetAccess({ ...active().snapshot, routerPort: 443 });
+
+    const result = access.origin;
+
     expect(result).toBe('https://82.66.118.204');
+});
+it('keeps the HTTPS port as the router port of a setup', () => {
+    const access = InternetAccess.off();
+
+    access.start(null, 34500);
+
+    expect(access.routerPort).toBe(34500);
+});
+it('forgets the router port once off', () => {
+    const access = active();
+
+    access.turnOff();
+
+    expect(access.routerPort).toBeNull();
+});
+it('refuses a saved setup without a router port', () => {
+    const state = { ...active().snapshot, routerPort: null };
+
+    const operation = () => new InternetAccess(state);
+
+    expect(operation).toThrow('router port');
+});
+it('moves an active router rule to a new port and tells about the new address', () => {
+    const access = active();
+
+    access.ruleMoved(34500);
+
+    expect([access.routerPort, access.origin, access.snapshot.addressMoved]).toEqual([
+        34500,
+        'https://82.66.118.204:34500',
+        true,
+    ]);
+});
+it('moves an awaited router rule without telling about a new address', () => {
+    const access = gettingCertificate();
+
+    access.certificateRefused('not-reachable', now);
+    access.ruleMoved(34500);
+
+    expect([access.routerPort, access.snapshot.addressMoved]).toEqual([34500, false]);
+});
+it('moves no router rule while off', () => {
+    const access = InternetAccess.off();
+
+    const operation = () => access.ruleMoved(34500);
+
+    expect(operation).toThrow('router rule');
+});
+it('stops telling about the new address once the Admin has seen it', () => {
+    const access = active();
+
+    access.ruleMoved(34500);
+    access.addressNoticeSeen();
+
+    expect(access.snapshot.addressMoved).toBe(false);
+});
+it('gives the renewal date of an address certificate at half its lifetime', () => {
+    const access = active();
+
+    const result = access.renewalAt;
+
+    expect(result?.toISOString()).toBe('2026-11-11T10:00:00.000Z');
+});
+it('gives the renewal date of a domain name certificate at two thirds of its lifetime', () => {
+    const access = InternetAccess.off();
+
+    access.start('home.example.fr', 34443);
+    access.routerFound('upnp', '82.66.118.204', now);
+    access.portOpened();
+    access.activate({ ...certificate, address: 'home.example.fr' });
+
+    const result = access.renewalAt;
+
+    expect(result?.toISOString()).toBe('2026-11-12T10:00:00.000Z');
+});
+it('has no renewal date before it is active', () => {
+    const access = gettingCertificate();
+
+    const result = access.renewalAt;
+
+    expect(result).toBeNull();
 });
 it('has no HTTPS internet address before it is active', () => {
     const access = gettingCertificate();
