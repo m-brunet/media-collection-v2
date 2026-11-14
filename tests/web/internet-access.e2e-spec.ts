@@ -114,11 +114,31 @@ describe('Internet access', () => {
         await page.getByRole('heading', { name: 'Add the rule in your router' }).waitFor();
         await capture(page, 'internet-access-manual-rule');
 
-        expect(await page.getByText(/refused to open port 443/).isVisible()).toBe(true);
-        expect(await page.getByText(String(httpsPort), { exact: true }).first().isVisible()).toBe(
-            true,
-        );
+        expect(
+            await page.getByText('Your router refused to open port ' + httpsPort + '.').isVisible(),
+        ).toBe(true);
+        expect(await page.getByText(String(httpsPort), { exact: true }).count()).toBe(3);
         expect(await page.getByRole('button', { name: 'Check again' }).isVisible()).toBe(true);
+    });
+    it('gives the port 443 rule Let’s Encrypt needs when the router refuses', async () => {
+        const { page } = await serverSettings({ externalAddress: publicAddress, accepts: false });
+
+        await page.getByRole('button', { name: 'Set up internet access' }).click();
+        await page.getByRole('heading', { name: 'Port 443, kept open' }).waitFor();
+
+        expect(await page.getByText('443', { exact: true }).isVisible()).toBe(true);
+    });
+    it('saves the HTTPS port from Ports, outside the advanced settings', async () => {
+        const { page } = await serverSettings({ externalAddress: publicAddress, accepts: true });
+        const form = page.getByRole('form', { name: 'HTTPS / internet access' });
+        const port = String(await RuntimeSetup.availablePort());
+
+        await form.getByRole('spinbutton', { name: /^HTTPS port/ }).fill(port);
+        await form.getByRole('button', { name: 'Save HTTPS port' }).click();
+        await page.getByText(/^HTTPS port saved\. Close and reopen/).waitFor();
+        await capture(page, 'server-settings-ports');
+
+        expect(await form.getByRole('spinbutton', { name: /^HTTPS port/ }).inputValue()).toBe(port);
     });
     it('explains a provider that shares the public address', async () => {
         const { page } = await serverSettings({ externalAddress: '100.70.0.1', accepts: true });
