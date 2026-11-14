@@ -55,14 +55,23 @@ describe('VolumeReview', () => {
                 isbn13: '9782344017524',
                 ownership: 'owned',
                 sourceTitle: false,
+                cover: null,
             },
-            { volume: 3, ticked: false, isbn13: null, ownership: 'owned', sourceTitle: false },
+            {
+                volume: 3,
+                ticked: false,
+                isbn13: null,
+                ownership: 'owned',
+                sourceTitle: false,
+                cover: null,
+            },
             {
                 volume: 4,
                 ticked: true,
                 isbn13: '9782723434782',
                 ownership: 'owned',
                 sourceTitle: false,
+                cover: null,
             },
         ]);
     });
@@ -121,5 +130,15 @@ describe('VolumeReview', () => {
         const covers = VolumeReview.covers(gunnm, choices);
 
         expect(covers).toEqual(['9782344017524', '9782723434782']);
+    });
+
+    it('fetches no cover for a volume whose cover was picked', () => {
+        const choices = VolumeReview.initial(gunnm).map((choice) =>
+            choice.volume === 2 ? { ...choice, cover: new File([], 'cover.jpg') } : choice,
+        );
+
+        const covers = VolumeReview.covers(gunnm, choices);
+
+        expect(covers).toEqual(['9782723434782']);
     });
 });

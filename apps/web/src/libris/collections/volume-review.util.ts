@@ -19,6 +19,7 @@ export type VolumeChoice = {
     isbn13: string | null;
     ownership: BookOwnership;
     sourceTitle: boolean;
+    cover: File | null;
 };
 
 export class VolumeReview {
@@ -36,6 +37,7 @@ export class VolumeReview {
                 isbn13: edition?.isbn13 ?? null,
                 ownership: 'owned',
                 sourceTitle: row.generatedTitle === null,
+                cover: null,
             };
         });
     }
@@ -109,6 +111,8 @@ export class VolumeReview {
     }
 
     static covers(found: FoundVolumes, choices: readonly VolumeChoice[]): string[] {
-        return VolumeReview.chosen(found, choices).map(({ edition }) => edition.isbn13);
+        return VolumeReview.chosen(found, choices)
+            .filter(({ choice }) => choice.cover === null)
+            .map(({ edition }) => edition.isbn13);
     }
 }

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type {
     BookOwnership,
     CollectionDetailsDto,
@@ -14,6 +14,7 @@ import { Dialog } from '../../shared/ui/dialog';
 import { Notice } from '../../shared/ui/notice';
 import { TextField } from '../../shared/ui/text-field';
 import { useAction } from '../../shared/use-action';
+import { CoverPicker } from '../books/cover-picker';
 import { useVolumeCovers } from './use-volume-covers';
 import type { VolumeCovers } from './volume-cover-queue';
 import type { FoundVolumes, VolumeChoice } from './volume-review.util';
@@ -102,20 +103,43 @@ export function AddVolumesDialog({
     );
 }
 
+function PickedCover({ volume, file }: { volume: number; file: File }) {
+    const { t } = useI18n();
+    const preview = useMemo(() => URL.createObjectURL(file), [file]);
+
+    useEffect(() => () => URL.revokeObjectURL(preview), [preview]);
+
+    return (
+        <img
+            className="volume-review__cover"
+            src={preview}
+            alt={t('volumes.coverAlt', { volume })}
+        />
+    );
+}
+
 function CoverCell({
-    volume,
-    isbn13,
+    row,
+    choice,
     covers,
+    onChange,
 }: {
-    volume: number;
-    isbn13: string | null;
+    row: MissingVolumeRowDto;
+    choice: VolumeChoice;
     covers: VolumeCovers;
+    onChange(changes: Partial<VolumeChoice>): void;
 }) {
     const { t } = useI18n();
+    const [picking, setPicking] = useState(false);
+    const isbn13 = choice.ticked ? choice.isbn13 : null;
     const cover = isbn13 ? covers.get(isbn13) : undefined;
 
     if (!isbn13) {
         return null;
+    }
+
+    if (choice.cover) {
+        return <PickedCover volume={row.volume} file={choice.cover} />;
     }
 
     if (cover?.kind === 'found') {
@@ -123,12 +147,49 @@ function CoverCell({
             <img
                 className="volume-review__cover"
                 src={'/api/books/lookups/covers/' + cover.token}
-                alt={t('volumes.coverAlt', { volume })}
+                alt={t('volumes.coverAlt', { volume: row.volume })}
             />
         );
     }
 
-    return <span className="muted">{t(cover ? 'volumes.coverNone' : 'volumes.coverPending')}</span>;
+    return (
+        <div className="volume-review__no-cover">
+            <span className="muted">{t(cover ? 'volumes.coverNone' : 'volumes.coverPending')}</span>
+            <Button
+                variant="ghost"
+                aria-label={t('volumes.coverFindOf', { volume: row.volume })}
+                onClick={() => setPicking(true)}
+            >
+                {t('volumes.coverFind')}
+            </Button>
+            {picking && (
+                <Dialog
+                    open
+                    title={t('volumes.coverFindOf', { volume: row.volume })}
+                    onClose={() => setPicking(false)}
+                    footer={
+                        <Button variant="primary" onClick={() => setPicking(false)}>
+                            {t('volumes.coverDone')}
+                        </Button>
+                    }
+                >
+                    <CoverPicker
+                        title={VolumeReview.title(row, choice)}
+                        savedCover={null}
+                        searchTerms={isbn13}
+                        choice={{ file: choice.cover, removed: false }}
+                        onChange={(picked) => {
+                            onChange({ cover: picked.file });
+
+                            if (picked.file) {
+                                setPicking(false);
+                            }
+                        }}
+                    />
+                </Dialog>
+            )}
+        </div>
+    );
 }
 
 function BookCell({
@@ -183,7 +244,7 @@ function BookCell({
                     className="field__control field__control--select"
                     aria-label={t('volumes.edition', { volume: row.volume })}
                     value={choice.isbn13 ?? ''}
-                    onChange={(event) => onChange({ isbn13: event.target.value })}
+                    onChange={(event) => onChange({ isbn13: event.target.value, cover: null })}
                 >
                     {choosable.map((candidate) => (
                         <option key={candidate.isbn13} value={candidate.isbn13}>
@@ -233,15 +294,17 @@ export function VolumeReviewPanel({
             let coversFailed = false;
 
             for (const added of result.added) {
+                const picked = choices.find((choice) => choice.volume === added.volume)?.cover;
                 const isbn = request.volumes.find((volume) => volume.volume === added.volume)?.isbn;
                 const cover = isbn ? covers.get(isbn) : undefined;
+                const token = cover?.kind === 'found' ? cover.token : null;
 
-                if (cover?.kind !== 'found') {
+                if (!picked && !token) {
                     continue;
                 }
 
                 try {
-                    const image = await api.download('/books/lookups/covers/' + cover.token);
+                    const image = picked ?? (await api.download('/books/lookups/covers/' + token));
 
                     await api.request('/books/' + added.bookId + '/cover', {
                         method: 'PUT',
@@ -313,9 +376,10 @@ export function VolumeReviewPanel({
                                     </td>
                                     <td>
                                         <CoverCell
-                                            volume={row.volume}
-                                            isbn13={choice.ticked ? choice.isbn13 : null}
+                                            row={row}
+                                            choice={choice}
                                             covers={covers}
+                                            onChange={(changes) => change(index, changes)}
                                         />
                                     </td>
                                     <td>
