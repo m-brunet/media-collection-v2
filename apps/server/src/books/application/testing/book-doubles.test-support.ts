@@ -1,3 +1,12 @@
+import type {
+    CollectionVolumes,
+    CollectionVolumesView,
+} from '../ports/driven/collection-volumes.interface.js';
+import type {
+    SeriesCatalogue,
+    SeriesPage,
+    SeriesRecord,
+} from '../ports/driven/series-catalogue.interface.js';
 import type { AuthorView, BookListQuery, CatalogPage } from '../book-views.js';
 import type { BookInput } from '../book-input.js';
 import type { AuthorRepository } from '../ports/driven/author-repository.interface.js';
@@ -569,6 +578,67 @@ export class MemoryCollectionBooks implements CollectionOwnedBooks {
         }
 
         return [...books];
+    }
+}
+
+export class MemoryCollectionVolumes implements CollectionVolumes {
+    readonly collections = new Map<string, Omit<CollectionVolumesView, 'uncovered'>>();
+    readonly asked: { collectionId: string; upTo: number }[] = [];
+
+    async of(collectionId: string, upTo: number): Promise<CollectionVolumesView> {
+        this.asked.push({ collectionId, upTo });
+        const collection = this.collections.get(collectionId);
+
+        if (!collection) {
+            throw new Failure('not_found', 'That collection does not exist.', 'collection-missing');
+        }
+
+        const uncovered = [];
+
+        for (let volume = 1; volume <= upTo; volume++) {
+            if (
+                !collection.members.some(
+                    (member) => member.volumeFrom <= volume && volume <= member.volumeTo,
+                )
+            ) {
+                uncovered.push(volume);
+            }
+        }
+
+        return { ...collection, members: [...collection.members], uncovered };
+    }
+}
+
+export class ScriptedSeries implements SeriesCatalogue {
+    readonly name = 'bnf';
+    readonly asked: string[] = [];
+    editionsReply: SourceReply<SeriesRecord[]> | 'fail' = { kind: 'none' };
+    pages: (SourceReply<SeriesPage> | 'fail')[] = [{ kind: 'none' }];
+
+    constructor(readonly limit = { requests: 100, seconds: 60 }) {}
+
+    async editions(isbn13s: readonly string[]): Promise<SourceReply<SeriesRecord[]>> {
+        this.asked.push('editions:' + isbn13s.join(','));
+
+        return ScriptedSeries.answer(this.editionsReply);
+    }
+
+    async volumes(
+        series: string,
+        publisher: string,
+        start: number,
+    ): Promise<SourceReply<SeriesPage>> {
+        this.asked.push('volumes:' + series + '/' + publisher + '@' + start);
+
+        return ScriptedSeries.answer(this.pages.shift() ?? { kind: 'none' });
+    }
+
+    private static answer<T>(reply: T | 'fail'): T {
+        if (reply === 'fail') {
+            throw new Error('Catalogue unreachable');
+        }
+
+        return reply;
     }
 }
 

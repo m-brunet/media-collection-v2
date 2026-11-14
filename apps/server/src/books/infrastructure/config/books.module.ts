@@ -68,6 +68,13 @@ import type { LookupSource } from '../../application/ports/driven/lookup-source.
 import type { CoverDownloader } from '../../application/ports/driven/cover-downloader.interface.js';
 import type { LookupCoverRegistry } from '../../application/ports/driven/lookup-cover-registry.interface.js';
 import { SourceLink } from '../../application/services/source-chain.service.js';
+import { SourceBudgets } from '../../application/services/source-budgets.service.js';
+import { SeriesLookup } from '../../application/services/series-lookup.service.js';
+import type { SeriesCatalogue } from '../../application/ports/driven/series-catalogue.interface.js';
+import type { CollectionVolumes } from '../../application/ports/driven/collection-volumes.interface.js';
+import { FindMissingVolumes } from '../../application/use-cases/find-missing-volumes.usecase.js';
+import { BnfSeries } from '../adapters/driven/third-party/bnf-series.adapter.js';
+import { MissingVolumesController } from '../adapters/driving/web/missing-volumes.controller.js';
 import { LookUpBook } from '../../application/use-cases/look-up-book.usecase.js';
 import { ReadLookupCover } from '../../application/use-cases/read-lookup-cover.usecase.js';
 import { FetchCoverFromAddress } from '../../application/use-cases/fetch-cover-from-address.usecase.js';
@@ -87,9 +94,17 @@ import { SharpCoverTrimmer } from '../adapters/driven/image/sharp-cover-trimmer.
 export interface BookLookupSources {
     information: LookupSource<LookupAnswer>[];
     covers: LookupSource<CoverOffer[]>[];
+    series: SeriesCatalogue;
     downloader: CoverDownloader;
     addressDownloader: CoverDownloader;
 }
+
+type LookupChains = {
+    information: SourceLink<LookupAnswer> | null;
+    covers: SourceLink<CoverOffer[]> | null;
+    series: SeriesLookup;
+    budgets: SourceBudgets;
+};
 
 export interface BooksDependencies {
     books: BookRepository;
@@ -101,6 +116,7 @@ export interface BooksDependencies {
     collections: CollectionMembership;
     collectionReader: BookCollectionReader;
     collectionBooks: CollectionOwnedBooks;
+    collectionVolumes: CollectionVolumes;
     shelves: ShelfAssignment;
     locationReader: BookLocationReader;
     tags: TagAssignment;
@@ -125,6 +141,7 @@ const token = {
     collections: 'BOOKS_COLLECTION_MEMBERSHIP',
     collectionReader: 'BOOKS_COLLECTION_READER',
     collectionBooks: 'BOOKS_COLLECTION_OWNED_BOOKS',
+    collectionVolumes: 'BOOKS_COLLECTION_VOLUMES',
     shelves: 'BOOKS_SHELF_ASSIGNMENT',
     locationReader: 'BOOKS_LOCATION_READER',
     tags: 'BOOKS_TAG_ASSIGNMENT',
@@ -161,10 +178,16 @@ const serviceProviders: Provider[] = [
     {
         provide: token.lookupChains,
         inject: [token.lookup, token.clock],
-        useFactory: (lookup: BookLookupSources, clock: Clock) => ({
-            information: SourceLink.chain(lookup.information, clock),
-            covers: SourceLink.chain(lookup.covers, clock),
-        }),
+        useFactory: (lookup: BookLookupSources, clock: Clock): LookupChains => {
+            const budgets = new SourceBudgets(clock);
+
+            return {
+                information: SourceLink.chain(lookup.information, clock, budgets),
+                covers: SourceLink.chain(lookup.covers, clock, budgets),
+                series: new SeriesLookup(lookup.series, budgets.of(lookup.series), clock),
+                budgets,
+            };
+        },
     },
     {
         provide: token.trimmer,
@@ -302,10 +325,7 @@ const useCaseProviders: Provider[] = [
         inject: [token.books, token.lookupChains, token.lookupCovers, token.authors],
         useFactory: (
             books: BookRepository,
-            chains: {
-                information: SourceLink<LookupAnswer> | null;
-                covers: SourceLink<CoverOffer[]> | null;
-            },
+            chains: LookupChains,
             registry: LookupCoverRegistry,
             authors: AuthorRepository,
         ) =>
@@ -316,6 +336,16 @@ const useCaseProviders: Provider[] = [
                 registry,
                 new AuthorMatcher(authors),
             ),
+    },
+    {
+        provide: 'BOOKS_FIND_MISSING_VOLUMES',
+        inject: [token.collectionVolumes, token.lookupChains, token.books, token.authors],
+        useFactory: (
+            collections: CollectionVolumes,
+            chains: LookupChains,
+            books: BookRepository,
+            authors: AuthorRepository,
+        ) => new FindMissingVolumes(collections, chains.series, books, new AuthorMatcher(authors)),
     },
     {
         provide: 'BOOKS_FETCH_COVER_FROM_ADDRESS',
@@ -683,6 +713,7 @@ export class BooksModule {
                 PersonalReadingController,
                 CollectionReadingController,
                 LookupsController,
+                MissingVolumesController,
             ],
             providers: [
                 ...ValueProviders.of(dependencies, token),
@@ -705,6 +736,7 @@ export class BooksModule {
                 new OpenLibraryInformation(openLibrary),
             ],
             covers: [new OpenLibraryCovers(openLibrary)],
+            series: new BnfSeries(http, addresses.bnf),
             downloader: new HttpCoverDownloader(),
             addressDownloader: new HttpCoverDownloader(fetch, new PublicAddresses()),
         };

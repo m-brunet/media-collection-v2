@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { BnfSeries } from './bnf-series.adapter.js';
 import { BnfSru } from './bnf-sru.adapter.js';
 import { SourceHttp } from './source-http.adapter.js';
+import { SeriesVolumes } from '../../../../domain/services/series-volumes.service.js';
 
 function recorded(name: string): string {
     return readFileSync(new URL('./fixtures/' + name, import.meta.url), 'utf8');
@@ -138,5 +139,39 @@ describe('BnfSeries', () => {
         const page = await source.volumes('One piece', 'Glénat', 1);
 
         expect(page).toMatchObject({ kind: 'limited', retryAt: expect.any(Date) });
+    });
+
+    it("separates Gunnm's editions: the anchor's first, Mars chronicle last, 1995's \"Gunnm.\" apart", async () => {
+        const { source } = catalogue(recorded('bnf-series-gunnm.xml'));
+        const page = await source.volumes('Gunnm', 'Glénat', 1);
+        const records = page.kind === 'found' ? page.value.records : [];
+        const anchor = SeriesVolumes.anchorOf(records, [{ isbn13: '9782723434799', volume: 5 }]);
+
+        const volumes = SeriesVolumes.of(anchor!, records);
+
+        expect(volumes.editions(1).map((edition) => edition.isbn13)).toEqual([
+            '9782723432931',
+            '9782344017548',
+            '9782344017517',
+        ]);
+        expect(volumes.editions(3)[0]?.isbn13).toBe('9782723434775');
+    });
+
+    it("finds One Piece's volumes catalogued under their own title or as an original edition", async () => {
+        const { source } = catalogue(recorded('bnf-series-one-piece.xml'));
+        const page = await source.volumes('One piece', 'Glénat', 1);
+        const records = page.kind === 'found' ? page.value.records : [];
+        const anchor = SeriesVolumes.anchorOf(records, [{ isbn13: '9782344052198', volume: 106 }]);
+
+        const volumes = SeriesVolumes.of(anchor!, records);
+
+        expect(volumes.editions(10)[0]?.answer.title).toBe("OK, let's stand up !");
+        expect(volumes.editions(3).map((edition) => edition.answer.title)).toEqual([
+            'Piété filiale',
+            'Piété filiale',
+            'One piece. 3',
+        ]);
+        expect(volumes.editions(113)[0]?.isbn13).toBe('9782344071120');
+        expect(volumes.editions(2).map((edition) => edition.isbn13)).not.toContain('9782344020425');
     });
 });

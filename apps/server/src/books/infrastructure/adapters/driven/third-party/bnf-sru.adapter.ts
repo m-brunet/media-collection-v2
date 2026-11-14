@@ -8,6 +8,8 @@ export type SruPage =
 // The BnF general catalogue (SRU, UNIMARC records). Licence Ouverte: free reuse, source credited.
 export class BnfSru {
     static readonly address = 'https://catalogue.bnf.fr/api/SRU';
+    // The BnF publishes no figure for this service; a household's lookups stay far below this.
+    static readonly limit = { requests: 30, seconds: 60 };
 
     constructor(
         private readonly http: SourceHttp,

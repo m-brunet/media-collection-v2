@@ -61,6 +61,18 @@ export class CollectionCoverage {
         return this.members.some((member) => member.range.covers(0));
     }
 
+    uncovered(upTo: number): number[] {
+        const volumes: number[] = [];
+
+        for (let volume = this.start; volume <= upTo; volume++) {
+            if (!this.members.some((member) => member.range.covers(volume))) {
+                volumes.push(volume);
+            }
+        }
+
+        return volumes;
+    }
+
     volumes(): VolumeEntry[] {
         const entries: VolumeEntry[] = [];
 

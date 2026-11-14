@@ -193,3 +193,24 @@ it('detects a saved book covering volume 0', () => {
 
     expect(coverage.coversVolumeZero).toBe(true);
 });
+
+it('leaves out of the uncovered volumes every number a book covers, whatever its ownership', () => {
+    const members = [
+        member('a', 'owned', 1),
+        member('b', 'owned', 2),
+        member('c', 'not-owned', 5),
+        member('d', 'owned', 7, 8),
+    ];
+
+    const coverage = CollectionCoverage.of(false, members);
+
+    expect(coverage.uncovered(10)).toEqual([3, 4, 6, 9, 10]);
+});
+
+it('starts the uncovered volumes at 0 for a collection with a volume 0', () => {
+    const members = [member('a', 'owned', 1)];
+
+    const coverage = CollectionCoverage.of(true, members);
+
+    expect(coverage.uncovered(3)).toEqual([0, 2, 3]);
+});

@@ -272,6 +272,7 @@ export class TestApp {
                         collections: membership,
                         collectionReader: membership,
                         collectionBooks: CollectionsModule.ownedBooks(collections, members),
+                        collectionVolumes: CollectionsModule.volumes(collections, members),
                         shelves: shelving,
                         locationReader: shelving,
                         tags: tagging,
