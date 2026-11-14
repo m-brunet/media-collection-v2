@@ -65,17 +65,23 @@ export interface InternetAccessStatus {
     nextAttemptAt: string | null;
     retryAfter: string | null;
     awaitingCheck: boolean;
+    routerPort: number | null;
+    addressMoved: boolean;
+    renewalAt: string | null;
     allowances: {
         certificates: { left: number; nextAt: string | null };
         checks: { left: number; nextAt: string | null };
     } | null;
     origin: string | null;
-    manualRule: {
-        localAddress: string | null;
-        internalPort: number;
-        externalPort: number;
-        protocol: 'TCP';
-    } | null;
+    manualRule: ManualPortRule | null;
+    checkRule: ManualPortRule | null;
+}
+
+export interface ManualPortRule {
+    localAddress: string | null;
+    internalPort: number;
+    externalPort: number;
+    protocol: 'TCP';
 }
 
 export interface HttpInternetAccessStatus {

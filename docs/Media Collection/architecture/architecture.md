@@ -273,13 +273,15 @@ separate; startup snapshots track pending changes, and settings report active HT
 legacy ports below `1024`, preserve HTTP and allow correction from settings. No redirects or HSTS are included.
 
 Internet access (Task 9.5) is an exception to the restart rule. `server-settings` owns it: the Admin's set up asks the
-router for an external `443` → HTTPS port rule through a `RouterGateway` port (UPnP, then NAT-PMP), classifies the
+router for an HTTPS port → same port rule through a `RouterGateway` port (UPnP, then NAT-PMP), classifies the
 router's external address (CGNAT, double NAT), and issues a Let's Encrypt IP address certificate (`shortlived`
 profile) through a `CertificateAuthority` port. The HTTPS listener answers the TLS-ALPN-01 challenge itself: its
 `SNICallback` serves the challenge certificate for the reverse-DNS name of the address (RFC 8738) when `acme-tls/1` is
 negotiated. The listener starts and swaps certificates live (`setSecureContext`) through an `HttpsRuntime` port, without
-a restart. An upkeep timer in root composition runs the maintain use case at startup and hourly: it recreates the
-router rule (2-hour lease) on every run, follows a changed public address and renews certificates. Only the
+a restart. Around each Let's Encrypt check, `CheckPortWindow` opens router port 443 to the HTTPS port and closes it
+afterwards, writing both steps through an `EventLog` port (issue #21). An upkeep timer in root composition runs the
+maintain use case at startup and hourly: it moves the router rule when the running HTTPS port changed
+(`HttpsRuleMove`), recreates the router rule (2-hour lease) on every run, follows a changed public address and renews certificates. Only the
 certificate and domain name work waits longer after a failure; a run that cannot keep a router rule is tried again
 after 1, 5 and 15 minutes (`UpkeepSchedule`), and each run's outcome is written to the log. The UPnP adapter searches
 the router once per call, up to three times. Automatic certificates live in the same

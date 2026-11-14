@@ -50,7 +50,7 @@ describe('PairingAddressPolicy', () => {
     it('accepts the HTTPS internet address while it is active', async () => {
         const subject = policy({ httpsActive: true });
 
-        const result = await subject.accepts('https://82.66.118.204');
+        const result = await subject.accepts('https://82.66.118.204:3443');
 
         expect(result).toBe(true);
     });

@@ -3,6 +3,7 @@ import {
     InternetAccessDoubles,
     publicAddress,
 } from '../testing/internet-access-doubles.test-support.js';
+import { HttpsRuleMove } from '../services/https-rule-move.service.js';
 import { MaintainInternetAccess } from './maintain-internet-access.usecase.js';
 
 const halfLife = new Date('2026-11-11T18:00:00.000Z');
@@ -11,10 +12,11 @@ function subjectFor(doubles: ReturnType<typeof InternetAccessDoubles.setup>) {
     return new MaintainInternetAccess(
         doubles.store,
         doubles.rules,
-        doubles.tls,
         doubles.setup,
         doubles.domains,
         doubles.names,
+        doubles.window,
+        new HttpsRuleMove(doubles.rules, doubles.log),
         doubles.clock,
     );
 }
@@ -25,7 +27,7 @@ it('recreates the router rule on every upkeep', async () => {
 
     await subject.execute();
 
-    expect(doubles.router.opened).toEqual([{ externalPort: 443, internalPort: 3443 }]);
+    expect(doubles.router.opened).toEqual([{ externalPort: 3443, internalPort: 3443 }]);
 });
 it('keeps a fresh certificate', async () => {
     const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());
@@ -201,7 +203,7 @@ it('renews the router rule while the certificate work waits after a failure', as
         doubles.store.current.failure?.reason,
         doubles.store.current.nextAttemptAt,
     ]).toEqual([
-        [{ externalPort: 443, internalPort: 3443 }],
+        [{ externalPort: 3443, internalPort: 3443 }],
         'authority-unavailable',
         '2026-11-08T11:00:00.000Z',
     ]);
@@ -264,6 +266,87 @@ it('ends a setup cut short by a restart', async () => {
         'off',
         'setup-failed',
     ]);
+});
+it('keeps no port 443 rule between checks', async () => {
+    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());
+    const subject = subjectFor(doubles);
+
+    await subject.execute();
+
+    expect(doubles.journal).toEqual(['open 3443 -> 3443']);
+});
+it('closes port 443 left open by a check cut short by a restart', async () => {
+    const doubles = InternetAccessDoubles.setup(
+        InternetAccessDoubles.active({ phase: 'setting-up', step: 'certificate' }),
+    );
+    const subject = subjectFor(doubles);
+
+    await subject.execute();
+
+    expect(doubles.router.closed).toEqual([{ externalPort: 443, internalPort: 3443 }]);
+});
+it('moves the former port 443 rule to the HTTPS port after the update', async () => {
+    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active({ routerPort: 443 }));
+    const subject = subjectFor(doubles);
+
+    await subject.execute();
+
+    expect(doubles.journal).toEqual(['close 443', 'open 3443 -> 3443']);
+});
+it('tells the Admin about the new address after moving the rule', async () => {
+    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active({ routerPort: 443 }));
+    const subject = subjectFor(doubles);
+
+    await subject.execute();
+
+    expect([doubles.store.current.routerPort, doubles.store.current.addressMoved]).toEqual([
+        3443,
+        true,
+    ]);
+});
+it('moves the rule an Admin waits to add by hand to the new HTTPS port', async () => {
+    const doubles = InternetAccessDoubles.setup(
+        InternetAccessDoubles.active({
+            phase: 'waiting-for-port',
+            mapping: 'manual',
+            certificate: null,
+            routerPort: 443,
+        }),
+    );
+    const subject = subjectFor(doubles);
+
+    await subject.execute();
+
+    expect([doubles.store.current.routerPort, doubles.router.closed]).toEqual([3443, []]);
+});
+it('keeps the rule on the running HTTPS port until the restart', async () => {
+    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active(), {
+        enabled: true,
+        port: 34500,
+        hasCertificate: true,
+    });
+    const subject = subjectFor(doubles);
+
+    doubles.https.running = 3443;
+
+    await subject.execute();
+
+    expect([doubles.journal, doubles.store.current.routerPort]).toEqual([
+        ['open 3443 -> 3443'],
+        3443,
+    ]);
+});
+it('moves the rule to the saved HTTPS port after the restart', async () => {
+    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active(), {
+        enabled: true,
+        port: 34500,
+        hasCertificate: true,
+    });
+    const subject = subjectFor(doubles);
+
+    await subject.execute();
+
+    expect(doubles.journal).toEqual(['close 3443', 'open 34500 -> 34500']);
 });
 it('does nothing while internet access is off', async () => {
     const doubles = InternetAccessDoubles.setup();
@@ -469,7 +552,7 @@ it('keeps the router rule while the certificate waits for the Admin', async () =
 
     await subject.execute();
 
-    expect(doubles.router.opened).toEqual([{ externalPort: 443, internalPort: 3443 }]);
+    expect(doubles.router.opened).toEqual([{ externalPort: 3443, internalPort: 3443 }]);
 });
 it('records a failed check for the estimate', async () => {
     const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());

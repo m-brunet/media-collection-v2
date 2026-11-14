@@ -128,9 +128,14 @@ export class RuntimeSetup {
         const port = (occupied.address() as { port: number }).port;
 
         await new Promise<void>((resolve) => occupied.close(() => resolve()));
+        const saved = await client.call('/server-settings/https-port', 'PUT', { port });
+
+        if (saved.status !== 200) {
+            throw new Error('HTTPS port fixture setup failed: ' + saved.text);
+        }
+
         const result = await client.call('/server-settings', 'PUT', {
             enabled: true,
-            port,
             chain: certificate.cert,
             key: certificate.private,
         });

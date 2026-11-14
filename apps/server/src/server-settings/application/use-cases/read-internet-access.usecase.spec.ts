@@ -11,34 +11,78 @@ import { ReadInternetAccess } from './read-internet-access.usecase.js';
 const admin = TestActors.of('admin', 'admin');
 
 function subjectFor(doubles: ReturnType<typeof InternetAccessDoubles.setup>) {
-    return new ReadInternetAccess(
-        doubles.store,
-        doubles.tls,
-        new FixedLocalAddress(),
-        doubles.clock,
-    );
+    return new ReadInternetAccess(doubles.store, new FixedLocalAddress(), doubles.clock);
 }
 
-it('gives the address phones open once active', async () => {
+it('gives the address phones open, with its port, once active', async () => {
     const subject = subjectFor(InternetAccessDoubles.setup(InternetAccessDoubles.active()));
 
     const view = await subject.execute(admin);
 
-    expect([view.origin, view.manualRule]).toEqual(['https://' + publicAddress, null]);
+    expect([view.origin, view.manualRule]).toEqual(['https://' + publicAddress + ':3443', null]);
 });
-it('gives the values for a manual router rule while waiting for it', async () => {
+function waitingForRule() {
     const access = InternetAccess.off();
 
-    access.start(null);
+    access.start(null, 3443);
     access.portNeeded(publicAddress, 'no-router', new Date('2026-11-08T10:00:00.000Z'));
-    const subject = subjectFor(InternetAccessDoubles.setup(access.snapshot));
+
+    return access.snapshot;
+}
+
+it('gives the router rule to add by hand, the HTTPS port outside and inside', async () => {
+    const subject = subjectFor(InternetAccessDoubles.setup(waitingForRule()));
 
     const view = await subject.execute(admin);
 
     expect([view.origin, view.manualRule]).toEqual([
         null,
-        { localAddress: '192.168.1.99', internalPort: 3443, externalPort: 443, protocol: 'TCP' },
+        { localAddress: '192.168.1.99', internalPort: 3443, externalPort: 3443, protocol: 'TCP' },
     ]);
+});
+it('gives the port 443 rule Let’s Encrypt needs while it checks', async () => {
+    const subject = subjectFor(InternetAccessDoubles.setup(waitingForRule()));
+
+    const view = await subject.execute(admin);
+
+    expect(view.checkRule).toEqual({
+        localAddress: '192.168.1.99',
+        internalPort: 3443,
+        externalPort: 443,
+        protocol: 'TCP',
+    });
+});
+it('keeps giving the rules added by hand once active', async () => {
+    const subject = subjectFor(
+        InternetAccessDoubles.setup(InternetAccessDoubles.active({ mapping: 'manual' })),
+    );
+
+    const view = await subject.execute(admin);
+
+    expect([view.manualRule?.externalPort, view.checkRule?.externalPort]).toEqual([3443, 443]);
+});
+it('gives no rule to add by hand when the router opens it', async () => {
+    const subject = subjectFor(InternetAccessDoubles.setup(InternetAccessDoubles.active()));
+
+    const view = await subject.execute(admin);
+
+    expect([view.manualRule, view.checkRule]).toEqual([null, null]);
+});
+it('gives the date of the next renewal', async () => {
+    const subject = subjectFor(InternetAccessDoubles.setup(InternetAccessDoubles.active()));
+
+    const view = await subject.execute(admin);
+
+    expect(view.renewalAt).toBe('2026-11-11T18:00:00.000Z');
+});
+it('tells that the address moved', async () => {
+    const subject = subjectFor(
+        InternetAccessDoubles.setup(InternetAccessDoubles.active({ addressMoved: true })),
+    );
+
+    const view = await subject.execute(admin);
+
+    expect(view.addressMoved).toBe(true);
 });
 it('shows nothing to open while off', async () => {
     const subject = subjectFor(InternetAccessDoubles.setup());
@@ -67,7 +111,7 @@ it('gives the domain name as the address phones open', async () => {
 
     const view = await subject.execute(admin);
 
-    expect([view.origin, view.domain]).toEqual(['https://home.example.fr', 'home.example.fr']);
+    expect([view.origin, view.domain]).toEqual(['https://home.example.fr:3443', 'home.example.fr']);
 });
 it('gives what Let’s Encrypt probably still allows after a failure', async () => {
     const subject = subjectFor(

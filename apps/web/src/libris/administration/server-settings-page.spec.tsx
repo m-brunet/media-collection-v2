@@ -35,9 +35,13 @@ function internetAccess(overrides: Partial<InternetAccessStatus> = {}): Internet
         nextAttemptAt: null,
         retryAfter: null,
         awaitingCheck: false,
+        routerPort: null,
+        addressMoved: false,
+        renewalAt: null,
         allowances: null,
         origin: null,
         manualRule: null,
+        checkRule: null,
         ...overrides,
     };
 }
@@ -92,24 +96,36 @@ const active = internetAccess({
     phase: 'active',
     mapping: 'upnp',
     publicAddress,
+    routerPort: 3443,
+    renewalAt: '2026-11-11T18:00:00.000Z',
     certificate: {
         address: publicAddress,
         issuedAt: '2026-11-08T10:00:00.000Z',
         expiresAt: '2026-11-15T02:00:00.000Z',
     },
-    origin: 'https://' + publicAddress,
+    origin: 'https://' + publicAddress + ':3443',
 });
+const rulesByHand = {
+    manualRule: {
+        localAddress: '192.168.1.99',
+        internalPort: 3443,
+        externalPort: 3443,
+        protocol: 'TCP' as const,
+    },
+    checkRule: {
+        localAddress: '192.168.1.99',
+        internalPort: 3443,
+        externalPort: 443,
+        protocol: 'TCP' as const,
+    },
+};
 const waiting = internetAccess({
     phase: 'waiting-for-port',
     mapping: 'manual',
     publicAddress,
+    routerPort: 3443,
     failure: { reason: 'port-refused', at: '2026-11-08T10:00:00.000Z' },
-    manualRule: {
-        localAddress: '192.168.1.99',
-        internalPort: 3443,
-        externalPort: 443,
-        protocol: 'TCP',
-    },
+    ...rulesByHand,
 });
 const addresses = [
     'http://127.0.0.1:34345',
@@ -409,7 +425,7 @@ it('lists the internet addresses with the local ones', async () => {
         expect.arrayContaining([
             'http://127.0.0.1:34345',
             'http://' + publicAddress + ':34345',
-            'https://' + publicAddress,
+            'https://' + publicAddress + ':3443',
         ]),
     );
 });
@@ -432,11 +448,13 @@ it('lists the HTTPS address with its QR code button once active', async () => {
     renderPage();
 
     expect(
-        await screen.findByRole('link', { name: 'https://' + publicAddress }),
+        await screen.findByRole('link', { name: 'https://' + publicAddress + ':3443' }),
     ).toBeInTheDocument();
     expect(screen.queryByRole('img', { name: /^QR code for/ })).not.toBeInTheDocument();
     expect(
-        screen.getByRole('button', { name: 'Show the QR code for https://' + publicAddress }),
+        screen.getByRole('button', {
+            name: 'Show the QR code for https://' + publicAddress + ':3443',
+        }),
     ).toBeInTheDocument();
 });
 it('gives the router rule to add by hand', async () => {
@@ -445,8 +463,79 @@ it('gives the router rule to add by hand', async () => {
     renderPage();
 
     expect(await screen.findByText('Add the rule in your router')).toBeInTheDocument();
-    expect(screen.getByText('192.168.1.99')).toBeInTheDocument();
-    expect(screen.getByText(/refused to open port 443/)).toBeInTheDocument();
+    expect(screen.getAllByText('192.168.1.99')).toHaveLength(2);
+    expect(screen.getByText(/refused to open port 3443/)).toBeInTheDocument();
+});
+it('gives the port 443 rule needed only while Let’s Encrypt checks', async () => {
+    administrator(status({ ...waiting, domain: 'home.example.fr' }));
+
+    renderPage();
+
+    expect(
+        await screen.findByText('Port 443, only while Let’s Encrypt checks'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('443', { exact: true })).toBeInTheDocument();
+});
+it('reminds to open port 443 before the renewal of a domain name certificate', async () => {
+    administrator(
+        status({
+            ...active,
+            mapping: 'manual',
+            domain: 'home.example.fr',
+            origin: 'https://home.example.fr:3443',
+            ...rulesByHand,
+        }),
+    );
+
+    renderPage();
+
+    expect(
+        await screen.findByText(/^Open port 443 on your router before .*You may close it/),
+    ).toBeInTheDocument();
+});
+it('advises a permanent port 443 rule for an address without a domain name', async () => {
+    administrator(status({ ...active, mapping: 'manual', ...rulesByHand }));
+
+    renderPage();
+
+    expect(await screen.findByText(/renewed every 3 days: keep port 443 open/)).toBeInTheDocument();
+    expect(screen.queryByText(/^Open port 443 on your router before/)).not.toBeInTheDocument();
+});
+it('gives no rule to add by hand when the router opened it', async () => {
+    administrator(status(active));
+
+    renderPage();
+
+    await screen.findByText('Internet access is on.');
+
+    expect(screen.queryByText('Add the rule in your router')).not.toBeInTheDocument();
+});
+it('tells once that phones need the new address', async () => {
+    administrator(status({ ...active, addressMoved: true }));
+
+    renderPage();
+
+    expect(
+        await screen.findByText(
+            'The internet address is now https://' +
+                publicAddress +
+                ':3443. Scan the QR code again on each phone.',
+        ),
+    ).toBeInTheDocument();
+});
+it('hides the new address notice once closed', async () => {
+    const api = administrator(status({ ...active, addressMoved: true })).on(
+        'DELETE /server-settings/internet-access/address-notice',
+        () => ({ status: 200, body: active }),
+    );
+
+    renderPage();
+    await screen.findByText(/Scan the QR code again/);
+    await userEvent.click(screen.getByRole('button', { name: 'Close message' }));
+
+    expect(api.calls.map((call) => call.route)).toContain(
+        'DELETE /server-settings/internet-access/address-notice',
+    );
 });
 it('checks the rule again', async () => {
     const api = administrator(status(waiting)).on(
@@ -634,6 +723,62 @@ it('keeps the computer awake when asked', async () => {
         route: 'PUT /server-settings/keep-awake',
         body: { enabled: true },
     });
+});
+it('shows both ports outside the advanced settings', async () => {
+    administrator(status());
+
+    renderPage();
+
+    const form = await screen.findByRole('form', { name: 'HTTPS / internet access' });
+
+    expect([form.closest('details'), within(form).getByLabelText(/^HTTPS port/)]).toEqual([
+        null,
+        expect.objectContaining({ value: '3443' }),
+    ]);
+});
+it('saves the HTTPS port', async () => {
+    const api = administrator(status()).on('PUT /server-settings/https-port', () => ({
+        status: 200,
+        body: status(),
+    }));
+
+    renderPage();
+    const form = await screen.findByRole('form', { name: 'HTTPS / internet access' });
+
+    await userEvent.clear(within(form).getByLabelText(/^HTTPS port/));
+    await userEvent.type(within(form).getByLabelText(/^HTTPS port/), '34443');
+    await userEvent.click(within(form).getByRole('button', { name: 'Save HTTPS port' }));
+
+    expect(api.calls).toContainEqual({
+        route: 'PUT /server-settings/https-port',
+        body: { port: 34443 },
+    });
+});
+it('says a saved HTTPS port applies after a restart', async () => {
+    administrator(status()).on('PUT /server-settings/https-port', () => ({
+        status: 200,
+        body: status(),
+    }));
+
+    renderPage();
+    const form = await screen.findByRole('form', { name: 'HTTPS / internet access' });
+
+    await userEvent.click(within(form).getByRole('button', { name: 'Save HTTPS port' }));
+
+    expect(await screen.findByText(/^HTTPS port saved. Close and reopen/)).toBeInTheDocument();
+});
+it('saves the manual certificate without a port', async () => {
+    const api = administrator(status()).on('PUT /server-settings', () => ({
+        status: 200,
+        body: status(),
+    }));
+
+    renderPage();
+    await userEvent.click(
+        await screen.findByRole('button', { name: 'Save HTTPS settings', hidden: true }),
+    );
+
+    expect(api.calls).toContainEqual({ route: 'PUT /server-settings', body: { enabled: false } });
 });
 it('locks the manual HTTPS settings while internet access is on', async () => {
     administrator(status(active));
@@ -823,11 +968,11 @@ it('shows a QR code that signs a phone in at the HTTPS internet address', async 
     pairable(status(active));
     renderPage();
 
-    await showQrCode('https://' + publicAddress);
+    await showQrCode('https://' + publicAddress + ':3443');
 
     await screen.findByText(/This code signs a phone in as alex/);
     expect(encode).toHaveBeenLastCalledWith(
-        'https://' + publicAddress + '/leaf/#pair=' + pairingCode,
+        'https://' + publicAddress + ':3443/leaf/#pair=' + pairingCode,
         expect.anything(),
     );
 });

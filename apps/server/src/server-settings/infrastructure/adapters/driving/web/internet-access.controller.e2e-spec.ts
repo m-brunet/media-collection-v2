@@ -8,6 +8,8 @@ import { TestApp } from '../../../../../../../../tests/api/setup/test-app.js';
 import { UserFixture } from '../../../../../../../../tests/api/fixtures/user.fixture.js';
 import { DomainName } from '../../../../domain/value-objects/domain-name.value-object.js';
 import { TlsSettings } from '../../../../domain/value-objects/tls-settings.value-object.js';
+import { InternetAccess } from '../../../../domain/entities/internet-access.entity.js';
+import { InternetAccessDoubles } from '../../../../application/testing/internet-access-doubles.test-support.js';
 
 let app: TestApp;
 const admin = new UserFixture({ username: 'administrator', role: 'admin' });
@@ -149,7 +151,7 @@ describe('GET /api/server-settings after a setup', () => {
             response.body.internetAccess.phase,
             response.body.internetAccess.origin,
             response.body.internetAccess.certificate?.address,
-        ]).toEqual(['active', 'https://' + publicAddress, publicAddress]);
+        ]).toEqual(['active', 'https://' + publicAddress + ':34443', publicAddress]);
     });
     it('switches HTTPS on with the issued certificate', async () => {
         const client = await app.authenticatedClient(admin);
@@ -166,7 +168,7 @@ describe('GET /api/server-settings after a setup', () => {
             [{ port: 34443, chain: 'chain for ' + publicAddress }],
         ]);
     });
-    it('gives the manual router rule when the router refuses the port', async () => {
+    it('gives the router rules to add by hand when the router refuses the port', async () => {
         const client = await app.authenticatedClient(admin);
 
         app.dependencies.internetAccess.router.accepts = false;
@@ -177,8 +179,15 @@ describe('GET /api/server-settings after a setup', () => {
         expect([
             response.body.internetAccess.phase,
             response.body.internetAccess.manualRule,
+            response.body.internetAccess.checkRule,
         ]).toEqual([
             'waiting-for-port',
+            {
+                localAddress: '192.168.1.99',
+                internalPort: 34443,
+                externalPort: 34443,
+                protocol: 'TCP',
+            },
             {
                 localAddress: '192.168.1.99',
                 internalPort: 34443,
@@ -220,7 +229,7 @@ describe('GET /api/server-settings after a setup', () => {
             app.dependencies.internetAccess.authority.subjects,
         ]).toEqual([
             'active',
-            'https://home.example.fr',
+            'https://home.example.fr:34443',
             'home.example.fr',
             [{ kind: 'domain', name: 'home.example.fr' }],
         ]);
@@ -328,8 +337,8 @@ describe('DELETE /api/server-settings/internet-access', () => {
         expect([
             response.status,
             response.body.phase,
-            app.dependencies.internetAccess.router.closed,
-        ]).toEqual([200, 'off', [{ externalPort: 443, internalPort: 34443 }]]);
+            app.dependencies.internetAccess.router.closed.at(-1),
+        ]).toEqual([200, 'off', { externalPort: 34443, internalPort: 34443 }]);
     });
     it('records the change in the technical audit log', async () => {
         const client = await app.authenticatedClient(admin);
@@ -354,19 +363,61 @@ describe('DELETE /api/server-settings/internet-access', () => {
     });
 });
 describe('PUT /api/server-settings while internet access is on', () => {
-    it('refuses any HTTPS change', async () => {
+    it('refuses any certificate change', async () => {
         const client = await app.authenticatedClient(admin);
 
         await setUp(client);
 
-        const response = await client.call('/server-settings', 'PUT', {
-            enabled: false,
-            port: 34443,
-        });
+        const response = await client.call('/server-settings', 'PUT', { enabled: false });
 
         expect([response.status, response.body]).toEqual([
             409,
             expect.objectContaining({ reason: 'internet-access-on' }),
         ]);
+    });
+});
+describe('DELETE /api/server-settings/internet-access/address-notice', () => {
+    it('stops telling about the new address', async () => {
+        const client = await app.authenticatedClient(admin);
+
+        await app.dependencies.internetAccess.store.save(
+            new InternetAccess(InternetAccessDoubles.active({ addressMoved: true })),
+        );
+
+        const response = await client.call<InternetAccessStatus>(
+            '/server-settings/internet-access/address-notice',
+            'DELETE',
+        );
+
+        expect([response.status, response.body.addressMoved]).toEqual([200, false]);
+    });
+    it('rejects non-administrators', async () => {
+        const client = await app.authenticatedClient(member);
+
+        await app.dependencies.internetAccess.store.save(
+            new InternetAccess(InternetAccessDoubles.active({ addressMoved: true })),
+        );
+
+        const response = await client.call(
+            '/server-settings/internet-access/address-notice',
+            'DELETE',
+        );
+
+        expect([
+            response.status,
+            (await app.dependencies.internetAccess.store.read()).snapshot.addressMoved,
+        ]).toEqual([403, true]);
+    });
+    it('rejects missing CSRF protection', async () => {
+        const client = await app.authenticatedClient(admin);
+
+        const response = await client.call(
+            '/server-settings/internet-access/address-notice',
+            'DELETE',
+            undefined,
+            { csrf: false },
+        );
+
+        expect(response.status).toBe(403);
     });
 });

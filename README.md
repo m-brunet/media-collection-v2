@@ -61,8 +61,9 @@ HTTP works without installing or accepting a certificate. Plain HTTP does not en
 HTTPS is available when a trusted certificate is appropriate for the deployment; it never redirects HTTP or enables
 HSTS.
 
-In **Server settings**, supply a currently valid PEM certificate chain and matching unencrypted private key, choose a
-port (default **34443**, **34444** when running from source), and enable HTTPS. Restart Electron to apply the saved settings. Both protocols share the
+In **Server settings › Ports**, choose the HTTPS port (default **34443**, **34444** when running from source); under
+the advanced settings, supply a currently valid PEM certificate chain and matching unencrypted private key and enable
+HTTPS. Restart Electron to apply the saved settings. Both protocols share the
 database. If optional HTTPS cannot start, HTTP continues and the administrator sees the error. Private keys are never
 returned by the API.
 

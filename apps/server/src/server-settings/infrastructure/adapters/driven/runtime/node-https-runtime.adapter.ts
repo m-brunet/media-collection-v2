@@ -22,6 +22,10 @@ export class NodeHttpsRuntime implements HttpsRuntime {
         return address && typeof address !== 'string' ? address.port : null;
     }
 
+    runningPort(): number | null {
+        return this.port;
+    }
+
     async start(port: number, certificate: { chain: string; key: string } | null): Promise<number> {
         const server = createServer(
             {

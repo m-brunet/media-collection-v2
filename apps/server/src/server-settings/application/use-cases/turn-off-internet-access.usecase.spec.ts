@@ -17,7 +17,6 @@ function subjectFor(
     return new TurnOffInternetAccess(
         doubles.store,
         doubles.router,
-        doubles.tls,
         AuditDoubles.auditedOperation(trail),
     );
 }
@@ -36,7 +35,7 @@ it('removes the router rule it created', async () => {
 
     await subject.execute(admin);
 
-    expect(doubles.router.closed).toEqual([{ externalPort: 443, internalPort: 3443 }]);
+    expect(doubles.router.closed).toEqual([{ externalPort: 3443, internalPort: 3443 }]);
 });
 it('leaves a rule the Admin created by hand to the Admin', async () => {
     const doubles = InternetAccessDoubles.setup(

@@ -90,21 +90,26 @@ Set up
    NAT** (a private address: `10/8`, `172.16/12`, `192.168/16`). CGNAT and double NAT stop the setup with a plain
    explanation and what to ask the internet provider (for example "full IPv4 address") or check on the own router.
    Without UPnP/NAT-PMP, the public address comes from the public service and the manual screen is shown.
-3. **Open the port**: a TCP rule external `443` → host local IP : HTTPS port, labelled "Media Collection". A refusal
-   (port taken, ports under 1024 not allowed, shared IPv4 port range) shows the manual screen.
-4. **Manual screen**: the exact values to enter in the router (host local IP, internal port, external port 443, TCP),
-   links to the main French provider boxes' help, and **Check again**, which runs the certificate step.
+3. **Open the port**: a TCP rule external HTTPS port → host local IP : same port, labelled "Media Collection"
+   (changed by [issue #21](issue-21-internet-ports.md), 2026-11-14: was external `443`). A refusal (port taken, shared IPv4 port range) shows
+   the manual screen.
+4. **Manual screen**: the exact values to enter in the router (host local IP, HTTPS port outside and inside, TCP), the
+   port 443 rule needed while Let's Encrypt checks, and **Check again**, which runs the certificate step.
 5. **Start HTTPS live** if it is not running: with the saved HTTPS port (enabled, with a temporary self-signed
    certificate only used until the first certificate arrives; browsers never receive it from the internet because
    the address is shown only after issuance).
 6. **Get the certificate**: Let's Encrypt ACME, `shortlived` profile (about 6 days), identifier = public IPv4,
    TLS-ALPN-01 answered by the app's own HTTPS listener. A failed validation means "not reachable from the internet on
-   port 443": the panel says so and offers the manual screen.
+   port 443": the panel says so and offers the manual screen. Since [issue #21](issue-21-internet-ports.md), port 443 → HTTPS port is opened on
+   the router just before each check (setup, Check again, renewal) and closed right after, success or failure; both
+   steps are logged.
 7. **Activate**: the certificate is saved like a manual one (protected `tls/` folder) and swapped into the running
-   listener. The panel shows `https://<public IP>` and a QR code.
+   listener. The panel shows `https://<public IP>:<HTTPS port>` and a QR code.
 
 Upkeep (runs at startup, then every hour, and after a failure with growing delays up to 6 hours)
-- Recreate the router rule (it follows a new local IP and survives router restarts).
+- Recreate the router rule (it follows a new local IP and survives router restarts). When the running HTTPS port
+  differs from the saved rule's port, remove the former rule and open the new one, and tell the Admin once about the
+  new address ([issue #21](issue-21-internet-ports.md)).
 - Read the public address; when it changed, get a new certificate for the new address and show the new address
   ("Your internet address changed: scan the new QR code").
 - Renew when less than half of the certificate's lifetime remains.
@@ -112,7 +117,7 @@ Upkeep (runs at startup, then every hour, and after a failure with growing delay
   runs. Let's Encrypt rate limits are respected (no retry loop faster than the backoff).
 
 Turn off
-- Removes the router rule, stops renewals, keeps HTTPS running with the last certificate on the home network until
+- Removes the router rule (HTTPS port), stops renewals, keeps HTTPS running with the last certificate on the home network until
   restart (no surprise disconnection); the automatic certificate is no longer renewed.
 
 Manual certificate (advanced)

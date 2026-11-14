@@ -32,7 +32,9 @@ environment or `config.json`). Saving another port keeps it for when the overrid
 
 Development and release therefore run side by side on one computer without any setting, and neither reads the other's
 file. To tell them apart, development adds " (dev)" to the Libris window title and to the tray icon name ("Media
-Collection (dev)"); the application name behind its folders stays "Media Collection". The defaults only apply while nothing is saved: a port saved in Server settings keeps applying.
+Collection (dev)"); the application name behind its folders stays "Media Collection". The defaults only apply while nothing is saved: a port saved in Server settings keeps applying. Both ports are set in
+Server settings › Ports and are also the outside ports on the router when internet access is on ([issue #21](../plans/issue-21-internet-ports.md));
+an update moves a saved HTTPS port of 3443 to 34443.
 
 ## The configuration file
 

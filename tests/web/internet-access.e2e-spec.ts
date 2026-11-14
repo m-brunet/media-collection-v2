@@ -34,7 +34,7 @@ async function serverSettings(internetAccess: NonNullable<RuntimeOptions['intern
     const httpsPort = await RuntimeSetup.availablePort();
 
     await RuntimeSetup.administrator(started.client);
-    await started.client.call('/server-settings', 'PUT', { enabled: false, port: httpsPort });
+    await started.client.call('/server-settings/https-port', 'PUT', { port: httpsPort });
     const page = await browser.page(started.client.base, {
         viewport: viewports.referenceDesktop,
     });
@@ -56,31 +56,38 @@ async function signIn(page: Page) {
 
 describe('Internet access', () => {
     it('sets up internet access and gives the Leaf address with its QR code', async () => {
-        const { page } = await serverSettings({ externalAddress: publicAddress, accepts: true });
+        const { page, httpsPort } = await serverSettings({
+            externalAddress: publicAddress,
+            accepts: true,
+        });
+        const origin = 'https://' + publicAddress + ':' + httpsPort;
 
         await page.getByRole('button', { name: 'Set up internet access' }).click();
         await page.getByText('Internet access is on.').waitFor();
         await capture(page, 'internet-access-active');
 
+        expect(await page.getByRole('link', { name: origin, exact: true }).isVisible()).toBe(true);
         expect(
-            await page
-                .getByRole('link', { name: 'https://' + publicAddress, exact: true })
-                .isVisible(),
-        ).toBe(true);
-        expect(
-            await page
-                .getByRole('button', { name: 'Show the QR code for https://' + publicAddress })
-                .isVisible(),
+            await page.getByRole('button', { name: 'Show the QR code for ' + origin }).isVisible(),
         ).toBe(true);
     });
     it('gives a QR code that a phone reads as the Leaf address with a sign-in code', async () => {
-        const { page } = await serverSettings({ externalAddress: publicAddress, accepts: true });
+        const { page, httpsPort } = await serverSettings({
+            externalAddress: publicAddress,
+            accepts: true,
+        });
 
         await page.getByRole('button', { name: 'Set up internet access' }).click();
         await page.getByText('Internet access is on.').waitFor();
 
-        expect(await readQrCode(await qrCodeFor(page, 'https://' + publicAddress))).toEqual([
-            expect.stringMatching(/^https:\/\/82\.66\.118\.204\/leaf\/#pair=[A-Za-z0-9_-]{43}$/),
+        expect(
+            await readQrCode(await qrCodeFor(page, 'https://' + publicAddress + ':' + httpsPort)),
+        ).toEqual([
+            expect.stringMatching(
+                new RegExp(
+                    '^https://82[.]66[.]118[.]204:' + httpsPort + '/leaf/#pair=[A-Za-z0-9_-]{43}$',
+                ),
+            ),
         ]);
     });
     it('starts HTTPS with the new certificate without a restart', async () => {
@@ -107,9 +114,31 @@ describe('Internet access', () => {
         await page.getByRole('heading', { name: 'Add the rule in your router' }).waitFor();
         await capture(page, 'internet-access-manual-rule');
 
-        expect(await page.getByText(/refused to open port 443/).isVisible()).toBe(true);
-        expect(await page.getByText(String(httpsPort), { exact: true }).isVisible()).toBe(true);
+        expect(
+            await page.getByText('Your router refused to open port ' + httpsPort + '.').isVisible(),
+        ).toBe(true);
+        expect(await page.getByText(String(httpsPort), { exact: true }).count()).toBe(3);
         expect(await page.getByRole('button', { name: 'Check again' }).isVisible()).toBe(true);
+    });
+    it('gives the port 443 rule Let’s Encrypt needs when the router refuses', async () => {
+        const { page } = await serverSettings({ externalAddress: publicAddress, accepts: false });
+
+        await page.getByRole('button', { name: 'Set up internet access' }).click();
+        await page.getByRole('heading', { name: 'Port 443, kept open' }).waitFor();
+
+        expect(await page.getByText('443', { exact: true }).isVisible()).toBe(true);
+    });
+    it('saves the HTTPS port from Ports, outside the advanced settings', async () => {
+        const { page } = await serverSettings({ externalAddress: publicAddress, accepts: true });
+        const form = page.getByRole('form', { name: 'HTTPS / internet access' });
+        const port = String(await RuntimeSetup.availablePort());
+
+        await form.getByRole('spinbutton', { name: /^HTTPS port/ }).fill(port);
+        await form.getByRole('button', { name: 'Save HTTPS port' }).click();
+        await page.getByText(/^HTTPS port saved\. Close and reopen/).waitFor();
+        await capture(page, 'server-settings-ports');
+
+        expect(await form.getByRole('spinbutton', { name: /^HTTPS port/ }).inputValue()).toBe(port);
     });
     it('explains a provider that shares the public address', async () => {
         const { page } = await serverSettings({ externalAddress: '100.70.0.1', accepts: true });
@@ -122,7 +151,10 @@ describe('Internet access', () => {
         );
     });
     it('saves a domain name, then sets up HTTPS for it', async () => {
-        const { page } = await serverSettings({ externalAddress: publicAddress, accepts: true });
+        const { page, httpsPort } = await serverSettings({
+            externalAddress: publicAddress,
+            accepts: true,
+        });
 
         await page.getByRole('textbox', { name: 'Domain name (optional)' }).fill('home.example.fr');
         await page
@@ -134,8 +166,14 @@ describe('Internet access', () => {
         await page.getByText('Internet access is on.').waitFor();
         await capture(page, 'internet-access-domain-active');
 
-        expect(await readQrCode(await qrCodeFor(page, 'https://home.example.fr'))).toEqual([
-            expect.stringMatching(/^https:\/\/home\.example\.fr\/leaf\/#pair=[A-Za-z0-9_-]{43}$/),
+        expect(
+            await readQrCode(await qrCodeFor(page, 'https://home.example.fr:' + httpsPort)),
+        ).toEqual([
+            expect.stringMatching(
+                new RegExp(
+                    '^https://home[.]example[.]fr:' + httpsPort + '/leaf/#pair=[A-Za-z0-9_-]{43}$',
+                ),
+            ),
         ]);
     });
     it('refuses a domain name that does not point to the connection', async () => {

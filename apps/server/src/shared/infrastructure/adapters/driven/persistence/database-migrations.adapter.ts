@@ -13,6 +13,7 @@ import { GeneratedTitlesMigration } from './migrations/010-generated-titles.js';
 import { ColourSchemesMigration } from './migrations/011-colour-schemes.js';
 import { PairingCodesMigration } from './migrations/012-pairing-codes.js';
 import { CollectionCategoriesMigration } from './migrations/013-collection-categories.js';
+import { InternetPortsMigration } from './migrations/014-internet-ports.js';
 
 export class DatabaseMigrations implements MigrationProvider {
     constructor(private readonly ids: IdGenerator) {}
@@ -36,6 +37,7 @@ export class DatabaseMigrations implements MigrationProvider {
             '011-colour-schemes': this.migration(new ColourSchemesMigration()),
             '012-pairing-codes': this.migration(new PairingCodesMigration()),
             '013-collection-categories': this.migration(new CollectionCategoriesMigration()),
+            '014-internet-ports': this.migration(new InternetPortsMigration()),
         };
     }
 

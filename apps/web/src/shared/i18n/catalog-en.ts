@@ -102,6 +102,16 @@ export const en = {
         'HTTP port saved. Remove the startup port override, then close and reopen the desktop application to apply it.',
     'server.httpSavedRestart':
         'HTTP port saved. Close and reopen the desktop application to apply it.',
+    'server.portsTitle': 'Ports',
+    'server.portsIntro':
+        'Each port is used on this computer and opened under the same number on your router, so phones outside your home use it too.',
+    'server.httpsPortTitle': 'HTTPS / internet access',
+    'server.httpsPortIntro':
+        'Phones outside your home open the HTTPS address with this port. Let’s Encrypt still checks this computer on port 443: it is opened only during each check.',
+    'server.httpsPortSubmit': 'Save HTTPS port',
+    'server.httpsPortSavedActive': 'HTTPS port saved. This port is already active.',
+    'server.httpsPortSavedRestart':
+        'HTTPS port saved. Close and reopen the desktop application to apply it; internet access then moves the router rule, and phones need the new address.',
     'server.httpsTitle': 'Optional HTTPS',
     'server.httpsEnable': 'Enable HTTPS after restart',
     'server.httpsPort': 'HTTPS port',
@@ -111,7 +121,7 @@ export const en = {
     'server.key': 'PEM private key',
     'server.httpsSubmit': 'Save HTTPS settings',
     'server.httpsSaved': 'Settings saved. Restart the desktop application to apply them.',
-    'server.advanced': 'Advanced: ports and manual certificate',
+    'server.advanced': 'Advanced: manual certificate',
     'server.httpsManaged':
         'Internet access manages the HTTPS certificate. Turn internet access off to change these settings.',
     'internet.title': 'Internet access',
@@ -145,6 +155,19 @@ export const en = {
     'internet.turnOffTitle': 'Turn off internet access?',
     'internet.turnOffBody':
         'Phones will no longer reach Libris and Leaf from outside your home. The router rule is removed. You can set it up again at any time; doing so uses one of the 5 certificates Let’s Encrypt allows per week for this address.',
+    'internet.addressMoved':
+        'The internet address is now {address}. Scan the QR code again on each phone.',
+    'internet.addressMovedByHand': 'Also change the rule in your router to the values below.',
+    'internet.checkRuleTitle': 'Port 443, only while Let’s Encrypt checks',
+    'internet.checkRuleIntro':
+        'Let’s Encrypt checks this computer on port 443 only: at the setup, at Check again and at each renewal. Add this second rule before a check; you may remove it after.',
+    'internet.checkRuleReminder':
+        'Open port 443 on your router before {date}: Let’s Encrypt checks this computer then to renew the certificate. You may close it after the renewal.',
+    'internet.checkRulePermanentTitle': 'Port 443, kept open',
+    'internet.checkRulePermanentIntro':
+        'Let’s Encrypt checks this computer on port 443 only. Add this second rule and keep it.',
+    'internet.checkRulePermanent':
+        'Without a domain name, the certificate is renewed every 3 days: keep port 443 open on your router with the second rule below.',
     'internet.manualTitle': 'Add the rule in your router',
     'internet.manualIntro':
         'In your router’s settings, look for “Port forwarding” (also called “NAT/PAT” or “Port redirection”) and add this rule:',
@@ -161,9 +184,9 @@ export const en = {
     'internet.failure.no-router':
         'Your router did not answer, so the rule cannot be added automatically.',
     'internet.failure.port-refused':
-        'Your router refused to open port 443. It may already be used, for example by the router’s own remote access.',
+        'Your router refused to open port {port}. It may already be used by another device or by the router itself.',
     'internet.failure.not-reachable':
-        'Let’s Encrypt could not reach this computer on port 443. Check the router rule and the Windows firewall.',
+        'Let’s Encrypt could not reach this computer on port 443. Check the router rules and the Windows firewall.',
     'internet.failure.cgnat':
         'Your internet provider shares your public address with other customers (CGNAT), so this computer cannot be reached from the internet. Ask your provider for a full IPv4 address, then try again.',
     'internet.failure.double-nat':
@@ -175,7 +198,7 @@ export const en = {
     'internet.failure.authority-unavailable':
         'Let’s Encrypt could not be reached. Check the internet connection, then try again.',
     'internet.failure.https-unavailable':
-        'HTTPS could not start: its port may be used by another program. Choose another HTTPS port in the advanced settings, then try again.',
+        'HTTPS could not start: its port may be used by another program. Choose another HTTPS port under Ports, restart, then try again.',
     'internet.failure.setup-failed': 'The setup stopped unexpectedly. Try again.',
     'internet.failure.domain-unresolved':
         'The domain name {domain} does not point to any address yet. Check the dynamic DNS settings of your router, then try again.',

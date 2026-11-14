@@ -7,6 +7,7 @@ import type { CertificateAuthority } from '../../application/ports/driven/certif
 import type { CertificateValidator } from '../../application/ports/driven/certificate-validator.interface.js';
 import type { DomainNameResolver } from '../../application/ports/driven/domain-name-resolver.interface.js';
 import type { DomainNameStore } from '../../application/ports/driven/domain-name-store.interface.js';
+import type { EventLog } from '../../application/ports/driven/event-log.interface.js';
 import type { HttpSettingsStore } from '../../application/ports/driven/http-settings-store.interface.js';
 import type { HttpsRuntime } from '../../application/ports/driven/https-runtime.interface.js';
 import type { HttpInternetAccessStore } from '../../application/ports/driven/http-internet-access-store.interface.js';
@@ -21,7 +22,9 @@ import type { TlsCertificateReader } from '../../application/ports/driven/tls-ce
 import type { TlsStore } from '../../application/ports/driven/tls-store.interface.js';
 import type { MaintainInternetAccessUseCase } from '../../application/ports/driving/maintain-internet-access-use-case.interface.js';
 import type { MaintainHttpInternetAccessUseCase } from '../../application/ports/driving/maintain-http-internet-access-use-case.interface.js';
+import { CheckPortWindow } from '../../application/services/check-port-window.service.js';
 import { DomainNameCheck } from '../../application/services/domain-name-check.service.js';
+import { HttpsRuleMove } from '../../application/services/https-rule-move.service.js';
 import { HttpInternetAccessClosing } from '../../application/services/http-internet-access-closing.service.js';
 import { HttpPortForwarding } from '../../application/services/http-port-forwarding.service.js';
 import { InternetAccessSetup } from '../../application/services/internet-access-setup.service.js';
@@ -39,6 +42,8 @@ import { ReadKeepAwake } from '../../application/use-cases/read-keep-awake.useca
 import { ReadTlsSettings } from '../../application/use-cases/read-tls-settings.usecase.js';
 import { SaveDomainName } from '../../application/use-cases/save-domain-name.usecase.js';
 import { SaveHttpSettings } from '../../application/use-cases/save-http-settings.usecase.js';
+import { SaveHttpsPort } from '../../application/use-cases/save-https-port.usecase.js';
+import { DismissAddressNotice } from '../../application/use-cases/dismiss-address-notice.usecase.js';
 import { SaveKeepAwake } from '../../application/use-cases/save-keep-awake.usecase.js';
 import { SaveTlsSettings } from '../../application/use-cases/save-tls-settings.usecase.js';
 import { SetUpInternetAccess } from '../../application/use-cases/set-up-internet-access.usecase.js';
@@ -63,6 +68,8 @@ export const SERVER_SETTINGS_READ_TLS_SETTINGS = 'SERVER_SETTINGS_READ_TLS_SETTI
 export const SERVER_SETTINGS_SAVE_TLS_SETTINGS = 'SERVER_SETTINGS_SAVE_TLS_SETTINGS';
 export const SERVER_SETTINGS_READ_HTTP_SETTINGS = 'SERVER_SETTINGS_READ_HTTP_SETTINGS';
 export const SERVER_SETTINGS_SAVE_HTTP_SETTINGS = 'SERVER_SETTINGS_SAVE_HTTP_SETTINGS';
+export const SERVER_SETTINGS_SAVE_HTTPS_PORT = 'SERVER_SETTINGS_SAVE_HTTPS_PORT';
+export const SERVER_SETTINGS_DISMISS_ADDRESS_NOTICE = 'SERVER_SETTINGS_DISMISS_ADDRESS_NOTICE';
 export const SERVER_SETTINGS_AUDITED_OPERATION = 'SERVER_SETTINGS_AUDITED_OPERATION';
 export const SERVER_SETTINGS_INTERNET_ACCESS_STORE = 'SERVER_SETTINGS_INTERNET_ACCESS_STORE';
 export const SERVER_SETTINGS_INTERNET_ACCESS_SETUP = 'SERVER_SETTINGS_INTERNET_ACCESS_SETUP';
@@ -104,6 +111,7 @@ export interface SettingsAdapters {
     background: BackgroundTasks;
     keepAwake: KeepAwakeStore;
     keepAwakeRuntime: KeepAwakeRuntime;
+    log: EventLog;
     clock: Clock;
 }
 
@@ -129,11 +137,13 @@ export class SettingsModule {
             background,
             keepAwake,
             keepAwakeRuntime,
+            log,
             clock,
         } = adapters;
         const domains = new DomainNameCheck(resolver);
         const rules = new RouterRules(router, probe);
         const forwarding = new HttpPortForwarding(rules, httpListener, clock);
+        const window = new CheckPortWindow(rules, log);
 
         return {
             module: SettingsModule,
@@ -170,6 +180,14 @@ export class SettingsModule {
                         new SaveHttpSettings(http, tls, httpInternetAccess, operations),
                 },
                 {
+                    provide: SERVER_SETTINGS_SAVE_HTTPS_PORT,
+                    useFactory: () => new SaveHttpsPort(tls, http, operations),
+                },
+                {
+                    provide: SERVER_SETTINGS_DISMISS_ADDRESS_NOTICE,
+                    useFactory: () => new DismissAddressNotice(internetAccess),
+                },
+                {
                     provide: SERVER_SETTINGS_INTERNET_ACCESS_SETUP,
                     useFactory: () =>
                         new InternetAccessSetup(
@@ -181,12 +199,13 @@ export class SettingsModule {
                             domains,
                             domainName,
                             new HttpInternetAccessClosing(httpInternetAccess, forwarding),
+                            window,
                             clock,
                         ),
                 },
                 {
                     provide: SERVER_SETTINGS_READ_INTERNET_ACCESS,
-                    useFactory: () => new ReadInternetAccess(internetAccess, tls, local, clock),
+                    useFactory: () => new ReadInternetAccess(internetAccess, local, clock),
                 },
                 {
                     provide: SERVER_SETTINGS_SET_UP_INTERNET_ACCESS,
@@ -216,8 +235,7 @@ export class SettingsModule {
                 },
                 {
                     provide: SERVER_SETTINGS_TURN_OFF_INTERNET_ACCESS,
-                    useFactory: () =>
-                        new TurnOffInternetAccess(internetAccess, router, tls, operations),
+                    useFactory: () => new TurnOffInternetAccess(internetAccess, router, operations),
                 },
                 {
                     provide: SERVER_SETTINGS_MAINTAIN_INTERNET_ACCESS,
@@ -226,10 +244,11 @@ export class SettingsModule {
                         new MaintainInternetAccess(
                             internetAccess,
                             rules,
-                            tls,
                             setup,
                             domains,
                             domainName,
+                            window,
+                            new HttpsRuleMove(rules, log),
                             clock,
                         ),
                 },

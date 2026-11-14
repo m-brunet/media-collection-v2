@@ -15,6 +15,7 @@ import type {
 } from '../ports/driven/certificate-authority.interface.js';
 import type { DomainNameResolver } from '../ports/driven/domain-name-resolver.interface.js';
 import type { DomainNameStore } from '../ports/driven/domain-name-store.interface.js';
+import type { EventLog } from '../ports/driven/event-log.interface.js';
 import type { DomainName } from '../../domain/value-objects/domain-name.value-object.js';
 import type { HttpsRuntime } from '../ports/driven/https-runtime.interface.js';
 import type { HttpInternetAccessStore } from '../ports/driven/http-internet-access-store.interface.js';
@@ -29,6 +30,7 @@ import type { RouterConnection } from '../ports/driven/router-connection.interfa
 import type { RouterGateway } from '../ports/driven/router-gateway.interface.js';
 import type { TlsCertificateReader } from '../ports/driven/tls-certificate-reader.interface.js';
 import type { TlsStore } from '../ports/driven/tls-store.interface.js';
+import { CheckPortWindow } from '../services/check-port-window.service.js';
 import { DomainNameCheck } from '../services/domain-name-check.service.js';
 import { HttpInternetAccessClosing } from '../services/http-internet-access-closing.service.js';
 import { HttpPortForwarding } from '../services/http-port-forwarding.service.js';
@@ -80,9 +82,18 @@ export class FixedHttpListener implements HttpListener {
     }
 }
 
+export class MemoryEventLog implements EventLog {
+    readonly lines: string[] = [];
+
+    write(line: string): void {
+        this.lines.push(line);
+    }
+}
+
 export class FakeRouter implements RouterGateway {
     readonly opened: PortRule[] = [];
     readonly closed: PortRule[] = [];
+    refusedPorts: number[] = [];
 
     constructor(
         public connection: RouterConnection | null = {
@@ -90,6 +101,7 @@ export class FakeRouter implements RouterGateway {
             externalAddress: publicAddress,
         },
         public accepts = true,
+        private readonly journal: string[] = [],
     ) {}
 
     async find(): Promise<RouterConnection | null> {
@@ -97,15 +109,19 @@ export class FakeRouter implements RouterGateway {
     }
 
     async open(rule: PortRule): Promise<boolean> {
-        if (this.accepts) {
+        const accepted = this.accepts && !this.refusedPorts.includes(rule.externalPort);
+
+        if (accepted) {
             this.opened.push(rule);
+            this.journal.push('open ' + rule.externalPort + ' -> ' + rule.internalPort);
         }
 
-        return this.accepts;
+        return accepted;
     }
 
     async close(rule: PortRule): Promise<void> {
         this.closed.push(rule);
+        this.journal.push('close ' + rule.externalPort);
     }
 }
 
@@ -149,11 +165,15 @@ export class FakeAuthority implements CertificateAuthority {
     failure: Error | null = null;
     retryAfter: string | null = null;
 
-    constructor(private readonly clock: Clock) {}
+    constructor(
+        private readonly clock: Clock,
+        private readonly journal: string[] = [],
+    ) {}
 
     async issue(subject: CertificateSubject, replacing: string | null): Promise<CertificateIssue> {
         const address = subject.name;
 
+        this.journal.push('check ' + address);
         this.requested.push(address);
         this.subjects.push({ ...subject });
         this.replaced.push(replacing);
@@ -189,6 +209,11 @@ export class FakeHttpsRuntime implements HttpsRuntime {
     readonly started: number[] = [];
     readonly installed: { port: number; chain: string }[] = [];
     available = true;
+    running: number | null = null;
+
+    runningPort(): number | null {
+        return this.running;
+    }
 
     async ensureRunning(port: number): Promise<boolean> {
         this.started.push(port);
@@ -270,10 +295,12 @@ export class MemoryKeepAwake implements KeepAwakeStore, KeepAwakeRuntime {
 export class InternetAccessDoubles {
     static setup(initial?: InternetAccessState, tls?: TlsSettingsState) {
         const clock = new SettableClock();
+        const journal: string[] = [];
+        const log = new MemoryEventLog();
         const store = new MemoryInternetAccessStore(initial);
-        const router = new FakeRouter();
+        const router = new FakeRouter(undefined, undefined, journal);
         const probe = new FakeProbe();
-        const authority = new FakeAuthority(clock);
+        const authority = new FakeAuthority(clock, journal);
         const https = new FakeHttpsRuntime();
         const tlsStore = new MemoryTlsStore(tls);
         const resolver = new FakeResolver();
@@ -283,6 +310,7 @@ export class InternetAccessDoubles {
         const httpListener = new FixedHttpListener();
         const rules = new RouterRules(router, probe);
         const forwarding = new HttpPortForwarding(rules, httpListener, clock);
+        const window = new CheckPortWindow(rules, log);
         const setup = new InternetAccessSetup(
             store,
             rules,
@@ -292,11 +320,15 @@ export class InternetAccessDoubles {
             domains,
             names,
             new HttpInternetAccessClosing(httpStore, forwarding),
+            window,
             clock,
         );
 
         return {
             clock,
+            journal,
+            log,
+            window,
             store,
             router,
             probe,
@@ -330,6 +362,7 @@ export class InternetAccessDoubles {
             phase: 'active',
             mapping: 'upnp',
             publicAddress,
+            routerPort: 3443,
             certificate: {
                 address: publicAddress,
                 issuedAt: '2026-11-08T10:00:00.000Z',

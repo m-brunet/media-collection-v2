@@ -22,7 +22,7 @@ export class SaveTlsSettings implements SaveTlsSettingsUseCase {
 
     async execute(
         actor: Actor,
-        input: { enabled: boolean; port: number; chain?: string; key?: string },
+        input: { enabled: boolean; chain?: string; key?: string },
     ): Promise<TlsSettingsState> {
         return this.operations.run(
             {
@@ -60,7 +60,7 @@ export class SaveTlsSettings implements SaveTlsSettingsUseCase {
 
                 const settings = new TlsSettings({
                     enabled: input.enabled,
-                    port: input.port,
+                    port: previous.port,
                     hasCertificate: supplying || previous.hasCertificate,
                 });
                 const http = await this.http.read();
