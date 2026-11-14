@@ -1,5 +1,5 @@
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
-import { InternetAccess } from '../../domain/entities/internet-access.entity.js';
+import type { InternetAccess } from '../../domain/entities/internet-access.entity.js';
 import type { InternetAccessFailureReason } from '../../domain/entities/internet-access.entity.js';
 import { TlsSettings } from '../../domain/value-objects/tls-settings.value-object.js';
 import type { CertificateAuthority } from '../ports/driven/certificate-authority.interface.js';
@@ -8,6 +8,7 @@ import type { HttpsRuntime } from '../ports/driven/https-runtime.interface.js';
 import type { InternetAccessStore } from '../ports/driven/internet-access-store.interface.js';
 import type { TlsCertificateReader } from '../ports/driven/tls-certificate-reader.interface.js';
 import type { TlsStore } from '../ports/driven/tls-store.interface.js';
+import type { CheckPortWindow } from './check-port-window.service.js';
 import type { DomainNameCheck } from './domain-name-check.service.js';
 import type { HttpInternetAccessClosing } from './http-internet-access-closing.service.js';
 import type { RouterRules } from './router-rules.service.js';
@@ -25,6 +26,7 @@ export class InternetAccessSetup {
         private readonly domains: DomainNameCheck,
         private readonly names: DomainNameReader,
         private readonly httpClosing: HttpInternetAccessClosing,
+        private readonly window: CheckPortWindow,
         private readonly clock: Clock,
     ) {}
 
@@ -83,9 +85,8 @@ export class InternetAccessSetup {
         // Same name: an ARI renewal of the certificate in use, which Let's Encrypt does not count.
         const replacing =
             access.certificate?.address === name ? await this.tls.currentChain() : null;
-        const issue = await this.authority.issue(
-            { kind: access.domain ? 'domain' : 'address', name },
-            replacing,
+        const issue = await this.window.around(access, port, () =>
+            this.authority.issue({ kind: access.domain ? 'domain' : 'address', name }, replacing),
         );
 
         if (issue.outcome === 'refused') {
@@ -161,11 +162,8 @@ export class InternetAccessSetup {
         }
 
         await this.store.save(access);
-        const { port } = await this.tls.read();
-        const opened = await this.rules.open({
-            externalPort: InternetAccess.checkPort,
-            internalPort: port,
-        });
+        const port = Required.value(access.routerPort, 'a setup has a router port');
+        const opened = await this.rules.open({ externalPort: port, internalPort: port });
 
         if (!opened) {
             access.portNeeded(router.externalAddress, 'port-refused', now);

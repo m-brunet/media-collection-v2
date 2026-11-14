@@ -115,6 +115,10 @@ export class InternetAccess {
         return this.state.mapping;
     }
 
+    get automatic(): boolean {
+        return this.state.mapping === 'upnp' || this.state.mapping === 'nat-pmp';
+    }
+
     get publicAddress(): string | null {
         return this.state.publicAddress;
     }

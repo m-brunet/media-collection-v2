@@ -328,8 +328,8 @@ describe('DELETE /api/server-settings/internet-access', () => {
         expect([
             response.status,
             response.body.phase,
-            app.dependencies.internetAccess.router.closed,
-        ]).toEqual([200, 'off', [{ externalPort: 443, internalPort: 34443 }]]);
+            app.dependencies.internetAccess.router.closed.at(-1),
+        ]).toEqual([200, 'off', { externalPort: 34443, internalPort: 34443 }]);
     });
     it('records the change in the technical audit log', async () => {
         const client = await app.authenticatedClient(admin);
