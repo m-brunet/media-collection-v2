@@ -6,7 +6,11 @@ import type { ReadLookupCoverUseCase } from '../../../../application/ports/drivi
 import type { FetchCoverFromAddressUseCase } from '../../../../application/ports/driving/fetch-cover-from-address-use-case.interface.js';
 import type { CoverImage } from '../../../../domain/value-objects/cover-image.value-object.js';
 import type { AuthenticatedRequest } from '../../../../../shared/infrastructure/adapters/driving/web/api-guard.js';
-import type { BookLookupDto } from '../../../../../../../../packages/contracts/src/http.js';
+import type {
+    BookLookupDto,
+    VolumeCoverDto,
+} from '../../../../../../../../packages/contracts/src/http.js';
+import type { FindVolumeCoverUseCase } from '../../../../application/ports/driving/find-volume-cover-use-case.interface.js';
 import { bookLookupSchema, coverAddressSchema, idSchema } from './book-schemas.js';
 
 @Controller('api/books/lookups')
@@ -16,6 +20,7 @@ export class LookupsController {
         @Inject('BOOKS_READ_LOOKUP_COVER') private readonly readLookupCover: ReadLookupCoverUseCase,
         @Inject('BOOKS_FETCH_COVER_FROM_ADDRESS')
         private readonly fetchCoverFromAddress: FetchCoverFromAddressUseCase,
+        @Inject('BOOKS_FIND_VOLUME_COVER') private readonly findVolumeCover: FindVolumeCoverUseCase,
     ) {}
 
     @Post()
@@ -25,6 +30,15 @@ export class LookupsController {
         @Req() request: AuthenticatedRequest,
     ): Promise<BookLookupDto> {
         return this.lookUpBook.execute(request.actor, body.isbn);
+    }
+
+    @Post('volume-cover')
+    @HttpCode(200)
+    volumeCover(
+        @Body({ schema: bookLookupSchema }) body: z.infer<typeof bookLookupSchema>,
+        @Req() request: AuthenticatedRequest,
+    ): Promise<VolumeCoverDto> {
+        return this.findVolumeCover.execute(request.actor, body.isbn);
     }
 
     @Get('covers/:token')

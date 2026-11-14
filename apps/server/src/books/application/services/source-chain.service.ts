@@ -36,10 +36,14 @@ export class SourceLink<T> {
     }
 
     begin(isbn13: string): SourceStep<T> {
-        return new SourceStep(this.source.name, this.ask(isbn13), this.next?.begin(isbn13) ?? null);
+        return new SourceStep(
+            this.source.name,
+            this.request(isbn13),
+            this.next?.begin(isbn13) ?? null,
+        );
     }
 
-    private async ask(isbn13: string): Promise<SourceReply<T> | 'failed'> {
+    async request(isbn13: string): Promise<SourceReply<T> | 'failed'> {
         if (!this.budget.take()) {
             return { kind: 'limited', retryAt: null };
         }

@@ -1,6 +1,7 @@
 import type {
     BookDto,
     BookLookupDto,
+    VolumeCoverDto,
 } from '../../../../../../../../packages/contracts/src/http.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { TestApp } from '../../../../../../../../tests/api/setup/test-app.js';
@@ -316,5 +317,48 @@ describe('POST /api/books/lookups/covers', () => {
         });
 
         expect(response.status).toBe(401);
+    });
+});
+
+describe('POST /api/books/lookups/volume-cover', () => {
+    it("gives a token for a volume's cover, to read like a looked-up cover", async () => {
+        sources().cover(isbn, coverAddress, jpeg);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<VolumeCoverDto>('/books/lookups/volume-cover', 'POST', {
+            isbn,
+        });
+        const token = response.body.kind === 'found' ? response.body.token : '';
+        const image = await client.call('/books/lookups/covers/' + token);
+
+        expect(response.status).toBe(200);
+        expect(response.body.kind).toBe('found');
+        expect(image.status).toBe(200);
+    });
+
+    it('finds nothing for a volume without a cover', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<VolumeCoverDto>('/books/lookups/volume-cover', 'POST', {
+            isbn,
+        });
+
+        expect(response.body).toEqual({ kind: 'none' });
+    });
+
+    it('refuses a Guest', async () => {
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call('/books/lookups/volume-cover', 'POST', { isbn });
+
+        expect(response.status).toBe(403);
+    });
+
+    it('refuses an invalid ISBN', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/books/lookups/volume-cover', 'POST', { isbn: '12' });
+
+        expect(response.status).toBe(400);
     });
 });
