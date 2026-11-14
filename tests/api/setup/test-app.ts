@@ -10,6 +10,7 @@ import {
     FakeRouter,
     FixedLocalAddress,
     InternetAccessDoubles,
+    MemoryEventLog,
     MemoryKeepAwake,
 } from '../../../apps/server/src/server-settings/application/testing/internet-access-doubles.test-support.js';
 import { HttpInternetAccess } from '../../../apps/server/src/server-settings/domain/entities/http-internet-access.entity.js';
@@ -157,6 +158,7 @@ export class TestApp {
                 https: new FakeHttpsRuntime(),
                 background: new AwaitableBackground(),
                 keepAwake: new MemoryKeepAwake(),
+                log: new MemoryEventLog(),
             };
 
             this.context = {
@@ -260,6 +262,7 @@ export class TestApp {
                         background: internetAccess.background,
                         keepAwake: internetAccess.keepAwake,
                         keepAwakeRuntime: internetAccess.keepAwake,
+                        log: internetAccess.log,
                         clock,
                     }),
                     AppearanceModule.register(

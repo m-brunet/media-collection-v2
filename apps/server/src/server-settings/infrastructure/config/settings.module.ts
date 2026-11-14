@@ -7,6 +7,7 @@ import type { CertificateAuthority } from '../../application/ports/driven/certif
 import type { CertificateValidator } from '../../application/ports/driven/certificate-validator.interface.js';
 import type { DomainNameResolver } from '../../application/ports/driven/domain-name-resolver.interface.js';
 import type { DomainNameStore } from '../../application/ports/driven/domain-name-store.interface.js';
+import type { EventLog } from '../../application/ports/driven/event-log.interface.js';
 import type { HttpSettingsStore } from '../../application/ports/driven/http-settings-store.interface.js';
 import type { HttpsRuntime } from '../../application/ports/driven/https-runtime.interface.js';
 import type { HttpInternetAccessStore } from '../../application/ports/driven/http-internet-access-store.interface.js';
@@ -21,7 +22,9 @@ import type { TlsCertificateReader } from '../../application/ports/driven/tls-ce
 import type { TlsStore } from '../../application/ports/driven/tls-store.interface.js';
 import type { MaintainInternetAccessUseCase } from '../../application/ports/driving/maintain-internet-access-use-case.interface.js';
 import type { MaintainHttpInternetAccessUseCase } from '../../application/ports/driving/maintain-http-internet-access-use-case.interface.js';
+import { CheckPortWindow } from '../../application/services/check-port-window.service.js';
 import { DomainNameCheck } from '../../application/services/domain-name-check.service.js';
+import { HttpsRuleMove } from '../../application/services/https-rule-move.service.js';
 import { HttpInternetAccessClosing } from '../../application/services/http-internet-access-closing.service.js';
 import { HttpPortForwarding } from '../../application/services/http-port-forwarding.service.js';
 import { InternetAccessSetup } from '../../application/services/internet-access-setup.service.js';
@@ -104,6 +107,7 @@ export interface SettingsAdapters {
     background: BackgroundTasks;
     keepAwake: KeepAwakeStore;
     keepAwakeRuntime: KeepAwakeRuntime;
+    log: EventLog;
     clock: Clock;
 }
 
@@ -129,11 +133,13 @@ export class SettingsModule {
             background,
             keepAwake,
             keepAwakeRuntime,
+            log,
             clock,
         } = adapters;
         const domains = new DomainNameCheck(resolver);
         const rules = new RouterRules(router, probe);
         const forwarding = new HttpPortForwarding(rules, httpListener, clock);
+        const window = new CheckPortWindow(rules, log);
 
         return {
             module: SettingsModule,
@@ -181,6 +187,7 @@ export class SettingsModule {
                             domains,
                             domainName,
                             new HttpInternetAccessClosing(httpInternetAccess, forwarding),
+                            window,
                             clock,
                         ),
                 },
@@ -216,8 +223,7 @@ export class SettingsModule {
                 },
                 {
                     provide: SERVER_SETTINGS_TURN_OFF_INTERNET_ACCESS,
-                    useFactory: () =>
-                        new TurnOffInternetAccess(internetAccess, router, tls, operations),
+                    useFactory: () => new TurnOffInternetAccess(internetAccess, router, operations),
                 },
                 {
                     provide: SERVER_SETTINGS_MAINTAIN_INTERNET_ACCESS,
@@ -230,6 +236,8 @@ export class SettingsModule {
                             setup,
                             domains,
                             domainName,
+                            window,
+                            new HttpsRuleMove(rules, log),
                             clock,
                         ),
                 },

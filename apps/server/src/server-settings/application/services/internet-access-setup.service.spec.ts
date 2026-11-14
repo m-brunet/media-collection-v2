@@ -32,12 +32,52 @@ it('saves each step so the page can follow the setup', async () => {
 
     expect(store.phases).toEqual(['setting-up:port', 'setting-up:certificate', 'active']);
 });
-it('forwards external port 443 to the HTTPS listening port', async () => {
+it('forwards the HTTPS port outside to the same port on this computer', async () => {
     const { setup, router } = startedDoubles();
 
     await setup.run();
 
-    expect(router.opened).toEqual([{ externalPort: 443, internalPort: 3443 }]);
+    expect(router.opened[0]).toEqual({ externalPort: 3443, internalPort: 3443 });
+});
+it('opens port 443 only around the Let’s Encrypt check of a setup', async () => {
+    const { setup, journal } = startedDoubles();
+
+    await setup.run();
+
+    expect(journal).toEqual([
+        'open 3443 -> 3443',
+        'open 443 -> 3443',
+        'check ' + publicAddress,
+        'close 443',
+    ]);
+});
+it('closes port 443 after a refused check', async () => {
+    const doubles = startedDoubles();
+
+    doubles.authority.refusal = 'not-reachable';
+
+    await doubles.setup.run();
+
+    expect([doubles.store.current.phase, doubles.journal.at(-1)]).toEqual([
+        'waiting-for-port',
+        'close 443',
+    ]);
+});
+it('closes port 443 after a check that fails with an error', async () => {
+    const doubles = startedDoubles();
+
+    doubles.authority.failure = new Error('connection reset');
+
+    await doubles.setup.run();
+
+    expect([doubles.store.current.phase, doubles.journal.at(-1)]).toEqual(['off', 'close 443']);
+});
+it('opens port 443 around a renewal too', async () => {
+    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());
+
+    await doubles.setup.renew(await doubles.store.read());
+
+    expect(doubles.journal).toEqual(['open 443 -> 3443', 'check ' + publicAddress, 'close 443']);
 });
 it('switches HTTPS on with the new certificate, without a restart', async () => {
     const { setup, https, tls } = startedDoubles();
@@ -237,7 +277,7 @@ it('closes HTTP to the internet once HTTPS works', async () => {
     expect([
         doubles.http.current.phase,
         doubles.http.current.closedByHttps,
-        doubles.router.closed,
+        doubles.router.closed.filter((rule) => rule.externalPort === 34345),
     ]).toEqual(['off', true, [{ externalPort: 34345, internalPort: 34345 }]]);
 });
 it('keeps HTTP open while HTTPS waits for a manual router rule', async () => {

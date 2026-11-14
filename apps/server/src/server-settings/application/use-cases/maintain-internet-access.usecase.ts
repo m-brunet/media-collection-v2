@@ -1,5 +1,5 @@
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
-import { InternetAccess } from '../../domain/entities/internet-access.entity.js';
+import type { InternetAccess } from '../../domain/entities/internet-access.entity.js';
 import type { InternetAccessFailureReason } from '../../domain/entities/internet-access.entity.js';
 import type { DomainNameReader } from '../ports/driven/domain-name-reader.interface.js';
 import type { InternetAccessStore } from '../ports/driven/internet-access-store.interface.js';
@@ -8,7 +8,9 @@ import type {
     MaintainInternetAccessUseCase,
     RuleUpkeepOutcome,
 } from '../ports/driving/maintain-internet-access-use-case.interface.js';
+import type { CheckPortWindow } from '../services/check-port-window.service.js';
 import type { DomainNameCheck } from '../services/domain-name-check.service.js';
+import type { HttpsRuleMove } from '../services/https-rule-move.service.js';
 import type { InternetAccessSetup } from '../services/internet-access-setup.service.js';
 import type { RouterRules } from '../services/router-rules.service.js';
 
@@ -20,29 +22,43 @@ export class MaintainInternetAccess implements MaintainInternetAccessUseCase {
         private readonly setup: InternetAccessSetup,
         private readonly domains: DomainNameCheck,
         private readonly names: DomainNameReader,
+        private readonly window: CheckPortWindow,
+        private readonly move: HttpsRuleMove,
         private readonly clock: Clock,
     ) {}
 
     async execute(): Promise<RuleUpkeepOutcome> {
         const access = await this.store.read();
         const now = this.clock.now();
+        const { port } = await this.tls.read();
+        const interrupted =
+            (access.phase === 'setting-up' || access.checking) && !this.setup.running;
 
-        if (access.phase === 'setting-up' && !this.setup.running) {
+        if (interrupted) {
+            const windowOpen = access.automatic && access.snapshot.step === 'certificate';
+
             access.interrupted(now);
-            await this.store.save(access);
 
-            return { rule: 'none' };
+            if (windowOpen) {
+                await this.window.close(port);
+            }
         }
 
-        if (access.checking && !this.setup.running) {
-            access.interrupted(now);
+        const moving = this.move.needed(access, port);
+
+        if (moving) {
+            await this.move.to(access, port);
         }
 
         if (access.phase !== 'active') {
+            if (interrupted || moving) {
+                await this.store.save(access);
+            }
+
             return { rule: 'none' };
         }
 
-        const outcome = await this.upkeep(access, now).catch((): RuleUpkeepOutcome => {
+        const outcome = await this.upkeep(access, port, now).catch((): RuleUpkeepOutcome => {
             access.upkeepFailed('setup-failed', now);
 
             return { rule: 'failed', reason: 'setup-failed' };
@@ -53,10 +69,13 @@ export class MaintainInternetAccess implements MaintainInternetAccessUseCase {
         return outcome;
     }
 
-    private async upkeep(access: InternetAccess, now: Date): Promise<RuleUpkeepOutcome> {
-        const { port } = await this.tls.read();
+    private async upkeep(
+        access: InternetAccess,
+        port: number,
+        now: Date,
+    ): Promise<RuleUpkeepOutcome> {
         const kept = await this.rules.keep(
-            { externalPort: InternetAccess.checkPort, internalPort: port },
+            { externalPort: port, internalPort: port },
             access.mapping === 'manual',
         );
 

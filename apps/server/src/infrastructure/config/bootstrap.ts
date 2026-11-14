@@ -29,6 +29,7 @@ import type { TlsSettingsState } from '../../server-settings/domain/value-object
 import { TlsSettings } from '../../server-settings/domain/value-objects/tls-settings.value-object.js';
 import { PemCertificateValidator } from '../../server-settings/infrastructure/adapters/driven/security/pem-certificate-validator.adapter.js';
 import { TlsAlpnChallenges } from '../../server-settings/infrastructure/adapters/driven/security/tls-alpn-challenges.adapter.js';
+import { ConsoleEventLog } from '../../server-settings/infrastructure/adapters/driven/runtime/console-event-log.adapter.js';
 import { NodeHttpsRuntime } from '../../server-settings/infrastructure/adapters/driven/runtime/node-https-runtime.adapter.js';
 import { KyselyDomainNameRepository } from '../../server-settings/infrastructure/adapters/driven/persistence/kysely-domain-name.repository.js';
 import { KyselyHttpInternetAccessRepository } from '../../server-settings/infrastructure/adapters/driven/persistence/kysely-http-internet-access.repository.js';
@@ -305,6 +306,7 @@ export class BackendRuntime {
                             keepAwakeRuntime: {
                                 apply: (enabled) => options.onKeepAwake?.(enabled),
                             },
+                            log: new ConsoleEventLog(),
                             clock,
                         }),
                         AppearanceModule.register(
