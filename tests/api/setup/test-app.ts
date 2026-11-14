@@ -77,6 +77,8 @@ import { MaintenanceModule } from '../../../apps/server/src/maintenance/infrastr
 import { KyselyApplicationDataEraser } from '../../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/kysely-application-data-eraser.adapter.js';
 import { KyselyLibraryEraser } from '../../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/kysely-library-eraser.adapter.js';
 import { KyselyCoverFileCleanup } from '../../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/kysely-cover-file-cleanup.adapter.js';
+import { StatisticsModule } from '../../../apps/server/src/statistics/infrastructure/config/statistics.module.js';
+import { KyselyLibraryStatisticsReader } from '../../../apps/server/src/statistics/infrastructure/adapters/driven/persistence/kysely-library-statistics-reader.adapter.js';
 import { OverviewModule } from '../../../apps/server/src/overview/infrastructure/config/overview.module.js';
 import { KyselyLibrarySummaryReader } from '../../../apps/server/src/overview/infrastructure/adapters/driven/persistence/kysely-library-summary-reader.adapter.js';
 import { DatabaseManager } from './database-manager.js';
@@ -320,6 +322,10 @@ export class TestApp {
                     }),
                     OverviewModule.register({
                         summary: new KyselyLibrarySummaryReader(database.connections),
+                    }),
+                    StatisticsModule.register({
+                        library: new KyselyLibraryStatisticsReader(database.connections),
+                        collections: CollectionsModule.tallies(collections, members),
                     }),
                     MaintenanceModule.register({
                         passwords: IdentityModule.administratorPassword(users, passwords),
