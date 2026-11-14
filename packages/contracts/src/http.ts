@@ -716,3 +716,38 @@ export interface OverviewDto {
     reading: { read: number; notRead: number } | null;
     bookcaseList: { id: string; name: string; shelfCount: number }[];
 }
+
+export interface StatisticsPublisherDto {
+    name: string;
+    books: number;
+    pages: number;
+}
+
+export interface StatisticsBookRecordDto {
+    id: string;
+    title: string;
+    authors: string[];
+    value: number;
+}
+
+export interface StatisticsDto {
+    ownedBooks: number;
+    singleBooks: number;
+    categories: Record<BookCategory, number>;
+    reading: { read: number; notRead: number } | null;
+    pages: { total: number; known: number };
+    price: { totalCents: number; known: number };
+    publishers: {
+        byBooks: StatisticsPublisherDto[];
+        byPages: StatisticsPublisherDto[];
+        without: number;
+        count: number;
+    };
+    authors: { name: string; books: number }[];
+    records: {
+        longest: StatisticsBookRecordDto | null;
+        mostExpensive: StatisticsBookRecordDto | null;
+        biggestCollection: { id: string; name: string; ownedBooks: number } | null;
+    };
+    collections: { finished: number; unfinished: number; missingVolumes: number };
+}
