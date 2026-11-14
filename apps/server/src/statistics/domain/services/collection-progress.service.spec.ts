@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { CollectionTally } from './collection-progress.service.js';
+import type { CollectionProgressEntry } from './collection-progress.service.js';
 import { CollectionProgress } from './collection-progress.service.js';
 
-function tally(name: string, values: Partial<CollectionTally> = {}): CollectionTally {
+function tally(
+    name: string,
+    values: Partial<CollectionProgressEntry> = {},
+): CollectionProgressEntry {
     return {
         id: name,
         name,

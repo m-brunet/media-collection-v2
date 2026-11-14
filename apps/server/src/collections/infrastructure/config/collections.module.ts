@@ -12,6 +12,8 @@ import type { CollectionRepository } from '../../application/ports/driven/collec
 import type { MemberTitles } from '../../application/ports/driven/member-titles.interface.js';
 import type { MemberCategories } from '../../application/ports/driven/member-categories.interface.js';
 import { OwnedCollectionBooks } from '../../application/services/owned-collection-books.service.js';
+import { CollectionTallyReader } from '../../application/services/collection-tally-reader.service.js';
+import type { CollectionTallies } from '../../../statistics/application/ports/driven/collection-tallies.interface.js';
 import { BookCollectionMembership } from '../../application/services/book-collection-membership.service.js';
 import { CollectionLoader } from '../../application/services/collection-loader.service.js';
 import { CollectionUpkeep } from '../../application/services/collection-upkeep.service.js';
@@ -227,5 +229,12 @@ export class CollectionsModule {
         members: CollectionMemberStore,
     ): CollectionOwnedBooks {
         return new OwnedCollectionBooks(new CollectionLoader(collections), members);
+    }
+
+    static tallies(
+        collections: CollectionRepository,
+        members: CollectionMemberStore,
+    ): CollectionTallies {
+        return new CollectionTallyReader(collections, members, new CollectionViewer());
     }
 }

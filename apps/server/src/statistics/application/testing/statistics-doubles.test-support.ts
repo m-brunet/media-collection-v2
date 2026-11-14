@@ -1,9 +1,9 @@
 import { TestActors } from '../../../shared/application/testing/test-actors.test-support.js';
+import type { StatisticsCategory } from '../../domain/services/collection-progress.service.js';
 import type {
+    CollectionTallies,
     CollectionTally,
-    StatisticsCategory,
-} from '../../domain/services/collection-progress.service.js';
-import type { CollectionTallies } from '../ports/driven/collection-tallies.interface.js';
+} from '../ports/driven/collection-tallies.interface.js';
 import type { LibraryStatisticsReader } from '../ports/driven/library-statistics-reader.interface.js';
 import type {
     AuthorCount,
