@@ -108,6 +108,16 @@ export const fr = {
         'Port HTTP enregistré. Retirez le port imposé au démarrage, puis fermez et rouvrez l’application de bureau pour l’appliquer.',
     'server.httpSavedRestart':
         'Port HTTP enregistré. Fermez puis rouvrez l’application de bureau pour l’appliquer.',
+    'server.portsTitle': 'Ports',
+    'server.portsIntro':
+        'Chaque port est utilisé sur cet ordinateur et ouvert sous le même numéro sur votre box : les téléphones hors de chez vous l’utilisent aussi.',
+    'server.httpsPortTitle': 'HTTPS / accès Internet',
+    'server.httpsPortIntro':
+        'Hors de chez vous, les téléphones ouvrent l’adresse HTTPS avec ce port. Let’s Encrypt vérifie toujours cet ordinateur sur le port 443 : il n’est ouvert que pendant chaque vérification.',
+    'server.httpsPortSubmit': 'Enregistrer le port HTTPS',
+    'server.httpsPortSavedActive': 'Port HTTPS enregistré. Ce port est déjà actif.',
+    'server.httpsPortSavedRestart':
+        'Port HTTPS enregistré. Fermez et rouvrez l’application de bureau pour l’appliquer ; l’accès Internet déplace alors la règle de la box et les téléphones ont besoin de la nouvelle adresse.',
     'server.httpsTitle': 'HTTPS (facultatif)',
     'server.httpsEnable': 'Activer HTTPS après le redémarrage',
     'server.httpsPort': 'Port HTTPS',
@@ -120,7 +130,7 @@ export const fr = {
     'server.httpsSubmit': 'Enregistrer les paramètres HTTPS',
     'server.httpsSaved':
         'Paramètres enregistrés. Redémarrez l’application de bureau pour les appliquer.',
-    'server.advanced': 'Avancé : ports et certificat manuel',
+    'server.advanced': 'Avancé : certificat manuel',
     'server.httpsManaged':
         'L’accès Internet gère le certificat HTTPS. Désactivez l’accès Internet pour modifier ces paramètres.',
     'internet.title': 'Accès Internet',
@@ -155,6 +165,20 @@ export const fr = {
     'internet.turnOffTitle': 'Désactiver l’accès Internet ?',
     'internet.turnOffBody':
         'Les téléphones ne pourront plus joindre Libris et Leaf hors de chez vous. La règle de la box est supprimée. Vous pouvez la reconfigurer à tout moment ; cela utilise l’un des 5 certificats que Let’s Encrypt accorde par semaine pour cette adresse.',
+    'internet.addressMoved':
+        'L’adresse Internet est maintenant {address}. Scannez à nouveau le QR code sur chaque téléphone.',
+    'internet.addressMovedByHand':
+        'Modifiez aussi la règle de votre box avec les valeurs ci-dessous.',
+    'internet.checkRuleTitle': 'Port 443, seulement pendant les vérifications de Let’s Encrypt',
+    'internet.checkRuleIntro':
+        'Let’s Encrypt ne vérifie cet ordinateur que sur le port 443 : à la configuration, à « Vérifier à nouveau » et à chaque renouvellement. Ajoutez cette deuxième règle avant une vérification ; vous pourrez la retirer ensuite.',
+    'internet.checkRuleReminder':
+        'Ouvrez le port 443 sur votre box avant le {date} : Let’s Encrypt vérifie alors cet ordinateur pour renouveler le certificat. Vous pourrez le refermer après le renouvellement.',
+    'internet.checkRulePermanentTitle': 'Port 443, gardé ouvert',
+    'internet.checkRulePermanentIntro':
+        'Let’s Encrypt ne vérifie cet ordinateur que sur le port 443. Ajoutez cette deuxième règle et gardez-la.',
+    'internet.checkRulePermanent':
+        'Sans nom de domaine, le certificat est renouvelé tous les 3 jours : gardez le port 443 ouvert sur votre box avec la deuxième règle ci-dessous.',
     'internet.manualTitle': 'Ajoutez la règle dans votre box',
     'internet.manualIntro':
         'Dans les réglages de votre box, cherchez « Redirection de ports » (ou « NAT/PAT ») et ajoutez cette règle :',
@@ -171,9 +195,9 @@ export const fr = {
     'internet.failure.no-router':
         'Votre box n’a pas répondu : la règle ne peut pas être ajoutée automatiquement.',
     'internet.failure.port-refused':
-        'Votre box a refusé d’ouvrir le port 443. Il est peut-être déjà utilisé, par exemple par l’accès à distance de la box.',
+        'Votre box a refusé d’ouvrir le port {port}. Il est peut-être déjà utilisé par un autre appareil ou par la box elle-même.',
     'internet.failure.not-reachable':
-        'Let’s Encrypt n’a pas pu joindre cet ordinateur sur le port 443. Vérifiez la règle de la box et le pare-feu Windows.',
+        'Let’s Encrypt n’a pas pu joindre cet ordinateur sur le port 443. Vérifiez les règles de la box et le pare-feu Windows.',
     'internet.failure.cgnat':
         'Votre fournisseur d’accès partage votre adresse publique avec d’autres clients (CGNAT) : cet ordinateur ne peut pas être joint depuis Internet. Demandez une adresse IPv4 complète (« full stack ») à votre fournisseur, puis réessayez.',
     'internet.failure.double-nat':
@@ -185,7 +209,7 @@ export const fr = {
     'internet.failure.authority-unavailable':
         'Let’s Encrypt est injoignable. Vérifiez la connexion Internet, puis réessayez.',
     'internet.failure.https-unavailable':
-        'HTTPS n’a pas pu démarrer : son port est peut-être utilisé par un autre programme. Choisissez un autre port HTTPS dans les paramètres avancés, puis réessayez.',
+        'HTTPS n’a pas pu démarrer : son port est peut-être utilisé par un autre programme. Choisissez un autre port HTTPS dans Ports, redémarrez, puis réessayez.',
     'internet.failure.setup-failed':
         'La configuration s’est arrêtée de façon inattendue. Réessayez.',
     'internet.failure.domain-unresolved':

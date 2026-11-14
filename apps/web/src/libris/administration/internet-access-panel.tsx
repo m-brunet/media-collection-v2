@@ -122,8 +122,18 @@ function HttpsInternetSection({
         ? t(failures[status.failure.reason], {
               domain: status.domain ?? '',
               address: status.publicAddress ?? '',
+              port: status.routerPort ?? '',
           })
         : null;
+    const dismissAddressNotice = () =>
+        void action.run(async () =>
+            onStatus(
+                await api.request<InternetAccessStatus>(
+                    '/server-settings/internet-access/address-notice',
+                    { method: 'DELETE' },
+                ),
+            ),
+        );
     const setUp = (replaceCertificate: boolean) =>
         api.request<InternetAccessStatus>('/server-settings/internet-access', {
             method: 'POST',
@@ -166,6 +176,12 @@ function HttpsInternetSection({
             {status.phase === 'active' && status.origin && status.certificate && (
                 <>
                     <Notice tone="success">{t('internet.active')}</Notice>
+                    {status.addressMoved && (
+                        <Notice tone="warning" onClose={dismissAddressNotice}>
+                            {t('internet.addressMoved', { address: status.origin })}
+                            {status.mapping === 'manual' && ' ' + t('internet.addressMovedByHand')}
+                        </Notice>
+                    )}
                     <p>
                         {t('internet.validUntil', {
                             date: dates.dateTime(status.certificate.expiresAt),
@@ -184,12 +200,13 @@ function HttpsInternetSection({
                                   })}
                         </Notice>
                     )}
+                    {status.mapping === 'manual' && <RulesByHand status={status} />}
                 </>
             )}
             {status.phase === 'waiting-for-port' && (
                 <>
                     {failure && <Notice tone="warning">{failure}</Notice>}
-                    {status.manualRule && <ManualRule rule={status.manualRule} />}
+                    <RulesByHand status={status} />
                 </>
             )}
             {status.phase === 'off' && failure && <Notice tone="error">{failure}</Notice>}
@@ -256,6 +273,36 @@ function HttpsInternetSection({
                 onClose={() => setTurningOff(false)}
             />
         </section>
+    );
+}
+
+function RulesByHand({ status }: { status: InternetAccessStatus }) {
+    const { t, dates } = useI18n();
+    const addressOnly = status.domain === null;
+
+    return (
+        <>
+            {status.phase === 'active' && addressOnly && (
+                <Notice tone="info">{t('internet.checkRulePermanent')}</Notice>
+            )}
+            {status.phase === 'active' && !addressOnly && status.renewalAt && (
+                <Notice tone="info">
+                    {t('internet.checkRuleReminder', { date: dates.dateTime(status.renewalAt) })}
+                </Notice>
+            )}
+            {status.manualRule && <ManualRule rule={status.manualRule} />}
+            {status.checkRule && (
+                <ManualRule
+                    rule={status.checkRule}
+                    title={
+                        addressOnly ? 'internet.checkRulePermanentTitle' : 'internet.checkRuleTitle'
+                    }
+                    intro={
+                        addressOnly ? 'internet.checkRulePermanentIntro' : 'internet.checkRuleIntro'
+                    }
+                />
+            )}
+        </>
     );
 }
 
