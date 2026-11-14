@@ -7,6 +7,8 @@ import { ActivityModule } from '../../activity/infrastructure/config/activity.mo
 import { KyselyActivityRecordReader } from '../../activity/infrastructure/adapters/driven/persistence/kysely-activity-record-reader.adapter.js';
 import { OverviewModule } from '../../overview/infrastructure/config/overview.module.js';
 import { KyselyLibrarySummaryReader } from '../../overview/infrastructure/adapters/driven/persistence/kysely-library-summary-reader.adapter.js';
+import { StatisticsModule } from '../../statistics/infrastructure/config/statistics.module.js';
+import { KyselyLibraryStatisticsReader } from '../../statistics/infrastructure/adapters/driven/persistence/kysely-library-statistics-reader.adapter.js';
 import { BooksModule } from '../../books/infrastructure/config/books.module.js';
 import { CollectionsModule } from '../../collections/infrastructure/config/collections.module.js';
 import { LocationsModule } from '../../locations/infrastructure/config/locations.module.js';
@@ -119,6 +121,10 @@ export class LibraryModules {
             }),
             ActivityModule.register({ records: new KyselyActivityRecordReader(connections) }),
             OverviewModule.register({ summary: new KyselyLibrarySummaryReader(connections) }),
+            StatisticsModule.register({
+                library: new KyselyLibraryStatisticsReader(connections),
+                collections: CollectionsModule.tallies(collections, members),
+            }),
         ];
     }
 }
