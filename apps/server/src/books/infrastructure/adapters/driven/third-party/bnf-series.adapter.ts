@@ -12,6 +12,7 @@ export class BnfSeries implements SeriesCatalogue {
     static readonly pageSize = 1000;
 
     readonly name = 'bnf';
+    readonly limit = BnfSru.limit;
 
     private readonly sru: BnfSru;
 

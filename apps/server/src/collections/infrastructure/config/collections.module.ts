@@ -1,4 +1,6 @@
 import type { DynamicModule, Provider } from '@nestjs/common';
+import type { CollectionVolumes } from '../../../books/application/ports/driven/collection-volumes.interface.js';
+import { CollectionVolumeReader } from '../../application/services/collection-volume-reader.service.js';
 import { Module } from '@nestjs/common';
 import { ValueProviders } from '../../../shared/infrastructure/config/value-providers.helper.js';
 import type { BookCollectionReader } from '../../../books/application/ports/driven/book-collection-reader.interface.js';
@@ -211,6 +213,13 @@ export class CollectionsModule {
             ids,
             clock,
         );
+    }
+
+    static volumes(
+        collections: CollectionRepository,
+        members: CollectionMemberStore,
+    ): CollectionVolumes {
+        return new CollectionVolumeReader(new CollectionLoader(collections), members);
     }
 
     static ownedBooks(

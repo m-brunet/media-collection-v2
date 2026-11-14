@@ -1,6 +1,7 @@
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 import type { LookupSource, SourceReply } from '../ports/driven/lookup-source.interface.js';
-import { SourceBudget } from './source-budget.service.js';
+import type { SourceBudget } from './source-budget.service.js';
+import { SourceBudgets } from './source-budgets.service.js';
 
 export interface SourceUnavailability {
     source: string;
@@ -23,10 +24,13 @@ export class SourceLink<T> {
         private readonly next: SourceLink<T> | null = null,
     ) {}
 
-    static chain<T>(sources: readonly LookupSource<T>[], clock: Clock): SourceLink<T> | null {
+    static chain<T>(
+        sources: readonly LookupSource<T>[],
+        clock: Clock,
+        budgets = new SourceBudgets(clock),
+    ): SourceLink<T> | null {
         return sources.reduceRight<SourceLink<T> | null>(
-            (next, source) =>
-                new SourceLink(source, new SourceBudget(source.limit, clock), clock, next),
+            (next, source) => new SourceLink(source, budgets.of(source), clock, next),
             null,
         );
     }

@@ -99,3 +99,7 @@ export { idSchema };
 export const bookLookupSchema = z.strictObject({ isbn: z.string().max(40) });
 
 export const coverAddressSchema = z.strictObject({ address: z.string().max(2000) });
+
+export const missingVolumesSearchSchema = z.strictObject({
+    upTo: z.number().int().min(0).max(9999),
+});

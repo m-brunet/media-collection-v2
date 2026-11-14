@@ -415,6 +415,35 @@ export type BookLookupDto =
           unavailable: { source: string; reason: 'limited' | 'failed' }[];
       };
 
+export interface MissingVolumeEditionDto {
+    isbn13: string;
+    title: string | null;
+    subtitle: string | null;
+    authors: string[];
+    publisher: string | null;
+    publicationYear: number | null;
+    pageCount: number | null;
+    summary: string | null;
+    inLibrary: boolean;
+}
+
+export interface MissingVolumeRowDto {
+    volume: number;
+    generatedTitle: string | null;
+    editions: MissingVolumeEditionDto[];
+}
+
+export type MissingVolumesDto =
+    | {
+          kind: 'found';
+          collection: { id: string; name: string; category: BookCategory };
+          anchor: { bookId: string; volume: number };
+          series: string;
+          rows: MissingVolumeRowDto[];
+      }
+    | { kind: 'edition-not-found' }
+    | { kind: 'unavailable'; retryAt: string | null };
+
 export interface CollectionSummaryDto {
     id: string;
     name: string;

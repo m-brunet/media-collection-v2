@@ -10,8 +10,7 @@ export class BnfCatalogue implements LookupSource<LookupAnswer> {
     static readonly address = BnfSru.address;
 
     readonly name = 'bnf';
-    // The BnF publishes no figure for this service; a household's lookups stay far below this.
-    readonly limit = { requests: 30, seconds: 60 };
+    readonly limit = BnfSru.limit;
 
     private readonly sru: BnfSru;
 

@@ -4,6 +4,11 @@ import type {
     LookupSource,
     SourceReply,
 } from '../../../apps/server/src/books/application/ports/driven/lookup-source.interface.js';
+import type {
+    SeriesCatalogue,
+    SeriesPage,
+    SeriesRecord,
+} from '../../../apps/server/src/books/application/ports/driven/series-catalogue.interface.js';
 import type { CoverOffer } from '../../../apps/server/src/books/domain/services/cover-combination.service.js';
 import type { LookupAnswerFields } from '../../../apps/server/src/books/domain/value-objects/lookup-answer.value-object.js';
 import { LookupAnswer } from '../../../apps/server/src/books/domain/value-objects/lookup-answer.value-object.js';
@@ -30,6 +35,31 @@ class ScriptedSource<T> implements LookupSource<T> {
         }
 
         return reply;
+    }
+}
+
+class ScriptedSeries implements SeriesCatalogue {
+    readonly name = 'bnf';
+    readonly limit = { requests: 1000, seconds: 60 };
+    readonly asked: string[] = [];
+    readonly records: SeriesRecord[] = [];
+
+    async editions(isbn13s: readonly string[]): Promise<SourceReply<SeriesRecord[]>> {
+        this.asked.push('editions');
+        const found = this.records.filter((record) =>
+            record.isbns.some((isbn) => isbn13s.includes(isbn)),
+        );
+
+        return found.length > 0 ? { kind: 'found', value: found } : { kind: 'none' };
+    }
+
+    async volumes(series: string): Promise<SourceReply<SeriesPage>> {
+        this.asked.push('volumes:' + series);
+        const found = this.records.filter((record) => record.answer.series?.name === series);
+
+        return found.length > 0
+            ? { kind: 'found', value: { records: found, next: null } }
+            : { kind: 'none' };
     }
 }
 
@@ -61,11 +91,25 @@ export class ScriptedLookupSources implements BookLookupSources {
     );
     readonly information = [this.bnf, this.openLibrary];
     readonly covers = [this.openLibraryCovers];
+    readonly series = new ScriptedSeries();
 
     knows(name: 'bnf' | 'openlibrary', isbn13: string, fields: LookupAnswerFields): void {
         const source = name === 'bnf' ? this.bnf : this.openLibrary;
 
         source.answer(isbn13, { kind: 'found', value: LookupAnswer.of(fields) });
+    }
+
+    volume(isbn13: string, series: string, volume: number, fields: LookupAnswerFields = {}): void {
+        this.series.records.push({
+            isbns: [isbn13],
+            subtitle: null,
+            answer: LookupAnswer.of({
+                title: series + '. ' + volume,
+                publisher: 'Glénat',
+                series: { name: series, volume },
+                ...fields,
+            }),
+        });
     }
 
     cover(isbn13: string, address: string, bytes: Uint8Array): void {
