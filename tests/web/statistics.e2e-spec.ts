@@ -100,13 +100,22 @@ describe('Statistics', () => {
         await page.getByRole('radio', { name: 'Manga' }).check({ force: true });
         await page.getByText('360', { exact: true }).waitFor();
 
-        expect([
-            all,
-            await owned(page),
-            new URL(page.url()).search,
-            await page.getByRole('heading', { name: 'Your reading' }).count(),
-            await page.evaluate(() => document.documentElement.scrollWidth),
-        ]).toEqual([['2', 1], '1', '?category=manga', 1, viewports.minimumDesktop.width]);
+        expect([all, await owned(page), new URL(page.url()).search]).toEqual([
+            ['2', 1],
+            '1',
+            '?category=manga',
+        ]);
+    });
+
+    it('fits the smallest desktop window', async () => {
+        await book('Dune', { publisher: 'A publisher with a rather long name for a ranking' });
+        const page = await statistics('camille');
+
+        await page.getByRole('heading', { name: 'Top publishers' }).waitFor();
+
+        expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+            viewports.minimumDesktop.width,
+        );
     });
 
     it('shows a Guest the numbers without any reading', async () => {
