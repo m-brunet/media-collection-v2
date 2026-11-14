@@ -16,7 +16,10 @@ import { EmptyState, LoadingState } from '../../shared/ui/states';
 import { useAction } from '../../shared/use-action';
 import { ReadingToggle } from '../../shared/book-form/reading-toggle';
 import { BookFormat } from '../../shared/book-form/book-format.util';
+import { AddVolumesDialog, VolumeReviewPanel } from './add-volumes';
 import { CollectionBatchEditor } from './collection-batch-editor';
+import type { FoundVolumes } from './volume-review.util';
+import { VolumeReview } from './volume-review.util';
 import { CollectionCovers } from './collection-covers.util';
 import { EditCollectionDialog } from './collection-dialogs';
 import { CollectionFormat } from './collection-format.util';
@@ -178,6 +181,9 @@ export function CollectionDetailsPage() {
     const [failure, setFailure] = useState<{ missing: boolean; text: string } | null>(null);
     const [editing, setEditing] = useState(false);
     const [batching, setBatching] = useState(false);
+    const [searching, setSearching] = useState(false);
+    const [review, setReview] = useState<FoundVolumes | null>(null);
+    const [report, setReport] = useState<string | null>(null);
     const [version, setVersion] = useState(0);
     const action = useAction();
     const editor = account?.role !== 'guest';
@@ -295,9 +301,19 @@ export function CollectionDetailsPage() {
                             <Button icon="edit" onClick={() => setEditing(true)}>
                                 {t('collection.edit')}
                             </Button>
-                            {!batching && (
+                            {!batching && !review && (
                                 <Button onClick={() => setBatching(true)}>
                                     {t('batch.editSeveral')}
+                                </Button>
+                            )}
+                            {!batching && !review && (
+                                <Button
+                                    onClick={() => {
+                                        setReport(null);
+                                        setSearching(true);
+                                    }}
+                                >
+                                    {t('volumes.add')}
                                 </Button>
                             )}
                             {collection.finished ? (
@@ -315,7 +331,20 @@ export function CollectionDetailsPage() {
                     )}
                 </div>
                 {action.feedback && <Notice tone="error">{action.feedback.text}</Notice>}
-                {editor && batching ? (
+                {report && <Notice tone="success">{report}</Notice>}
+                {editor && review ? (
+                    <VolumeReviewPanel
+                        found={review}
+                        onCancel={() => setReview(null)}
+                        onSaved={({ result, coversFailed }) => {
+                            setReport(
+                                VolumeReview.report(collection.name, result, coversFailed, t),
+                            );
+                            setReview(null);
+                            setVersion((current) => current + 1);
+                        }}
+                    />
+                ) : editor && batching ? (
                     <CollectionBatchEditor
                         collection={collection}
                         onSaved={() => setVersion((current) => current + 1)}
@@ -331,6 +360,18 @@ export function CollectionDetailsPage() {
                     />
                 )}
             </div>
+            {editor && (
+                <AddVolumesDialog
+                    key={collection.id + version}
+                    collection={collection}
+                    open={searching}
+                    onClose={() => setSearching(false)}
+                    onFound={(found) => {
+                        setSearching(false);
+                        setReview(found);
+                    }}
+                />
+            )}
             {editor && (
                 <EditCollectionDialog
                     collection={collection}

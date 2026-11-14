@@ -968,6 +968,55 @@ body {
     gap: var(--space-5);
 }
 
+.volume-review__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-4);
+}
+
+.volume-review__header p {
+    margin: var(--space-2) 0 0;
+}
+
+.volume-review__scroll {
+    overflow-x: auto;
+}
+
+.volume-review td {
+    vertical-align: top;
+}
+
+.volume-review__tick {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 500;
+}
+
+.volume-review__cover {
+    display: block;
+    width: 48px;
+    height: 72px;
+    border-radius: var(--radius-sm);
+    object-fit: cover;
+}
+
+.volume-review__book {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    min-width: 220px;
+}
+
+.volume-review__suggestion {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+}
+
 .collection-label {
     padding: 4px 10px;
     border-radius: var(--radius-md);
