@@ -13,6 +13,8 @@ import { CollectionShopping } from '../../domain/services/collection-shopping.se
 import { Required } from '../../../shared/domain/required.helper.js';
 
 export class CollectionViewer {
+    static readonly previewCount = 3;
+
     summary(collection: Collection, records: readonly MemberRecord[]): CollectionSummaryView {
         const { id, name, category, includesVolumeZero, finished } = collection.snapshot;
         const coverage = collection.coverage(MemberCoverage.of(records));
@@ -84,7 +86,7 @@ export class CollectionViewer {
             ...covered.filter((record) => record.ownership === 'owned'),
             ...covered.filter((record) => record.ownership !== 'owned'),
         ]
-            .slice(0, 2)
+            .slice(0, CollectionViewer.previewCount)
             .map(({ bookId, title, updatedAt }) => ({ id: bookId, title, updatedAt }));
     }
 
