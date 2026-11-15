@@ -102,7 +102,7 @@ Book and collection listing views are simple listings with simple search, advanc
 - Books default to title A-Z; ascending/descending directions are available for title, date added, and publication date. Missing publication dates appear last in both directions.
 - Different filter fields combine with AND; multiple selections inside a non-tag field combine with OR. Tags still require every included tag and reject any excluded tag.
 - Include explicit No physical location and No collection choices. Simple text search applies together with advanced filters.
-- On the Collections page, the Category filter uses the collection's own category; the other criteria are book-level.
+- On the Collections page, the Category filter uses the collection's own category; the other criteria are book-level. A **Status** choice in the toolbar (All / Unfinished / Finished, issue #63) narrows the list by the collection's Finished mark and combines with them; see [Finished](collections.md#finished).
 - A collection matches book-level search/filters only if at least one member book satisfies the entire expression. Its ownership/completeness counts always cover the whole collection. [Task 3](locations-tags-search.md) is complete, with acceptance examples.
 
 ## Overview
