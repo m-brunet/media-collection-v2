@@ -52,7 +52,8 @@ export class MemoryCollections implements CollectionRepository {
             (collection) =>
                 (query.ids === null || query.ids.includes(collection.id)) &&
                 (query.categories.length === 0 ||
-                    query.categories.includes(collection.snapshot.category)),
+                    query.categories.includes(collection.snapshot.category)) &&
+                (query.finished === null || collection.snapshot.finished === query.finished),
         );
         const ordered = query.direction === 'asc' ? selected : selected.reverse();
 

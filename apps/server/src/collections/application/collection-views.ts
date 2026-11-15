@@ -53,6 +53,7 @@ export interface CollectionDetailsView extends CollectionSummaryView {
 
 export interface CollectionListQuery {
     search: string;
+    finished: boolean | null;
     filter: BookFilter;
     direction: 'asc' | 'desc';
     offset: number;

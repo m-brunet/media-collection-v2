@@ -58,10 +58,11 @@ export class CollectionsController {
         @Query({ schema: collectionListSchema }) query: z.infer<typeof collectionListSchema>,
         @Req() request: AuthenticatedRequest,
     ): Promise<CollectionListPageDto> {
-        const { search, direction, offset, limit } = query;
+        const { search, direction, offset, limit, finished } = query;
 
         return this.listCollections.execute(request.actor, {
             search,
+            finished,
             direction,
             offset,
             limit,

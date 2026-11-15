@@ -26,6 +26,7 @@ export class ListCollections implements ListCollectionsUseCase {
         const page = await this.collections.page({
             ids,
             categories: query.filter.categories,
+            finished: query.finished,
             direction: query.direction,
             offset: query.offset,
             limit: query.limit,

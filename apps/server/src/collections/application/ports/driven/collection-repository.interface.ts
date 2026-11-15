@@ -3,6 +3,7 @@ import type { Collection, CollectionCategory } from '../../../domain/entities/co
 export type CollectionPageQuery = {
     ids: readonly string[] | null;
     categories: readonly CollectionCategory[];
+    finished: boolean | null;
     direction: 'asc' | 'desc';
     offset: number;
     limit: number;

@@ -77,6 +77,15 @@ async function withCover(saved: BookDto) {
     return response.body;
 }
 
+async function finished(saved: BookDto) {
+    const client = await app.authenticatedClient(owner);
+    const response = await client.call('/collections/' + saved.collection!.id + '/finish', 'POST');
+
+    if (response.status !== 200) {
+        throw new Error('Arranging the scenario failed: ' + response.text);
+    }
+}
+
 describe('GET /api/collections', () => {
     it('lists collections by name with whole-collection counts', async () => {
         await book(membership('Dune', 1));
@@ -682,6 +691,67 @@ describe('GET /api/collections with filters', () => {
         );
 
         expect(response.body.items.map((item) => item.name)).toEqual(['Akira']);
+    });
+    it('keeps the Finished collections for a Guest', async () => {
+        const batman = await book(membership('Batman', 1));
+
+        await book(membership('Dune', 1));
+        await finished(batman);
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call<CollectionListPageDto>('/collections?finished=true');
+
+        expect([
+            response.status,
+            response.body.total,
+            response.body.items.map((item) => item.name),
+        ]).toEqual([200, 1, ['Batman']]);
+    });
+    it('keeps the unfinished collections, even without known gaps', async () => {
+        const batman = await book(membership('Batman', 1));
+
+        await book(membership('Dune', 1));
+        await finished(batman);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<CollectionListPageDto>('/collections?finished=false');
+
+        expect(response.body.items.map((item) => item.name)).toEqual(['Dune']);
+    });
+    it('combines the status with the category and the book criteria', async () => {
+        const naruto = await book(membership('Naruto', 1), { category: 'manga' });
+
+        await book(membership('Akira', 1), { category: 'manga' });
+        await book(membership('Batman', 1));
+        await finished(naruto);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<CollectionListPageDto>(
+            '/collections?finished=false&category=manga&ownership=owned',
+        );
+
+        expect(response.body.items.map((item) => item.name)).toEqual(['Akira']);
+    });
+    it('counts and pages the collections of one status', async () => {
+        for (const name of ['Akira', 'Batman', 'Dune']) {
+            await book(membership(name, 1));
+        }
+
+        await finished(await book(membership('Naruto', 1)));
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<CollectionListPageDto>(
+            '/collections?finished=false&offset=2&limit=2',
+        );
+
+        expect(response.body).toMatchObject({ total: 3, items: [{ name: 'Dune' }] });
+    });
+    it.each(['', 'yes', 'true&finished=false'])('refuses the status "%s"', async (value) => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/collections?finished=' + value);
+
+        expect(response.status).toBe(400);
     });
     it('refuses a reading filter for a Guest', async () => {
         const client = await app.authenticatedClient(guest);
