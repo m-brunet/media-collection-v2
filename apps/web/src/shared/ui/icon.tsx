@@ -58,6 +58,7 @@ const lucide = {
     overview: LayoutDashboard,
     activity: History,
     statistics: ChartColumn,
+    'view-dashboard': LayoutDashboard,
     'view-story': TextAlignStart,
     'view-topics': Columns2,
     'view-wall': Rows3,
@@ -111,6 +112,7 @@ export type IconName = keyof typeof lucide;
 const purposes: Partial<Record<IconName, string>> = {
     overview: 'overview',
     activity: 'activity',
+    statistics: 'statistics',
     administration: 'administration',
     settings: 'settings',
     accounts: 'administration',

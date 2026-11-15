@@ -97,3 +97,22 @@ it('draws Lucide for the screen states by default', () => {
 
     expect(container.querySelector('svg.lucide-camera-off')).not.toBeNull();
 });
+it('draws the Statistics menu icon in the chosen set', async () => {
+    const { container } = render(<Icon name="statistics" set="solid-silhouettes" />);
+
+    await waitFor(() => expect(container.querySelector('[data-icon-set]')).not.toBeNull());
+
+    expect(container.querySelector('svg.lucide')).toBeNull();
+});
+it('keeps the view icons in Lucide in every set', async () => {
+    const { container } = render(
+        <>
+            <Icon name="overview" set="solid-silhouettes" />
+            <Icon name="view-dashboard" set="solid-silhouettes" />
+        </>,
+    );
+
+    await waitFor(() => expect(container.querySelector('[data-icon-set]')).not.toBeNull());
+
+    expect(container.querySelectorAll('svg.lucide').length).toBe(1);
+});

@@ -26,7 +26,7 @@ const views: readonly StatisticsViewEntry[] = [
     {
         id: 'dashboard',
         label: 'statistics.viewDashboard',
-        icon: 'overview',
+        icon: 'view-dashboard',
         component: DashboardView,
     },
     { id: 'story', label: 'statistics.viewStory', icon: 'view-story', component: StoryView },
