@@ -42,7 +42,8 @@ Owning docs: [features](../product/features.md#statistics). Feature: `apps/serve
   the first card is chosen at opening and for an unknown topic. The publishers panel shows books and pages side by
   side, without the *by books / by pages* choice. A topic without data shows "—" on its card and an empty panel.
 - Computed on the server at each request, nothing stored, one request for the page. Charts are plain SVG and CSS (no
-  chart library), coloured from the appearance colour scheme, and every chart also shows its numbers as text. Numbers
+  chart library), coloured from the appearance colour scheme (category colours, decided on 2026-11-15: Books in the
+  scheme accent, Manga in yellow `#d5b66f`, Comics in light blue `#7fb6dc`, the blue of the Doop design), and every chart also shows its numbers as text. Numbers
   and money follow the interface language.
 
 ## API

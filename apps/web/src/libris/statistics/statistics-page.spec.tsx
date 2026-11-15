@@ -52,6 +52,26 @@ it('shows each category with its number and share', async () => {
             .map((item) => item.textContent),
     ).toEqual(['Manga268 · 60%', 'Comics97 · 22%', 'Books85 · 19%']);
 });
+it('colours the books with the accent, the manga yellow and the comics light blue', async () => {
+    library();
+
+    show();
+
+    const legend = await screen.findByRole('list', { name: 'By category' });
+
+    expect(
+        within(legend)
+            .getAllByRole('listitem')
+            .map((item) => [
+                item.textContent,
+                item.querySelector<HTMLElement>('.statistics-legend__swatch')?.style.background,
+            ]),
+    ).toEqual([
+        ['Manga268 · 60%', 'var(--color-chart-2)'],
+        ['Comics97 · 22%', 'var(--color-chart-3)'],
+        ['Books85 · 19%', 'var(--color-chart-1)'],
+    ]);
+});
 it('dims the categories that are not chosen', async () => {
     library();
 

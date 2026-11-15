@@ -5,9 +5,9 @@ import { StatisticsFormat } from './statistics-format.util';
 
 const categories: readonly BookCategory[] = ['books', 'manga', 'comics'];
 const categoryColors: Record<BookCategory, string> = {
-    books: 'var(--color-chart-3)',
-    manga: 'var(--color-chart-1)',
-    comics: 'var(--color-chart-2)',
+    books: 'var(--color-chart-1)',
+    manga: 'var(--color-chart-2)',
+    comics: 'var(--color-chart-3)',
 };
 
 export function useStatisticsSegments(statistics: StatisticsDto, category: BookCategory | null) {
