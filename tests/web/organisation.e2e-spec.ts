@@ -92,8 +92,11 @@ async function renamed(path: string, name: string) {
     }
 }
 
-async function signedIn(username: string): Promise<Page> {
-    const page = await browser.page(base, { viewport: viewports.referenceDesktop });
+async function signedIn(
+    username: string,
+    viewport: { width: number; height: number } = viewports.referenceDesktop,
+): Promise<Page> {
+    const page = await browser.page(base, { viewport });
 
     await page.goto('/');
     await page.getByLabel(/^Username/).fill(username);
@@ -223,6 +226,83 @@ describe('Bookshelves', () => {
 
         await page.getByText('“Shelf 3” was deleted. Its books were kept.').waitFor();
         expect((await admin.call<BookDto>('/books/' + dune.id)).body.location).toBeNull();
+    });
+});
+
+describe('Bookshelves Wall', () => {
+    async function shelved(viewport?: { width: number; height: number }) {
+        const oak = await bookcase('Oak bookcase', ['Shelf 1', 'Shelf 2']);
+
+        for (const title of ['Dune', 'Emma', 'Hyperion']) {
+            await book(title, { shelfId: oak.shelves[0]!.id });
+        }
+
+        const page = await signedIn('camille', viewport);
+
+        await openBookshelves(page);
+        await spine(page, /^Dune \d+ · Susanna Clarke$/).waitFor();
+
+        return page;
+    }
+
+    function spine(page: Page, name: RegExp) {
+        return page.getByRole('list', { name: 'Books on Shelf 1' }).getByRole('link', { name });
+    }
+
+    function width(page: Page, selector: string) {
+        return page
+            .locator(selector)
+            .first()
+            .evaluate((element) => element.getBoundingClientRect().width);
+    }
+
+    it('keeps the width of a bay when the window grows', async () => {
+        const page = await shelved();
+        const before = await width(page, '.wall-shelf__bay');
+
+        await page.setViewportSize({ width: 1920, height: 1080 });
+
+        expect([before, await width(page, '.wall-shelf__bay')]).toEqual([582, 582]);
+    });
+
+    it('gives the extra room of a wide window to the shelf panel', async () => {
+        const page = await shelved();
+        const before = await width(page, '.shelf-panel');
+
+        await page.setViewportSize({ width: 1920, height: 1080 });
+
+        expect(await width(page, '.shelf-panel')).toBeGreaterThan(before);
+    });
+
+    it('moves the shelf panel below the bookcase in a narrow window', async () => {
+        const page = await shelved({ width: 1000, height: 900 });
+
+        const [bookcase, panel] = await Promise.all(
+            ['.wall-bookcase', '.shelf-panel'].map((selector) =>
+                page.locator(selector).evaluate((element) => element.getBoundingClientRect()),
+            ),
+        );
+
+        expect(panel!.top).toBeGreaterThanOrEqual(bookcase!.bottom);
+    });
+
+    it('fits the smallest desktop window', async () => {
+        const page = await shelved(viewports.minimumDesktop);
+
+        const scrolled = await page.evaluate(() => document.documentElement.scrollWidth);
+
+        expect(scrolled).toBeLessThanOrEqual(viewports.minimumDesktop.width);
+    });
+
+    it('moves from spine to spine with the arrow keys', async () => {
+        const page = await shelved();
+
+        await spine(page, /^Dune \d+ · Susanna Clarke$/).focus();
+        await page.keyboard.press('ArrowRight');
+
+        expect(
+            await page.evaluate(() => document.activeElement?.getAttribute('aria-label')),
+        ).toMatch(/^Emma \d+ · Susanna Clarke$/);
     });
 });
 

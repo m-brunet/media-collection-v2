@@ -1,6 +1,6 @@
 # Bookshelves page: design proposals
 
-Status: refinement of [issue 51](https://github.com/m-brunet/media-collection-v2/issues/51) in progress. Four proposals are drawn; none is chosen yet. Nothing here is a requirement until a proposal is picked.
+Status: decided on 2026-11-13. Three views, no single winner: **Wall** (proposal A, [issue 51](https://github.com/m-brunet/media-collection-v2/issues/51), done on 2026-11-15), **Ribbons** (proposal B, issue 75) and **Columns** (proposal D, issue 76), behind a View choice. The Shelf map (proposal C) is dropped, and so is the search field. The rules of the Wall are in [issue-51-bookshelves-wall](../plans/issue-51-bookshelves-wall.md); this document keeps the study.
 
 The proposals are drawn on the Doop canvas, page [Bookcases page - New designs](https://doop.design/c/shiKEeCX2V?page=v9usJgjHFw). They follow the Libris look described in [design guidelines](design-guidelines.md): they change the structure of the page, not its style.
 
@@ -126,7 +126,7 @@ All four proposals show the same library, sized on the real one the page must ha
 
 ## Spine drawing rules
 
-These rules apply to proposal A if it is chosen. Values in pixels are starting points to tune on real shelves.
+These rules apply to proposal A, now the Wall view, built at the "real books" level. Values in pixels are starting points to tune on real shelves.
 
 A spine is one book on the drawn shelf.
 
@@ -136,7 +136,7 @@ A spine is one book on the drawn shelf.
 
 - The width grows with the book's page count, between a minimum and a maximum: about 6 px for the thinnest books and 22 px for 900 pages and more.
 - **Minimum width:** a very short book, for example 20 pages, still gets the minimum width, so it stays visible and can be pointed at.
-- **Fallback:** a book with no page count gets a default width of about 12 px, a mid-size book.
+- **Fallback (decided 2026-11-13):** a book with no page count is drawn as an average book of its category: 200 pages for a manga, 400 for a book, 70 for a comic. This width is a maximum: when the shelf overflows, these books shrink by the same amount, down to the minimum width, before any book goes behind. Books with a page count never shrink.
 - The page count is a proxy for thickness, not a measure: a hardcover and a paperback with the same page count get the same width. The shelf will look plausible, not exact.
 
 **Front first, then behind.**
@@ -145,7 +145,7 @@ A spine is one book on the drawn shelf.
 - When the width of the shelf is used up, the following books are drawn faded behind the front ones.
 - Because spines have different widths, a shelf of thick books spills behind sooner than a shelf of thin ones.
 - This is decoration: the application chooses which books go behind. It is not a record of where a book stands.
-- A cap is needed for very full shelves: past two layers the shelf simply looks full. The cap is still to define.
+- **Cap (decided 2026-11-13):** two layers, front and behind. Books beyond them are not drawn; the shelf looks full and its count stays exact.
 
 **A stable look.** The height and colour of a spine are derived from the book's identifier, so a shelf looks the same on every visit and does not reshuffle when a book is added.
 
@@ -158,9 +158,11 @@ A spine is one book on the drawn shelf.
 
 Width from the page count requires the "real books" level.
 
-## Open questions
+## Open questions (answered)
 
-From the issue, still to decide once a proposal is chosen:
+The questions below were raised during the study and answered on 2026-11-13 in issues 51, 75 and 76 (views, empty states, Guests, keyboard, window widths, the cap, real books, no search). They are kept as a record.
+
+From the issue:
 
 - What is shown with each cover (title on hover, ownership, lent badge) and what moves to the book page.
 - Accessibility: keyboard navigation, focus and screen reader labels, in particular for spines (A), cover strips (B) and grid cells (C).

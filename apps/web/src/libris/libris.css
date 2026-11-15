@@ -2995,6 +2995,7 @@ a.wall-tile:hover .wall-tile__title {
 
 .wall-bookcase {
     gap: var(--space-6);
+    max-width: calc(var(--wall-drawing-width) + 2 * var(--space-5));
     padding: var(--space-5);
 }
 

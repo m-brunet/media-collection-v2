@@ -58,6 +58,7 @@ Start with the [implementation plan](plans/implementation-plan.md) for task stat
 - [KI-9 and KI-10: Let's Encrypt attempts](plans/ki-09-ki-10-certificate-attempts.md).
 - [Issue #21: internet ports, 443 only for Let's Encrypt's check](plans/issue-21-internet-ports.md).
 - [Issues #34, #72, #73: Statistics page, Dashboard, Story and Topics views](plans/issue-34-statistics.md).
+- [Issue #51: Bookshelves page, View choice and the Wall view](plans/issue-51-bookshelves-wall.md).
 
 ## Reading in Obsidian
 
