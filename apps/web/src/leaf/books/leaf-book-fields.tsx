@@ -18,6 +18,7 @@ import { useSourceNames } from '../../shared/book-form/use-source-names';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Button } from '../../shared/ui/button';
 import { Icon } from '../../shared/ui/icon';
+import { ShelfSelect } from '../../shared/book-form/shelf-select';
 import { SelectField } from '../../shared/ui/select-field';
 import { TextAreaField, TextField } from '../../shared/ui/text-field';
 import { ReadingField } from '../../shared/book-form/reading-toggle';
@@ -312,35 +313,19 @@ function CollectionFields(props: LeafFieldsProps) {
 
 function OrganisationFields({ values, update, errorFor, bookcases }: LeafFieldsProps) {
     const { t } = useI18n();
-    const shelves = bookcases.find((bookcase) => bookcase.id === values.bookcaseId)?.shelves ?? [];
 
     return (
         <fieldset className="leaf-form__section">
             <legend className="leaf-form__legend">{t('form.organisation')}</legend>
-            <SelectField
-                label={t('location.bookcase')}
-                value={values.bookcaseId ?? ''}
-                options={[
-                    { value: '', label: t('location.unassigned') },
-                    ...bookcases.map((bookcase) => ({ value: bookcase.id, label: bookcase.name })),
-                ]}
-                onChange={(event) =>
-                    update({ bookcaseId: event.target.value || null, shelfId: null })
-                }
-            />
-            {values.bookcaseId && (
-                <SelectField
-                    label={t('location.shelf')}
-                    value={values.shelfId ?? ''}
-                    placeholder={t('location.chooseHint')}
-                    options={shelves.map((shelf) => ({ value: shelf.id, label: shelf.name }))}
-                    onChange={(event) => update({ shelfId: event.target.value || null })}
+            {bookcases.some((bookcase) => bookcase.shelves.length > 0) ? (
+                <ShelfSelect
+                    bookcases={bookcases}
+                    shelfId={values.shelfId}
+                    error={errorFor('location')}
+                    onChange={(place) => update(place)}
                 />
-            )}
-            {errorFor('location') && (
-                <p className="field__error" role="alert">
-                    {errorFor('location')}
-                </p>
+            ) : (
+                <p className="muted">{t('leaf.form.noShelves')}</p>
             )}
             <NameList
                 label={t('tags.field')}

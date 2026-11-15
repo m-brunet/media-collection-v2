@@ -353,6 +353,7 @@ export const fr = {
     'leaf.form.use': 'Utiliser',
     'leaf.form.useAlternative': 'Utiliser {value}',
     'leaf.form.addAuthor': 'Ajouter l’auteur',
+    'leaf.form.noShelves': 'Aucune étagère n’existe encore : le livre reste non rangé.',
     'leaf.form.addTag': 'Ajouter l’étiquette',
     'leaf.form.addNote': 'Ajouter une note personnelle',
     'leaf.cover.chosen': 'Couverture choisie',

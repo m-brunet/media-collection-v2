@@ -336,6 +336,7 @@ export const en = {
     'leaf.form.use': 'Use',
     'leaf.form.useAlternative': 'Use {value}',
     'leaf.form.addAuthor': 'Add author',
+    'leaf.form.noShelves': 'No shelf exists yet, so the book stays unassigned.',
     'leaf.form.addTag': 'Add tag',
     'leaf.form.addNote': 'Add a personal note',
     'leaf.cover.chosen': 'Chosen cover',

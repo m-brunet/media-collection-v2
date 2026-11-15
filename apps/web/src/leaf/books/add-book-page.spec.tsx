@@ -290,9 +290,7 @@ it('starts with the last saved book’s shelf, category and reading status', asy
 
     open();
 
-    expect(await screen.findByRole('option', { name: 'Top' })).toBeInTheDocument();
-    expect(screen.getByLabelText('Bookcase')).toHaveValue('salon');
-    expect(screen.getByLabelText('Shelf')).toHaveValue('top');
+    expect(await screen.findByRole('combobox', { name: 'Physical location' })).toHaveValue('top');
     expect(screen.getByRole('radio', { name: 'Manga' })).toBeChecked();
     expect(screen.getByRole('button', { name: 'Read' })).toHaveClass('button--pressed');
 });
@@ -314,8 +312,9 @@ it('drops a remembered shelf deleted since', async () => {
 
     open();
 
-    expect(await screen.findByLabelText('Bookcase')).toHaveValue('');
-    expect(screen.queryByLabelText('Shelf')).not.toBeInTheDocument();
+    expect(
+        await screen.findByText('No shelf exists yet, so the book stays unassigned.'),
+    ).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: 'Manga' })).toBeChecked();
 });
 
@@ -332,7 +331,7 @@ it('leaves without asking when only the remembered choices are filled in', async
     api.on('GET /bookcases', () => ({ status: 200, body: [salon] }));
     remember('alex', { category: 'manga', read: true, bookcaseId: 'salon', shelfId: 'top' });
     open();
-    await screen.findByRole('option', { name: 'Top' });
+    await screen.findByRole('option', { name: 'Salon – Top' });
 
     await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
 
@@ -363,6 +362,35 @@ it('remembers the saved book’s choices for the next scan', async () => {
     expect(JSON.parse(window.localStorage.getItem('media-collection.leaf.last-add.alex')!)).toEqual(
         { category: 'comics', read: true, bookcaseId: 'salon', shelfId: 'top' },
     );
+});
+
+it('saves a shelf chosen in another bookcase only when the book is saved', async () => {
+    const study = {
+        id: 'study',
+        name: 'Study',
+        bookCount: 0,
+        shelves: [{ id: 'low', bookcaseId: 'study', name: 'Low', bookCount: 0 }],
+    };
+
+    api.on('GET /bookcases', () => ({ status: 200, body: [salon, study] })).on(
+        'POST /books',
+        () => ({ status: 201, body: bookDto({ id: 'new' }) }),
+    );
+    remember('alex', { category: 'manga', read: false, bookcaseId: 'salon', shelfId: 'top' });
+    open();
+    await userEvent.selectOptions(
+        await screen.findByRole('combobox', { name: 'Physical location' }),
+        'Study – Low',
+    );
+    const before = api.calls.filter((call) => call.route === 'POST /books').length;
+
+    await userEvent.click(screen.getByRole('button', { name: 'Save book' }));
+
+    await screen.findByText('Elsewhere: /saved');
+    expect([before, api.calls.find((call) => call.route === 'POST /books')?.body]).toEqual([
+        0,
+        expect.objectContaining({ shelfId: 'low' }),
+    ]);
 });
 
 function refuseCategoryOnce() {
