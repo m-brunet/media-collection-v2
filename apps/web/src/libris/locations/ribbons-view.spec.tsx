@@ -168,9 +168,9 @@ it('ends the strip with a tile counting the books that do not fit', async () => 
     expect([
         within(list).getAllByRole('link').length,
         within(list).getByRole('button', {
-            name: '18 more books on Shelf 3, show the next ones',
+            name: '17 more books on Shelf 3, show the next ones',
         }).textContent,
-    ]).toEqual([12, '+18']);
+    ]).toEqual([13, '+17']);
 });
 
 it('shows every cover of a shelf that fits, with no tile', async () => {
@@ -194,7 +194,7 @@ it('loads and shows the next covers with the arrow', async () => {
     await userEvent.click(screen.getByRole('button', { name: 'Next books of Shelf 3' }));
 
     expect([
-        await within(await shelf3()).findByRole('link', { name: 'Book 12 · Author 12' }),
+        await within(await shelf3()).findByRole('link', { name: 'Book 13 · Author 13' }),
         calls.calls.map((call) => call.route),
     ]).toEqual([expect.anything(), expect.arrayContaining([route('s3', 24)])]);
 });
@@ -204,7 +204,7 @@ it('moves back along the shelf once the strip has moved', async () => {
     show();
     await shelf3();
     await userEvent.click(
-        screen.getByRole('button', { name: '18 more books on Shelf 3, show the next ones' }),
+        screen.getByRole('button', { name: '17 more books on Shelf 3, show the next ones' }),
     );
 
     await userEvent.click(await screen.findByRole('button', { name: 'Previous books of Shelf 3' }));

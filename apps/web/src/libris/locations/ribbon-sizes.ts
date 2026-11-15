@@ -4,6 +4,6 @@ export const RibbonSizes = {
     coverWidth: 58,
     coverGap: 8,
     arrowWidth: 32,
-    placesBeforeMeasure: 13,
+    placesBeforeMeasure: 14,
     pageSize: 24,
 } as const;

@@ -3374,6 +3374,11 @@ a.wall-tile:hover .wall-tile__title {
     pointer-events: none;
 }
 
+.ribbon__card--end {
+    right: 0;
+    left: auto;
+}
+
 .ribbon__card b {
     display: block;
     font-weight: 500;
