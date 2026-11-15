@@ -4,6 +4,7 @@ import type { LocationEditing } from './location-dialogs';
 export interface LocationSelection {
     bookcase?: string;
     shelf?: string;
+    keepShelf?: boolean;
 }
 
 export interface BookshelvesViewProps {

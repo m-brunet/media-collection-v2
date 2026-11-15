@@ -1,5 +1,6 @@
 import type {
     BookCategory,
+    BookListItemDto,
     BookOwnership,
     BookSort,
 } from '../../../../../packages/contracts/src/http';
@@ -37,6 +38,14 @@ export class BookFormat {
 
     static reading(read: boolean): MessageKey {
         return read ? 'status.read' : 'status.notRead';
+    }
+
+    static status(book: Pick<BookListItemDto, 'ownership' | 'read' | 'loan'>): MessageKey[] {
+        return [
+            BookFormat.ownership(book.ownership),
+            ...(book.read === null ? [] : [BookFormat.reading(book.read)]),
+            ...(book.loan ? (['books.lent'] as const) : []),
+        ];
     }
 
     static price(cents: number, locale: string): string {

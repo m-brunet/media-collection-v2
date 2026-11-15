@@ -2,9 +2,9 @@ import { useRef } from 'react';
 import type { CSSProperties } from 'react';
 import type { BookcaseDto } from '../../../../../packages/contracts/src/http';
 import { useI18n } from '../../shared/i18n/i18n-context';
-import { Button } from '../../shared/ui/button';
 import { Notice } from '../../shared/ui/notice';
 import { LoadingState } from '../../shared/ui/states';
+import { BookcaseActions } from './bookcase-actions';
 import type { BookshelvesViewProps } from './bookshelves-view';
 import { ShelfPanel } from './shelf-panel';
 import { useBookcaseSpines } from './use-bookcase-spines';
@@ -94,27 +94,11 @@ function OpenBookcase({
                     {counts.shelves(bookcase.shelves.length)} · {counts.books(bookcase.bookCount)}
                 </span>
                 {editor && (
-                    <div className="actions wall-bookcase__actions">
-                        <Button
-                            icon="add"
-                            onClick={() => onEdit({ kind: 'create-shelf', bookcase })}
-                        >
-                            {t('shelf.add')}
-                        </Button>
-                        <Button
-                            icon="edit"
-                            onClick={() => onEdit({ kind: 'rename-bookcase', bookcase })}
-                        >
-                            {t('bookcase.rename')}
-                        </Button>
-                        <Button
-                            variant="danger"
-                            icon="delete"
-                            onClick={() => onEdit({ kind: 'delete-bookcase', bookcase })}
-                        >
-                            {t('bookcase.delete')}
-                        </Button>
-                    </div>
+                    <BookcaseActions
+                        bookcase={bookcase}
+                        className="wall-bookcase__actions"
+                        onEdit={onEdit}
+                    />
                 )}
             </div>
             <div ref={frame} className="wall-bookcase__frame">

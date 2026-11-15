@@ -14,6 +14,7 @@ import type { LocationEditing } from './location-dialogs';
 import { LocationDialogs } from './location-dialogs';
 import { useBookcases } from './use-bookcases';
 import { useLocationCounts } from './use-location-counts';
+import { RibbonsView } from './ribbons-view';
 import { WallView } from './wall-view';
 
 interface BookshelvesViewEntry extends ViewEntry {
@@ -22,6 +23,12 @@ interface BookshelvesViewEntry extends ViewEntry {
 
 const views: readonly BookshelvesViewEntry[] = [
     { id: 'wall', label: 'bookshelves.viewWall', icon: 'view-wall', component: WallView },
+    {
+        id: 'ribbons',
+        label: 'bookshelves.viewRibbons',
+        icon: 'view-ribbons',
+        component: RibbonsView,
+    },
 ];
 
 export function BookshelvesPage() {
@@ -60,8 +67,10 @@ export function BookshelvesPage() {
             next.set('bookcase', selected.bookcase);
         }
 
-        if (selected.shelf) {
-            next.set('shelf', selected.shelf);
+        const shelf = selected.keepShelf ? parameters.get('shelf') : selected.shelf;
+
+        if (shelf) {
+            next.set('shelf', shelf);
         }
 
         setParameters(next, { replace: true });
