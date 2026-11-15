@@ -88,6 +88,31 @@ describe('POST /api/books/lookups', () => {
         expect(JSON.stringify(response.body)).not.toContain(coverAddress);
     });
 
+    it("offers the publisher's collection after the publisher, apart from an abbreviation", async () => {
+        sources().knows('bnf', isbn, {
+            title: "D'un monde à l'autre",
+            publisher: 'Librairie générale française',
+            publisherCollection: 'Le livre de poche',
+        });
+        sources().knows('openlibrary', isbn, { publisher: 'LGF' });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookLookupDto>('/books/lookups', 'POST', { isbn });
+
+        expect([response.status, response.body]).toEqual([
+            200,
+            expect.objectContaining({
+                fields: expect.objectContaining({
+                    publisher: [
+                        { value: 'Librairie générale française', sources: ['bnf'] },
+                        { value: 'Le livre de poche', sources: ['bnf'] },
+                        { value: 'LGF', sources: ['openlibrary'] },
+                    ],
+                }),
+            }),
+        ]);
+    });
+
     it('suggests the category a source gives', async () => {
         sources().knows('bnf', isbn, { title: 'Claymore', category: 'manga' });
         const client = await app.authenticatedClient(owner);

@@ -47,8 +47,8 @@ export class LookupCombination {
                         .sort()
                         .join('|'),
             ),
-            publisher: this.choices(
-                (answer) => answer.publisher,
+            publisher: this.listed(
+                (answer) => [answer.publisher, answer.publisherCollection],
                 (publisher) => LookupCombination.words(publisher),
             ),
             publicationDate: this.choices(
@@ -98,22 +98,29 @@ export class LookupCombination {
         read: (answer: LookupAnswer) => T | null,
         key: (value: T) => string,
     ): LookupChoice<T>[] {
+        return this.listed((answer) => [read(answer)], key);
+    }
+
+    private listed<T>(
+        read: (answer: LookupAnswer) => readonly (T | null)[],
+        key: (value: T) => string,
+    ): LookupChoice<T>[] {
         const choices: (LookupChoice<T> & { key: string })[] = [];
 
         for (const { source, answer } of this.answers) {
-            const value = read(answer);
+            for (const value of read(answer)) {
+                if (value === null) {
+                    continue;
+                }
 
-            if (value === null) {
-                continue;
-            }
+                const valueKey = key(value);
+                const same = choices.find((choice) => choice.key === valueKey);
 
-            const valueKey = key(value);
-            const same = choices.find((choice) => choice.key === valueKey);
-
-            if (same) {
-                same.sources.push(source);
-            } else {
-                choices.push({ value, sources: [source], key: valueKey });
+                if (!same) {
+                    choices.push({ value, sources: [source], key: valueKey });
+                } else if (!same.sources.includes(source)) {
+                    same.sources.push(source);
+                }
             }
         }
 
