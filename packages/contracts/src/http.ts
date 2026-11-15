@@ -583,6 +583,24 @@ export interface BookcaseDto {
     shelves: ShelfDto[];
 }
 
+export interface SpineBookDto {
+    id: string;
+    title: string;
+    authors: string[];
+    category: BookCategory;
+    pageCount: number | null;
+}
+
+export interface ShelfSpinesDto {
+    shelfId: string;
+    books: SpineBookDto[];
+}
+
+export interface BookcaseSpinesDto {
+    bookcaseId: string;
+    shelves: ShelfSpinesDto[];
+}
+
 export interface NameDto {
     name: string;
 }

@@ -1,4 +1,5 @@
 import type { BookShelfStore } from '../ports/driven/book-shelf-store.interface.js';
+import type { BookcaseSpineReader } from '../ports/driven/bookcase-spine-reader.interface.js';
 import type { BookcaseRepository } from '../ports/driven/bookcase-repository.interface.js';
 import type { ShelfRepository } from '../ports/driven/shelf-repository.interface.js';
 import { BookShelfAssignment } from '../services/book-shelf-assignment.service.js';
@@ -6,6 +7,7 @@ import { LocationLoader } from '../services/location-loader.service.js';
 import { LocationNaming } from '../services/location-naming.service.js';
 import { LocationOverview } from '../services/location-overview.service.js';
 import { LocationViewer } from '../services/location-viewer.service.js';
+import type { SpineBookView } from '../location-views.js';
 import { Bookcase } from '../../domain/entities/bookcase.entity.js';
 import { Shelf } from '../../domain/entities/shelf.entity.js';
 import {
@@ -135,6 +137,23 @@ export class MemoryBookShelves implements BookShelfStore {
     }
 }
 
+export class MemorySpineReader implements BookcaseSpineReader {
+    readonly books = new Map<string, SpineBookView[]>();
+    readonly asked: string[][] = [];
+
+    async booksOn(shelfIds: readonly string[]): Promise<Map<string, SpineBookView[]>> {
+        this.asked.push([...shelfIds]);
+
+        return new Map(
+            shelfIds.flatMap((id) => {
+                const books = this.books.get(id);
+
+                return books ? [[id, books] as const] : [];
+            }),
+        );
+    }
+}
+
 export class LocationDoubles {
     static furniture() {
         const store = new MemoryBookShelves();
@@ -150,6 +169,8 @@ export class LocationDoubles {
             store,
             trail,
             loader,
+            spines: new MemorySpineReader(),
+            viewer: new LocationViewer(),
             ids: { next: () => 'location-' + ++counter },
             clock: { now: () => new Date('2026-03-01T10:00:00Z') },
             naming: new LocationNaming(bookcases, shelves),

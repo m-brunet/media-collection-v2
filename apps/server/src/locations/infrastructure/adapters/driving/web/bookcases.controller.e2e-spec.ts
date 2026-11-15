@@ -1,5 +1,6 @@
 import type {
     BookcaseDto,
+    BookcaseSpinesDto,
     BookDto,
     ShelfDto,
 } from '../../../../../../../../packages/contracts/src/http.js';
@@ -82,6 +83,66 @@ describe('GET /api/bookcases', () => {
         const client = app.client();
 
         const response = await client.call('/bookcases');
+
+        expect(response.status).toBe(401);
+    });
+});
+
+describe('GET /api/bookcases/:id/spines', () => {
+    it('gives the books of each shelf in shelf order, empty shelves included', async () => {
+        const oak = await bookcase('Oak');
+        const top = await shelf(oak.id, 'Top');
+        const bottom = await shelf(oak.id, 'Bottom');
+        const piranesi = await bookOn(top.id);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookcaseSpinesDto>('/bookcases/' + oak.id + '/spines');
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({
+            bookcaseId: oak.id,
+            shelves: [
+                { shelfId: bottom.id, books: [] },
+                {
+                    shelfId: top.id,
+                    books: [
+                        {
+                            id: piranesi.id,
+                            title: 'Piranesi',
+                            authors: ['Susanna Clarke'],
+                            category: 'books',
+                            pageCount: 272,
+                        },
+                    ],
+                },
+            ],
+        });
+    });
+    it('lets a Guest see the spines', async () => {
+        const oak = await bookcase('Oak');
+        const top = await shelf(oak.id, 'Top');
+
+        await bookOn(top.id);
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call<BookcaseSpinesDto>('/bookcases/' + oak.id + '/spines');
+
+        expect([response.status, response.body.shelves[0]?.books.length]).toEqual([200, 1]);
+    });
+    it('answers 404 for an unknown bookcase', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call(
+            '/bookcases/7d3c1b52-2f4e-4a8b-9c1d-5e6f7a8b9c0d/spines',
+        );
+
+        expect([response.status, response.body.reason]).toEqual([404, 'bookcase-missing']);
+    });
+    it('requires a signed-in account', async () => {
+        const oak = await bookcase('Oak');
+        const client = app.client();
+
+        const response = await client.call('/bookcases/' + oak.id + '/spines');
 
         expect(response.status).toBe(401);
     });

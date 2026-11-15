@@ -13,11 +13,16 @@ import {
 import type { z } from 'zod';
 import type { CreateBookcaseUseCase } from '../../../../application/ports/driving/create-bookcase-use-case.interface.js';
 import type { CreateShelfUseCase } from '../../../../application/ports/driving/create-shelf-use-case.interface.js';
+import type { GetBookcaseSpinesUseCase } from '../../../../application/ports/driving/get-bookcase-spines-use-case.interface.js';
 import type { DeleteBookcaseUseCase } from '../../../../application/ports/driving/delete-bookcase-use-case.interface.js';
 import type { ListBookcasesUseCase } from '../../../../application/ports/driving/list-bookcases-use-case.interface.js';
 import type { RenameBookcaseUseCase } from '../../../../application/ports/driving/rename-bookcase-use-case.interface.js';
 import type { AuthenticatedRequest } from '../../../../../shared/infrastructure/adapters/driving/web/api-guard.js';
-import type { BookcaseDto, ShelfDto } from '../../../../../../../../packages/contracts/src/http.js';
+import type {
+    BookcaseDto,
+    BookcaseSpinesDto,
+    ShelfDto,
+} from '../../../../../../../../packages/contracts/src/http.js';
 import { locationIdSchema, locationNameSchema } from './location-schemas.js';
 
 @Controller('api/bookcases')
@@ -28,11 +33,20 @@ export class BookcasesController {
         @Inject('LOCATIONS_RENAME_BOOKCASE') private readonly renameBookcase: RenameBookcaseUseCase,
         @Inject('LOCATIONS_DELETE_BOOKCASE') private readonly deleteBookcase: DeleteBookcaseUseCase,
         @Inject('LOCATIONS_CREATE_SHELF') private readonly createShelf: CreateShelfUseCase,
+        @Inject('LOCATIONS_SPINES') private readonly getSpines: GetBookcaseSpinesUseCase,
     ) {}
 
     @Get()
     list(@Req() request: AuthenticatedRequest): Promise<BookcaseDto[]> {
         return this.listBookcases.execute(request.actor);
+    }
+
+    @Get(':id/spines')
+    spines(
+        @Param('id', { schema: locationIdSchema }) id: string,
+        @Req() request: AuthenticatedRequest,
+    ): Promise<BookcaseSpinesDto> {
+        return this.getSpines.execute(request.actor, id);
     }
 
     @Post()

@@ -5,6 +5,7 @@ import type { BookLocationReader } from '../../../books/application/ports/driven
 import type { ShelfAssignment } from '../../../books/application/ports/driven/shelf-assignment.interface.js';
 import type { ShelfLocator } from '../../../books/application/ports/driven/shelf-locator.interface.js';
 import type { BookShelfStore } from '../../application/ports/driven/book-shelf-store.interface.js';
+import type { BookcaseSpineReader } from '../../application/ports/driven/bookcase-spine-reader.interface.js';
 import type { BookcaseRepository } from '../../application/ports/driven/bookcase-repository.interface.js';
 import type { ShelfRepository } from '../../application/ports/driven/shelf-repository.interface.js';
 import { BookShelfAssignment } from '../../application/services/book-shelf-assignment.service.js';
@@ -17,6 +18,7 @@ import { CreateBookcase } from '../../application/use-cases/create-bookcase.usec
 import { CreateShelf } from '../../application/use-cases/create-shelf.usecase.js';
 import { DeleteBookcase } from '../../application/use-cases/delete-bookcase.usecase.js';
 import { DeleteShelf } from '../../application/use-cases/delete-shelf.usecase.js';
+import { GetBookcaseSpines } from '../../application/use-cases/get-bookcase-spines.usecase.js';
 import { ListBookcases } from '../../application/use-cases/list-bookcases.usecase.js';
 import { RenameBookcase } from '../../application/use-cases/rename-bookcase.usecase.js';
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
@@ -29,6 +31,7 @@ export interface LocationsDependencies {
     bookcases: BookcaseRepository;
     shelves: ShelfRepository;
     store: BookShelfStore;
+    spines: BookcaseSpineReader;
     ids: IdGenerator;
     clock: Clock;
     operations: AuditedOperation;
@@ -38,6 +41,7 @@ const token = {
     bookcases: 'LOCATIONS_BOOKCASES',
     shelves: 'LOCATIONS_SHELVES',
     store: 'LOCATIONS_BOOK_SHELVES',
+    spines: 'LOCATIONS_SPINE_READER',
     ids: 'LOCATIONS_IDS',
     clock: 'LOCATIONS_CLOCK',
     operations: 'LOCATIONS_AUDITED_OPERATION',
@@ -73,6 +77,15 @@ const useCaseProviders: Provider[] = [
         provide: 'LOCATIONS_LIST',
         inject: [token.overview],
         useFactory: (overview: LocationOverview) => new ListBookcases(overview),
+    },
+    {
+        provide: 'LOCATIONS_SPINES',
+        inject: [token.loader, token.shelves, token.spines],
+        useFactory: (
+            loader: LocationLoader,
+            shelves: ShelfRepository,
+            spines: BookcaseSpineReader,
+        ) => new GetBookcaseSpines(loader, shelves, new LocationViewer(), spines),
     },
     {
         provide: 'LOCATIONS_CREATE_BOOKCASE',

@@ -21,6 +21,7 @@ import { KyselyActiveLoans } from '../../lending/infrastructure/adapters/driven/
 import { KyselyBookcaseRepository } from '../../locations/infrastructure/adapters/driven/persistence/kysely-bookcase.repository.js';
 import { KyselyShelfRepository } from '../../locations/infrastructure/adapters/driven/persistence/kysely-shelf.repository.js';
 import { KyselyBookShelfStore } from '../../locations/infrastructure/adapters/driven/persistence/kysely-book-shelf-store.adapter.js';
+import { KyselyBookcaseSpineReader } from '../../locations/infrastructure/adapters/driven/persistence/kysely-bookcase-spine-reader.adapter.js';
 import { KyselyTagRepository } from '../../tags/infrastructure/adapters/driven/persistence/kysely-tag.repository.js';
 import { KyselyBookTagStore } from '../../tags/infrastructure/adapters/driven/persistence/kysely-book-tag-store.adapter.js';
 import { KyselyCollectionRepository } from '../../collections/infrastructure/adapters/driven/persistence/kysely-collection.repository.js';
@@ -105,6 +106,7 @@ export class LibraryModules {
                 bookcases,
                 shelves,
                 store: bookShelves,
+                spines: new KyselyBookcaseSpineReader(connections),
                 ids,
                 clock,
                 operations,
