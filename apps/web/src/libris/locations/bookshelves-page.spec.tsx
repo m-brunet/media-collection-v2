@@ -185,6 +185,17 @@ it('selects a shelf by its name and writes it to the address', async () => {
     ]).toEqual([expect.anything(), expect.objectContaining({ ariaCurrent: 'true' }), '?shelf=s3']);
 });
 
+it('opens the bookcase of the address when the shelf of the address stands in another', async () => {
+    api();
+
+    show('/bookshelves?bookcase=study&shelf=s3');
+
+    expect([
+        await screen.findByRole('heading', { level: 2, name: 'Study bookcase' }),
+        await within(panel()).findByRole('heading', { name: '2 books on Top' }),
+    ]).toHaveLength(2);
+});
+
 it('draws one spine per book, named with its title and author, linked to the book', async () => {
     api();
 
