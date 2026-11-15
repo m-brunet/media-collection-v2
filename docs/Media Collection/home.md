@@ -59,6 +59,7 @@ Start with the [implementation plan](plans/implementation-plan.md) for task stat
 - [Issue #21: internet ports, 443 only for Let's Encrypt's check](plans/issue-21-internet-ports.md).
 - [Issues #34, #72, #73: Statistics page, Dashboard, Story and Topics views](plans/issue-34-statistics.md).
 - [Issue #51: Bookshelves page, View choice and the Wall view](plans/issue-51-bookshelves-wall.md).
+- [Issue #75: Bookshelves page, the Ribbons view](plans/issue-75-bookshelves-ribbons.md).
 
 ## Reading in Obsidian
 

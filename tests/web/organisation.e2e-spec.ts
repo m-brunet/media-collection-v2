@@ -306,6 +306,85 @@ describe('Bookshelves Wall', () => {
     });
 });
 
+describe('Bookshelves Ribbons', () => {
+    async function ribbons(count: number, viewport?: { width: number; height: number }) {
+        const oak = await bookcase('Oak bookcase', ['Shelf 1']);
+
+        await bookcase('Study bookcase', ['Top']);
+
+        for (let index = 0; index < count; index++) {
+            await book('Book ' + String(index).padStart(2, '0'), { shelfId: oak.shelves[0]!.id });
+        }
+
+        const page = await signedIn('camille', viewport);
+
+        await openBookshelves(page);
+        await page.getByText('Ribbons', { exact: true }).click();
+        await page.getByRole('tablist', { name: 'Bookcases' }).waitFor();
+        await covers(page).first().waitFor();
+
+        return page;
+    }
+
+    function covers(page: Page) {
+        return page.getByRole('list', { name: 'Books on Shelf 1' }).getByRole('link');
+    }
+
+    it('shows thirteen covers and a tile on the reference window', async () => {
+        const page = await ribbons(20);
+
+        const shown = await covers(page).count();
+
+        expect([shown, await page.getByRole('button', { name: /^7 more books/ }).count()]).toEqual([
+            13, 1,
+        ]);
+    });
+
+    it('shows more covers on a wide window', async () => {
+        const page = await ribbons(30);
+
+        await page.setViewportSize({ width: 1920, height: 1080 });
+
+        await expect.poll(() => covers(page).count()).toBeGreaterThan(13);
+    });
+
+    it('moves along a shelf and back with the arrows', async () => {
+        const page = await ribbons(20);
+
+        await page.getByRole('button', { name: 'Next books of Shelf 1' }).click();
+        await expect
+            .poll(() => covers(page).first().getAttribute('aria-label'))
+            .toMatch(/^Book 13 /);
+
+        await page.getByRole('button', { name: 'Previous books of Shelf 1' }).click();
+
+        await expect
+            .poll(() => covers(page).first().getAttribute('aria-label'))
+            .toMatch(/^Book 00 /);
+    });
+
+    it('moves between the bookcase tabs with the arrow keys', async () => {
+        const page = await ribbons(1);
+
+        await page.getByRole('tab', { name: /^Oak bookcase/ }).focus();
+
+        await page.keyboard.press('ArrowRight');
+
+        await page.getByRole('heading', { level: 2, name: 'Study bookcase' }).waitFor();
+        expect(await page.evaluate(() => document.activeElement?.textContent)).toMatch(
+            /^Study bookcase/,
+        );
+    });
+
+    it('fits the smallest desktop window', async () => {
+        const page = await ribbons(20, viewports.minimumDesktop);
+
+        const scrolled = await page.evaluate(() => document.documentElement.scrollWidth);
+
+        expect(scrolled).toBeLessThanOrEqual(viewports.minimumDesktop.width);
+    });
+});
+
 describe('Tags', () => {
     it('reuses an equivalent tag typed in the book form', async () => {
         await created<TagDto>('/tags', { name: 'Science-fiction' });
