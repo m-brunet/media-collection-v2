@@ -7,6 +7,7 @@ export type VolumeToAdd = {
     ownership: Ownership;
     title: string | null;
     authors: string[];
+    publisher: string | null;
     publicationYear: number | null;
     pageCount: number | null;
     summary: string | null;

@@ -77,17 +77,13 @@ export class UnimarcRecord {
     // also the series itself ("Claymore"), which is skipped. Brackets mark a name supplied by the
     // cataloguer.
     private static publisherCollection(fields: Fields, series: string | null): string | null {
-        const words = (name: string) =>
-            NameKey.of(name)
-                .replace(/[^\p{L}\p{N}]+/gu, ' ')
-                .trim();
-        const seriesWords = series ? words(series) : null;
+        const seriesWords = series ? NameKey.words(series) : null;
 
         return (
             (fields.get('225') ?? [])
                 .flatMap((entry) => entry.get('a')?.slice(0, 1) ?? [])
                 .map((name) => name.replace(/^\[(.*)\]$/, '$1').trim())
-                .find((name) => name && words(name) !== seriesWords) ?? null
+                .find((name) => name && NameKey.words(name) !== seriesWords) ?? null
         );
     }
 

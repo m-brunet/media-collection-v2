@@ -3,6 +3,12 @@ export class NameKey {
         return value.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase().trim();
     }
 
+    static words(value: string): string {
+        return NameKey.of(value)
+            .replace(/[^\p{L}\p{N}]+/gu, ' ')
+            .trim();
+    }
+
     static similar(first: string, second: string): boolean {
         const a = NameKey.of(first);
         const b = NameKey.of(second);

@@ -128,9 +128,7 @@ export class LookupCombination {
     }
 
     private static words(value: string): string {
-        return NameKey.of(value)
-            .replace(/[^\p{L}\p{N}]+/gu, ' ')
-            .trim();
+        return NameKey.words(value);
     }
 
     private static language(code: string): string {

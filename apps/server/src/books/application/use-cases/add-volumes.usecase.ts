@@ -150,7 +150,7 @@ export class AddVolumes implements AddVolumesUseCase {
                     : details.authorIds.map((id) => ({ id })),
             category: details.category,
             ownership: volume.ownership,
-            publisher: details.publisher,
+            publisher: volume.publisher ?? details.publisher,
             publicationYear: volume.publicationYear,
             publicationMonth: null,
             summary: volume.summary,

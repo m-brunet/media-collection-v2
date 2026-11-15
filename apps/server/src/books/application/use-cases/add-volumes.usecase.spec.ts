@@ -28,6 +28,7 @@ function row(volume: number, isbn: string, changes: Partial<VolumeToAdd> = {}): 
         ownership: 'owned',
         title: null,
         authors: ['Yukito Kishiro'],
+        publisher: null,
         publicationYear: 2001,
         pageCount: 200,
         summary: 'Gally ' + volume,
@@ -98,6 +99,20 @@ describe('AddVolumes', () => {
         expect((await current.tagging.of(added.bookId)).map((tag) => tag.id)).toEqual(['history']);
         expect(await current.readings.isRead(owner.id, added.bookId)).toBe(true);
         expect(book?.details.authorIds).toEqual(anchor.authors.map((author) => author.id));
+    });
+
+    it('gives a volume the publisher chosen for it', async () => {
+        const { current, anchor, collectionId } = await gunnm();
+
+        const result = await useCase(current).execute(owner, {
+            collectionId,
+            anchorBookId: anchor.id,
+            volumes: [row(2, '9782723434324', { publisher: 'Seinen manga' })],
+        });
+
+        expect((await current.books.findById(result.added[0]!.bookId))?.details.publisher).toBe(
+            'Seinen manga',
+        );
     });
 
     it('takes the source title when the person chose it', async () => {

@@ -427,6 +427,7 @@ export interface NewVolumeDto {
     ownership: BookOwnership;
     title: string | null;
     authors: string[];
+    publisher: string | null;
     publicationYear: number | null;
     pageCount: number | null;
     summary: string | null;
@@ -453,7 +454,7 @@ export interface MissingVolumeEditionDto {
     title: string | null;
     subtitle: string | null;
     authors: string[];
-    publisher: string | null;
+    publishers: string[];
     publicationYear: number | null;
     pageCount: number | null;
     summary: string | null;
