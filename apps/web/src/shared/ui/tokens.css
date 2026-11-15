@@ -28,14 +28,14 @@
     --color-chart-2: #d5b66f;
     --color-chart-3: var(--scheme-text-secondary);
     --color-chart-track: var(--scheme-border-strong);
-    --color-spine-1: color-mix(in oklab, var(--scheme-accent) 70%, var(--scheme-control));
-    --color-spine-2: color-mix(in oklab, #d5b66f 75%, var(--scheme-control));
-    --color-spine-3: color-mix(in oklab, var(--scheme-text-secondary) 60%, var(--scheme-control));
-    --color-spine-4: color-mix(in oklab, #c98f84 75%, var(--scheme-control));
-    --color-spine-5: color-mix(in oklab, #8ea3b8 75%, var(--scheme-control));
-    --color-spine-6: color-mix(in oklab, var(--scheme-accent) 40%, var(--scheme-control));
-    --color-spine-7: color-mix(in oklab, #b7a5c4 70%, var(--scheme-control));
-    --color-spine-8: color-mix(in oklab, #93b3ad 70%, var(--scheme-control));
+    --color-spine-1: color-mix(in oklab, #c9b48a 72%, #303336);
+    --color-spine-2: color-mix(in oklab, #9fb39a 72%, #303336);
+    --color-spine-3: color-mix(in oklab, #8ea3b8 72%, #303336);
+    --color-spine-4: color-mix(in oklab, #c98f84 72%, #303336);
+    --color-spine-5: color-mix(in oklab, #d8cfb8 72%, #303336);
+    --color-spine-6: color-mix(in oklab, #b7a5c4 72%, #303336);
+    --color-spine-7: color-mix(in oklab, #d3a35f 72%, #303336);
+    --color-spine-8: color-mix(in oklab, #93b3ad 72%, #303336);
 
     --font-body: 'Inter', system-ui, sans-serif;
     --font-heading: 'Space Grotesk', 'Inter', system-ui, sans-serif;

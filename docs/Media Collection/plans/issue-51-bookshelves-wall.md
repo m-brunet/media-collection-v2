@@ -31,7 +31,9 @@ bookcase) and `apps/server/src/books` (shelf order of the book list). Libris pag
     When the shelf overflows, these books shrink by the same amount, never under 6 px; books with a page count keep
     their width;
   - the books that still do not fit go behind, faded; beyond two layers nothing is drawn and the count stays exact;
-  - colour (8 colours from the appearance scheme) and height come from the book's identifier.
+  - colour and height come from the book's identifier. The 8 spine colours are fixed book colours, the same on every
+    appearance colour scheme (changed on 2026-11-15: colours mixed from the scheme accent changed the look of a shelf
+    with the scheme and blended with the selected-shelf outline).
 - **Spines and the keyboard:** each spine is a link named "Title · Author" that opens the book; pointing at it or
   focusing it shows the same text. A shelf is one Tab stop; the arrow keys, Home and End move between its spines.
 - **Shelf panel:** "Bookcase / Shelf", "N books on Shelf", then two rows of covers in shelf order. When the books do not
