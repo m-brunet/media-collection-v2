@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useId, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import type { BookCategory, StatisticsDto } from '../../../../../packages/contracts/src/http';
@@ -6,14 +6,16 @@ import { BookFormat } from '../../shared/book-form/book-format.util';
 import type { MessageKey } from '../../shared/i18n/catalog-en';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Required } from '../../shared/required.util';
-import { BarRanking } from './bar-ranking';
 import { SplitBar } from './split-bar';
 import { StatisticsFormat } from './statistics-format.util';
+import type { RankOrder } from './statistics-parts';
 import {
+    AuthorsBars,
     BiggestCollectionRecord,
     LongestRecord,
     MostExpensiveRecord,
     PublisherNotes,
+    RankByChoice,
     Sentence,
     useCount,
     useKnownOn,
@@ -304,19 +306,18 @@ function PanelContent({
 }
 
 function AuthorsPanel({ statistics, title }: { statistics: StatisticsDto; title: string | null }) {
-    const { t, locale } = useI18n();
+    const { t } = useI18n();
+    const [order, setOrder] = useState<RankOrder>('books');
 
     return (
         <PanelContent eyebrow={t('statistics.topicsAuthors')} title={title}>
-            <p className="muted">{t('statistics.topicsAuthorsIntro')}</p>
-            <BarRanking
-                label={t('statistics.topAuthors')}
-                entries={statistics.authors.byBooks.map((author) => ({
-                    name: author.name,
-                    value: author.books,
-                    display: StatisticsFormat.number(author.books, locale),
-                }))}
-            />
+            <RankByChoice label={t('statistics.rankAuthorsBy')} value={order} onChange={setOrder} />
+            <p className="muted">
+                {order === 'books'
+                    ? t('statistics.topicsAuthorsIntro')
+                    : t('statistics.topicsAuthorsIntroPages')}
+            </p>
+            <AuthorsBars statistics={statistics} order={order} />
             <p className="muted">{t('statistics.authorsNote')}</p>
         </PanelContent>
     );

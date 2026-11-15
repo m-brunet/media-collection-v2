@@ -1496,16 +1496,16 @@ export const en = {
     'statistics.missingOne': '1 volume missing in total.',
     'statistics.missingMany': '{count} volumes missing in total.',
     'statistics.topPublishers': 'Top publishers',
-    'statistics.rankBy': 'Rank by',
     'statistics.byBooks': 'By books',
     'statistics.byPages': 'By pages',
+    'statistics.rankPublishersBy': 'Rank the publishers by',
+    'statistics.rankAuthorsBy': 'Rank the authors by',
     'statistics.noPublishers': 'No book has a publisher yet.',
     'statistics.onlyPublishersOne': 'Only 1 publisher.',
     'statistics.onlyPublishersMany': 'Only {count} publishers.',
     'statistics.withoutPublisherOne': '1 book has no publisher.',
     'statistics.withoutPublisherMany': '{count} books have no publisher.',
     'statistics.topAuthors': 'Top authors',
-    'statistics.authorsBy': 'by number of books',
     'statistics.noAuthors': 'No book has an author yet.',
     'statistics.authorsNote': 'A book with several authors counts for each of them.',
     'statistics.longest': 'Longest book',
@@ -1574,6 +1574,7 @@ export const en = {
     'statistics.topicsBooks': 'Books',
     'statistics.topicsAuthors': 'Authors',
     'statistics.topicsAuthorsIntro': 'The 10 authors with the most books.',
+    'statistics.topicsAuthorsIntroPages': 'The 10 authors with the most pages.',
 } as const;
 
 export type MessageKey = keyof typeof en;

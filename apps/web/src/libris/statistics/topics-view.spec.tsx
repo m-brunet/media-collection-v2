@@ -113,6 +113,28 @@ it('gives the share of the chosen category on the first card', async () => {
 
     expect(cards(menu)[0]).toBe('Owned books26860% of your 450 books');
 });
+it('switches the authors panel to pages and tells it in its intro', async () => {
+    library(
+        statistics({
+            authors: {
+                byBooks: [{ name: 'Eiichiro Oda', books: 62, pages: 1500 }],
+                byPages: [{ name: 'Victor Hugo', books: 1, pages: 1664 }],
+            },
+        }),
+    );
+    await topics('/statistics?view=topics&topic=authors');
+
+    await userEvent.click(
+        within(screen.getByRole('group', { name: 'Rank the authors by' })).getByRole('radio', {
+            name: 'By pages',
+        }),
+    );
+
+    expect([
+        screen.getByText('The 10 authors with the most pages.'),
+        within(screen.getByRole('list', { name: 'Top authors' })).getByRole('listitem').textContent,
+    ]).toEqual([expect.anything(), '1Victor Hugo1,664']);
+});
 it('shows a dash and an empty panel for a topic without data', async () => {
     library(statistics({ authors: { byBooks: [], byPages: [] } }));
 
