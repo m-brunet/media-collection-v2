@@ -112,7 +112,7 @@ function library(search: MissingVolumesDto = found) {
 
 async function review(api = library()) {
     renderRoute('/collections/c1', { '/collections/:id': <CollectionDetailsPage /> });
-    await userEvent.click(await screen.findByRole('button', { name: 'Add volumes up to…' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Add volumes' }));
     await userEvent.type(screen.getByRole('spinbutton', { name: /Up to volume/ }), '4');
     await userEvent.click(screen.getByRole('button', { name: 'Find volumes' }));
     await screen.findByRole('region', { name: 'Volumes to add' });
@@ -450,7 +450,7 @@ it('adds nothing when the review is cancelled', async () => {
 it('explains that the edition is not in the BnF catalogue', async () => {
     library({ kind: 'edition-not-found' });
     renderRoute('/collections/c1', { '/collections/:id': <CollectionDetailsPage /> });
-    await userEvent.click(await screen.findByRole('button', { name: 'Add volumes up to…' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Add volumes' }));
     await userEvent.type(screen.getByRole('spinbutton', { name: /Up to volume/ }), '4');
 
     await userEvent.click(screen.getByRole('button', { name: 'Find volumes' }));
@@ -468,5 +468,5 @@ it('offers a Guest no way to add volumes', async () => {
     renderRoute('/collections/c1', { '/collections/:id': <CollectionDetailsPage /> });
 
     await screen.findByRole('heading', { name: 'Gunnm' });
-    expect(screen.queryByRole('button', { name: 'Add volumes up to…' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Add volumes' })).not.toBeInTheDocument();
 });

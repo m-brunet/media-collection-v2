@@ -838,7 +838,8 @@ export const fr = {
     'collection.missingBody':
         'Elle a peut-être été supprimée, ou son dernier livre retiré, dans une autre fenêtre.',
     'collection.back': 'Retour aux collections',
-    'volumes.add': 'Ajouter des tomes jusqu’au…',
+    'volumes.add': 'Ajouter des tomes',
+    'volumes.addUnavailable': 'Marquez la collection comme non terminée avant d’ajouter des tomes.',
     'volumes.dialogTitle': 'Ajouter les tomes manquants',
     'volumes.upTo': 'Jusqu’au tome',
     'volumes.upToHint':
