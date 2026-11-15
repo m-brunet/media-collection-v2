@@ -281,6 +281,49 @@ describe('Collections', () => {
         await capture(page, 'collections-list-1280');
     });
 
+    it('keeps the search, filters, status and sort on one toolbar row at 1280 px', async () => {
+        await member(membership('Batman', 1));
+        const page = await signedIn('camille', viewports.minimumDesktop);
+
+        await page.getByRole('link', { name: 'Collections' }).click();
+
+        const status = page.getByRole('group', { name: 'Status' });
+
+        await status.getByText('Unfinished').waitFor();
+        const [search, choice, sort] = await Promise.all(
+            [
+                page.getByRole('searchbox'),
+                status.getByText('Unfinished'),
+                page.getByRole('combobox', { name: 'Sort collections' }),
+            ].map((locator) => locator.boundingBox()),
+        );
+
+        const middle = (box: { y: number; height: number } | null) =>
+            Math.round(box!.y + box!.height / 2);
+
+        expect([
+            middle(choice) - middle(search),
+            middle(sort) - middle(search),
+            await page.evaluate(() => document.documentElement.scrollWidth <= 1280),
+        ]).toEqual([0, 0, true]);
+    });
+
+    it('lists only the unfinished collections once chosen', async () => {
+        await member(membership('Batman', 1));
+        const dune = await member(membership('Dune', 1));
+
+        await admin.call('/collections/' + dune.collection!.id + '/finish', 'POST');
+        const page = await signedIn('camille');
+
+        await page.getByRole('link', { name: 'Collections' }).click();
+        await page.getByRole('link', { name: /Dune/ }).waitFor();
+
+        await page.getByRole('group', { name: 'Status' }).getByText('Unfinished').click();
+
+        await expect.poll(() => page.getByRole('link', { name: /Dune/ }).count()).toBe(0);
+        expect(await page.getByRole('link', { name: /Batman/ }).count()).toBe(1);
+    });
+
     it('shows the covers of a collection without clipping at 1280 px', async () => {
         await member(membership('Dune', 1));
         await member(membership('Dune', 1, 3), { publisher: 'Chilton Books' });

@@ -3709,3 +3709,12 @@ a.wall-tile:hover .wall-tile__title {
 .organisation-row > .organisation-row__status {
     flex: 1 1 100%;
 }
+
+.collections-status .choice-buttons .field__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}

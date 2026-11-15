@@ -82,3 +82,25 @@ describe('CollectionFormat', () => {
         expect(result).toEqual({ key: 'collection.labelUnfinished' });
     });
 });
+
+describe('CollectionFormat list status', () => {
+    it('reads the status of the address', () => {
+        const statuses = ['true', 'false', null].map(CollectionFormat.listStatus);
+
+        expect(statuses).toEqual(['finished', 'unfinished', 'all']);
+    });
+
+    it('reads any other value as All', () => {
+        const statuses = ['', 'yes', 'TRUE'].map(CollectionFormat.listStatus);
+
+        expect(statuses).toEqual(['all', 'all', 'all']);
+    });
+
+    it('writes no parameter for All', () => {
+        const parameters = (['finished', 'unfinished', 'all'] as const).map(
+            CollectionFormat.listStatusParameter,
+        );
+
+        expect(parameters).toEqual(['true', 'false', '']);
+    });
+});

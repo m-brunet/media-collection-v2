@@ -9,12 +9,14 @@ import { ApiErrorMessage } from '../../shared/api-error-message.util';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { useSession } from '../../shared/session/session-context';
 import { Button } from '../../shared/ui/button';
+import { ChoiceButtons } from '../../shared/ui/choice-buttons';
 import { Icon } from '../../shared/ui/icon';
 import { BookCover } from '../books/book-cover';
 import { BookFormat } from '../../shared/book-form/book-format.util';
 import { PageHeader } from '../../shared/ui/layout';
 import { Notice } from '../../shared/ui/notice';
 import { EmptyState, LoadingState } from '../../shared/ui/states';
+import type { CollectionStatus } from './collection-format.util';
 import { CollectionFormat } from './collection-format.util';
 import { AppliedFilters, useListingFilter } from '../filters/applied-filters';
 import { BookFilter } from '../filters/book-filter.util';
@@ -91,6 +93,9 @@ export function CollectionsPage() {
     const [parameters, setParameters] = useSearchParams();
     const search = parameters.get('search') ?? '';
     const direction = parameters.get('direction') === 'desc' ? 'desc' : 'asc';
+    const finished = parameters.get('finished');
+    const status = CollectionFormat.listStatus(finished);
+    const statusParameter = CollectionFormat.listStatusParameter(status);
     const [typed, setTyped] = useState(search);
     const [listing, setListing] = useState<Listing | null>(null);
     const [loadingMore, setLoadingMore] = useState(false);
@@ -98,11 +103,15 @@ export function CollectionsPage() {
     const editor = account?.role !== 'guest';
     const deleted = (location.state as { deleted?: string } | null)?.deleted;
     const filters = useListingFilter('collections');
-    const filtered = BookFilter.active(filters.filter);
+    const filtered = BookFilter.active(filters.filter) || status !== 'all';
     const [allTotal, setAllTotal] = useState<number | null>(null);
     const query =
-        new URLSearchParams({ search, direction, limit: String(pageSize) }).toString() +
-        (filtered ? '&' + filters.query : '');
+        new URLSearchParams({
+            search,
+            direction,
+            limit: String(pageSize),
+            ...(statusParameter ? { finished: statusParameter } : {}),
+        }).toString() + (BookFilter.active(filters.filter) ? '&' + filters.query : '');
     const fetchPage = useCallback(
         (offset: number) =>
             api.request<CollectionListPageDto>('/collections?' + query + '&offset=' + offset),
@@ -124,6 +133,12 @@ export function CollectionsPage() {
         },
         [parameters, setParameters, location.state],
     );
+
+    useEffect(() => {
+        if (finished !== null && finished !== statusParameter) {
+            update({ finished: statusParameter });
+        }
+    }, [finished, statusParameter, update]);
 
     useEffect(() => {
         if (typed === search) {
@@ -185,9 +200,13 @@ export function CollectionsPage() {
     const none = current && current.total === 0 && !narrowed;
     const clearAll = () => {
         setTyped('');
-        setParameters(BookFilter.write(BookFilter.empty(), new URLSearchParams()), {
-            replace: true,
-        });
+        setParameters(direction === 'desc' ? { direction } : {}, { replace: true });
+    };
+    const clearFilters = () => {
+        const next = BookFilter.write(BookFilter.empty(), parameters);
+
+        next.delete('finished');
+        setParameters(next, { replace: true, state: location.state });
     };
 
     return (
@@ -226,6 +245,19 @@ export function CollectionsPage() {
                         <Button icon="filter" onClick={filters.open}>
                             {t('filters.open')}
                         </Button>
+                        <div className="collections-status">
+                            <ChoiceButtons<CollectionStatus>
+                                label={t('collections.status')}
+                                value={status}
+                                choices={CollectionFormat.statuses.map((choice) => ({
+                                    value: choice.status,
+                                    label: t(choice.label),
+                                }))}
+                                onChange={(next) =>
+                                    update({ finished: CollectionFormat.listStatusParameter(next) })
+                                }
+                            />
+                        </div>
                         <label htmlFor="collection-sort" className="visually-hidden">
                             {t('collections.sortLabel')}
                         </label>
@@ -249,7 +281,11 @@ export function CollectionsPage() {
                 )}
                 {!none && (filtered || (current && search)) && (
                     <div className="applied-row">
-                        <AppliedFilters filter={filters.filter} onChange={filters.change} />
+                        <AppliedFilters
+                            filter={filters.filter}
+                            onChange={filters.change}
+                            onClear={clearFilters}
+                        />
                         {current && allTotal !== null && (
                             <p className="muted applied-row__count" role="status">
                                 {t('collections.matching', {

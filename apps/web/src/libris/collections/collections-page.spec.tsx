@@ -196,3 +196,112 @@ it('ignores a collection filter left in the address of the Collections list', as
         'GET /collections?search=&direction=asc&limit=48&offset=0',
     );
 });
+
+function statusGroup() {
+    return screen.findByRole('group', { name: 'Status' });
+}
+
+function routes(api: FakeApi) {
+    return api.calls.map((call) => call.route);
+}
+
+it('starts on All collections', async () => {
+    const api = new FakeApi().signedIn(account()).on('GET /collections', listing([summary()]));
+
+    show();
+
+    expect([within(await statusGroup()).getByRole('radio', { name: 'All' }), routes(api)]).toEqual([
+        expect.objectContaining({ checked: true }),
+        expect.arrayContaining(['GET /collections?search=&direction=asc&limit=48&offset=0']),
+    ]);
+});
+
+it('shows the unfinished collections from the first page, keeping the other criteria', async () => {
+    const api = new FakeApi().signedIn(account()).on('GET /collections', listing([summary()]));
+    const router = show('/collections?direction=desc&category=manga');
+
+    await userEvent.click(within(await statusGroup()).getByRole('radio', { name: 'Unfinished' }));
+
+    await waitFor(() =>
+        expect(routes(api)).toContain(
+            'GET /collections?search=&direction=desc&limit=48&finished=false&category=manga&offset=0',
+        ),
+    );
+    expect(router.state.location.search).toBe('?direction=desc&category=manga&finished=false');
+});
+
+it('removes the status from the address for All', async () => {
+    new FakeApi().signedIn(account()).on('GET /collections', listing([summary()]));
+    const router = show('/collections?finished=true');
+
+    await userEvent.click(within(await statusGroup()).getByRole('radio', { name: 'All' }));
+
+    expect(router.state.location.search).toBe('');
+});
+
+it('reads an unknown status of the address as All', async () => {
+    const api = new FakeApi().signedIn(account()).on('GET /collections', listing([summary()]));
+    const router = show('/collections?finished=maybe');
+
+    await screen.findByRole('link', { name: /Batman/ });
+
+    expect([router.state.location.search, routes(api)]).toEqual([
+        '',
+        expect.not.arrayContaining([expect.stringContaining('finished=')]),
+    ]);
+});
+
+it('keeps the status when opening the advanced filters', async () => {
+    new FakeApi().signedIn(account()).on('GET /collections', listing([summary()]));
+    const router = renderRoute('/collections?finished=true', {
+        '/collections': <CollectionsPage />,
+        '/collections/filters': <p>Filters</p>,
+    });
+
+    await statusGroup();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Advanced filters' }));
+
+    expect(router.state.location.search).toBe('?finished=true');
+});
+
+it('clears the status with the other filters, keeping the sort and the search', async () => {
+    new FakeApi().signedIn(account()).on('GET /collections', listing([summary()]));
+    const router = show('/collections?search=bat&direction=desc&finished=true&ownership=owned');
+
+    await statusGroup();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+
+    expect(router.state.location.search).toBe('?search=bat&direction=desc');
+});
+
+it('keeps the toolbar and offers to clear when no collection has the status', async () => {
+    new FakeApi()
+        .signedIn(account())
+        .on('GET /collections?limit=1', () => ({ status: 200, body: { total: 3, items: [] } }))
+        .on('GET /collections?search=&direction=desc&limit=48&finished=true&offset=0', listing([]))
+        .on('GET /collections', listing([summary()]));
+    const router = show('/collections?direction=desc&finished=true');
+
+    await screen.findByText('No matching collections');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+
+    expect([screen.getByRole('group', { name: 'Status' }), router.state.location.search]).toEqual([
+        expect.anything(),
+        '?direction=desc',
+    ]);
+});
+
+it('offers a Guest the status choice', async () => {
+    new FakeApi().signedIn(account({ role: 'guest' })).on('GET /collections', listing([summary()]));
+
+    show();
+
+    expect(
+        within(await statusGroup())
+            .getAllByRole('radio')
+            .map((radio) => radio.closest('label')?.textContent),
+    ).toEqual(['All', 'Unfinished', 'Finished']);
+});
