@@ -1,13 +1,6 @@
 import type { ReactNode } from 'react';
-
-export interface RingSegment {
-    key: string;
-    label: string;
-    value: number;
-    detail: string;
-    color: string;
-    dimmed?: boolean;
-}
+import type { ChartSegment } from './chart-segment';
+import { ChartLegend } from './chart-legend';
 
 const radius = 42;
 const circumference = 2 * Math.PI * radius;
@@ -18,7 +11,7 @@ export function RingChart({
     note,
 }: {
     label: string;
-    segments: readonly RingSegment[];
+    segments: readonly ChartSegment[];
     note?: ReactNode;
 }) {
     const total = segments.reduce((sum, segment) => sum + segment.value, 0);
@@ -62,25 +55,7 @@ export function RingChart({
                     })}
             </svg>
             <div className="statistics-ring__legend">
-                <ul aria-label={label}>
-                    {segments.map((segment) => (
-                        <li
-                            key={segment.key}
-                            className={
-                                segment.dimmed
-                                    ? 'statistics-legend statistics-legend--dimmed'
-                                    : 'statistics-legend'
-                            }
-                        >
-                            <span
-                                className="statistics-legend__swatch"
-                                style={{ background: segment.color }}
-                            />
-                            <span>{segment.label}</span>
-                            <b>{segment.detail}</b>
-                        </li>
-                    ))}
-                </ul>
+                <ChartLegend label={label} segments={segments} />
                 {note && <p className="muted">{note}</p>}
             </div>
         </div>
