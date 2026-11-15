@@ -748,6 +748,12 @@ export interface StatisticsBookRecordDto {
     value: number;
 }
 
+export interface StatisticsAuthorDto {
+    name: string;
+    books: number;
+    pages: number;
+}
+
 export interface StatisticsDto {
     ownedBooks: number;
     singleBooks: number;
@@ -761,7 +767,7 @@ export interface StatisticsDto {
         without: number;
         count: number;
     };
-    authors: { name: string; books: number }[];
+    authors: { byBooks: StatisticsAuthorDto[]; byPages: StatisticsAuthorDto[] };
     records: {
         longest: StatisticsBookRecordDto | null;
         mostExpensive: StatisticsBookRecordDto | null;

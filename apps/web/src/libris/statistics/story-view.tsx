@@ -74,7 +74,7 @@ export function StoryView({
                     <SplitBar label={t('statistics.yourReading')} segments={segments.reading} />
                 </Section>
             )}
-            {(publishers.byBooks.length > 0 || authors.length > 0) && (
+            {(publishers.byBooks.length > 0 || authors.byBooks.length > 0) && (
                 <Section
                     title={t('statistics.storyMakersTitle')}
                     sentence={said.makers}

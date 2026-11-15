@@ -41,7 +41,13 @@ export class GetStatistics implements GetStatisticsUseCase {
                 without: publishers.without,
                 count: publishers.counts.length,
             },
-            authors: Ranking.top(authors, (author) => author.books),
+            authors: {
+                byBooks: Ranking.top(authors, (author) => author.books),
+                byPages: Ranking.top(
+                    authors.filter((author) => author.pages > 0),
+                    (author) => author.pages,
+                ),
+            },
             records: {
                 longest,
                 mostExpensive,

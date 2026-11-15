@@ -137,12 +137,29 @@ describe('GetStatistics', () => {
         library.written = Array.from({ length: 12 }, (_, index) => ({
             name: 'Author ' + index,
             books: index,
+            pages: 0,
         }));
 
         const view = await use.execute(StatisticsActors.owner, null);
 
-        expect(view.authors.map((author) => author.books)).toEqual([
+        expect(view.authors.byBooks.map((author) => author.books)).toEqual([
             11, 10, 9, 8, 7, 6, 5, 4, 3, 2,
+        ]);
+    });
+    it('ranks authors by pages, leaving out those without a page count', async () => {
+        const { library, use } = statistics();
+
+        library.written = [
+            { name: 'Eiichiro Oda', books: 62, pages: 1200 },
+            { name: 'Victor Hugo', books: 1, pages: 1664 },
+            { name: 'Hergé', books: 23, pages: 0 },
+        ];
+
+        const view = await use.execute(StatisticsActors.owner, null);
+
+        expect(view.authors.byPages.map((author) => author.name)).toEqual([
+            'Victor Hugo',
+            'Eiichiro Oda',
         ]);
     });
     it('gives the longest and the most expensive books', async () => {

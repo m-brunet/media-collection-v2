@@ -149,7 +149,7 @@ it('leaves out the sections without data', async () => {
             pages: { total: 0, known: 0 },
             price: { totalCents: 0, known: 0 },
             publishers: { byBooks: [], byPages: [], without: 3, count: 0 },
-            authors: [],
+            authors: { byBooks: [], byPages: [] },
             collections: { finished: 0, unfinished: 0, missingVolumes: 0 },
         }),
     );

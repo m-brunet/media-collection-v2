@@ -116,11 +116,16 @@ export class KyselyLibraryStatisticsReader implements LibraryStatisticsReader {
             .select((eb) => [
                 'authors.name',
                 eb.fn.count<number>('books.id').distinct().as('books'),
+                eb.fn.sum<number | null>('books.page_count').as('pages'),
             ])
             .groupBy(['authors.id', 'authors.name'])
             .execute();
 
-        return rows.map((row) => ({ name: row.name, books: Number(row.books) }));
+        return rows.map((row) => ({
+            name: row.name,
+            books: Number(row.books),
+            pages: Number(row.pages ?? 0),
+        }));
     }
 
     longest(category: StatisticsCategory | null): Promise<BookRecord | null> {

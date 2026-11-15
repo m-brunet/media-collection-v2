@@ -86,7 +86,10 @@ describe('GET /api/statistics', () => {
                     without: 0,
                     count: 2,
                 },
-                authors: [{ name: 'Susanna Clarke', books: 3 }],
+                authors: {
+                    byBooks: [{ name: 'Susanna Clarke', books: 3, pages: 656 }],
+                    byPages: [{ name: 'Susanna Clarke', books: 3, pages: 656 }],
+                },
                 records: {
                     longest: {
                         id: piranesi.id,

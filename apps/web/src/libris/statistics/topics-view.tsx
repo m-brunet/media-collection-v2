@@ -105,7 +105,7 @@ function useTopics(statistics: StatisticsDto, category: BookCategory | null): To
     const number = (value: number) => StatisticsFormat.number(value, locale);
     const { reading, publishers, authors } = statistics;
     const publisher = publishers.byBooks[0];
-    const author = authors[0];
+    const author = authors.byBooks[0];
     const { finished, unfinished, missingVolumes } = statistics.collections;
     const collections = finished + unfinished;
 
@@ -311,7 +311,7 @@ function AuthorsPanel({ statistics, title }: { statistics: StatisticsDto; title:
             <p className="muted">{t('statistics.topicsAuthorsIntro')}</p>
             <BarRanking
                 label={t('statistics.topAuthors')}
-                entries={statistics.authors.map((author) => ({
+                entries={statistics.authors.byBooks.map((author) => ({
                     name: author.name,
                     value: author.books,
                     display: StatisticsFormat.number(author.books, locale),

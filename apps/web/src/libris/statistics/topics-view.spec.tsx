@@ -114,7 +114,7 @@ it('gives the share of the chosen category on the first card', async () => {
     expect(cards(menu)[0]).toBe('Owned books26860% of your 450 books');
 });
 it('shows a dash and an empty panel for a topic without data', async () => {
-    library(statistics({ authors: [] }));
+    library(statistics({ authors: { byBooks: [], byPages: [] } }));
 
     const { menu } = await topics('/statistics?view=topics&topic=authors');
 

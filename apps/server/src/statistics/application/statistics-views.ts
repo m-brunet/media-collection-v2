@@ -15,7 +15,7 @@ export type PublisherCount = { name: string; books: number; pages: number };
 
 export type PublisherCounts = { counts: PublisherCount[]; without: number };
 
-export type AuthorCount = { name: string; books: number };
+export type AuthorCount = { name: string; books: number; pages: number };
 
 export type BookRecord = { id: string; title: string; authors: string[]; value: number };
 
@@ -30,7 +30,7 @@ export type StatisticsView = BookTotals & {
         without: number;
         count: number;
     };
-    authors: AuthorCount[];
+    authors: { byBooks: AuthorCount[]; byPages: AuthorCount[] };
     records: {
         longest: BookRecord | null;
         mostExpensive: BookRecord | null;

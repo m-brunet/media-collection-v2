@@ -266,10 +266,42 @@ describe('Library statistics', () => {
 
         expect(authors).toEqual(
             expect.arrayContaining([
-                { name: 'René Goscinny', books: 3 },
-                { name: 'Albert Uderzo', books: 2 },
+                { name: 'René Goscinny', books: 3, pages: 0 },
+                { name: 'Albert Uderzo', books: 2, pages: 0 },
             ]),
         );
+    });
+    it('sums the known pages of each author, a shared book counting for each of them', async () => {
+        const current = await library();
+
+        await current.book({ title: 'Asterix 1', pages: 48, authors: ['Goscinny', 'Uderzo'] });
+        await current.book({ title: 'Asterix 2', authors: ['Goscinny', 'Uderzo'] });
+        await current.book({ title: 'Lucky Luke', pages: 46, authors: ['Goscinny'] });
+        await current.book({
+            title: 'Wanted',
+            pages: 500,
+            ownership: 'not-owned',
+            authors: ['Uderzo'],
+        });
+
+        const authors = await current.statistics.authors(null);
+
+        expect(authors).toEqual(
+            expect.arrayContaining([
+                { name: 'Goscinny', books: 3, pages: 94 },
+                { name: 'Uderzo', books: 2, pages: 48 },
+            ]),
+        );
+    });
+    it('sums the pages of the chosen category only', async () => {
+        const current = await library();
+
+        await current.book({ title: 'Akira 1', category: 'manga', pages: 360, authors: ['Otomo'] });
+        await current.book({ title: 'Domu', category: 'comics', pages: 240, authors: ['Otomo'] });
+
+        const authors = await current.statistics.authors('manga');
+
+        expect(authors).toEqual([{ name: 'Otomo', books: 1, pages: 360 }]);
     });
     it('gives the longest owned book with its authors, equal lengths by title', async () => {
         const current = await library();
