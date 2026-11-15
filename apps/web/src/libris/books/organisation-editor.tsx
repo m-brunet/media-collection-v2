@@ -1,15 +1,14 @@
 import { useRef, useState } from 'react';
-import { Link } from 'react-router';
 import type { BookDto, BookOrganisationDto } from '../../../../../packages/contracts/src/http';
 import { api } from '../../shared/api.util';
 import { ApiErrorMessage } from '../../shared/api-error-message.util';
-import { ShelfSelect } from '../../shared/book-form/shelf-select';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Icon } from '../../shared/ui/icon';
 import { Panel } from '../../shared/ui/layout';
 import { LocationFormat } from '../locations/location-format.util';
 import { useBookcases } from '../locations/use-bookcases';
 import type { DraftTag } from '../../shared/book-form/book-draft.util';
+import { LocationField } from './location-field';
 import { TagPicker } from './tag-picker';
 
 type Status =
@@ -103,25 +102,19 @@ export function OrganisationEditor({
         <Panel label={t('organisation.title')}>
             {!editor && <OrganisationSummary book={book} />}
             {editor && (
-                <div className="form">
-                    {bookcases && bookcases.some((bookcase) => bookcase.shelves.length > 0) ? (
-                        <ShelfSelect
-                            bookcases={bookcases}
-                            shelfId={shelfId}
-                            hint={t('location.chooseHint')}
-                            onChange={(next) => {
-                                setShelfId(next.shelfId);
-                                save({ shelfId: next.shelfId });
-                            }}
-                        />
-                    ) : (
-                        bookcases && (
-                            <p className="muted">
-                                {t('location.noneYet')}{' '}
-                                <Link to="/bookshelves">{t('location.manage')}</Link>
-                            </p>
-                        )
-                    )}
+                <div className="organisation-row">
+                    <div className="organisation-row__location">
+                        {bookcases && (
+                            <LocationField
+                                bookcases={bookcases}
+                                shelfId={shelfId}
+                                onChange={(next) => {
+                                    setShelfId(next.shelfId);
+                                    save({ shelfId: next.shelfId });
+                                }}
+                            />
+                        )}
+                    </div>
                     <TagPicker
                         tags={tags}
                         hint={t('organisation.tagsHint')}
@@ -136,7 +129,7 @@ export function OrganisationEditor({
                     />
                     <p
                         className={
-                            'organisation-status' +
+                            'organisation-row__status organisation-status' +
                             (status.kind === 'failed' ? ' organisation-status--failed' : '')
                         }
                         role="status"

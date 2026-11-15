@@ -449,8 +449,8 @@ describe('Bookshelves Columns', () => {
         await page.keyboard.press('m');
         await page
             .getByRole('dialog')
-            .getByLabel(/^Shelf/)
-            .selectOption({ label: 'Shelf 2' });
+            .getByLabel('Physical location')
+            .selectOption({ label: 'Oak bookcase – Shelf 2' });
 
         await page.getByRole('button', { name: 'Move book' }).click();
 

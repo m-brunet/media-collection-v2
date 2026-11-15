@@ -60,12 +60,7 @@ function MoveForm({
             }}
         >
             <p>{t('columns.moveBody')}</p>
-            <LocationField
-                bookcases={bookcases}
-                bookcaseId={place.bookcaseId}
-                shelfId={place.shelfId}
-                onChange={setPlace}
-            />
+            <LocationField bookcases={bookcases} shelfId={place.shelfId} onChange={setPlace} />
             {action.feedback && <Notice tone="error">{action.feedback.text}</Notice>}
             <div className="actions">
                 <Button type="submit" variant="primary" busy={action.busy} disabled={!ready}>

@@ -3689,3 +3689,23 @@ a.wall-tile:hover .wall-tile__title {
     font-size: 11px;
     color: var(--color-text);
 }
+
+.organisation-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--space-4) var(--space-5);
+}
+
+.organisation-row > * {
+    flex: 2 1 480px;
+    min-width: 0;
+}
+
+.organisation-row > .organisation-row__location {
+    flex: 1 1 240px;
+}
+
+.organisation-row > .organisation-row__status {
+    flex: 1 1 100%;
+}

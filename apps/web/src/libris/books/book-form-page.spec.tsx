@@ -870,8 +870,10 @@ it('saves the chosen shelf and tags, reusing an existing tag', async () => {
 
     addPage();
     await fillRequired();
-    await userEvent.selectOptions(screen.getByLabelText('Bookcase'), 'Oak bookcase');
-    await userEvent.selectOptions(screen.getByLabelText(/^Shelf/), 'Shelf 3');
+    await userEvent.selectOptions(
+        screen.getByRole('combobox', { name: 'Physical location' }),
+        'Oak bookcase – Shelf 3',
+    );
     const tags = screen.getByRole('combobox', { name: 'Find or create tag' });
 
     await userEvent.type(tags, 'fantasy');
@@ -891,22 +893,19 @@ it('saves the chosen shelf and tags, reusing an existing tag', async () => {
     );
 });
 
-it('asks for a shelf when only a bookcase is chosen, without contacting the server', async () => {
+it('keeps a chosen shelf in the form until Save', async () => {
     const api = new FakeApi()
         .signedIn(account())
         .on('GET /bookcases', () => ({ status: 200, body: bookcases }));
 
     addPage();
     await fillRequired();
-    await userEvent.selectOptions(screen.getByLabelText('Bookcase'), 'Oak bookcase');
 
-    await userEvent.click(saveButton());
+    await userEvent.selectOptions(
+        await screen.findByRole('combobox', { name: 'Physical location' }),
+        'Oak bookcase – Shelf 3',
+    );
 
-    expect(
-        await screen.findAllByText(
-            'Choose a shelf of this bookcase, or leave the bookcase unassigned.',
-        ),
-    ).not.toHaveLength(0);
     expect(posted(api)).toEqual([]);
 });
 

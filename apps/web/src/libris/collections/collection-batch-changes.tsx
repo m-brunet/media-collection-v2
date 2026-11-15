@@ -177,7 +177,6 @@ function FieldChange({
                     {CollectionBatch.takesValue(draft.shelf.mode) && bookcases && (
                         <LocationField
                             bookcases={bookcases}
-                            bookcaseId={draft.shelf.bookcaseId}
                             shelfId={draft.shelf.shelfId}
                             onChange={(location) => set('shelf', { ...draft.shelf, ...location })}
                         />

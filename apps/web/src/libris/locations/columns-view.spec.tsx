@@ -216,7 +216,10 @@ it('moves a book with M, then drops it from the table and reloads the counts', a
     await userEvent.keyboard('m');
     const dialog = screen.getByRole('dialog', { name: 'Move “Solaris”' });
 
-    await userEvent.selectOptions(within(dialog).getByLabelText(/^Shelf/), 'Shelf 1');
+    await userEvent.selectOptions(
+        within(dialog).getByRole('combobox', { name: 'Physical location' }),
+        'Oak bookcase – Shelf 1',
+    );
 
     await userEvent.click(within(dialog).getByRole('button', { name: 'Move book' }));
 
