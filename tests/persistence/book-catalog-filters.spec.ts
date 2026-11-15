@@ -1,14 +1,14 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { BookFilterCriteria } from '../../apps/server/src/shared/application/book-filter.js';
 import { BookFilter } from '../../apps/server/src/shared/application/book-filter.js';
-import { library, LibraryRows } from './library-rows.test-support.js';
+import { LibraryRows } from './library-rows.test-support.js';
 
 afterEach(async () => {
     await LibraryRows.close();
 });
 
 async function titles(
-    current: Awaited<ReturnType<typeof library>>,
+    current: Awaited<ReturnType<typeof LibraryRows.open>>,
     criteria: Partial<BookFilterCriteria>,
     search = '',
     readerId: string | null = null,
@@ -28,7 +28,7 @@ async function titles(
 
 describe('KyselyBookCatalog filters', () => {
     it('accepts either chosen category but requires ownership and location (example 8)', async () => {
-        const current = await library();
+        const current = await LibraryRows.open();
         const oak = await current.bookcase('Oak');
         const top = await current.shelf(oak);
         const hall = await current.shelf(await current.bookcase('Hall'));
@@ -53,7 +53,7 @@ describe('KyselyBookCatalog filters', () => {
         expect(result).toEqual(['Comics A', 'Manga A']);
     });
     it('requires every included tag and rejects any excluded tag (example 9)', async () => {
-        const current = await library();
+        const current = await LibraryRows.open();
         const fantasy = await current.tag('Fantasy');
         const adventure = await current.tag('Adventure');
         const medieval = await current.tag('Medieval');
@@ -69,7 +69,7 @@ describe('KyselyBookCatalog filters', () => {
         expect(result).toEqual(['Both']);
     });
     it('narrows the filtered books with the search text (example 9)', async () => {
-        const current = await library();
+        const current = await LibraryRows.open();
         const fantasy = await current.tag('Fantasy');
 
         await current.book({ title: 'Earthsea', tagIds: [fantasy] });
@@ -85,7 +85,7 @@ describe('KyselyBookCatalog filters', () => {
         expect(result).toEqual(['Gormenghast']);
     });
     it('selects books without a location or a collection (example 10)', async () => {
-        const current = await library();
+        const current = await LibraryRows.open();
         const top = await current.shelf(await current.bookcase('Oak'));
         const batman = await current.collection('Batman');
 
@@ -101,7 +101,7 @@ describe('KyselyBookCatalog filters', () => {
         expect(result).toEqual(['Loose']);
     });
     it('accepts a chosen collection or no collection together', async () => {
-        const current = await library();
+        const current = await LibraryRows.open();
         const batman = await current.collection('Batman');
         const dune = await current.collection('Dune');
 
@@ -114,7 +114,7 @@ describe('KyselyBookCatalog filters', () => {
         expect(result).toEqual(['Batman 1', 'Standalone']);
     });
     it('filters on the reading status of the reader only', async () => {
-        const current = await library();
+        const current = await LibraryRows.open();
         const camille = await current.reader();
         const sam = await current.reader();
 
@@ -126,7 +126,7 @@ describe('KyselyBookCatalog filters', () => {
         expect(result).toEqual(['Read by Sam']);
     });
     it('selects the books without a cover', async () => {
-        const current = await library();
+        const current = await LibraryRows.open();
 
         await current.book({ title: 'Covered', cover: 'covered.jpg' });
         await current.book({ title: 'Bare' });
@@ -136,7 +136,7 @@ describe('KyselyBookCatalog filters', () => {
         expect(result).toEqual(['Bare']);
     });
     it('selects the books with a cover', async () => {
-        const current = await library();
+        const current = await LibraryRows.open();
 
         await current.book({ title: 'Covered', cover: 'covered.jpg' });
         await current.book({ title: 'Bare' });
@@ -146,7 +146,7 @@ describe('KyselyBookCatalog filters', () => {
         expect(result).toEqual(['Covered']);
     });
     it('selects the books without a price', async () => {
-        const current = await library();
+        const current = await LibraryRows.open();
 
         await current.book({ title: 'Priced', priceCents: 1290 });
         await current.book({ title: 'Unpriced' });
@@ -157,7 +157,7 @@ describe('KyselyBookCatalog filters', () => {
         expect(result).toEqual(['Unpriced', 'Unpriced wish']);
     });
     it('selects the books with a price', async () => {
-        const current = await library();
+        const current = await LibraryRows.open();
 
         await current.book({ title: 'Priced', priceCents: 1290 });
         await current.book({ title: 'Unpriced' });
@@ -167,7 +167,7 @@ describe('KyselyBookCatalog filters', () => {
         expect(result).toEqual(['Priced']);
     });
     it('keeps every book when both cover and price choices are chosen', async () => {
-        const current = await library();
+        const current = await LibraryRows.open();
 
         await current.book({ title: 'Complete', cover: 'complete.jpg', priceCents: 990 });
         await current.book({ title: 'Empty' });
@@ -180,7 +180,7 @@ describe('KyselyBookCatalog filters', () => {
         expect(result).toEqual(['Complete', 'Empty']);
     });
     it('selects the books missing both a cover and a price', async () => {
-        const current = await library();
+        const current = await LibraryRows.open();
 
         await current.book({ title: 'Complete', cover: 'complete.jpg', priceCents: 990 });
         await current.book({ title: 'Cover only', cover: 'cover-only.jpg' });
@@ -192,7 +192,7 @@ describe('KyselyBookCatalog filters', () => {
         expect(result).toEqual(['Empty']);
     });
     it('finds partial names ignoring case and accents (example 14)', async () => {
-        const current = await library();
+        const current = await LibraryRows.open();
 
         await current.book({ title: 'The Hobbit', author: 'J. R. R. Tolkien' });
         await current.book({ title: 'Élan vital' });
@@ -203,7 +203,7 @@ describe('KyselyBookCatalog filters', () => {
         expect(result).toEqual([['The Hobbit'], ['Élan vital']]);
     });
     it('finds a book from the equivalent ISBN-10 (example 14)', async () => {
-        const current = await library();
+        const current = await LibraryRows.open();
 
         await current.book({ title: 'Rasselas', isbn13: '9780306406157' });
 
@@ -215,7 +215,7 @@ describe('KyselyBookCatalog filters', () => {
 
 describe('KyselyBookCatalog collection matches', () => {
     it('excludes a collection whose books each satisfy only part of the filter (example 11)', async () => {
-        const current = await library();
+        const current = await LibraryRows.open();
         const fantasy = await current.tag('Fantasy');
         const split = await current.collection('Split');
         const whole = await current.collection('Whole');
@@ -243,7 +243,7 @@ describe('KyselyBookCatalog collection matches', () => {
         expect(result).toEqual([whole]);
     });
     it('matches a collection through any one of its books', async () => {
-        const current = await library();
+        const current = await LibraryRows.open();
         const batman = await current.collection('Batman');
 
         await current.book({
@@ -263,7 +263,7 @@ describe('KyselyBookCatalog collection matches', () => {
         expect(result).toEqual([batman]);
     });
     it('matches a collection with one volume without a cover', async () => {
-        const current = await library();
+        const current = await LibraryRows.open();
         const dune = await current.collection('Dune');
         const batman = await current.collection('Batman');
 
@@ -282,7 +282,7 @@ describe('KyselyBookCatalog collection matches', () => {
 });
 
 describe('KyselyBookCatalog shelf order', () => {
-    async function shelved(current: Awaited<ReturnType<typeof library>>) {
+    async function shelved(current: Awaited<ReturnType<typeof LibraryRows.open>>) {
         const page = await current.catalog.search({
             search: '',
             sort: 'shelf',
@@ -297,7 +297,7 @@ describe('KyselyBookCatalog shelf order', () => {
     }
 
     it('keeps the volumes of a collection together at the place of its name', async () => {
-        const current = await library();
+        const current = await LibraryRows.open();
         const saga = await current.collection('Saga');
 
         await current.book({ title: 'Zeta' });
@@ -311,7 +311,7 @@ describe('KyselyBookCatalog shelf order', () => {
         expect(result).toEqual(['Alpha', 'Book One', 'Book Two', 'Book Three', 'Zeta']);
     });
     it('places a book in no collection at its title', async () => {
-        const current = await library();
+        const current = await LibraryRows.open();
         const middle = await current.collection('Middle');
 
         await current.book({ title: 'Nadir' });

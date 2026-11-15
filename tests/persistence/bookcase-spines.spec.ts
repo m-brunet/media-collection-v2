@@ -1,13 +1,13 @@
 import { afterEach, expect, it } from 'vitest';
 import { KyselyBookcaseSpineReader } from '../../apps/server/src/locations/infrastructure/adapters/driven/persistence/kysely-bookcase-spine-reader.adapter.js';
-import { library, LibraryRows } from './library-rows.test-support.js';
+import { LibraryRows } from './library-rows.test-support.js';
 
 afterEach(async () => {
     await LibraryRows.close();
 });
 
 async function furnished() {
-    const current = await library();
+    const current = await LibraryRows.open();
     const oak = await current.bookcase('Oak');
 
     return {
