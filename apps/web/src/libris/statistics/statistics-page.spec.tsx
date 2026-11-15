@@ -109,12 +109,61 @@ it('leaves out the reading of a Guest', async () => {
         screen.queryByRole('heading', { name: 'Your reading' }),
     ]).toEqual([null, null]);
 });
+const writers = statistics({
+    authors: {
+        byBooks: [
+            { name: 'Eiichiro Oda', books: 62, pages: 1500 },
+            { name: 'Victor Hugo', books: 1, pages: 1664 },
+        ],
+        byPages: [
+            { name: 'Victor Hugo', books: 1, pages: 1664 },
+            { name: 'Eiichiro Oda', books: 62, pages: 1500 },
+        ],
+    },
+});
+
+function authorRows() {
+    return within(screen.getByRole('list', { name: 'Top authors' }))
+        .getAllByRole('listitem')
+        .map((item) => item.textContent);
+}
+
+function authorChoice(name: string) {
+    return within(screen.getByRole('group', { name: 'Rank the authors by' })).getByRole('radio', {
+        name,
+    });
+}
+
+it('starts the top authors on their number of books', async () => {
+    library(writers);
+
+    show();
+
+    await screen.findByRole('list', { name: 'Top authors' });
+    expect([authorChoice('By books'), authorRows()]).toEqual([
+        expect.objectContaining({ checked: true }),
+        ['1Eiichiro Oda62', '2Victor Hugo1'],
+    ]);
+});
+it('ranks the authors by pages once chosen', async () => {
+    library(writers);
+    show();
+    await screen.findByRole('list', { name: 'Top authors' });
+
+    await userEvent.click(authorChoice('By pages'));
+
+    expect(authorRows()).toEqual(['1Victor Hugo1,664', '2Eiichiro Oda1,500']);
+});
 it('ranks the publishers by pages once chosen', async () => {
     library();
     show();
     await screen.findByRole('list', { name: 'Top publishers' });
 
-    await userEvent.click(screen.getByRole('radio', { name: 'By pages' }));
+    await userEvent.click(
+        within(screen.getByRole('group', { name: 'Rank the publishers by' })).getByRole('radio', {
+            name: 'By pages',
+        }),
+    );
 
     expect(
         within(screen.getByRole('list', { name: 'Top publishers' }))

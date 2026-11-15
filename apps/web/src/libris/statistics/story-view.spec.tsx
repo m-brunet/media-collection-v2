@@ -125,7 +125,11 @@ it('ranks the publishers by pages once chosen', async () => {
     library();
     await story();
 
-    await userEvent.click(screen.getByRole('radio', { name: 'By pages' }));
+    await userEvent.click(
+        within(screen.getByRole('group', { name: 'Rank the publishers by' })).getByRole('radio', {
+            name: 'By pages',
+        }),
+    );
 
     expect(
         within(screen.getByRole('list', { name: 'Top publishers' }))

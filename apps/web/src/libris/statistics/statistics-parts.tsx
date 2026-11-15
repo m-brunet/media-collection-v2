@@ -16,7 +16,31 @@ import { StatisticsFormat } from './statistics-format.util';
 
 export type Heading = 'h2' | 'h3';
 
-type PublisherOrder = 'books' | 'pages';
+export type RankOrder = 'books' | 'pages';
+
+export function RankByChoice({
+    label,
+    value,
+    onChange,
+}: {
+    label: string;
+    value: RankOrder;
+    onChange(order: RankOrder): void;
+}) {
+    const { t } = useI18n();
+
+    return (
+        <ChoiceButtons<RankOrder>
+            label={label}
+            value={value}
+            choices={[
+                { value: 'books', label: t('statistics.byBooks') },
+                { value: 'pages', label: t('statistics.byPages') },
+            ]}
+            onChange={onChange}
+        />
+    );
+}
 
 export function Sentence({ said }: { said: { text: string; emphasis: string | null } }) {
     const at = said.emphasis === null ? -1 : said.text.indexOf(said.emphasis);
@@ -122,7 +146,7 @@ export function PublishersRanking({
     heading: Heading;
 }) {
     const { t, locale } = useI18n();
-    const [order, setOrder] = useState<PublisherOrder>('books');
+    const [order, setOrder] = useState<RankOrder>('books');
     const ranked =
         order === 'books' ? statistics.publishers.byBooks : statistics.publishers.byPages;
 
@@ -130,13 +154,9 @@ export function PublishersRanking({
         <>
             <div className="statistics-card__heading">
                 <Title className="eyebrow">{t('statistics.topPublishers')}</Title>
-                <ChoiceButtons<PublisherOrder>
-                    label={t('statistics.rankBy')}
+                <RankByChoice
+                    label={t('statistics.rankPublishersBy')}
                     value={order}
-                    choices={[
-                        { value: 'books', label: t('statistics.byBooks') },
-                        { value: 'pages', label: t('statistics.byPages') },
-                    ]}
                     onChange={setOrder}
                 />
             </div>
@@ -167,27 +187,51 @@ export function AuthorsRanking({
     statistics: StatisticsDto;
     heading: Heading;
 }) {
-    const { t, locale } = useI18n();
+    const { t } = useI18n();
+    const [order, setOrder] = useState<RankOrder>('books');
 
     return (
         <>
             <div className="statistics-card__heading">
                 <Title className="eyebrow">{t('statistics.topAuthors')}</Title>
-                <span className="muted">{t('statistics.authorsBy')}</span>
-            </div>
-            {statistics.authors.byBooks.length === 0 ? (
-                <p className="muted">{t('statistics.noAuthors')}</p>
-            ) : (
-                <BarRanking
-                    label={t('statistics.topAuthors')}
-                    entries={statistics.authors.byBooks.map((author) => ({
-                        name: author.name,
-                        value: author.books,
-                        display: StatisticsFormat.number(author.books, locale),
-                    }))}
+                <RankByChoice
+                    label={t('statistics.rankAuthorsBy')}
+                    value={order}
+                    onChange={setOrder}
                 />
-            )}
+            </div>
+            <AuthorsBars statistics={statistics} order={order} />
         </>
+    );
+}
+
+export function AuthorsBars({
+    statistics,
+    order,
+}: {
+    statistics: StatisticsDto;
+    order: RankOrder;
+}) {
+    const { t, locale } = useI18n();
+    const ranked = order === 'books' ? statistics.authors.byBooks : statistics.authors.byPages;
+
+    if (ranked.length === 0) {
+        return <p className="muted">{t('statistics.noAuthors')}</p>;
+    }
+
+    return (
+        <BarRanking
+            label={t('statistics.topAuthors')}
+            entries={ranked.map((author) => {
+                const value = order === 'books' ? author.books : author.pages;
+
+                return {
+                    name: author.name,
+                    value,
+                    display: StatisticsFormat.number(value, locale),
+                };
+            })}
+        />
     );
 }
 
