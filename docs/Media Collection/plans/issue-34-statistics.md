@@ -24,6 +24,13 @@ Owning docs: [features](../product/features.md#statistics). Feature: `apps/serve
 - **Rankings** keep the top 10; equal values are ordered by name (A to Z, ignoring case and accents). Publishers rank
   *by books* or *by pages*; books without a publisher are not ranked and their number is shown under the ranking.
   "Only N publishers" shows when there are fewer than 10. A book with several authors counts once for each of them.
+  **Authors** rank *by books* or *by pages* too (#84, 2026-11-15): an author's pages are the sum of the known page
+  counts of the owned books they wrote, a book with several authors counting in full for each; an author without any
+  known page count is left out of the pages ranking. Each order is its own top 10, both follow the category choice,
+  and the choice is not kept when leaving the page. The two *Rank by* groups are named "Rank the publishers by" and
+  "Rank the authors by" for screen readers. Every view has the authors choice (Dashboard and Story cards, the Topics
+  *Authors* panel, whose intro follows it: "The 10 authors with the most books." / "…with the most pages."). The
+  Story sentence and the Topics *Top author* card keep the author with the most books.
 - **Records:** longest book, most expensive book (equal values by title), biggest collection. Each links to its book or
   collection page; a record is hidden when no book has the needed value.
 - **Reading** is the signed-in person's own; a Guest sees the whole page without it, prices included.
@@ -52,7 +59,8 @@ Owning docs: [features](../product/features.md#statistics). Feature: `apps/serve
 category gives `400`). Answer `StatisticsDto` (`packages/contracts/src/http.ts`): `ownedBooks`, `singleBooks` (owned
 books in no collection), `categories`, `reading` (`null` for a Guest), `pages { total, known }`,
 `price { totalCents, known }`, `publishers { byBooks, byPages, without, count }` (each entry carries books and pages),
-`authors`, `records { longest, mostExpensive, biggestCollection }` (each nullable),
+`authors { byBooks, byPages }` (each entry carries books and pages), `records { longest, mostExpensive,
+biggestCollection }` (each nullable),
 `collections { finished, unfinished, missingVolumes }`.
 
 ## Acceptance examples
@@ -80,3 +88,7 @@ books in no collection), `categories`, `reading` (`null` for a Guest), `pages { 
 14. Topics, no author on any book: the *Top author* card shows "—" and "Nothing to count yet", and its panel says
     there is nothing to show yet.
 15. Choose *Manga*, then Story, then Topics: the address keeps `category=manga` and every view counts manga only.
+16. (#84) *Asterix 1* (48 pages) by Goscinny and Uderzo, *Asterix 2* (no page count) by both, *Lucky Luke* (46 pages)
+    by Goscinny: by books Goscinny 3, Uderzo 2; by pages Goscinny 94, Uderzo 48.
+17. (#84) Top authors opens on *By books*; choosing *By pages* shows the page totals in their own order. In Topics, the
+    *Authors* panel does the same and its intro becomes "The 10 authors with the most pages."
