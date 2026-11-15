@@ -102,8 +102,8 @@ describe('SpineLayout.shelf', () => {
                 (spine) =>
                     spine.colour >= 0 &&
                     spine.colour < 8 &&
-                    spine.height >= 56 &&
-                    spine.height <= 78,
+                    spine.height >= 50 &&
+                    spine.height <= 68,
             ),
         ).toBe(true);
     });
