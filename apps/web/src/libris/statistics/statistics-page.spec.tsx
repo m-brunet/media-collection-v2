@@ -1,11 +1,8 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import type { StatisticsDto } from '../../../../../packages/contracts/src/http';
-import { account, deviceLanguages, FakeApi } from '../../testing/fake-api.test-support';
-import { Required } from '../../shared/required.util';
-import { renderRoute } from '../../testing/render-route.test-support';
-import { StatisticsPage } from './statistics-page';
+import { deviceLanguages } from '../../testing/fake-api.test-support';
+import { card, library, show, statistics } from './statistics-fixtures.test-support';
 
 beforeEach(() => {
     deviceLanguages(['en-GB']);
@@ -14,54 +11,6 @@ afterEach(() => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
 });
-
-function statistics(overrides: Partial<StatisticsDto> = {}): StatisticsDto {
-    return {
-        ownedBooks: 4500,
-        singleBooks: 61,
-        categories: { books: 85, manga: 268, comics: 97 },
-        reading: { read: 312, notRead: 138 },
-        pages: { total: 96420, known: 412 },
-        price: { totalCents: 328450, known: 398 },
-        publishers: {
-            byBooks: [
-                { name: 'Glénat', books: 96, pages: 18000 },
-                { name: 'Kana', books: 61, pages: 21000 },
-            ],
-            byPages: [
-                { name: 'Kana', books: 61, pages: 21000 },
-                { name: 'Glénat', books: 96, pages: 18000 },
-            ],
-            without: 22,
-            count: 2,
-        },
-        authors: [{ name: 'Eiichiro Oda', books: 62 }],
-        records: {
-            longest: { id: 'b1', title: 'Les Misérables', authors: ['Victor Hugo'], value: 1664 },
-            mostExpensive: { id: 'b2', title: 'Akira', authors: ['Katsuhiro Otomo'], value: 14900 },
-            biggestCollection: { id: 'c1', name: 'One Piece', ownedBooks: 62 },
-        },
-        collections: { finished: 14, unfinished: 24, missingVolumes: 187 },
-        ...overrides,
-    };
-}
-
-function library(body: StatisticsDto = statistics(), role: 'owner' | 'guest' = 'owner') {
-    return new FakeApi()
-        .signedIn(account({ role }))
-        .on('GET /statistics', () => ({ status: 200, body }));
-}
-
-function show(path = '/statistics') {
-    return renderRoute(path, { '/statistics': <StatisticsPage /> });
-}
-
-function card(name: string) {
-    return Required.value(
-        screen.getByRole('heading', { name }).closest('section'),
-        'each statistic is a section under its heading',
-    );
-}
 
 it('shows the four big numbers', async () => {
     library();
@@ -248,14 +197,47 @@ it('shows the empty state for an empty library', async () => {
 
     expect(await screen.findByText('No owned book yet')).toBeInTheDocument();
 });
-it('hides the view choice while the page has a single view', async () => {
+it('offers the views on the title line', async () => {
+    library();
+
+    show();
+
+    const views = await screen.findByRole('group', { name: 'View' });
+
+    expect(
+        within(views)
+            .getAllByRole('radio')
+            .map((radio) => radio.getAttribute('value')),
+    ).toEqual(['dashboard', 'story']);
+});
+it('opens the view given in the address', async () => {
     library();
 
     show('/statistics?view=story');
 
+    expect(await screen.findByRole('heading', { name: 'Your library' })).toBeInTheDocument();
+});
+it('switches the view and keeps the chosen category', async () => {
+    const api = library();
+    const router = show('/statistics?category=manga');
+
     await screen.findByRole('heading', { name: 'Owned books' });
 
-    expect(screen.queryByRole('group', { name: 'View' })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('radio', { name: 'Story' }));
+
+    expect([
+        await screen.findByRole('heading', { name: 'Your library' }),
+        new URLSearchParams(router.state.location.search).get('category'),
+        api.calls.filter((call) => call.route.includes('statistics')).length,
+    ]).toEqual([expect.anything(), 'manga', 1]);
+});
+it('opens the last view chosen on this browser', async () => {
+    library();
+    window.localStorage.setItem('media-collection.statistics-view', 'story');
+
+    show();
+
+    expect(await screen.findByRole('heading', { name: 'Your library' })).toBeInTheDocument();
 });
 it('falls back to the Dashboard for an unknown view', async () => {
     library();

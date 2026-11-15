@@ -25,23 +25,32 @@ export function useCount() {
         t(count === 1 ? one : many, { count: StatisticsFormat.number(count, locale) });
 }
 
-export function KnownOn({ known, total }: { known: number; total: number }) {
+export function useKnownOn() {
     const { t, locale } = useI18n();
 
-    return t(total === 1 ? 'statistics.onBooksOne' : 'statistics.onBooksMany', {
-        known: StatisticsFormat.number(known, locale),
-        total: StatisticsFormat.number(total, locale),
-    });
+    return (known: number, total: number) =>
+        t(total === 1 ? 'statistics.onBooksOne' : 'statistics.onBooksMany', {
+            known: StatisticsFormat.number(known, locale),
+            total: StatisticsFormat.number(total, locale),
+        });
+}
+
+export function KnownOn({ known, total }: { known: number; total: number }) {
+    const knownOn = useKnownOn();
+
+    return knownOn(known, total);
 }
 
 export function WithoutPriceLink({
     statistics,
     category,
-    message = 'statistics.withoutPrice',
+    one = 'statistics.withoutPrice',
+    many = 'statistics.withoutPrice',
 }: {
     statistics: StatisticsDto;
     category: BookCategory | null;
-    message?: MessageKey;
+    one?: MessageKey;
+    many?: MessageKey;
 }) {
     const { t, locale } = useI18n();
     const missing = statistics.ownedBooks - statistics.price.known;
@@ -55,7 +64,9 @@ export function WithoutPriceLink({
     return (
         missing > 0 && (
             <Link to={'/books?' + filters.toString()}>
-                {t(message, { count: StatisticsFormat.number(missing, locale) })}
+                {t(missing === 1 ? one : many, {
+                    count: StatisticsFormat.number(missing, locale),
+                })}
             </Link>
         )
     );
