@@ -1075,10 +1075,8 @@ export const fr = {
     'form.organisation': '02 / Emplacement et étiquettes · Facultatif',
     'location.label': 'Emplacement physique',
     'location.bookcase': 'Bibliothèque',
-    'location.shelf': 'Étagère',
     'location.unassigned': 'Non rangé',
     'location.none': 'Aucun emplacement physique',
-    'location.shelfOnly': 'Un livre est rangé sur une étagère, jamais dans une bibliothèque seule.',
     'location.shelfRequired':
         'Choisissez une étagère de cette bibliothèque, ou laissez la bibliothèque non rangée.',
     'location.noneYet': 'Aucune étagère n’existe encore.',
