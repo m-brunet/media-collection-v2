@@ -401,3 +401,20 @@ describe('Location and tags row', () => {
         ]);
     });
 });
+
+describe('Remembered list choices', () => {
+    it('brings back the last filters and sort when coming back through the menu', async () => {
+        await savedBook();
+        const page = await signedIn('camille');
+
+        await page.goto('/books?ownership=owned&sort=title-desc');
+        await page.getByRole('button', { name: /Remove the filter Owned/ }).waitFor();
+        await page.getByRole('link', { name: 'Overview' }).click();
+        await page.getByRole('heading', { name: 'Overview' }).waitFor();
+
+        await page.getByRole('link', { name: 'Library', exact: true }).click();
+
+        await page.getByRole('button', { name: /Remove the filter Owned/ }).waitFor();
+        expect(new URL(page.url()).search).toBe('?ownership=owned&sort=title-desc');
+    });
+});
