@@ -16,7 +16,15 @@ import { useInView } from './use-in-view';
 import { useLocationCounts } from './use-location-counts';
 import { useShelfRibbon } from './use-shelf-ribbon';
 
-function RibbonCover({ book, pointed }: { book: BookListItemDto; pointed: boolean }) {
+function RibbonCover({
+    book,
+    pointed,
+    end,
+}: {
+    book: BookListItemDto;
+    pointed: boolean;
+    end: boolean;
+}) {
     const { t } = useI18n();
     const authors = book.authors.join(', ');
 
@@ -35,7 +43,10 @@ function RibbonCover({ book, pointed }: { book: BookListItemDto; pointed: boolea
                 {book.loan && <span className="ribbon__lent">{t('books.lent')}</span>}
             </Link>
             {pointed && (
-                <span className="ribbon__card" aria-hidden="true">
+                <span
+                    className={end ? 'ribbon__card ribbon__card--end' : 'ribbon__card'}
+                    aria-hidden="true"
+                >
                     <b>{book.title}</b>
                     {[
                         ...(authors ? [authors] : []),
@@ -63,15 +74,14 @@ export function RibbonShelf({
     const seen = useInView(strip);
     const [start, setStart] = useState(0);
     const [pointed, setPointed] = useState<string | null>(null);
-    const places = RibbonWindow.places(width);
-    const ribbon = useShelfRibbon(shelf, start + places, seen);
+    const ribbon = useShelfRibbon(shelf, start + RibbonWindow.places(width, start > 0), seen);
     const total = ribbon.total ?? shelf.bookCount;
-    const page = RibbonWindow.page(start, places, total);
+    const page = RibbonWindow.page(start, width, total);
     const shown = ribbon.items.slice(page.start, page.start + page.count);
     const inBooks =
         '/books?' +
         BookFilter.write({ ...BookFilter.empty(), location: ['shelf:' + shelf.id] }).toString();
-    const next = () => setStart(page.start + page.step);
+    const next = () => setStart(page.next);
 
     return (
         <div className="ribbon">
@@ -113,20 +123,21 @@ export function RibbonShelf({
                     <LoadingState label={t('books.loading')} />
                 ) : (
                     <>
-                        <button
-                            type="button"
-                            className="ribbon__arrow"
-                            aria-label={t('ribbons.previous', { name: shelf.name })}
-                            hidden={page.start === 0}
-                            onClick={() => setStart(Math.max(0, page.start - page.step))}
-                        >
-                            <Icon name="previous" size={16} />
-                        </button>
+                        {page.start > 0 && (
+                            <button
+                                type="button"
+                                className="ribbon__arrow"
+                                aria-label={t('ribbons.previous', { name: shelf.name })}
+                                onClick={() => setStart(page.previous)}
+                            >
+                                <Icon name="previous" size={16} />
+                            </button>
+                        )}
                         <ul
                             className="ribbon__covers"
                             aria-label={t('shelf.booksLabel', { name: shelf.name })}
                         >
-                            {shown.map((book) => (
+                            {shown.map((book, index) => (
                                 <li
                                     key={book.id}
                                     onMouseEnter={() => setPointed(book.id)}
@@ -134,7 +145,11 @@ export function RibbonShelf({
                                     onFocus={() => setPointed(book.id)}
                                     onBlur={() => setPointed(null)}
                                 >
-                                    <RibbonCover book={book} pointed={pointed === book.id} />
+                                    <RibbonCover
+                                        book={book}
+                                        pointed={pointed === book.id}
+                                        end={index >= shown.length / 2}
+                                    />
                                 </li>
                             ))}
                             {page.more > 0 && (
