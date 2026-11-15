@@ -7,26 +7,26 @@ import type {
 import { api } from '../../shared/api.util';
 import { ApiErrorMessage } from '../../shared/api-error-message.util';
 import type { MessageKey } from '../../shared/i18n/catalog-en';
-import { RibbonSizes } from './ribbon-sizes';
 
-interface Ribbon {
-    of: ShelfDto;
+const pageSize = 24;
+
+interface ShelfBooks {
+    of: string;
     total: number | null;
     items: BookListItemDto[];
     failure: MessageKey | null;
 }
 
-function fresh(shelf: ShelfDto): Ribbon {
-    return { of: shelf, total: null, items: [], failure: null };
+function fresh(shelfId: string): ShelfBooks {
+    return { of: shelfId, total: null, items: [], failure: null };
 }
 
-export function useShelfRibbon(shelf: ShelfDto, needed: number, active: boolean) {
-    const [state, setState] = useState<Ribbon>(() => fresh(shelf));
-    const ribbon = state.of === shelf ? state : fresh(shelf);
-    const offset = ribbon.items.length;
+export function useShelfBooks(shelf: ShelfDto, needed: number, active: boolean) {
+    const [state, setState] = useState<ShelfBooks>(() => fresh(shelf.id));
+    const books = state.of === shelf.id ? state : fresh(shelf.id);
+    const offset = books.items.length;
     const missing =
-        ribbon.failure === null &&
-        (ribbon.total === null || offset < Math.min(ribbon.total, needed));
+        books.failure === null && (books.total === null || offset < Math.min(books.total, needed));
 
     useEffect(() => {
         if (!active || !missing) {
@@ -38,14 +38,14 @@ export function useShelfRibbon(shelf: ShelfDto, needed: number, active: boolean)
             location: 'shelf:' + shelf.id,
             sort: 'shelf',
             offset: String(offset),
-            limit: String(Math.min(100, Math.max(RibbonSizes.pageSize, needed - offset))),
+            limit: String(Math.min(100, Math.max(pageSize, needed - offset))),
         });
 
         api.request<BookListPageDto>('/books?' + query.toString()).then(
             (page) =>
                 current &&
                 setState((previous) => {
-                    const base = previous.of === shelf ? previous : fresh(shelf);
+                    const base = previous.of === shelf.id ? previous : fresh(shelf.id);
 
                     if (base.items.length !== offset) {
                         return base;
@@ -60,13 +60,25 @@ export function useShelfRibbon(shelf: ShelfDto, needed: number, active: boolean)
                     };
                 }),
             (error: unknown) =>
-                current && setState({ ...fresh(shelf), failure: ApiErrorMessage.key(error) }),
+                current && setState({ ...fresh(shelf.id), failure: ApiErrorMessage.key(error) }),
         );
 
         return () => {
             current = false;
         };
-    }, [shelf, active, missing, offset, needed]);
+    }, [shelf.id, active, missing, offset, needed]);
 
-    return ribbon;
+    return {
+        ...books,
+        remove: (bookId: string) =>
+            setState((previous) =>
+                previous.of !== shelf.id
+                    ? previous
+                    : {
+                          ...previous,
+                          items: previous.items.filter((book) => book.id !== bookId),
+                          total: previous.total === null ? null : previous.total - 1,
+                      },
+            ),
+    };
 }
