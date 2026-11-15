@@ -60,6 +60,7 @@ Start with the [implementation plan](plans/implementation-plan.md) for task stat
 - [Issues #34, #72, #73: Statistics page, Dashboard, Story and Topics views](plans/issue-34-statistics.md).
 - [Issue #51: Bookshelves page, View choice and the Wall view](plans/issue-51-bookshelves-wall.md).
 - [Issue #75: Bookshelves page, the Ribbons view](plans/issue-75-bookshelves-ribbons.md).
+- [Issue #76: Bookshelves page, the Columns view](plans/issue-76-bookshelves-columns.md).
 
 ## Reading in Obsidian
 

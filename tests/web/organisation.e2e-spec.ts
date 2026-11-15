@@ -398,6 +398,75 @@ describe('Bookshelves Ribbons', () => {
     });
 });
 
+describe('Bookshelves Columns', () => {
+    async function columns(count: number, viewport?: { width: number; height: number }) {
+        const oak = await bookcase('Oak bookcase', ['Shelf 1', 'Shelf 2']);
+
+        for (let index = 0; index < count; index++) {
+            await book('Book ' + String(index).padStart(2, '0'), { shelfId: oak.shelves[0]!.id });
+        }
+
+        const page = await signedIn('camille', viewport);
+
+        await openBookshelves(page);
+        await page.getByRole('radio', { name: 'Columns' }).click();
+        await rows(page).first().waitFor();
+
+        return page;
+    }
+
+    function rows(page: Page) {
+        return page.getByRole('table', { name: 'Books on Shelf 1' }).locator('tbody tr');
+    }
+
+    it('loads the following books while the table scrolls', async () => {
+        const page = await columns(40);
+
+        await page
+            .locator('.columns-view__scroller')
+            .evaluate((element) => element.scrollTo({ top: element.scrollHeight }));
+
+        await expect.poll(() => rows(page).count()).toBe(40);
+        await page.getByText(/–40 of 40$/).waitFor();
+    });
+
+    it('goes through the columns with the arrow keys and opens a book with Enter', async () => {
+        const page = await columns(2);
+
+        await page.getByRole('option', { name: /^Oak bookcase/ }).focus();
+        await page.keyboard.press('ArrowRight');
+        await page.keyboard.press('ArrowRight');
+
+        await page.keyboard.press('Enter');
+
+        await page.getByRole('heading', { name: /^Book 00 / }).waitFor();
+    });
+
+    it('moves a book to another shelf with M and updates the counts', async () => {
+        const page = await columns(2);
+
+        await rows(page).first().focus();
+        await page.keyboard.press('m');
+        await page
+            .getByRole('dialog')
+            .getByLabel(/^Shelf/)
+            .selectOption({ label: 'Shelf 2' });
+
+        await page.getByRole('button', { name: 'Move book' }).click();
+
+        await page.getByRole('option', { name: /^Shelf 2\s*1$/ }).waitFor();
+        expect(await rows(page).count()).toBe(1);
+    });
+
+    it('fits the smallest desktop window', async () => {
+        const page = await columns(2, viewports.minimumDesktop);
+
+        const scrolled = await page.evaluate(() => document.documentElement.scrollWidth);
+
+        expect(scrolled).toBeLessThanOrEqual(viewports.minimumDesktop.width);
+    });
+});
+
 describe('Tags', () => {
     it('reuses an equivalent tag typed in the book form', async () => {
         await created<TagDto>('/tags', { name: 'Science-fiction' });
