@@ -101,7 +101,11 @@ describe('Statistics', () => {
         await page.getByRole('heading', { name: 'Owned books' }).waitFor();
         const all = [await owned(page), await page.getByText('960', { exact: true }).count()];
 
-        await page.getByRole('radio', { name: 'Manga' }).check({ force: true });
+        await page
+            .getByRole('group', { name: 'Show' })
+            .locator('label', { hasText: 'Manga' })
+            .click();
+        await page.waitForURL(/category=manga/);
         await page.getByText('360', { exact: true }).waitFor();
 
         expect([all, await owned(page), new URL(page.url()).search]).toEqual([
