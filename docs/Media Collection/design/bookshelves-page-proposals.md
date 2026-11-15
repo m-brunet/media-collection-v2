@@ -1,6 +1,6 @@
 # Bookshelves page: design proposals
 
-Status: decided on 2026-11-13. Three views, no single winner: **Wall** (proposal A, [issue 51](https://github.com/m-brunet/media-collection-v2/issues/51), done on 2026-11-15), **Ribbons** (proposal B, issue 75) and **Columns** (proposal D, issue 76), behind a View choice. The Shelf map (proposal C) is dropped, and so is the search field. The rules of the Wall are in [issue-51-bookshelves-wall](../plans/issue-51-bookshelves-wall.md); this document keeps the study.
+Status: decided on 2026-11-13. Three views, no single winner: **Wall** (proposal A, [issue 51](https://github.com/m-brunet/media-collection-v2/issues/51), done on 2026-11-15), **Ribbons** (proposal B, [issue 75](https://github.com/m-brunet/media-collection-v2/issues/75), done on 2026-11-15) and **Columns** (proposal D, issue 76), behind a View choice. The Shelf map (proposal C) is dropped, and so is the search field. The rules of the Wall are in [issue-51-bookshelves-wall](../plans/issue-51-bookshelves-wall.md), those of the Ribbons in [issue-75-bookshelves-ribbons](../plans/issue-75-bookshelves-ribbons.md); this document keeps the study.
 
 The proposals are drawn on the Doop canvas, page [Bookcases page - New designs](https://doop.design/c/shiKEeCX2V?page=v9usJgjHFw). They follow the Libris look described in [design guidelines](design-guidelines.md): they change the structure of the page, not its style.
 

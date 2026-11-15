@@ -17,6 +17,8 @@ bookcase) and `apps/server/src/books` (shelf order of the book list). Libris pag
   **It is hidden while the page has a single view**, so it appears with #75 or #76. Selecting a bookcase or a shelf
   keeps the view in the address.
 - **Selection in the address:** `?bookcase=` and `?shelf=`. Without them, the first bookcase and its first shelf.
+  When both are given and the shelf stands in another bookcase, the bookcase wins and its first shelf is selected
+  (changed on 2026-11-15 with #75, whose tabs change the bookcase and keep the shelf).
   Opening a bookcase from the strip selects its first shelf.
 - **Strip:** one miniature per bookcase, in the bookcase list order (by name). One bar per shelf, as long as its book
   count compared to the fullest shelf of the library. The open bookcase is marked; the strip scrolls sideways when it
@@ -74,4 +76,5 @@ bookcase) and `apps/server/src/books` (shelf order of the book list). Libris pag
    of 10 books: the 10 covers, no tile.
 8. The window grows from 1440 px to 1920 px: the bays keep their width and the shelf panel grows.
 9. A Guest sees no *New bookcase*, *Add shelf*, *Delete bookcase*, *Move shelf* or *Delete shelf*.
-10. `/bookshelves?view=unknown` shows the Wall; the View choice is not shown while the Wall is the only view.
+10. `/bookshelves?view=unknown` shows the Wall; the View choice is not shown while the Wall is the only view. (Since #75
+    the choice shows Wall and Ribbons.)

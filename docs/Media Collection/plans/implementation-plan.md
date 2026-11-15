@@ -48,7 +48,8 @@ Bugs, improvements and features are GitHub issues in this repository, decided on
 - Domain name and HTTP from the internet (2026-11-09, Task 9.6): a saved domain name, checked on save, used by every internet address; the certificate then covers the name (`classic` profile, renewed at two thirds of its lifetime), still proven on external port 443; no DNS provider API. HTTP may be opened to the internet at the Admin's explicit request (reverses "only HTTPS is exposed"); a working HTTPS closes it.
 - Internet ports (2026-11-10, issue #21): the HTTP and HTTPS ports are also the outside ports on the router and appear in the internet addresses; router port 443 is opened only around each Let's Encrypt check. Plan: [issue-21-internet-ports](issue-21-internet-ports.md).
 - Statistics page (2026-11-13, issue #34): a read-only `/statistics` page over owned books, narrowed by category, with Dashboard, Story (#72) and Topics (#73) views. Plan: [issue-34-statistics](issue-34-statistics.md).
-- Bookshelves page (2026-11-13, issue #51): views behind a View choice shared with Statistics; the Wall draws bookcases with one spine per book; shelf order for the book list (`sort=shelf`). Ribbons (#75) and Columns (#76) follow. Plan: [issue-51-bookshelves-wall](issue-51-bookshelves-wall.md).
+- Bookshelves page (2026-11-13, issue #51): views behind a View choice shared with Statistics; the Wall draws bookcases with one spine per book; shelf order for the book list (`sort=shelf`). Columns (#76) follows. Plan: [issue-51-bookshelves-wall](issue-51-bookshelves-wall.md).
+- Bookshelves Ribbons view (2026-11-15, issue #75): bookcase tabs and one strip of covers per shelf, moving page by page; a shared menu button for the shelf actions. Plan: [issue-75-bookshelves-ribbons](issue-75-bookshelves-ribbons.md).
 - Markdown excluded from oxfmt. `npm run check` builds before lint.
 
 ## Testing strategy (applies to every task)
