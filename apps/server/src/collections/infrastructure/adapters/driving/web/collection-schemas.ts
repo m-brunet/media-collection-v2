@@ -7,6 +7,10 @@ export const collectionListSchema = z.strictObject({
     direction: z.enum(['asc', 'desc']).default('asc'),
     offset: z.coerce.number().int().min(0).default(0),
     limit: z.coerce.number().int().min(1).max(100).default(48),
+    finished: z
+        .enum(['true', 'false'])
+        .optional()
+        .transform((value) => (value === undefined ? null : value === 'true')),
     ...bookFilterQuery,
 });
 

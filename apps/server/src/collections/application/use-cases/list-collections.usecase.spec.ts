@@ -17,7 +17,14 @@ function subject(current: ReturnType<typeof CollectionDoubles.shelf>) {
     );
 }
 
-const query = { search: '', direction: 'asc' as const, offset: 0, limit: 48, filter: anyBook };
+const query = {
+    search: '',
+    finished: null,
+    direction: 'asc' as const,
+    offset: 0,
+    limit: 48,
+    filter: anyBook,
+};
 
 describe('ListCollections', () => {
     it('lists collections by name with whole-collection counts', async () => {
@@ -38,6 +45,30 @@ describe('ListCollections', () => {
             missingCount: 9,
             finished: false,
         });
+    });
+
+    it('keeps only the Finished collections when asked', async () => {
+        const current = CollectionDoubles.shelf();
+
+        await CollectionDoubles.member(current, 'b1', 'owned', 'Dune', 1);
+        await CollectionDoubles.member(current, 'a1', 'owned', 'Batman', 1);
+        await CollectionDoubles.markFinished(current, 'collection-1');
+
+        const result = await subject(current).execute(owner, { ...query, finished: true });
+
+        expect([result.total, result.items.map((item) => item.name)]).toEqual([1, ['Dune']]);
+    });
+
+    it('keeps only the unfinished collections when asked, even without known gaps', async () => {
+        const current = CollectionDoubles.shelf();
+
+        await CollectionDoubles.member(current, 'b1', 'owned', 'Dune', 1);
+        await CollectionDoubles.member(current, 'a1', 'owned', 'Batman', 1);
+        await CollectionDoubles.markFinished(current, 'collection-1');
+
+        const result = await subject(current).execute(guest, { ...query, finished: false });
+
+        expect([result.total, result.items.map((item) => item.name)]).toEqual([1, ['Batman']]);
     });
 
     it('orders collections from Z to A', async () => {
