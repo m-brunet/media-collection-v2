@@ -298,7 +298,7 @@ describe('Collections', () => {
             ].map((locator) => locator.boundingBox()),
         );
 
-        const middle = (box: { y: number; height: number } | null) =>
+        const middle = (box: { y: number; height: number } | null | undefined) =>
             Math.round(box!.y + box!.height / 2);
 
         expect([
