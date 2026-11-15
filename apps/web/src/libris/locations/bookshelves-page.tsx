@@ -95,7 +95,7 @@ export function BookshelvesPage() {
     const chosen = shelves.find((candidate) => candidate.id === parameters.get('shelf'));
     const bookcase =
         bookcases.find(
-            (candidate) => candidate.id === (chosen?.bookcaseId ?? parameters.get('bookcase')),
+            (candidate) => candidate.id === (parameters.get('bookcase') ?? chosen?.bookcaseId),
         ) ?? bookcases[0];
 
     if (!bookcase) {
@@ -121,7 +121,8 @@ export function BookshelvesPage() {
         );
     }
 
-    const shelf = chosen ?? bookcase.shelves[0] ?? null;
+    const shelf =
+        (chosen?.bookcaseId === bookcase.id ? chosen : undefined) ?? bookcase.shelves[0] ?? null;
     const View = view.component;
 
     return (
