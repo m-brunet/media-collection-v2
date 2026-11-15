@@ -157,7 +157,7 @@ export interface Appearance {
 
 export type BookCategory = 'books' | 'manga' | 'comics';
 export type BookOwnership = 'owned' | 'not-owned';
-export type BookSort = 'title' | 'added' | 'published';
+export type BookSort = 'title' | 'added' | 'published' | 'shelf';
 
 export interface AuthorDto {
     id: string;

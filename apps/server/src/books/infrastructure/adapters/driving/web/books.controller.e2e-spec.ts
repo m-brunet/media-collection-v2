@@ -294,6 +294,29 @@ describe('GET /api/books', () => {
 
         expect(response.body.items.map((item) => item.title)).toEqual(['New', 'Old', 'Unknown']);
     });
+    it('sorts in shelf order, a collection at its name and in volume order', async () => {
+        await created({ title: 'Zorro' });
+        await member(membership('Dune', 2));
+        await member(membership('Dune', 1));
+        await created({ title: 'Aurora', isbn: '9780306406157' });
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call<BookListPageDto>('/books?sort=shelf');
+
+        expect(response.body.items.map((item) => item.title)).toEqual([
+            'Aurora',
+            'Edition 2',
+            'Edition 1',
+            'Zorro',
+        ]);
+    });
+    it('refuses an unknown sort', async () => {
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call<BookListPageDto>('/books?sort=colour');
+
+        expect(response.status).toBe(400);
+    });
     it('sorts by most recently added', async () => {
         await created({ title: 'First' });
         app.advance(1000);

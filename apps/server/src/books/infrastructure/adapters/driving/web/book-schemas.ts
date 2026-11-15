@@ -87,7 +87,7 @@ export const newBookSchema = bookInputSchema.extend({ read: z.boolean() });
 
 export const bookListSchema = z.strictObject({
     search: z.string().max(400).default(''),
-    sort: z.enum(['title', 'added', 'published']).default('title'),
+    sort: z.enum(['title', 'added', 'published', 'shelf']).default('title'),
     direction: z.enum(['asc', 'desc']).default('asc'),
     offset: z.coerce.number().int().min(0).default(0),
     limit: z.coerce.number().int().min(1).max(100).default(48),

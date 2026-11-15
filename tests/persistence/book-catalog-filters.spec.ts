@@ -481,3 +481,46 @@ describe('KyselyBookCatalog collection matches', () => {
         expect(result).toEqual([dune]);
     });
 });
+
+describe('KyselyBookCatalog shelf order', () => {
+    async function shelved(current: Awaited<ReturnType<typeof library>>) {
+        const page = await current.catalog.search({
+            search: '',
+            sort: 'shelf',
+            direction: 'asc',
+            offset: 0,
+            limit: 48,
+            readerId: null,
+            filter: BookFilter.of({}),
+        });
+
+        return page.items.map((item) => item.title);
+    }
+
+    it('keeps the volumes of a collection together at the place of its name', async () => {
+        const current = await library();
+        const saga = await current.collection('Saga');
+
+        await current.book({ title: 'Zeta' });
+        await current.book({ title: 'Book Three', collectionId: saga, volume: 3 });
+        await current.book({ title: 'Alpha' });
+        await current.book({ title: 'Book One', collectionId: saga, volume: 1 });
+        await current.book({ title: 'Book Two', collectionId: saga, volume: 2 });
+
+        const result = await shelved(current);
+
+        expect(result).toEqual(['Alpha', 'Book One', 'Book Two', 'Book Three', 'Zeta']);
+    });
+    it('places a book in no collection at its title', async () => {
+        const current = await library();
+        const middle = await current.collection('Middle');
+
+        await current.book({ title: 'Nadir' });
+        await current.book({ title: 'Apex', collectionId: middle, volume: 1 });
+        await current.book({ title: 'Lumen' });
+
+        const result = await shelved(current);
+
+        expect(result).toEqual(['Lumen', 'Apex', 'Nadir']);
+    });
+});
