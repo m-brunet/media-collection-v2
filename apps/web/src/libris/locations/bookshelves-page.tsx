@@ -14,6 +14,7 @@ import type { LocationEditing } from './location-dialogs';
 import { LocationDialogs } from './location-dialogs';
 import { useBookcases } from './use-bookcases';
 import { useLocationCounts } from './use-location-counts';
+import { ColumnsView } from './columns-view';
 import { RibbonsView } from './ribbons-view';
 import { WallView } from './wall-view';
 
@@ -28,6 +29,12 @@ const views: readonly BookshelvesViewEntry[] = [
         label: 'bookshelves.viewRibbons',
         icon: 'view-ribbons',
         component: RibbonsView,
+    },
+    {
+        id: 'columns',
+        label: 'bookshelves.viewColumns',
+        icon: 'view-columns',
+        component: ColumnsView,
     },
 ];
 
@@ -165,6 +172,10 @@ export function BookshelvesPage() {
                     editor={editor}
                     onSelect={select}
                     onEdit={setEditing}
+                    onChanged={(message) => {
+                        setDone(message);
+                        reload();
+                    }}
                 />
             </div>
             {dialogs}

@@ -358,7 +358,7 @@ it('has no search field any more', async () => {
     expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
 });
 
-it('offers the Wall and the Ribbons in the View choice', async () => {
+it('offers the Wall, the Ribbons and the Columns in the View choice', async () => {
     api();
 
     await shown();
@@ -370,6 +370,7 @@ it('offers the Wall and the Ribbons in the View choice', async () => {
     ).toEqual([
         ['Wall', 'true'],
         ['Ribbons', 'false'],
+        ['Columns', 'false'],
     ]);
 });
 
