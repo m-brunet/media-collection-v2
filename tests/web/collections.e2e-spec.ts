@@ -324,6 +324,47 @@ describe('Collections', () => {
         expect(await page.getByRole('link', { name: /Batman/ }).count()).toBe(1);
     });
 
+    it.each([viewports.minimumDesktop, viewports.referenceDesktop])(
+        'fits three cover previews and the counts inside a card at $width px',
+        async (viewport) => {
+            for (const volume of [1, 2, 3]) {
+                const saved = await member(membership('Batman', volume));
+
+                await admin.call('/books/' + saved.id + '/cover', 'PUT', undefined, {
+                    raw: {
+                        bytes: Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2]),
+                        contentType: 'image/png',
+                    },
+                });
+            }
+
+            await member(membership('Dune', 1));
+            const page = await signedIn('camille', viewport);
+
+            await page.getByRole('link', { name: 'Collections' }).click();
+
+            const card = page.locator('.collection-card').first();
+
+            await card.locator('.collection-card__covers .book-cover').nth(2).waitFor();
+            const fit = await card.evaluate((element) => {
+                const box = (selector: string) =>
+                    element.querySelector(selector)!.getBoundingClientRect();
+                const counts = box('.collection-card__counts');
+
+                return {
+                    covers: element.querySelectorAll('.collection-card__covers .book-cover').length,
+                    apart: box('.collection-card__covers').right <= counts.left,
+                    inside: counts.right <= element.getBoundingClientRect().right,
+                    unclipped: [...element.querySelectorAll('.collection-card__counts *')].every(
+                        (child) => child.scrollWidth <= child.clientWidth + 1,
+                    ),
+                };
+            });
+
+            expect(fit).toEqual({ covers: 3, apart: true, inside: true, unclipped: true });
+        },
+    );
+
     it('shows the covers of a collection without clipping at 1280 px', async () => {
         await member(membership('Dune', 1));
         await member(membership('Dune', 1, 3), { publisher: 'Chilton Books' });
