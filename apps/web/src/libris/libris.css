@@ -2771,10 +2771,38 @@ a.wall-tile:hover .wall-tile__title {
     flex: 1;
 }
 
-.statistics-ring__legend ul {
+.statistics-legends {
     margin: 0;
     padding: 0;
     list-style: none;
+}
+
+.statistics-legends--inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-6);
+    margin-top: var(--space-3);
+}
+
+.statistics-legends--inline .statistics-legend {
+    grid-template-columns: 12px auto auto;
+}
+
+.statistics-split__bar {
+    display: flex;
+    gap: 2px;
+    height: 28px;
+    overflow: hidden;
+    border-radius: 6px;
+    background: var(--color-chart-track);
+}
+
+.statistics-split__part {
+    display: block;
+}
+
+.statistics-split__part--dimmed {
+    opacity: 0.35;
 }
 
 .statistics-legend {
