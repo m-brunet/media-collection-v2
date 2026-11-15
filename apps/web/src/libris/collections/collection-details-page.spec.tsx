@@ -788,6 +788,101 @@ it('sends a publisher to fill only on the books that have none', async () => {
     });
 });
 
+function shelfApi() {
+    return batchApi().on('GET /bookcases', () => ({
+        status: 200,
+        body: [
+            {
+                id: 'oak',
+                name: 'Oak',
+                bookCount: 0,
+                shelves: [{ id: 'oak-top', bookcaseId: 'oak', name: 'Top', bookCount: 0 }],
+            },
+            {
+                id: 'study',
+                name: 'Study',
+                bookCount: 0,
+                shelves: [{ id: 'study-top', bookcaseId: 'study', name: 'Top', bookCount: 0 }],
+            },
+        ],
+    }));
+}
+
+function shelfChoice(card: HTMLElement) {
+    return within(card).findByRole('combobox', { name: /^Physical location/ });
+}
+
+it('offers one grouped shelf choice to place the books, with no shelf chosen yet', async () => {
+    shelfApi();
+    show();
+    const panel = await chooseAllAndOpen();
+    const choice = await shelfChoice(await addChange(panel, 'Shelf'));
+
+    expect([
+        within(choice)
+            .getAllByRole('group')
+            .map((group) => group.getAttribute('label')),
+        within(choice).getAllByRole('option')[0],
+    ]).toEqual([
+        ['Oak', 'Study'],
+        expect.objectContaining({ disabled: true, textContent: 'Choose a shelf' }),
+    ]);
+});
+
+it('asks for a shelf before reviewing a placement', async () => {
+    const api = shelfApi();
+
+    show();
+    const panel = await chooseAllAndOpen();
+
+    await shelfChoice(await addChange(panel, 'Shelf'));
+
+    await userEvent.click(within(panel).getByRole('button', { name: 'Review changes' }));
+
+    expect([
+        await within(panel).findByText('Choose a shelf, or choose Clear.'),
+        api.calls.filter((call) => call.route === 'POST /books/batch-edit'),
+    ]).toEqual([expect.anything(), []]);
+});
+
+it('sends a shelf of another bookcase to fill only the books without one', async () => {
+    const api = shelfApi();
+
+    show();
+    const panel = await chooseAllAndOpen();
+    const card = await addChange(panel, 'Shelf');
+
+    await userEvent.click(within(card).getByRole('radio', { name: 'Fill if empty' }));
+    await userEvent.selectOptions(await shelfChoice(card), 'Study – Top');
+
+    await userEvent.click(within(panel).getByRole('button', { name: 'Review changes' }));
+
+    expect(api.calls.find((call) => call.route === 'POST /books/batch-edit')?.body).toEqual({
+        collectionId: 'c1',
+        bookIds: ['omnibus', 'year-one', 'twelve'],
+        preview: true,
+        changes: { shelfId: 'study-top', onlyIfEmpty: ['shelfId'] },
+    });
+});
+
+it('hides the shelf choice and removes the location with Clear', async () => {
+    const api = shelfApi();
+
+    show();
+    const panel = await chooseAllAndOpen();
+    const card = await addChange(panel, 'Shelf');
+
+    await shelfChoice(card);
+    await userEvent.click(within(card).getByRole('radio', { name: 'Clear' }));
+
+    await userEvent.click(within(panel).getByRole('button', { name: 'Review changes' }));
+
+    expect([
+        within(card).queryByRole('combobox'),
+        api.calls.find((call) => call.route === 'POST /books/batch-edit')?.body,
+    ]).toEqual([null, expect.objectContaining({ changes: { shelfId: null } })]);
+});
+
 it('explains that Fill if empty only reaches the books without a value', async () => {
     batchApi();
     show();
