@@ -50,7 +50,7 @@ Task 1 is complete. [Collections and shopping](collections.md) is the authoritat
 - Overlap is permitted only between Owned books. Rare planned-book conflicts require explicit resolution, never silent deletion/replacement.
 - Empty collections disappear; deleting a collection preserves its books and clears membership/coverage.
 - A collection has one category (Books, Manga or Comics) shared by all its books; a mismatch is refused with a one-click fix, and the collection's Category changes all its books at once. See [Category](collections.md#category).
-- On desktop, **Add volumes up to…** adds a collection's missing volumes from the BnF catalogue, in the edition of a volume already owned, after a row-by-row review. See [Add missing volumes](collections.md#add-missing-volumes).
+- On desktop, **Add volumes** (unfinished collections only) adds a collection's missing volumes from the BnF catalogue, in the edition of a volume already owned, after a row-by-row review. See [Add missing volumes](collections.md#add-missing-volumes).
 - Mobile uses compact missing-volume entries and emphasizes last owned. Ordinary saved Not Owned entries require confirmation for quick add; inferred volumes and omnibus books cannot use it. Guests remain read-only.
 
 See [edition impact analysis](collection-editions-impact.md) for counting implications. Shared name matching belongs to Task 2; exact screen refinements belong to Task 6. No database or implementation design is prescribed.
