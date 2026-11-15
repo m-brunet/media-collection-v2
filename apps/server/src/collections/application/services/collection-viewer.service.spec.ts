@@ -58,7 +58,29 @@ describe('CollectionViewer', () => {
         expect(summary.previews).toEqual([
             { id: 'three', title: 'Batman three', updatedAt: '2026-02-05T00:00:00.000Z' },
             { id: 'four', title: 'Batman four', updatedAt: '2026-02-04T00:00:00.000Z' },
+            { id: 'one', title: 'Batman one', updatedAt: '2026-02-03T00:00:00.000Z' },
         ]);
+    });
+
+    it('previews at most three covers', async () => {
+        const current = CollectionDoubles.shelf();
+
+        for (const [id, volume] of [
+            ['one', 1],
+            ['two', 2],
+            ['three', 3],
+            ['four', 4],
+        ] as const) {
+            await CollectionDoubles.member(current, id, 'owned', 'Batman', volume);
+            current.members.saveBook(id, 'owned', 'Batman ' + id, { hasCover: true });
+        }
+
+        const collection = (await current.collections.findById('collection-1'))!;
+        const records = await current.members.ofCollections(['collection-1']);
+
+        const summary = current.viewer.summary(collection, records);
+
+        expect(summary.previews.map((preview) => preview.id)).toEqual(['one', 'two', 'three']);
     });
 
     it('falls back to the covers of books not owned', async () => {
