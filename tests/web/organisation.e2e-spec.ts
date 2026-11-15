@@ -319,7 +319,7 @@ describe('Bookshelves Ribbons', () => {
         const page = await signedIn('camille', viewport);
 
         await openBookshelves(page);
-        await page.getByText('Ribbons', { exact: true }).click();
+        await page.getByRole('radio', { name: 'Ribbons' }).click();
         await page.getByRole('tablist', { name: 'Bookcases' }).waitFor();
         await covers(page).first().waitFor();
 
@@ -374,6 +374,19 @@ describe('Bookshelves Ribbons', () => {
         expect(await page.evaluate(() => document.activeElement?.textContent)).toMatch(
             /^Study bookcase/,
         );
+    });
+
+    it('lines the View choice up with the New bookcase button', async () => {
+        const page = await ribbons(1);
+
+        const [views, create] = await Promise.all(
+            [
+                page.getByRole('radiogroup', { name: 'View' }),
+                page.getByRole('button', { name: 'New bookcase' }),
+            ].map((locator) => locator.evaluate((element) => element.getBoundingClientRect())),
+        );
+
+        expect([views!.top, views!.height]).toEqual([create!.top, create!.height]);
     });
 
     it('fits the smallest desktop window', async () => {
