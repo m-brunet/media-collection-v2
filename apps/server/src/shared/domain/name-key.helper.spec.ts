@@ -80,3 +80,9 @@ it('does not find a short name similar to a longer word containing it', () => {
 
     expect(result).toBe(false);
 });
+
+it('reduces a name to its words, ignoring case, accents and punctuation', () => {
+    const words = ['Le Livre de Poche', ' le livre-de-POCHE. ', 'Pôle fiction'].map(NameKey.words);
+
+    expect(words).toEqual(['le livre de poche', 'le livre de poche', 'pole fiction']);
+});

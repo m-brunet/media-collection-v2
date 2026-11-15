@@ -111,6 +111,7 @@ export const addVolumesSchema = z.strictObject({
                 ownership: z.enum(['owned', 'not-owned']),
                 title: BookFields.text(1000),
                 authors: z.array(z.string().max(400)).max(30),
+                publisher: BookFields.text(1000),
                 publicationYear: z.number().int().nullable(),
                 pageCount: z.number().int().nullable(),
                 summary: BookFields.text(20000),

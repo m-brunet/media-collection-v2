@@ -76,6 +76,7 @@ export class VolumeReview {
                 ownership: choice.ownership,
                 title: choice.sourceTitle || !row.generatedTitle ? edition.title : null,
                 authors: edition.authors,
+                publisher: edition.publishers[0] ?? null,
                 publicationYear: edition.publicationYear,
                 pageCount: edition.pageCount,
                 summary: edition.summary,

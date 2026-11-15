@@ -50,6 +50,7 @@ function volume(number: number, isbn: string, changes: Partial<NewVolumeDto> = {
         ownership: 'owned',
         title: null,
         authors: ['Yukito Kishiro'],
+        publisher: null,
         publicationYear: 2001,
         pageCount: 200,
         summary: null,
@@ -76,6 +77,29 @@ describe('POST /api/books/volumes', () => {
             [2, 'Gunnm Vol. 2'],
             [3, 'Gunnm Vol. 3'],
         ]);
+    });
+
+    it('saves the publisher chosen for each new volume', async () => {
+        const first = await anchor();
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<VolumesAddedDto>('/books/volumes', 'POST', {
+            collectionId: first.collection!.id,
+            anchorBookId: first.id,
+            volumes: [
+                volume(2, '9782723434324', { publisher: 'Seinen manga' }),
+                volume(3, '9782723434775', { publisher: 'Glénat' }),
+            ],
+        });
+
+        const publishers = await Promise.all(
+            response.body.added.map(
+                async (added) =>
+                    (await client.call<BookDto>('/books/' + added.bookId)).body.publisher,
+            ),
+        );
+
+        expect([response.status, publishers]).toEqual([201, ['Seinen manga', 'Glénat']]);
     });
 
     it('gives a new volume the category and publisher of the anchor', async () => {

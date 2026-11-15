@@ -13,9 +13,11 @@ import type { AuthorMatcher } from '../services/author-matcher.service.js';
 import type { SeriesLookup, SeriesReply } from '../services/series-lookup.service.js';
 import type { OwnedVolume, VolumeEdition } from '../../domain/services/series-volumes.service.js';
 import { SeriesVolumes } from '../../domain/services/series-volumes.service.js';
+import type { LookupAnswer } from '../../domain/value-objects/lookup-answer.value-object.js';
 import { GeneratedTitle } from '../../domain/value-objects/generated-title.value-object.js';
 import { Isbn } from '../../domain/value-objects/isbn.value-object.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
+import { NameKey } from '../../../shared/domain/name-key.helper.js';
 import { Required } from '../../../shared/domain/required.helper.js';
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
@@ -123,12 +125,23 @@ export class FindMissingVolumes implements FindMissingVolumesUseCase {
             title: answer.title,
             subtitle: edition.subtitle,
             authors: answer.authors.map((name) => existing.get(name) ?? name),
-            publisher: answer.publisher,
+            publishers: FindMissingVolumes.publishers(answer),
             publicationYear: answer.publicationDate?.year ?? null,
             pageCount: answer.pageCount,
             summary: answer.summary?.text ?? null,
             inLibrary: (await this.books.findByIsbn(edition.isbn13)) !== null,
         };
+    }
+
+    private static publishers(answer: LookupAnswer): string[] {
+        const names = [answer.publisher, answer.publisherCollection].filter(
+            (name): name is string => name !== null,
+        );
+
+        return names.filter(
+            (name, index) =>
+                names.findIndex((other) => NameKey.words(other) === NameKey.words(name)) === index,
+        );
     }
 
     private static owned(members: readonly CollectionVolumeMember[]): OwnedVolume[] {

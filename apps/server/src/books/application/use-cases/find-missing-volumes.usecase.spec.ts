@@ -139,7 +139,7 @@ describe('FindMissingVolumes', () => {
                         title: 'Le corps et l’âme',
                         subtitle: null,
                         authors: ['Yukito Kishirô'],
-                        publisher: 'Glénat',
+                        publishers: ['Glénat'],
                         publicationYear: 2003,
                         pageCount: 200,
                         summary: 'Gally 3',
@@ -149,6 +149,25 @@ describe('FindMissingVolumes', () => {
                 ],
             },
         ]);
+    });
+
+    it("offers an edition's publisher, then its publisher's collection, once each", async () => {
+        const { useCase, series } = setup();
+
+        series.editionsReply = { kind: 'found', value: [five] };
+        series.pages = [
+            page([
+                entry('9782723434775', 3, { publisherCollection: 'Seinen manga' }),
+                entry('9782723434782', 4, { publisherCollection: 'GLENAT' }),
+            ]),
+        ];
+
+        const result = await useCase.execute(owner, 'gunnm', 4);
+
+        expect(
+            result.kind === 'found' &&
+                result.rows.map((row) => row.editions.map((edition) => edition.publishers)),
+        ).toEqual([[['Glénat', 'Seinen manga']], [['Glénat']]]);
     });
 
     it('gives no generated title to Books', async () => {
