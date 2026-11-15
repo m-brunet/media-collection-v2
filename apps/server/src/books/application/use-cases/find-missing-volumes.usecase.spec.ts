@@ -59,12 +59,19 @@ function setup(members: CollectionVolumeMember[] = gunnm, category: 'books' | 'm
     const collections = new MemoryCollectionVolumes();
     const budget = new SourceBudget(series.limit, clock);
 
-    collections.collections.set('gunnm', { id: 'gunnm', name: 'Gunnm', category, members });
+    collections.collections.set('gunnm', {
+        id: 'gunnm',
+        name: 'Gunnm',
+        category,
+        finished: false,
+        members,
+    });
 
     return {
         current,
         series,
         budget,
+        collections,
         useCase: new FindMissingVolumes(
             collections,
             new SeriesLookup(series, budget, clock),
@@ -81,6 +88,20 @@ describe('FindMissingVolumes', () => {
         const result = useCase.execute(guest, 'gunnm', 8);
 
         await expect(result).rejects.toMatchObject({ code: 'forbidden' });
+    });
+
+    it('refuses a Finished collection before asking the catalogue', async () => {
+        const { useCase, series, collections } = setup();
+
+        collections.collections.get('gunnm')!.finished = true;
+
+        const result = useCase.execute(owner, 'gunnm', 8);
+
+        await expect(result).rejects.toMatchObject({
+            code: 'conflict',
+            reason: 'collection-finished',
+        });
+        expect(series.asked).toEqual([]);
     });
 
     it('lists every missing number up to the volume asked, gaps included', async () => {
