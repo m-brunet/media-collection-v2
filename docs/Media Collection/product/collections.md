@@ -62,6 +62,8 @@ One Owned omnibus remains one book for library counts, location, and lending whi
 
 Desktop collection details show the collection as a wall of covers in volume order, wrapping across the full width of the page. Each book is one tile: its cover, or a **No cover** placeholder with a solid border when it has none (missing volumes have a dashed one), its title and a muted line (Owned or Not owned, Omnibus with its range, Books for the Books category). Several editions of the same volume each get their own tile, side by side; an omnibus appears once, at its first volume, so the same omnibus covering several numbers never looks like several physical books. Clicking a tile opens the book's details page. Each expected volume with no saved book appears in its place as an empty dashed tile, for example **Volume 10 · Missing**; it opens nothing and cannot be chosen in **Edit books**. A planned volume shows its saved Not owned book instead (redesigned 2026-11-13; the expandable volume entries are gone).
 
+On the Collections page, each collection card previews up to three covers of its books, those of Owned books first (issue #70, 2026-11-15); a collection with fewer covers shows the ones it has, and one without any shows none.
+
 ## Finished
 
 - Finished is explicitly set by the user, permitted only when every expected volume is covered by an Owned book.
