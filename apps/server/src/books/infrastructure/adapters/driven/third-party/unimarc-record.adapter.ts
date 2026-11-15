@@ -1,5 +1,6 @@
 import type { BookCategory } from '../../../../domain/entities/book.entity.js';
 import { LookupAnswer } from '../../../../domain/value-objects/lookup-answer.value-object.js';
+import { NameKey } from '../../../../../shared/domain/name-key.helper.js';
 import { Required } from '../../../../../shared/domain/required.helper.js';
 
 type Subfields = Map<string, string[]>;
@@ -7,7 +8,7 @@ type Fields = Map<string, Subfields[]>;
 
 // A UNIMARC record of the BnF general catalogue. Fields used: 010 ISBN, 101 language (and
 // original language), 200 title (subtitle and volume), 210/214 publisher and date, 215 extent, 330
-// summary, 461 series and volume, 608 and 686 category (see `category`), 70X persons and 71X
+// summary, 225 publisher's collection (see `publisherCollection`), 461 series and volume, 608 and 686 category (see `category`), 70X persons and 71X
 // organisations as authors (see `authors`).
 export class UnimarcRecord {
     private constructor(private readonly fields: Fields) {}
@@ -58,6 +59,7 @@ export class UnimarcRecord {
             title,
             authors: UnimarcRecord.authors(fields),
             publisher: first(imprint, 'c'),
+            publisherCollection: UnimarcRecord.publisherCollection(fields, seriesName),
             publicationDate: year ? { year: Number(year), month: null } : null,
             pageCount: pages ? Number(pages) : null,
             // A BnF summary describes this edition; it is taken as written in the edition's language.
@@ -69,6 +71,24 @@ export class UnimarcRecord {
                     : null,
             category: UnimarcRecord.category(fields),
         });
+    }
+
+    // 225 $a is a series statement: the publisher's collection ("Le livre de poche"), but often
+    // also the series itself ("Claymore"), which is skipped. Brackets mark a name supplied by the
+    // cataloguer.
+    private static publisherCollection(fields: Fields, series: string | null): string | null {
+        const words = (name: string) =>
+            NameKey.of(name)
+                .replace(/[^\p{L}\p{N}]+/gu, ' ')
+                .trim();
+        const seriesWords = series ? words(series) : null;
+
+        return (
+            (fields.get('225') ?? [])
+                .flatMap((entry) => entry.get('a')?.slice(0, 1) ?? [])
+                .map((name) => name.replace(/^\[(.*)\]$/, '$1').trim())
+                .find((name) => name && words(name) !== seriesWords) ?? null
+        );
     }
 
     // A comic by its class in the Bibliographie nationale française (686 $a 805) or its form

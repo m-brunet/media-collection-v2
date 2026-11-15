@@ -203,6 +203,74 @@ describe('BnfCatalogue', () => {
         expect(reply).toMatchObject({ value: { authors: ['Tsugumi Ohba', 'Takeshi Obata'] } });
     });
 
+    it("reads the publisher's collection of a novel, skipping the series written beside it", async () => {
+        const { source } = catalogue(recorded('bnf-ewilan-1.xml'));
+
+        const reply = await source.find('9782253164692');
+
+        expect(reply).toMatchObject({
+            kind: 'found',
+            value: {
+                publisher: 'Librairie générale française',
+                publisherCollection: 'Le livre de poche',
+            },
+        });
+    });
+
+    it("reads the publisher's collection of a book whose series is its title", async () => {
+        const { source } = catalogue(recorded('bnf-passe-miroir-1.xml'));
+
+        const reply = await source.find('9782075215466');
+
+        expect(reply).toMatchObject({
+            kind: 'found',
+            value: { publisherCollection: 'Pôle fiction' },
+        });
+    });
+
+    it("reads the publisher's collection of a manga after its series", async () => {
+        const { source } = catalogue(recorded('bnf-claymore-15.xml'));
+
+        const reply = await source.find('9782723471930');
+
+        expect(reply).toMatchObject({
+            kind: 'found',
+            value: { publisherCollection: 'Shonen manga' },
+        });
+    });
+
+    it("gives no publisher's collection when the only series statement is the series", async () => {
+        const { source } = catalogue(recorded('bnf-blacksad-1.xml'));
+
+        const reply = await source.find('9782205213287');
+
+        expect(reply).toMatchObject({ kind: 'found', value: { publisherCollection: null } });
+    });
+
+    it("gives no publisher's collection without a series statement", async () => {
+        const { source } = catalogue(recorded('bnf-rose-hip-rose-1.xml'));
+
+        const reply = await source.find('9782845998179');
+
+        expect(reply).toMatchObject({ kind: 'found', value: { publisherCollection: null } });
+    });
+
+    it("drops the brackets of a publisher's collection named by the cataloguer", async () => {
+        const { source } = catalogue(
+            record(
+                field('225', { a: '[Collection Akira]', x: '1253-9745' }),
+                field('210', { c: 'Glénat' }),
+            ),
+        );
+
+        const reply = await source.find('9782723426961');
+
+        expect(reply).toMatchObject({
+            kind: 'found',
+            value: { publisherCollection: 'Collection Akira' },
+        });
+    });
+
     it('finds nothing for an ISBN the catalogue does not know', async () => {
         const { source } = catalogue(recorded('bnf-none.xml'));
 
