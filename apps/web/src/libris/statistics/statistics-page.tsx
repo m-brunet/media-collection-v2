@@ -4,24 +4,21 @@ import { useSearchParams } from 'react-router';
 import type { BookCategory, StatisticsDto } from '../../../../../packages/contracts/src/http';
 import { api } from '../../shared/api.util';
 import { ApiErrorMessage } from '../../shared/api-error-message.util';
-import type { MessageKey } from '../../shared/i18n/catalog-en';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Button } from '../../shared/ui/button';
 import { ChoiceButtons } from '../../shared/ui/choice-buttons';
-import type { IconName } from '../../shared/ui/icon';
 import { PageHeader } from '../../shared/ui/layout';
 import { Notice } from '../../shared/ui/notice';
 import { EmptyState, LoadingState } from '../../shared/ui/states';
+import type { ViewEntry } from '../../shared/ui/view-choice';
+import { useViewChoice } from '../../shared/ui/view-choice';
 import { DashboardView } from './dashboard-view';
 import { StoryView } from './story-view';
 import { TopicsView } from './topics-view';
 
 type CategoryChoice = BookCategory | 'all';
 
-interface StatisticsViewEntry {
-    id: string;
-    label: MessageKey;
-    icon: IconName;
+interface StatisticsViewEntry extends ViewEntry {
     component: ComponentType<{ statistics: StatisticsDto; category: BookCategory | null }>;
 }
 
@@ -36,32 +33,6 @@ const views: readonly StatisticsViewEntry[] = [
     { id: 'topics', label: 'statistics.viewTopics', icon: 'view-topics', component: TopicsView },
 ];
 const categoryChoices: readonly CategoryChoice[] = ['all', 'books', 'manga', 'comics'];
-const rememberedView = 'media-collection.statistics-view';
-
-class ViewMemory {
-    static read(): string | null {
-        try {
-            return window.localStorage.getItem(rememberedView);
-        } catch {
-            // Justified: the browser may refuse storage; the page then opens on the default view.
-            return null;
-        }
-    }
-
-    static write(view: string): void {
-        try {
-            window.localStorage.setItem(rememberedView, view);
-        } catch {
-            // Justified: the browser may refuse storage; the chosen view still applies to this visit.
-        }
-    }
-}
-
-function chosenView(parameter: string | null): StatisticsViewEntry {
-    const [fallback] = views as [StatisticsViewEntry];
-
-    return views.find((view) => view.id === (parameter ?? ViewMemory.read())) ?? fallback;
-}
 
 function chosenCategory(parameter: string | null): BookCategory | null {
     return categoryChoices.includes(parameter as CategoryChoice) && parameter !== 'all'
@@ -73,7 +44,7 @@ export function StatisticsPage() {
     const { t } = useI18n();
     const [parameters, setParameters] = useSearchParams();
     const category = chosenCategory(parameters.get('category'));
-    const view = chosenView(parameters.get('view'));
+    const { view, choice } = useViewChoice(views, 'media-collection.statistics-view');
     const address = '/statistics' + (category ? '?category=' + category : '');
     const [loaded, setLoaded] = useState<{ address: string; value: StatisticsDto } | null>(null);
     const [failure, setFailure] = useState<string | null>(null);
@@ -93,46 +64,29 @@ export function StatisticsPage() {
         };
     }, [address, attempt, t]);
 
-    const choose = (key: 'category' | 'view', value: string | null) => {
+    const chooseCategory = (value: string | null) => {
         const next = new URLSearchParams(parameters);
 
         if (value === null) {
-            next.delete(key);
+            next.delete('category');
         } else {
-            next.set(key, value);
+            next.set('category', value);
         }
 
         setParameters(next, { replace: true });
-    };
-    const chooseView = (id: string) => {
-        ViewMemory.write(id);
-        choose('view', id);
     };
     const retry = () => {
         setFailure(null);
         setAttempt((value) => value + 1);
     };
     const View = view.component;
-    const viewChoice =
-        views.length > 1 ? (
-            <ChoiceButtons
-                label={t('statistics.view')}
-                value={view.id}
-                choices={views.map((entry) => ({
-                    value: entry.id,
-                    label: t(entry.label),
-                    icon: entry.icon,
-                }))}
-                onChange={chooseView}
-            />
-        ) : undefined;
 
     return (
         <>
             <PageHeader
                 title={t('statistics.title')}
                 intro={t('statistics.intro')}
-                actions={viewChoice}
+                actions={choice}
             />
             <div className="statistics">
                 <ChoiceButtons
@@ -143,7 +97,7 @@ export function StatisticsPage() {
                         value,
                         label: t(value === 'all' ? 'statistics.all' : `category.${value}`),
                     }))}
-                    onChange={(value) => choose('category', value === 'all' ? null : value)}
+                    onChange={(value) => chooseCategory(value === 'all' ? null : value)}
                 />
                 {failure ? (
                     <Notice tone="error">
