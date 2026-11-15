@@ -54,6 +54,65 @@ describe('LookupCombination', () => {
         expect(result.publisher).toEqual([{ value: 'Glénat', sources: ['bnf', 'openlibrary'] }]);
     });
 
+    it("offers a source's publisher, then its publisher's collection", () => {
+        const combination = combine([
+            'bnf',
+            { publisher: 'Librairie générale française', publisherCollection: 'Le livre de poche' },
+        ]);
+
+        const result = combination.result();
+
+        expect(result.publisher).toEqual([
+            { value: 'Librairie générale française', sources: ['bnf'] },
+            { value: 'Le livre de poche', sources: ['bnf'] },
+        ]);
+    });
+
+    it("merges a publisher's collection with the same publisher of another source", () => {
+        const combination = combine(
+            [
+                'bnf',
+                {
+                    publisher: 'Librairie générale française',
+                    publisherCollection: 'Le livre de poche',
+                },
+            ],
+            ['openlibrary', { publisher: 'Le Livre de Poche' }],
+        );
+
+        const result = combination.result();
+
+        expect(result.publisher).toEqual([
+            { value: 'Librairie générale française', sources: ['bnf'] },
+            { value: 'Le livre de poche', sources: ['bnf', 'openlibrary'] },
+        ]);
+    });
+
+    it('keeps an abbreviation apart from the full name of a publisher', () => {
+        const combination = combine(
+            ['bnf', { publisher: 'Librairie générale française' }],
+            ['openlibrary', { publisher: 'LGF' }],
+        );
+
+        const result = combination.result();
+
+        expect(result.publisher.map((choice) => choice.value)).toEqual([
+            'Librairie générale française',
+            'LGF',
+        ]);
+    });
+
+    it("counts a source once when its publisher's collection repeats its publisher", () => {
+        const combination = combine([
+            'bnf',
+            { publisher: 'Glénat', publisherCollection: 'GLENAT' },
+        ]);
+
+        const result = combination.result();
+
+        expect(result.publisher).toEqual([{ value: 'Glénat', sources: ['bnf'] }]);
+    });
+
     it('merges the same authors written in another order', () => {
         const combination = combine(
             ['bnf', { authors: ['Fujisawa Tooru', 'Kiyoshi Nagai'] }],
