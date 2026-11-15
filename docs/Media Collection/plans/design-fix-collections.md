@@ -24,7 +24,8 @@ Compared by rendering the current pages with design-like data next to the design
 1. **Layout.** Design: a two-column grid of cards (24 px column gap, 20 px row gap). Now: a single-column list of thin
    bordered rows.
 2. **Card.** Design: borderless surface card (`#1D2022`, radius 7, padding 24); top line = name (Space Grotesk 23)
-   with `Open →` in accent; below, up to two cover previews (67 × 100, whole cover, not cropped) beside
+   with `Open →` in accent; below, up to three cover previews (two in the design; three since issue #70,
+   2026-11-15) (67 × 100, whole cover, not cropped) beside
    `4 / 12 volumes Owned` (16 px) and the status line (12 px, muted; `Finished` in accent). Now: name, count, status
    and Open spread across one row in four columns; no covers; Finished not accented.
 3. **Cover previews need data.** `CollectionSummaryDto` carries no books, so the list cannot show covers today. This
