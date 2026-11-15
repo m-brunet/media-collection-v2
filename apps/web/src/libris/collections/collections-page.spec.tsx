@@ -4,6 +4,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { CollectionSummaryDto } from '../../../../../packages/contracts/src/http';
 import { account, deviceLanguages, FakeApi } from '../../testing/fake-api.test-support';
 import { renderRoute } from '../../testing/render-route.test-support';
+import { ListMemory } from '../filters/list-memory.util';
 import { CollectionsPage } from './collections-page';
 
 beforeEach(() => {
@@ -210,6 +211,7 @@ it('starts on All collections', async () => {
 
     show();
 
+    await screen.findByRole('link', { name: /Batman/ });
     expect([within(await statusGroup()).getByRole('radio', { name: 'All' }), routes(api)]).toEqual([
         expect.objectContaining({ checked: true }),
         expect.arrayContaining(['GET /collections?search=&direction=asc&limit=48&offset=0']),
@@ -304,4 +306,21 @@ it('offers a Guest the status choice', async () => {
             .getAllByRole('radio')
             .map((radio) => radio.closest('label')?.textContent),
     ).toEqual(['All', 'Unfinished', 'Finished']);
+});
+
+it('restores the last status, filters and direction before asking for the list', async () => {
+    const api = new FakeApi().signedIn(account()).on('GET /collections', listing([summary()]));
+
+    ListMemory.write(
+        'alex',
+        'collections',
+        new URLSearchParams('category=manga&direction=desc&finished=false'),
+    );
+
+    show();
+
+    await screen.findByRole('link', { name: /Batman/ });
+    expect(routes(api).filter((route) => route.includes('offset=0'))).toEqual([
+        'GET /collections?search=&direction=desc&limit=48&finished=false&category=manga&offset=0',
+    ]);
 });

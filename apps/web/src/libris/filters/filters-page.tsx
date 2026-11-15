@@ -1,3 +1,4 @@
+import { choicesGiven } from './use-list-memory';
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import type { BookCategory, BookOwnership } from '../../../../../packages/contracts/src/http';
@@ -46,7 +47,12 @@ export function FiltersPage({ listing }: { listing: 'books' | 'collections' }) {
                 className="stack"
                 onSubmit={(event) => {
                     event.preventDefault();
-                    navigate('/' + listing + '?' + BookFilter.write(filter, parameters).toString());
+                    navigate(
+                        '/' + listing + '?' + BookFilter.write(filter, parameters).toString(),
+                        {
+                            state: choicesGiven,
+                        },
+                    );
                 }}
             >
                 <div className="filters">

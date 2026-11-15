@@ -1,9 +1,11 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { bookItem } from '../../testing/book-fixtures.test-support';
 import { account, deviceLanguages, FakeApi } from '../../testing/fake-api.test-support';
 import { renderRoute } from '../../testing/render-route.test-support';
+import { ListMemory } from '../filters/list-memory.util';
+import { choicesGiven } from '../filters/use-list-memory';
 import { MyBooksPage } from './my-books-page';
 
 beforeEach(() => {
@@ -291,4 +293,123 @@ it('marks a lent book in the list', async () => {
     expect(await screen.findByRole('link', { name: /Piranesi/ })).toHaveTextContent(
         'Owned · Not read · Lent',
     );
+});
+
+function remember(accountId: string, choices: string) {
+    ListMemory.write(accountId, 'books', new URLSearchParams(choices));
+}
+
+function listRequests(api: FakeApi) {
+    return api.calls
+        .map((call) => call.route)
+        .filter((route) => route.startsWith('GET /books?search='));
+}
+
+function remembered() {
+    return ListMemory.read('alex', 'books', false)?.toString();
+}
+
+it('restores the last filters and sort before asking for the list', async () => {
+    const api = new FakeApi().signedIn(account());
+
+    remember('alex', 'category=manga&sort=title-desc');
+
+    show();
+
+    await waitFor(() => expect(listRequests(api).length).toBeGreaterThan(0));
+    expect(listRequests(api)).toEqual([
+        'GET /books?search=&sort=title&direction=desc&limit=48&category=manga&offset=0',
+    ]);
+});
+
+it('uses an explicit address alone, without the remembered choices', async () => {
+    const api = new FakeApi().signedIn(account());
+
+    remember('alex', 'category=manga&sort=title-desc');
+
+    show('/books?tag=t1');
+
+    await waitFor(() => expect(listRequests(api).length).toBeGreaterThan(0));
+    expect(listRequests(api)).toEqual([
+        'GET /books?search=&sort=title&direction=asc&limit=48&tag=t1&offset=0',
+    ]);
+});
+
+it("does not use another account's choices", async () => {
+    const api = new FakeApi().signedIn(account());
+
+    remember('sam', 'category=manga');
+
+    show();
+
+    await waitFor(() => expect(listRequests(api).length).toBeGreaterThan(0));
+    expect(listRequests(api)[0]).not.toContain('category=manga');
+});
+
+it('remembers a sort chosen on the list', async () => {
+    new FakeApi()
+        .signedIn(account())
+        .on('GET /books', () => ({ status: 200, body: { total: 1, items: [bookItem()] } }));
+    show();
+    await screen.findByRole('link', { name: /Piranesi/ });
+
+    await userEvent.selectOptions(
+        screen.getByRole('combobox', { name: 'Sort books' }),
+        'Title Z–A',
+    );
+
+    await waitFor(() => expect(remembered()).toBe('sort=title-desc'));
+});
+
+it('keeps the list cleared after Clear filters, remembering no filter', async () => {
+    new FakeApi().signedIn(account());
+    remember('alex', 'category=manga&sort=title-desc');
+    const router = show();
+    const applied = await screen.findByRole('list', { name: 'Applied filters' });
+
+    await userEvent.click(within(applied).getByRole('button', { name: 'Clear filters' }));
+
+    await waitFor(() => expect(remembered()).toBe('sort=title-desc'));
+    expect(router.state.location.search).toBe('?sort=title-desc');
+});
+
+it('keeps an empty selection applied from the advanced filters', async () => {
+    const api = new FakeApi().signedIn(account());
+
+    remember('alex', 'category=manga');
+
+    renderRoute(
+        { pathname: '/books', search: '', state: choicesGiven },
+        { '/books': <MyBooksPage /> },
+    );
+
+    await waitFor(() => expect(listRequests(api).length).toBeGreaterThan(0));
+    expect(listRequests(api)[0]).not.toContain('category=manga');
+});
+
+it('drops the reading filter remembered for a Guest', async () => {
+    const api = new FakeApi().signedIn(account({ role: 'guest' }));
+
+    ListMemory.write('alex', 'books', new URLSearchParams('reading=unread&category=comics'));
+
+    show();
+
+    await waitFor(() => expect(listRequests(api).length).toBeGreaterThan(0));
+    expect(listRequests(api)).toEqual([
+        'GET /books?search=&sort=title&direction=asc&limit=48&category=comics&offset=0',
+    ]);
+});
+
+it('opens the list when the browser refuses storage', async () => {
+    new FakeApi().signedIn(account());
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+        throw new Error('blocked');
+    });
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+        throw new Error('blocked');
+    });
+
+    show();
+
+    expect(await screen.findByRole('combobox', { name: 'Sort books' })).toBeInTheDocument();
 });

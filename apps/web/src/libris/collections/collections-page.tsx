@@ -19,6 +19,7 @@ import { EmptyState, LoadingState } from '../../shared/ui/states';
 import type { CollectionStatus } from './collection-format.util';
 import { CollectionFormat } from './collection-format.util';
 import { AppliedFilters, useListingFilter } from '../filters/applied-filters';
+import { useListMemory } from '../filters/use-list-memory';
 import { BookFilter } from '../filters/book-filter.util';
 
 const pageSize = 48;
@@ -103,6 +104,7 @@ export function CollectionsPage() {
     const editor = account?.role !== 'guest';
     const deleted = (location.state as { deleted?: string } | null)?.deleted;
     const filters = useListingFilter('collections');
+    const restoring = useListMemory('collections');
     const filtered = BookFilter.active(filters.filter) || status !== 'all';
     const [allTotal, setAllTotal] = useState<number | null>(null);
     const query =
@@ -164,6 +166,10 @@ export function CollectionsPage() {
     }, []);
 
     useEffect(() => {
+        if (restoring) {
+            return;
+        }
+
         let current = true;
 
         fetchPage(0).then(
@@ -175,7 +181,7 @@ export function CollectionsPage() {
         return () => {
             current = false;
         };
-    }, [fetchPage, query, t]);
+    }, [fetchPage, query, restoring, t]);
 
     const loadMore = async () => {
         if (!listing) {
