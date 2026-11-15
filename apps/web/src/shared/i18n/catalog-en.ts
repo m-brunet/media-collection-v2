@@ -931,6 +931,7 @@ export const en = {
     'batch.problem.ownership': 'Choose Owned or Not owned.',
     'batch.problem.read': 'Choose Read or Not read.',
     'batch.problem.publisher': 'Enter the new publisher, or choose Clear.',
+    'batch.problem.shelf': 'Choose a shelf, or choose Clear.',
     'batch.problem.price': 'Enter the new price, or choose Clear.',
     'batch.problem.authors': 'Add at least one author.',
     'batch.savedOne': '1 book updated.',

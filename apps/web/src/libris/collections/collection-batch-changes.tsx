@@ -178,6 +178,7 @@ function FieldChange({
                         <LocationField
                             bookcases={bookcases}
                             shelfId={draft.shelf.shelfId}
+                            required
                             onChange={(location) => set('shelf', { ...draft.shelf, ...location })}
                         />
                     )}

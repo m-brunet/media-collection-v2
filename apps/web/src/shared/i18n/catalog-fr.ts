@@ -973,6 +973,7 @@ export const fr = {
     'batch.problem.ownership': 'Choisissez Possédé ou Non possédé.',
     'batch.problem.read': 'Choisissez Lu ou Non lu.',
     'batch.problem.publisher': 'Saisissez le nouvel éditeur, ou choisissez Effacer.',
+    'batch.problem.shelf': 'Choisissez une étagère, ou choisissez Effacer.',
     'batch.problem.price': 'Saisissez le nouveau prix, ou choisissez Effacer.',
     'batch.problem.authors': 'Ajoutez au moins un auteur.',
     'batch.savedOne': '1 livre modifié.',
