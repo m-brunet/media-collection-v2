@@ -31,7 +31,7 @@ export function FiltersPage({ listing }: { listing: 'books' | 'collections' }) {
         BookFilter.applicable(BookFilter.read(parameters), { guest, collections }),
     );
     const { bookcases } = useBookcases();
-    const label = useFilterLabels(filter);
+    const { label } = useFilterLabels(filter);
     const summary = (
         key: 'category' | 'location' | 'ownership' | 'cover' | 'price' | 'reading',
         any: string,

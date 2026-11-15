@@ -126,7 +126,7 @@ export function SearchedChoices({
 
     const name = (value: string) =>
         fixed.find((option) => option.value === value)?.label ??
-        known.get(value) ??
+        known?.get(value) ??
         found.find((choice) => choice.id === value)?.name ??
         t(field === 'author' ? 'filters.someAuthor' : 'filters.someCollection');
     const options: ChoiceOption[] = [

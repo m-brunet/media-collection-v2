@@ -413,3 +413,52 @@ it('opens the list when the browser refuses storage', async () => {
 
     expect(await screen.findByRole('combobox', { name: 'Sort books' })).toBeInTheDocument();
 });
+
+it('removes a deleted tag with a notice, keeping the other filters', async () => {
+    new FakeApi().signedIn(account()).on('GET /tags', () => ({ status: 200, body: [] }));
+    const router = show('/books?category=manga&tag=gone');
+
+    await screen.findByText('A filter no longer exists and was removed: a tag.');
+
+    await waitFor(() => expect(remembered()).toBe('category=manga'));
+    expect(router.state.location.search).toBe('?category=manga');
+});
+
+it('removes a deleted shelf and a deleted collection together', async () => {
+    new FakeApi()
+        .signedIn(account())
+        .on('GET /bookcases', () => ({ status: 200, body: [] }))
+        .on('GET /collections/gone', () => ({ status: 404, body: { message: 'Missing' } }));
+
+    show('/books?location=shelf:old&collection=gone');
+
+    expect(
+        await screen.findByText(
+            'Some filters no longer exist and were removed: a collection, a shelf.',
+        ),
+    ).toBeInTheDocument();
+});
+
+it('keeps a tag that still exists', async () => {
+    const api = new FakeApi().signedIn(account()).on('GET /tags', () => ({
+        status: 200,
+        body: [{ id: 't1', name: 'Fantasy', bookCount: 1 }],
+    }));
+
+    show('/books?tag=t1');
+
+    expect(
+        await screen.findByRole('button', { name: 'Remove the filter Include: Fantasy' }),
+    ).toBeInTheDocument();
+    expect(api.calls.map((call) => call.route)).not.toContainEqual(expect.stringMatching(/tag=$/));
+});
+
+it('closes the notice of a removed filter', async () => {
+    new FakeApi().signedIn(account()).on('GET /tags', () => ({ status: 200, body: [] }));
+    show('/books?tag=gone');
+    const notice = await screen.findByText('A filter no longer exists and was removed: a tag.');
+
+    await userEvent.click(within(notice.closest('.notice')!).getByRole('button'));
+
+    expect(screen.queryByText(/no longer exists/)).not.toBeInTheDocument();
+});

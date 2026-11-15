@@ -219,6 +219,11 @@ export function CollectionsPage() {
         <>
             <PageHeader title={t('collections.title')} intro={t('collections.intro')} />
             <div className="stack">
+                {filters.removed && (
+                    <Notice tone="info" onClose={filters.closeRemoved}>
+                        {filters.removed}
+                    </Notice>
+                )}
                 {deleted && (
                     <Notice
                         tone="success"
@@ -290,6 +295,7 @@ export function CollectionsPage() {
                         <AppliedFilters
                             filter={filters.filter}
                             onChange={filters.change}
+                            onUnavailable={filters.dropUnavailable}
                             onClear={clearFilters}
                         />
                         {current && allTotal !== null && (
