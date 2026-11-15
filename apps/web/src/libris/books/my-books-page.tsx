@@ -14,6 +14,7 @@ import { BookCover } from './book-cover';
 import { CollectionFormat } from '../collections/collection-format.util';
 import { BookFormat } from '../../shared/book-form/book-format.util';
 import { AppliedFilters, useListingFilter } from '../filters/applied-filters';
+import { useListMemory } from '../filters/use-list-memory';
 import { BookFilter } from '../filters/book-filter.util';
 import { Required } from '../../shared/required.util';
 
@@ -76,6 +77,7 @@ export function MyBooksPage() {
     const editor = account?.role !== 'guest';
     const deleted = (location.state as { deleted?: string } | null)?.deleted;
     const filters = useListingFilter('books');
+    const restoring = useListMemory('books');
     const filtered = BookFilter.active(filters.filter);
     const [libraryTotal, setLibraryTotal] = useState<number | null>(null);
     const query =
@@ -130,6 +132,10 @@ export function MyBooksPage() {
     }, []);
 
     useEffect(() => {
+        if (restoring) {
+            return;
+        }
+
         let current = true;
 
         fetchPage(0).then(
@@ -141,7 +147,7 @@ export function MyBooksPage() {
         return () => {
             current = false;
         };
-    }, [fetchPage, query, t]);
+    }, [fetchPage, query, restoring, t]);
 
     const loadMore = async () => {
         if (!listing) {
