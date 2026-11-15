@@ -1,26 +1,25 @@
 import { Link } from 'react-router';
 import type { BookcaseDto } from '../../../../../packages/contracts/src/http';
+import type { ShelfPlace } from '../../shared/book-form/shelf-select';
+import { ShelfSelect } from '../../shared/book-form/shelf-select';
 import { useI18n } from '../../shared/i18n/i18n-context';
-import { SelectField } from '../../shared/ui/select-field';
-import type { BookDraftValues } from '../../shared/book-form/book-draft.util';
 
 export function LocationField({
     bookcases,
-    bookcaseId,
     shelfId,
     error,
+    required = false,
     onChange,
 }: {
     bookcases: BookcaseDto[];
-    bookcaseId: string | null;
     shelfId: string | null;
     error?: string;
-    onChange(changes: Pick<BookDraftValues, 'bookcaseId' | 'shelfId'>): void;
+    required?: boolean;
+    onChange(place: ShelfPlace): void;
 }) {
     const { t } = useI18n();
-    const bookcase = bookcases.find((candidate) => candidate.id === bookcaseId);
 
-    if (bookcases.length === 0) {
+    if (!bookcases.some((bookcase) => bookcase.shelves.length > 0)) {
         return (
             <p className="muted">
                 {t('location.noneYet')} <Link to="/bookshelves">{t('location.manage')}</Link>
@@ -29,38 +28,13 @@ export function LocationField({
     }
 
     return (
-        <div className="form">
-            <div className="book-form__row book-form__row--two">
-                <SelectField
-                    label={t('location.bookcase')}
-                    value={bookcaseId ?? ''}
-                    options={[
-                        { value: '', label: t('location.unassigned') },
-                        ...bookcases.map((choice) => ({ value: choice.id, label: choice.name })),
-                    ]}
-                    onChange={(event) =>
-                        onChange({ bookcaseId: event.target.value || null, shelfId: null })
-                    }
-                />
-                <SelectField
-                    label={t('location.shelf')}
-                    required={bookcase !== undefined}
-                    disabled={!bookcase}
-                    value={shelfId ?? ''}
-                    options={[
-                        { value: '', label: t('location.unassigned') },
-                        ...(bookcase?.shelves ?? []).map((shelf) => ({
-                            value: shelf.id,
-                            label: shelf.name,
-                        })),
-                    ]}
-                    onChange={(event) =>
-                        onChange({ bookcaseId, shelfId: event.target.value || null })
-                    }
-                />
-            </div>
-            {error && <p className="field__error">{error}</p>}
-            <p className="muted">{t('location.shelfOnly')}</p>
-        </div>
+        <ShelfSelect
+            bookcases={bookcases}
+            shelfId={shelfId}
+            required={required}
+            hint={required ? undefined : t('location.chooseHint')}
+            error={error}
+            onChange={onChange}
+        />
     );
 }

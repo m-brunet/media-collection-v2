@@ -206,18 +206,19 @@ function BookForm({ book }: { book: BookDto | null }) {
                     categoryRule={categoryRule}
                 />
                 <Panel label={t('form.organisation')}>
-                    <div className="form">
-                        {bookcases && (
-                            <LocationField
-                                bookcases={bookcases}
-                                bookcaseId={values.bookcaseId}
-                                shelfId={values.shelfId}
-                                error={errorFor('location')}
-                                onChange={(changes) =>
-                                    setValues((current) => ({ ...current, ...changes }))
-                                }
-                            />
-                        )}
+                    <div className="organisation-row">
+                        <div className="organisation-row__location">
+                            {bookcases && (
+                                <LocationField
+                                    bookcases={bookcases}
+                                    shelfId={values.shelfId}
+                                    error={errorFor('location')}
+                                    onChange={(changes) =>
+                                        setValues((current) => ({ ...current, ...changes }))
+                                    }
+                                />
+                            )}
+                        </div>
                         <TagPicker
                             tags={values.tags}
                             error={errorFor('tags')}

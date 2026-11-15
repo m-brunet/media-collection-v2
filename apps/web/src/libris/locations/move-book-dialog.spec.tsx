@@ -57,10 +57,10 @@ it('names the book being moved and starts from its shelf', async () => {
     const dialog = show();
 
     expect([
-        (within(dialog).getByLabelText(/^Bookcase/) as HTMLSelectElement).value,
-        (within(dialog).getByLabelText(/^Shelf/) as HTMLSelectElement).value,
+        (within(dialog).getByRole('combobox', { name: 'Physical location' }) as HTMLSelectElement)
+            .value,
         within(dialog).getByRole('button', { name: 'Move book' }),
-    ]).toEqual(['oak', 's3', expect.objectContaining({ disabled: true })]);
+    ]).toEqual(['s3', expect.objectContaining({ disabled: true })]);
 });
 
 it('moves the book to the chosen shelf and tells where it went', async () => {
@@ -70,8 +70,10 @@ it('moves the book to the chosen shelf and tells where it went', async () => {
     const onMoved = vi.fn();
     const dialog = show(onMoved);
 
-    await userEvent.selectOptions(within(dialog).getByLabelText(/^Bookcase/), 'Study bookcase');
-    await userEvent.selectOptions(within(dialog).getByLabelText(/^Shelf/), 'Top');
+    await userEvent.selectOptions(
+        within(dialog).getByRole('combobox', { name: 'Physical location' }),
+        'Study bookcase – Top',
+    );
 
     await userEvent.click(within(dialog).getByRole('button', { name: 'Move book' }));
 
@@ -89,7 +91,10 @@ it('keeps the book where it was and explains a refused move', async () => {
     const onMoved = vi.fn();
     const dialog = show(onMoved);
 
-    await userEvent.selectOptions(within(dialog).getByLabelText(/^Shelf/), 'Shelf 1');
+    await userEvent.selectOptions(
+        within(dialog).getByRole('combobox', { name: 'Physical location' }),
+        'Oak bookcase – Shelf 1',
+    );
 
     await userEvent.click(within(dialog).getByRole('button', { name: 'Move book' }));
 
