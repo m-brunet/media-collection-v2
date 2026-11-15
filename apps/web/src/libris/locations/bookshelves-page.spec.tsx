@@ -1,7 +1,11 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import type { BookcaseDto } from '../../../../../packages/contracts/src/http';
+import type {
+    BookcaseDto,
+    BookcaseSpinesDto,
+    BookListItemDto,
+} from '../../../../../packages/contracts/src/http';
 import { bookItem } from '../../testing/book-fixtures.test-support';
 import { account, deviceLanguages, FakeApi } from '../../testing/fake-api.test-support';
 import { renderRoute } from '../../testing/render-route.test-support';
@@ -13,6 +17,7 @@ beforeEach(() => {
 afterEach(() => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
+    window.localStorage.clear();
 });
 
 const bookcases: BookcaseDto[] = [
@@ -28,10 +33,63 @@ const bookcases: BookcaseDto[] = [
     {
         id: 'study',
         name: 'Study bookcase',
-        bookCount: 1,
-        shelves: [{ id: 'top', bookcaseId: 'study', name: 'Top', bookCount: 1 }],
+        bookCount: 2,
+        shelves: [{ id: 'top', bookcaseId: 'study', name: 'Top', bookCount: 2 }],
     },
+    { id: 'hall', name: 'Hall', bookCount: 0, shelves: [] },
 ];
+const oakSpines: BookcaseSpinesDto = {
+    bookcaseId: 'oak',
+    shelves: [
+        { shelfId: 's1', books: [] },
+        {
+            shelfId: 's3',
+            books: [
+                {
+                    id: 'dune',
+                    title: 'Dune',
+                    authors: ['Frank Herbert'],
+                    category: 'books',
+                    pageCount: 612,
+                },
+                { id: 'akira', title: 'Akira', authors: [], category: 'manga', pageCount: null },
+                {
+                    id: 'hyperion',
+                    title: 'Hyperion',
+                    authors: ['Dan Simmons'],
+                    category: 'books',
+                    pageCount: 480,
+                },
+            ],
+        },
+    ],
+};
+const studySpines: BookcaseSpinesDto = {
+    bookcaseId: 'study',
+    shelves: [
+        {
+            shelfId: 'top',
+            books: [
+                {
+                    id: 'b1',
+                    title: 'Piranesi',
+                    authors: ['Susanna Clarke'],
+                    category: 'books',
+                    pageCount: 272,
+                },
+            ],
+        },
+    ],
+};
+
+function covers(total: number, items = total): { total: number; items: BookListItemDto[] } {
+    return {
+        total,
+        items: Array.from({ length: Math.min(items, 16) }, (_, index) =>
+            bookItem({ id: 'c' + index, title: 'Cover ' + index }),
+        ),
+    };
+}
 
 function show(path = '/bookshelves') {
     return renderRoute(path, { '/bookshelves': <BookshelvesPage /> });
@@ -41,190 +99,296 @@ function api(role: 'owner' | 'guest' = 'owner') {
     return new FakeApi()
         .signedIn(account({ role }))
         .on('GET /bookcases', () => ({ status: 200, body: bookcases }))
-        .on('GET /books', () => ({
-            status: 200,
-            body: { total: 1, items: [bookItem({ title: 'Dune' })] },
-        }));
+        .on('GET /bookcases/oak/spines', () => ({ status: 200, body: oakSpines }))
+        .on('GET /bookcases/study/spines', () => ({ status: 200, body: studySpines }))
+        .on('GET /books', () => ({ status: 200, body: covers(2) }));
 }
 
-function tree() {
-    return screen.getByRole('navigation', { name: 'Bookcases and shelves' });
+function strip() {
+    return screen.getByRole('navigation', { name: 'Bookcases' });
 }
 
-function toggle(name: string) {
-    return within(tree()).getByRole('button', { name: 'Shelves of ' + name });
+function panel() {
+    return screen.getByRole('complementary', { name: 'Selected shelf' });
 }
 
-it('shows each bookcase with its shelf count and the shelves of the selected one', async () => {
+async function shown(path?: string) {
+    const router = show(path);
+
+    await screen.findByRole('list', { name: 'Books on Shelf 3' });
+
+    return router;
+}
+
+it('sums up the bookcases, shelves and books on the title line', async () => {
     api();
 
     show();
 
-    expect(await screen.findByText('2 bookcases · 3 shelves')).toBeInTheDocument();
-    expect(within(tree()).getByText('2 shelves')).toBeInTheDocument();
-    expect(within(tree()).getByText('1 shelf')).toBeInTheDocument();
-    expect(within(tree()).getByRole('button', { name: 'Shelf 3 · 64 books' })).toBeInTheDocument();
-    expect(within(tree()).queryByRole('button', { name: 'Top · 1 book' })).not.toBeInTheDocument();
+    expect(await screen.findByText('3 bookcases · 3 shelves · 66 books')).toBeInTheDocument();
 });
 
-it('opens on arrival only the bookcase of the shelf in the address', async () => {
+it('shows every bookcase in the strip with its counts and marks the open one', async () => {
     api();
 
-    show('/bookshelves?shelf=top');
+    await shown();
 
-    expect(await screen.findByText('2 bookcases · 3 shelves')).toBeInTheDocument();
-    expect(within(tree()).getByRole('button', { name: 'Top · 1 book' })).toBeInTheDocument();
-    expect(toggle('Study bookcase')).toHaveAttribute('aria-expanded', 'true');
-    expect(toggle('Oak bookcase')).toHaveAttribute('aria-expanded', 'false');
     expect(
-        within(tree()).queryByRole('button', { name: 'Shelf 3 · 64 books' }),
-    ).not.toBeInTheDocument();
+        within(strip())
+            .getAllByRole('button')
+            .map((button) => [button.textContent, button.getAttribute('aria-current')]),
+    ).toEqual([
+        ['Oak bookcase2 shelves · 64 books', 'true'],
+        ['Study bookcase1 shelf · 2 books', null],
+        ['Hall0 shelves · 0 books', null],
+    ]);
 });
 
-it('opens on arrival the bookcase in the address', async () => {
+it('opens the first bookcase and its first shelf without a selection in the address', async () => {
     api();
 
-    show('/bookshelves?bookcase=study');
+    await shown();
 
-    expect(await screen.findByText('2 bookcases · 3 shelves')).toBeInTheDocument();
-    expect(within(tree()).getByRole('button', { name: 'Top · 1 book' })).toBeInTheDocument();
-    expect(toggle('Oak bookcase')).toHaveAttribute('aria-expanded', 'false');
+    expect([
+        screen.getByRole('heading', { level: 2, name: 'Oak bookcase' }),
+        within(panel()).getByRole('heading', { name: '0 books on Shelf 1' }),
+    ]).toHaveLength(2);
 });
 
-it('opens a selected bookcase and closes the others', async () => {
+it('opens a bookcase from the strip with its first shelf selected', async () => {
+    const calls = api();
+    const router = await shown();
+
+    await userEvent.click(within(strip()).getByRole('button', { name: /^Study bookcase/ }));
+
+    expect([
+        await within(panel()).findByRole('heading', { name: '2 books on Top' }),
+        router.state.location.search,
+        calls.calls.map((call) => call.route),
+    ]).toEqual([
+        expect.anything(),
+        '?bookcase=study',
+        expect.arrayContaining(['GET /bookcases/study/spines']),
+    ]);
+});
+
+it('selects a shelf by its name and writes it to the address', async () => {
     api();
-    show();
-    await screen.findByText('2 bookcases · 3 shelves');
+    const router = await shown();
 
-    await userEvent.click(within(tree()).getByRole('button', { name: 'Study bookcase' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Shelf 3 · 64 books' }));
 
-    expect(within(tree()).getByRole('button', { name: 'Study bookcase' })).toHaveAttribute(
-        'aria-current',
-        'true',
-    );
-    expect(within(tree()).getByRole('button', { name: 'Top · 1 book' })).toBeInTheDocument();
+    expect([
+        await within(panel()).findByRole('heading', { name: '64 books on Shelf 3' }),
+        screen.getByRole('button', { name: 'Shelf 3 · 64 books' }),
+        router.state.location.search,
+    ]).toEqual([expect.anything(), expect.objectContaining({ ariaCurrent: 'true' }), '?shelf=s3']);
+});
+
+it('draws one spine per book, named with its title and author, linked to the book', async () => {
+    api();
+
+    await shown();
+
     expect(
-        within(tree()).queryByRole('button', { name: 'Shelf 3 · 64 books' }),
-    ).not.toBeInTheDocument();
+        within(screen.getByRole('list', { name: 'Books on Shelf 3' }))
+            .getAllByRole('link')
+            .map((link) => [link.getAttribute('aria-label'), link.getAttribute('href')]),
+    ).toEqual([
+        ['Dune · Frank Herbert', '/books/dune'],
+        ['Akira', '/books/akira'],
+        ['Hyperion · Dan Simmons', '/books/hyperion'],
+    ]);
 });
 
-it('opens another bookcase with its chevron without changing the selection', async () => {
+it('keeps a shelf to one stop in the Tab order', async () => {
     api();
-    show('/bookshelves?shelf=s3');
-    await screen.findByRole('heading', { name: '64 books on Shelf 3' });
 
-    await userEvent.click(toggle('Study bookcase'));
+    await shown();
 
-    expect(toggle('Study bookcase')).toHaveAttribute('aria-expanded', 'true');
-    expect(within(tree()).getByRole('button', { name: 'Top · 1 book' })).toBeInTheDocument();
-    expect(toggle('Oak bookcase')).toHaveAttribute('aria-expanded', 'false');
-    expect(screen.getByRole('heading', { name: '64 books on Shelf 3' })).toBeInTheDocument();
-});
-
-it('closes the open bookcase with its chevron', async () => {
-    api();
-    show('/bookshelves?shelf=s3');
-    await screen.findByRole('heading', { name: '64 books on Shelf 3' });
-
-    await userEvent.click(toggle('Oak bookcase'));
-
-    expect(toggle('Oak bookcase')).toHaveAttribute('aria-expanded', 'false');
     expect(
-        within(tree()).queryByRole('button', { name: 'Shelf 3 · 64 books' }),
-    ).not.toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: '64 books on Shelf 3' })).toBeInTheDocument();
+        within(screen.getByRole('list', { name: 'Books on Shelf 3' }))
+            .getAllByRole('link')
+            .map((link) => link.tabIndex),
+    ).toEqual([0, -1, -1]);
 });
 
-it('reopens a closed bookcase when its header is selected again', async () => {
+it('moves from spine to spine with the arrow keys', async () => {
     api();
-    show('/bookshelves?bookcase=oak');
-    await screen.findByText('2 bookcases · 3 shelves');
-    await userEvent.click(toggle('Oak bookcase'));
+    await shown();
+    screen.getByRole('link', { name: 'Dune · Frank Herbert' }).focus();
 
-    await userEvent.click(within(tree()).getByRole('button', { name: 'Oak bookcase' }));
+    await userEvent.keyboard('{ArrowRight}{ArrowRight}');
 
-    expect(toggle('Oak bookcase')).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('link', { name: 'Hyperion · Dan Simmons' })).toHaveFocus();
 });
 
-it('leaves the shelves of a closed bookcase out of the Tab order', async () => {
+it('shows the title and author of the pointed spine', async () => {
     api();
-    show('/bookshelves?shelf=top');
-    await screen.findByText('2 bookcases · 3 shelves');
-    toggle('Study bookcase').focus();
+    await shown();
 
-    await userEvent.tab();
+    await userEvent.hover(screen.getByRole('link', { name: 'Dune · Frank Herbert' }));
 
-    expect(within(tree()).getByRole('button', { name: 'Study bookcase' })).toHaveFocus();
+    expect(screen.getByText('Dune · Frank Herbert', { selector: 'span' })).toBeInTheDocument();
 });
 
-it('shows open every bookcase with a matching shelf while searching', async () => {
-    api().on('GET /bookcases', () => ({
-        status: 200,
-        body: [
-            {
-                ...bookcases[0],
-                shelves: [{ id: 's1', bookcaseId: 'oak', name: 'Upper', bookCount: 0 }],
-            },
-            {
-                ...bookcases[1],
-                shelves: [{ id: 'top', bookcaseId: 'study', name: 'Upper', bookCount: 1 }],
-            },
-        ],
-    }));
-    show();
-    await screen.findByText('2 bookcases · 2 shelves');
-
-    await userEvent.type(screen.getByLabelText('Search bookcases and shelves'), 'upper');
-
-    expect(within(tree()).getByRole('button', { name: 'Upper · 0 books' })).toBeInTheDocument();
-    expect(within(tree()).getByRole('button', { name: 'Upper · 1 book' })).toBeInTheDocument();
-    expect(toggle('Study bookcase')).toBeDisabled();
-});
-
-it('lists the books of the selected shelf', async () => {
+it('asks for the covers of the selected shelf in shelf order', async () => {
     const calls = api();
 
-    show('/bookshelves?bookcase=study');
-    await screen.findByText('2 bookcases · 3 shelves');
+    await shown('/bookshelves?shelf=s3');
 
-    await userEvent.click(within(tree()).getByRole('button', { name: 'Top · 1 book' }));
-
-    expect(await screen.findByRole('heading', { name: '1 book on Top' })).toBeInTheDocument();
-    expect(await screen.findByRole('link', { name: /Dune/ })).toHaveAttribute('href', '/books/b1');
     expect(calls.calls.map((call) => call.route)).toContain(
-        'GET /books?location=shelf%3Atop&limit=24&offset=0',
+        'GET /books?location=shelf%3As3&sort=shelf&limit=16',
     );
 });
 
-it('finds a shelf by name ignoring case', async () => {
-    api();
-    show();
-    await screen.findByText('2 bookcases · 3 shelves');
+it('shows every cover when they fit in two rows', async () => {
+    api().on('GET /books', () => ({ status: 200, body: covers(10) }));
 
-    await userEvent.type(screen.getByLabelText('Search bookcases and shelves'), 'TOP');
+    await shown('/bookshelves?shelf=s3');
 
-    expect(within(tree()).getByRole('button', { name: 'Top · 1 book' })).toBeInTheDocument();
-    expect(within(tree()).queryByText('Oak bookcase')).not.toBeInTheDocument();
+    expect([
+        (await within(panel()).findAllByRole('link', { name: /^Cover/ })).length,
+        within(panel()).queryByRole('link', { name: /more books/ }),
+    ]).toEqual([10, null]);
 });
 
-it('creates a shelf in the chosen bookcase', async () => {
-    const calls = api().on('POST /bookcases/study/shelves', () => ({
-        status: 201,
-        body: { id: 'bottom', bookcaseId: 'study', name: 'Bottom', bookCount: 0 },
+it('ends the two rows with a tile counting the other books', async () => {
+    api().on('GET /books', () => ({ status: 200, body: covers(64) }));
+
+    await shown('/bookshelves?shelf=s3');
+
+    expect([
+        (await within(panel()).findAllByRole('link', { name: /^Cover/ })).length,
+        within(panel()).getByRole('link', { name: '55 more books on Shelf 3' }),
+    ]).toEqual([9, expect.objectContaining({ textContent: '+55 more' })]);
+});
+
+it('opens the shelf in the Library from the tile and from the link', async () => {
+    api().on('GET /books', () => ({ status: 200, body: covers(64) }));
+
+    await shown('/bookshelves?shelf=s3');
+
+    expect([
+        (
+            await within(panel()).findByRole('link', { name: '55 more books on Shelf 3' })
+        ).getAttribute('href'),
+        within(panel())
+            .getByRole('link', { name: 'Open this shelf in the Library' })
+            .getAttribute('href'),
+    ]).toEqual(['/books?location=shelf%3As3', '/books?location=shelf%3As3']);
+});
+
+it('marks a lent book among the covers', async () => {
+    api().on('GET /books', () => ({
+        status: 200,
+        body: {
+            total: 1,
+            items: [
+                bookItem({
+                    title: 'Dune',
+                    authors: ['Frank Herbert'],
+                    loan: {
+                        id: 'l1',
+                        receiverId: 'r-sam',
+                        receiverName: 'Sam Taylor',
+                        lentAt: '2026-10-30T09:00:00.000Z',
+                    },
+                }),
+            ],
+        },
     }));
 
-    show();
-    await userEvent.click(await screen.findByRole('button', { name: 'Add shelf' }));
+    await shown('/bookshelves?shelf=s3');
+
+    expect(
+        await within(panel()).findByRole('link', { name: 'Dune · Frank Herbert' }),
+    ).toHaveTextContent('Lent');
+});
+
+it('says when the selected shelf has no book', async () => {
+    api().on('GET /books', () => ({ status: 200, body: covers(0) }));
+
+    await shown('/bookshelves?shelf=s1');
+
+    expect(await within(panel()).findByText('No book is on this shelf yet.')).toBeInTheDocument();
+});
+
+it('invites to add a shelf to a bookcase without shelves', async () => {
+    api();
+
+    show('/bookshelves?bookcase=hall');
+
+    expect([
+        await screen.findByText('This bookcase has no shelf yet. Add one to assign books to it.', {
+            selector: '.wall-bookcase p',
+        }),
+        screen.getByRole('button', { name: 'Add shelf' }),
+    ]).toHaveLength(2);
+});
+
+it('shows a Guest the bookcases without managing them', async () => {
+    api('guest');
+
+    await shown();
+
+    expect(
+        ['New bookcase', 'Add shelf', 'Delete bookcase', 'Delete shelf', 'Move shelf'].map((name) =>
+            screen.queryByRole('button', { name }),
+        ),
+    ).toEqual([null, null, null, null, null]);
+});
+
+it('has no search field any more', async () => {
+    api();
+
+    await shown();
+
+    expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
+});
+
+it('hides the View choice while the page has a single view', async () => {
+    api();
+
+    await shown();
+
+    expect(screen.queryByRole('group', { name: 'View' })).not.toBeInTheDocument();
+});
+
+it('falls back to the Wall for an unknown view', async () => {
+    api();
+
+    show('/bookshelves?view=unknown');
+
+    expect(await screen.findByRole('navigation', { name: 'Bookcases' })).toBeInTheDocument();
+});
+
+it('keeps the view in the address when selecting a shelf', async () => {
+    api();
+    const router = await shown('/bookshelves?view=wall');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Shelf 3 · 64 books' }));
+
+    expect(router.state.location.search).toBe('?view=wall&shelf=s3');
+});
+
+it('creates a shelf in the open bookcase', async () => {
+    const calls = api().on('POST /bookcases/oak/shelves', () => ({
+        status: 201,
+        body: { id: 'bottom', bookcaseId: 'oak', name: 'Bottom', bookCount: 0 },
+    }));
+
+    await shown();
+    await userEvent.click(screen.getByRole('button', { name: 'Add shelf' }));
     const dialog = screen.getByRole('dialog', { name: 'Create a shelf' });
 
-    await userEvent.selectOptions(within(dialog).getByLabelText(/Bookcase/), 'Study bookcase');
     await userEvent.type(within(dialog).getByLabelText(/Shelf name/), 'Bottom');
 
     await userEvent.click(within(dialog).getByRole('button', { name: 'Create shelf' }));
 
     expect(await screen.findByText('“Bottom” was created.')).toBeInTheDocument();
     expect(calls.calls).toContainEqual({
-        route: 'POST /bookcases/study/shelves',
+        route: 'POST /bookcases/oak/shelves',
         body: { name: 'Bottom' },
     });
 });
@@ -234,8 +398,8 @@ it('moves a shelf to another bookcase and explains a name conflict there', async
         status: 409,
         body: { message: 'Taken', reason: 'shelf-name-taken' },
     }));
-    show('/bookshelves?shelf=s3');
-    await userEvent.click(await screen.findByRole('button', { name: 'Move shelf' }));
+    await shown('/bookshelves?shelf=s3');
+    await userEvent.click(within(panel()).getByRole('button', { name: 'Move shelf' }));
     const dialog = screen.getByRole('dialog', { name: 'Move Shelf 3' });
 
     await userEvent.selectOptions(within(dialog).getByLabelText(/Bookcase/), 'Study bookcase');
@@ -251,9 +415,9 @@ it('moves a shelf to another bookcase and explains a name conflict there', async
 
 it('tells how many books become unassigned before deleting a shelf', async () => {
     api();
-    show('/bookshelves?shelf=s3');
+    await shown('/bookshelves?shelf=s3');
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Delete shelf' }));
+    await userEvent.click(within(panel()).getByRole('button', { name: 'Delete shelf' }));
 
     expect(
         within(screen.getByRole('dialog', { name: 'Delete Shelf 3?' })).getByText(
@@ -264,9 +428,9 @@ it('tells how many books become unassigned before deleting a shelf', async () =>
 
 it('tells which shelves go with a deleted bookcase', async () => {
     api();
-    show('/bookshelves?shelf=s3');
+    await shown('/bookshelves?shelf=s3');
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Delete bookcase' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Delete bookcase' }));
 
     expect(
         within(screen.getByRole('dialog', { name: 'Delete Oak bookcase?' })).getByText(
@@ -278,8 +442,8 @@ it('tells which shelves go with a deleted bookcase', async () => {
 it('deletes a shelf once confirmed', async () => {
     const calls = api().on('DELETE /shelves/s3', () => ({ status: 204 }));
 
-    show('/bookshelves?shelf=s3');
-    await userEvent.click(await screen.findByRole('button', { name: 'Delete shelf' }));
+    await shown('/bookshelves?shelf=s3');
+    await userEvent.click(within(panel()).getByRole('button', { name: 'Delete shelf' }));
 
     await userEvent.click(
         within(screen.getByRole('dialog', { name: 'Delete Shelf 3?' })).getByRole('button', {
@@ -293,16 +457,6 @@ it('deletes a shelf once confirmed', async () => {
     expect(calls.calls.map((call) => call.route)).toContain('DELETE /shelves/s3');
 });
 
-it('shows a Guest the locations without managing them', async () => {
-    api('guest');
-
-    show();
-
-    expect(await screen.findByText('2 bookcases · 3 shelves')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'New bookcase' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Delete shelf' })).not.toBeInTheDocument();
-});
-
 it('invites to create the first bookcase', async () => {
     new FakeApi().signedIn(account()).on('GET /bookcases', () => ({ status: 200, body: [] }));
 
@@ -314,28 +468,4 @@ it('invites to create the first bookcase', async () => {
         ),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Create bookcase' })).toBeInTheDocument();
-});
-
-it('marks a lent book among the books of a shelf', async () => {
-    api().on('GET /books', () => ({
-        status: 200,
-        body: {
-            total: 1,
-            items: [
-                bookItem({
-                    title: 'Dune',
-                    loan: {
-                        id: 'l1',
-                        receiverId: 'r-sam',
-                        receiverName: 'Sam Taylor',
-                        lentAt: '2026-10-30T09:00:00.000Z',
-                    },
-                }),
-            ],
-        },
-    }));
-
-    show('/bookshelves?shelf=top');
-
-    expect(await screen.findByRole('link', { name: /Dune/ })).toHaveTextContent('Owned · Lent');
 });

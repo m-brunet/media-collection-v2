@@ -1,162 +1,38 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router';
-import type {
-    BookcaseDto,
-    BookListItemDto,
-    BookListPageDto,
-    ShelfDto,
-} from '../../../../../packages/contracts/src/http';
-import { api } from '../../shared/api.util';
-import { ApiErrorMessage } from '../../shared/api-error-message.util';
+import { useState } from 'react';
+import type { ComponentType } from 'react';
+import { useSearchParams } from 'react-router';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { useSession } from '../../shared/session/session-context';
 import { Button } from '../../shared/ui/button';
-import { Icon } from '../../shared/ui/icon';
 import { PageHeader } from '../../shared/ui/layout';
 import { Notice } from '../../shared/ui/notice';
 import { EmptyState, LoadingState } from '../../shared/ui/states';
-import { BookCover } from '../books/book-cover';
-import { BookDraft } from '../../shared/book-form/book-draft.util';
-import { BookFormat } from '../../shared/book-form/book-format.util';
+import type { ViewEntry } from '../../shared/ui/view-choice';
+import { useViewChoice } from '../../shared/ui/view-choice';
+import type { BookshelvesViewProps, LocationSelection } from './bookshelves-view';
 import type { LocationEditing } from './location-dialogs';
 import { LocationDialogs } from './location-dialogs';
-import { BookcaseGroup } from './bookcase-group';
 import { useBookcases } from './use-bookcases';
+import { useLocationCounts } from './use-location-counts';
+import { WallView } from './wall-view';
 
-const pageSize = 24;
-
-function matching(bookcases: BookcaseDto[], search: string): BookcaseDto[] {
-    const key = BookDraft.nameKey(search);
-
-    if (!key) {
-        return bookcases;
-    }
-
-    return bookcases.flatMap((bookcase) => {
-        if (BookDraft.nameKey(bookcase.name).includes(key)) {
-            return [bookcase];
-        }
-
-        const shelves = bookcase.shelves.filter((shelf) =>
-            BookDraft.nameKey(shelf.name).includes(key),
-        );
-
-        return shelves.length > 0 ? [{ ...bookcase, shelves }] : [];
-    });
+interface BookshelvesViewEntry extends ViewEntry {
+    component: ComponentType<BookshelvesViewProps>;
 }
 
-function ShelfBooks({ shelf }: { shelf: ShelfDto }) {
-    const { t } = useI18n();
-    const [books, setBooks] = useState<{ shelf: string; items: BookListItemDto[]; total: number }>({
-        shelf: '',
-        items: [],
-        total: 0,
-    });
-    const [failure, setFailure] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
-    const fetchPage = useCallback(
-        (offset: number) =>
-            api.request<BookListPageDto>(
-                '/books?' +
-                    new URLSearchParams({
-                        location: 'shelf:' + shelf.id,
-                        limit: String(pageSize),
-                        offset: String(offset),
-                    }).toString(),
-            ),
-        [shelf.id],
-    );
-
-    useEffect(() => {
-        let current = true;
-
-        fetchPage(0).then(
-            (page) => current && setBooks({ shelf: shelf.id, ...page }),
-            (error: unknown) => current && setFailure(t(ApiErrorMessage.key(error))),
-        );
-
-        return () => {
-            current = false;
-        };
-    }, [fetchPage, shelf.id, shelf.bookCount, t]);
-
-    if (failure) {
-        return <Notice tone="error">{failure}</Notice>;
-    }
-
-    if (books.shelf !== shelf.id) {
-        return <LoadingState label={t('books.loading')} />;
-    }
-
-    if (books.total === 0) {
-        return <p className="muted">{t('shelf.empty')}</p>;
-    }
-
-    return (
-        <>
-            <ul className="shelf-books" aria-label={t('shelf.booksLabel', { name: shelf.name })}>
-                {books.items.map((book) => (
-                    <li key={book.id}>
-                        <Link to={'/books/' + book.id} className="shelf-book">
-                            <BookCover
-                                src={
-                                    book.hasCover ? BookFormat.cover(book.id, book.updatedAt) : null
-                                }
-                                title={book.title}
-                                size="small"
-                            />
-                            <span className="shelf-book__title">{book.title}</span>
-                            <span className="muted">
-                                {[
-                                    t(BookFormat.ownership(book.ownership)),
-                                    book.loan ? t('books.lent') : null,
-                                ]
-                                    .filter(Boolean)
-                                    .join(' · ')}
-                            </span>
-                        </Link>
-                    </li>
-                ))}
-            </ul>
-            {books.items.length < books.total && (
-                <div className="book-grid__more">
-                    <Button
-                        busy={loading}
-                        onClick={() => {
-                            setLoading(true);
-                            fetchPage(books.items.length)
-                                .then(
-                                    (page) =>
-                                        setBooks({
-                                            shelf: shelf.id,
-                                            total: page.total,
-                                            items: [...books.items, ...page.items],
-                                        }),
-                                    (error: unknown) => setFailure(t(ApiErrorMessage.key(error))),
-                                )
-                                .finally(() => setLoading(false));
-                        }}
-                    >
-                        {t('books.loadMore')}
-                    </Button>
-                    <span className="muted">
-                        {t('books.showing', { shown: books.items.length, total: books.total })}
-                    </span>
-                </div>
-            )}
-        </>
-    );
-}
+const views: readonly BookshelvesViewEntry[] = [
+    { id: 'wall', label: 'bookshelves.viewWall', icon: 'view-wall', component: WallView },
+];
 
 export function BookshelvesPage() {
     const { t } = useI18n();
     const { account } = useSession();
     const editor = account?.role !== 'guest';
+    const counts = useLocationCounts();
     const { bookcases, failure, reload } = useBookcases();
     const [parameters, setParameters] = useSearchParams();
-    const [search, setSearch] = useState('');
+    const { view, choice } = useViewChoice(views, 'media-collection.bookshelves-view');
     const [editing, setEditing] = useState<LocationEditing | null>(null);
-    const [toggled, setToggled] = useState<{ selection: string; open: string | null } | null>(null);
     const [done, setDone] = useState<string | null>(null);
 
     if (failure) {
@@ -172,28 +48,23 @@ export function BookshelvesPage() {
         return <LoadingState label={t('bookshelves.loading')} />;
     }
 
-    const shelves = bookcases.flatMap((bookcase) => bookcase.shelves);
-    const shelf =
-        shelves.find((candidate) => candidate.id === parameters.get('shelf')) ??
-        (parameters.get('bookcase') ? undefined : shelves[0]);
-    const bookcase =
-        bookcases.find(
-            (candidate) => candidate.id === (shelf?.bookcaseId ?? parameters.get('bookcase')),
-        ) ?? bookcases[0];
-    const shown = matching(bookcases, search);
-    const searching = BookDraft.nameKey(search) !== '';
-    const selection = (bookcase?.id ?? '') + '/' + (shelf?.id ?? '');
-    const open = toggled?.selection === selection ? toggled.open : bookcase?.id;
-    const select = (selected: { shelf?: string; bookcase?: string }) => {
-        setToggled(null);
-        setParameters(
-            selected.shelf
-                ? { shelf: selected.shelf }
-                : selected.bookcase
-                  ? { bookcase: selected.bookcase }
-                  : {},
-            { replace: true },
-        );
+    const select = (selected: LocationSelection) => {
+        const next = new URLSearchParams();
+        const kept = parameters.get('view');
+
+        if (kept) {
+            next.set('view', kept);
+        }
+
+        if (selected.bookcase) {
+            next.set('bookcase', selected.bookcase);
+        }
+
+        if (selected.shelf) {
+            next.set('shelf', selected.shelf);
+        }
+
+        setParameters(next, { replace: true });
     };
     const dialogs = (
         <LocationDialogs
@@ -211,8 +82,23 @@ export function BookshelvesPage() {
             onClose={() => setEditing(null)}
         />
     );
+    const create = editor && (
+        <Button
+            variant="primary"
+            icon="add"
+            onClick={() => setEditing({ kind: 'create-bookcase' })}
+        >
+            {t('bookcase.create')}
+        </Button>
+    );
+    const shelves = bookcases.flatMap((bookcase) => bookcase.shelves);
+    const chosen = shelves.find((candidate) => candidate.id === parameters.get('shelf'));
+    const bookcase =
+        bookcases.find(
+            (candidate) => candidate.id === (chosen?.bookcaseId ?? parameters.get('bookcase')),
+        ) ?? bookcases[0];
 
-    if (bookcases.length === 0) {
+    if (!bookcase) {
         return (
             <>
                 <PageHeader title={t('bookshelves.title')} />
@@ -235,20 +121,24 @@ export function BookshelvesPage() {
         );
     }
 
+    const shelf = chosen ?? bookcase.shelves[0] ?? null;
+    const View = view.component;
+
     return (
         <>
             <PageHeader
                 title={t('bookshelves.title')}
-                intro={t('bookshelves.intro')}
+                intro={[
+                    counts.bookcases(bookcases.length),
+                    counts.shelves(shelves.length),
+                    counts.books(bookcases.reduce((total, entry) => total + entry.bookCount, 0)),
+                ].join(' · ')}
                 actions={
-                    editor && (
-                        <Button
-                            variant="primary"
-                            icon="add"
-                            onClick={() => setEditing({ kind: 'create-bookcase' })}
-                        >
-                            {t('bookcase.create')}
-                        </Button>
+                    (choice || create) && (
+                        <div className="actions">
+                            {choice}
+                            {create}
+                        </div>
                     )
                 }
             />
@@ -258,146 +148,14 @@ export function BookshelvesPage() {
                         {done}
                     </Notice>
                 )}
-                <div className="book-toolbar">
-                    <div className="search-field">
-                        <Icon name="search" className="search-field__icon" />
-                        <label htmlFor="location-search" className="visually-hidden">
-                            {t('bookshelves.searchLabel')}
-                        </label>
-                        <input
-                            id="location-search"
-                            type="search"
-                            className="field__control search-field__control"
-                            placeholder={t('bookshelves.searchPlaceholder')}
-                            value={search}
-                            onChange={(event) => setSearch(event.target.value)}
-                        />
-                    </div>
-                    <span className="muted book-toolbar__count">
-                        {t('bookshelves.totals', {
-                            bookcases:
-                                bookcases.length === 1
-                                    ? t('bookshelves.bookcasesOne')
-                                    : t('bookshelves.bookcasesMany', { count: bookcases.length }),
-                            shelves:
-                                shelves.length === 1
-                                    ? t('bookshelves.shelvesOne')
-                                    : t('bookshelves.shelvesMany', { count: shelves.length }),
-                        })}
-                    </span>
-                </div>
-                <div className="bookshelves">
-                    <nav className="bookshelves__tree" aria-label={t('bookshelves.treeLabel')}>
-                        {shown.length === 0 && (
-                            <p className="muted">{t('bookshelves.noResults', { search })}</p>
-                        )}
-                        {shown.map((candidate) => (
-                            <BookcaseGroup
-                                key={candidate.id}
-                                bookcase={candidate}
-                                open={searching || candidate.id === open}
-                                toggleable={!searching}
-                                current={!shelf && candidate.id === bookcase?.id}
-                                currentShelf={shelf?.id}
-                                onSelectBookcase={() => select({ bookcase: candidate.id })}
-                                onSelectShelf={(item) => select({ shelf: item })}
-                                onToggle={() =>
-                                    setToggled({
-                                        selection,
-                                        open: candidate.id === open ? null : candidate.id,
-                                    })
-                                }
-                            />
-                        ))}
-                    </nav>
-                    <div className="bookshelves__detail">
-                        {shelf && bookcase ? (
-                            <section className="stack stack--compact">
-                                <p className="eyebrow">
-                                    {bookcase.name} / {shelf.name}
-                                </p>
-                                <h2 className="panel__title">
-                                    {shelf.bookCount === 1
-                                        ? t('shelf.headingOne', { name: shelf.name })
-                                        : t('shelf.headingMany', {
-                                              name: shelf.name,
-                                              count: shelf.bookCount,
-                                          })}
-                                </h2>
-                                {editor && (
-                                    <div className="actions">
-                                        <Button
-                                            icon="edit"
-                                            onClick={() =>
-                                                setEditing({ kind: 'rename-shelf', shelf })
-                                            }
-                                        >
-                                            {t('shelf.rename')}
-                                        </Button>
-                                        <Button
-                                            icon="move"
-                                            onClick={() =>
-                                                setEditing({ kind: 'move-shelf', shelf })
-                                            }
-                                        >
-                                            {t('shelf.move')}
-                                        </Button>
-                                        <Button
-                                            variant="danger"
-                                            icon="delete"
-                                            onClick={() =>
-                                                setEditing({ kind: 'delete-shelf', shelf })
-                                            }
-                                        >
-                                            {t('shelf.delete')}
-                                        </Button>
-                                    </div>
-                                )}
-                                <ShelfBooks shelf={shelf} />
-                            </section>
-                        ) : (
-                            <p className="muted">
-                                {editor ? t('bookshelves.noShelf') : t('bookshelves.noShelfGuest')}
-                            </p>
-                        )}
-                        {bookcase && (
-                            <section className="panel bookcase-card">
-                                <p className="eyebrow">{t('bookcase.actions')}</p>
-                                <h2 className="panel__title">{bookcase.name}</h2>
-                                {editor && (
-                                    <div className="actions">
-                                        <Button
-                                            icon="add"
-                                            onClick={() =>
-                                                setEditing({ kind: 'create-shelf', bookcase })
-                                            }
-                                        >
-                                            {t('shelf.add')}
-                                        </Button>
-                                        <Button
-                                            icon="edit"
-                                            onClick={() =>
-                                                setEditing({ kind: 'rename-bookcase', bookcase })
-                                            }
-                                        >
-                                            {t('bookcase.rename')}
-                                        </Button>
-                                        <Button
-                                            variant="danger"
-                                            icon="delete"
-                                            onClick={() =>
-                                                setEditing({ kind: 'delete-bookcase', bookcase })
-                                            }
-                                        >
-                                            {t('bookcase.delete')}
-                                        </Button>
-                                    </div>
-                                )}
-                                <p className="muted">{t('bookshelves.footnote')}</p>
-                            </section>
-                        )}
-                    </div>
-                </div>
+                <View
+                    bookcases={bookcases}
+                    bookcase={bookcase}
+                    shelf={shelf}
+                    editor={editor}
+                    onSelect={select}
+                    onEdit={setEditing}
+                />
             </div>
             {dialogs}
         </>
