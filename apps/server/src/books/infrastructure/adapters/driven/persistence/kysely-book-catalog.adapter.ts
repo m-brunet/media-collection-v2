@@ -17,6 +17,7 @@ import { NameKey } from '../../../../../shared/domain/name-key.helper.js';
 import type { DatabaseSchema } from '../../../../../shared/infrastructure/adapters/driven/persistence/database.adapter.js';
 import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
 import { Required } from '../../../../../shared/domain/required.helper.js';
+import { KyselyShelfOrder } from '../../../../../shared/infrastructure/adapters/driven/persistence/kysely-shelf-order.adapter.js';
 
 export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
     constructor(private readonly connections: DatabaseConnections) {}
@@ -58,6 +59,8 @@ export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
 
         if (query.sort === 'added') {
             rows = rows.orderBy('books.created_at', direction);
+        } else if (query.sort === 'shelf') {
+            rows = KyselyShelfOrder.apply(rows, direction);
         } else if (query.sort === 'published') {
             rows = rows
                 .orderBy((eb) => eb('books.publication_year', 'is', null))

@@ -38,7 +38,7 @@ export interface BookView {
     personal: { read: boolean; note: { text: string; updatedAt: string } | null } | null;
 }
 
-export type BookSort = 'title' | 'added' | 'published';
+export type BookSort = 'title' | 'added' | 'published' | 'shelf';
 
 export interface BookListQuery {
     search: string;
