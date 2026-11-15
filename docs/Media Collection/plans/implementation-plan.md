@@ -52,6 +52,7 @@ Bugs, improvements and features are GitHub issues in this repository, decided on
 - Bookshelves Ribbons view (2026-11-15, issue #75): bookcase tabs and one strip of covers per shelf, moving page by page; a shared menu button for the shelf actions. Plan: [issue-75-bookshelves-ribbons](issue-75-bookshelves-ribbons.md).
 - Bookshelves Columns view (2026-11-15, issue #76): bookcases, shelves and a table of books side by side, keyboard first, with a dialog to move a book to another shelf. Plan: [issue-76-bookshelves-columns](issue-76-bookshelves-columns.md).
 - Location and tags row (2026-11-15, issue #62): one grouped Location selector everywhere a book's shelf is chosen; Location beside Tags on the book page and the Libris form. Plan: [issue-62-location-tags-row](issue-62-location-tags-row.md).
+- Publisher's collection (2026-11-15, issue #82): the BnF series statement as a second publisher choice in the lookup, and a publisher chosen for each volume added. Plan: [issue-82-publisher-collection](issue-82-publisher-collection.md).
 - Markdown excluded from oxfmt. `npm run check` builds before lint.
 
 ## Testing strategy (applies to every task)

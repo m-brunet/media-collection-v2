@@ -62,6 +62,7 @@ Start with the [implementation plan](plans/implementation-plan.md) for task stat
 - [Issue #75: Bookshelves page, the Ribbons view](plans/issue-75-bookshelves-ribbons.md).
 - [Issue #76: Bookshelves page, the Columns view](plans/issue-76-bookshelves-columns.md).
 - [Issue #62: Location and tags side by side, one grouped Location selector](plans/issue-62-location-tags-row.md).
+- [Issue #82: The publisher's collection as a second publisher choice](plans/issue-82-publisher-collection.md).
 
 ## Reading in Obsidian
 
