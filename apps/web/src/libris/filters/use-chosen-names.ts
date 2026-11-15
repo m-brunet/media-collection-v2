@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import type { AuthorDto, CollectionDetailsDto } from '../../../../../packages/contracts/src/http';
-import { api } from '../../shared/api.util';
+import { api, ApiError } from '../../shared/api.util';
 
 export function useChosenNames(
     field: 'author' | 'collection',
     values: readonly string[],
-): ReadonlyMap<string, string> {
-    const [names, setNames] = useState<ReadonlyMap<string, string>>(new Map());
+): ReadonlyMap<string, string> | null {
+    const [loaded, setLoaded] = useState<{ key: string; names: ReadonlyMap<string, string> }>({
+        key: '',
+        names: new Map(),
+    });
     const key = [...new Set(values.filter((value) => value !== 'none'))].sort().join(',');
 
     useEffect(() => {
@@ -17,7 +20,7 @@ export function useChosenNames(
         let current = true;
 
         loadNames(field, key.split(',')).then(
-            (found) => current && setNames(found),
+            (names) => current && setLoaded({ key, names }),
             () => undefined,
         );
 
@@ -26,7 +29,7 @@ export function useChosenNames(
         };
     }, [field, key]);
 
-    return names;
+    return loaded.key === key ? loaded.names : null;
 }
 
 async function loadNames(
@@ -45,7 +48,13 @@ async function loadNames(
         ids.map((id) =>
             api.request<CollectionDetailsDto>('/collections/' + encodeURIComponent(id)).then(
                 (collection): [string, string] => [id, collection.name],
-                () => null,
+                (error: unknown) => {
+                    if (error instanceof ApiError && error.status === 404) {
+                        return null;
+                    }
+
+                    throw error;
+                },
             ),
         ),
     );

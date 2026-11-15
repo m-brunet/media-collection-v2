@@ -197,6 +197,11 @@ export function MyBooksPage() {
                 }
             />
             <div className="stack">
+                {filters.removed && (
+                    <Notice tone="info" onClose={filters.closeRemoved}>
+                        {filters.removed}
+                    </Notice>
+                )}
                 {deleted && (
                     <Notice
                         tone="success"
@@ -261,7 +266,11 @@ export function MyBooksPage() {
                 )}
                 {!libraryEmpty && (filtered || (current && search)) && (
                     <div className="applied-row">
-                        <AppliedFilters filter={filters.filter} onChange={filters.change} />
+                        <AppliedFilters
+                            filter={filters.filter}
+                            onChange={filters.change}
+                            onUnavailable={filters.dropUnavailable}
+                        />
                         {current && libraryTotal !== null && (
                             <p className="muted applied-row__count" role="status">
                                 {t('books.matching', {
