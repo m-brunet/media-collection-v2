@@ -12,6 +12,7 @@ import { useI18n } from '../../shared/i18n/i18n-context';
 import { Button } from '../../shared/ui/button';
 import { Dialog } from '../../shared/ui/dialog';
 import { Notice } from '../../shared/ui/notice';
+import { SelectField } from '../../shared/ui/select-field';
 import { TextField } from '../../shared/ui/text-field';
 import { useAction } from '../../shared/use-action';
 import { CoverPicker } from '../books/cover-picker';
@@ -246,7 +247,16 @@ function BookCell({
                     className="field__control field__control--select"
                     aria-label={t('volumes.edition', { volume: row.volume })}
                     value={choice.isbn13 ?? ''}
-                    onChange={(event) => onChange({ isbn13: event.target.value, cover: null })}
+                    onChange={(event) =>
+                        onChange({
+                            isbn13: event.target.value,
+                            cover: null,
+                            publisher:
+                                row.editions.find(
+                                    (candidate) => candidate.isbn13 === event.target.value,
+                                )?.publishers[0] ?? null,
+                        })
+                    }
                 >
                     {choosable.map((candidate) => (
                         <option key={candidate.isbn13} value={candidate.isbn13}>
@@ -260,6 +270,44 @@ function BookCell({
                 )
             )}
         </div>
+    );
+}
+
+function PublisherCell({
+    row,
+    choice,
+    anchor,
+    onChange,
+}: {
+    row: MissingVolumeRowDto;
+    choice: VolumeChoice;
+    anchor: number;
+    onChange(changes: Partial<VolumeChoice>): void;
+}) {
+    const { t } = useI18n();
+    const publishers = VolumeReview.publishers(row, choice);
+
+    if (publishers.length === 0) {
+        return <span className="muted">{t('volumes.publisherAnchor', { volume: anchor })}</span>;
+    }
+
+    if (publishers.length === 1) {
+        return <span>{publishers[0]}</span>;
+    }
+
+    return (
+        <select
+            className="field__control field__control--select"
+            aria-label={t('volumes.publisherOf', { volume: row.volume })}
+            value={choice.publisher ?? ''}
+            onChange={(event) => onChange({ publisher: event.target.value })}
+        >
+            {publishers.map((publisher) => (
+                <option key={publisher} value={publisher}>
+                    {publisher}
+                </option>
+            ))}
+        </select>
     );
 }
 
@@ -286,6 +334,21 @@ export function VolumeReviewPanel({
         );
     const everyOwnership = (ownership: BookOwnership) =>
         setChoices((current) => current.map((choice) => ({ ...choice, ownership })));
+    const publishers = VolumeReview.everyPublisher(found);
+    const [everyPublisher, setEveryPublisher] = useState('');
+    const applyPublisher = (publisher: string) => {
+        setEveryPublisher(publisher);
+        setChoices((current) =>
+            current.map((choice, index) => {
+                const row = found.rows[index];
+
+                return {
+                    ...choice,
+                    publisher: publisher || (row ? VolumeReview.ownPublisher(row, choice) : null),
+                };
+            }),
+        );
+    };
     const save = () =>
         void action.run(async () => {
             const request = VolumeReview.request(found, choices);
@@ -329,6 +392,20 @@ export function VolumeReviewPanel({
                         {t('volumes.reviewHint', { volume: found.anchor.volume })}
                     </p>
                 </div>
+                {publishers.length > 1 && (
+                    <SelectField
+                        label={t('volumes.publisherAll')}
+                        value={everyPublisher}
+                        options={[
+                            { value: '', label: t('volumes.publisherOwn') },
+                            ...publishers.map((publisher) => ({
+                                value: publisher,
+                                label: publisher,
+                            })),
+                        ]}
+                        onChange={(event) => applyPublisher(event.target.value)}
+                    />
+                )}
                 <div className="actions">
                     <span className="muted">{t('volumes.ownershipAll')}</span>
                     {BookFormat.ownerships.map((ownership) => (
@@ -345,6 +422,7 @@ export function VolumeReviewPanel({
                             <th scope="col">{t('volumes.column.volume')}</th>
                             <th scope="col">{t('volumes.column.cover')}</th>
                             <th scope="col">{t('volumes.column.book')}</th>
+                            <th scope="col">{t('volumes.column.publisher')}</th>
                             <th scope="col">{t('volumes.column.ownership')}</th>
                         </tr>
                     </thead>
@@ -390,6 +468,16 @@ export function VolumeReviewPanel({
                                             choice={choice}
                                             onChange={(changes) => change(index, changes)}
                                         />
+                                    </td>
+                                    <td>
+                                        {available && (
+                                            <PublisherCell
+                                                row={row}
+                                                choice={choice}
+                                                anchor={found.anchor.volume}
+                                                onChange={(changes) => change(index, changes)}
+                                            />
+                                        )}
                                     </td>
                                     <td>
                                         {available && (

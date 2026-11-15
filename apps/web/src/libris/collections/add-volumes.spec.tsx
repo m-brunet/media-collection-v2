@@ -5,6 +5,7 @@ import type {
     CollectionDetailsDto,
     MissingVolumeEditionDto,
     MissingVolumesDto,
+    NewVolumesDto,
 } from '../../../../../packages/contracts/src/http';
 import { account, deviceLanguages, FakeApi } from '../../testing/fake-api.test-support';
 import { renderRoute } from '../../testing/render-route.test-support';
@@ -222,6 +223,87 @@ it('adds the ticked volumes with their edition, ownership and title, then report
         },
     });
     expect(screen.queryByRole('region', { name: 'Volumes to add' })).not.toBeInTheDocument();
+});
+
+const publishing: MissingVolumesDto = {
+    ...found,
+    rows: [
+        {
+            volume: 2,
+            generatedTitle: 'Gunnm Vol. 2',
+            editions: [edition('9782723434324', { publishers: ['Glénat', 'Seinen manga'] })],
+        },
+        {
+            volume: 3,
+            generatedTitle: 'Gunnm Vol. 3',
+            editions: [edition('9782723434775', { publishers: ['Kana'] })],
+        },
+        {
+            volume: 4,
+            generatedTitle: 'Gunnm Vol. 4',
+            editions: [edition('9782723434782', { publishers: [] })],
+        },
+    ],
+};
+
+function publisherOf(volume: number) {
+    return within(rowOf(volume)).getByRole('combobox', { name: 'Publisher of volume ' + volume });
+}
+
+it("keeps each volume's own publisher, even when they differ", async () => {
+    await review(library(publishing));
+
+    const shown = [
+        publisherOf(2),
+        within(rowOf(3)).getByText('Kana'),
+        within(rowOf(4)).getByText('As volume 1'),
+    ];
+
+    expect(shown[0]).toHaveValue('Glénat');
+    expect(shown.slice(1)).toHaveLength(2);
+});
+
+it('gives every volume one publisher, then lets one volume keep another', async () => {
+    const api = library(publishing).on('POST /books/volumes', () => ({
+        status: 201,
+        body: { added: [], skipped: [] },
+    }));
+
+    await review(api);
+    await userEvent.selectOptions(
+        screen.getByRole('combobox', { name: 'Publisher of every volume' }),
+        'Seinen manga',
+    );
+    await userEvent.selectOptions(publisherOf(3), 'Kana');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add 3 volumes' }));
+
+    const sent = await vi.waitFor(() =>
+        Required.value(
+            api.calls.find((call) => call.route === 'POST /books/volumes'),
+            'the volumes were sent',
+        ),
+    );
+
+    expect((sent.body as NewVolumesDto).volumes.map((volume) => volume.publisher)).toEqual([
+        'Seinen manga',
+        'Kana',
+        'Seinen manga',
+    ]);
+});
+
+it('gives each volume its own publisher again from the every-volume choice', async () => {
+    await review(library(publishing));
+    const every = screen.getByRole('combobox', { name: 'Publisher of every volume' });
+
+    await userEvent.selectOptions(every, 'Seinen manga');
+
+    await userEvent.selectOptions(every, "Each volume's own");
+
+    expect([publisherOf(2), within(rowOf(3)).getByText('Kana')]).toEqual([
+        expect.objectContaining({ value: 'Glénat' }),
+        expect.anything(),
+    ]);
 });
 
 it('saves the cover that arrived with its volume', async () => {

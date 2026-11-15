@@ -18,6 +18,7 @@ export type VolumeChoice = {
     ticked: boolean;
     isbn13: string | null;
     ownership: BookOwnership;
+    publisher: string | null;
     sourceTitle: boolean;
     cover: File | null;
 };
@@ -36,6 +37,7 @@ export class VolumeReview {
                 ticked: edition !== null,
                 isbn13: edition?.isbn13 ?? null,
                 ownership: 'owned',
+                publisher: edition?.publishers[0] ?? null,
                 sourceTitle: row.generatedTitle === null,
                 cover: null,
             };
@@ -44,6 +46,28 @@ export class VolumeReview {
 
     static edition(row: MissingVolumeRowDto, choice: VolumeChoice): MissingVolumeEditionDto | null {
         return row.editions.find((edition) => edition.isbn13 === choice.isbn13) ?? null;
+    }
+
+    static publishers(row: MissingVolumeRowDto, choice: VolumeChoice): string[] {
+        const own = VolumeReview.edition(row, choice)?.publishers ?? [];
+
+        return choice.publisher === null || own.includes(choice.publisher)
+            ? own
+            : [...own, choice.publisher];
+    }
+
+    static everyPublisher(found: FoundVolumes): string[] {
+        return [
+            ...new Set(
+                found.rows.flatMap((row) =>
+                    VolumeReview.choosable(row).flatMap((edition) => edition.publishers),
+                ),
+            ),
+        ];
+    }
+
+    static ownPublisher(row: MissingVolumeRowDto, choice: VolumeChoice): string | null {
+        return VolumeReview.edition(row, choice)?.publishers[0] ?? null;
     }
 
     static title(row: MissingVolumeRowDto, choice: VolumeChoice): string {
@@ -76,7 +100,7 @@ export class VolumeReview {
                 ownership: choice.ownership,
                 title: choice.sourceTitle || !row.generatedTitle ? edition.title : null,
                 authors: edition.authors,
-                publisher: edition.publishers[0] ?? null,
+                publisher: choice.publisher,
                 publicationYear: edition.publicationYear,
                 pageCount: edition.pageCount,
                 summary: edition.summary,
