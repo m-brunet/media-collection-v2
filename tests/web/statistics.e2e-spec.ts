@@ -87,6 +87,10 @@ function owned(page: Page) {
         .textContent();
 }
 
+function view(page: Page, name: string) {
+    return page.getByRole('group', { name: 'View' }).locator('label', { hasText: name }).click();
+}
+
 describe('Statistics', () => {
     it('counts the owned books and narrows every number to the chosen category', async () => {
         await book('Dune', { pageCount: 600 });
@@ -128,5 +132,38 @@ describe('Statistics', () => {
             await page.getByRole('heading', { name: 'Read by you' }).count(),
             await page.getByRole('heading', { name: 'Your reading' }).count(),
         ]).toEqual([0, 0]);
+    });
+
+    it('keeps the chosen category while switching to the Story and Topics views', async () => {
+        await book('Dune');
+        await book('Akira', { category: 'manga' });
+        const page = await statistics('camille');
+
+        await page.getByRole('heading', { name: 'Owned books' }).waitFor();
+        await page
+            .getByRole('group', { name: 'Show' })
+            .locator('label', { hasText: 'Manga' })
+            .click();
+        await page.waitForURL(/category=manga/);
+        await view(page, 'Story');
+        await page.getByText('You own 1 manga.').waitFor();
+        await view(page, 'Topics');
+        await page.getByRole('group', { name: 'Topics' }).waitFor();
+
+        expect(new URL(page.url()).searchParams.get('category')).toBe('manga');
+    });
+
+    it('fits the smallest desktop window in the Story and Topics views', async () => {
+        await book('Dune', { publisher: 'A publisher with a rather long name for a ranking' });
+        const page = await statistics('camille');
+        const widths: number[] = [];
+
+        for (const name of ['Story', 'Topics']) {
+            await view(page, name);
+            await page.waitForURL(new RegExp('view=' + name.toLowerCase()));
+            widths.push(await page.evaluate(() => document.documentElement.scrollWidth));
+        }
+
+        expect(Math.max(...widths)).toBeLessThanOrEqual(viewports.minimumDesktop.width);
     });
 });
