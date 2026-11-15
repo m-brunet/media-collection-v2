@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import type {
     CollectionDetailsDto,
@@ -6,9 +7,11 @@ import type {
 } from '../../../../../packages/contracts/src/http';
 import { api, ApiError } from '../../shared/api.util';
 import { ApiErrorMessage } from '../../shared/api-error-message.util';
+import type { MessageKey } from '../../shared/i18n/catalog-en';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { useSession } from '../../shared/session/session-context';
 import { Button } from '../../shared/ui/button';
+import type { IconName } from '../../shared/ui/icon';
 import { Dialog } from '../../shared/ui/dialog';
 import { PageHeader } from '../../shared/ui/layout';
 import { Notice } from '../../shared/ui/notice';
@@ -106,28 +109,39 @@ function ReadingControl({ collection }: { collection: CollectionDetailsDto }) {
     );
 }
 
-function FinishButton({
+function BlockedButton({
     blocked,
-    busy,
-    onFinish,
+    reason,
+    end = false,
+    icon,
+    busy = false,
+    onClick,
+    children,
 }: {
     blocked: boolean;
-    busy: boolean;
-    onFinish(): void;
+    reason: MessageKey;
+    end?: boolean;
+    icon?: IconName;
+    busy?: boolean;
+    onClick(): void;
+    children: ReactNode;
 }) {
     const { t } = useI18n();
     const tooltip = useTooltip(blocked);
 
     return (
-        <span className="collection-tip collection-tip--end" {...tooltip.anchor}>
+        <span
+            className={end ? 'collection-tip collection-tip--end' : 'collection-tip'}
+            {...tooltip.anchor}
+        >
             <Button
-                icon="check"
+                icon={icon}
                 busy={busy}
                 aria-disabled={blocked || undefined}
                 {...tooltip.trigger}
-                onClick={() => !blocked && onFinish()}
+                onClick={() => !blocked && onClick()}
             >
-                {t('collection.finish')}
+                {children}
             </Button>
             {blocked && (
                 <span
@@ -136,7 +150,7 @@ function FinishButton({
                     className="collection-tip__text"
                     hidden={!tooltip.open}
                 >
-                    {t('collection.finishUnavailable')}
+                    {t(reason)}
                 </span>
             )}
         </span>
@@ -298,35 +312,45 @@ export function CollectionDetailsPage() {
                     </div>
                     {editor && (
                         <div className="actions collection-summary__actions">
-                            <Button icon="edit" onClick={() => setEditing(true)}>
-                                {t('collection.edit')}
-                            </Button>
+                            {!batching && (
+                                <Button icon="edit" onClick={() => setEditing(true)}>
+                                    {t('collection.edit')}
+                                </Button>
+                            )}
                             {!batching && !review && (
                                 <Button onClick={() => setBatching(true)}>
                                     {t('batch.editSeveral')}
                                 </Button>
                             )}
                             {!batching && !review && (
-                                <Button
+                                <BlockedButton
+                                    blocked={collection.finished}
+                                    reason="volumes.addUnavailable"
                                     onClick={() => {
                                         setReport(null);
                                         setSearching(true);
                                     }}
                                 >
                                     {t('volumes.add')}
-                                </Button>
+                                </BlockedButton>
                             )}
-                            {collection.finished ? (
-                                <Button busy={action.busy} onClick={() => change('reopen')}>
-                                    {t('collection.reopen')}
-                                </Button>
-                            ) : (
-                                <FinishButton
-                                    blocked={blocked}
-                                    busy={action.busy}
-                                    onFinish={() => change('finish')}
-                                />
-                            )}
+                            {!batching &&
+                                (collection.finished ? (
+                                    <Button busy={action.busy} onClick={() => change('reopen')}>
+                                        {t('collection.reopen')}
+                                    </Button>
+                                ) : (
+                                    <BlockedButton
+                                        blocked={blocked}
+                                        reason="collection.finishUnavailable"
+                                        end
+                                        icon="check"
+                                        busy={action.busy}
+                                        onClick={() => change('finish')}
+                                    >
+                                        {t('collection.finish')}
+                                    </BlockedButton>
+                                ))}
                         </div>
                     )}
                 </div>

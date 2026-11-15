@@ -799,7 +799,8 @@ export const en = {
     'collection.missingBody':
         'It may have been deleted, or its last book removed, in another window.',
     'collection.back': 'Back to collections',
-    'volumes.add': 'Add volumes up to…',
+    'volumes.add': 'Add volumes',
+    'volumes.addUnavailable': 'Mark the collection unfinished before adding volumes.',
     'volumes.dialogTitle': 'Add missing volumes',
     'volumes.upTo': 'Up to volume',
     'volumes.upToHint':

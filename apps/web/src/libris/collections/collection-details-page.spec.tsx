@@ -216,7 +216,12 @@ it('labels a Finished collection Finished by its name', async () => {
     expect(label).toHaveAccessibleDescription(
         'Finished collections remain on desktop and are hidden from mobile shopping.',
     );
-    expect(screen.getByRole('tooltip', { hidden: true })).not.toBeVisible();
+    expect(
+        screen.getByText(
+            'Finished collections remain on desktop and are hidden from mobile shopping.',
+            { selector: '[role="tooltip"]' },
+        ),
+    ).not.toBeVisible();
     expect(screen.getByText('Complete')).toBeInTheDocument();
 });
 
@@ -495,30 +500,34 @@ it('gives a Guest no reading status', async () => {
     expect(api.calls.map((call) => call.route)).not.toContain('GET /collections/c1/reading');
 });
 
+function batchPlan(saved: boolean) {
+    return {
+        collection: { id: 'c1', name: 'Batman' },
+        saved,
+        books: [
+            {
+                id: 'omnibus',
+                title: 'Batman omnibus',
+                before: {
+                    title: 'Batman omnibus',
+                    titleGenerated: false,
+                    priceCents: 2500,
+                },
+                after: { title: 'Batman Vol. 1–3', titleGenerated: true, priceCents: null },
+            },
+            { id: 'year-one', title: 'Year One', before: {}, after: {} },
+        ],
+        skipped: [{ id: 'twelve', title: 'Batman 12', reason: 'book-lent' }],
+    };
+}
+
 function batchApi() {
     return new FakeApi()
         .signedIn(account())
         .on('GET /collections/c1', () => ({ status: 200, body: batman() }))
         .on('POST /books/batch-edit', (body) => ({
             status: 200,
-            body: {
-                collection: { id: 'c1', name: 'Batman' },
-                saved: !(body as { preview: boolean }).preview,
-                books: [
-                    {
-                        id: 'omnibus',
-                        title: 'Batman omnibus',
-                        before: {
-                            title: 'Batman omnibus',
-                            titleGenerated: false,
-                            priceCents: 2500,
-                        },
-                        after: { title: 'Batman Vol. 1–3', titleGenerated: true, priceCents: null },
-                    },
-                    { id: 'year-one', title: 'Year One', before: {}, after: {} },
-                ],
-                skipped: [{ id: 'twelve', title: 'Batman 12', reason: 'book-lent' }],
-            },
+            body: batchPlan(!(body as { preview: boolean }).preview),
         }));
 }
 
@@ -1182,4 +1191,110 @@ it('explains that a collection no longer exists', async () => {
     await waitFor(() =>
         expect(screen.getByRole('link', { name: 'Back to collections' })).toBeInTheDocument(),
     );
+});
+
+function actions() {
+    return ['Edit collection', 'Edit books', 'Add volumes', 'Mark Finished'].map((name) =>
+        screen.queryByRole('button', { name }),
+    );
+}
+
+it('offers Add volumes on an unfinished collection', async () => {
+    batchApi();
+
+    show();
+
+    expect(await screen.findByRole('button', { name: 'Add volumes' })).not.toHaveAttribute(
+        'aria-disabled',
+    );
+});
+
+it('keeps Add volumes disabled on a Finished collection, saying why', async () => {
+    new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
+        status: 200,
+        body: batman({ finished: true, missingCount: 0 }),
+    }));
+
+    show();
+
+    const add = await screen.findByRole('button', { name: 'Add volumes' });
+
+    expect(add).toHaveAttribute('aria-disabled', 'true');
+    expect(add).toHaveAccessibleDescription(
+        'Mark the collection unfinished before adding volumes.',
+    );
+});
+
+it('does not search for volumes from a disabled Add volumes', async () => {
+    const api = new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
+        status: 200,
+        body: batman({ finished: true, missingCount: 0 }),
+    }));
+
+    show();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Add volumes' }));
+
+    expect([
+        screen.queryByRole('dialog'),
+        api.calls.some((call) => call.route.includes('missing-volumes')),
+    ]).toEqual([null, false]);
+});
+
+it('enables Add volumes again once the collection is reopened', async () => {
+    new FakeApi()
+        .signedIn(account())
+        .on('GET /collections/c1', () => ({
+            status: 200,
+            body: batman({ finished: true, missingCount: 0 }),
+        }))
+        .on('POST /collections/c1/reopen', () => ({
+            status: 200,
+            body: batman({ finished: false, missingCount: 0 }),
+        }));
+    show();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Reopen collection' }));
+
+    expect(await screen.findByRole('button', { name: 'Mark Finished' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add volumes' })).not.toHaveAttribute(
+        'aria-disabled',
+    );
+});
+
+it('hides every competing collection action during Edit books', async () => {
+    batchApi();
+    show();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Edit books' }));
+
+    expect(actions()).toEqual([null, null, null, null]);
+});
+
+it('brings every collection action back on Cancel', async () => {
+    batchApi();
+    show();
+    await userEvent.click(await screen.findByRole('button', { name: 'Edit books' }));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(actions().every((button) => button !== null)).toBe(true);
+});
+
+it('keeps the collection actions hidden after a failed save', async () => {
+    new FakeApi()
+        .signedIn(account())
+        .on('GET /collections/c1', () => ({ status: 200, body: batman() }))
+        .on('POST /books/batch-edit', (body) =>
+            (body as { preview: boolean }).preview
+                ? { status: 200, body: batchPlan(false) }
+                : { status: 500, body: { message: 'Broken' } },
+        );
+    show();
+    const review = await reviewTitles();
+
+    await userEvent.click(within(review).getByRole('button', { name: 'Save 1 book' }));
+
+    expect(await within(review).findByRole('alert')).toBeInTheDocument();
+    expect(actions()).toEqual([null, null, null, null]);
 });
