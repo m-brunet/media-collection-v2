@@ -2871,3 +2871,46 @@ a.wall-tile:hover .wall-tile__title {
 .statistics-ranking__value {
     text-align: right;
 }
+
+.statistics-story__section {
+    display: grid;
+    grid-template-columns: minmax(0, 400px) minmax(0, 1fr);
+    gap: var(--space-12);
+    align-items: start;
+    padding: var(--space-8) 0;
+    border-top: var(--border);
+}
+
+.statistics-story__sentence {
+    margin: var(--space-2) 0 var(--space-2);
+    font-family: var(--font-heading);
+    font-size: 26px;
+    line-height: 1.3;
+    color: var(--color-text-secondary);
+}
+
+.statistics-story__sentence strong {
+    font-size: 44px;
+    font-weight: 500;
+    line-height: 1.1;
+    color: var(--color-accent);
+}
+
+.statistics-story__visual {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+.statistics-story__rankings {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-8);
+}
+
+@media (max-width: 900px) {
+    .statistics-story__section {
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--space-5);
+    }
+}
