@@ -1521,6 +1521,28 @@ export const en = {
     'statistics.storyOnlyUnfinished': 'Your only collection is not finished yet.',
     'statistics.storyMissingOne': '1 volume is still missing.',
     'statistics.storyMissingMany': '{count} volumes are still missing.',
+    'statistics.viewTopics': 'Topics',
+    'statistics.topicsLabel': 'Topics',
+    'statistics.topicTopPublisher': 'Top publisher',
+    'statistics.topicTopAuthor': 'Top author',
+    'statistics.topicFinished': 'Finished collections',
+    'statistics.topicsShareOne': '{percent} of your only book',
+    'statistics.topicsShareMany': '{percent} of your {total} books',
+    'statistics.topicsReadDetail': '{percent} · {left} left to read',
+    'statistics.topicsOf': '{part} of {total}',
+    'statistics.topicsMissingOne': '1 volume missing',
+    'statistics.topicsMissingMany': '{count} volumes missing',
+    'statistics.topicsNothing': 'Nothing to count yet',
+    'statistics.topicsEmpty': 'There is nothing to show here yet.',
+    'statistics.bookOne': '1 book',
+    'statistics.bookMany': '{count} books',
+    'statistics.topicsPublishers': 'Publishers',
+    'statistics.topicsPublishersIntro':
+        'The 10 publishers with the most books, with their books and pages side by side.',
+    'statistics.topicsPublisher': 'Publisher',
+    'statistics.topicsBooks': 'Books',
+    'statistics.topicsAuthors': 'Authors',
+    'statistics.topicsAuthorsIntro': 'The 10 authors with the most books.',
 } as const;
 
 export type MessageKey = keyof typeof en;

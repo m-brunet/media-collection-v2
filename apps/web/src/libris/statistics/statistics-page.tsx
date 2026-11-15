@@ -14,6 +14,7 @@ import { Notice } from '../../shared/ui/notice';
 import { EmptyState, LoadingState } from '../../shared/ui/states';
 import { DashboardView } from './dashboard-view';
 import { StoryView } from './story-view';
+import { TopicsView } from './topics-view';
 
 type CategoryChoice = BookCategory | 'all';
 
@@ -32,6 +33,7 @@ const views: readonly StatisticsViewEntry[] = [
         component: DashboardView,
     },
     { id: 'story', label: 'statistics.viewStory', icon: 'view-story', component: StoryView },
+    { id: 'topics', label: 'statistics.viewTopics', icon: 'view-topics', component: TopicsView },
 ];
 const categoryChoices: readonly CategoryChoice[] = ['all', 'books', 'manga', 'comics'];
 const rememberedView = 'media-collection.statistics-view';

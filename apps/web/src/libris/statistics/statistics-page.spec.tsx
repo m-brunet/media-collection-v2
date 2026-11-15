@@ -208,7 +208,7 @@ it('offers the views on the title line', async () => {
         within(views)
             .getAllByRole('radio')
             .map((radio) => radio.getAttribute('value')),
-    ).toEqual(['dashboard', 'story']);
+    ).toEqual(['dashboard', 'story', 'topics']);
 });
 it('opens the view given in the address', async () => {
     library();

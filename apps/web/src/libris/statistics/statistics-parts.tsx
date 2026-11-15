@@ -18,6 +18,20 @@ export type Heading = 'h2' | 'h3';
 
 type PublisherOrder = 'books' | 'pages';
 
+export function Sentence({ said }: { said: { text: string; emphasis: string | null } }) {
+    const at = said.emphasis === null ? -1 : said.text.indexOf(said.emphasis);
+
+    return at < 0 || said.emphasis === null ? (
+        said.text
+    ) : (
+        <>
+            {said.text.slice(0, at)}
+            <strong>{said.emphasis}</strong>
+            {said.text.slice(at + said.emphasis.length)}
+        </>
+    );
+}
+
 export function useCount() {
     const { t, locale } = useI18n();
 
