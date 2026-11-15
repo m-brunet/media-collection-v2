@@ -37,9 +37,11 @@ export function useListingFilter(listing: 'books' | 'collections') {
 export function AppliedFilters({
     filter,
     onChange,
+    onClear,
 }: {
     filter: Filter;
     onChange(filter: Filter): void;
+    onClear?(): void;
 }) {
     const { t } = useI18n();
     const label = useFilterLabels(filter);
@@ -71,7 +73,10 @@ export function AppliedFilters({
                 );
             })}
             <li>
-                <Button variant="ghost" onClick={() => onChange(BookFilter.empty())}>
+                <Button
+                    variant="ghost"
+                    onClick={() => (onClear ? onClear() : onChange(BookFilter.empty()))}
+                >
                     {t('filters.clear')}
                 </Button>
             </li>

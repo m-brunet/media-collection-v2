@@ -7,7 +7,23 @@ export interface Message {
     values?: MessageValues;
 }
 
+export type CollectionStatus = 'all' | 'unfinished' | 'finished';
+
 export class CollectionFormat {
+    static readonly statuses = [
+        { status: 'all', label: 'collections.statusAll' },
+        { status: 'unfinished', label: 'collections.statusUnfinished' },
+        { status: 'finished', label: 'collections.statusFinished' },
+    ] as const satisfies readonly { status: CollectionStatus; label: MessageKey }[];
+
+    static listStatus(value: string | null): CollectionStatus {
+        return value === 'true' ? 'finished' : value === 'false' ? 'unfinished' : 'all';
+    }
+
+    static listStatusParameter(status: CollectionStatus): string {
+        return status === 'all' ? '' : String(status === 'finished');
+    }
+
     static readonly sorts = [
         { direction: 'asc', label: 'collections.sort.nameAsc' },
         { direction: 'desc', label: 'collections.sort.nameDesc' },
