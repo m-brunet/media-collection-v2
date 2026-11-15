@@ -30,7 +30,7 @@ export function useStatisticsSentences(statistics: StatisticsDto, category: Book
     const reading = statistics.reading ?? { read: 0, notRead: 0 };
     const read = StatisticsFormat.number(reading.read, locale);
     const publisher = statistics.publishers.byBooks[0]?.name;
-    const author = statistics.authors[0]?.name;
+    const author = statistics.authors.byBooks[0]?.name;
     const { finished, unfinished, missingVolumes } = statistics.collections;
     const collections = finished + unfinished;
     const done = StatisticsFormat.number(finished, locale);

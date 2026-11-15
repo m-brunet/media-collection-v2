@@ -25,7 +25,10 @@ export function statistics(overrides: Partial<StatisticsDto> = {}): StatisticsDt
             without: 22,
             count: 2,
         },
-        authors: [{ name: 'Eiichiro Oda', books: 62 }],
+        authors: {
+            byBooks: [{ name: 'Eiichiro Oda', books: 62, pages: 11780 }],
+            byPages: [{ name: 'Eiichiro Oda', books: 62, pages: 11780 }],
+        },
         records: {
             longest: { id: 'b1', title: 'Les Misérables', authors: ['Victor Hugo'], value: 1664 },
             mostExpensive: { id: 'b2', title: 'Akira', authors: ['Katsuhiro Otomo'], value: 14900 },

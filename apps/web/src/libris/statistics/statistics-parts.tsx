@@ -175,12 +175,12 @@ export function AuthorsRanking({
                 <Title className="eyebrow">{t('statistics.topAuthors')}</Title>
                 <span className="muted">{t('statistics.authorsBy')}</span>
             </div>
-            {statistics.authors.length === 0 ? (
+            {statistics.authors.byBooks.length === 0 ? (
                 <p className="muted">{t('statistics.noAuthors')}</p>
             ) : (
                 <BarRanking
                     label={t('statistics.topAuthors')}
-                    entries={statistics.authors.map((author) => ({
+                    entries={statistics.authors.byBooks.map((author) => ({
                         name: author.name,
                         value: author.books,
                         display: StatisticsFormat.number(author.books, locale),
