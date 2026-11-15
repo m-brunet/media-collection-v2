@@ -26,7 +26,7 @@
     --color-focus: var(--scheme-accent-text);
     --color-chart-1: var(--scheme-accent);
     --color-chart-2: #d5b66f;
-    --color-chart-3: var(--scheme-text-secondary);
+    --color-chart-3: #7fb6dc;
     --color-chart-track: var(--scheme-border-strong);
     --color-spine-1: color-mix(in oklab, #c9b48a 72%, #303336);
     --color-spine-2: color-mix(in oklab, #9fb39a 72%, #303336);
