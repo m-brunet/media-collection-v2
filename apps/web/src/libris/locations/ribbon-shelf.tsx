@@ -14,7 +14,7 @@ import { RibbonWindow } from './ribbon-window.util';
 import { useElementWidth } from './use-element-width';
 import { useInView } from './use-in-view';
 import { useLocationCounts } from './use-location-counts';
-import { useShelfRibbon } from './use-shelf-ribbon';
+import { useShelfBooks } from './use-shelf-books';
 
 function RibbonCover({
     book,
@@ -74,7 +74,7 @@ export function RibbonShelf({
     const seen = useInView(strip);
     const [start, setStart] = useState(0);
     const [pointed, setPointed] = useState<string | null>(null);
-    const ribbon = useShelfRibbon(shelf, start + RibbonWindow.places(width, start > 0), seen);
+    const ribbon = useShelfBooks(shelf, start + RibbonWindow.places(width, start > 0), seen);
     const total = ribbon.total ?? shelf.bookCount;
     const page = RibbonWindow.page(start, width, total);
     const shown = ribbon.items.slice(page.start, page.start + page.count);
