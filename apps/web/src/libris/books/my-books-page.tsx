@@ -27,16 +27,7 @@ interface Listing {
 
 function BookCard({ book }: { book: BookListItemDto }) {
     const { t } = useI18n();
-    const status = [t(BookFormat.ownership(book.ownership))];
-
-    if (book.read !== null) {
-        status.push(t(BookFormat.reading(book.read)));
-    }
-
-    if (book.loan) {
-        status.push(t('books.lent'));
-    }
-
+    const status = BookFormat.status(book).map((key) => t(key));
     const volumes = book.collection
         ? CollectionFormat.volumes(book.collection.volumeFrom, book.collection.volumeTo)
         : null;

@@ -358,12 +358,19 @@ it('has no search field any more', async () => {
     expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
 });
 
-it('hides the View choice while the page has a single view', async () => {
+it('offers the Wall and the Ribbons in the View choice', async () => {
     api();
 
     await shown();
 
-    expect(screen.queryByRole('group', { name: 'View' })).not.toBeInTheDocument();
+    expect(
+        within(screen.getByRole('group', { name: 'View' }))
+            .getAllByRole('radio')
+            .map(
+                (choice) =>
+                    choice.getAttribute('aria-label') ?? choice.closest('label')?.textContent,
+            ),
+    ).toEqual(['Wall', 'Ribbons']);
 });
 
 it('falls back to the Wall for an unknown view', async () => {
