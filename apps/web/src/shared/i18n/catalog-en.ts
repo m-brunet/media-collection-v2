@@ -1036,6 +1036,7 @@ export const en = {
     'location.shelfRequired': 'Choose a shelf of this bookcase, or leave the bookcase unassigned.',
     'location.noneYet': 'No shelf exists yet.',
     'location.manage': 'Create bookcases and shelves',
+    'location.choosePlaceholder': 'Choose a shelf',
     'location.chooseHint': 'Choose an existing shelf or leave unassigned.',
     'location.unassignedOne': '1 book will become unassigned.',
     'location.unassignedMany': '{count} books will become unassigned.',

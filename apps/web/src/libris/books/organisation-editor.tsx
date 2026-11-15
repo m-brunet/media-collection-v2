@@ -1,12 +1,9 @@
-import { useId, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router';
-import type {
-    BookDto,
-    BookOrganisationDto,
-    BookcaseDto,
-} from '../../../../../packages/contracts/src/http';
+import type { BookDto, BookOrganisationDto } from '../../../../../packages/contracts/src/http';
 import { api } from '../../shared/api.util';
 import { ApiErrorMessage } from '../../shared/api-error-message.util';
+import { ShelfSelect } from '../../shared/book-form/shelf-select';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Icon } from '../../shared/ui/icon';
 import { Panel } from '../../shared/ui/layout';
@@ -47,51 +44,6 @@ function OrganisationSummary({ book }: { book: BookDto }) {
                 </dd>
             </div>
         </dl>
-    );
-}
-
-function ShelfSelect({
-    bookcases,
-    value,
-    onChange,
-}: {
-    bookcases: BookcaseDto[];
-    value: string | null;
-    onChange(shelfId: string | null): void;
-}) {
-    const { t } = useI18n();
-    const id = useId();
-
-    return (
-        <div className="field">
-            <label htmlFor={id} className="field__label">
-                {t('location.label')}
-            </label>
-            <select
-                id={id}
-                className="field__control field__control--select"
-                aria-describedby={id + '-hint'}
-                value={value ?? ''}
-                onChange={(event) => onChange(event.target.value || null)}
-            >
-                <option value="">{t('location.unassigned')}</option>
-                {bookcases.map((bookcase) => (
-                    <optgroup key={bookcase.id} label={bookcase.name}>
-                        {bookcase.shelves.map((shelf) => (
-                            <option key={shelf.id} value={shelf.id}>
-                                {LocationFormat.label({
-                                    bookcaseName: bookcase.name,
-                                    shelfName: shelf.name,
-                                })}
-                            </option>
-                        ))}
-                    </optgroup>
-                ))}
-            </select>
-            <p id={id + '-hint'} className="field__hint">
-                {t('location.chooseHint')}
-            </p>
-        </div>
     );
 }
 
@@ -155,10 +107,11 @@ export function OrganisationEditor({
                     {bookcases && bookcases.some((bookcase) => bookcase.shelves.length > 0) ? (
                         <ShelfSelect
                             bookcases={bookcases}
-                            value={shelfId}
+                            shelfId={shelfId}
+                            hint={t('location.chooseHint')}
                             onChange={(next) => {
-                                setShelfId(next);
-                                save({ shelfId: next });
+                                setShelfId(next.shelfId);
+                                save({ shelfId: next.shelfId });
                             }}
                         />
                     ) : (

@@ -1081,6 +1081,7 @@ export const fr = {
         'Choisissez une étagère de cette bibliothèque, ou laissez la bibliothèque non rangée.',
     'location.noneYet': 'Aucune étagère n’existe encore.',
     'location.manage': 'Créer des bibliothèques et des étagères',
+    'location.choosePlaceholder': 'Choisir une étagère',
     'location.chooseHint': 'Choisissez une étagère existante ou laissez non rangé.',
     'location.unassignedOne': '1 livre ne sera plus rangé.',
     'location.unassignedMany': '{count} livres ne seront plus rangés.',
