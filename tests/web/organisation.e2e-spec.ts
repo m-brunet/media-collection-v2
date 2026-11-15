@@ -111,8 +111,8 @@ async function openBookshelves(page: Page) {
     await page.getByRole('heading', { name: 'Bookshelves' }).waitFor();
 }
 
-function tree(page: Page) {
-    return page.getByRole('navigation', { name: 'Bookcases and shelves' });
+function strip(page: Page) {
+    return page.getByRole('navigation', { name: 'Bookcases' });
 }
 
 describe('Bookshelves', () => {
@@ -129,8 +129,8 @@ describe('Bookshelves', () => {
 
         await page.getByRole('button', { name: 'Create shelf' }).click();
 
-        await tree(page).getByRole('button', { name: 'Top · 0 books' }).waitFor();
-        expect(await page.getByText('1 bookcase · 1 shelf').count()).toBe(1);
+        await page.getByRole('button', { name: 'Top · 0 books' }).waitFor();
+        expect(await page.getByText('1 bookcase · 1 shelf · 0 books').count()).toBe(1);
         await capture(page, 'bookshelves');
     });
 
@@ -145,7 +145,7 @@ describe('Bookshelves', () => {
         await page.getByRole('button', { name: 'Save name' }).click();
 
         await page.getByText('The bookcase is now “Walnut bookcase”.').waitFor();
-        expect(await tree(page).getByText('Walnut bookcase').count()).toBe(1);
+        expect(await strip(page).getByText('Walnut bookcase').count()).toBe(1);
     });
 
     it('shows a renamed bookcase on the books kept in it', async () => {
@@ -181,9 +181,10 @@ describe('Bookshelves', () => {
         await page.getByRole('dialog').getByRole('button', { name: 'Move shelf' }).click();
 
         await page.getByText('“Middle” is now in Study bookcase.').waitFor();
-        const study = tree(page).locator('section', { hasText: 'Study bookcase' });
-
-        expect(await study.getByRole('button', { name: 'Middle · 1 book' }).count()).toBe(1);
+        await page.getByRole('button', { name: 'Middle · 1 book' }).waitFor();
+        expect(await page.getByRole('heading', { level: 2 }).first().textContent()).toBe(
+            'Study bookcase',
+        );
     });
 
     it('refuses to move a shelf next to an equivalent name', async () => {
