@@ -78,3 +78,15 @@ it('names other authors, keeping every other value', () => {
 
     expect(renamed).toMatchObject({ title: "Darwin's Game", authors: ["Flipflop's"] });
 });
+
+it("tidies the publisher's collection and drops an empty one", () => {
+    const answers = [
+        LookupAnswer.of({ publisherCollection: '  Le livre   de poche ' }),
+        LookupAnswer.of({ publisherCollection: '   ' }),
+    ];
+
+    expect(answers.map((answer) => answer.publisherCollection)).toEqual([
+        'Le livre de poche',
+        null,
+    ]);
+});

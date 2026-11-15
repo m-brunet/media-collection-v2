@@ -19,6 +19,7 @@ export interface LookupAnswerFields {
     title?: string | null;
     authors?: readonly string[];
     publisher?: string | null;
+    publisherCollection?: string | null;
     publicationDate?: LookupDate | null;
     pageCount?: number | null;
     summary?: LookupSummary | null;
@@ -32,6 +33,7 @@ export class LookupAnswer {
         readonly title: string | null,
         readonly authors: readonly string[],
         readonly publisher: string | null,
+        readonly publisherCollection: string | null,
         readonly publicationDate: LookupDate | null,
         readonly pageCount: number | null,
         readonly summary: LookupSummary | null,
@@ -52,6 +54,7 @@ export class LookupAnswer {
             LookupAnswer.text(fields.title),
             authors,
             LookupAnswer.text(fields.publisher),
+            LookupAnswer.text(fields.publisherCollection),
             LookupAnswer.date(fields.publicationDate),
             LookupAnswer.positive(fields.pageCount),
             summaryText
