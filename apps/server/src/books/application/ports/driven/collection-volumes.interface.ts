@@ -11,6 +11,7 @@ export type CollectionVolumesView = {
     id: string;
     name: string;
     category: BookCategory;
+    finished: boolean;
     members: CollectionVolumeMember[];
     uncovered: number[];
 };

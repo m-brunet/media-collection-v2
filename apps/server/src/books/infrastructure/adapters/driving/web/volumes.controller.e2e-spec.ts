@@ -1,6 +1,7 @@
 import type {
     ActivityPageDto,
     BookDto,
+    BookListPageDto,
     NewVolumeDto,
     VolumesAddedDto,
 } from '../../../../../../../../packages/contracts/src/http.js';
@@ -76,6 +77,27 @@ describe('POST /api/books/volumes', () => {
         expect(response.body.added.map((added) => [added.volume, added.title])).toEqual([
             [2, 'Gunnm Vol. 2'],
             [3, 'Gunnm Vol. 3'],
+        ]);
+    });
+
+    it('refuses volumes for a collection finished since the search, creating no book', async () => {
+        const first = await anchor();
+        const client = await app.authenticatedClient(owner);
+
+        await client.call('/collections/' + first.collection!.id + '/finish', 'POST');
+
+        const response = await client.call('/books/volumes', 'POST', {
+            collectionId: first.collection!.id,
+            anchorBookId: first.id,
+            volumes: [volume(2, '9782723434324')],
+        });
+
+        const found = await client.call<BookListPageDto>('/books?search=9782723434324');
+
+        expect([response.status, response.body.reason, found.body.total]).toEqual([
+            409,
+            'collection-finished',
+            0,
         ]);
     });
 

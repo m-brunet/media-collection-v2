@@ -37,6 +37,14 @@ export class FindMissingVolumes implements FindMissingVolumesUseCase {
         ActorAuthorization.requireLibraryEditor(actor);
         const collection = await this.collections.of(collectionId, upTo);
 
+        if (collection.finished) {
+            throw new Failure(
+                'conflict',
+                'Mark the collection unfinished before adding volumes.',
+                'collection-finished',
+            );
+        }
+
         Failure.ensure(
             collection.uncovered.length <= FindMissingVolumes.maximumVolumes,
             'Add at most ' + FindMissingVolumes.maximumVolumes + ' volumes at once.',

@@ -15,12 +15,13 @@ export class CollectionVolumeReader implements CollectionVolumes {
     async of(collectionId: string, upTo: number): Promise<CollectionVolumesView> {
         const collection = await this.loader.load(collectionId);
         const records = await this.members.ofCollections([collectionId]);
-        const { id, name, category } = collection.snapshot;
+        const { id, name, category, finished } = collection.snapshot;
 
         return {
             id,
             name,
             category,
+            finished,
             members: records.map(({ bookId, volumeFrom, volumeTo, isbn }) => ({
                 bookId,
                 volumeFrom,

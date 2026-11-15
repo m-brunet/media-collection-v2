@@ -50,6 +50,14 @@ export class AddVolumes implements AddVolumesUseCase {
                 const highest = Math.max(0, ...request.volumes.map((volume) => volume.volume));
                 const collection = await this.collections.of(request.collectionId, highest);
 
+                if (collection.finished) {
+                    throw new Failure(
+                        'conflict',
+                        'Mark the collection unfinished before adding volumes.',
+                        'collection-finished',
+                    );
+                }
+
                 Failure.ensure(
                     collection.members.some((member) => member.bookId === request.anchorBookId),
                     'The volume the search started from is no longer in this collection.',

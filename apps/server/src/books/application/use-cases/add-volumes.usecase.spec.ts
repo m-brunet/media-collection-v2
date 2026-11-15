@@ -115,6 +115,24 @@ describe('AddVolumes', () => {
         );
     });
 
+    it('refuses a Finished collection and adds nothing', async () => {
+        const { current, anchor, collectionId } = await gunnm();
+
+        current.collections.finished.add(collectionId);
+
+        const result = useCase(current).execute(owner, {
+            collectionId,
+            anchorBookId: anchor.id,
+            volumes: [row(2, '9782723434324')],
+        });
+
+        await expect(result).rejects.toMatchObject({
+            code: 'conflict',
+            reason: 'collection-finished',
+        });
+        expect(await current.books.findByIsbn('9782723434324')).toBeNull();
+    });
+
     it('takes the source title when the person chose it', async () => {
         const { current, anchor, collectionId } = await gunnm();
 
