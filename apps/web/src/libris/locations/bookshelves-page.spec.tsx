@@ -364,13 +364,27 @@ it('offers the Wall and the Ribbons in the View choice', async () => {
     await shown();
 
     expect(
-        within(screen.getByRole('group', { name: 'View' }))
+        within(screen.getByRole('radiogroup', { name: 'View' }))
             .getAllByRole('radio')
-            .map(
-                (choice) =>
-                    choice.getAttribute('aria-label') ?? choice.closest('label')?.textContent,
-            ),
-    ).toEqual(['Wall', 'Ribbons']);
+            .map((choice) => [choice.textContent, choice.getAttribute('aria-checked')]),
+    ).toEqual([
+        ['Wall', 'true'],
+        ['Ribbons', 'false'],
+    ]);
+});
+
+it('moves to the next view with the arrow keys', async () => {
+    api();
+    const router = await shown();
+
+    screen.getByRole('radio', { name: 'Wall' }).focus();
+
+    await userEvent.keyboard('{ArrowRight}');
+
+    expect([screen.getByRole('radio', { name: 'Ribbons' }), router.state.location.search]).toEqual([
+        expect.objectContaining({ ariaChecked: 'true' }),
+        '?view=ribbons',
+    ]);
 });
 
 it('falls back to the Wall for an unknown view', async () => {

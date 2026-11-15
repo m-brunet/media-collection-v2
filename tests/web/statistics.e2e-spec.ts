@@ -88,7 +88,7 @@ function owned(page: Page) {
 }
 
 function view(page: Page, name: string) {
-    return page.getByRole('group', { name: 'View' }).locator('label', { hasText: name }).click();
+    return page.getByRole('radiogroup', { name: 'View' }).getByRole('radio', { name }).click();
 }
 
 describe('Statistics', () => {

@@ -202,13 +202,13 @@ it('offers the views on the title line', async () => {
 
     show();
 
-    const views = await screen.findByRole('group', { name: 'View' });
+    const views = await screen.findByRole('radiogroup', { name: 'View' });
 
     expect(
         within(views)
             .getAllByRole('radio')
-            .map((radio) => radio.getAttribute('value')),
-    ).toEqual(['dashboard', 'story', 'topics']);
+            .map((radio) => radio.textContent),
+    ).toEqual(['Dashboard', 'Story', 'Topics']);
 });
 it('opens the view given in the address', async () => {
     library();
