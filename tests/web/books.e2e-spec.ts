@@ -270,3 +270,134 @@ describe('Reading the library', () => {
         await page.getByText(/Your shared library is empty/).waitFor();
     });
 });
+
+describe('Location and tags row', () => {
+    async function shelf(): Promise<string> {
+        const bookcase = (await admin.call<{ id: string }>('/bookcases', 'POST', { name: 'Oak' }))
+            .body;
+
+        return (
+            await admin.call<{ id: string }>('/bookcases/' + bookcase.id + '/shelves', 'POST', {
+                name: 'Top',
+            })
+        ).body.id;
+    }
+
+    function box(locator: Locator) {
+        return locator.evaluate((element) => {
+            const { top, left, right, width } = element.getBoundingClientRect();
+
+            return { top, left, right, width };
+        });
+    }
+
+    async function columns(page: Page) {
+        const row = page.locator('.organisation-row').first();
+
+        await page.getByRole('combobox', { name: 'Physical location' }).waitFor();
+
+        return Promise.all([
+            box(row.locator('.organisation-row__location')),
+            box(row.locator('> .field').last()),
+        ]);
+    }
+
+    it('puts Location in a third of the row and Tags in two thirds on the book page', async () => {
+        const piranesi = await savedBook({ shelfId: await shelf() });
+        const page = await signedIn('camille');
+
+        await page.goto('/books/' + piranesi.id);
+
+        const [location, tags] = await columns(page);
+
+        expect([location.top, Math.round((tags.width / location.width) * 10) / 10]).toEqual([
+            tags.top,
+            2,
+        ]);
+    });
+
+    it('puts Location in a third of the row and Tags in two thirds in the book form', async () => {
+        const piranesi = await savedBook({ shelfId: await shelf() });
+        const page = await signedIn('camille', viewports.minimumDesktop);
+
+        await page.goto('/books/' + piranesi.id + '/edit');
+
+        const [location, tags] = await columns(page);
+
+        expect([location.top, Math.round((tags.width / location.width) * 10) / 10]).toEqual([
+            tags.top,
+            2,
+        ]);
+    });
+
+    it('keeps every remove button of many long tags inside the Tags column', async () => {
+        const piranesi = await savedBook({
+            shelfId: await shelf(),
+            tags: Array.from({ length: 12 }, (_, index) => ({
+                name: 'A rather long tag name for wrapping ' + index,
+            })),
+        });
+        const page = await signedIn('camille', viewports.minimumDesktop);
+
+        await page.goto('/books/' + piranesi.id);
+
+        const [, tags] = await columns(page);
+        const removes = await page.getByRole('button', { name: /^Remove the tag/ }).all();
+        const outside = (await Promise.all(removes.map(box))).filter(
+            (remove) => remove.left < tags.left || remove.right > tags.right + 1,
+        );
+
+        expect([removes.length, outside]).toEqual([12, []]);
+    });
+
+    it('fits the smallest desktop window', async () => {
+        const piranesi = await savedBook({ shelfId: await shelf() });
+        const page = await signedIn('camille', viewports.minimumDesktop);
+
+        await page.goto('/books/' + piranesi.id);
+        await columns(page);
+
+        const scrolled = await page.evaluate(() => document.documentElement.scrollWidth);
+
+        expect(scrolled).toBeLessThanOrEqual(viewports.minimumDesktop.width);
+    });
+
+    it('fills the width of the batch Shelf card with one grouped selector', async () => {
+        await shelf();
+        await savedBook({
+            title: 'Batman 1',
+            collection: { collection: { name: 'Batman' }, volumeFrom: 1, volumeTo: 1 },
+        });
+        const page = await signedIn('camille');
+
+        await page.getByRole('link', { name: 'Collections', exact: true }).click();
+        await page
+            .getByRole('link', { name: /Batman/ })
+            .first()
+            .click();
+        await page.getByRole('button', { name: 'Edit books' }).click();
+        await page.getByRole('button', { name: 'Select all' }).click();
+        await page.getByRole('button', { name: 'Edit 1 book' }).click();
+
+        await page.getByRole('dialog').getByRole('button', { name: 'Shelf' }).click();
+
+        const card = page.getByRole('region', { name: 'Shelf' });
+        const [choice, inner] = await Promise.all([
+            box(card.getByRole('combobox', { name: /^Physical location/ })),
+            card.evaluate((element) => {
+                const style = getComputedStyle(element);
+
+                return (
+                    element.clientWidth -
+                    parseFloat(style.paddingLeft) -
+                    parseFloat(style.paddingRight)
+                );
+            }),
+        ]);
+
+        expect([await card.getByRole('combobox').count(), Math.round(choice.width)]).toEqual([
+            1,
+            Math.round(inner),
+        ]);
+    });
+});
