@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
-import { useEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import type { BookCategory } from '../../../../../packages/contracts/src/http';
 import type { BookDraftValues } from './book-draft.util';
 import { BookDraft } from './book-draft.util';
@@ -14,7 +14,7 @@ export function useCategoryLock(
     const chosen = useRef(category);
     const lockedBefore = useRef<BookCategory | null>(null);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         if (locked) {
             if (lockedBefore.current === null) {
                 chosen.current = category;
