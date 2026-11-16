@@ -179,6 +179,17 @@ Reading status and notes are personal features for Owners/Admin: one user's chan
 
 New Owners start with all existing books Not read. Each new book starts Not read independently for every Owner/Admin.
 
+## Server settings
+
+Admin only. The page answers first where the library can be reached, then lists one setting per line (decided 2026-11-16, issue #113; design: Doop, page "Server settings", proposal A "Status first").
+
+- **Three cards on top:** *This computer* (loopback addresses), *Home network* (the other running addresses, one per network adapter) and *Internet* (the HTTPS and HTTP internet addresses). Each card shows its addresses, a status pill and one line of explanation. A place without an address keeps its card, marked Off. The Internet card says Off, Setting up, Needs your help, On · HTTPS (with the certificate's validity date) or On · not encrypted while HTTP is open.
+- **QR code on request:** a card beside them invites to choose *Show QR code* on an address. Only then is a sign-in code created for that address (renewed every 2 minutes while shown); its card is outlined. The HTTP internet address gets a plain code without sign-in, and loopback addresses have no code.
+- **Internet access:** one row each for HTTPS from the internet, Domain name, HTTP from the internet and Keep this computer awake: name and one line of explanation or state on the left, the control and status pill on the right. Messages, setup steps and router rules appear under the row they concern.
+- **Ports:** one row each for the HTTP port and the HTTPS port, with their confirmation, override notice and next addresses under the row.
+- A pending restart is announced at the top. *Advanced: manual certificate* stays collapsed at the bottom.
+- Layout only: the functions, the server and the confirmation dialogs are unchanged.
+
 ## Local administrator recovery
 
 Accepted approach: trust access to the host computer's operating-system account; require no recovery key or previous application credentials.
