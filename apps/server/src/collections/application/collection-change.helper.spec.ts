@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Collection } from '../domain/entities/collection.entity.js';
-import { CollectionChange, CollectionSnapshot } from './collection-audit.js';
+import { CollectionChange } from './collection-change.helper.js';
 
 const batman = () =>
     new Collection({
@@ -45,29 +45,6 @@ describe('CollectionChange', () => {
                 finished: false,
             },
             after: null,
-        });
-    });
-});
-
-describe('CollectionSnapshot', () => {
-    it('records the collection settings in plain values', () => {
-        const collection = new Collection({
-            id: 'c1',
-            name: 'Batman',
-            category: 'comics',
-            includesVolumeZero: true,
-            finished: false,
-            createdAt: '2026-01-01T00:00:00.000Z',
-            updatedAt: '2026-01-01T00:00:00.000Z',
-        });
-
-        const result = CollectionSnapshot.of(collection);
-
-        expect(result).toEqual({
-            name: 'Batman',
-            category: 'comics',
-            includesVolumeZero: true,
-            finished: false,
         });
     });
 });

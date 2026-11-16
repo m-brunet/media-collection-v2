@@ -1,5 +1,6 @@
 import type { DeleteBookcaseUseCase } from '../ports/driving/delete-bookcase-use-case.interface.js';
-import { LocationAudit, LocationSnapshot } from '../location-audit.js';
+import { LocationAudit } from '../location-audit.js';
+import { LocationSnapshot } from '../location-snapshot.helper.js';
 import type { BookcaseRepository } from '../ports/driven/bookcase-repository.interface.js';
 import { LocationLoader } from '../services/location-loader.service.js';
 import { LocationOverview } from '../services/location-overview.service.js';

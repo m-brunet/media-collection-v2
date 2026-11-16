@@ -1,5 +1,5 @@
 import type { BookInput } from '../book-input.js';
-import { BookSnapshot } from '../book-audit.js';
+import { BookSnapshot } from '../book-snapshot.helper.js';
 import type { BookRepository } from '../ports/driven/book-repository.interface.js';
 import type { CollectionMembership } from '../ports/driven/collection-membership.interface.js';
 import type { ReadingStatusStore } from '../ports/driven/reading-status-store.interface.js';

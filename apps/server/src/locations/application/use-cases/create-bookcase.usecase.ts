@@ -1,5 +1,6 @@
 import type { CreateBookcaseUseCase } from '../ports/driving/create-bookcase-use-case.interface.js';
-import { LocationAudit, LocationSnapshot } from '../location-audit.js';
+import { LocationAudit } from '../location-audit.js';
+import { LocationSnapshot } from '../location-snapshot.helper.js';
 import type { BookcaseView } from '../location-views.js';
 import type { BookcaseRepository } from '../ports/driven/bookcase-repository.interface.js';
 import { LocationNaming } from '../services/location-naming.service.js';

@@ -1,6 +1,7 @@
 import type { RecordReturnsUseCase } from '../ports/driving/record-returns-use-case.interface.js';
 import type { ReturnOutcome } from '../lending-input.js';
-import { LoanAudit, LoanSnapshot } from '../loan-audit.js';
+import { LoanAudit } from '../loan-audit.js';
+import { LoanSnapshot } from '../loan-snapshot.helper.js';
 import type { LoanRepository } from '../ports/driven/loan-repository.interface.js';
 import type { ReceiverRepository } from '../ports/driven/receiver-repository.interface.js';
 import { Loan } from '../../domain/entities/loan.entity.js';

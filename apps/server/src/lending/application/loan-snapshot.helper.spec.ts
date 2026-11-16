@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { LoanSnapshot } from './loan-audit.js';
+import { LoanSnapshot } from './loan-snapshot.helper.js';
 import { Loan } from '../domain/entities/loan.entity.js';
 import { Receiver } from '../domain/entities/receiver.entity.js';
 

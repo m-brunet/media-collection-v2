@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Tag } from '../domain/entities/tag.entity.js';
-import { TagSnapshot } from './tag-audit.js';
+import { TagSnapshot } from './tag-snapshot.helper.js';
 
 const at = '2026-01-01T00:00:00.000Z';
 const fantasy = () => new Tag({ id: 'fantasy', name: 'Fantasy', createdAt: at, updatedAt: at });

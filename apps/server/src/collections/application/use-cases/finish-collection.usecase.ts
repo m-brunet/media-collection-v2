@@ -1,5 +1,6 @@
 import type { FinishCollectionUseCase } from '../ports/driving/finish-collection-use-case.interface.js';
-import { CollectionAudit, CollectionSnapshot } from '../collection-audit.js';
+import { CollectionAudit } from '../collection-audit.js';
+import { CollectionSnapshot } from '../collection-snapshot.helper.js';
 import type { CollectionDetailsView } from '../collection-views.js';
 import { MemberCoverage } from '../member-coverage.helper.js';
 import type { CollectionMemberStore } from '../ports/driven/collection-member-store.interface.js';

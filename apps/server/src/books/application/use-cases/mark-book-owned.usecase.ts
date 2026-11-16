@@ -1,6 +1,7 @@
 import type { MarkBookOwnedUseCase } from '../ports/driving/mark-book-owned-use-case.interface.js';
 import type { BookView } from '../book-views.js';
-import { BookAudit, BookSnapshot } from '../book-audit.js';
+import { BookAudit } from '../book-audit.js';
+import { BookSnapshot } from '../book-snapshot.helper.js';
 import type { BookCollectionReader } from '../ports/driven/book-collection-reader.interface.js';
 import type { BookRepository } from '../ports/driven/book-repository.interface.js';
 import { BookLoader } from '../services/book-loader.service.js';

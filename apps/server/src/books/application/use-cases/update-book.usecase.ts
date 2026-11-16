@@ -1,7 +1,8 @@
 import type { UpdateBookUseCase } from '../ports/driving/update-book-use-case.interface.js';
 import type { BookInput } from '../book-input.js';
 import type { BookView } from '../book-views.js';
-import { BookAudit, BookSnapshot } from '../book-audit.js';
+import { BookAudit } from '../book-audit.js';
+import { BookSnapshot } from '../book-snapshot.helper.js';
 import type { AuthorRepository } from '../ports/driven/author-repository.interface.js';
 import type { BookRepository } from '../ports/driven/book-repository.interface.js';
 import type { BookCollectionReader } from '../ports/driven/book-collection-reader.interface.js';

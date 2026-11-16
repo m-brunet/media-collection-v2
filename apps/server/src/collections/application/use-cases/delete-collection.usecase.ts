@@ -1,5 +1,6 @@
 import type { DeleteCollectionUseCase } from '../ports/driving/delete-collection-use-case.interface.js';
-import { CollectionAudit, CollectionSnapshot } from '../collection-audit.js';
+import { CollectionAudit } from '../collection-audit.js';
+import { CollectionSnapshot } from '../collection-snapshot.helper.js';
 import type { CollectionMemberStore } from '../ports/driven/collection-member-store.interface.js';
 import type { CollectionRepository } from '../ports/driven/collection-repository.interface.js';
 import type { MemberTitles } from '../ports/driven/member-titles.interface.js';

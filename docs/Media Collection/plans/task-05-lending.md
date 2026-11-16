@@ -148,7 +148,8 @@ presentation and Overview counter (Task 8), data reset (Task 9).
 ## Architecture review (2026-11-06)
 
 Mandatory findings, fixed: `lending/application/loan-audit.ts` had no same-directory spec (added
-`loan-audit.spec.ts`); `Loan.restore` rebuilt loans without checking their invariants (the constructor now refuses an
+`loan-audit.spec.ts`; `LoanSnapshot` and its spec have since moved to `loan-snapshot.helper.ts` and
+`loan-snapshot.helper.spec.ts`); `Loan.restore` rebuilt loans without checking their invariants (the constructor now refuses an
 inconsistent status / return date / missing book of an active loan, `loan-invalid`). Optional improvement applied:
 active-loan book views carry `updatedAt`, so the Lent books page versions cover addresses like the other pages.
 
