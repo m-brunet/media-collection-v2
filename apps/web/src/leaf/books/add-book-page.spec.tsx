@@ -31,6 +31,7 @@ function lookup(overrides: Partial<LookedUpBook> = {}): LookedUpBook {
         authorSpellings: [],
         covers: [],
         unavailable: [],
+        pending: [],
         ...overrides,
     };
 }
@@ -66,6 +67,28 @@ it('fills the form with the preferred source’s values', async () => {
     expect(screen.getByLabelText('Scanned ISBN')).toHaveValue(isbn);
     expect(screen.getByText('Susanna Clarke')).toBeInTheDocument();
     expect(screen.getByLabelText('Publisher')).toHaveValue('Bloomsbury');
+});
+
+it('names the sources still answering, with a way to check again', async () => {
+    open(lookup({ pending: ['openlibrary'] }));
+
+    expect(
+        await screen.findByText(
+            /No answer yet from Open Library; the values found may be incomplete\. Check again to see the rest\./,
+        ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Check again' })).toHaveAttribute(
+        'href',
+        '/scan/found',
+    );
+});
+
+it('says nothing about late sources when every source answered', async () => {
+    open();
+
+    await screen.findByLabelText(/^Title/);
+
+    expect(screen.queryByRole('link', { name: 'Check again' })).not.toBeInTheDocument();
 });
 
 it('keeps the same three sections, additional information folded without its values', async () => {

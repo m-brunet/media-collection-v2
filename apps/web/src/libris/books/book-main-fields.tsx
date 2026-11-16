@@ -47,7 +47,7 @@ export function BookMainFields({
     errorFor(field: BookField): string | undefined;
     personal: boolean;
     existingBookId: string | null;
-    find: { busy: boolean; retry: boolean; onFind(): void } | null;
+    find: { busy: boolean; retry: boolean; check: boolean; onFind(): void } | null;
     cover: CoverChoice;
     onCoverChange(choice: CoverChoice): void;
     onCorrectAuthor?(author: AuthorDto): void;
@@ -85,7 +85,13 @@ export function BookMainFields({
                                     disabled={values.noIsbn || values.isbn.trim() === ''}
                                     onClick={find.onFind}
                                 >
-                                    {find.retry ? t('lookup.retry') : t('lookup.find')}
+                                    {t(
+                                        find.check
+                                            ? 'lookup.checkAgain'
+                                            : find.retry
+                                              ? 'lookup.retry'
+                                              : 'lookup.find',
+                                    )}
                                 </Button>
                             )}
                         </div>

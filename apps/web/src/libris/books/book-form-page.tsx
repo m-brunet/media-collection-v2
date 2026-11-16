@@ -195,6 +195,7 @@ function BookForm({ book }: { book: BookDto | null }) {
                             : {
                                   busy: lookup.busy,
                                   retry: lookup.message?.retry ?? false,
+                                  check: lookup.message?.check ?? false,
                                   onFind: () => void lookup.find(),
                               }
                     }

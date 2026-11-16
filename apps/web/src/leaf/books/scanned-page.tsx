@@ -15,6 +15,7 @@ import type { AddBookState } from './add-book-page';
 type Failure =
     | { kind: 'not-found' }
     | { kind: 'unavailable'; sources: string[] }
+    | { kind: 'pending'; sources: string[] }
     | { kind: 'error' };
 
 type Step =
@@ -103,6 +104,8 @@ function FailureMessage({ failure }: { failure: Failure }) {
             return <>{t('leaf.found.notFound')}</>;
         case 'unavailable':
             return <>{t('leaf.found.unavailable', { sources: sourceNames(failure.sources) })}</>;
+        case 'pending':
+            return <>{t('leaf.found.pending', { sources: sourceNames(failure.sources) })}</>;
         case 'error':
             return <>{t('leaf.found.error')}</>;
     }
@@ -141,6 +144,12 @@ function Scanned({ isbn }: { isbn: string }) {
             }
         } else if (result.found) {
             navigate('/add', { state: { isbn, lookup: result } satisfies AddBookState });
+        } else if (result.pending.length > 0) {
+            setStep({
+                kind: 'failed',
+                failure: { kind: 'pending', sources: result.pending },
+                attempts,
+            });
         } else if (result.unavailable.length > 0) {
             failed({
                 kind: 'unavailable',
@@ -194,9 +203,16 @@ function Scanned({ isbn }: { isbn: string }) {
                 <Notice tone="warning">
                     <FailureMessage failure={step.failure} />
                 </Notice>
-                <p>{t('leaf.found.retryOnce', { isbn })}</p>
+                <p>
+                    {t(
+                        step.failure.kind === 'pending'
+                            ? 'leaf.found.pendingHint'
+                            : 'leaf.found.retryOnce',
+                        { isbn },
+                    )}
+                </p>
                 <Button variant="primary" onClick={() => void find()}>
-                    {t('leaf.retry')}
+                    {t(step.failure.kind === 'pending' ? 'lookup.checkAgain' : 'leaf.retry')}
                 </Button>
                 <Link to="/" className="button button--secondary">
                     <span>{t('leaf.scan.backHome')}</span>

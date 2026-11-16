@@ -27,6 +27,7 @@ function lookedUp(overrides: Partial<Extract<BookLookupDto, { kind: 'looked-up' 
         authorSpellings: [],
         covers: [],
         unavailable: [],
+        pending: [],
         ...overrides,
     };
 }
@@ -147,6 +148,54 @@ it('names the sources that could not be reached', async () => {
     expect(
         await screen.findByText('The lookup did not complete: BnF could not be reached.'),
     ).toBeInTheDocument();
+});
+
+it('names the sources still answering and offers Check again', async () => {
+    lookups(api, { status: 200, body: lookedUp({ found: false, pending: ['bnf'] }) });
+    open();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Find book' }));
+
+    expect(await screen.findByText('No answer yet from BnF.')).toBeInTheDocument();
+    expect(
+        screen.getByText(
+            'The answer is on its way. Check again in a few seconds. The scanned ISBN ' +
+                isbn +
+                ' is kept.',
+        ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Check again' })).toBeInTheDocument();
+});
+
+it('lets the person check again as long as a source is still answering', async () => {
+    const pending = { status: 200, body: lookedUp({ found: false, pending: ['bnf'] }) };
+
+    lookups(api, pending, pending, pending);
+    open();
+    await userEvent.click(await screen.findByRole('button', { name: 'Find book' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Check again' }));
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Check again' }));
+
+    expect(await screen.findByRole('button', { name: 'Check again' })).toBeInTheDocument();
+    expect(lookupCalls(api)).toHaveLength(3);
+});
+
+it('opens the review form when a later check finds the book', async () => {
+    lookups(
+        api,
+        { status: 200, body: lookedUp({ found: false, pending: ['bnf'] }) },
+        { status: 200, body: lookedUp() },
+    );
+    renderRoute(
+        { pathname: '/scan/found', state: { isbn } },
+        { '/scan/found': <ScannedPage />, '/add': <p>Review form</p> },
+    );
+    await userEvent.click(await screen.findByRole('button', { name: 'Find book' }));
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Check again' }));
+
+    expect(await screen.findByText('Review form')).toBeInTheDocument();
 });
 
 it('ends with Back to home only when the retry fails too', async () => {

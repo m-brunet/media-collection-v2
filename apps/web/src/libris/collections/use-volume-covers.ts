@@ -26,7 +26,6 @@ export function useVolumeCovers(wanted: readonly string[]): VolumeCovers {
                 new Promise((resolve) => {
                     timer = setTimeout(resolve, milliseconds);
                 }),
-            () => Date.now(),
             setCovers,
         );
 
