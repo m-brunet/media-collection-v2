@@ -58,7 +58,8 @@ export type ActivityEvent =
       }
     | { kind: 'shelf-created' | 'shelf-deleted'; name: string; bookcase: string }
     | { kind: 'shelf-renamed'; from: string; to: string; bookcase: string }
-    | { kind: 'shelf-moved'; name: string; from: string; to: string };
+    | { kind: 'shelf-moved'; name: string; from: string; to: string }
+    | { kind: 'kept-covers-deleted'; count: number };
 
 export type ActivityCategory = 'books' | 'manga' | 'comics';
 
@@ -98,6 +99,7 @@ export class ActivityProjection {
             'shelf.deleted',
             'tag.renamed',
             'tag.deleted',
+            'maintenance.kept-covers-deleted',
         ],
         [
             'collection.updated',
@@ -242,9 +244,19 @@ export class ActivityProjection {
                 return ActivityProjection.named('tag-deleted', current);
             case 'receiver.created':
                 return ActivityProjection.named('receiver-created', current);
+            case 'maintenance.kept-covers-deleted':
+                return ActivityProjection.keptCoversDeleted(before);
             default:
                 return null;
         }
+    }
+
+    private static keptCoversDeleted(before: Values): ActivityEvent | null {
+        const count = before?.keptCovers;
+
+        return typeof count === 'number' && count > 0
+            ? { kind: 'kept-covers-deleted', count }
+            : null;
     }
 
     private static volumesAdded(after: Values): ActivityEvent | null {

@@ -1,9 +1,12 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { randomUUID } from 'node:crypto';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { FileCoverStorage } from '../../apps/server/src/books/infrastructure/adapters/driven/filesystem/file-cover-storage.adapter.js';
 import { KyselyKeptCoverStore } from '../../apps/server/src/books/infrastructure/adapters/driven/persistence/kysely-kept-cover-store.adapter.js';
+import { KyselyKeptCoverArchive } from '../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/kysely-kept-cover-archive.adapter.js';
+import { KyselyCoverFileCleanup } from '../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/kysely-cover-file-cleanup.adapter.js';
 import { KyselyKeptCoverCount } from '../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/kysely-kept-cover-count.adapter.js';
 import { Database } from '../../apps/server/src/shared/infrastructure/adapters/driven/persistence/database.adapter.js';
 import { UuidGenerator } from '../../apps/server/src/shared/infrastructure/adapters/driven/runtime/uuid-generator.adapter.js';
@@ -34,7 +37,20 @@ async function empty() {
 
     databases.push(database);
 
-    return { database, store: new KyselyKeptCoverStore(database.connections) };
+    return { path, database, store: new KyselyKeptCoverStore(database.connections) };
+}
+
+async function archive() {
+    const { path, database, store } = await empty();
+    const covers = new FileCoverStorage(path);
+
+    return {
+        path,
+        database,
+        store,
+        covers,
+        archive: new KyselyKeptCoverArchive(database.connections, covers),
+    };
 }
 
 async function populated() {
@@ -153,5 +169,66 @@ describe('kept cover count', () => {
         const count = await new KyselyKeptCoverCount(database.connections).afterReset();
 
         expect(count).toBe(0);
+    });
+});
+
+describe('kept cover archive', () => {
+    it('counts the kept covers, their size and the oldest date', async () => {
+        const { store, covers, archive: subject } = await archive();
+        const first = await covers.store(new Uint8Array(1000), 'image/jpeg');
+        const second = await covers.store(new Uint8Array(500), 'image/png');
+
+        await store.put({ ...kept(first), keptAt: '2026-03-12T09:00:00.000Z' });
+        await store.put({ ...kept(second, '9781635575637'), keptAt: '2026-11-16T09:00:00.000Z' });
+
+        const summary = await subject.summary();
+
+        expect(summary).toEqual({
+            count: 2,
+            bytes: 1500,
+            oldestKeptAt: '2026-03-12T09:00:00.000Z',
+        });
+    });
+
+    it('counts a kept cover whose picture is gone as empty', async () => {
+        const { store, archive: subject } = await archive();
+
+        await store.put(kept('00000000-0000-4000-8000-000000000000.jpg'));
+
+        const summary = await subject.summary();
+
+        expect(summary).toMatchObject({ count: 1, bytes: 0 });
+    });
+
+    it('reports nothing kept in an empty library', async () => {
+        const { archive: subject } = await archive();
+
+        const summary = await subject.summary();
+
+        expect(summary).toEqual({ count: 0, bytes: 0, oldestKeptAt: null });
+    });
+
+    it('deletes every kept cover and tells how many', async () => {
+        const { store, archive: subject } = await archive();
+
+        await store.put(kept('a.jpg'));
+        await store.put(kept('b.jpg', '9781635575637'));
+
+        const deleted = await subject.deleteAll();
+
+        expect(deleted).toBe(2);
+        expect(await store.find(isbn)).toBeNull();
+    });
+
+    it('leaves the pictures to the cleanup, which then removes them', async () => {
+        const { path, database, store, covers, archive: subject } = await archive();
+        const file = await covers.store(new Uint8Array(10), 'image/jpeg');
+
+        await store.put(kept(file));
+        await subject.deleteAll();
+
+        await new KyselyCoverFileCleanup(database.connections, covers).removeUnreferenced();
+
+        expect(await readdir(join(path, 'covers'))).toEqual([]);
     });
 });

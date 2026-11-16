@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { CoverStorage } from '../../../../application/ports/driven/cover-storage.interface.js';
 import type { CoverMediaType } from '../../../../domain/value-objects/cover-image.value-object.js';
@@ -45,6 +45,19 @@ export class FileCoverStorage implements CoverStorage {
 
             return { bytes, mediaType };
         } catch {
+            return null;
+        }
+    }
+
+    async size(file: string): Promise<number | null> {
+        if (!FileCoverStorage.fileName.test(file)) {
+            return null;
+        }
+
+        try {
+            return (await stat(join(this.directory, file))).size;
+        } catch {
+            // Justified: a cover whose file is gone has no size; the caller counts it as empty.
             return null;
         }
     }

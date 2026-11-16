@@ -449,6 +449,16 @@ export interface KeptCoversDto {
     count: number;
 }
 
+export interface KeptCoverSummaryDto {
+    count: number;
+    bytes: number;
+    oldestKeptAt: string | null;
+}
+
+export interface KeptCoversDeletedDto {
+    deleted: number;
+}
+
 export type VolumeCoverDto = { kind: 'found'; token: string } | { kind: 'none' };
 
 export interface MissingVolumeEditionDto {
@@ -705,7 +715,8 @@ export type ActivityEventDto =
       }
     | { kind: 'shelf-created' | 'shelf-deleted'; name: string; bookcase: string }
     | { kind: 'shelf-renamed'; from: string; to: string; bookcase: string }
-    | { kind: 'shelf-moved'; name: string; from: string; to: string };
+    | { kind: 'shelf-moved'; name: string; from: string; to: string }
+    | { kind: 'kept-covers-deleted'; count: number };
 
 export interface ActivityEntryDto {
     id: string;

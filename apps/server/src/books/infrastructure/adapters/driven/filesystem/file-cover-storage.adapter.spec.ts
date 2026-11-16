@@ -42,6 +42,28 @@ describe('FileCoverStorage', () => {
 
         expect(result).toEqual({ bytes: Buffer.from([1, 2]), mediaType: 'image/jpeg' });
     });
+    it('tells the size of a stored image', async () => {
+        const storage = new FileCoverStorage(directory());
+        const file = await storage.store(new Uint8Array(1200), 'image/jpeg');
+
+        const size = await storage.size(file);
+
+        expect(size).toBe(1200);
+    });
+    it('has no size for an image that is not stored', async () => {
+        const storage = new FileCoverStorage(directory());
+
+        const size = await storage.size('00000000-0000-4000-8000-000000000000.jpg');
+
+        expect(size).toBeNull();
+    });
+    it('never sizes a name it could not have generated', async () => {
+        const storage = new FileCoverStorage(directory('notes.txt'));
+
+        const size = await storage.size('notes.txt');
+
+        expect(size).toBeNull();
+    });
     it('never reads a name it could not have generated', async () => {
         const data = directory();
 
