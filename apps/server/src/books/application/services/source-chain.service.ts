@@ -35,8 +35,14 @@ export class SourceLink<T> {
         );
     }
 
-    request(isbn13: string, bulk: boolean): Promise<DeskReply<T>> {
-        return this.desk.ask(isbn13, bulk);
+    async first(isbn13: string, bulk: boolean): Promise<T | null> {
+        const reply = await this.desk.ask(isbn13, bulk);
+
+        if (reply !== 'failed' && reply.kind === 'found') {
+            return reply.value;
+        }
+
+        return this.next ? this.next.first(isbn13, bulk) : null;
     }
 }
 

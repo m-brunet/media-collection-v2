@@ -84,6 +84,7 @@ export class ScriptedLookupSources implements BookLookupSources {
     readonly bnf = new ScriptedSource<LookupAnswer>('bnf');
     readonly openLibrary = new ScriptedSource<LookupAnswer>('openlibrary');
     readonly openLibraryCovers = new ScriptedSource<CoverOffer[]>('openlibrary');
+    readonly inventaireCovers = new ScriptedSource<CoverOffer[]>('inventaire');
     readonly downloader = new ScriptedDownloader();
     private readonly web = new Map<string, Uint8Array>();
     readonly addressDownloader = new HttpCoverDownloader(
@@ -99,7 +100,7 @@ export class ScriptedLookupSources implements BookLookupSources {
         new PublicAddresses(async () => ['93.184.215.14']),
     );
     readonly information = [this.bnf, this.openLibrary];
-    readonly covers = [this.openLibraryCovers];
+    readonly covers = [this.inventaireCovers, this.openLibraryCovers];
     readonly series = new ScriptedSeries();
 
     knows(name: 'bnf' | 'openlibrary', isbn13: string, fields: LookupAnswerFields): void {
@@ -125,6 +126,14 @@ export class ScriptedLookupSources implements BookLookupSources {
         this.openLibraryCovers.answer(isbn13, {
             kind: 'found',
             value: [{ address, width: 400, height: 600, fingerprint: null }],
+        });
+        this.downloader.images.set(address, bytes);
+    }
+
+    inventaireCover(isbn13: string, address: string, bytes: Uint8Array): void {
+        this.inventaireCovers.answer(isbn13, {
+            kind: 'found',
+            value: [{ address, width: null, height: null, fingerprint: null }],
         });
         this.downloader.images.set(address, bytes);
     }

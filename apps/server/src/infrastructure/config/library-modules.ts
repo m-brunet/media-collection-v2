@@ -42,7 +42,12 @@ export interface LibraryDependencies {
     lookupAddresses?: LookupAddresses;
 }
 
-export type LookupAddresses = { bnf?: string; openLibrary?: string; delaySeconds?: number };
+export type LookupAddresses = {
+    bnf?: string;
+    openLibrary?: string;
+    inventaire?: string;
+    delaySeconds?: number;
+};
 
 export class LibraryModules {
     static register(
