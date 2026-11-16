@@ -1,32 +1,44 @@
 import type {
     LookupSource,
     SourceReply,
+    SourceTurn,
 } from '../../../../application/ports/driven/lookup-source.interface.js';
 import type { BookCategory } from '../../../../domain/entities/book.entity.js';
 import type { LookupDate } from '../../../../domain/value-objects/lookup-answer.value-object.js';
 import { LookupAnswer } from '../../../../domain/value-objects/lookup-answer.value-object.js';
-import type { OpenLibraryRecord, OpenLibraryRecords } from './open-library-records.adapter.js';
+import type { OpenLibraryRecord } from './open-library-records.adapter.js';
+import { OpenLibraryRecords } from './open-library-records.adapter.js';
 
 const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 
 // Open Library gives no edition language and no summary in these records.
 export class OpenLibraryInformation implements LookupSource<LookupAnswer> {
     readonly name = 'openlibrary';
-    // Kept well below Open Library's published limits for identified clients.
-    readonly limit = { requests: 20, seconds: 60 };
+    readonly batchSize = OpenLibraryRecords.batchSize;
 
     constructor(private readonly records: OpenLibraryRecords) {}
 
-    async find(isbn13: string): Promise<SourceReply<LookupAnswer>> {
-        const reply = await this.records.record(isbn13);
+    async find(
+        isbn13s: readonly string[],
+        turn: SourceTurn,
+    ): Promise<SourceReply<ReadonlyMap<string, LookupAnswer>>> {
+        const reply = await this.records.records(isbn13s, turn);
 
         if (reply.kind !== 'found') {
             return reply;
         }
 
-        const answer = OpenLibraryInformation.answer(reply.value);
+        const answers = new Map<string, LookupAnswer>();
 
-        return answer.empty ? { kind: 'none' } : { kind: 'found', value: answer };
+        for (const [isbn13, record] of reply.value) {
+            const answer = OpenLibraryInformation.answer(record);
+
+            if (!answer.empty) {
+                answers.set(isbn13, answer);
+            }
+        }
+
+        return { kind: 'found', value: answers };
     }
 
     private static answer(record: OpenLibraryRecord): LookupAnswer {

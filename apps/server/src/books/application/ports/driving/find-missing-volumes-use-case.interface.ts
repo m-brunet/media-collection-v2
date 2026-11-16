@@ -31,5 +31,10 @@ export type MissingVolumes =
     | { kind: 'unavailable'; retryAt: string | null };
 
 export interface FindMissingVolumesUseCase {
-    execute(actor: Actor, collectionId: string, upTo: number): Promise<MissingVolumes>;
+    execute(
+        actor: Actor,
+        collectionId: string,
+        upTo: number,
+        signal?: AbortSignal,
+    ): Promise<MissingVolumes>;
 }

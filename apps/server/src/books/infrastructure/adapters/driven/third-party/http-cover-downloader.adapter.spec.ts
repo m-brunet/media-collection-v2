@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import type { SourceTurn } from '../../../../application/ports/driven/lookup-source.interface.js';
+import { SourceQueue } from '../../../../application/services/source-queue.service.js';
+import { ManualClock } from '../../../../application/testing/book-doubles.test-support.js';
 import { CoverImage } from '../../../../domain/value-objects/cover-image.value-object.js';
 import { HttpCoverDownloader } from './http-cover-downloader.adapter.js';
 
@@ -109,6 +112,64 @@ describe('HttpCoverDownloader', () => {
 
         expect(bytes).toBeNull();
         expect(requests).toBe(HttpCoverDownloader.maximumRedirects + 1);
+    });
+
+    it('downloads from a paced service through its queue, as a single-book request', async () => {
+        const turns: SourceTurn[] = [];
+        const queue = new SourceQueue(0, new ManualClock());
+        const send = queue.send.bind(queue);
+
+        queue.send = (turn, request) => {
+            turns.push(turn);
+
+            return send(turn, request);
+        };
+        const downloader = new HttpCoverDownloader(
+            async () => new Response(jpeg, { status: 200 }),
+            undefined,
+            new Map([['covers.example', queue]]),
+        );
+
+        const bytes = await downloader.download('https://covers.example/1-L.jpg');
+
+        expect(bytes).toEqual(jpeg);
+        expect(turns).toEqual([{ bulk: false }]);
+    });
+
+    it('downloads from any other address without a queue', async () => {
+        const queue = new SourceQueue(0, new ManualClock());
+
+        queue.pause(null);
+        const downloader = new HttpCoverDownloader(
+            async () => new Response(jpeg, { status: 200 }),
+            undefined,
+            new Map([['covers.example', queue]]),
+        );
+
+        const bytes = await downloader.download('https://images.example/1-L.jpg');
+
+        expect(bytes).toEqual(jpeg);
+    });
+
+    it('gives nothing while the service asked to wait, without a request', async () => {
+        const requested: string[] = [];
+        const queue = new SourceQueue(0, new ManualClock());
+
+        queue.pause(null);
+        const downloader = new HttpCoverDownloader(
+            async (url) => {
+                requested.push(url);
+
+                return new Response(jpeg, { status: 200 });
+            },
+            undefined,
+            new Map([['covers.example', queue]]),
+        );
+
+        const bytes = await downloader.download('https://covers.example/1-L.jpg');
+
+        expect(bytes).toBeNull();
+        expect(requested).toEqual([]);
     });
 
     it('gives nothing when the source cannot be reached', async () => {

@@ -1,53 +1,67 @@
 import { describe, expect, it } from 'vitest';
-import { ManualClock, ScriptedSeries } from '../testing/book-doubles.test-support.js';
+import { ScriptedSeries } from '../testing/book-doubles.test-support.js';
 import { SeriesLookup } from './series-lookup.service.js';
-import { SourceBudget } from './source-budget.service.js';
 
-function setup(requests = 100) {
-    const clock = new ManualClock();
-    const series = new ScriptedSeries({ requests, seconds: 60 });
-    const budget = new SourceBudget(series.limit, clock);
+function setup() {
+    const series = new ScriptedSeries();
 
-    return { clock, series, budget, lookup: new SeriesLookup(series, budget, clock) };
+    return { series, lookup: new SeriesLookup(series) };
 }
 
 describe('SeriesLookup', () => {
-    it('spends one request of the budget per page', async () => {
-        const { series, lookup } = setup(1);
+    it('reads every page of a series', async () => {
+        const { series, lookup } = setup();
 
-        series.pages = [{ kind: 'found', value: { records: [], next: 1001 } }];
+        series.pages = [
+            { kind: 'found', value: { records: [], next: 1001 } },
+            { kind: 'found', value: { records: [], next: null } },
+        ];
+
+        await lookup.volumes('Gunnm', 'Glénat');
+
+        expect(series.asked).toEqual(['volumes:Gunnm/Glénat@1', 'volumes:Gunnm/Glénat@1001']);
+    });
+
+    it('stops at the page the catalogue refuses', async () => {
+        const { series, lookup } = setup();
+
+        series.pages = [
+            { kind: 'found', value: { records: [], next: 1001 } },
+            { kind: 'limited', retryAt: null },
+        ];
 
         const reply = await lookup.volumes('Gunnm', 'Glénat');
 
         expect(reply).toEqual({ kind: 'limited', retryAt: null });
-        expect(series.asked).toEqual(['volumes:Gunnm/Glénat@1']);
     });
 
-    it('asks nothing more before the time the catalogue asks to wait', async () => {
-        const { clock, series, lookup } = setup();
+    it('reports a catalogue whose queue is too long as busy', async () => {
+        const { series, lookup } = setup();
 
-        series.editionsReply = { kind: 'limited', retryAt: new Date('2026-03-01T10:02:00Z') };
-        await lookup.editions(['9782723434799']);
-        clock.advance(60);
+        series.editionsReply = { kind: 'busy' };
 
         const reply = await lookup.editions(['9782723434799']);
 
-        expect(reply).toEqual({ kind: 'limited', retryAt: null });
-        expect(series.asked).toHaveLength(1);
+        expect(reply).toEqual({ kind: 'busy' });
     });
 
-    it('asks again once that time has passed', async () => {
-        const { clock, series, lookup } = setup();
+    it('asks as bulk work', async () => {
+        const { series, lookup } = setup();
 
-        series.editionsReply = { kind: 'limited', retryAt: new Date('2026-03-01T10:02:00Z') };
         await lookup.editions(['9782723434799']);
-        clock.advance(121);
-        series.editionsReply = { kind: 'none' };
 
-        const reply = await lookup.editions(['9782723434799']);
+        expect(series.turns).toEqual([{ bulk: true }]);
+    });
 
-        expect(reply).toEqual({ kind: 'none' });
-        expect(series.asked).toHaveLength(2);
+    it('hands the cancellation of the run to every request', async () => {
+        const { series, lookup } = setup();
+        const cancel = new AbortController();
+
+        series.pages = [{ kind: 'found', value: { records: [], next: null } }];
+
+        await lookup.volumes('Gunnm', 'Glénat', cancel.signal);
+
+        expect(series.turns).toEqual([{ bulk: true, signal: cancel.signal }]);
     });
 
     it('reports an unreachable catalogue as failed', async () => {

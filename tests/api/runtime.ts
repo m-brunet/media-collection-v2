@@ -24,7 +24,7 @@ export interface RuntimeOptions {
     port?: number | null;
     main?: boolean;
     environmentPort?: number;
-    lookupAddresses?: { bnf: string; openLibrary: string };
+    lookupAddresses?: { bnf: string; openLibrary: string; delaySeconds: number };
     internetAccess?: { externalAddress: string | null; accepts: boolean; domainAddress?: string };
     language?: string;
     updates?: {

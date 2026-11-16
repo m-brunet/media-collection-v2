@@ -1,4 +1,5 @@
 import type { CoverDownloader } from '../../../../application/ports/driven/cover-downloader.interface.js';
+import type { SourceQueue } from '../../../../application/services/source-queue.service.js';
 import { CoverImage } from '../../../../domain/value-objects/cover-image.value-object.js';
 import type { Fetcher } from './source-http.adapter.js';
 import { SourceHttp } from './source-http.adapter.js';
@@ -14,9 +15,27 @@ export class HttpCoverDownloader implements CoverDownloader {
     constructor(
         private readonly fetcher: Fetcher = fetch,
         private readonly policy: AddressPolicy = HttpCoverDownloader.anyWebAddress,
+        private readonly queues: ReadonlyMap<string, SourceQueue> = new Map(),
     ) {}
 
     async download(address: string): Promise<Uint8Array | null> {
+        try {
+            const queue = this.queues.get(new URL(address).hostname);
+
+            if (!queue) {
+                return await this.fetched(address);
+            }
+
+            const outcome = await queue.send({ bulk: false }, () => this.fetched(address));
+
+            return outcome.kind === 'sent' ? outcome.value : null;
+        } catch {
+            // Justified: an unreachable source or a malformed address only means no cover here.
+            return null;
+        }
+    }
+
+    private async fetched(address: string): Promise<Uint8Array | null> {
         try {
             let url = new URL(address);
 

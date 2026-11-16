@@ -42,7 +42,7 @@ export interface LibraryDependencies {
     lookupAddresses?: LookupAddresses;
 }
 
-export type LookupAddresses = { bnf?: string; openLibrary?: string };
+export type LookupAddresses = { bnf?: string; openLibrary?: string; delaySeconds?: number };
 
 export class LibraryModules {
     static register(
@@ -74,7 +74,7 @@ export class LibraryModules {
                     readings: new KyselyReadingStatusRepository(connections),
                     notes: new KyselyPersonalNoteRepository(connections),
                     covers: new FileCoverStorage(dataDirectory),
-                    lookup: BooksModule.lookupSources(lookupAddresses),
+                    lookup: BooksModule.lookupSources(clock, lookupAddresses),
                     collections: membership,
                     collectionReader: membership,
                     collectionBooks: CollectionsModule.ownedBooks(collections, members),

@@ -1,10 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { CoverOffer } from '../../domain/services/cover-combination.service.js';
 import type { LookupAnswerFields } from '../../domain/value-objects/lookup-answer.value-object.js';
 import { LookupAnswer } from '../../domain/value-objects/lookup-answer.value-object.js';
 import type { SourceReply } from '../ports/driven/lookup-source.interface.js';
 import { AuthorMatcher } from '../services/author-matcher.service.js';
-import { SourceBudget } from '../services/source-budget.service.js';
 import { SourceLink } from '../services/source-chain.service.js';
 import {
     BookDoubles,
@@ -20,12 +19,12 @@ import { LookUpBook } from './look-up-book.usecase.js';
 const clock = new ManualClock();
 
 function chain<T>(...sources: ScriptedSource<T>[]): SourceLink<T> | null {
-    return sources.reduceRight<SourceLink<T> | null>(
-        (next, source) =>
-            new SourceLink(source, new SourceBudget(source.limit, clock), clock, next),
-        null,
-    );
+    return SourceLink.chain(sources, clock);
 }
+
+afterEach(() => {
+    vi.useRealTimers();
+});
 
 function answer(fields: LookupAnswerFields): SourceReply<LookupAnswer> {
     return { kind: 'found', value: LookupAnswer.of(fields) };
@@ -102,6 +101,7 @@ describe('LookUpBook', () => {
                 { token: 'lookup-cover-1', width: 400, height: 600, sources: ['openlibrary'] },
             ],
             unavailable: [],
+            pending: [],
         });
     });
 
@@ -143,6 +143,131 @@ describe('LookUpBook', () => {
                 { source: 'openlibrary', reason: 'limited' },
             ],
         });
+    });
+
+    it('names a source whose queue is too long as busy', async () => {
+        const bnf = new ScriptedSource<LookupAnswer>('bnf', { kind: 'busy' });
+
+        const result = await new LookUpBook(
+            BookDoubles.library().books,
+            chain(bnf),
+            null,
+            new MemoryCoverRegistry(),
+            new AuthorMatcher(BookDoubles.library().authors),
+        ).execute(owner, '9782253164692');
+
+        expect(result).toMatchObject({
+            found: false,
+            unavailable: [{ source: 'bnf', reason: 'busy' }],
+        });
+    });
+
+    it('answers after ten seconds with what has arrived, naming the sources still answering', async () => {
+        vi.useFakeTimers();
+        const bnf = new ScriptedSource('bnf', answer({ title: 'Piranesi' }));
+        const sudoc = new ScriptedSource<LookupAnswer>('sudoc', 'hang');
+        const covers = new ScriptedSource<CoverOffer[]>('inventaire', 'hang');
+        const lookup = new LookUpBook(
+            BookDoubles.library().books,
+            chain(bnf, sudoc),
+            chain(covers),
+            new MemoryCoverRegistry(),
+            new AuthorMatcher(BookDoubles.library().authors),
+        );
+
+        const answered = lookup.execute(owner, '9782253164692');
+
+        await vi.advanceTimersByTimeAsync(LookUpBook.answerSeconds * 1000);
+        const result = await answered;
+
+        expect(result).toMatchObject({
+            found: true,
+            fields: { title: [{ value: 'Piranesi', sources: ['bnf'] }] },
+            unavailable: [],
+            pending: ['sudoc', 'inventaire'],
+        });
+    });
+
+    it('does not answer before ten seconds while a source is still answering', async () => {
+        vi.useFakeTimers();
+        const bnf = new ScriptedSource<LookupAnswer>('bnf', 'hang');
+        let answered = false;
+
+        void new LookUpBook(
+            BookDoubles.library().books,
+            chain(bnf),
+            null,
+            new MemoryCoverRegistry(),
+            new AuthorMatcher(BookDoubles.library().authors),
+        )
+            .execute(owner, '9782253164692')
+            .then(() => {
+                answered = true;
+            });
+        await vi.advanceTimersByTimeAsync(LookUpBook.answerSeconds * 1000 - 1);
+
+        expect(answered).toBe(false);
+    });
+
+    it('names a source once when its information and its cover are both late', async () => {
+        vi.useFakeTimers();
+        const information = new ScriptedSource<LookupAnswer>('openlibrary', 'hang');
+        const covers = new ScriptedSource<CoverOffer[]>('openlibrary', 'hang');
+        const lookup = new LookUpBook(
+            BookDoubles.library().books,
+            chain(information),
+            chain(covers),
+            new MemoryCoverRegistry(),
+            new AuthorMatcher(BookDoubles.library().authors),
+        );
+
+        const answered = lookup.execute(owner, '9782253164692');
+
+        await vi.advanceTimersByTimeAsync(LookUpBook.answerSeconds * 1000);
+        const result = await answered;
+
+        expect(result).toMatchObject({ found: false, pending: ['openlibrary'] });
+    });
+
+    it('joins a late request on Check again instead of sending it twice', async () => {
+        vi.useFakeTimers();
+        const sudoc = new ScriptedSource<LookupAnswer>('sudoc', 'hang');
+        const lookup = new LookUpBook(
+            BookDoubles.library().books,
+            chain(sudoc),
+            null,
+            new MemoryCoverRegistry(),
+            new AuthorMatcher(BookDoubles.library().authors),
+        );
+        const first = lookup.execute(owner, '9782253164692');
+
+        await vi.advanceTimersByTimeAsync(LookUpBook.answerSeconds * 1000);
+        await first;
+
+        const again = lookup.execute(owner, '9782253164692');
+
+        await vi.advanceTimersByTimeAsync(LookUpBook.answerSeconds * 1000);
+        await again;
+
+        expect(sudoc.requests).toHaveLength(1);
+    });
+
+    it('gives an answered lookup again from the cache, without a new request', async () => {
+        const bnf = new ScriptedSource('bnf', answer({ title: 'Piranesi' }));
+        const lookup = new LookUpBook(
+            BookDoubles.library().books,
+            chain(bnf),
+            null,
+            new MemoryCoverRegistry(),
+            new AuthorMatcher(BookDoubles.library().authors),
+        );
+
+        await lookup.execute(owner, '9782253164692');
+
+        const result = await lookup.execute(owner, '9782253164692');
+
+        expect(result).toMatchObject({ found: true, pending: [] });
+        expect(bnf.requests).toHaveLength(1);
     });
 
     it('rejects an invalid ISBN', async () => {

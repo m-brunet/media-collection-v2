@@ -16,6 +16,8 @@ import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 import { NameKey } from '../../../shared/domain/name-key.helper.js';
 
 export class LookUpBook implements LookUpBookUseCase {
+    static readonly answerSeconds = 10;
+
     constructor(
         private readonly books: BookRepository,
         private readonly information: SourceLink<LookupAnswer> | null,
@@ -36,6 +38,8 @@ export class LookUpBook implements LookUpBookUseCase {
         const answers: { source: string; answer: LookupAnswer }[] = [];
         const covers = new CoverCombination();
         const unavailable: SourceUnavailability[] = [];
+        const lateInformation: string[] = [];
+        const lateCovers: string[] = [];
         const report = (unavailability: SourceUnavailability) => {
             if (!unavailable.some(({ source }) => source === unavailability.source)) {
                 unavailable.push(unavailability);
@@ -43,17 +47,33 @@ export class LookUpBook implements LookUpBookUseCase {
         };
         const informationSteps = this.information?.begin(isbn13);
         const coverSteps = this.covers?.begin(isbn13);
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const deadline = new Promise<'late'>((resolve) => {
+            timer = setTimeout(() => resolve('late'), LookUpBook.answerSeconds * 1000);
+        });
 
-        await Promise.all([
-            informationSteps?.handle({
-                found: (source, answer) => answers.push({ source, answer }),
-                unavailable: report,
-            }),
-            coverSteps?.handle({
-                found: (source, offers) => covers.add(source, offers),
-                unavailable: report,
-            }),
-        ]);
+        try {
+            await Promise.all([
+                informationSteps?.handle(
+                    {
+                        found: (source, answer) => answers.push({ source, answer }),
+                        unavailable: report,
+                        late: (source) => lateInformation.push(source),
+                    },
+                    deadline,
+                ),
+                coverSteps?.handle(
+                    {
+                        found: (source, offers) => covers.add(source, offers),
+                        unavailable: report,
+                        late: (source) => lateCovers.push(source),
+                    },
+                    deadline,
+                ),
+            ]);
+        } finally {
+            clearTimeout(timer);
+        }
 
         const { fields, authorSpellings } = await this.combined(answers);
         const coverChoices = covers.result();
@@ -71,6 +91,7 @@ export class LookUpBook implements LookUpBookUseCase {
                 sources,
             })),
             unavailable,
+            pending: [...new Set([...lateInformation, ...lateCovers])],
         };
     }
 

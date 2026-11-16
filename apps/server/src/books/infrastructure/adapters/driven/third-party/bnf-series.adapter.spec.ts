@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { SourceProbe } from '../../../../application/testing/book-doubles.test-support.js';
 import { BnfSeries } from './bnf-series.adapter.js';
 import { BnfSru } from './bnf-sru.adapter.js';
 import { SourceHttp } from './source-http.adapter.js';
@@ -11,7 +12,7 @@ function recorded(name: string): string {
 
 function catalogue(body: string, status = 200, headers: Record<string, string> = {}) {
     const requests: URL[] = [];
-    const http = new SourceHttp(async (url) => {
+    const http = new SourceHttp(SourceProbe.queue(), async (url) => {
         requests.push(new URL(url));
 
         return new Response(body, { status, headers });
@@ -34,7 +35,7 @@ describe('BnfSeries', () => {
     it("reads a series' records with their ISBN, subtitle and volume", async () => {
         const { source } = catalogue(recorded('bnf-series-one-piece.xml'));
 
-        const page = await source.volumes('One piece', 'Glénat', 1);
+        const page = await source.volumes('One piece', 'Glénat', 1, SourceProbe.turn);
 
         expect(page.kind === 'found' && page.value.records).toEqual(
             expect.arrayContaining([
@@ -65,7 +66,7 @@ describe('BnfSeries', () => {
     it('reads the volume of a title written "T. 5"', async () => {
         const { source } = catalogue(recorded('bnf-series-gunnm.xml'));
 
-        const page = await source.volumes('Gunnm', 'Glénat', 1);
+        const page = await source.volumes('Gunnm', 'Glénat', 1, SourceProbe.turn);
 
         expect(page.kind === 'found' && page.value.records).toEqual(
             expect.arrayContaining([
@@ -80,7 +81,7 @@ describe('BnfSeries', () => {
     it('searches the series by its name and publisher, a thousand records at a time', async () => {
         const { requests, source } = catalogue(reply(1));
 
-        await source.volumes('One "piece"', 'Glénat', 1);
+        await source.volumes('One "piece"', 'Glénat', 1, SourceProbe.turn);
 
         expect(requests[0]!.origin + requests[0]!.pathname).toBe(BnfSru.address);
         expect(requests[0]!.searchParams.get('query')).toBe(
@@ -93,8 +94,8 @@ describe('BnfSeries', () => {
     it('gives the start of the next page while records remain', async () => {
         const { requests, source } = catalogue(reply(1500));
 
-        const first = await source.volumes('One piece', 'Glénat', 1);
-        const second = await source.volumes('One piece', 'Glénat', 1001);
+        const first = await source.volumes('One piece', 'Glénat', 1, SourceProbe.turn);
+        const second = await source.volumes('One piece', 'Glénat', 1001, SourceProbe.turn);
 
         expect(first).toMatchObject({ kind: 'found', value: { next: 1001 } });
         expect(second).toMatchObject({ kind: 'found', value: { next: null } });
@@ -104,7 +105,10 @@ describe('BnfSeries', () => {
     it('asks for several editions in a single request', async () => {
         const { requests, source } = catalogue(reply(1));
 
-        const editions = await source.editions(['9782723488525', '9782344052181']);
+        const editions = await source.editions(
+            ['9782723488525', '9782344052181'],
+            SourceProbe.turn,
+        );
 
         expect(editions).toMatchObject({
             kind: 'found',
@@ -119,7 +123,7 @@ describe('BnfSeries', () => {
     it('asks nothing for no edition', async () => {
         const { requests, source } = catalogue(reply(1));
 
-        const editions = await source.editions([]);
+        const editions = await source.editions([], SourceProbe.turn);
 
         expect(editions).toEqual({ kind: 'none' });
         expect(requests).toHaveLength(0);
@@ -128,7 +132,7 @@ describe('BnfSeries', () => {
     it('finds nothing for a series the catalogue does not know', async () => {
         const { source } = catalogue(recorded('bnf-none.xml'));
 
-        const page = await source.volumes('Nothing', 'Nobody', 1);
+        const page = await source.volumes('Nothing', 'Nobody', 1, SourceProbe.turn);
 
         expect(page).toEqual({ kind: 'none' });
     });
@@ -136,14 +140,14 @@ describe('BnfSeries', () => {
     it('reports a catalogue asking to wait', async () => {
         const { source } = catalogue('', 429, { 'Retry-After': '120' });
 
-        const page = await source.volumes('One piece', 'Glénat', 1);
+        const page = await source.volumes('One piece', 'Glénat', 1, SourceProbe.turn);
 
         expect(page).toMatchObject({ kind: 'limited', retryAt: expect.any(Date) });
     });
 
     it("separates Gunnm's editions: the anchor's first, Mars chronicle last, 1995's \"Gunnm.\" apart", async () => {
         const { source } = catalogue(recorded('bnf-series-gunnm.xml'));
-        const page = await source.volumes('Gunnm', 'Glénat', 1);
+        const page = await source.volumes('Gunnm', 'Glénat', 1, SourceProbe.turn);
         const records = page.kind === 'found' ? page.value.records : [];
         const anchor = SeriesVolumes.anchorOf(records, [{ isbn13: '9782723434799', volume: 5 }]);
 
@@ -159,7 +163,7 @@ describe('BnfSeries', () => {
 
     it("finds One Piece's volumes catalogued under their own title or as an original edition", async () => {
         const { source } = catalogue(recorded('bnf-series-one-piece.xml'));
-        const page = await source.volumes('One piece', 'Glénat', 1);
+        const page = await source.volumes('One piece', 'Glénat', 1, SourceProbe.turn);
         const records = page.kind === 'found' ? page.value.records : [];
         const anchor = SeriesVolumes.anchorOf(records, [{ isbn13: '9782344052198', volume: 106 }]);
 

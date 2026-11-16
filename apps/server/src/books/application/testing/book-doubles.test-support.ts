@@ -26,7 +26,12 @@ import type {
 } from '../ports/driven/collection-membership.interface.js';
 import type { CoverStorage } from '../ports/driven/cover-storage.interface.js';
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
-import type { LookupSource, SourceReply } from '../ports/driven/lookup-source.interface.js';
+import type {
+    LookupSource,
+    SourceReply,
+    SourceTurn,
+} from '../ports/driven/lookup-source.interface.js';
+import { SourceQueue } from '../services/source-queue.service.js';
 import type { LookupCoverRegistry } from '../ports/driven/lookup-cover-registry.interface.js';
 import type { CoverDownloader } from '../ports/driven/cover-downloader.interface.js';
 import type { CoverImage } from '../../domain/value-objects/cover-image.value-object.js';
@@ -214,25 +219,67 @@ export class MemoryTrimmer implements CoverTrimmer {
 
 export class ScriptedSource<T> implements LookupSource<T> {
     readonly asked: string[] = [];
+    readonly requests: string[][] = [];
+    readonly turns: SourceTurn[] = [];
+    readonly unknown = new Set<string>();
 
     constructor(
         readonly name: string,
-        private readonly reply: SourceReply<T> | 'fail' | 'hang',
-        readonly limit = { requests: 100, seconds: 60 },
+        public reply: SourceReply<T> | 'fail' | 'hang',
+        readonly batchSize = 1,
     ) {}
 
-    async find(isbn13: string): Promise<SourceReply<T>> {
-        this.asked.push(isbn13);
+    async find(
+        isbn13s: readonly string[],
+        turn: SourceTurn,
+    ): Promise<SourceReply<ReadonlyMap<string, T>>> {
+        const reply = this.reply;
 
-        if (this.reply === 'fail') {
+        this.asked.push(...isbn13s);
+        this.requests.push([...isbn13s]);
+        this.turns.push(turn);
+
+        if (reply === 'fail') {
             throw new Error('Source unreachable');
         }
 
-        if (this.reply === 'hang') {
+        if (reply === 'hang') {
             return new Promise(() => undefined);
         }
 
-        return this.reply;
+        if (reply.kind !== 'found') {
+            return reply;
+        }
+
+        return {
+            kind: 'found',
+            value: new Map(
+                isbn13s
+                    .toReversed()
+                    .filter((isbn13) => !this.unknown.has(isbn13))
+                    .map((isbn13) => [isbn13, reply.value]),
+            ),
+        };
+    }
+}
+
+export class SourceProbe {
+    static readonly turn: SourceTurn = { bulk: false };
+
+    static queue(): SourceQueue {
+        return new SourceQueue(0, new ManualClock());
+    }
+
+    static async one<T>(source: LookupSource<T>, isbn13: string): Promise<SourceReply<T>> {
+        const reply = await source.find([isbn13], SourceProbe.turn);
+
+        if (reply.kind !== 'found') {
+            return reply;
+        }
+
+        const value = reply.value.get(isbn13);
+
+        return value === undefined ? { kind: 'none' } : { kind: 'found', value };
     }
 }
 
@@ -661,13 +708,16 @@ export class MembershipVolumes implements CollectionVolumes {
 export class ScriptedSeries implements SeriesCatalogue {
     readonly name = 'bnf';
     readonly asked: string[] = [];
+    readonly turns: SourceTurn[] = [];
     editionsReply: SourceReply<SeriesRecord[]> | 'fail' = { kind: 'none' };
     pages: (SourceReply<SeriesPage> | 'fail')[] = [{ kind: 'none' }];
 
-    constructor(readonly limit = { requests: 100, seconds: 60 }) {}
-
-    async editions(isbn13s: readonly string[]): Promise<SourceReply<SeriesRecord[]>> {
+    async editions(
+        isbn13s: readonly string[],
+        turn: SourceTurn,
+    ): Promise<SourceReply<SeriesRecord[]>> {
         this.asked.push('editions:' + isbn13s.join(','));
+        this.turns.push(turn);
 
         return ScriptedSeries.answer(this.editionsReply);
     }
@@ -676,8 +726,10 @@ export class ScriptedSeries implements SeriesCatalogue {
         series: string,
         publisher: string,
         start: number,
+        turn: SourceTurn,
     ): Promise<SourceReply<SeriesPage>> {
         this.asked.push('volumes:' + series + '/' + publisher + '@' + start);
+        this.turns.push(turn);
 
         return ScriptedSeries.answer(this.pages.shift() ?? { kind: 'none' });
     }

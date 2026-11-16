@@ -68,7 +68,7 @@ import type { LookupSource } from '../../application/ports/driven/lookup-source.
 import type { CoverDownloader } from '../../application/ports/driven/cover-downloader.interface.js';
 import type { LookupCoverRegistry } from '../../application/ports/driven/lookup-cover-registry.interface.js';
 import { SourceLink } from '../../application/services/source-chain.service.js';
-import { SourceBudgets } from '../../application/services/source-budgets.service.js';
+import { SourceQueue } from '../../application/services/source-queue.service.js';
 import { SeriesLookup } from '../../application/services/series-lookup.service.js';
 import type { SeriesCatalogue } from '../../application/ports/driven/series-catalogue.interface.js';
 import type { CollectionVolumes } from '../../application/ports/driven/collection-volumes.interface.js';
@@ -107,7 +107,6 @@ type LookupChains = {
     information: SourceLink<LookupAnswer> | null;
     covers: SourceLink<CoverOffer[]> | null;
     series: SeriesLookup;
-    budgets: SourceBudgets;
 };
 
 export interface BooksDependencies {
@@ -183,16 +182,11 @@ const serviceProviders: Provider[] = [
     {
         provide: token.lookupChains,
         inject: [token.lookup, token.clock],
-        useFactory: (lookup: BookLookupSources, clock: Clock): LookupChains => {
-            const budgets = new SourceBudgets(clock);
-
-            return {
-                information: SourceLink.chain(lookup.information, clock, budgets),
-                covers: SourceLink.chain(lookup.covers, clock, budgets),
-                series: new SeriesLookup(lookup.series, budgets.of(lookup.series), clock),
-                budgets,
-            };
-        },
+        useFactory: (lookup: BookLookupSources, clock: Clock): LookupChains => ({
+            information: SourceLink.chain(lookup.information, clock),
+            covers: SourceLink.chain(lookup.covers, clock),
+            series: new SeriesLookup(lookup.series),
+        }),
     },
     {
         provide: token.creation,
@@ -413,19 +407,9 @@ const useCaseProviders: Provider[] = [
     },
     {
         provide: 'BOOKS_FIND_VOLUME_COVER',
-        inject: [token.lookupChains, token.lookupCovers, token.clock, token.lookup],
-        useFactory: (
-            chains: LookupChains,
-            registry: LookupCoverRegistry,
-            clock: Clock,
-            lookup: BookLookupSources,
-        ) =>
-            new FindVolumeCover(
-                chains.covers,
-                registry,
-                clock,
-                FindVolumeCover.half(lookup.covers[0]?.limit ?? { requests: 2, seconds: 60 }),
-            ),
+        inject: [token.lookupChains, token.lookupCovers],
+        useFactory: (chains: LookupChains, registry: LookupCoverRegistry) =>
+            new FindVolumeCover(chains.covers, registry),
     },
     {
         provide: 'BOOKS_FIND_MISSING_VOLUMES',
@@ -778,20 +762,38 @@ export class BooksModule {
         };
     }
 
+    // The BnF publishes no request limit for its SRU service. Open Library allows 1 request per
+    // second to clients that send no contact email (https://openlibrary.org/developers/api).
+    static readonly lookupDelaySeconds = { bnf: 3, openLibrary: 2 };
+
     static lookupSources(
-        addresses: { bnf?: string; openLibrary?: string } = {},
+        clock: Clock,
+        settings: { bnf?: string; openLibrary?: string; delaySeconds?: number } = {},
     ): BookLookupSources {
-        const http = new SourceHttp();
-        const openLibrary = new OpenLibraryRecords(http, addresses.openLibrary);
+        const delays = BooksModule.lookupDelaySeconds;
+        const bnfQueue = new SourceQueue(settings.delaySeconds ?? delays.bnf, clock);
+        const openLibraryQueue = new SourceQueue(
+            settings.delaySeconds ?? delays.openLibrary,
+            clock,
+        );
+        const bnf = new SourceHttp(bnfQueue);
+        const openLibrary = new OpenLibraryRecords(
+            new SourceHttp(openLibraryQueue),
+            settings.openLibrary,
+        );
 
         return {
             information: [
-                new BnfCatalogue(http, addresses.bnf),
+                new BnfCatalogue(bnf, settings.bnf),
                 new OpenLibraryInformation(openLibrary),
             ],
             covers: [new OpenLibraryCovers(openLibrary)],
-            series: new BnfSeries(http, addresses.bnf),
-            downloader: new HttpCoverDownloader(),
+            series: new BnfSeries(bnf, settings.bnf),
+            downloader: new HttpCoverDownloader(
+                fetch,
+                undefined,
+                new Map([['covers.openlibrary.org', openLibraryQueue]]),
+            ),
             addressDownloader: new HttpCoverDownloader(fetch, new PublicAddresses()),
         };
     }

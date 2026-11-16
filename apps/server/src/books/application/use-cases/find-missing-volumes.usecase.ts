@@ -33,7 +33,12 @@ export class FindMissingVolumes implements FindMissingVolumesUseCase {
         private readonly authors: AuthorMatcher,
     ) {}
 
-    async execute(actor: Actor, collectionId: string, upTo: number): Promise<MissingVolumes> {
+    async execute(
+        actor: Actor,
+        collectionId: string,
+        upTo: number,
+        signal?: AbortSignal,
+    ): Promise<MissingVolumes> {
         ActorAuthorization.requireLibraryEditor(actor);
         const collection = await this.collections.of(collectionId, upTo);
 
@@ -56,7 +61,10 @@ export class FindMissingVolumes implements FindMissingVolumesUseCase {
             return { kind: 'edition-not-found' };
         }
 
-        const editions = await this.series.editions(owned.map((volume) => volume.isbn13));
+        const editions = await this.series.editions(
+            owned.map((volume) => volume.isbn13),
+            signal,
+        );
 
         if (editions.kind !== 'found') {
             return FindMissingVolumes.without(editions);
@@ -71,9 +79,10 @@ export class FindMissingVolumes implements FindMissingVolumesUseCase {
         const records = await this.series.volumes(
             anchor.answer.series.name,
             anchor.answer.publisher,
+            signal,
         );
 
-        if (records.kind === 'limited' || records.kind === 'failed') {
+        if (records.kind !== 'found' && records.kind !== 'none') {
             return FindMissingVolumes.without(records);
         }
 
