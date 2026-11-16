@@ -1,6 +1,7 @@
 import { LendingArrangement } from '../../../../../../../../tests/api/fixtures/lending-arrangement.js';
 import type {
     BookDto,
+    BookLookupDto,
     BookcaseDto,
     BookListPageDto,
     MembershipDto,
@@ -1573,5 +1574,44 @@ describe('Generated titles of books', () => {
         );
 
         expect(response.body).toMatchObject({ title: 'Gunnm Vol. 3', titleGenerated: false });
+    });
+});
+
+describe('DELETE /api/books/:id of a book with a cover', () => {
+    const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
+
+    async function withCover(overrides: Parameters<typeof BookInputFixture.of>[0]) {
+        const book = await created(overrides);
+        const client = await app.authenticatedClient(owner);
+        const response = await client.call('/books/' + book.id + '/cover', 'PUT', undefined, {
+            raw: { bytes: png, contentType: 'image/png' },
+        });
+
+        if (response.status !== 200) {
+            throw new Error('Arranging the scenario failed: ' + response.text);
+        }
+
+        return { book, client };
+    }
+
+    it('keeps the cover under the ISBN, offered again when the ISBN is looked up', async () => {
+        const { book, client } = await withCover({ isbn: '9782253164692' });
+
+        await client.call('/books/' + book.id, 'DELETE');
+
+        const lookup = await client.call<BookLookupDto>('/books/lookups', 'POST', {
+            isbn: '9782253164692',
+        });
+
+        expect(lookup.body).toMatchObject({ found: true, covers: [{ sources: ['libris'] }] });
+    });
+
+    it('deletes the cover of a book without an ISBN', async () => {
+        const { book, client } = await withCover({ isbn: null, noIsbn: true });
+
+        const response = await client.call('/books/' + book.id, 'DELETE');
+
+        expect(response.status).toBe(204);
+        expect(await app.dependencies.books.covers.list()).toEqual([]);
     });
 });

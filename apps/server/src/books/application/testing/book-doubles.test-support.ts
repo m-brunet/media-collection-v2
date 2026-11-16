@@ -25,6 +25,8 @@ import type {
     MembershipRequest,
 } from '../ports/driven/collection-membership.interface.js';
 import type { CoverStorage } from '../ports/driven/cover-storage.interface.js';
+import type { KeptCover, KeptCoverStore } from '../ports/driven/kept-cover-store.interface.js';
+import { KeptCovers } from '../services/kept-covers.service.js';
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 import type {
     LookupSource,
@@ -349,6 +351,22 @@ export class MemoryCovers implements CoverStorage {
 
     async list(): Promise<string[]> {
         return [...this.files.keys()];
+    }
+}
+
+export class MemoryKeptCovers implements KeptCoverStore {
+    readonly kept = new Map<string, KeptCover>();
+
+    async find(isbn13: string): Promise<KeptCover | null> {
+        return this.kept.get(isbn13) ?? null;
+    }
+
+    async put(cover: KeptCover): Promise<void> {
+        this.kept.set(cover.isbn13, cover);
+    }
+
+    async remove(isbn13: string): Promise<void> {
+        this.kept.delete(isbn13);
     }
 }
 
@@ -769,6 +787,7 @@ export class BookDoubles {
         const builder = new BookDetailsBuilder(resolver);
         const titles = new GeneratedTitleSync(books, identity, clock);
         const removal = new BookRemoval(books, authors, collections, loader, guard, loans);
+        const keptStore = new MemoryKeptCovers();
 
         return {
             books,
@@ -776,6 +795,8 @@ export class BookDoubles {
             readings,
             notes,
             covers,
+            keptStore,
+            kept: new KeptCovers(keptStore, covers, ids, clock),
             trimmer,
             trail,
             catalog,
@@ -878,7 +899,7 @@ export class BookDoubles {
     ) {
         return new CreateBook(
             current.creation,
-            current.covers,
+            current.kept,
             current.viewer,
             current.ids,
             current.operations,

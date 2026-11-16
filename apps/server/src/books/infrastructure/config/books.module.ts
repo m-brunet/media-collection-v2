@@ -66,6 +66,8 @@ import { CollectionReadingController } from '../adapters/driving/web/collection-
 import { PersonalReadingController } from '../adapters/driving/web/personal-reading.controller.js';
 import type { LookupSource } from '../../application/ports/driven/lookup-source.interface.js';
 import type { CoverDownloader } from '../../application/ports/driven/cover-downloader.interface.js';
+import type { KeptCoverStore } from '../../application/ports/driven/kept-cover-store.interface.js';
+import { KeptCovers } from '../../application/services/kept-covers.service.js';
 import type { LookupCoverRegistry } from '../../application/ports/driven/lookup-cover-registry.interface.js';
 import { SourceLink } from '../../application/services/source-chain.service.js';
 import { SourceQueue } from '../../application/services/source-queue.service.js';
@@ -117,6 +119,7 @@ export interface BooksDependencies {
     readings: ReadingStatusStore;
     notes: PersonalNoteStore;
     covers: CoverStorage;
+    keptCoverStore: KeptCoverStore;
     collections: CollectionMembership;
     collectionReader: BookCollectionReader;
     collectionBooks: CollectionOwnedBooks;
@@ -172,6 +175,8 @@ const token = {
     lookup: 'BOOKS_LOOKUP_SOURCES',
     lookupCovers: 'BOOKS_LOOKUP_COVERS',
     lookupChains: 'BOOKS_LOOKUP_CHAINS',
+    keptCoverStore: 'BOOKS_KEPT_COVER_STORE',
+    keptCovers: 'BOOKS_KEPT_COVERS',
     creation: 'BOOKS_CREATION',
 } as const;
 const serviceProviders: Provider[] = [
@@ -179,6 +184,12 @@ const serviceProviders: Provider[] = [
         provide: token.lookupCovers,
         inject: [token.clock],
         useFactory: (clock: Clock): LookupCoverRegistry => new MemoryLookupCoverRegistry(clock),
+    },
+    {
+        provide: token.keptCovers,
+        inject: [token.keptCoverStore, token.covers, token.ids, token.clock],
+        useFactory: (store: KeptCoverStore, covers: CoverStorage, ids: IdGenerator, clock: Clock) =>
+            new KeptCovers(store, covers, ids, clock),
     },
     {
         provide: token.lookupChains,
@@ -358,12 +369,19 @@ const serviceProviders: Provider[] = [
 const useCaseProviders: Provider[] = [
     {
         provide: 'BOOKS_LOOK_UP',
-        inject: [token.books, token.lookupChains, token.lookupCovers, token.authors],
+        inject: [
+            token.books,
+            token.lookupChains,
+            token.lookupCovers,
+            token.authors,
+            token.keptCovers,
+        ],
         useFactory: (
             books: BookRepository,
             chains: LookupChains,
             registry: LookupCoverRegistry,
             authors: AuthorRepository,
+            kept: KeptCovers,
         ) =>
             new LookUpBook(
                 books,
@@ -371,6 +389,7 @@ const useCaseProviders: Provider[] = [
                 chains.covers,
                 registry,
                 new AuthorMatcher(authors),
+                kept,
             ),
     },
     {
@@ -408,9 +427,9 @@ const useCaseProviders: Provider[] = [
     },
     {
         provide: 'BOOKS_FIND_VOLUME_COVER',
-        inject: [token.lookupChains, token.lookupCovers],
-        useFactory: (chains: LookupChains, registry: LookupCoverRegistry) =>
-            new FindVolumeCover(chains.covers, registry),
+        inject: [token.lookupChains, token.lookupCovers, token.keptCovers],
+        useFactory: (chains: LookupChains, registry: LookupCoverRegistry, kept: KeptCovers) =>
+            new FindVolumeCover(chains.covers, registry, kept),
     },
     {
         provide: 'BOOKS_FIND_MISSING_VOLUMES',
@@ -430,20 +449,20 @@ const useCaseProviders: Provider[] = [
     },
     {
         provide: 'BOOKS_READ_LOOKUP_COVER',
-        inject: [token.lookupCovers, token.lookup],
-        useFactory: (registry: LookupCoverRegistry, lookup: BookLookupSources) =>
-            new ReadLookupCover(registry, lookup.downloader),
+        inject: [token.lookupCovers, token.lookup, token.keptCovers],
+        useFactory: (registry: LookupCoverRegistry, lookup: BookLookupSources, kept: KeptCovers) =>
+            new ReadLookupCover(registry, lookup.downloader, kept),
     },
     {
         provide: 'BOOKS_CREATE',
-        inject: [token.creation, token.covers, token.viewer, token.ids, token.operations],
+        inject: [token.creation, token.keptCovers, token.viewer, token.ids, token.operations],
         useFactory: (
             creation: BookCreation,
-            covers: CoverStorage,
+            kept: KeptCovers,
             viewer: BookViewer,
             ids: IdGenerator,
             operations: AuditedOperation,
-        ) => new CreateBook(creation, covers, viewer, ids, operations),
+        ) => new CreateBook(creation, kept, viewer, ids, operations),
     },
     {
         provide: 'BOOKS_UPDATE',
@@ -454,7 +473,7 @@ const useCaseProviders: Provider[] = [
             token.collectionReader,
             token.removal,
             token.organiser,
-            token.covers,
+            token.keptCovers,
             token.loader,
             token.builder,
             token.identity,
@@ -471,7 +490,7 @@ const useCaseProviders: Provider[] = [
             memberships: BookCollectionReader,
             removal: BookRemoval,
             organiser: BookOrganiser,
-            covers: CoverStorage,
+            kept: KeptCovers,
             loader: BookLoader,
             builder: BookDetailsBuilder,
             identity: BookIdentityCheck,
@@ -488,7 +507,7 @@ const useCaseProviders: Provider[] = [
                 memberships,
                 removal,
                 organiser,
-                covers,
+                kept,
                 loader,
                 builder,
                 identity,
@@ -538,16 +557,16 @@ const useCaseProviders: Provider[] = [
             token.removal,
             token.collectionReader,
             token.organisation,
-            token.covers,
+            token.keptCovers,
             token.operations,
         ],
         useFactory: (
             removal: BookRemoval,
             collections: BookCollectionReader,
             organisation: BookOrganisationReader,
-            covers: CoverStorage,
+            kept: KeptCovers,
             operations: AuditedOperation,
-        ) => new DeleteBook(removal, collections, organisation, covers, operations),
+        ) => new DeleteBook(removal, collections, organisation, kept, operations),
     },
     {
         provide: 'BOOKS_MARK_OWNED',
@@ -614,6 +633,7 @@ const useCaseProviders: Provider[] = [
             token.viewer,
             token.clock,
             token.operations,
+            token.keptCovers,
         ],
         useFactory: (
             books: BookRepository,
@@ -623,13 +643,14 @@ const useCaseProviders: Provider[] = [
             viewer: BookViewer,
             clock: Clock,
             operations: AuditedOperation,
-        ) => new ReplaceCover(books, covers, trimmer, loader, viewer, clock, operations),
+            kept: KeptCovers,
+        ) => new ReplaceCover(books, covers, trimmer, loader, viewer, clock, operations, kept),
     },
     {
         provide: 'BOOKS_REMOVE_COVER',
         inject: [
             token.books,
-            token.covers,
+            token.keptCovers,
             token.loader,
             token.viewer,
             token.clock,
@@ -637,12 +658,12 @@ const useCaseProviders: Provider[] = [
         ],
         useFactory: (
             books: BookRepository,
-            covers: CoverStorage,
+            kept: KeptCovers,
             loader: BookLoader,
             viewer: BookViewer,
             clock: Clock,
             operations: AuditedOperation,
-        ) => new RemoveCover(books, covers, loader, viewer, clock, operations),
+        ) => new RemoveCover(books, kept, loader, viewer, clock, operations),
     },
     {
         provide: 'BOOKS_READ_COVER',
@@ -705,6 +726,7 @@ const developmentProviders: Provider[] = [
             token.ids,
             token.clock,
             token.operations,
+            token.keptCovers,
         ],
         useFactory: (
             books: BookRepository,
@@ -718,6 +740,7 @@ const developmentProviders: Provider[] = [
             ids: IdGenerator,
             clock: Clock,
             operations: AuditedOperation,
+            kept: KeptCovers,
         ) =>
             new ImportBook(
                 books,
@@ -731,6 +754,7 @@ const developmentProviders: Provider[] = [
                 ids,
                 clock,
                 operations,
+                kept,
             ),
     },
 ];

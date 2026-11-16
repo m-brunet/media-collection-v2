@@ -6,6 +6,7 @@ import type { CoverStorage } from '../ports/driven/cover-storage.interface.js';
 import type { CoverTrimmer } from '../ports/driven/cover-trimmer.interface.js';
 import { BookLoader } from '../services/book-loader.service.js';
 import { BookViewer } from '../services/book-viewer.service.js';
+import type { KeptCovers } from '../services/kept-covers.service.js';
 import { CoverImage } from '../../domain/value-objects/cover-image.value-object.js';
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 import type { AuditedOperation } from '../../../shared/application/services/audited-operation.service.js';
@@ -21,11 +22,13 @@ export class ReplaceCover implements ReplaceCoverUseCase {
         private readonly viewer: BookViewer,
         private readonly clock: Clock,
         private readonly operations: AuditedOperation,
+        private readonly kept: KeptCovers,
     ) {}
 
     async execute(actor: Actor, bookId: string, image: Uint8Array): Promise<BookView> {
         let stored: string | null = null;
         let replaced: string | null = null;
+        let isbn13: string | null = null;
 
         try {
             const view = await this.operations.run(
@@ -41,6 +44,7 @@ export class ReplaceCover implements ReplaceCoverUseCase {
                     const book = await this.loader.load(bookId);
 
                     replaced = book.snapshot.coverFile;
+                    isbn13 = book.snapshot.details.isbn?.isbn13 ?? null;
                     stored = await this.covers.store(cover.bytes, cover.mediaType);
                     book.replaceCover(stored, this.clock.now().toISOString());
                     await this.books.save(book);
@@ -56,6 +60,8 @@ export class ReplaceCover implements ReplaceCoverUseCase {
             if (replaced) {
                 await this.covers.remove(replaced);
             }
+
+            await this.kept.release(isbn13);
 
             return view;
         } catch (error) {

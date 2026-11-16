@@ -3,6 +3,7 @@ import type { CoverOffer } from '../../domain/services/cover-combination.service
 import type { SourceReply } from '../ports/driven/lookup-source.interface.js';
 import { SourceLink } from '../services/source-chain.service.js';
 import {
+    BookDoubles,
     guest,
     ManualClock,
     MemoryCoverRegistry,
@@ -21,11 +22,13 @@ const offer: CoverOffer = {
 function setup(reply: SourceReply<CoverOffer[]> | 'fail' = { kind: 'found', value: [offer] }) {
     const source = new ScriptedSource('openlibrary', reply);
     const registry = new MemoryCoverRegistry();
+    const { kept, keptStore } = BookDoubles.library();
 
     return {
         source,
         registry,
-        useCase: new FindVolumeCover(SourceLink.chain([source], new ManualClock()), registry),
+        keptStore,
+        useCase: new FindVolumeCover(SourceLink.chain([source], new ManualClock()), registry, kept),
     };
 }
 
@@ -107,6 +110,7 @@ describe('FindVolumeCover', () => {
         const useCase = new FindVolumeCover(
             SourceLink.chain([inventaire, openLibrary], new ManualClock()),
             registry,
+            BookDoubles.library().kept,
         );
 
         const result = await useCase.execute(owner, '9782723434775');
@@ -124,6 +128,7 @@ describe('FindVolumeCover', () => {
         const useCase = new FindVolumeCover(
             SourceLink.chain([inventaire, openLibrary], new ManualClock()),
             new MemoryCoverRegistry(),
+            BookDoubles.library().kept,
         );
 
         await useCase.execute(owner, '9782723434775');
@@ -132,11 +137,37 @@ describe('FindVolumeCover', () => {
     });
 
     it('gives no cover without a cover source', async () => {
-        const useCase = new FindVolumeCover(null, new MemoryCoverRegistry());
+        const useCase = new FindVolumeCover(
+            null,
+            new MemoryCoverRegistry(),
+            BookDoubles.library().kept,
+        );
 
         const result = await useCase.execute(owner, '9782723434775');
 
         expect(result).toEqual({ kind: 'none' });
+    });
+
+    it('gives the cover kept for the ISBN, without asking any source', async () => {
+        const source = new ScriptedSource<CoverOffer[]>('inventaire', {
+            kind: 'found',
+            value: [offer],
+        });
+        const current = BookDoubles.library();
+        const registry = new MemoryCoverRegistry();
+        const file = await current.covers.store(new Uint8Array([1]), 'image/png');
+
+        await current.kept.keep('9782723434775', file);
+
+        const result = await new FindVolumeCover(
+            SourceLink.chain([source], new ManualClock()),
+            registry,
+            current.kept,
+        ).execute(owner, '9782723434775');
+
+        expect(result).toEqual({ kind: 'found', token: 'lookup-cover-1' });
+        expect(registry.address('lookup-cover-1')).toBe('kept:' + file);
+        expect(source.asked).toEqual([]);
     });
 
     it('refuses an invalid ISBN', async () => {

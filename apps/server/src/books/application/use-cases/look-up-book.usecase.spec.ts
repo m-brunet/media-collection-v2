@@ -49,6 +49,7 @@ describe('LookUpBook', () => {
             null,
             new MemoryCoverRegistry(),
             new AuthorMatcher(BookDoubles.library().authors),
+            BookDoubles.library().kept,
         ).execute(owner, '978-1-63557-563-7');
 
         expect(result).toEqual({ kind: 'existing', bookId: book.id });
@@ -64,6 +65,7 @@ describe('LookUpBook', () => {
             null,
             new MemoryCoverRegistry(),
             new AuthorMatcher(BookDoubles.library().authors),
+            BookDoubles.library().kept,
         ).execute(owner, '2253164690');
 
         expect(bnf.asked).toEqual(['9782253164692']);
@@ -86,6 +88,7 @@ describe('LookUpBook', () => {
             chain(covers),
             new MemoryCoverRegistry(),
             new AuthorMatcher(BookDoubles.library().authors),
+            BookDoubles.library().kept,
         ).execute(owner, '9782253164692');
 
         expect(result).toMatchObject({
@@ -114,6 +117,7 @@ describe('LookUpBook', () => {
             null,
             new MemoryCoverRegistry(),
             new AuthorMatcher(BookDoubles.library().authors),
+            BookDoubles.library().kept,
         ).execute(owner, '9782253164692');
 
         expect(result).toMatchObject({ kind: 'looked-up', found: false, unavailable: [] });
@@ -133,6 +137,7 @@ describe('LookUpBook', () => {
             chain(covers),
             new MemoryCoverRegistry(),
             new AuthorMatcher(BookDoubles.library().authors),
+            BookDoubles.library().kept,
         ).execute(owner, '9782253164692');
 
         expect(result).toMatchObject({
@@ -154,6 +159,7 @@ describe('LookUpBook', () => {
             null,
             new MemoryCoverRegistry(),
             new AuthorMatcher(BookDoubles.library().authors),
+            BookDoubles.library().kept,
         ).execute(owner, '9782253164692');
 
         expect(result).toMatchObject({
@@ -173,6 +179,7 @@ describe('LookUpBook', () => {
             chain(covers),
             new MemoryCoverRegistry(),
             new AuthorMatcher(BookDoubles.library().authors),
+            BookDoubles.library().kept,
         );
 
         const answered = lookup.execute(owner, '9782253164692');
@@ -199,6 +206,7 @@ describe('LookUpBook', () => {
             null,
             new MemoryCoverRegistry(),
             new AuthorMatcher(BookDoubles.library().authors),
+            BookDoubles.library().kept,
         )
             .execute(owner, '9782253164692')
             .then(() => {
@@ -219,6 +227,7 @@ describe('LookUpBook', () => {
             chain(covers),
             new MemoryCoverRegistry(),
             new AuthorMatcher(BookDoubles.library().authors),
+            BookDoubles.library().kept,
         );
 
         const answered = lookup.execute(owner, '9782253164692');
@@ -238,6 +247,7 @@ describe('LookUpBook', () => {
             null,
             new MemoryCoverRegistry(),
             new AuthorMatcher(BookDoubles.library().authors),
+            BookDoubles.library().kept,
         );
         const first = lookup.execute(owner, '9782253164692');
 
@@ -260,6 +270,7 @@ describe('LookUpBook', () => {
             null,
             new MemoryCoverRegistry(),
             new AuthorMatcher(BookDoubles.library().authors),
+            BookDoubles.library().kept,
         );
 
         await lookup.execute(owner, '9782253164692');
@@ -270,6 +281,53 @@ describe('LookUpBook', () => {
         expect(bnf.requests).toHaveLength(1);
     });
 
+    it('offers the cover kept for the ISBN, without asking any cover source', async () => {
+        const current = BookDoubles.library();
+        const file = await current.covers.store(new Uint8Array([1]), 'image/png');
+        const covers = new ScriptedSource<CoverOffer[]>('inventaire', {
+            kind: 'found',
+            value: [cover],
+        });
+        const registry = new MemoryCoverRegistry();
+
+        await current.kept.keep('9782253164692', file);
+
+        const result = await new LookUpBook(
+            current.books,
+            null,
+            chain(covers),
+            registry,
+            new AuthorMatcher(current.authors),
+            current.kept,
+        ).execute(owner, '9782253164692');
+
+        expect(result).toMatchObject({
+            found: true,
+            covers: [{ token: 'lookup-cover-1', sources: ['libris'] }],
+        });
+        expect(registry.address('lookup-cover-1')).toBe('kept:' + file);
+        expect(covers.asked).toEqual([]);
+    });
+
+    it('still asks the information sources when a cover is kept for the ISBN', async () => {
+        const current = BookDoubles.library();
+        const file = await current.covers.store(new Uint8Array([1]), 'image/png');
+        const bnf = new ScriptedSource('bnf', answer({ title: 'Piranesi' }));
+
+        await current.kept.keep('9782253164692', file);
+
+        await new LookUpBook(
+            current.books,
+            chain(bnf),
+            null,
+            new MemoryCoverRegistry(),
+            new AuthorMatcher(current.authors),
+            current.kept,
+        ).execute(owner, '9782253164692');
+
+        expect(bnf.asked).toEqual(['9782253164692']);
+    });
+
     it('rejects an invalid ISBN', async () => {
         const lookup = new LookUpBook(
             BookDoubles.library().books,
@@ -277,6 +335,7 @@ describe('LookUpBook', () => {
             null,
             new MemoryCoverRegistry(),
             new AuthorMatcher(BookDoubles.library().authors),
+            BookDoubles.library().kept,
         );
 
         const result = lookup.execute(owner, '9782253164691');
@@ -293,6 +352,7 @@ describe('LookUpBook', () => {
             null,
             new MemoryCoverRegistry(),
             new AuthorMatcher(BookDoubles.library().authors),
+            BookDoubles.library().kept,
         ).execute(guest, '9782253164692');
 
         await expect(result).rejects.toMatchObject({ reason: 'guest-read-only' });
@@ -313,6 +373,7 @@ describe('LookUpBook', () => {
                 null,
                 new MemoryCoverRegistry(),
                 new AuthorMatcher(authors),
+                BookDoubles.library().kept,
             ).execute(owner, '9782253164692');
         }
 

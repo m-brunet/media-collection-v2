@@ -9,12 +9,17 @@ export class KyselyCoverFileCleanup implements CoverFileCleanup {
     ) {}
 
     async removeUnreferenced(): Promise<number> {
-        const rows = await this.connections.current
+        const db = this.connections.current;
+        const books = await db
             .selectFrom('books')
             .select('cover_file')
             .where('cover_file', 'is not', null)
             .execute();
-        const referenced = new Set(rows.map((row) => row.cover_file));
+        const kept = await db.selectFrom('kept_covers').select('file').execute();
+        const referenced = new Set([
+            ...books.map((row) => row.cover_file),
+            ...kept.map((row) => row.file),
+        ]);
         let removed = 0;
 
         for (const file of await this.covers.list()) {

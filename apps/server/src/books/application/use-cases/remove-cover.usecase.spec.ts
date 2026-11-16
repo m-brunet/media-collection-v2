@@ -15,7 +15,7 @@ async function withCover() {
 function subject(current: ReturnType<typeof BookDoubles.library>) {
     return new RemoveCover(
         current.books,
-        current.covers,
+        current.kept,
         current.loader,
         current.viewer,
         current.clock,
@@ -30,7 +30,16 @@ describe('RemoveCover', () => {
         const result = await subject(current).execute(owner, book.id);
 
         expect(result.hasCover).toBe(false);
-        expect(current.covers.files.size).toBe(0);
+    });
+    it('keeps the removed cover under the ISBN of the book', async () => {
+        const { current, book } = await withCover();
+
+        await subject(current).execute(owner, book.id);
+
+        expect(current.covers.files.size).toBe(1);
+        expect(current.keptStore.kept.get(book.isbn!)?.file).toBe(
+            [...current.covers.files.keys()][0],
+        );
     });
     it('records the change with the book title', async () => {
         const { current, book } = await withCover();

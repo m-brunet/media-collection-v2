@@ -20,6 +20,7 @@ function subject(current = BookDoubles.library()) {
         current.ids,
         current.clock,
         current.operations,
+        current.kept,
     );
 }
 

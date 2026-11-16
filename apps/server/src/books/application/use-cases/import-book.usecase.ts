@@ -13,6 +13,7 @@ import type { ReadingStatusStore } from '../ports/driven/reading-status-store.in
 import { BookDetailsBuilder } from '../services/book-details-builder.service.js';
 import { BookIdentityCheck } from '../services/book-identity-check.service.js';
 import { GeneratedTitleSync } from '../services/generated-title-sync.service.js';
+import type { KeptCovers } from '../services/kept-covers.service.js';
 import { Book } from '../../domain/entities/book.entity.js';
 import { CoverImage } from '../../domain/value-objects/cover-image.value-object.js';
 import { GeneratedTitle } from '../../domain/value-objects/generated-title.value-object.js';
@@ -36,14 +37,16 @@ export class ImportBook implements ImportBookUseCase {
         private readonly ids: IdGenerator,
         private readonly clock: Clock,
         private readonly operations: AuditedOperation,
+        private readonly kept: KeptCovers,
     ) {}
 
     async execute(actor: Actor, imported: ImportedBook): Promise<ImportedBookOutcome> {
         const cover = this.usableCover(imported.cover);
         let stored: string | null = null;
+        let isbn13: string | null = null;
 
         try {
-            return await this.operations.run(
+            const outcome: ImportedBookOutcome = await this.operations.run(
                 {
                     category: BookAudit.created,
                     actorId: actor.id,
@@ -57,6 +60,7 @@ export class ImportBook implements ImportBookUseCase {
                     const input = this.input(imported);
                     const details = await this.builder.build(input);
 
+                    isbn13 = details.isbn?.isbn13 ?? null;
                     this.ensureCreatedBefore(imported.createdAt, now);
                     await this.identity.ensureUnique(details, id, true);
 
@@ -101,6 +105,12 @@ export class ImportBook implements ImportBookUseCase {
                     };
                 },
             );
+
+            if (stored) {
+                await this.kept.forget(isbn13);
+            }
+
+            return outcome;
         } catch (error) {
             if (stored) {
                 await this.covers.remove(stored);

@@ -72,12 +72,14 @@ import { KyselyBookCatalog } from '../../../apps/server/src/books/infrastructure
 import { KyselyReadingStatusRepository } from '../../../apps/server/src/books/infrastructure/adapters/driven/persistence/kysely-reading-status.repository.js';
 import { KyselyPersonalNoteRepository } from '../../../apps/server/src/books/infrastructure/adapters/driven/persistence/kysely-personal-note.repository.js';
 import { FileCoverStorage } from '../../../apps/server/src/books/infrastructure/adapters/driven/filesystem/file-cover-storage.adapter.js';
+import { KyselyKeptCoverStore } from '../../../apps/server/src/books/infrastructure/adapters/driven/persistence/kysely-kept-cover-store.adapter.js';
 import { ActivityModule } from '../../../apps/server/src/activity/infrastructure/config/activity.module.js';
 import { KyselyActivityRecordReader } from '../../../apps/server/src/activity/infrastructure/adapters/driven/persistence/kysely-activity-record-reader.adapter.js';
 import { MaintenanceModule } from '../../../apps/server/src/maintenance/infrastructure/config/maintenance.module.js';
 import { KyselyApplicationDataEraser } from '../../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/kysely-application-data-eraser.adapter.js';
 import { KyselyLibraryEraser } from '../../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/kysely-library-eraser.adapter.js';
 import { KyselyCoverFileCleanup } from '../../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/kysely-cover-file-cleanup.adapter.js';
+import { KyselyKeptCoverCount } from '../../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/kysely-kept-cover-count.adapter.js';
 import { StatisticsModule } from '../../../apps/server/src/statistics/infrastructure/config/statistics.module.js';
 import { KyselyLibraryStatisticsReader } from '../../../apps/server/src/statistics/infrastructure/adapters/driven/persistence/kysely-library-statistics-reader.adapter.js';
 import { OverviewModule } from '../../../apps/server/src/overview/infrastructure/config/overview.module.js';
@@ -143,6 +145,7 @@ export class TestApp {
                 readings: new KyselyReadingStatusRepository(database.connections),
                 notes: new KyselyPersonalNoteRepository(database.connections),
                 covers: new FileCoverStorage(directory),
+                keptCoverStore: new KyselyKeptCoverStore(database.connections),
                 lookup: new ScriptedLookupSources(),
             };
             const collections = new KyselyCollectionRepository(database.connections);
@@ -333,12 +336,13 @@ export class TestApp {
                         passwords: IdentityModule.administratorPassword(users, passwords),
                         eraser: new KyselyApplicationDataEraser(
                             database.connections,
-                            new KyselyLibraryEraser(database.connections),
+                            new KyselyLibraryEraser(database.connections, ids, clock),
                         ),
                         covers: new KyselyCoverFileCleanup(
                             database.connections,
                             new FileCoverStorage(directory),
                         ),
+                        keptCovers: new KyselyKeptCoverCount(database.connections),
                         operations,
                         sessions,
                     }),

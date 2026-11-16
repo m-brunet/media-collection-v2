@@ -14,17 +14,18 @@ afterEach(async () => {
 describe('development data reset', () => {
     it('empties the library and the audit log, keeping accounts and settings', async () => {
         const directory = await directories.populated('dev-data-');
+        const before = await directories.contents(directory);
 
         const report = await DevelopmentDataCommands.reset(directory);
         const after = await directories.contents(directory);
 
         expect(report.join('\n')).toContain(
-            'Deleted 1 books, 1 authors, 1 collections, 1 loans and 1 cover files.',
+            'Deleted 1 books, 1 authors, 1 collections, 1 loans and 0 cover files.',
         );
         expect(Object.values(after.library).every((count) => count === 0)).toBe(true);
         expect(after.users).toEqual([{ username: 'admin', language: 'fr', token_version: 2 }]);
         expect(after.settings).toEqual([{ value: 'kept' }]);
-        expect(after.covers).toEqual(['notes.txt']);
+        expect(after.covers).toEqual(before.covers);
     });
     it('leaves another data directory untouched', async () => {
         const development = await directories.populated('dev-data-');

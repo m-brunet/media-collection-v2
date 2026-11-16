@@ -479,3 +479,66 @@ describe('POST /api/books/lookups/volume-cover', () => {
         expect(response.status).toBe(400);
     });
 });
+
+describe('lookups of an ISBN that has a kept cover', () => {
+    const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
+
+    async function keptCover() {
+        const client = await app.authenticatedClient(owner);
+        const book = (await client.call<BookDto>('/books', 'POST', BookInputFixture.of({ isbn })))
+            .body;
+
+        await client.call('/books/' + book.id + '/cover', 'PUT', undefined, {
+            raw: { bytes: png, contentType: 'image/png' },
+        });
+        await client.call('/books/' + book.id, 'DELETE');
+
+        return client;
+    }
+
+    it('offers the kept cover alone, without asking Inventaire or Open Library', async () => {
+        sources().inventaireCover(isbn, inventaireAddress, jpeg);
+        sources().cover(isbn, coverAddress, jpeg);
+        const client = await keptCover();
+
+        const response = await client.call<BookLookupDto>('/books/lookups', 'POST', { isbn });
+
+        expect(response.body).toMatchObject({ covers: [{ sources: ['libris'] }] });
+        expect(sources().inventaireCovers.asked).toEqual([]);
+        expect(sources().openLibraryCovers.asked).toEqual([]);
+    });
+
+    it('still asks the information sources', async () => {
+        sources().knows('bnf', isbn, { title: "D'un monde à l'autre" });
+        const client = await keptCover();
+
+        const response = await client.call<BookLookupDto>('/books/lookups', 'POST', { isbn });
+
+        expect(response.body).toMatchObject({
+            fields: { title: [{ value: "D'un monde à l'autre", sources: ['bnf'] }] },
+        });
+    });
+
+    it('shows the kept cover from its stored file', async () => {
+        const client = await keptCover();
+        const lookup = await client.call<BookLookupDto>('/books/lookups', 'POST', { isbn });
+        const token = lookup.body.kind === 'looked-up' ? lookup.body.covers[0]!.token : 'no-cover';
+
+        const response = await client.call('/books/lookups/covers/' + token);
+
+        expect(response.status).toBe(200);
+        expect(response.headers['content-type']).toContain('image/png');
+    });
+
+    it('gives the kept cover for a volume, without asking a cover source', async () => {
+        sources().inventaireCover(isbn, inventaireAddress, jpeg);
+        const client = await keptCover();
+
+        const response = await client.call<VolumeCoverDto>('/books/lookups/volume-cover', 'POST', {
+            isbn,
+        });
+
+        expect(response.body.kind).toBe('found');
+        expect(sources().inventaireCovers.asked).toEqual([]);
+    });
+});

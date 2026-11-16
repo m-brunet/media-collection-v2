@@ -1,4 +1,7 @@
-import type { BookDto } from '../../../../../../../../packages/contracts/src/http.js';
+import type {
+    BookDto,
+    VolumeCoverDto,
+} from '../../../../../../../../packages/contracts/src/http.js';
 import sharp from 'sharp';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { TestApp } from '../../../../../../../../tests/api/setup/test-app.js';
@@ -152,5 +155,53 @@ describe('DELETE /api/books/:id/cover', () => {
         const response = await client.call<BookDto>('/books/' + book.id + '/cover', 'DELETE');
 
         expect(response.body.hasCover).toBe(false);
+    });
+});
+
+describe('DELETE /api/books/:id/cover of a book with an ISBN', () => {
+    const isbn = '9782253164692';
+
+    async function removed() {
+        const client = await app.authenticatedClient(owner);
+        const book = (await client.call<BookDto>('/books', 'POST', BookInputFixture.of({ isbn })))
+            .body;
+
+        await client.call('/books/' + book.id + '/cover', 'PUT', undefined, upload(png));
+        await client.call('/books/' + book.id + '/cover', 'DELETE');
+
+        return { client, book };
+    }
+
+    it('keeps the removed cover under the ISBN', async () => {
+        const { client } = await removed();
+
+        const response = await client.call<VolumeCoverDto>('/books/lookups/volume-cover', 'POST', {
+            isbn,
+        });
+
+        expect(response.body.kind).toBe('found');
+        expect(await app.dependencies.books.covers.list()).toHaveLength(1);
+    });
+});
+
+describe('PUT /api/books/:id/cover of a book whose ISBN has a kept cover', () => {
+    const isbn = '9782253164692';
+
+    it('deletes the kept cover: the ISBN has its cover on the book again', async () => {
+        const client = await app.authenticatedClient(owner);
+        const book = (await client.call<BookDto>('/books', 'POST', BookInputFixture.of({ isbn })))
+            .body;
+
+        await client.call('/books/' + book.id + '/cover', 'PUT', undefined, upload(png));
+        await client.call('/books/' + book.id + '/cover', 'DELETE');
+
+        await client.call('/books/' + book.id + '/cover', 'PUT', undefined, upload(png));
+
+        const kept = await client.call<VolumeCoverDto>('/books/lookups/volume-cover', 'POST', {
+            isbn,
+        });
+
+        expect(kept.body).toEqual({ kind: 'none' });
+        expect(await app.dependencies.books.covers.list()).toHaveLength(1);
     });
 });

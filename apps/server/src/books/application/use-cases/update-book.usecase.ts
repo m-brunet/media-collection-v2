@@ -6,7 +6,6 @@ import type { AuthorRepository } from '../ports/driven/author-repository.interfa
 import type { BookRepository } from '../ports/driven/book-repository.interface.js';
 import type { BookCollectionReader } from '../ports/driven/book-collection-reader.interface.js';
 import type { CollectionMembership } from '../ports/driven/collection-membership.interface.js';
-import type { CoverStorage } from '../ports/driven/cover-storage.interface.js';
 import { BookDetailsBuilder } from '../services/book-details-builder.service.js';
 import { BookIdentityCheck } from '../services/book-identity-check.service.js';
 import { BookOrganiser } from '../services/book-organiser.service.js';
@@ -15,6 +14,7 @@ import { LentBookGuard } from '../services/lent-book-guard.service.js';
 import { BookRemoval } from '../services/book-removal.service.js';
 import { BookViewer } from '../services/book-viewer.service.js';
 import { GeneratedTitleSync } from '../services/generated-title-sync.service.js';
+import type { KeptCovers } from '../services/kept-covers.service.js';
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 import type { AuditedOperation } from '../../../shared/application/services/audited-operation.service.js';
 import type { Actor } from '../../../shared/domain/actor.helper.js';
@@ -28,7 +28,7 @@ export class UpdateBook implements UpdateBookUseCase {
         private readonly memberships: BookCollectionReader,
         private readonly removal: BookRemoval,
         private readonly organiser: BookOrganiser,
-        private readonly covers: CoverStorage,
+        private readonly kept: KeptCovers,
         private readonly loader: BookLoader,
         private readonly builder: BookDetailsBuilder,
         private readonly identity: BookIdentityCheck,
@@ -40,7 +40,7 @@ export class UpdateBook implements UpdateBookUseCase {
     ) {}
 
     async execute(actor: Actor, bookId: string, input: BookInput): Promise<BookView> {
-        const { view, replacedCovers } = await this.operations.run(
+        const { view, replacedCovers, covered } = await this.operations.run(
             {
                 category: BookAudit.updated,
                 actorId: actor.id,
@@ -90,9 +90,13 @@ export class UpdateBook implements UpdateBookUseCase {
                 return {
                     result: {
                         view: await this.viewer.view(book, actor),
-                        replacedCovers: replaced.flatMap(
-                            (planned) => planned.book.snapshot.coverFile ?? [],
-                        ),
+                        replacedCovers: replaced.map((planned) => ({
+                            isbn13: planned.book.snapshot.details.isbn?.isbn13 ?? null,
+                            file: planned.book.snapshot.coverFile,
+                        })),
+                        covered: book.snapshot.coverFile
+                            ? (book.snapshot.details.isbn?.isbn13 ?? null)
+                            : null,
                     },
                     before,
                     after: {
@@ -117,9 +121,11 @@ export class UpdateBook implements UpdateBookUseCase {
             },
         );
 
-        for (const file of replacedCovers) {
-            await this.covers.remove(file);
+        for (const cover of replacedCovers) {
+            await this.kept.keep(cover.isbn13, cover.file);
         }
+
+        await this.kept.release(covered);
 
         return view;
     }

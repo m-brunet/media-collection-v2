@@ -59,6 +59,7 @@ import { MaintenanceModule } from '../../maintenance/infrastructure/config/maint
 import { KyselyApplicationDataEraser } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-application-data-eraser.adapter.js';
 import { KyselyLibraryEraser } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-library-eraser.adapter.js';
 import { KyselyCoverFileCleanup } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-cover-file-cleanup.adapter.js';
+import { KyselyKeptCoverCount } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-kept-cover-count.adapter.js';
 import { FileCoverStorage } from '../../books/infrastructure/adapters/driven/filesystem/file-cover-storage.adapter.js';
 import { SetupAccess } from '../../identity/infrastructure/adapters/driving/web/setup-access.service.js';
 import { KyselyPairingCodeRepository } from '../../identity/infrastructure/adapters/driven/persistence/kysely-pairing-code.repository.js';
@@ -319,12 +320,13 @@ export class BackendRuntime {
                             passwords: IdentityModule.administratorPassword(users, passwords),
                             eraser: new KyselyApplicationDataEraser(
                                 database.connections,
-                                new KyselyLibraryEraser(database.connections),
+                                new KyselyLibraryEraser(database.connections, ids, clock),
                             ),
                             covers: new KyselyCoverFileCleanup(
                                 database.connections,
                                 new FileCoverStorage(options.dataDirectory),
                             ),
+                            keptCovers: new KyselyKeptCoverCount(database.connections),
                             operations,
                             sessions,
                         }),

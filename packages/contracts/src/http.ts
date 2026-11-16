@@ -445,6 +445,10 @@ export interface VolumesAddedDto {
     skipped: { volume: number; isbn: string; reason: 'volume-taken' | 'isbn-taken' }[];
 }
 
+export interface KeptCoversDto {
+    count: number;
+}
+
 export type VolumeCoverDto = { kind: 'found'; token: string } | { kind: 'none' };
 
 export interface MissingVolumeEditionDto {

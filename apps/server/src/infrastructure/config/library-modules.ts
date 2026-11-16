@@ -32,6 +32,7 @@ import { KyselyBookCatalog } from '../../books/infrastructure/adapters/driven/pe
 import { KyselyReadingStatusRepository } from '../../books/infrastructure/adapters/driven/persistence/kysely-reading-status.repository.js';
 import { KyselyPersonalNoteRepository } from '../../books/infrastructure/adapters/driven/persistence/kysely-personal-note.repository.js';
 import { FileCoverStorage } from '../../books/infrastructure/adapters/driven/filesystem/file-cover-storage.adapter.js';
+import { KyselyKeptCoverStore } from '../../books/infrastructure/adapters/driven/persistence/kysely-kept-cover-store.adapter.js';
 
 export interface LibraryDependencies {
     database: Database;
@@ -79,6 +80,7 @@ export class LibraryModules {
                     readings: new KyselyReadingStatusRepository(connections),
                     notes: new KyselyPersonalNoteRepository(connections),
                     covers: new FileCoverStorage(dataDirectory),
+                    keptCoverStore: new KyselyKeptCoverStore(connections),
                     lookup: BooksModule.lookupSources(clock, lookupAddresses),
                     collections: membership,
                     collectionReader: membership,

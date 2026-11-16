@@ -1,6 +1,7 @@
 import type { ReadLookupCoverUseCase } from '../ports/driving/read-lookup-cover-use-case.interface.js';
 import type { CoverDownloader } from '../ports/driven/cover-downloader.interface.js';
 import type { LookupCoverRegistry } from '../ports/driven/lookup-cover-registry.interface.js';
+import { KeptCovers } from '../services/kept-covers.service.js';
 import { CoverImage } from '../../domain/value-objects/cover-image.value-object.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import type { Actor } from '../../../shared/domain/actor.helper.js';
@@ -10,6 +11,7 @@ export class ReadLookupCover implements ReadLookupCoverUseCase {
     constructor(
         private readonly registry: LookupCoverRegistry,
         private readonly downloader: CoverDownloader,
+        private readonly kept: KeptCovers,
     ) {}
 
     async execute(actor: Actor, token: string): Promise<CoverImage> {
@@ -24,7 +26,9 @@ export class ReadLookupCover implements ReadLookupCoverUseCase {
             );
         }
 
-        const bytes = await this.downloader.download(address);
+        const bytes = KeptCovers.isKept(address)
+            ? await this.kept.read(address)
+            : await this.downloader.download(address);
 
         try {
             if (bytes) {
