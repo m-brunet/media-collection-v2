@@ -66,6 +66,12 @@ Decided 2026-11-06.
 
 - One lookup asks several sources and combines them: a field missing from the preferred source is completed from the next ones. Where sources disagree, the preferred source's value is the first choice and the other values are offered as alternatives, each with its source. Values differing only by case, accents, punctuation or author name order count as the same.
 - Covers come from their own list of sources. The same picture offered by several sources is shown once, at its best resolution. Very small thumbnails are not offered.
+- **Kept covers** (decided 2026-11-16, issue #105): an ISBN has at most one cover, either on its book or kept.
+  - Deleting a book, or removing its cover, keeps the cover under the book's ISBN. Replacing a cover deletes the old one. A book without an ISBN has its cover deleted, as before.
+  - Adding a cover to a book whose ISBN has a kept cover deletes the kept one. A second cover kept for the same ISBN replaces the first.
+  - The lookup offers the kept cover first, as "from your library", and then asks no cover source for that ISBN (Inventaire, Open Library); the information sources are still asked. The same holds for the covers of a series' volumes.
+  - A cover removed by hand is therefore offered again for its ISBN; choosing another cover replaces it.
+  - The data reset and the development commands keep these covers; see [features](features.md#data-reset).
 - **Inventaire covers** (decided 2026-11-16, issue #93): Inventaire is asked for covers only, never for book information; the BnF and Open Library stay the information sources. Its cover is the first choice, before Open Library's, each shown with its source; an existing cover is never replaced automatically. For the volumes of a series, Inventaire is asked first and Open Library only for a volume Inventaire has no cover for. Inventaire's data is CC0, but the pictures keep their own copyright: they are stored for the household's own library, never published.
 - A summary is kept only when it is in the edition's language (French users may own English books); otherwise the summary stays empty. Titles, authors and other fields come from the edition itself.
 - The category is filled when a source tells it (decided 2026-11-10): in the BnF record, the comic class (686 $a 805) or form ("Bandes dessinées", 608) makes a Comics, and a Manga when translated from Japanese, Korean or Chinese (101 $c; manhwa and manhua count as manga); in Open Library, the work's subjects ("manga", "comic", "graphic novel"). Publishers are not used, since some publish both. The lookup's category replaces the form's without asking: on desktop it is shown in the review, and it can be changed in the form as usual. Without one, the form keeps its category (Books, or on the phone the last saved book's).
@@ -162,6 +168,8 @@ Guests have no personal notes feature and no reading-status display or controls.
 24. A volume search has filled the BnF queue and a book is scanned meanwhile: the scan's request goes before the waiting search requests.
 25. Inventaire and Open Library both have a cover for the ISBN: the review offers Inventaire's first, "Cover 1, from Inventaire", then Open Library's. Only Open Library has one: it is the only choice, as before.
 26. Twelve volumes are found for a series: Inventaire is asked for the first one, then for ten together in one request, then for the last one. Each cover shows on its row once its picture is downloaded, about 3 seconds apart.
+27. A book with a cover is deleted, then its ISBN is looked up again: the review offers "Cover 1, from your library", and neither Inventaire nor Open Library is asked. Saving the book with that cover leaves no kept cover for the ISBN.
+28. A cover is removed from a book, then another picture is added to it: the removed cover, kept in between, is deleted.
 
 ## Assigned follow-ups
 

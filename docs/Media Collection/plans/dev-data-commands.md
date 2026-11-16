@@ -18,8 +18,10 @@ release's data:
   changed (`--data-dir`, `APP_DATA_DIR`), when `.dev-data` is a link or resolves elsewhere, and while the
   development app is running (Electron's single-instance lock, which follows the data directory's profile).
 - Reset keeps users (accounts, passwords, roles, language, appearance) and the server settings. It deletes library
-  data (books, authors, collections, bookcases/shelves, tags, receivers, loans, reading statuses, personal notes,
-  cover files) and the audit log, and signs every session out. It deletes records; it never drops tables.
+  data (books, authors, collections, bookcases/shelves, tags, receivers, loans, reading statuses, personal notes)
+  and the audit log, and signs every session out. It deletes records; it never drops tables. Since issue #105 the
+  cover of every book that has an ISBN is kept under that ISBN, here and in the import, so later lookups reuse it
+  without asking a cover source; only the cover files that no book and no kept cover uses are deleted.
 - Import = reset + import, in one transaction: a failure keeps the previous library.
 - Code: a `development-data` backend feature started by dev-only Electron flags, like `--reset-admin`. It reuses the
   books and collections use cases through their driving ports; new books go through a books `ImportBook` use case
