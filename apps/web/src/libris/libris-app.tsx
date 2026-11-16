@@ -29,6 +29,9 @@ import { CollectionDetailsPage } from './collections/collection-details-page';
 import { CollectionsPage } from './collections/collections-page';
 import { FiltersPage } from './filters/filters-page';
 import { BookshelvesPage } from './locations/bookshelves-page';
+import { AddBooksPage } from './locations/add-books-page';
+import { AddBooksFilters } from './locations/add-books-filters';
+import { AddBooksLayout } from './locations/add-books-selection';
 import { TagsPage } from './tags/tags-page';
 import { OverviewPage } from './overview/overview-page';
 import { StatisticsPage } from './statistics/statistics-page';
@@ -132,6 +135,17 @@ function LibrisRoutes() {
                 />
                 <Route path="/collections/:id" element={<CollectionDetailsPage />} />
                 <Route path="/bookshelves" element={<BookshelvesPage />} />
+                <Route
+                    path="/bookshelves/shelves/:shelfId/add-books"
+                    element={
+                        <LibraryEditorOnly>
+                            <AddBooksLayout />
+                        </LibraryEditorOnly>
+                    }
+                >
+                    <Route index element={<AddBooksPage />} />
+                    <Route path="filters" element={<AddBooksFilters />} />
+                </Route>
                 <Route path="/tags" element={<TagsPage />} />
                 <Route path="/loans" element={<LoansPage />} />
                 <Route

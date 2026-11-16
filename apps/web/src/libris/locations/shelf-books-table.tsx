@@ -6,7 +6,6 @@ import type {
     BookListItemDto,
     ShelfDto,
 } from '../../../../../packages/contracts/src/http';
-import { BookFormat } from '../../shared/book-form/book-format.util';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Icon } from '../../shared/ui/icon';
 import { Notice } from '../../shared/ui/notice';
@@ -14,6 +13,8 @@ import { LoadingState } from '../../shared/ui/states';
 import { ColumnsSizes } from './columns-sizes';
 import { MoveBookDialog } from './move-book-dialog';
 import { SpineLayout } from './spine-layout.util';
+import { ShelfBookFormat } from './shelf-book-format.util';
+import { useBookStatus } from './use-book-status';
 import { useShelfBooks } from './use-shelf-books';
 
 const steps: Partial<Record<string, (index: number, last: number) => number>> = {
@@ -22,28 +23,6 @@ const steps: Partial<Record<string, (index: number, last: number) => number>> = 
     Home: () => 0,
     End: (_, last) => last,
 };
-
-function useBookStatus() {
-    const { t } = useI18n();
-
-    return (book: BookListItemDto) =>
-        book.loan
-            ? t('columns.lentTo', { name: book.loan.receiverName })
-            : [
-                  t(BookFormat.ownership(book.ownership)),
-                  ...(book.read ? [t('status.read')] : []),
-              ].join(' · ');
-}
-
-function collection(book: BookListItemDto, none: string) {
-    if (!book.collection) {
-        return none;
-    }
-
-    const { name, volumeFrom, volumeTo } = book.collection;
-
-    return name + ' · ' + (volumeFrom === volumeTo ? volumeFrom : volumeFrom + '–' + volumeTo);
-}
 
 export const ShelfBooksTable = forwardRef<
     HTMLTableElement,
@@ -184,7 +163,9 @@ export const ShelfBooksTable = forwardRef<
                                     </Link>
                                 </td>
                                 <td>{book.authors.join(', ')}</td>
-                                <td>{collection(book, t('columns.noCollection'))}</td>
+                                <td>
+                                    {ShelfBookFormat.collection(book, t('columns.noCollection'))}
+                                </td>
                                 <td className={book.loan ? 'columns-table__lent' : undefined}>
                                     <span>{status(book)}</span>
                                     {editor && (

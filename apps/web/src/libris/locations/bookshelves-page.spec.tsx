@@ -446,6 +446,42 @@ it('moves a shelf to another bookcase and explains a name conflict there', async
     ).toBeInTheDocument();
 });
 
+it('opens the screen to add books to the selected shelf, first of its actions', async () => {
+    api();
+    const router = await shown('/bookshelves?shelf=s3');
+    const actions = within(panel()).getAllByRole('button');
+
+    await userEvent.click(within(panel()).getByRole('button', { name: 'Add books' }));
+
+    expect(actions[0]).toHaveAccessibleName('Add books');
+    expect(router.state.location.pathname + router.state.location.search).toBe(
+        '/bookshelves/shelves/s3/add-books?location=none',
+    );
+});
+
+it('offers a Guest no way to add books to a shelf', async () => {
+    api('guest');
+
+    await shown('/bookshelves?shelf=s3');
+
+    expect(screen.queryByRole('button', { name: 'Add books' })).not.toBeInTheDocument();
+});
+
+it('shows the message a finished action arrives with', async () => {
+    api();
+
+    renderRoute(
+        {
+            pathname: '/bookshelves',
+            search: '?shelf=s3',
+            state: { done: '2 books are now on Shelf 3.' },
+        },
+        { '/bookshelves': <BookshelvesPage /> },
+    );
+
+    expect(await screen.findByText('2 books are now on Shelf 3.')).toBeInTheDocument();
+});
+
 it('tells how many books become unassigned before deleting a shelf', async () => {
     api();
     await shown('/bookshelves?shelf=s3');

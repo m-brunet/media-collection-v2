@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import type {
     BookcaseDto,
     BookListPageDto,
@@ -17,6 +17,7 @@ import { LoadingState } from '../../shared/ui/states';
 import { BookCover } from '../books/book-cover';
 import { BookFilter } from '../filters/book-filter.util';
 import type { LocationEditing } from './location-dialogs';
+import { ShelfPlacement } from './shelf-placement.util';
 import { useElementWidth } from './use-element-width';
 import { WallSizes } from './wall-sizes';
 
@@ -131,6 +132,7 @@ export function ShelfPanel({
     onEdit(editing: LocationEditing): void;
 }) {
     const { t } = useI18n();
+    const navigate = useNavigate();
     const panel = useRef<HTMLElement>(null);
     const width = useElementWidth(panel);
     const columns =
@@ -167,6 +169,12 @@ export function ShelfPanel({
                     <ShelfCovers shelf={shelf} columns={columns} />
                     {editor && (
                         <div className="actions shelf-panel__actions">
+                            <Button
+                                icon="add"
+                                onClick={() => navigate(ShelfPlacement.opening(shelf.id))}
+                            >
+                                {t('shelf.addBooks')}
+                            </Button>
                             <Button
                                 icon="edit"
                                 onClick={() => onEdit({ kind: 'rename-shelf', shelf })}

@@ -71,6 +71,23 @@ it('returns to the Library with the combined criteria, keeping the search', asyn
     );
 });
 
+it('returns to the screen it was opened for, without an ownership choice', async () => {
+    api();
+    const router = renderRoute('/shelf/filters?location=none', {
+        '/shelf/filters': <FiltersPage listing="books" returnTo="/shelf" ownedOnly />,
+    });
+
+    await screen.findByRole('radiogroup', { name: 'Fantasy' });
+    const ownership = screen.queryByText('Any ownership');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Show results' }));
+
+    expect(ownership).not.toBeInTheDocument();
+    expect(router.state.location.pathname + router.state.location.search).toBe(
+        '/shelf?location=none',
+    );
+});
+
 it('summarises the chosen tags and resets them together', async () => {
     api();
     show('/books/filters?tag=fantasy&notTag=medieval');

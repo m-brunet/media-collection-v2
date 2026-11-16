@@ -229,6 +229,56 @@ describe('Bookshelves', () => {
     });
 });
 
+describe('Add books to a shelf', () => {
+    it('places loose books and moves a shelved one, then shows the shelf with its new count', async () => {
+        const oak = await bookcase('Oak bookcase', ['Shelf 3']);
+        const hall = await bookcase('Hallway', ['Shelf 1']);
+        const dune = await book('Dune');
+        const emma = await book('Emma');
+        const mort = await book('Mort', { shelfId: hall.shelves[0]!.id });
+        const page = await signedIn('camille');
+
+        await page.goto('/bookshelves?shelf=' + oak.shelves[0]!.id);
+        await page.getByRole('button', { name: 'Add books' }).click();
+        await page.getByRole('heading', { name: 'Add books to Shelf 3' }).waitFor();
+        await page.getByRole('checkbox', { name: dune.title }).check();
+        await page.getByRole('checkbox', { name: emma.title }).check();
+        await page.getByRole('button', { name: 'Remove the filter No physical location' }).click();
+        await page.getByRole('checkbox', { name: mort.title }).check();
+        await page.getByText('2 placed on Shelf 3 · 1 moved from Hallway – Shelf 1').waitFor();
+        await capture(page, 'add-books-to-shelf');
+
+        await page.getByRole('button', { name: 'Place 3 books on Shelf 3' }).click();
+
+        await page.getByText('3 books are now on Shelf 3:', { exact: false }).waitFor();
+        await page.getByRole('heading', { name: 'Bookshelves' }).waitFor();
+        expect(
+            await Promise.all(
+                [dune, emma, mort].map(
+                    async (saved) =>
+                        (await admin.call<BookDto>('/books/' + saved.id)).body.location?.shelfId,
+                ),
+            ),
+        ).toEqual([oak.shelves[0]!.id, oak.shelves[0]!.id, oak.shelves[0]!.id]);
+    });
+
+    it('fits the smallest desktop window without horizontal scrolling', async () => {
+        await bookcase('Oak bookcase', ['Shelf 3']);
+        await book('Dune');
+        const page = await signedIn('camille', viewports.minimumDesktop);
+
+        await openBookshelves(page);
+        await page.getByRole('button', { name: 'Add books' }).click();
+        await page.getByRole('table', { name: 'Books to add to Shelf 3' }).waitFor();
+
+        expect(
+            await page.evaluate(
+                () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+            ),
+        ).toBe(true);
+    });
+});
+
 describe('Bookshelves Wall', () => {
     async function shelved(viewport?: { width: number; height: number }) {
         const oak = await bookcase('Oak bookcase', ['Shelf 1', 'Shelf 2']);

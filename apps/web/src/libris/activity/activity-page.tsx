@@ -53,6 +53,7 @@ const icons: Record<ActivityEntryDto['event']['kind'], IconName> = {
     'shelf-renamed': 'bookshelves',
     'shelf-moved': 'bookshelves',
     'shelf-deleted': 'bookshelves',
+    'books-placed': 'bookshelves',
     'tag-created': 'tag',
     'tag-renamed': 'tag',
     'tag-deleted': 'tag',

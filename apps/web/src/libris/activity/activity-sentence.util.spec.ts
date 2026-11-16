@@ -46,6 +46,30 @@ describe('ActivitySentence', () => {
             'Vous avez passé la collection Naruto et son livre dans la catégorie BD et comics',
         );
     });
+    it('says books were placed on a shelf, with their number and the bookcase', () => {
+        const event: ActivityEventDto = {
+            kind: 'books-placed',
+            shelf: 'Shelf 3',
+            bookcase: 'Study · oak',
+            count: 38,
+        };
+
+        const sentence = ActivitySentence.main(event, t);
+
+        expect(sentence).toBe('You placed 38 books on Study · oak – Shelf 3');
+    });
+    it('says a single book was placed on a shelf, in French', () => {
+        const event: ActivityEventDto = {
+            kind: 'books-placed',
+            shelf: 'Étagère 3',
+            bookcase: 'Bureau',
+            count: 1,
+        };
+
+        const sentence = ActivitySentence.main(event, tFr);
+
+        expect(sentence).toBe('Vous avez rangé 1 livre sur Bureau – Étagère 3');
+    });
     it('says kept covers were deleted, with their number', () => {
         const event: ActivityEventDto = { kind: 'kept-covers-deleted', count: 437 };
 

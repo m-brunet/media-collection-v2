@@ -235,6 +235,15 @@ it('explains that a Guest cannot add a book', async () => {
     expect(await screen.findByText('This page is unavailable')).toBeInTheDocument();
 });
 
+it('explains that a Guest cannot add books to a shelf', async () => {
+    window.history.replaceState(null, '', '/bookshelves/shelves/s3/add-books');
+    new FakeApi().signedIn(account({ role: 'guest' }));
+
+    render(<LibrisApp />);
+
+    expect(await screen.findByText('This page is unavailable')).toBeInTheDocument();
+});
+
 it('shows the credits and licences to a signed-out visitor', async () => {
     window.history.replaceState(null, '', '/credits');
     new FakeApi();

@@ -1,4 +1,6 @@
+import { useNavigate } from 'react-router';
 import { useRef } from 'react';
+import { ShelfPlacement } from './shelf-placement.util';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Button } from '../../shared/ui/button';
 import { Icon } from '../../shared/ui/icon';
@@ -22,6 +24,7 @@ export function ColumnsView({
     onChanged,
 }: BookshelvesViewProps) {
     const { t, locale } = useI18n();
+    const navigate = useNavigate();
     const counts = useLocationCounts();
     const number = new Intl.NumberFormat(locale);
     const bookcaseList = useRef<HTMLUListElement>(null);
@@ -121,6 +124,12 @@ export function ColumnsView({
                             <span className="muted">{counts.books(shelf.bookCount)}</span>
                             {editor && (
                                 <div className="actions columns-view__actions">
+                                    <Button
+                                        icon="add"
+                                        onClick={() => navigate(ShelfPlacement.opening(shelf.id))}
+                                    >
+                                        {t('shelf.addBooks')}
+                                    </Button>
                                     <Button
                                         icon="edit"
                                         onClick={() => onEdit({ kind: 'rename-shelf', shelf })}
