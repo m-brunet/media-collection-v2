@@ -88,6 +88,7 @@ import { MemoryLookupCoverRegistry } from '../adapters/driven/memory/memory-look
 import { BnfCatalogue } from '../adapters/driven/third-party/bnf-catalogue.adapter.js';
 import { HttpCoverDownloader } from '../adapters/driven/third-party/http-cover-downloader.adapter.js';
 import { PublicAddresses } from '../adapters/driven/third-party/public-addresses.adapter.js';
+import { InventaireCovers } from '../adapters/driven/third-party/inventaire-covers.adapter.js';
 import { OpenLibraryCovers } from '../adapters/driven/third-party/open-library-covers.adapter.js';
 import { OpenLibraryInformation } from '../adapters/driven/third-party/open-library-information.adapter.js';
 import { OpenLibraryRecords } from '../adapters/driven/third-party/open-library-records.adapter.js';
@@ -764,11 +765,18 @@ export class BooksModule {
 
     // The BnF publishes no request limit for its SRU service. Open Library allows 1 request per
     // second to clients that send no contact email (https://openlibrary.org/developers/api).
-    static readonly lookupDelaySeconds = { bnf: 3, openLibrary: 2 };
+    // Inventaire enforces a limit it does not publish and answers 429 beyond it
+    // (https://api.inventaire.io); the 10 seconds of its robots.txt are for web crawlers.
+    static readonly lookupDelaySeconds = { bnf: 3, openLibrary: 2, inventaire: 3 };
 
     static lookupSources(
         clock: Clock,
-        settings: { bnf?: string; openLibrary?: string; delaySeconds?: number } = {},
+        settings: {
+            bnf?: string;
+            openLibrary?: string;
+            inventaire?: string;
+            delaySeconds?: number;
+        } = {},
     ): BookLookupSources {
         const delays = BooksModule.lookupDelaySeconds;
         const bnfQueue = new SourceQueue(settings.delaySeconds ?? delays.bnf, clock);
@@ -776,6 +784,7 @@ export class BooksModule {
             settings.delaySeconds ?? delays.openLibrary,
             clock,
         );
+        const inventaireQueue = new SourceQueue(settings.delaySeconds ?? delays.inventaire, clock);
         const bnf = new SourceHttp(bnfQueue);
         const openLibrary = new OpenLibraryRecords(
             new SourceHttp(openLibraryQueue),
@@ -787,12 +796,18 @@ export class BooksModule {
                 new BnfCatalogue(bnf, settings.bnf),
                 new OpenLibraryInformation(openLibrary),
             ],
-            covers: [new OpenLibraryCovers(openLibrary)],
+            covers: [
+                new InventaireCovers(new SourceHttp(inventaireQueue), settings.inventaire),
+                new OpenLibraryCovers(openLibrary),
+            ],
             series: new BnfSeries(bnf, settings.bnf),
             downloader: new HttpCoverDownloader(
                 fetch,
                 undefined,
-                new Map([['covers.openlibrary.org', openLibraryQueue]]),
+                new Map([
+                    ['covers.openlibrary.org', openLibraryQueue],
+                    ['inventaire.io', inventaireQueue],
+                ]),
             ),
             addressDownloader: new HttpCoverDownloader(fetch, new PublicAddresses()),
         };

@@ -137,7 +137,11 @@ describe('Find book', () => {
         expect(
             await page.getByRole('img', { name: "Cover of D'un monde à l'autre" }).isVisible(),
         ).toBe(true);
-        expect(sourceRequests()).toEqual(['/bnf/SRU', '/openlibrary/api/books']);
+        expect(sourceRequests().toSorted()).toEqual([
+            '/bnf/SRU',
+            '/inventaire/api/entities/by-uris',
+            '/openlibrary/api/books',
+        ]);
         await capture(page, 'lookup-saved-details');
     });
 

@@ -97,6 +97,40 @@ describe('FindVolumeCover', () => {
         expect(result).toEqual({ kind: 'none' });
     });
 
+    it('takes the cover of the next source when the preferred one has none', async () => {
+        const inventaire = new ScriptedSource<CoverOffer[]>('inventaire', { kind: 'none' });
+        const openLibrary = new ScriptedSource<CoverOffer[]>('openlibrary', {
+            kind: 'found',
+            value: [offer],
+        });
+        const registry = new MemoryCoverRegistry();
+        const useCase = new FindVolumeCover(
+            SourceLink.chain([inventaire, openLibrary], new ManualClock()),
+            registry,
+        );
+
+        const result = await useCase.execute(owner, '9782723434775');
+
+        expect(result).toEqual({ kind: 'found', token: 'lookup-cover-1' });
+        expect(registry.address('lookup-cover-1')).toBe(offer.address);
+    });
+
+    it('does not ask the next source when the preferred one has a cover', async () => {
+        const inventaire = new ScriptedSource<CoverOffer[]>('inventaire', {
+            kind: 'found',
+            value: [offer],
+        });
+        const openLibrary = new ScriptedSource<CoverOffer[]>('openlibrary', { kind: 'none' });
+        const useCase = new FindVolumeCover(
+            SourceLink.chain([inventaire, openLibrary], new ManualClock()),
+            new MemoryCoverRegistry(),
+        );
+
+        await useCase.execute(owner, '9782723434775');
+
+        expect(openLibrary.asked).toEqual([]);
+    });
+
     it('gives no cover without a cover source', async () => {
         const useCase = new FindVolumeCover(null, new MemoryCoverRegistry());
 

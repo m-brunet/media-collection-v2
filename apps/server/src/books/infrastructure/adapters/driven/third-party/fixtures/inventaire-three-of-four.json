@@ -1,0 +1,92 @@
+{
+    "entities": {
+        "inv:783a4084e477b0df0a9e30ec53391816": {
+            "_id": "783a4084e477b0df0a9e30ec53391816",
+            "_rev": "7-704ac02fbf0e6255317a9d1808875ea0",
+            "type": "edition",
+            "labels": { "fromclaims": "Claymore 1" },
+            "claims": {
+                "wdt:P31": ["wd:Q3331189"],
+                "wdt:P212": ["978-2-7234-5636-4"],
+                "wdt:P957": ["2-7234-5636-6"],
+                "wdt:P407": ["wd:Q150"],
+                "wdt:P1476": ["Claymore 1"],
+                "invp:P2": ["da8bcab7293460f0c5a28017f88d5fb35aa8713c"],
+                "wdt:P577": ["2006"],
+                "wdt:P629": ["inv:783a4084e477b0df0a9e30ec53391075"],
+                "wdt:P1680": ["La tueuse aux yeux d'argent"],
+                "wdt:P123": ["wd:Q1454296"],
+                "wdt:P655": ["wd:Q2852924", "inv:31d2a00c225350cac674074f6b306f34"]
+            },
+            "created": 1581182679332,
+            "updated": 1661454543959,
+            "version": 7,
+            "uri": "inv:783a4084e477b0df0a9e30ec53391816",
+            "originalLang": "fr",
+            "image": { "url": "/img/entities/da8bcab7293460f0c5a28017f88d5fb35aa8713c" },
+            "descriptions": { "fromclaims": "La tueuse aux yeux d'argent" },
+            "invId": "783a4084e477b0df0a9e30ec53391816"
+        },
+        "inv:965dde679f716a0b6d68fab6628a61d9": {
+            "_id": "965dde679f716a0b6d68fab6628a61d9",
+            "_rev": "8-e48b7e734e0e37da6352caa82c5a2776",
+            "type": "edition",
+            "labels": { "fromclaims": "Pair de l'Empire" },
+            "claims": {
+                "wdt:P31": ["wd:Q3331189"],
+                "wdt:P212": ["978-2-8112-0912-4"],
+                "wdt:P957": ["2-8112-0912-3"],
+                "wdt:P407": ["wd:Q150"],
+                "wdt:P1476": ["Pair de l'Empire"],
+                "invp:P2": ["78fefdeaabbc6954d57444305e0750047d55c14c"],
+                "wdt:P577": ["2013-04-26"],
+                "wdt:P629": ["wd:Q2331093"],
+                "wdt:P123": ["wd:Q2923533"],
+                "wdt:P195": ["inv:36e6f9e2c34707ab45537027f2e26010"],
+                "wdt:P655": ["wd:Q62035702"],
+                "wdt:P1104": [840],
+                "wdt:P268": ["436201327"]
+            },
+            "created": 1618062893318,
+            "version": 8,
+            "updated": 1718904843205,
+            "uri": "inv:965dde679f716a0b6d68fab6628a61d9",
+            "originalLang": "fr",
+            "image": { "url": "/img/entities/78fefdeaabbc6954d57444305e0750047d55c14c" },
+            "invId": "965dde679f716a0b6d68fab6628a61d9"
+        },
+        "inv:a295a78be16b5a714e74fd6a9d773e03": {
+            "_id": "a295a78be16b5a714e74fd6a9d773e03",
+            "_rev": "5-94aa30b1b8d1260bbb35e157c2a4ce3a",
+            "type": "edition",
+            "labels": { "fromclaims": "Z comme Zorglub" },
+            "claims": {
+                "wdt:P31": ["wd:Q3331189"],
+                "wdt:P212": ["978-2-8001-0017-3"],
+                "wdt:P957": ["2-8001-0017-6"],
+                "wdt:P407": ["wd:Q150"],
+                "wdt:P1476": ["Z comme Zorglub"],
+                "invp:P2": ["b57fdfc294e77f9fe72dccbffef664e60af0ed66"],
+                "wdt:P577": ["1986-04-01"],
+                "wdt:P629": ["wd:Q3480170"],
+                "wdt:P1104": [64],
+                "wdt:P2969": ["466169"],
+                "wdt:P648": ["OL8940345M"],
+                "wdt:P123": ["wd:Q1266653"]
+            },
+            "created": 1546941941197,
+            "updated": 1764710075685,
+            "version": 8,
+            "uri": "inv:a295a78be16b5a714e74fd6a9d773e03",
+            "originalLang": "fr",
+            "image": { "url": "/img/entities/b57fdfc294e77f9fe72dccbffef664e60af0ed66" },
+            "invId": "a295a78be16b5a714e74fd6a9d773e03"
+        }
+    },
+    "redirects": {
+        "isbn:9782723456364": "inv:783a4084e477b0df0a9e30ec53391816",
+        "isbn:9782811209124": "inv:965dde679f716a0b6d68fab6628a61d9",
+        "isbn:9782800100173": "inv:a295a78be16b5a714e74fd6a9d773e03"
+    },
+    "notFound": ["isbn:9782253917502"]
+}

@@ -14,6 +14,8 @@ const guest = new UserFixture({ username: 'morgan', role: 'guest' });
 const isbn = '9782253164692';
 const jpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]);
 const coverAddress = 'https://covers.openlibrary.org/b/id/11376002-L.jpg';
+const inventaireAddress =
+    'https://inventaire.io/img/entities/637042f24123f713ca64b13732771b5febb67a43';
 
 beforeEach(async () => {
     app = new TestApp();
@@ -165,6 +167,20 @@ describe('POST /api/books/lookups', () => {
         expect(response.body).toMatchObject({
             found: true,
             unavailable: [{ source: 'bnf', reason: 'failed' }],
+        });
+    });
+
+    it('offers the Inventaire cover before the Open Library one, each with its source', async () => {
+        sources().cover(isbn, coverAddress, jpeg);
+        sources().inventaireCover(isbn, inventaireAddress, jpeg);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookLookupDto>('/books/lookups', 'POST', { isbn });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toMatchObject({
+            found: true,
+            covers: [{ sources: ['inventaire'] }, { sources: ['openlibrary'] }],
         });
     });
 
@@ -409,6 +425,31 @@ describe('POST /api/books/lookups/volume-cover', () => {
         });
 
         expect(response.body).toEqual({ kind: 'none' });
+    });
+
+    it('prefers the Inventaire cover, without asking Open Library', async () => {
+        sources().inventaireCover(isbn, inventaireAddress, jpeg);
+        sources().cover(isbn, coverAddress, jpeg);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<VolumeCoverDto>('/books/lookups/volume-cover', 'POST', {
+            isbn,
+        });
+
+        expect([response.status, response.body.kind]).toEqual([200, 'found']);
+        expect(sources().openLibraryCovers.asked).toEqual([]);
+    });
+
+    it('takes the Open Library cover when Inventaire has none', async () => {
+        sources().cover(isbn, coverAddress, jpeg);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<VolumeCoverDto>('/books/lookups/volume-cover', 'POST', {
+            isbn,
+        });
+
+        expect([response.status, response.body.kind]).toEqual([200, 'found']);
+        expect(sources().inventaireCovers.asked).toEqual([isbn]);
     });
 
     it('gives no cover, and no time to ask again, when the source asked to wait', async () => {

@@ -18,8 +18,7 @@ export class FindVolumeCover implements FindVolumeCoverUseCase {
     async execute(actor: Actor, isbn: string): Promise<VolumeCover> {
         ActorAuthorization.requireLibraryEditor(actor);
         const { isbn13 } = Isbn.parse(isbn);
-        const reply = await this.covers?.request(isbn13, true);
-        const offer = reply && reply !== 'failed' && reply.kind === 'found' ? reply.value[0] : null;
+        const offer = (await this.covers?.first(isbn13, true))?.[0];
 
         return offer
             ? { kind: 'found', token: this.registry.register(offer.address) }

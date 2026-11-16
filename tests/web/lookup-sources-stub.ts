@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import type { IncomingMessage, Server, ServerResponse } from 'node:http';
 import { createServer } from 'node:http';
 
-type Source = 'bnf' | 'openlibrary';
+type Source = 'bnf' | 'openlibrary' | 'inventaire';
 type Trouble = { status: 500 } | { status: 503; retryAfterSeconds: number };
 
 const recorded = new URL(
@@ -15,6 +15,7 @@ export class LookupSourcesStub {
     private port = 0;
     private readonly bnfRecords = new Map<string, string>();
     private readonly openLibraryRecords = new Map<string, object>();
+    private readonly inventaireCovers = new Set<string>();
     private readonly troubles = new Map<Source, Trouble>();
     private readonly cover: Buffer;
     readonly requests: string[] = [];
@@ -23,14 +24,26 @@ export class LookupSourcesStub {
         this.cover = cover;
     }
 
-    get addresses(): { bnf: string; openLibrary: string; delaySeconds: number } {
+    get addresses(): {
+        bnf: string;
+        openLibrary: string;
+        inventaire: string;
+        delaySeconds: number;
+    } {
         const base = 'http://127.0.0.1:' + this.port;
 
         return {
             bnf: base + '/bnf/SRU',
             openLibrary: base + '/openlibrary/api/books',
+            inventaire: base + '/inventaire/api/entities/by-uris',
             delaySeconds: 0,
         };
+    }
+
+    inventaire(isbn13: string): this {
+        this.inventaireCovers.add(isbn13);
+
+        return this;
     }
 
     bnf(isbn13: string, fixture: string): this {
@@ -70,6 +83,7 @@ export class LookupSourcesStub {
     reset(): void {
         this.bnfRecords.clear();
         this.openLibraryRecords.clear();
+        this.inventaireCovers.clear();
         this.troubles.clear();
         this.requests.length = 0;
     }
@@ -93,8 +107,29 @@ export class LookupSourcesStub {
 
         this.requests.push(url.pathname);
 
-        if (url.pathname.startsWith('/covers/')) {
+        if (url.pathname.startsWith('/covers/') || url.pathname.startsWith('/img/entities/')) {
             response.writeHead(200, { 'Content-Type': 'image/png' }).end(this.cover);
+        } else if (url.pathname === '/inventaire/api/entities/by-uris') {
+            this.reply('inventaire', response, () => {
+                const uris = (url.searchParams.get('uris') ?? '').split('|');
+                const known = uris.filter((uri) =>
+                    this.inventaireCovers.has(uri.replace('isbn:', '')),
+                );
+
+                return {
+                    type: 'application/json',
+                    body: JSON.stringify({
+                        entities: Object.fromEntries(
+                            known.map((uri) => [
+                                uri,
+                                { image: { url: '/img/entities/' + uri.replace('isbn:', '') } },
+                            ]),
+                        ),
+                        redirects: {},
+                        notFound: uris.filter((uri) => !known.includes(uri)),
+                    }),
+                };
+            });
         } else if (url.pathname === '/bnf/SRU') {
             this.reply('bnf', response, () => {
                 const isbn = (url.searchParams.get('query') ?? '').match(/\d{13}/)?.[0] ?? '';

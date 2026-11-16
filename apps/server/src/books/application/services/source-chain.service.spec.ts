@@ -111,7 +111,7 @@ describe('SourceLink', () => {
         const link = chain(new ScriptedSource('bnf', found('a')));
         const { events, recipient } = recorder();
 
-        await link.request('9782253164692', false);
+        await link.first('9782253164692', false);
 
         await link.begin('9782253164692').handle(recipient, Promise.resolve('late'));
 
@@ -121,10 +121,55 @@ describe('SourceLink', () => {
     it('asks for one ISBN as bulk work when told so', async () => {
         const source = new ScriptedSource('bnf', found('a'));
 
-        const reply = await chain(source).request('9782253164692', true);
+        const value = await chain(source).first('9782253164692', true);
 
-        expect(reply).toEqual({ kind: 'found', value: 'a' });
+        expect(value).toBe('a');
         expect(source.turns).toEqual([{ bulk: true }]);
+    });
+
+    it('gives the answer of the preferred source without asking the next one', async () => {
+        const second = new ScriptedSource('ol', found('b'));
+
+        const value = await chain(new ScriptedSource('bnf', found('a')), second).first(
+            '9782253164692',
+            true,
+        );
+
+        expect(value).toBe('a');
+        expect(second.asked).toEqual([]);
+    });
+
+    it('asks the next source when the preferred one has nothing', async () => {
+        const link = chain(
+            new ScriptedSource<string>('bnf', { kind: 'none' }),
+            new ScriptedSource('ol', found('b')),
+        );
+
+        const value = await link.first('9782253164692', true);
+
+        expect(value).toBe('b');
+    });
+
+    it('asks the next source when the preferred one cannot answer', async () => {
+        const link = chain(
+            new ScriptedSource<string>('bnf', 'fail'),
+            new ScriptedSource('ol', found('b')),
+        );
+
+        const value = await link.first('9782253164692', true);
+
+        expect(value).toBe('b');
+    });
+
+    it('gives nothing when no source has an answer', async () => {
+        const link = chain(
+            new ScriptedSource<string>('bnf', { kind: 'none' }),
+            new ScriptedSource<string>('ol', { kind: 'busy' }),
+        );
+
+        const value = await link.first('9782253164692', true);
+
+        expect(value).toBeNull();
     });
 });
 
