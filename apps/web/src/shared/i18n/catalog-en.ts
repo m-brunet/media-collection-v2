@@ -424,6 +424,23 @@ export const en = {
     'accounts.reactivate': 'Reactivate',
     'accounts.lifecycleHint':
         'Deactivation signs the account out, keeps its private data and reserves its username.',
+    'keptCovers.label': 'Kept covers',
+    'keptCovers.none':
+        'No cover is kept. The covers of deleted books, and covers removed from a book, are kept here under their ISBN.',
+    'keptCovers.one': '1 cover kept · {size}',
+    'keptCovers.many': '{count} covers kept · {size}',
+    'keptCovers.intro':
+        'The covers of deleted books, and covers removed from a book, are kept under their ISBN. A book added again finds its cover without asking a catalogue.',
+    'keptCovers.oldest': 'The oldest was kept on {date}.',
+    'keptCovers.delete': 'Delete kept covers',
+    'keptCovers.hint': 'Covers on your books are never deleted by this action.',
+    'keptCovers.confirmTitle': 'Delete the kept covers?',
+    'keptCovers.confirmOne':
+        'The kept cover ({size}) will be deleted. A book added again will ask the catalogues for its cover. Covers on your books are not affected.',
+    'keptCovers.confirmMany':
+        'The {count} kept covers ({size}) will be deleted. Books added again will ask the catalogues for their cover. Covers on your books are not affected.',
+    'keptCovers.deletedOne': 'The kept cover was deleted.',
+    'keptCovers.deletedMany': 'The {count} kept covers were deleted.',
     'dataReset.label': 'Application data reset',
     'dataReset.intro':
         'Erases the whole library and every other account. Your Admin username and password are kept.',
@@ -1488,6 +1505,8 @@ export const en = {
     'activity.tagRenamed': 'You renamed the tag {from} to {to}',
     'activity.tagDeleted': 'You deleted the {name} tag',
     'activity.receiverCreated': 'You added the receiver {name}',
+    'activity.keptCoversDeleted': 'You deleted {count} kept covers',
+    'activity.keptCoverDeleted': 'You deleted a kept cover',
     'activity.also': 'Also: {changes}',
     'activity.also.collectionCreated': 'created the collection {name}',
     'activity.also.collectionUpdated': 'updated the collection {name}',

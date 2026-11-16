@@ -13,6 +13,7 @@ import { AccountStatusDialog } from './account-status-dialog';
 import { CreateAccountDialog } from './create-account-dialog';
 import { ResetPasswordDialog } from './reset-password-dialog';
 import { DataResetDialog } from './data-reset-dialog';
+import { KeptCoversPanel } from './kept-covers-panel';
 
 export function AccountsPage() {
     const { t } = useI18n();
@@ -144,6 +145,21 @@ export function AccountsPage() {
                         )}
                         <p className="field__hint">{t('accounts.lifecycleHint')}</p>
                     </Panel>
+                )}
+                {accounts && (
+                    <KeptCoversPanel
+                        onDeleted={(count) =>
+                            setResult({
+                                tone: 'success',
+                                text: t(
+                                    count === 1
+                                        ? 'keptCovers.deletedOne'
+                                        : 'keptCovers.deletedMany',
+                                    { count },
+                                ),
+                            })
+                        }
+                    />
                 )}
                 {accounts && (
                     <Panel label={t('dataReset.label')}>

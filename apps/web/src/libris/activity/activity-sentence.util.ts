@@ -40,6 +40,7 @@ export class ActivitySentence {
         'tag-renamed': 'activity.tagRenamed',
         'tag-deleted': 'activity.tagDeleted',
         'receiver-created': 'activity.receiverCreated',
+        'kept-covers-deleted': 'activity.keptCoversDeleted',
     };
 
     private static readonly consequences: Partial<Record<Kind, MessageKey>> = {
@@ -75,6 +76,13 @@ export class ActivitySentence {
                 name: event.name,
                 count: event.count,
             });
+        }
+
+        if (event.kind === 'kept-covers-deleted') {
+            return t(
+                event.count === 1 ? 'activity.keptCoverDeleted' : 'activity.keptCoversDeleted',
+                { count: event.count },
+            );
         }
 
         if (event.kind === 'collection-category-changed') {
