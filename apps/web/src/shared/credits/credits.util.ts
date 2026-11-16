@@ -160,6 +160,16 @@ export class Credits {
                     changes: null,
                 },
                 {
+                    id: 'sudoc',
+                    name: 'Sudoc',
+                    author: 'Abes (Agence bibliographique de l’enseignement supérieur)',
+                    url: 'https://www.sudoc.abes.fr',
+                    licence: 'Licence Ouverte / Open Licence (Etalab)',
+                    licenceUrl: 'https://www.etalab.gouv.fr/licence-ouverte-open-licence/',
+                    used: 'credits.sudoc.used',
+                    changes: null,
+                },
+                {
                     id: 'open-library',
                     name: 'Open Library',
                     author: 'Internet Archive',

@@ -523,6 +523,7 @@ export const en = {
     'credits.ibmPlexMono.used': 'Codes and small labels (ISBNs, section labels).',
     'credits.bnf.used':
         'Book information and summaries in Find book. Source: Bibliothèque nationale de France.',
+    'credits.sudoc.used': 'Book information and summaries in Find book. Source: Sudoc, Abes.',
     'credits.openLibrary.used': 'Book information and covers in Find book.',
     'credits.inventaire.used':
         'Covers in Find book and Add volumes. The pictures keep their own copyright.',
@@ -672,6 +673,7 @@ export const en = {
     'reason.lookupCoverMissing': 'This cover is no longer available. Find the book again.',
     'reason.lookupCoverUnavailable': 'The source of this cover did not provide a usable image.',
     'source.bnf': 'BnF',
+    'source.sudoc': 'Sudoc',
     'source.openlibrary': 'Open Library',
     'source.inventaire': 'Inventaire',
     'source.libris': 'your library',
