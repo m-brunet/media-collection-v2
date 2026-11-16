@@ -449,6 +449,23 @@ export const fr = {
     'accounts.reactivate': 'Réactiver',
     'accounts.lifecycleHint':
         'La désactivation déconnecte le compte, conserve ses données privées et réserve son nom d’utilisateur.',
+    'keptCovers.label': 'Couvertures conservées',
+    'keptCovers.none':
+        'Aucune couverture n’est conservée. Les couvertures des livres supprimés, et celles retirées d’un livre, sont conservées ici sous leur ISBN.',
+    'keptCovers.one': '1 couverture conservée · {size}',
+    'keptCovers.many': '{count} couvertures conservées · {size}',
+    'keptCovers.intro':
+        'Les couvertures des livres supprimés, et celles retirées d’un livre, sont conservées sous leur ISBN. Un livre ajouté de nouveau retrouve sa couverture sans interroger un catalogue.',
+    'keptCovers.oldest': 'La plus ancienne a été conservée le {date}.',
+    'keptCovers.delete': 'Supprimer les couvertures conservées',
+    'keptCovers.hint': 'Les couvertures de vos livres ne sont jamais supprimées par cette action.',
+    'keptCovers.confirmTitle': 'Supprimer les couvertures conservées ?',
+    'keptCovers.confirmOne':
+        'La couverture conservée ({size}) sera supprimée. Un livre ajouté de nouveau interrogera les catalogues pour sa couverture. Les couvertures de vos livres ne sont pas concernées.',
+    'keptCovers.confirmMany':
+        'Les {count} couvertures conservées ({size}) seront supprimées. Les livres ajoutés de nouveau interrogeront les catalogues pour leur couverture. Les couvertures de vos livres ne sont pas concernées.',
+    'keptCovers.deletedOne': 'La couverture conservée a été supprimée.',
+    'keptCovers.deletedMany': 'Les {count} couvertures conservées ont été supprimées.',
     'dataReset.label': 'Réinitialisation des données',
     'dataReset.intro':
         'Efface toute la bibliothèque et tous les autres comptes. Votre nom d’utilisateur et votre mot de passe Admin sont conservés.',
@@ -1543,6 +1560,8 @@ export const fr = {
     'activity.tagRenamed': 'Vous avez renommé l’étiquette {from} en {to}',
     'activity.tagDeleted': 'Vous avez supprimé l’étiquette {name}',
     'activity.receiverCreated': 'Vous avez ajouté l’emprunteur {name}',
+    'activity.keptCoversDeleted': 'Vous avez supprimé {count} couvertures conservées',
+    'activity.keptCoverDeleted': 'Vous avez supprimé une couverture conservée',
     'activity.also': 'Aussi : {changes}',
     'activity.also.collectionCreated': 'création de la collection {name}',
     'activity.also.collectionUpdated': 'modification de la collection {name}',

@@ -56,6 +56,7 @@ const icons: Record<ActivityEntryDto['event']['kind'], IconName> = {
     'tag-created': 'tag',
     'tag-renamed': 'tag',
     'tag-deleted': 'tag',
+    'kept-covers-deleted': 'books',
 };
 
 function EntryTime({ entry, relative }: { entry: ActivityEntryDto; relative: string }) {

@@ -46,6 +46,20 @@ describe('ActivitySentence', () => {
             'Vous avez passé la collection Naruto et son livre dans la catégorie BD et comics',
         );
     });
+    it('says kept covers were deleted, with their number', () => {
+        const event: ActivityEventDto = { kind: 'kept-covers-deleted', count: 437 };
+
+        const sentence = ActivitySentence.main(event, t);
+
+        expect(sentence).toBe('You deleted 437 kept covers');
+    });
+    it('says a single kept cover was deleted, in French', () => {
+        const event: ActivityEventDto = { kind: 'kept-covers-deleted', count: 1 };
+
+        const sentence = ActivitySentence.main(event, tFr);
+
+        expect(sentence).toBe('Vous avez supprimé une couverture conservée');
+    });
     it('says volumes were added to a collection', () => {
         const event: ActivityEventDto = { kind: 'volumes-added', name: 'Gunnm', count: 4 };
 
