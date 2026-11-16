@@ -5,6 +5,7 @@ const known: Record<string, MessageKey> = {
     bnf: 'source.bnf',
     openlibrary: 'source.openlibrary',
     inventaire: 'source.inventaire',
+    libris: 'source.libris',
 };
 
 export function useSourceNames() {

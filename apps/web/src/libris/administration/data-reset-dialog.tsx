@@ -1,5 +1,6 @@
 import type { FormEvent } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import type { KeptCoversDto } from '../../../../../packages/contracts/src/http';
 import { api } from '../../shared/api.util';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Button } from '../../shared/ui/button';
@@ -23,16 +24,40 @@ export function DataResetDialog({
     const action = useAction();
     const [password, setPassword] = useState('');
     const [understood, setUnderstood] = useState(false);
+    const [keptCovers, setKeptCovers] = useState(0);
+    const [deleteKeptCovers, setDeleteKeptCovers] = useState(false);
+
+    useEffect(() => {
+        if (!open) {
+            return;
+        }
+
+        let current = true;
+
+        api.request<KeptCoversDto>('/maintenance/kept-covers').then(
+            (kept) => current && setKeptCovers(kept.count),
+            () => current && setKeptCovers(0),
+        );
+
+        return () => {
+            current = false;
+        };
+    }, [open]);
+
     const close = () => {
         action.setFeedback(null);
         setPassword('');
         setUnderstood(false);
+        setDeleteKeptCovers(false);
         onClose();
     };
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         void action.run(async () => {
-            await api.request('/maintenance/data-reset', { method: 'POST', body: { password } });
+            await api.request('/maintenance/data-reset', {
+                method: 'POST',
+                body: { password, deleteKeptCovers },
+            });
             onReset();
         });
     };
@@ -59,6 +84,22 @@ export function DataResetDialog({
         >
             <form id={formId} className="form" onSubmit={submit}>
                 <p>{t('dataReset.body')}</p>
+                <p>{t('dataReset.covers')}</p>
+                {keptCovers > 0 && (
+                    <label className="checkbox">
+                        <input
+                            type="checkbox"
+                            checked={deleteKeptCovers}
+                            onChange={(event) => setDeleteKeptCovers(event.target.checked)}
+                        />
+                        {t(
+                            keptCovers === 1
+                                ? 'dataReset.deleteCoversOne'
+                                : 'dataReset.deleteCoversMany',
+                            { count: keptCovers },
+                        )}
+                    </label>
+                )}
                 <TextField
                     label={t('dataReset.password')}
                     name="password"
