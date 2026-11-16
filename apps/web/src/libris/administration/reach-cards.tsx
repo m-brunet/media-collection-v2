@@ -6,7 +6,6 @@ import type {
 import type { MessageKey } from '../../shared/i18n/catalog-en';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { useSession } from '../../shared/session/session-context';
-import { Button } from '../../shared/ui/button';
 import { Icon } from '../../shared/ui/icon';
 import { QrCode } from '../../shared/ui/qr-code';
 import { ServerAddress } from './server-address.util';
@@ -150,18 +149,21 @@ export function ReachCards({
                             <li key={address} className="place-card__address">
                                 <a href={address}>{address}</a>
                                 {!ServerAddress.loopback(address) && (
-                                    <Button
-                                        icon="qr"
-                                        className="qr-button"
+                                    <button
+                                        type="button"
+                                        className="icon-button qr-button"
                                         aria-pressed={address === shown}
                                         aria-controls="address-qr"
                                         aria-label={t('server.qrShowFor', { address })}
+                                        title={
+                                            address === shown
+                                                ? t('reach.qrShown')
+                                                : t('server.qrShow')
+                                        }
                                         onClick={() => setSelected(address)}
                                     >
-                                        {address === shown
-                                            ? t('reach.qrShown')
-                                            : t('server.qrShow')}
-                                    </Button>
+                                        <Icon name="qr" size={18} />
+                                    </button>
                                 )}
                             </li>
                         ))}
