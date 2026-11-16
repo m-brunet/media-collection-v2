@@ -44,6 +44,7 @@ import { SaveDomainName } from '../../application/use-cases/save-domain-name.use
 import { SaveHttpSettings } from '../../application/use-cases/save-http-settings.usecase.js';
 import { SaveHttpsPort } from '../../application/use-cases/save-https-port.usecase.js';
 import { DismissAddressNotice } from '../../application/use-cases/dismiss-address-notice.usecase.js';
+import { DismissSetupFailure } from '../../application/use-cases/dismiss-setup-failure.usecase.js';
 import { SaveKeepAwake } from '../../application/use-cases/save-keep-awake.usecase.js';
 import { SaveTlsSettings } from '../../application/use-cases/save-tls-settings.usecase.js';
 import { SetUpInternetAccess } from '../../application/use-cases/set-up-internet-access.usecase.js';
@@ -70,6 +71,7 @@ export const SERVER_SETTINGS_READ_HTTP_SETTINGS = 'SERVER_SETTINGS_READ_HTTP_SET
 export const SERVER_SETTINGS_SAVE_HTTP_SETTINGS = 'SERVER_SETTINGS_SAVE_HTTP_SETTINGS';
 export const SERVER_SETTINGS_SAVE_HTTPS_PORT = 'SERVER_SETTINGS_SAVE_HTTPS_PORT';
 export const SERVER_SETTINGS_DISMISS_ADDRESS_NOTICE = 'SERVER_SETTINGS_DISMISS_ADDRESS_NOTICE';
+export const SERVER_SETTINGS_DISMISS_SETUP_FAILURE = 'SERVER_SETTINGS_DISMISS_SETUP_FAILURE';
 export const SERVER_SETTINGS_AUDITED_OPERATION = 'SERVER_SETTINGS_AUDITED_OPERATION';
 export const SERVER_SETTINGS_INTERNET_ACCESS_STORE = 'SERVER_SETTINGS_INTERNET_ACCESS_STORE';
 export const SERVER_SETTINGS_INTERNET_ACCESS_SETUP = 'SERVER_SETTINGS_INTERNET_ACCESS_SETUP';
@@ -186,6 +188,10 @@ export class SettingsModule {
                 {
                     provide: SERVER_SETTINGS_DISMISS_ADDRESS_NOTICE,
                     useFactory: () => new DismissAddressNotice(internetAccess),
+                },
+                {
+                    provide: SERVER_SETTINGS_DISMISS_SETUP_FAILURE,
+                    useFactory: () => new DismissSetupFailure(internetAccess),
                 },
                 {
                     provide: SERVER_SETTINGS_INTERNET_ACCESS_SETUP,

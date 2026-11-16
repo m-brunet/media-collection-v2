@@ -2,6 +2,7 @@ import { Body, Controller, Delete, HttpCode, Inject, Post, Req } from '@nestjs/c
 import { z } from 'zod';
 import type { CheckInternetAccessUseCase } from '../../../../application/ports/driving/check-internet-access-use-case.interface.js';
 import type { DismissAddressNoticeUseCase } from '../../../../application/ports/driving/dismiss-address-notice-use-case.interface.js';
+import type { DismissSetupFailureUseCase } from '../../../../application/ports/driving/dismiss-setup-failure-use-case.interface.js';
 import type { ReadInternetAccessUseCase } from '../../../../application/ports/driving/read-internet-access-use-case.interface.js';
 import type { SetUpInternetAccessUseCase } from '../../../../application/ports/driving/set-up-internet-access-use-case.interface.js';
 import type { TurnOffInternetAccessUseCase } from '../../../../application/ports/driving/turn-off-internet-access-use-case.interface.js';
@@ -27,6 +28,8 @@ export class InternetAccessController {
         private readonly read: ReadInternetAccessUseCase,
         @Inject('SERVER_SETTINGS_DISMISS_ADDRESS_NOTICE')
         private readonly dismiss: DismissAddressNoticeUseCase,
+        @Inject('SERVER_SETTINGS_DISMISS_SETUP_FAILURE')
+        private readonly dismissFailure: DismissSetupFailureUseCase,
     ) {}
 
     @Post()
@@ -55,6 +58,13 @@ export class InternetAccessController {
         @Req() request: AuthenticatedRequest,
     ): Promise<InternetAccessStatus> {
         await this.dismiss.execute(request.actor);
+
+        return this.read.execute(request.actor);
+    }
+
+    @Delete('failure')
+    async dismissSetupFailure(@Req() request: AuthenticatedRequest): Promise<InternetAccessStatus> {
+        await this.dismissFailure.execute(request.actor);
 
         return this.read.execute(request.actor);
     }

@@ -785,3 +785,43 @@ it('has no HTTPS internet address before it is active', () => {
 
     expect(result).toBeNull();
 });
+it('forgets the failure of a stopped setup once the Admin has seen it', () => {
+    const access = settingUp();
+
+    access.stop('setup-failed', now);
+
+    const forgotten = access.setupFailureSeen();
+
+    expect([forgotten, access.snapshot.failure, access.phase]).toEqual([true, null, 'off']);
+});
+it('keeps the Let’s Encrypt date when the failure is forgotten', () => {
+    const access = new InternetAccess({
+        ...InternetAccess.off().snapshot,
+        failure: { reason: 'rate-limited', at: now.toISOString() },
+        retryAfter: '2026-11-09T10:00:00.000Z',
+    });
+
+    access.setupFailureSeen();
+
+    expect(access.snapshot.retryAfter).toBe('2026-11-09T10:00:00.000Z');
+});
+it('keeps the failure of internet access waiting for the router', () => {
+    const access = new InternetAccess({
+        ...InternetAccess.off().snapshot,
+        phase: 'waiting-for-port',
+        mapping: 'manual',
+        routerPort: 34443,
+        failure: { reason: 'port-refused', at: now.toISOString() },
+    });
+
+    const forgotten = access.setupFailureSeen();
+
+    expect([forgotten, access.snapshot.failure?.reason]).toEqual([false, 'port-refused']);
+});
+it('has nothing to forget without a failure', () => {
+    const access = InternetAccess.off();
+
+    const forgotten = access.setupFailureSeen();
+
+    expect(forgotten).toBe(false);
+});

@@ -394,6 +394,16 @@ export class InternetAccess {
         this.state = { ...this.state, addressMoved: false };
     }
 
+    setupFailureSeen(): boolean {
+        if (this.state.phase !== 'off' || this.state.failure === null) {
+            return false;
+        }
+
+        this.state = { ...this.state, failure: null };
+
+        return true;
+    }
+
     upkeepDue(now: Date): boolean {
         return (
             this.state.phase === 'active' &&

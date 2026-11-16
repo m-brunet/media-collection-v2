@@ -421,3 +421,47 @@ describe('DELETE /api/server-settings/internet-access/address-notice', () => {
         expect(response.status).toBe(403);
     });
 });
+describe('DELETE /api/server-settings/internet-access/failure', () => {
+    const stopped = () =>
+        new InternetAccess({
+            ...InternetAccess.off().snapshot,
+            failure: { reason: 'setup-failed', at: '2026-11-08T10:00:00.000Z' },
+        });
+
+    it('stops telling about a stopped setup', async () => {
+        const client = await app.authenticatedClient(admin);
+
+        await app.dependencies.internetAccess.store.save(stopped());
+
+        const response = await client.call<InternetAccessStatus>(
+            '/server-settings/internet-access/failure',
+            'DELETE',
+        );
+
+        expect([response.status, response.body.failure]).toEqual([200, null]);
+    });
+    it('rejects non-administrators', async () => {
+        const client = await app.authenticatedClient(member);
+
+        await app.dependencies.internetAccess.store.save(stopped());
+
+        const response = await client.call('/server-settings/internet-access/failure', 'DELETE');
+
+        expect([
+            response.status,
+            (await app.dependencies.internetAccess.store.read()).snapshot.failure?.reason,
+        ]).toEqual([403, 'setup-failed']);
+    });
+    it('rejects missing CSRF protection', async () => {
+        const client = await app.authenticatedClient(admin);
+
+        const response = await client.call(
+            '/server-settings/internet-access/failure',
+            'DELETE',
+            undefined,
+            { csrf: false },
+        );
+
+        expect(response.status).toBe(403);
+    });
+});
