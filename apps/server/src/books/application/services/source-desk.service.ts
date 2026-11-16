@@ -1,5 +1,9 @@
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
-import type { LookupSource, SourceReply } from '../ports/driven/lookup-source.interface.js';
+import type {
+    LookupSource,
+    SourceBatchReply,
+    SourceReply,
+} from '../ports/driven/lookup-source.interface.js';
 import { SourceCache } from './source-cache.service.js';
 
 export type DeskReply<T> = SourceReply<T> | 'failed';
@@ -83,7 +87,7 @@ export class SourceDesk<T> {
 
     private async request(
         batch: readonly WaitingIsbn<T>[],
-    ): Promise<DeskReply<ReadonlyMap<string, T>>> {
+    ): Promise<SourceBatchReply<T> | 'failed'> {
         try {
             return await this.source.find(
                 batch.map((entry) => entry.isbn13),
@@ -95,16 +99,21 @@ export class SourceDesk<T> {
         }
     }
 
-    private static replyFor<T>(
-        reply: DeskReply<ReadonlyMap<string, T>>,
-        isbn13: string,
-    ): DeskReply<T> {
-        if (reply === 'failed' || reply.kind !== 'found') {
+    static replyFor<T>(reply: SourceBatchReply<T> | 'failed', isbn13: string): DeskReply<T> {
+        if (reply === 'failed' || (reply.kind !== 'found' && reply.kind !== 'partial')) {
             return reply;
         }
 
         const value = reply.value.get(isbn13);
 
-        return value === undefined ? { kind: 'none' } : { kind: 'found', value };
+        if (value !== undefined) {
+            return { kind: 'found', value };
+        }
+
+        return (
+            (reply.kind === 'partial' ? reply.unsettled.get(isbn13) : undefined) ?? {
+                kind: 'none',
+            }
+        );
     }
 }

@@ -122,6 +122,19 @@ describe('SourceHttp', () => {
         expect(sent).toHaveLength(1);
     });
 
+    it('gives back an error answer its caller expects', async () => {
+        const { http } = answering(404);
+
+        const reply = await http.get(
+            'https://source.example/books',
+            'application/json',
+            SourceProbe.turn,
+            [404],
+        );
+
+        expect(reply.kind === 'ok' && reply.response.status).toBe(404);
+    });
+
     it('fails on any other error answer', async () => {
         const { http } = answering(500);
 

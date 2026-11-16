@@ -47,6 +47,8 @@ export type LookupAddresses = {
     bnf?: string;
     openLibrary?: string;
     inventaire?: string;
+    sudoc?: string;
+    sudocRecords?: string;
     delaySeconds?: number;
 };
 

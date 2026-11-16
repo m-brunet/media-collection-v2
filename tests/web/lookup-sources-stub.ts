@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import type { IncomingMessage, Server, ServerResponse } from 'node:http';
 import { createServer } from 'node:http';
 
-type Source = 'bnf' | 'openlibrary' | 'inventaire';
+type Source = 'bnf' | 'openlibrary' | 'inventaire' | 'sudoc';
 type Trouble = { status: 500 } | { status: 503; retryAfterSeconds: number };
 
 const recorded = new URL(
@@ -16,6 +16,8 @@ export class LookupSourcesStub {
     private readonly bnfRecords = new Map<string, string>();
     private readonly openLibraryRecords = new Map<string, object>();
     private readonly inventaireCovers = new Set<string>();
+    private readonly sudocRecords = new Map<string, string>();
+    private readonly sudocUnheld = new Map<string, string>();
     private readonly troubles = new Map<Source, Trouble>();
     private readonly cover: Buffer;
     readonly requests: string[] = [];
@@ -28,6 +30,8 @@ export class LookupSourcesStub {
         bnf: string;
         openLibrary: string;
         inventaire: string;
+        sudoc: string;
+        sudocRecords: string;
         delaySeconds: number;
     } {
         const base = 'http://127.0.0.1:' + this.port;
@@ -36,12 +40,26 @@ export class LookupSourcesStub {
             bnf: base + '/bnf/SRU',
             openLibrary: base + '/openlibrary/api/books',
             inventaire: base + '/inventaire/api/entities/by-uris',
+            sudoc: base + '/sudoc/sru',
+            sudocRecords: base + '/sudoc',
             delaySeconds: 0,
         };
     }
 
     inventaire(isbn13: string): this {
         this.inventaireCovers.add(isbn13);
+
+        return this;
+    }
+
+    sudoc(isbn13: string, fixture: string): this {
+        this.sudocRecords.set(isbn13, LookupSourcesStub.record(fixture));
+
+        return this;
+    }
+
+    sudocWithoutHolding(isbn13: string, fixture: string): this {
+        this.sudocUnheld.set(isbn13, LookupSourcesStub.record(fixture));
 
         return this;
     }
@@ -84,6 +102,8 @@ export class LookupSourcesStub {
         this.bnfRecords.clear();
         this.openLibraryRecords.clear();
         this.inventaireCovers.clear();
+        this.sudocRecords.clear();
+        this.sudocUnheld.clear();
         this.troubles.clear();
         this.requests.length = 0;
     }
@@ -139,6 +159,44 @@ export class LookupSourcesStub {
                     body: this.bnfRecords.get(isbn) ?? LookupSourcesStub.bnfNone(),
                 };
             });
+        } else if (url.pathname === '/sudoc/sru') {
+            this.reply('sudoc', response, () => {
+                const isbns = (url.searchParams.get('query') ?? '').match(/\d{13}/g) ?? [];
+                const records = isbns.flatMap((isbn) => this.sudocRecords.get(isbn) ?? []);
+
+                return {
+                    type: 'text/xml',
+                    body:
+                        '<srw:searchRetrieveResponse><srw:numberOfRecords>' +
+                        records.length +
+                        '</srw:numberOfRecords><srw:records>' +
+                        records
+                            .map((record) => '<srw:record>' + record + '</srw:record>')
+                            .join('') +
+                        '</srw:records></srw:searchRetrieveResponse>',
+                };
+            });
+        } else if (url.pathname.startsWith('/sudoc/services/isbn2ppn/')) {
+            const isbn = url.pathname.split('/').at(-1) ?? '';
+
+            if (this.troubles.has('sudoc') || this.sudocUnheld.has(isbn)) {
+                this.reply('sudoc', response, () => ({
+                    type: 'text/json',
+                    body: JSON.stringify({
+                        sudoc: { query: { isbn, resultNoHolding: { ppn: isbn.slice(4) } } },
+                    }),
+                }));
+            } else {
+                response.writeHead(404).end();
+            }
+        } else if (/^\/sudoc\/\d{9}\.xml$/.test(url.pathname)) {
+            this.reply('sudoc', response, () => {
+                const record = [...this.sudocUnheld].find(([isbn]) =>
+                    url.pathname.includes(isbn.slice(4)),
+                );
+
+                return { type: 'application/xml', body: record?.[1] ?? '' };
+            });
         } else if (url.pathname === '/openlibrary/api/books') {
             this.reply('openlibrary', response, () => {
                 const keys = (url.searchParams.get('bibkeys') ?? '').split(',');
@@ -174,6 +232,10 @@ export class LookupSourcesStub {
 
             response.writeHead(200, { 'Content-Type': type + '; charset=utf-8' }).end(body);
         }
+    }
+
+    private static record(fixture: string): string {
+        return readFileSync(new URL(fixture, recorded), 'utf8').replace(/^<\?xml[^>]*\?>/, '');
     }
 
     private static bnfNone(): string {

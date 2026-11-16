@@ -178,6 +178,43 @@ describe('SourceDesk', () => {
         expect(replies).toEqual([{ kind: 'none' }, found('a')]);
     });
 
+    it('reports an ISBN its source left unanswered, next to the ones it answered', async () => {
+        const { desk, source } = setup(found('a'), 10);
+
+        source.unsettled.set('9782723471930', { kind: 'limited', retryAt: null });
+        void desk.ask('9782253164692', true);
+
+        const replies = await Promise.all([
+            desk.ask('9782723471930', true),
+            desk.ask('9782845998179', true),
+        ]);
+
+        expect(replies).toEqual([{ kind: 'limited', retryAt: null }, found('a')]);
+    });
+
+    it('reports an ISBN whose request failed inside a batch as failed', async () => {
+        const { desk, source } = setup(found('a'), 10);
+
+        source.unsettled.set('9782723471930', 'failed');
+
+        const reply = await desk.ask('9782723471930', true);
+
+        expect(reply).toBe('failed');
+    });
+
+    it('asks again for an ISBN its source left unanswered', async () => {
+        const { desk, source } = setup(found('a'), 10);
+
+        source.unsettled.set('9782723471930', 'failed');
+        await desk.ask('9782723471930', true);
+        source.unsettled.clear();
+
+        const reply = await desk.ask('9782723471930', true);
+
+        expect(reply).toEqual(found('a'));
+        expect(source.requests).toHaveLength(2);
+    });
+
     it('sends a single-book ISBN before the bulk ISBNs that wait', async () => {
         const { desk, source } = setup(found('a'), 1);
 
