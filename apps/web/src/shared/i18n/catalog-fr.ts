@@ -454,7 +454,11 @@ export const fr = {
         'Efface toute la bibliothèque et tous les autres comptes. Votre nom d’utilisateur et votre mot de passe Admin sont conservés.',
     'dataReset.title': 'Réinitialiser les données',
     'dataReset.body':
-        'Efface définitivement les livres, couvertures, collections, bibliothèques, étiquettes, emprunteurs, prêts, l’historique, les autres comptes et les préférences enregistrées. Votre nom d’utilisateur et votre mot de passe Admin actuels, les réglages du serveur et les sauvegardes enregistrées à part sont conservés. Tout le monde est déconnecté.',
+        'Efface définitivement les livres, collections, bibliothèques, étiquettes, emprunteurs, prêts, l’historique, les autres comptes et les préférences enregistrées. Votre nom d’utilisateur et votre mot de passe Admin actuels, les réglages du serveur et les sauvegardes enregistrées à part sont conservés. Tout le monde est déconnecté.',
+    'dataReset.covers':
+        'Les couvertures des livres qui ont un ISBN sont conservées : un livre ajouté de nouveau retrouve sa couverture sans interroger un catalogue.',
+    'dataReset.deleteCoversOne': 'Supprimer aussi la couverture conservée',
+    'dataReset.deleteCoversMany': 'Supprimer aussi les {count} couvertures conservées',
     'dataReset.password': 'Mot de passe Admin actuel',
     'dataReset.passwordPlaceholder': 'Saisissez votre mot de passe actuel',
     'dataReset.understood': 'Je comprends que cette action est irréversible',
@@ -690,6 +694,7 @@ export const fr = {
     'source.bnf': 'BnF',
     'source.openlibrary': 'Open Library',
     'source.inventaire': 'Inventaire',
+    'source.libris': 'votre bibliothèque',
     'form.noIsbn': 'Ce livre n’a pas d’ISBN',
     'form.title': 'Titre',
     'form.titleGenerated':

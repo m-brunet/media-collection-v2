@@ -429,7 +429,11 @@ export const en = {
         'Erases the whole library and every other account. Your Admin username and password are kept.',
     'dataReset.title': 'Reset application data',
     'dataReset.body':
-        'Permanently erase books, covers, collections, bookcases, tags, receivers, loans, history, other users and saved preferences. Your current Admin username and password, the server settings and separately saved backups are kept. Everyone is signed out.',
+        'Permanently erase books, collections, bookcases, tags, receivers, loans, history, other users and saved preferences. Your current Admin username and password, the server settings and separately saved backups are kept. Everyone is signed out.',
+    'dataReset.covers':
+        'The covers of books that have an ISBN are kept, so a book added again finds its cover without asking a catalogue.',
+    'dataReset.deleteCoversOne': 'Also delete the kept cover',
+    'dataReset.deleteCoversMany': 'Also delete the {count} kept covers',
     'dataReset.password': 'Current Admin password',
     'dataReset.passwordPlaceholder': 'Enter your current password',
     'dataReset.understood': 'I understand this cannot be undone',
@@ -653,6 +657,7 @@ export const en = {
     'source.bnf': 'BnF',
     'source.openlibrary': 'Open Library',
     'source.inventaire': 'Inventaire',
+    'source.libris': 'your library',
     'form.noIsbn': 'This book has no ISBN',
     'form.title': 'Title',
     'form.titleGenerated':

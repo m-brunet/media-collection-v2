@@ -39,7 +39,10 @@ it('explains what is erased and what is kept', () => {
 
     const dialog = renderDialog();
 
-    expect(within(dialog).getByText(/Permanently erase books, covers/)).toBeInTheDocument();
+    expect(within(dialog).getByText(/Permanently erase books, collections/)).toBeInTheDocument();
+    expect(
+        within(dialog).getByText(/The covers of books that have an ISBN are kept/),
+    ).toBeInTheDocument();
     expect(within(dialog).getByText(/separately saved backups are kept/)).toBeInTheDocument();
 });
 it('keeps the reset disabled until the password is entered and the warning confirmed', async () => {
@@ -64,7 +67,62 @@ it('sends the current password and reports the reset', async () => {
     expect(onReset).toHaveBeenCalledOnce();
     expect(api.calls).toContainEqual({
         route: 'POST /maintenance/data-reset',
-        body: { password: 'admin-password' },
+        body: { password: 'admin-password', deleteKeptCovers: false },
+    });
+});
+it('offers to delete the kept covers too, with their number', async () => {
+    signedInAdministrator().on('GET /maintenance/kept-covers', () => ({
+        status: 200,
+        body: { count: 437 },
+    }));
+
+    const dialog = renderDialog();
+
+    expect(
+        await within(dialog).findByRole('checkbox', { name: 'Also delete the 437 kept covers' }),
+    ).not.toBeChecked();
+});
+it('words the choice for a single kept cover', async () => {
+    signedInAdministrator().on('GET /maintenance/kept-covers', () => ({
+        status: 200,
+        body: { count: 1 },
+    }));
+
+    const dialog = renderDialog();
+
+    expect(
+        await within(dialog).findByRole('checkbox', { name: 'Also delete the kept cover' }),
+    ).toBeInTheDocument();
+});
+it('offers nothing about kept covers when there are none', async () => {
+    const api = signedInAdministrator().on('GET /maintenance/kept-covers', () => ({
+        status: 200,
+        body: { count: 0 },
+    }));
+    const dialog = renderDialog();
+
+    await vi.waitFor(() =>
+        expect(api.calls.map((call) => call.route)).toContain('GET /maintenance/kept-covers'),
+    );
+
+    expect(within(dialog).queryByRole('checkbox', { name: /kept cover/ })).not.toBeInTheDocument();
+});
+it('asks the reset to delete the kept covers when the box is ticked', async () => {
+    const api = signedInAdministrator()
+        .on('GET /maintenance/kept-covers', () => ({ status: 200, body: { count: 3 } }))
+        .on('POST /maintenance/data-reset', () => ({ status: 204 }));
+    const dialog = renderDialog();
+
+    await confirmed(dialog, 'admin-password');
+    await userEvent.click(
+        await within(dialog).findByRole('checkbox', { name: 'Also delete the 3 kept covers' }),
+    );
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Reset data and sign out' }));
+
+    expect(api.calls).toContainEqual({
+        route: 'POST /maintenance/data-reset',
+        body: { password: 'admin-password', deleteKeptCovers: true },
     });
 });
 it('shows a wrong password in the dialog without resetting', async () => {
