@@ -23,6 +23,7 @@ export type LookedUpBook = {
     authorSpellings: AuthorSpelling[];
     covers: LookupCoverView[];
     unavailable: SourceUnavailability[];
+    pending: string[];
 };
 
 export type BookLookup = ExistingBookLookup | LookedUpBook;

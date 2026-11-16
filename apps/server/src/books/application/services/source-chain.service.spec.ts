@@ -1,20 +1,14 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { SourceReply } from '../ports/driven/lookup-source.interface.js';
 import { ManualClock, ScriptedSource } from '../testing/book-doubles.test-support.js';
-import { SourceBudget } from './source-budget.service.js';
 import type { SourceRecipient, SourceUnavailability } from './source-chain.service.js';
 import { SourceLink } from './source-chain.service.js';
 
-afterEach(() => {
-    vi.useRealTimers();
-});
+const never = new Promise<'late'>(() => undefined);
+const found = (value: string): SourceReply<string> => ({ kind: 'found', value });
 
-function link(
-    source: ScriptedSource<string>,
-    next: SourceLink<string> | null = null,
-    clock = new ManualClock(),
-) {
-    return new SourceLink(source, new SourceBudget(source.limit, clock), clock, next);
+function chain(...sources: ScriptedSource<string>[]) {
+    return SourceLink.chain(sources, new ManualClock())!;
 }
 
 function recorder() {
@@ -23,145 +17,132 @@ function recorder() {
         found: (source, value) => events.push(source + ':' + value),
         unavailable: ({ source, reason }: SourceUnavailability) =>
             events.push(source + ':' + reason),
+        late: (source) => events.push(source + ':late'),
     };
 
     return { events, recipient };
 }
 
-const found = (value: string): SourceReply<string> => ({ kind: 'found', value });
-
 describe('SourceLink', () => {
     it('hands every answer over in order of preference', async () => {
-        const chain = link(
+        const link = chain(
             new ScriptedSource('bnf', found('a')),
-            link(new ScriptedSource('ol', found('b'))),
+            new ScriptedSource('ol', found('b')),
         );
         const { events, recipient } = recorder();
 
-        await chain.begin('9782253164692').handle(recipient);
+        await link.begin('9782253164692').handle(recipient, never);
 
         expect(events).toEqual(['bnf:a', 'ol:b']);
     });
 
-    it('asks every source at once, before the first one answers', async () => {
+    it('asks every source at once, before the first one answers', () => {
         const first = new ScriptedSource<string>('bnf', 'hang');
         const second = new ScriptedSource('ol', found('b'));
 
-        link(first, link(second)).begin('9782253164692');
+        chain(first, second).begin('9782253164692');
 
         expect(second.asked).toEqual(['9782253164692']);
     });
 
+    it('asks a single-book lookup ahead of bulk work', () => {
+        const source = new ScriptedSource('bnf', found('a'));
+
+        chain(source).begin('9782253164692');
+
+        expect(source.turns).toEqual([{ bulk: false }]);
+    });
+
     it('passes the lookup on when a source has nothing', async () => {
-        const chain = link(
+        const link = chain(
             new ScriptedSource<string>('bnf', { kind: 'none' }),
-            link(new ScriptedSource('ol', found('b'))),
+            new ScriptedSource('ol', found('b')),
         );
         const { events, recipient } = recorder();
 
-        await chain.begin('9782253164692').handle(recipient);
+        await link.begin('9782253164692').handle(recipient, never);
 
         expect(events).toEqual(['ol:b']);
     });
 
     it('reports a failing source and continues (example 20)', async () => {
-        const chain = link(
+        const link = chain(
             new ScriptedSource<string>('bnf', 'fail'),
-            link(new ScriptedSource('ol', found('b'))),
+            new ScriptedSource('ol', found('b')),
         );
         const { events, recipient } = recorder();
 
-        await chain.begin('9782253164692').handle(recipient);
+        await link.begin('9782253164692').handle(recipient, never);
 
         expect(events).toEqual(['bnf:failed', 'ol:b']);
     });
 
-    it('reports a source that does not answer in time', async () => {
-        vi.useFakeTimers();
-        const chain = link(new ScriptedSource<string>('bnf', 'hang'));
+    it('reports a source that asked to wait (example 20)', async () => {
+        const link = chain(new ScriptedSource<string>('bnf', { kind: 'limited', retryAt: null }));
         const { events, recipient } = recorder();
 
-        const handled = chain.begin('9782253164692').handle(recipient);
+        await link.begin('9782253164692').handle(recipient, never);
 
-        await vi.advanceTimersByTimeAsync(SourceLink.timeoutSeconds * 1000);
-        await handled;
-
-        expect(events).toEqual(['bnf:failed']);
-    });
-
-    it('does not ask a source over its rate limit (example 20)', async () => {
-        const source = new ScriptedSource('bnf', found('a'), { requests: 1, seconds: 60 });
-        const chain = link(source);
-        const { events, recipient } = recorder();
-
-        await chain.begin('9782253164692').handle(recorder().recipient);
-
-        await chain.begin('9782723471930').handle(recipient);
-
-        expect(source.asked).toEqual(['9782253164692']);
         expect(events).toEqual(['bnf:limited']);
     });
 
-    it('waits as long as a source asked before asking it again (example 20)', async () => {
-        const clock = new ManualClock();
-        const source = new ScriptedSource<string>('bnf', {
-            kind: 'limited',
-            retryAt: new Date(clock.now().getTime() + 120_000),
-        });
-        const chain = link(source, null, clock);
+    it('reports a source whose queue is too long as busy', async () => {
+        const link = chain(new ScriptedSource<string>('bnf', { kind: 'busy' }));
+        const { events, recipient } = recorder();
 
-        await chain.begin('9782253164692').handle(recorder().recipient);
-        clock.advance(119);
+        await link.begin('9782253164692').handle(recipient, never);
 
-        await chain.begin('9782723471930').handle(recorder().recipient);
+        expect(events).toEqual(['bnf:busy']);
+    });
 
-        expect(source.asked).toEqual(['9782253164692']);
+    it('names a source that has not answered by the deadline and continues', async () => {
+        const link = chain(
+            new ScriptedSource<string>('bnf', 'hang'),
+            new ScriptedSource('ol', found('b')),
+        );
+        const { events, recipient } = recorder();
+
+        await link.begin('9782253164692').handle(recipient, Promise.resolve('late'));
+
+        expect(events).toEqual(['bnf:late', 'ol:b']);
+    });
+
+    it('gives an answer that arrived before the deadline passed', async () => {
+        const link = chain(new ScriptedSource('bnf', found('a')));
+        const { events, recipient } = recorder();
+
+        await link.request('9782253164692', false);
+
+        await link.begin('9782253164692').handle(recipient, Promise.resolve('late'));
+
+        expect(events).toEqual(['bnf:a']);
+    });
+
+    it('asks for one ISBN as bulk work when told so', async () => {
+        const source = new ScriptedSource('bnf', found('a'));
+
+        const reply = await chain(source).request('9782253164692', true);
+
+        expect(reply).toEqual({ kind: 'found', value: 'a' });
+        expect(source.turns).toEqual([{ bulk: true }]);
     });
 });
 
 describe('SourceLink.chain', () => {
-    it('links the sources in the given order of preference', async () => {
-        const chain = SourceLink.chain(
-            [new ScriptedSource('bnf', found('a')), new ScriptedSource('ol', found('b'))],
-            new ManualClock(),
-        );
-        const { events, recipient } = recorder();
+    it('keeps the answers of each source across lookups', async () => {
+        const source = new ScriptedSource('bnf', found('a'));
+        const link = chain(source);
 
-        await chain!.begin('9782253164692').handle(recipient);
+        await link.begin('9782253164692').handle(recorder().recipient, never);
 
-        expect(events).toEqual(['bnf:a', 'ol:b']);
-    });
+        await link.begin('9782253164692').handle(recorder().recipient, never);
 
-    it('gives each source its own budget', async () => {
-        const chain = SourceLink.chain(
-            [
-                new ScriptedSource('bnf', found('a'), { requests: 1, seconds: 60 }),
-                new ScriptedSource('ol', found('b'), { requests: 1, seconds: 60 }),
-            ],
-            new ManualClock(),
-        );
-        const { events, recipient } = recorder();
-
-        await chain!.begin('9782253164692').handle(recipient);
-
-        expect(events).toEqual(['bnf:a', 'ol:b']);
-    });
-
-    it('keeps the budgets across lookups', async () => {
-        const source = new ScriptedSource('bnf', found('a'), { requests: 1, seconds: 60 });
-        const chain = SourceLink.chain([source], new ManualClock());
-        const { events, recipient } = recorder();
-
-        await chain!.begin('9782253164692').handle(recorder().recipient);
-
-        await chain!.begin('9782723471930').handle(recipient);
-
-        expect(events).toEqual(['bnf:limited']);
+        expect(source.requests).toHaveLength(1);
     });
 
     it('is empty without sources', () => {
-        const chain = SourceLink.chain<string>([], new ManualClock());
+        const link = SourceLink.chain<string>([], new ManualClock());
 
-        expect(chain).toBeNull();
+        expect(link).toBeNull();
     });
 });

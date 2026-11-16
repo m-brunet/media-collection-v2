@@ -6,11 +6,9 @@ import type { LookupAnswerFields } from '../../domain/value-objects/lookup-answe
 import type { CollectionVolumeMember } from '../ports/driven/collection-volumes.interface.js';
 import { AuthorMatcher } from '../services/author-matcher.service.js';
 import { SeriesLookup } from '../services/series-lookup.service.js';
-import { SourceBudget } from '../services/source-budget.service.js';
 import {
     BookDoubles,
     guest,
-    ManualClock,
     MemoryCollectionVolumes,
     owner,
     ScriptedSeries,
@@ -54,10 +52,8 @@ const gunnm = [
 
 function setup(members: CollectionVolumeMember[] = gunnm, category: 'books' | 'manga' = 'manga') {
     const current = BookDoubles.library();
-    const clock = new ManualClock();
     const series = new ScriptedSeries();
     const collections = new MemoryCollectionVolumes();
-    const budget = new SourceBudget(series.limit, clock);
 
     collections.collections.set('gunnm', {
         id: 'gunnm',
@@ -70,11 +66,10 @@ function setup(members: CollectionVolumeMember[] = gunnm, category: 'books' | 'm
     return {
         current,
         series,
-        budget,
         collections,
         useCase: new FindMissingVolumes(
             collections,
-            new SeriesLookup(series, budget, clock),
+            new SeriesLookup(series),
             current.books,
             new AuthorMatcher(current.authors),
         ),
@@ -277,15 +272,39 @@ describe('FindMissingVolumes', () => {
         expect(result).toEqual({ kind: 'unavailable', retryAt: null });
     });
 
-    it('asks nothing once the catalogue budget is spent', async () => {
-        const { useCase, series, budget } = setup();
+    it('reports a catalogue whose queue is too long', async () => {
+        const { useCase, series } = setup();
 
-        budget.pause(new Date('2026-03-01T11:00:00Z'));
+        series.editionsReply = { kind: 'busy' };
 
         const result = await useCase.execute(owner, 'gunnm', 8);
 
         expect(result).toEqual({ kind: 'unavailable', retryAt: null });
-        expect(series.asked).toEqual([]);
+    });
+
+    it('reports a volume list the catalogue was too busy to give', async () => {
+        const { useCase, series } = setup();
+
+        series.editionsReply = { kind: 'found', value: [five] };
+        series.pages = [{ kind: 'busy' }];
+
+        const result = await useCase.execute(owner, 'gunnm', 8);
+
+        expect(result).toEqual({ kind: 'unavailable', retryAt: null });
+    });
+
+    it('hands the cancellation of the search to every catalogue request', async () => {
+        const { useCase, series } = setup();
+        const cancel = new AbortController();
+
+        series.editionsReply = { kind: 'found', value: [five] };
+
+        await useCase.execute(owner, 'gunnm', 8, cancel.signal);
+
+        expect(series.turns).toEqual([
+            { bulk: true, signal: cancel.signal },
+            { bulk: true, signal: cancel.signal },
+        ]);
     });
 
     it('refuses more than 200 volumes at once', async () => {

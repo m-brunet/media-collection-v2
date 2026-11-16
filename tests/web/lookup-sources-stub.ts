@@ -23,10 +23,14 @@ export class LookupSourcesStub {
         this.cover = cover;
     }
 
-    get addresses(): { bnf: string; openLibrary: string } {
+    get addresses(): { bnf: string; openLibrary: string; delaySeconds: number } {
         const base = 'http://127.0.0.1:' + this.port;
 
-        return { bnf: base + '/bnf/SRU', openLibrary: base + '/openlibrary/api/books' };
+        return {
+            bnf: base + '/bnf/SRU',
+            openLibrary: base + '/openlibrary/api/books',
+            delaySeconds: 0,
+        };
     }
 
     bnf(isbn13: string, fixture: string): this {
@@ -102,12 +106,16 @@ export class LookupSourcesStub {
             });
         } else if (url.pathname === '/openlibrary/api/books') {
             this.reply('openlibrary', response, () => {
-                const key = url.searchParams.get('bibkeys') ?? '';
-                const record = this.openLibraryRecords.get(key.replace('ISBN:', ''));
+                const keys = (url.searchParams.get('bibkeys') ?? '').split(',');
+                const records = keys.flatMap((key) => {
+                    const record = this.openLibraryRecords.get(key.replace('ISBN:', ''));
+
+                    return record ? [[key, record]] : [];
+                });
 
                 return {
                     type: 'application/json',
-                    body: JSON.stringify(record ? { [key]: record } : {}),
+                    body: JSON.stringify(Object.fromEntries(records)),
                 };
             });
         } else {

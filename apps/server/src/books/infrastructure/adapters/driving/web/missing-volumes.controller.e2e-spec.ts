@@ -98,6 +98,18 @@ describe('POST /api/collections/:id/missing-volumes/search', () => {
         expect(response.body).toEqual({ kind: 'edition-not-found' });
     });
 
+    it('asks the catalogue as bulk work, with a way to cancel that a finished search leaves unused', async () => {
+        const first = await volume(1, '9782723432931');
+        const client = await app.authenticatedClient(owner);
+
+        await client.call(search(first.collection!.id), 'POST', { upTo: 5 });
+
+        const turn = app.dependencies.books.lookup.series.turns[0];
+
+        expect(turn?.bulk).toBe(true);
+        expect(turn?.signal?.aborted).toBe(false);
+    });
+
     it('refuses a Finished collection, to be marked unfinished first', async () => {
         const first = await volume(1, '9782723432931');
         const client = await app.authenticatedClient(owner);

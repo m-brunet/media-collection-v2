@@ -1,10 +1,14 @@
-export type SourceReply<T> =
-    | { kind: 'found'; value: T }
-    | { kind: 'none' }
-    | { kind: 'limited'; retryAt: Date | null };
+export type SourceRefusal = { kind: 'limited'; retryAt: Date | null } | { kind: 'busy' };
+
+export type SourceReply<T> = { kind: 'found'; value: T } | { kind: 'none' } | SourceRefusal;
+
+export type SourceTurn = { bulk: boolean; signal?: AbortSignal };
 
 export interface LookupSource<T> {
     readonly name: string;
-    readonly limit: { requests: number; seconds: number };
-    find(isbn13: string): Promise<SourceReply<T>>;
+    readonly batchSize: number;
+    find(
+        isbn13s: readonly string[],
+        turn: SourceTurn,
+    ): Promise<SourceReply<ReadonlyMap<string, T>>>;
 }

@@ -1,100 +1,65 @@
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
-import type { LookupSource, SourceReply } from '../ports/driven/lookup-source.interface.js';
-import type { SourceBudget } from './source-budget.service.js';
-import { SourceBudgets } from './source-budgets.service.js';
+import type { LookupSource } from '../ports/driven/lookup-source.interface.js';
+import type { DeskReply } from './source-desk.service.js';
+import { SourceDesk } from './source-desk.service.js';
 
 export interface SourceUnavailability {
     source: string;
-    reason: 'limited' | 'failed';
+    reason: 'limited' | 'failed' | 'busy';
 }
 
 export interface SourceRecipient<T> {
     found(source: string, value: T): void;
     unavailable(unavailability: SourceUnavailability): void;
+    late(source: string): void;
 }
 
 export class SourceLink<T> {
-    static readonly timeoutSeconds = 8;
-    static readonly defaultPauseSeconds = 60;
-
     constructor(
-        private readonly source: LookupSource<T>,
-        private readonly budget: SourceBudget,
-        private readonly clock: Clock,
+        private readonly desk: SourceDesk<T>,
         private readonly next: SourceLink<T> | null = null,
     ) {}
 
-    static chain<T>(
-        sources: readonly LookupSource<T>[],
-        clock: Clock,
-        budgets = new SourceBudgets(clock),
-    ): SourceLink<T> | null {
+    static chain<T>(sources: readonly LookupSource<T>[], clock: Clock): SourceLink<T> | null {
         return sources.reduceRight<SourceLink<T> | null>(
-            (next, source) => new SourceLink(source, budgets.of(source), clock, next),
+            (next, source) => new SourceLink(new SourceDesk(source, clock), next),
             null,
         );
     }
 
     begin(isbn13: string): SourceStep<T> {
         return new SourceStep(
-            this.source.name,
-            this.request(isbn13),
+            this.desk.name,
+            this.desk.ask(isbn13, false),
             this.next?.begin(isbn13) ?? null,
         );
     }
 
-    async request(isbn13: string): Promise<SourceReply<T> | 'failed'> {
-        if (!this.budget.take()) {
-            return { kind: 'limited', retryAt: null };
-        }
-
-        let timer: ReturnType<typeof setTimeout> | undefined;
-
-        try {
-            const reply = await Promise.race([
-                this.source.find(isbn13),
-                new Promise<'failed'>((resolve) => {
-                    timer = setTimeout(() => resolve('failed'), SourceLink.timeoutSeconds * 1000);
-                }),
-            ]);
-
-            if (reply !== 'failed' && reply.kind === 'limited') {
-                this.budget.pause(
-                    reply.retryAt ??
-                        new Date(
-                            this.clock.now().getTime() + SourceLink.defaultPauseSeconds * 1000,
-                        ),
-                );
-            }
-
-            return reply;
-        } catch {
-            // Justified: one unreachable source must not stop the lookup; it is reported instead.
-            return 'failed';
-        } finally {
-            clearTimeout(timer);
-        }
+    request(isbn13: string, bulk: boolean): Promise<DeskReply<T>> {
+        return this.desk.ask(isbn13, bulk);
     }
 }
 
 export class SourceStep<T> {
     constructor(
         private readonly source: string,
-        private readonly reply: Promise<SourceReply<T> | 'failed'>,
+        private readonly reply: Promise<DeskReply<T>>,
         private readonly next: SourceStep<T> | null,
     ) {}
 
-    async handle(recipient: SourceRecipient<T>): Promise<void> {
-        const reply = await this.reply;
+    async handle(recipient: SourceRecipient<T>, deadline: Promise<'late'>): Promise<void> {
+        const reply = await Promise.race([this.reply, deadline]);
 
-        if (reply === 'failed') {
+        if (reply === 'late') {
+            recipient.late(this.source);
+        } else if (reply === 'failed') {
             recipient.unavailable({ source: this.source, reason: 'failed' });
-        } else if (reply.kind === 'limited') {
-            recipient.unavailable({ source: this.source, reason: 'limited' });
         } else if (reply.kind === 'found') {
             recipient.found(this.source, reply.value);
+        } else if (reply.kind !== 'none') {
+            recipient.unavailable({ source: this.source, reason: reply.kind });
         }
 
-        await this.next?.handle(recipient);
+        await this.next?.handle(recipient, deadline);
     }
 }

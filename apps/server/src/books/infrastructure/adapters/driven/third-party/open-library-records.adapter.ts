@@ -1,4 +1,7 @@
-import type { SourceReply } from '../../../../application/ports/driven/lookup-source.interface.js';
+import type {
+    SourceReply,
+    SourceTurn,
+} from '../../../../application/ports/driven/lookup-source.interface.js';
 import type { SourceHttp } from './source-http.adapter.js';
 
 // The part of an Open Library Books API record ("jscmd=data") the lookups use.
@@ -14,62 +17,65 @@ export interface OpenLibraryRecord {
     cover?: { large?: string; medium?: string };
 }
 
-// Open Library's Books API, asked once per ISBN for both the book information and the cover: a
-// record fetched for one is reused by the other for a minute. Covers are then addressed by
-// cover id, which Open Library does not rate-limit (only its ISBN cover route is).
+export type OpenLibraryReply = SourceReply<ReadonlyMap<string, OpenLibraryRecord>>;
+
+// Open Library's Books API takes several ISBNs in one request ("bibkeys=ISBN:a,ISBN:b") and
+// answers with an object keyed by those same keys. A record holds both the book information and
+// the cover address. Covers are addressed by cover id, which Open Library does not rate-limit
+// (only its ISBN cover route is).
 export class OpenLibraryRecords {
     static readonly address = 'https://openlibrary.org/api/books';
-    static readonly reuseSeconds = 60;
+    static readonly batchSize = 20;
 
-    private readonly recent = new Map<
-        string,
-        { at: number; reply: Promise<SourceReply<OpenLibraryRecord>> }
-    >();
+    private readonly asked = new Map<string, Promise<OpenLibraryReply>>();
 
     constructor(
         private readonly http: SourceHttp,
         private readonly address = OpenLibraryRecords.address,
-        private readonly now: () => Date = () => new Date(),
     ) {}
 
-    record(isbn13: string): Promise<SourceReply<OpenLibraryRecord>> {
-        const now = this.now().getTime();
+    records(isbn13s: readonly string[], turn: SourceTurn): Promise<OpenLibraryReply> {
+        const key = isbn13s.join(',');
+        const known = this.asked.get(key);
 
-        for (const [isbn, entry] of this.recent) {
-            if (now - entry.at >= OpenLibraryRecords.reuseSeconds * 1000) {
-                this.recent.delete(isbn);
-            }
+        if (known) {
+            return known;
         }
 
-        const kept = this.recent.get(isbn13);
+        const reply = this.fetch(isbn13s, turn).finally(() => this.asked.delete(key));
 
-        if (kept) {
-            return kept.reply;
-        }
-
-        const reply = this.fetch(isbn13);
-
-        this.recent.set(isbn13, { at: now, reply });
-        reply.catch(() => this.recent.delete(isbn13));
+        this.asked.set(key, reply);
 
         return reply;
     }
 
-    private async fetch(isbn13: string): Promise<SourceReply<OpenLibraryRecord>> {
-        const key = 'ISBN:' + isbn13;
-        const query = new URLSearchParams({ bibkeys: key, format: 'json', jscmd: 'data' });
+    private async fetch(isbn13s: readonly string[], turn: SourceTurn): Promise<OpenLibraryReply> {
+        const query = new URLSearchParams({
+            bibkeys: isbn13s.map((isbn13) => 'ISBN:' + isbn13).join(','),
+            format: 'json',
+            jscmd: 'data',
+        });
         const reply = await this.http.get(
             this.address + '?' + query.toString(),
             'application/json',
+            turn,
         );
 
-        if (reply.kind === 'limited') {
+        if (reply.kind !== 'ok') {
             return reply;
         }
 
-        const records = (await reply.response.json()) as Record<string, OpenLibraryRecord>;
-        const record = records[key];
+        const answered = (await reply.response.json()) as Record<string, OpenLibraryRecord>;
+        const records = new Map<string, OpenLibraryRecord>();
 
-        return record ? { kind: 'found', value: record } : { kind: 'none' };
+        for (const isbn13 of isbn13s) {
+            const record = answered['ISBN:' + isbn13];
+
+            if (record) {
+                records.set(isbn13, record);
+            }
+        }
+
+        return { kind: 'found', value: records };
     }
 }

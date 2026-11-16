@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CoverOffer } from '../../domain/services/cover-combination.service.js';
 import type { SourceReply } from '../ports/driven/lookup-source.interface.js';
-import { SourceBudgets } from '../services/source-budgets.service.js';
 import { SourceLink } from '../services/source-chain.service.js';
 import {
     guest,
@@ -19,23 +18,14 @@ const offer: CoverOffer = {
     fingerprint: null,
 };
 
-function setup(reply: SourceReply<CoverOffer[]> = { kind: 'found', value: [offer] }) {
-    const clock = new ManualClock();
-    const source = new ScriptedSource('openlibrary', reply, { requests: 20, seconds: 60 });
-    const budgets = new SourceBudgets(clock);
+function setup(reply: SourceReply<CoverOffer[]> | 'fail' = { kind: 'found', value: [offer] }) {
+    const source = new ScriptedSource('openlibrary', reply);
     const registry = new MemoryCoverRegistry();
 
     return {
-        clock,
         source,
-        budgets,
         registry,
-        useCase: new FindVolumeCover(
-            SourceLink.chain([source], clock, budgets),
-            registry,
-            clock,
-            FindVolumeCover.half(source.limit),
-        ),
+        useCase: new FindVolumeCover(SourceLink.chain([source], new ManualClock()), registry),
     };
 }
 
@@ -65,51 +55,54 @@ describe('FindVolumeCover', () => {
         expect(result).toEqual({ kind: 'none' });
     });
 
-    it('spends at most half of the source budget, leaving the rest to single lookups', async () => {
-        const { useCase, source, budgets } = setup();
+    it('asks as bulk work, behind single-book lookups', async () => {
+        const { useCase, source } = setup();
 
-        for (let request = 0; request < 10; request++) {
-            await useCase.execute(owner, '9782723434775');
-        }
+        await useCase.execute(owner, '9782723434775');
 
-        const eleventh = await useCase.execute(owner, '9782723434775');
-
-        expect(eleventh).toEqual({ kind: 'limited', retryAt: '2026-03-01T10:00:06.000Z' });
-        expect(source.asked).toHaveLength(10);
-        expect(budgets.of(source).take()).toBe(true);
+        expect(source.turns).toEqual([{ bulk: true }]);
     });
 
-    it('asks again once the window has moved on', async () => {
-        const { useCase, source, clock } = setup();
+    it('asks once for a volume whose cover was already searched', async () => {
+        const { useCase, source } = setup();
 
-        for (let request = 0; request < 10; request++) {
-            await useCase.execute(owner, '9782723434775');
-        }
+        await useCase.execute(owner, '9782723434775');
 
-        clock.advance(61);
-        const result = await useCase.execute(owner, '9782723434775');
+        await useCase.execute(owner, '9782723434775');
 
-        expect(result.kind).toBe('found');
-        expect(source.asked).toHaveLength(11);
+        expect(source.requests).toHaveLength(1);
     });
 
-    it('waits as long as the source asks', async () => {
+    it('gives no cover when the source asked to wait', async () => {
         const { useCase } = setup({ kind: 'limited', retryAt: new Date('2026-03-01T10:03:00Z') });
 
         const result = await useCase.execute(owner, '9782723434775');
 
-        expect(result).toEqual({ kind: 'limited', retryAt: '2026-03-01T10:03:00.000Z' });
+        expect(result).toEqual({ kind: 'none' });
     });
 
-    it('asks nothing while the source is paused', async () => {
-        const { useCase, source, budgets } = setup();
-
-        budgets.of(source).pause(new Date('2026-03-01T10:05:00Z'));
+    it('gives no cover when the queue of the source is too long', async () => {
+        const { useCase } = setup({ kind: 'busy' });
 
         const result = await useCase.execute(owner, '9782723434775');
 
-        expect(result.kind).toBe('limited');
-        expect(source.asked).toEqual([]);
+        expect(result).toEqual({ kind: 'none' });
+    });
+
+    it('gives no cover when the source is unreachable', async () => {
+        const { useCase } = setup('fail');
+
+        const result = await useCase.execute(owner, '9782723434775');
+
+        expect(result).toEqual({ kind: 'none' });
+    });
+
+    it('gives no cover without a cover source', async () => {
+        const useCase = new FindVolumeCover(null, new MemoryCoverRegistry());
+
+        const result = await useCase.execute(owner, '9782723434775');
+
+        expect(result).toEqual({ kind: 'none' });
     });
 
     it('refuses an invalid ISBN', async () => {

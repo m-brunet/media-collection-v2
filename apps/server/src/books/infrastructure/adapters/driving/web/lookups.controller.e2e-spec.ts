@@ -84,6 +84,7 @@ describe('POST /api/books/lookups', () => {
                 { token: expect.any(String), width: 400, height: 600, sources: ['openlibrary'] },
             ],
             unavailable: [],
+            pending: [],
         });
         expect(JSON.stringify(response.body)).not.toContain(coverAddress);
     });
@@ -165,6 +166,35 @@ describe('POST /api/books/lookups', () => {
             found: true,
             unavailable: [{ source: 'bnf', reason: 'failed' }],
         });
+    });
+
+    it('names a source whose queue is too long as busy', async () => {
+        sources().bnf.answer(isbn, { kind: 'busy' });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookLookupDto>('/books/lookups', 'POST', { isbn });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toMatchObject({
+            found: false,
+            unavailable: [{ source: 'bnf', reason: 'busy' }],
+        });
+    });
+
+    it('answers a repeated lookup from the kept answers, without asking again', async () => {
+        sources().knows('bnf', isbn, { title: "D'un monde à l'autre" });
+        await lookedUp();
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookLookupDto>('/books/lookups', 'POST', { isbn });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toMatchObject({
+            found: true,
+            fields: { title: [{ value: "D'un monde à l'autre", sources: ['bnf'] }] },
+            pending: [],
+        });
+        expect(sources().bnf.asked).toEqual([isbn]);
     });
 
     it('rejects an invalid ISBN', async () => {
@@ -379,6 +409,17 @@ describe('POST /api/books/lookups/volume-cover', () => {
         });
 
         expect(response.body).toEqual({ kind: 'none' });
+    });
+
+    it('gives no cover, and no time to ask again, when the source asked to wait', async () => {
+        sources().openLibraryCovers.answer(isbn, { kind: 'limited', retryAt: null });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<VolumeCoverDto>('/books/lookups/volume-cover', 'POST', {
+            isbn,
+        });
+
+        expect([response.status, response.body]).toEqual([200, { kind: 'none' }]);
     });
 
     it('refuses a Guest', async () => {

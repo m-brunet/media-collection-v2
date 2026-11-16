@@ -3,6 +3,7 @@ import type { CoverDownloader } from '../../../apps/server/src/books/application
 import type {
     LookupSource,
     SourceReply,
+    SourceTurn,
 } from '../../../apps/server/src/books/application/ports/driven/lookup-source.interface.js';
 import type {
     SeriesCatalogue,
@@ -16,7 +17,7 @@ import { HttpCoverDownloader } from '../../../apps/server/src/books/infrastructu
 import { PublicAddresses } from '../../../apps/server/src/books/infrastructure/adapters/driven/third-party/public-addresses.adapter.js';
 
 class ScriptedSource<T> implements LookupSource<T> {
-    readonly limit = { requests: 1000, seconds: 60 };
+    readonly batchSize = 1;
     readonly asked: string[] = [];
     private readonly replies = new Map<string, SourceReply<T> | 'fail'>();
 
@@ -26,7 +27,9 @@ class ScriptedSource<T> implements LookupSource<T> {
         this.replies.set(isbn13, reply);
     }
 
-    async find(isbn13: string): Promise<SourceReply<T>> {
+    async find(isbn13s: readonly string[]): Promise<SourceReply<ReadonlyMap<string, T>>> {
+        const isbn13 = isbn13s[0] ?? '';
+
         this.asked.push(isbn13);
         const reply = this.replies.get(isbn13) ?? { kind: 'none' };
 
@@ -34,18 +37,24 @@ class ScriptedSource<T> implements LookupSource<T> {
             throw new Error(this.name + ' is unreachable');
         }
 
-        return reply;
+        return reply.kind === 'found'
+            ? { kind: 'found', value: new Map([[isbn13, reply.value]]) }
+            : reply;
     }
 }
 
 class ScriptedSeries implements SeriesCatalogue {
     readonly name = 'bnf';
-    readonly limit = { requests: 1000, seconds: 60 };
     readonly asked: string[] = [];
+    readonly turns: SourceTurn[] = [];
     readonly records: SeriesRecord[] = [];
 
-    async editions(isbn13s: readonly string[]): Promise<SourceReply<SeriesRecord[]>> {
+    async editions(
+        isbn13s: readonly string[],
+        turn: SourceTurn,
+    ): Promise<SourceReply<SeriesRecord[]>> {
         this.asked.push('editions');
+        this.turns.push(turn);
         const found = this.records.filter((record) =>
             record.isbns.some((isbn) => isbn13s.includes(isbn)),
         );

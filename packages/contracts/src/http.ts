@@ -418,7 +418,8 @@ export type BookLookupDto =
           fields: BookLookupFieldsDto;
           authorSpellings: AuthorSpellingDto[];
           covers: LookupCoverDto[];
-          unavailable: { source: string; reason: 'limited' | 'failed' }[];
+          unavailable: { source: string; reason: 'limited' | 'failed' | 'busy' }[];
+          pending: string[];
       };
 
 export interface NewVolumeDto {
@@ -444,10 +445,7 @@ export interface VolumesAddedDto {
     skipped: { volume: number; isbn: string; reason: 'volume-taken' | 'isbn-taken' }[];
 }
 
-export type VolumeCoverDto =
-    | { kind: 'found'; token: string }
-    | { kind: 'none' }
-    | { kind: 'limited'; retryAt: string };
+export type VolumeCoverDto = { kind: 'found'; token: string } | { kind: 'none' };
 
 export interface MissingVolumeEditionDto {
     isbn13: string;

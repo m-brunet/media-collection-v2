@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { SourceProbe } from '../../../../application/testing/book-doubles.test-support.js';
 import { BnfCatalogue } from './bnf-catalogue.adapter.js';
 import { SourceHttp } from './source-http.adapter.js';
 
@@ -9,7 +10,7 @@ function recorded(name: string): string {
 
 function catalogue(body: string, status = 200, headers: Record<string, string> = {}) {
     const requests: string[] = [];
-    const http = new SourceHttp(async (url) => {
+    const http = new SourceHttp(SourceProbe.queue(), async (url) => {
         requests.push(url);
 
         return new Response(body, { status, headers });
@@ -42,7 +43,7 @@ describe('BnfCatalogue', () => {
     it('reads a manga volume with its series, without its translator', async () => {
         const { source } = catalogue(recorded('bnf-rose-hip-rose-1.xml'));
 
-        const reply = await source.find('9782845998179');
+        const reply = await SourceProbe.one(source, '9782845998179');
 
         expect(reply).toMatchObject({
             kind: 'found',
@@ -65,7 +66,7 @@ describe('BnfCatalogue', () => {
     it("keeps a volume's own title and its series apart", async () => {
         const { source } = catalogue(recorded('bnf-claymore-15.xml'));
 
-        const reply = await source.find('9782723471930');
+        const reply = await SourceProbe.one(source, '9782723471930');
 
         expect(reply).toMatchObject({
             kind: 'found',
@@ -82,7 +83,7 @@ describe('BnfCatalogue', () => {
     it('reads a novel and its page count', async () => {
         const { source } = catalogue(recorded('bnf-ewilan-1.xml'));
 
-        const reply = await source.find('9782253164692');
+        const reply = await SourceProbe.one(source, '9782253164692');
 
         expect(reply).toMatchObject({
             kind: 'found',
@@ -99,7 +100,7 @@ describe('BnfCatalogue', () => {
     it('reads an author given only as a secondary name with a written role', async () => {
         const { source } = catalogue(recorded('bnf-passe-miroir-1.xml'));
 
-        const reply = await source.find('9782075215466');
+        const reply = await SourceProbe.one(source, '9782075215466');
 
         expect(reply).toMatchObject({
             kind: 'found',
@@ -117,7 +118,7 @@ describe('BnfCatalogue', () => {
     it('reads a manga from its comic class and its Japanese original', async () => {
         const { source } = catalogue(recorded('bnf-claymore-15.xml'));
 
-        const reply = await source.find('9782723471930');
+        const reply = await SourceProbe.one(source, '9782723471930');
 
         expect(reply).toMatchObject({ value: { category: 'manga' } });
     });
@@ -125,7 +126,7 @@ describe('BnfCatalogue', () => {
     it('reads a manga from its comic form and its Japanese original', async () => {
         const { source } = catalogue(recorded('bnf-rose-hip-rose-1.xml'));
 
-        const reply = await source.find('9782845998179');
+        const reply = await SourceProbe.one(source, '9782845998179');
 
         expect(reply).toMatchObject({ value: { category: 'manga' } });
     });
@@ -133,7 +134,7 @@ describe('BnfCatalogue', () => {
     it('reads a comic translated from Korean as a manga', async () => {
         const { source } = catalogue(recorded('bnf-solo-leveling-17.xml'));
 
-        const reply = await source.find('9782382884171');
+        const reply = await SourceProbe.one(source, '9782382884171');
 
         expect(reply).toMatchObject({ value: { category: 'manga' } });
     });
@@ -143,7 +144,7 @@ describe('BnfCatalogue', () => {
             record(field('101', { a: 'fre', c: 'chi' }), field('686', { a: '805' })),
         );
 
-        const reply = await source.find('9782889210000');
+        const reply = await SourceProbe.one(source, '9782889210000');
 
         expect(reply).toMatchObject({ value: { category: 'manga' } });
     });
@@ -151,7 +152,7 @@ describe('BnfCatalogue', () => {
     it('reads a European comic as a comic', async () => {
         const { source } = catalogue(recorded('bnf-blacksad-1.xml'));
 
-        const reply = await source.find('9782205213287');
+        const reply = await SourceProbe.one(source, '9782205213287');
 
         expect(reply).toMatchObject({ value: { category: 'comics' } });
     });
@@ -159,7 +160,7 @@ describe('BnfCatalogue', () => {
     it('reads a comic from its form alone', async () => {
         const { source } = catalogue(record(field('608', { a: 'Bandes dessinées' })));
 
-        const reply = await source.find('9782205000000');
+        const reply = await SourceProbe.one(source, '9782205000000');
 
         expect(reply).toMatchObject({ value: { category: 'comics' } });
     });
@@ -167,7 +168,7 @@ describe('BnfCatalogue', () => {
     it('gives no category for a novel of another class', async () => {
         const { source } = catalogue(recorded('bnf-ewilan-1.xml'));
 
-        const reply = await source.find('9782253164692');
+        const reply = await SourceProbe.one(source, '9782253164692');
 
         expect(reply).toMatchObject({ value: { category: null } });
     });
@@ -175,7 +176,7 @@ describe('BnfCatalogue', () => {
     it('gives no category for a novel without a class', async () => {
         const { source } = catalogue(recorded('bnf-passe-miroir-1.xml'));
 
-        const reply = await source.find('9782075215466');
+        const reply = await SourceProbe.one(source, '9782075215466');
 
         expect(reply).toMatchObject({ value: { category: null } });
     });
@@ -183,7 +184,7 @@ describe('BnfCatalogue', () => {
     it('reads an organisation as author', async () => {
         const { source } = catalogue(record(field('710', { a: 'Clamp', 4: '070' })));
 
-        const reply = await source.find('9782845990000');
+        const reply = await SourceProbe.one(source, '9782845990000');
 
         expect(reply).toMatchObject({ value: { authors: ['Clamp'] } });
     });
@@ -198,7 +199,7 @@ describe('BnfCatalogue', () => {
             ),
         );
 
-        const reply = await source.find('9782505000000');
+        const reply = await SourceProbe.one(source, '9782505000000');
 
         expect(reply).toMatchObject({ value: { authors: ['Tsugumi Ohba', 'Takeshi Obata'] } });
     });
@@ -206,7 +207,7 @@ describe('BnfCatalogue', () => {
     it("reads the publisher's collection of a novel, skipping the series written beside it", async () => {
         const { source } = catalogue(recorded('bnf-ewilan-1.xml'));
 
-        const reply = await source.find('9782253164692');
+        const reply = await SourceProbe.one(source, '9782253164692');
 
         expect(reply).toMatchObject({
             kind: 'found',
@@ -220,7 +221,7 @@ describe('BnfCatalogue', () => {
     it("reads the publisher's collection of a book whose series is its title", async () => {
         const { source } = catalogue(recorded('bnf-passe-miroir-1.xml'));
 
-        const reply = await source.find('9782075215466');
+        const reply = await SourceProbe.one(source, '9782075215466');
 
         expect(reply).toMatchObject({
             kind: 'found',
@@ -231,7 +232,7 @@ describe('BnfCatalogue', () => {
     it("reads the publisher's collection of a manga after its series", async () => {
         const { source } = catalogue(recorded('bnf-claymore-15.xml'));
 
-        const reply = await source.find('9782723471930');
+        const reply = await SourceProbe.one(source, '9782723471930');
 
         expect(reply).toMatchObject({
             kind: 'found',
@@ -242,7 +243,7 @@ describe('BnfCatalogue', () => {
     it("gives no publisher's collection when the only series statement is the series", async () => {
         const { source } = catalogue(recorded('bnf-blacksad-1.xml'));
 
-        const reply = await source.find('9782205213287');
+        const reply = await SourceProbe.one(source, '9782205213287');
 
         expect(reply).toMatchObject({ kind: 'found', value: { publisherCollection: null } });
     });
@@ -250,7 +251,7 @@ describe('BnfCatalogue', () => {
     it("gives no publisher's collection without a series statement", async () => {
         const { source } = catalogue(recorded('bnf-rose-hip-rose-1.xml'));
 
-        const reply = await source.find('9782845998179');
+        const reply = await SourceProbe.one(source, '9782845998179');
 
         expect(reply).toMatchObject({ kind: 'found', value: { publisherCollection: null } });
     });
@@ -263,7 +264,7 @@ describe('BnfCatalogue', () => {
             ),
         );
 
-        const reply = await source.find('9782723426961');
+        const reply = await SourceProbe.one(source, '9782723426961');
 
         expect(reply).toMatchObject({
             kind: 'found',
@@ -274,7 +275,7 @@ describe('BnfCatalogue', () => {
     it('finds nothing for an ISBN the catalogue does not know', async () => {
         const { source } = catalogue(recorded('bnf-none.xml'));
 
-        const reply = await source.find('9780000000002');
+        const reply = await SourceProbe.one(source, '9780000000002');
 
         expect(reply).toEqual({ kind: 'none' });
     });
@@ -282,7 +283,7 @@ describe('BnfCatalogue', () => {
     it('asks for the UNIMARC record of the ISBN', async () => {
         const { requests, source } = catalogue(recorded('bnf-none.xml'));
 
-        await source.find('9782253164692');
+        await SourceProbe.one(source, '9782253164692');
 
         const url = new URL(requests[0]!);
 
@@ -294,7 +295,7 @@ describe('BnfCatalogue', () => {
     it('reports a catalogue asking to wait', async () => {
         const { source } = catalogue('', 429, { 'Retry-After': '120' });
 
-        const reply = await source.find('9782253164692');
+        const reply = await SourceProbe.one(source, '9782253164692');
 
         expect(reply).toMatchObject({ kind: 'limited', retryAt: expect.any(Date) });
     });

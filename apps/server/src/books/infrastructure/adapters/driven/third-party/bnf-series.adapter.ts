@@ -1,4 +1,7 @@
-import type { SourceReply } from '../../../../application/ports/driven/lookup-source.interface.js';
+import type {
+    SourceReply,
+    SourceTurn,
+} from '../../../../application/ports/driven/lookup-source.interface.js';
 import type {
     SeriesCatalogue,
     SeriesPage,
@@ -12,7 +15,6 @@ export class BnfSeries implements SeriesCatalogue {
     static readonly pageSize = 1000;
 
     readonly name = 'bnf';
-    readonly limit = BnfSru.limit;
 
     private readonly sru: BnfSru;
 
@@ -20,7 +22,10 @@ export class BnfSeries implements SeriesCatalogue {
         this.sru = new BnfSru(http, address);
     }
 
-    async editions(isbn13s: readonly string[]): Promise<SourceReply<SeriesRecord[]>> {
+    async editions(
+        isbn13s: readonly string[],
+        turn: SourceTurn,
+    ): Promise<SourceReply<SeriesRecord[]>> {
         if (isbn13s.length === 0) {
             return { kind: 'none' };
         }
@@ -28,9 +33,10 @@ export class BnfSeries implements SeriesCatalogue {
         const page = await this.sru.search(
             isbn13s.map((isbn) => `bib.isbn all "${isbn}"`).join(' or '),
             Math.min(isbn13s.length * 2, BnfSeries.pageSize),
+            turn,
         );
 
-        if (page.kind === 'limited') {
+        if (page.kind !== 'ok') {
             return page;
         }
 
@@ -43,14 +49,16 @@ export class BnfSeries implements SeriesCatalogue {
         series: string,
         publisher: string,
         start: number,
+        turn: SourceTurn,
     ): Promise<SourceReply<SeriesPage>> {
         const page = await this.sru.search(
             `bib.title all "${BnfSeries.term(series)}" and bib.publisher all "${BnfSeries.term(publisher)}"`,
             BnfSeries.pageSize,
+            turn,
             start,
         );
 
-        if (page.kind === 'limited') {
+        if (page.kind !== 'ok') {
             return page;
         }
 

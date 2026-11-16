@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'vitest';
+import { SourceProbe } from '../../../../application/testing/book-doubles.test-support.js';
 import { OpenLibraryCovers } from './open-library-covers.adapter.js';
 import { OpenLibraryRecords } from './open-library-records.adapter.js';
 import { SourceHttp } from './source-http.adapter.js';
 
 function covers(record: object) {
     const body = JSON.stringify({ 'ISBN:9782253164692': record });
-    const http = new SourceHttp(async () => new Response(body, { status: 200 }));
+    const http = new SourceHttp(
+        SourceProbe.queue(),
+        async () => new Response(body, { status: 200 }),
+    );
 
     return new OpenLibraryCovers(new OpenLibraryRecords(http));
 }
@@ -19,7 +23,7 @@ describe('OpenLibraryCovers', () => {
             },
         });
 
-        const reply = await source.find('9782253164692');
+        const reply = await SourceProbe.one(source, '9782253164692');
 
         expect(reply).toEqual({
             kind: 'found',
@@ -37,7 +41,7 @@ describe('OpenLibraryCovers', () => {
     it('offers nothing for an edition without a cover', async () => {
         const source = covers({ title: "La quête d'Ewilan" });
 
-        const reply = await source.find('9782253164692');
+        const reply = await SourceProbe.one(source, '9782253164692');
 
         expect(reply).toEqual({ kind: 'none' });
     });
