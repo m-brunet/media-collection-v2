@@ -372,6 +372,18 @@ export class MemoryKeptCovers implements KeptCoverStore {
     async remove(isbn13: string): Promise<void> {
         this.kept.delete(isbn13);
     }
+
+    async all(): Promise<KeptCover[]> {
+        return [...this.kept.values()];
+    }
+
+    async clear(): Promise<number> {
+        const count = this.kept.size;
+
+        this.kept.clear();
+
+        return count;
+    }
 }
 
 export class MemoryLoans implements BookLoanReader, LoanHistory {

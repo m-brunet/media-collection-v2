@@ -79,7 +79,7 @@ import { MaintenanceModule } from '../../../apps/server/src/maintenance/infrastr
 import { KyselyApplicationDataEraser } from '../../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/kysely-application-data-eraser.adapter.js';
 import { KyselyLibraryEraser } from '../../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/kysely-library-eraser.adapter.js';
 import { KyselyCoverFileCleanup } from '../../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/kysely-cover-file-cleanup.adapter.js';
-import { KyselyKeptCoverArchive } from '../../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/kysely-kept-cover-archive.adapter.js';
+import { StoredKeptCoverArchive } from '../../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/stored-kept-cover-archive.adapter.js';
 import { KyselyKeptCoverCount } from '../../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/kysely-kept-cover-count.adapter.js';
 import { StatisticsModule } from '../../../apps/server/src/statistics/infrastructure/config/statistics.module.js';
 import { KyselyLibraryStatisticsReader } from '../../../apps/server/src/statistics/infrastructure/adapters/driven/persistence/kysely-library-statistics-reader.adapter.js';
@@ -337,15 +337,25 @@ export class TestApp {
                         passwords: IdentityModule.administratorPassword(users, passwords),
                         eraser: new KyselyApplicationDataEraser(
                             database.connections,
-                            new KyselyLibraryEraser(database.connections, ids, clock),
+                            new KyselyLibraryEraser(
+                                database.connections,
+                                ids,
+                                clock,
+                                books.keptCoverStore,
+                            ),
+                            books.keptCoverStore,
                         ),
                         covers: new KyselyCoverFileCleanup(
                             database.connections,
                             new FileCoverStorage(directory),
+                            books.keptCoverStore,
                         ),
-                        keptCovers: new KyselyKeptCoverCount(database.connections),
-                        keptCoverArchive: new KyselyKeptCoverArchive(
+                        keptCovers: new KyselyKeptCoverCount(
                             database.connections,
+                            books.keptCoverStore,
+                        ),
+                        keptCoverArchive: new StoredKeptCoverArchive(
+                            books.keptCoverStore,
                             new FileCoverStorage(directory),
                         ),
                         operations,
