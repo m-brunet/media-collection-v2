@@ -1138,7 +1138,7 @@ it('asks for a sign-in code for the chosen address and outlines its card', async
     expect(await card('This computer')).not.toHaveClass('place-card--current');
     expect(
         screen.getByRole('button', { name: 'Show the QR code for http://192.168.1.99:34345' }),
-    ).toHaveTextContent('QR code shown');
+    ).toHaveAttribute('title', 'QR code shown');
 });
 it('announces the QR code when it changes', async () => {
     administrator(withAddresses(status()));
@@ -1245,4 +1245,17 @@ it('gives the keep awake box its row title and explanation', async () => {
                 'Leaf only works while this computer is on and awake. The screen can still turn off.',
         }),
     ).toBeInTheDocument();
+});
+it('keeps each address and its QR code button on one line', async () => {
+    administrator(withAddresses(status()));
+
+    renderPage();
+    const button = await screen.findByRole('button', {
+        name: 'Show the QR code for http://192.168.1.99:34345',
+    });
+
+    expect(button).toHaveAttribute('title', 'Show QR code');
+    expect(button.closest('li')).toContainElement(
+        screen.getByRole('link', { name: 'http://192.168.1.99:34345' }),
+    );
 });
