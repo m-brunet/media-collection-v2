@@ -3,7 +3,7 @@ import type { VolumeCoverDto } from '../../../../../packages/contracts/src/http'
 import type { VolumeCovers } from './volume-cover-queue';
 import { VolumeCoverQueue } from './volume-cover-queue';
 
-function setup(replies: Record<string, VolumeCoverDto[]>, wanted: string[], sleeps = 3) {
+function setup(replies: Record<string, VolumeCoverDto>, wanted: string[], sleeps = 1) {
     const asked: string[] = [];
     const waits: number[] = [];
     const arrivals: VolumeCovers[] = [];
@@ -12,7 +12,7 @@ function setup(replies: Record<string, VolumeCoverDto[]>, wanted: string[], slee
         async (isbn) => {
             asked.push(isbn);
 
-            return replies[isbn]?.shift() ?? { kind: 'none' };
+            return replies[isbn] ?? { kind: 'none' };
         },
         async (milliseconds) => {
             waits.push(milliseconds);
@@ -21,7 +21,6 @@ function setup(replies: Record<string, VolumeCoverDto[]>, wanted: string[], slee
                 queue.stop();
             }
         },
-        () => Date.parse('2026-03-01T10:00:00Z'),
         (covers) => arrivals.push(covers),
     );
 
@@ -29,47 +28,35 @@ function setup(replies: Record<string, VolumeCoverDto[]>, wanted: string[], slee
 }
 
 describe('VolumeCoverQueue', () => {
-    it('asks one cover at a time, six seconds apart, in the order wanted', async () => {
-        const { queue, asked, waits, arrivals } = setup(
-            { a: [{ kind: 'found', token: 'token-a' }] },
-            ['a', 'b'],
-            2,
-        );
+    it('asks one cover after the other, in the order wanted', async () => {
+        const { queue, asked, arrivals } = setup({ a: { kind: 'found', token: 'token-a' } }, [
+            'a',
+            'b',
+        ]);
 
         await queue.run();
 
         expect(asked).toEqual(['a', 'b']);
-        expect(waits).toEqual([6000, 6000]);
         expect([...arrivals.at(-1)!]).toEqual([
             ['a', { kind: 'found', token: 'token-a' }],
             ['b', { kind: 'none' }],
         ]);
     });
 
-    it('waits until the time given when the source is limited, then asks again', async () => {
-        const { queue, asked, waits } = setup(
-            {
-                a: [
-                    { kind: 'limited', retryAt: '2026-03-01T10:03:00Z' },
-                    { kind: 'found', token: 'token-a' },
-                ],
-            },
-            ['a'],
-            2,
-        );
+    it('asks the next cover as soon as one has answered: the server paces the sources', async () => {
+        const { queue, waits } = setup({}, ['a', 'b']);
 
         await queue.run();
 
-        expect(waits).toEqual([180000, 6000]);
-        expect(asked).toEqual(['a', 'a']);
+        expect(waits).toEqual([VolumeCoverQueue.idleWait]);
     });
 
-    it('waits a few minutes when the time to wait cannot be read', async () => {
-        const { queue, waits } = setup({ a: [{ kind: 'limited', retryAt: 'soon' }] }, ['a'], 1);
+    it('never asks again for a cover the server did not give', async () => {
+        const { queue, asked } = setup({ a: { kind: 'none' } }, ['a'], 3);
 
         await queue.run();
 
-        expect(waits).toEqual([VolumeCoverQueue.fallbackWait]);
+        expect(asked).toEqual(['a']);
     });
 
     it('counts an unreachable server as no cover', async () => {
@@ -80,7 +67,6 @@ describe('VolumeCoverQueue', () => {
                 throw new Error('offline');
             },
             async () => queue.stop(),
-            () => 0,
             (covers) => arrivals.push(covers),
         );
 
@@ -104,6 +90,6 @@ describe('VolumeCoverQueue', () => {
         await queue.run();
 
         expect(asked).toEqual(['a']);
-        expect(waits).toEqual([6000, 6000, 6000]);
+        expect(waits).toEqual([1000, 1000, 1000]);
     });
 });

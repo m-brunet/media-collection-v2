@@ -21,6 +21,7 @@ export interface LookupMessage {
     tone: 'info' | 'warning' | 'success';
     text: string;
     retry: boolean;
+    check?: boolean;
     offline?: boolean;
 }
 
@@ -66,6 +67,13 @@ export function useBookLookup({
                 openBook(result.bookId);
             } else if (result.found) {
                 setReview(result);
+            } else if (result.pending.length > 0) {
+                setMessage({
+                    tone: 'info',
+                    text: t('lookup.pendingNone', { sources: sourceNames(result.pending) }),
+                    retry: true,
+                    check: true,
+                });
             } else if (result.unavailable.length > 0) {
                 setMessage({
                     tone: 'warning',
@@ -109,16 +117,23 @@ export function useBookLookup({
             showAdditional();
         }
 
-        setMessage(
-            result.unavailable.length > 0
-                ? {
-                      tone: 'warning',
-                      text: t('lookup.partial', { sources: unavailableNames(result) }),
-                      retry: false,
-                      offline: true,
-                  }
-                : { tone: 'success', text: t('lookup.applied'), retry: false },
-        );
+        if (result.pending.length > 0) {
+            setMessage({
+                tone: 'info',
+                text: t('lookup.pendingPartial', { sources: sourceNames(result.pending) }),
+                retry: true,
+                check: true,
+            });
+        } else if (result.unavailable.length > 0) {
+            setMessage({
+                tone: 'warning',
+                text: t('lookup.partial', { sources: unavailableNames(result) }),
+                retry: false,
+                offline: true,
+            });
+        } else {
+            setMessage({ tone: 'success', text: t('lookup.applied'), retry: false });
+        }
 
         if (conflicts.length > 0) {
             setReplacing({ selection, conflicts });

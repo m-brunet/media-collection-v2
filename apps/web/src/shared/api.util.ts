@@ -21,6 +21,7 @@ export class ApiClient {
             body?: unknown;
             passive?: boolean;
             file?: Blob;
+            signal?: AbortSignal;
         } = {},
     ): Promise<T> {
         const method = options.method ?? 'GET';
@@ -43,6 +44,7 @@ export class ApiClient {
             credentials: 'same-origin',
             body:
                 method === 'GET' ? undefined : (options.file ?? JSON.stringify(options.body ?? {})),
+            signal: options.signal,
         });
 
         if (!response.ok) {

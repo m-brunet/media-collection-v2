@@ -462,6 +462,20 @@ it('explains that the edition is not in the BnF catalogue', async () => {
     ).toBeVisible();
 });
 
+it('cancels the volume search when its dialog is closed', async () => {
+    const api = library({ kind: 'edition-not-found' });
+
+    renderRoute('/collections/c1', { '/collections/:id': <CollectionDetailsPage /> });
+    await userEvent.click(await screen.findByRole('button', { name: 'Add volumes' }));
+    await userEvent.type(screen.getByRole('spinbutton', { name: /Up to volume/ }), '4');
+    await userEvent.click(screen.getByRole('button', { name: 'Find volumes' }));
+    await screen.findByText(/was not found in the BnF catalogue/);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(api.signals.get('POST /collections/c1/missing-volumes/search')?.aborted).toBe(true);
+});
+
 it('offers a Guest no way to add volumes', async () => {
     library().signedIn(account({ role: 'guest' }));
 

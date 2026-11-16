@@ -6,6 +6,7 @@ type Handler = (body: unknown) => { status: number; body?: unknown };
 
 export class FakeApi {
     readonly calls: { route: string; body: unknown }[] = [];
+    readonly signals = new Map<string, AbortSignal>();
     private readonly handlers = new Map<string, Handler>();
 
     constructor() {
@@ -57,6 +58,10 @@ export class FakeApi {
             this.handlers.get(Required.at(route.split('?'), 0, 'a route has a path'));
 
         this.calls.push({ route, body });
+
+        if (init.signal) {
+            this.signals.set(route, init.signal);
+        }
 
         if (!handler) {
             return Response.json({ message: 'Not found' }, { status: 404 });

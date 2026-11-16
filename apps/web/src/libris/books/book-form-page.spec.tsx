@@ -1066,6 +1066,7 @@ describe('Find book', () => {
             authorSpellings: [],
             covers: [],
             unavailable: [],
+            pending: [],
             ...overrides,
         };
     }
@@ -1345,6 +1346,60 @@ describe('Find book', () => {
             ),
         ).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Retry lookup' })).toBeEnabled();
+    });
+
+    it('names the sources still answering and offers Check again when nothing has arrived yet', async () => {
+        new FakeApi().signedIn(account()).on('POST /books/lookups', () => ({
+            status: 200,
+            body: lookedUp({ found: false, pending: ['bnf'] }),
+        }));
+
+        addPage();
+        await findBook();
+
+        expect(
+            await screen.findByText(
+                'No answer yet from BnF. Your ISBN is kept. Check again in a few seconds, or complete this form manually.',
+            ),
+        ).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Check again' })).toBeEnabled();
+    });
+
+    it('offers Check again after using values while a source is still answering', async () => {
+        new FakeApi().signedIn(account()).on('POST /books/lookups', () => ({
+            status: 200,
+            body: lookedUp({ fields: ewilanFields, pending: ['openlibrary'] }),
+        }));
+        addPage();
+        await findBook();
+        const review = await screen.findByRole('dialog', { name: 'Review the lookup result' });
+
+        await userEvent.click(within(review).getByRole('button', { name: 'Use these values' }));
+
+        expect(
+            screen.getByText(
+                'No answer yet from Open Library; the values found may be incomplete. Check again to see the rest.',
+            ),
+        ).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Check again' })).toBeEnabled();
+    });
+
+    it('repeats the lookup on Check again', async () => {
+        const api = new FakeApi().signedIn(account()).on('POST /books/lookups', () => ({
+            status: 200,
+            body: lookedUp({ found: false, pending: ['bnf'] }),
+        }));
+
+        addPage();
+        await findBook();
+
+        await userEvent.click(await screen.findByRole('button', { name: 'Check again' }));
+
+        await vi.waitFor(() =>
+            expect(api.calls.filter((call) => call.route === 'POST /books/lookups')).toHaveLength(
+                2,
+            ),
+        );
     });
 
     it('explains an invalid ISBN beside the field', async () => {

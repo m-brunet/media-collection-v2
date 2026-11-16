@@ -1,6 +1,6 @@
 import type { FormEvent } from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { Navigate, useBlocker, useLocation, useNavigate } from 'react-router';
+import { Link, Navigate, useBlocker, useLocation, useNavigate } from 'react-router';
 import type { BookcaseDto, BookLookupDto } from '../../../../../packages/contracts/src/http';
 import { api } from '../../shared/api.util';
 import type { BookDraftValues, DraftFieldSetter } from '../../shared/book-form/book-draft.util';
@@ -133,6 +133,7 @@ function AddBookForm({ isbn, lookup, accountId, bookcases }: AddBookFormProps) {
         void saving.save(values);
     };
     const unavailable = sourceNames(lookup.unavailable.map(({ source }) => source));
+    const pending = sourceNames(lookup.pending);
 
     return (
         <LeafPage
@@ -143,6 +144,14 @@ function AddBookForm({ isbn, lookup, accountId, bookcases }: AddBookFormProps) {
             {unavailable && (
                 <Notice tone="warning" icon="lookup-offline">
                     {t('lookup.partial', { sources: unavailable })}
+                </Notice>
+            )}
+            {pending && (
+                <Notice tone="info">
+                    {t('lookup.pendingPartial', { sources: pending })}{' '}
+                    <Link to="/scan/found" state={{ isbn }}>
+                        {t('lookup.checkAgain')}
+                    </Link>
                 </Notice>
             )}
             <form className="leaf-form" onSubmit={submit} noValidate>

@@ -323,6 +323,9 @@ export const en = {
     'leaf.found.notFound': 'No book catalogue knows this ISBN.',
     'leaf.found.unavailable': 'The lookup did not complete: {sources} could not be reached.',
     'leaf.found.error': 'The lookup did not complete.',
+    'leaf.found.pending': 'No answer yet from {sources}.',
+    'leaf.found.pendingHint':
+        'The answer is on its way. Check again in a few seconds. The scanned ISBN {isbn} is kept.',
     'leaf.found.retryOnce': 'You can retry once. The scanned ISBN {isbn} is kept.',
     'leaf.found.exhaustedTitle': 'Lookup unavailable',
     'leaf.found.exhaustedNotFoundTitle': 'Book not found',
@@ -603,6 +606,11 @@ export const en = {
         'Book lookup is unavailable. Your ISBN is kept. Retry or complete this form manually.',
     'lookup.partial':
         'Some sources did not answer ({sources}); the values found may be incomplete.',
+    'lookup.checkAgain': 'Check again',
+    'lookup.pendingNone':
+        'No answer yet from {sources}. Your ISBN is kept. Check again in a few seconds, or complete this form manually.',
+    'lookup.pendingPartial':
+        'No answer yet from {sources}; the values found may be incomplete. Check again to see the rest.',
     'lookup.applied': 'Lookup values added to the form. Check them, then save the book.',
     'lookup.reviewTitle': 'Review the lookup result',
     'lookup.reviewIntro': 'Choose the values to use. Nothing is saved yet.',

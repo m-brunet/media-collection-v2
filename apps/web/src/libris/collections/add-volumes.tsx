@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type {
     BookOwnership,
     CollectionDetailsDto,
@@ -38,8 +38,14 @@ export function AddVolumesDialog({
     const action = useAction();
     const [upTo, setUpTo] = useState('');
     const [outcome, setOutcome] = useState<string | null>(null);
+    const searching = useRef<AbortController | null>(null);
+    const close = () => {
+        searching.current?.abort();
+        onClose();
+    };
     const search = () => {
         const volume = Number(upTo);
+        const cancel = new AbortController();
 
         setOutcome(null);
 
@@ -49,11 +55,23 @@ export function AddVolumesDialog({
             return;
         }
 
+        searching.current = cancel;
+
         void action.run(async () => {
-            const found = await api.request<MissingVolumesDto>(
-                '/collections/' + collection.id + '/missing-volumes/search',
-                { method: 'POST', body: { upTo: volume } },
-            );
+            let found: MissingVolumesDto;
+
+            try {
+                found = await api.request<MissingVolumesDto>(
+                    '/collections/' + collection.id + '/missing-volumes/search',
+                    { method: 'POST', body: { upTo: volume }, signal: cancel.signal },
+                );
+            } catch (error) {
+                if (cancel.signal.aborted) {
+                    return;
+                }
+
+                throw error;
+            }
 
             if (found.kind === 'edition-not-found') {
                 setOutcome(t('volumes.editionNotFound'));
@@ -71,10 +89,10 @@ export function AddVolumesDialog({
         <Dialog
             open={open}
             title={t('volumes.dialogTitle')}
-            onClose={onClose}
+            onClose={close}
             footer={
                 <>
-                    <Button onClick={onClose}>{t('common.cancel')}</Button>
+                    <Button onClick={close}>{t('common.cancel')}</Button>
                     <Button variant="primary" busy={action.busy} onClick={search}>
                         {t('volumes.search')}
                     </Button>

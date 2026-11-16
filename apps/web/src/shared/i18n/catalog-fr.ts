@@ -340,6 +340,9 @@ export const fr = {
     'leaf.found.notFound': 'Aucun catalogue de livres ne connaît cet ISBN.',
     'leaf.found.unavailable': 'La recherche n’a pas abouti : {sources} n’a pas pu être joint.',
     'leaf.found.error': 'La recherche n’a pas abouti.',
+    'leaf.found.pending': 'Pas encore de réponse de {sources}.',
+    'leaf.found.pendingHint':
+        'La réponse est en route. Vérifiez à nouveau dans quelques secondes. L’ISBN scanné {isbn} est conservé.',
     'leaf.found.retryOnce': 'Vous pouvez réessayer une fois. L’ISBN scanné {isbn} est conservé.',
     'leaf.found.exhaustedTitle': 'Recherche indisponible',
     'leaf.found.exhaustedNotFoundTitle': 'Livre introuvable',
@@ -637,6 +640,11 @@ export const fr = {
         'La recherche est indisponible. Votre ISBN est conservé. Réessayez ou complétez le formulaire vous-même.',
     'lookup.partial':
         'Certaines sources n’ont pas répondu ({sources}) ; les valeurs trouvées peuvent être incomplètes.',
+    'lookup.checkAgain': 'Vérifier à nouveau',
+    'lookup.pendingNone':
+        'Pas encore de réponse de {sources}. Votre ISBN est conservé. Vérifiez à nouveau dans quelques secondes ou complétez le formulaire vous-même.',
+    'lookup.pendingPartial':
+        'Pas encore de réponse de {sources} ; les valeurs trouvées peuvent être incomplètes. Vérifiez à nouveau pour voir la suite.',
     'lookup.applied': 'Valeurs ajoutées au formulaire. Vérifiez-les, puis enregistrez le livre.',
     'lookup.reviewTitle': 'Vérifier le résultat de la recherche',
     'lookup.reviewIntro': 'Choisissez les valeurs à utiliser. Rien n’est encore enregistré.',
