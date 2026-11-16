@@ -2,9 +2,9 @@ import type { RemoveCoverUseCase } from '../ports/driving/remove-cover-use-case.
 import type { BookView } from '../book-views.js';
 import { BookAudit } from '../book-audit.js';
 import type { BookRepository } from '../ports/driven/book-repository.interface.js';
-import type { CoverStorage } from '../ports/driven/cover-storage.interface.js';
 import { BookLoader } from '../services/book-loader.service.js';
 import { BookViewer } from '../services/book-viewer.service.js';
+import type { KeptCovers } from '../services/kept-covers.service.js';
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 import type { AuditedOperation } from '../../../shared/application/services/audited-operation.service.js';
 import type { Actor } from '../../../shared/domain/actor.helper.js';
@@ -13,7 +13,7 @@ import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 export class RemoveCover implements RemoveCoverUseCase {
     constructor(
         private readonly books: BookRepository,
-        private readonly covers: CoverStorage,
+        private readonly kept: KeptCovers,
         private readonly loader: BookLoader,
         private readonly viewer: BookViewer,
         private readonly clock: Clock,
@@ -22,6 +22,7 @@ export class RemoveCover implements RemoveCoverUseCase {
 
     async execute(actor: Actor, bookId: string): Promise<BookView> {
         let removed: string | null = null;
+        let isbn13: string | null = null;
         const view = await this.operations.run(
             {
                 category: BookAudit.coverChanged,
@@ -34,6 +35,7 @@ export class RemoveCover implements RemoveCoverUseCase {
                 const book = await this.loader.load(bookId);
 
                 removed = book.snapshot.coverFile;
+                isbn13 = book.snapshot.details.isbn?.isbn13 ?? null;
                 book.replaceCover(null, this.clock.now().toISOString());
                 await this.books.save(book);
 
@@ -45,9 +47,7 @@ export class RemoveCover implements RemoveCoverUseCase {
             },
         );
 
-        if (removed) {
-            await this.covers.remove(removed);
-        }
+        await this.kept.keep(isbn13, removed);
 
         return view;
     }

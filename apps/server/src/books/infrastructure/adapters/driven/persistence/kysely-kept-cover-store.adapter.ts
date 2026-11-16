@@ -1,0 +1,40 @@
+import type {
+    KeptCover,
+    KeptCoverStore,
+} from '../../../../application/ports/driven/kept-cover-store.interface.js';
+import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
+
+export class KyselyKeptCoverStore implements KeptCoverStore {
+    constructor(private readonly connections: DatabaseConnections) {}
+
+    private get db() {
+        return this.connections.current;
+    }
+
+    async find(isbn13: string): Promise<KeptCover | null> {
+        const row = await this.db
+            .selectFrom('kept_covers')
+            .selectAll()
+            .where('isbn13', '=', isbn13)
+            .executeTakeFirst();
+
+        return row ? { id: row.id, isbn13: row.isbn13, file: row.file, keptAt: row.kept_at } : null;
+    }
+
+    async put(cover: KeptCover): Promise<void> {
+        await this.remove(cover.isbn13);
+        await this.db
+            .insertInto('kept_covers')
+            .values({
+                id: cover.id,
+                isbn13: cover.isbn13,
+                file: cover.file,
+                kept_at: cover.keptAt,
+            })
+            .execute();
+    }
+
+    async remove(isbn13: string): Promise<void> {
+        await this.db.deleteFrom('kept_covers').where('isbn13', '=', isbn13).execute();
+    }
+}

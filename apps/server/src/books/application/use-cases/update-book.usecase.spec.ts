@@ -10,7 +10,7 @@ function subject(current: ReturnType<typeof BookDoubles.library>) {
         current.collections,
         current.removal,
         current.organiser,
-        current.covers,
+        current.kept,
         current.loader,
         current.builder,
         current.identity,
@@ -34,6 +34,39 @@ describe('UpdateBook', () => {
         );
 
         expect(result).toMatchObject({ title: 'Piranesi (paperback)', pageCount: 272 });
+    });
+    it('deletes the cover kept for the new ISBN of a book that has its own cover', async () => {
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
+        const own = await current.covers.store(new Uint8Array([1]), 'image/png');
+        const kept = await current.covers.store(new Uint8Array([9]), 'image/png');
+
+        current.books.books.get(book.id)!.replaceCover(own, '2026-03-01T10:00:00.000Z');
+        await current.kept.keep('9782253164692', kept);
+
+        await subject(current).execute(
+            owner,
+            book.id,
+            BookDoubles.input({ isbn: '9782253164692' }),
+        );
+
+        expect(current.keptStore.kept.size).toBe(0);
+        expect([...current.covers.files.keys()]).toEqual([own]);
+    });
+    it('leaves the cover kept for the ISBN of a book that has no cover', async () => {
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current);
+        const kept = await current.covers.store(new Uint8Array([9]), 'image/png');
+
+        await current.kept.keep('9782253164692', kept);
+
+        await subject(current).execute(
+            owner,
+            book.id,
+            BookDoubles.input({ isbn: '9782253164692' }),
+        );
+
+        expect(current.keptStore.kept.get('9782253164692')?.file).toBe(kept);
     });
     it('removes an author no other book uses any more', async () => {
         const current = BookDoubles.library();

@@ -1,9 +1,15 @@
+import type { Clock } from '../../../../../shared/application/ports/driven/clock.interface.js';
+import type { IdGenerator } from '../../../../../shared/application/ports/driven/id-generator.interface.js';
 import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
 
 export type ErasedLibrary = { books: number; authors: number; collections: number; loans: number };
 
 export class KyselyLibraryEraser {
-    constructor(private readonly connections: DatabaseConnections) {}
+    constructor(
+        private readonly connections: DatabaseConnections,
+        private readonly ids: IdGenerator,
+        private readonly clock: Clock,
+    ) {}
 
     async erase(): Promise<ErasedLibrary> {
         const db = this.connections.current;
@@ -21,6 +27,7 @@ export class KyselyLibraryEraser {
         await db.deleteFrom('book_authors').execute();
         await db.deleteFrom('reading_statuses').execute();
         await db.deleteFrom('personal_notes').execute();
+        await this.keepCovers();
         const books = await db.deleteFrom('books').executeTakeFirst();
         const authors = await db.deleteFrom('authors').executeTakeFirst();
 
@@ -36,5 +43,28 @@ export class KyselyLibraryEraser {
             collections: Number(collections.numDeletedRows),
             loans: Number(loans.numDeletedRows),
         };
+    }
+
+    private async keepCovers(): Promise<void> {
+        const db = this.connections.current;
+        const keptAt = this.clock.now().toISOString();
+        const covers = await db
+            .selectFrom('books')
+            .select(['isbn13', 'cover_file'])
+            .where('isbn13', 'is not', null)
+            .where('cover_file', 'is not', null)
+            .execute();
+
+        for (const { isbn13, cover_file: file } of covers) {
+            if (isbn13 === null || file === null) {
+                continue;
+            }
+
+            await db.deleteFrom('kept_covers').where('isbn13', '=', isbn13).execute();
+            await db
+                .insertInto('kept_covers')
+                .values({ id: this.ids.next(), isbn13, file, kept_at: keptAt })
+                .execute();
+        }
     }
 }

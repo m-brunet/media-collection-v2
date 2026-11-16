@@ -5,6 +5,7 @@ import type {
 import type { BookRepository } from '../ports/driven/book-repository.interface.js';
 import type { LookupCoverRegistry } from '../ports/driven/lookup-cover-registry.interface.js';
 import type { AuthorMatcher, AuthorSpelling } from '../services/author-matcher.service.js';
+import { KeptCovers } from '../services/kept-covers.service.js';
 import type { SourceLink, SourceUnavailability } from '../services/source-chain.service.js';
 import type { CoverOffer } from '../../domain/services/cover-combination.service.js';
 import { CoverCombination } from '../../domain/services/cover-combination.service.js';
@@ -24,6 +25,7 @@ export class LookUpBook implements LookUpBookUseCase {
         private readonly covers: SourceLink<CoverOffer[]> | null,
         private readonly registry: LookupCoverRegistry,
         private readonly authors: AuthorMatcher,
+        private readonly kept: KeptCovers,
     ) {}
 
     async execute(actor: Actor, isbn: string): Promise<BookLookup> {
@@ -46,7 +48,13 @@ export class LookUpBook implements LookUpBookUseCase {
             }
         };
         const informationSteps = this.information?.begin(isbn13);
-        const coverSteps = this.covers?.begin(isbn13);
+        const keptCover = await this.kept.offer(isbn13);
+        const coverSteps = keptCover ? null : this.covers?.begin(isbn13);
+
+        if (keptCover) {
+            covers.add(KeptCovers.source, [keptCover]);
+        }
+
         let timer: ReturnType<typeof setTimeout> | undefined;
         const deadline = new Promise<'late'>((resolve) => {
             timer = setTimeout(() => resolve('late'), LookUpBook.answerSeconds * 1000);

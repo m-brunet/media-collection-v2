@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { randomUUID } from 'node:crypto';
-import { readdir } from 'node:fs/promises';
+import { readdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { Database } from '../../apps/server/src/shared/infrastructure/adapters/driven/persistence/database.adapter.js';
 import { UuidGenerator } from '../../apps/server/src/shared/infrastructure/adapters/driven/runtime/uuid-generator.adapter.js';
@@ -53,13 +53,24 @@ async function installation() {
     return { directory, database, adminId: admin.id };
 }
 
-async function erase(database: Database, adminId: string) {
+const resetAt = new Date('2026-11-16T09:00:00.000Z');
+
+async function erase(database: Database, adminId: string, deleteKeptCovers = false) {
     await database.connections.run(() =>
         new KyselyApplicationDataEraser(
             database.connections,
-            new KyselyLibraryEraser(database.connections),
-        ).erase(adminId),
+            new KyselyLibraryEraser(database.connections, new UuidGenerator(), {
+                now: () => resetAt,
+            }),
+        ).erase(adminId, deleteKeptCovers),
     );
+}
+
+function keptCovers(database: Database) {
+    return database.connection
+        .selectFrom('kept_covers')
+        .select(['isbn13', 'file', 'kept_at'])
+        .execute();
 }
 
 describe('application data eraser', () => {
@@ -105,6 +116,113 @@ describe('application data eraser', () => {
 
         expect(Object.values(contents.library).every((count) => count === 0)).toBe(true);
     });
+    it('keeps the cover of each book under its ISBN', async () => {
+        const { database, adminId } = await installation();
+        const book = await database.connection
+            .selectFrom('books')
+            .select(['isbn13', 'cover_file'])
+            .executeTakeFirstOrThrow();
+
+        await erase(database, adminId);
+
+        const kept = await keptCovers(database);
+
+        await database.close();
+        expect(kept).toEqual([
+            { isbn13: book.isbn13, file: book.cover_file, kept_at: resetAt.toISOString() },
+        ]);
+    });
+    it('replaces a cover kept earlier for the ISBN of a book', async () => {
+        const { database, adminId } = await installation();
+        const book = await database.connection
+            .selectFrom('books')
+            .select(['isbn13', 'cover_file'])
+            .executeTakeFirstOrThrow();
+
+        await database.connection
+            .insertInto('kept_covers')
+            .values({
+                id: randomUUID(),
+                isbn13: book.isbn13!,
+                file: 'earlier.jpg',
+                kept_at: '2026-01-01T00:00:00.000Z',
+            })
+            .execute();
+
+        await erase(database, adminId);
+
+        const kept = await keptCovers(database);
+
+        await database.close();
+        expect(kept.map((cover) => cover.file)).toEqual([book.cover_file]);
+    });
+    it('keeps a cover kept earlier for another ISBN', async () => {
+        const { database, adminId } = await installation();
+
+        await database.connection
+            .insertInto('kept_covers')
+            .values({
+                id: randomUUID(),
+                isbn13: '9782253164692',
+                file: 'earlier.jpg',
+                kept_at: '2026-01-01T00:00:00.000Z',
+            })
+            .execute();
+
+        await erase(database, adminId);
+
+        const kept = await keptCovers(database);
+
+        await database.close();
+        expect(kept.map((cover) => cover.isbn13).sort()).toEqual([
+            '9781635575637',
+            '9782253164692',
+        ]);
+    });
+    it('deletes every kept cover when asked', async () => {
+        const { database, adminId } = await installation();
+
+        await erase(database, adminId, true);
+
+        const kept = await keptCovers(database);
+
+        await database.close();
+        expect(kept).toEqual([]);
+    });
+    it('leaves the picture of a kept cover in place when the unused files are cleaned', async () => {
+        const { directory, database, adminId } = await installation();
+        const book = await database.connection
+            .selectFrom('books')
+            .select('cover_file')
+            .executeTakeFirstOrThrow();
+
+        await erase(database, adminId);
+
+        await new KyselyCoverFileCleanup(
+            database.connections,
+            new FileCoverStorage(directory),
+        ).removeUnreferenced();
+
+        await database.close();
+        expect(await readdir(join(directory, 'covers'))).toContain(book.cover_file);
+    });
+    it('removes the pictures once the kept covers are deleted', async () => {
+        const { directory, database, adminId } = await installation();
+        const book = await database.connection
+            .selectFrom('books')
+            .select('cover_file')
+            .executeTakeFirstOrThrow();
+
+        await erase(database, adminId, true);
+
+        await new KyselyCoverFileCleanup(
+            database.connections,
+            new FileCoverStorage(directory),
+        ).removeUnreferenced();
+
+        await database.close();
+        expect(await readdir(join(directory, 'covers'))).not.toContain(book.cover_file);
+    });
     it('keeps the HTTPS certificate files', async () => {
         const { directory, database, adminId } = await installation();
 
@@ -119,10 +237,12 @@ describe('application data eraser', () => {
 });
 
 describe('cover file cleanup after a reset', () => {
-    it('removes the stored covers no book uses, leaving other files', async () => {
+    it('removes the stored covers that no book and no kept cover uses, leaving other files', async () => {
         const { directory, database, adminId } = await installation();
+        const orphan = randomUUID() + '.jpg';
 
-        await erase(database, adminId);
+        await writeFile(join(directory, 'covers', orphan), 'image');
+        await erase(database, adminId, true);
         const cleanup = new KyselyCoverFileCleanup(
             database.connections,
             new FileCoverStorage(directory),
@@ -131,7 +251,7 @@ describe('cover file cleanup after a reset', () => {
         const removed = await cleanup.removeUnreferenced();
 
         await database.close();
-        expect(removed).toBe(1);
+        expect(removed).toBe(2);
         expect(await readdir(join(directory, 'covers'))).toEqual(['notes.txt']);
     });
 });

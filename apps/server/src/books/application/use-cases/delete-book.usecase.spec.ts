@@ -7,7 +7,7 @@ function subject(current: ReturnType<typeof BookDoubles.library>) {
         current.removal,
         current.collections,
         current.organisation,
-        current.covers,
+        current.kept,
         current.operations,
     );
 }
@@ -22,9 +22,25 @@ describe('DeleteBook', () => {
         expect(current.books.books.size).toBe(0);
         expect(current.authors.authors.size).toBe(0);
     });
-    it('removes the cover file', async () => {
+    it('keeps the cover under the ISBN of the deleted book', async () => {
         const current = BookDoubles.library();
-        const book = await BookDoubles.saved(current);
+        const book = await BookDoubles.saved(current, { isbn: '9782253164692' });
+        const file = await current.covers.store(new Uint8Array([1]), 'image/png');
+        const stored = current.books.books.get(book.id)!;
+
+        stored.replaceCover(file, '2026-03-01T10:00:00.000Z');
+
+        await subject(current).execute(owner, book.id);
+
+        expect([...current.covers.files.keys()]).toEqual([file]);
+        expect(current.keptStore.kept.get('9782253164692')).toMatchObject({
+            file,
+            keptAt: '2026-03-01T10:00:00.000Z',
+        });
+    });
+    it('removes the cover file of a book without an ISBN', async () => {
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, { isbn: null, noIsbn: true });
         const file = await current.covers.store(new Uint8Array([1]), 'image/png');
         const stored = current.books.books.get(book.id)!;
 
@@ -33,6 +49,30 @@ describe('DeleteBook', () => {
         await subject(current).execute(owner, book.id);
 
         expect(current.covers.files.size).toBe(0);
+        expect(current.keptStore.kept.size).toBe(0);
+    });
+    it('keeps nothing for a book without a cover', async () => {
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, { isbn: '9782253164692' });
+
+        await subject(current).execute(owner, book.id);
+
+        expect(current.keptStore.kept.size).toBe(0);
+    });
+    it('replaces the cover kept earlier for the same ISBN', async () => {
+        const current = BookDoubles.library();
+        const earlier = await current.covers.store(new Uint8Array([9]), 'image/png');
+
+        await current.kept.keep('9782253164692', earlier);
+        const book = await BookDoubles.saved(current, { isbn: '9782253164692' });
+        const file = await current.covers.store(new Uint8Array([1]), 'image/png');
+
+        current.books.books.get(book.id)!.replaceCover(file, '2026-03-01T10:00:00.000Z');
+
+        await subject(current).execute(owner, book.id);
+
+        expect([...current.covers.files.keys()]).toEqual([file]);
+        expect(current.keptStore.kept.get('9782253164692')?.file).toBe(file);
     });
     it('records the deleted information', async () => {
         const current = BookDoubles.library();

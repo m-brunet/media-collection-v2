@@ -14,6 +14,7 @@ function subject(current: ReturnType<typeof BookDoubles.library>) {
         current.viewer,
         current.clock,
         current.operations,
+        current.kept,
     );
 }
 
@@ -25,6 +26,19 @@ describe('ReplaceCover', () => {
         const result = await subject(current).execute(owner, book.id, png);
 
         expect(result.hasCover).toBe(true);
+        expect(current.covers.files.size).toBe(1);
+    });
+    it('deletes the cover kept for the ISBN once the book has a cover', async () => {
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, { isbn: '9782253164692' });
+        const kept = await current.covers.store(new Uint8Array([9]), 'image/png');
+
+        await current.kept.keep('9782253164692', kept);
+
+        await subject(current).execute(owner, book.id, png);
+
+        expect(current.keptStore.kept.size).toBe(0);
+        expect(current.covers.files.has(kept)).toBe(false);
         expect(current.covers.files.size).toBe(1);
     });
     it('stores the cover without its shop padding', async () => {

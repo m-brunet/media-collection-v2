@@ -5,7 +5,7 @@ import { CreateBook } from './create-book.usecase.js';
 function subject(current = BookDoubles.library()) {
     return new CreateBook(
         current.creation,
-        current.covers,
+        current.kept,
         current.viewer,
         current.ids,
         current.operations,

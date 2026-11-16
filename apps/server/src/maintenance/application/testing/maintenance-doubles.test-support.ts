@@ -120,12 +120,16 @@ export class FixedPasswordCheck implements AdministratorPasswordCheck {
 export class MemoryApplicationData implements ApplicationDataEraser, CoverFileCleanup {
     accounts = ['admin', 'owner', 'guest'];
     covers = ['cover.jpg'];
+    orphans: string[] = [];
     referencedCovers: string[] = [];
     preferences: Record<string, string> = { appearance: 'Mint' };
 
-    async erase(keptAccountId: string): Promise<void> {
+    async erase(keptAccountId: string, deleteKeptCovers: boolean): Promise<void> {
         this.accounts = this.accounts.filter((account) => account === keptAccountId);
         this.preferences = {};
+        this.referencedCovers = deleteKeptCovers
+            ? []
+            : this.covers.filter((cover) => !this.orphans.includes(cover));
     }
 
     async removeUnreferenced(): Promise<number> {

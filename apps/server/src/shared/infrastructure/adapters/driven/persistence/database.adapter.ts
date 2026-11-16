@@ -168,6 +168,13 @@ interface LoansTable {
     book_isbn: string | null;
 }
 
+interface KeptCoversTable {
+    id: string;
+    isbn13: string;
+    file: string;
+    kept_at: string;
+}
+
 export interface DatabaseSchema {
     users: UsersTable;
     pairing_codes: PairingCodesTable;
@@ -175,6 +182,7 @@ export interface DatabaseSchema {
     audit_logs: AuditLogsTable;
     authors: AuthorsTable;
     books: BooksTable;
+    kept_covers: KeptCoversTable;
     book_authors: BookAuthorsTable;
     reading_statuses: ReadingStatusesTable;
     personal_notes: PersonalNotesTable;

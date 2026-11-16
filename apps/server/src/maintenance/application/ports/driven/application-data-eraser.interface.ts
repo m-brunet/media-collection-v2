@@ -1,3 +1,3 @@
 export interface ApplicationDataEraser {
-    erase(keptAccountId: string): Promise<void>;
+    erase(keptAccountId: string, deleteKeptCovers: boolean): Promise<void>;
 }

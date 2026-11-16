@@ -15,7 +15,7 @@ export class ResetApplicationData implements ResetApplicationDataUseCase {
         private readonly operations: AuditedOperation,
     ) {}
 
-    async execute(actor: Actor, password: string): Promise<void> {
+    async execute(actor: Actor, password: string, deleteKeptCovers: boolean): Promise<void> {
         await this.operations.run(
             {
                 category: MaintenanceAudit.dataReset,
@@ -26,7 +26,7 @@ export class ResetApplicationData implements ResetApplicationDataUseCase {
             async () => {
                 ActorAuthorization.requireAdmin(actor);
                 await this.passwords.confirm(actor.id, password);
-                await this.eraser.erase(actor.id);
+                await this.eraser.erase(actor.id, deleteKeptCovers);
 
                 return { result: undefined, before: null, after: null };
             },

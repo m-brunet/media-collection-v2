@@ -26,11 +26,12 @@ class DevelopmentDataContext {}
 
 export class DevelopmentDataCommands {
     static async reset(dataDirectory: string): Promise<string[]> {
-        const database = await Database.open(dataDirectory, new UuidGenerator());
+        const ids = new UuidGenerator();
+        const database = await Database.open(dataDirectory, ids);
 
         try {
             const report = await new ResetDevelopmentData(
-                new KyselyLibraryEraser(database.connections),
+                new KyselyLibraryEraser(database.connections, ids, new SystemClock()),
                 new KyselyCoverFileCleanup(
                     database.connections,
                     new FileCoverStorage(dataDirectory),
@@ -81,7 +82,7 @@ export class DevelopmentDataCommands {
                     new JsonV1Dump(source),
                     new CachedCoverDownloads(join(dirname(source), 'covers')),
                     IdentityModule.administrator(new KyselyUserRepository(database.connections)),
-                    new KyselyLibraryEraser(database.connections),
+                    new KyselyLibraryEraser(database.connections, ids, clock),
                     new KyselyCoverFileCleanup(
                         database.connections,
                         new FileCoverStorage(dataDirectory),

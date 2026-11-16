@@ -10,10 +10,15 @@ export class KyselyApplicationDataEraser implements ApplicationDataEraser {
         private readonly library: KyselyLibraryEraser,
     ) {}
 
-    async erase(keptAccountId: string): Promise<void> {
+    async erase(keptAccountId: string, deleteKeptCovers: boolean): Promise<void> {
         const db = this.connections.current;
 
         await this.library.erase();
+
+        if (deleteKeptCovers) {
+            await db.deleteFrom('kept_covers').execute();
+        }
+
         await db.deleteFrom('users').where('id', '!=', keptAccountId).execute();
         await db
             .deleteFrom('server_settings')
