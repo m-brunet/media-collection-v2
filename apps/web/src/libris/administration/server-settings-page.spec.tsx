@@ -1259,3 +1259,22 @@ it('keeps each address and its QR code button on one line', async () => {
         screen.getByRole('link', { name: 'http://192.168.1.99:34345' }),
     );
 });
+it('closes the message of a stopped setup for good', async () => {
+    const api = administrator(
+        status(
+            internetAccess({ failure: { reason: 'setup-failed', at: '2026-11-08T10:00:00.000Z' } }),
+        ),
+    ).on('DELETE /server-settings/internet-access/failure', () => ({
+        status: 200,
+        body: internetAccess(),
+    }));
+
+    renderPage();
+    await screen.findByText('The setup stopped unexpectedly. Try again.');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Close message' }));
+
+    expect(api.calls.map((call) => call.route)).toContain(
+        'DELETE /server-settings/internet-access/failure',
+    );
+});

@@ -150,6 +150,15 @@ function HttpsInternetSection({
                 ),
             ),
         );
+    const dismissFailure = () =>
+        void action.run(async () =>
+            onStatus(
+                await api.request<InternetAccessStatus>(
+                    '/server-settings/internet-access/failure',
+                    { method: 'DELETE' },
+                ),
+            ),
+        );
     const setUp = (replaceCertificate: boolean) =>
         api.request<InternetAccessStatus>('/server-settings/internet-access', {
             method: 'POST',
@@ -238,7 +247,11 @@ function HttpsInternetSection({
                 </>
             }
         >
-            {status.phase === 'off' && failure && <Notice tone="error">{failure}</Notice>}
+            {status.phase === 'off' && failure && (
+                <Notice tone="error" onClose={dismissFailure}>
+                    {failure}
+                </Notice>
+            )}
             {status.phase === 'setting-up' && <SetupSteps current={status.step} />}
             {status.phase === 'waiting-for-port' && failure && (
                 <Notice tone="warning">{failure}</Notice>
