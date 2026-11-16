@@ -1,5 +1,6 @@
 import type { DeleteTagUseCase } from '../ports/driving/delete-tag-use-case.interface.js';
-import { TagAudit, TagSnapshot } from '../tag-audit.js';
+import { TagAudit } from '../tag-audit.js';
+import { TagSnapshot } from '../tag-snapshot.helper.js';
 import type { BookTagStore } from '../ports/driven/book-tag-store.interface.js';
 import type { TagRepository } from '../ports/driven/tag-repository.interface.js';
 import { TagLoader } from '../services/tag-loader.service.js';

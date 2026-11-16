@@ -1,4 +1,5 @@
-import { CollectionAudit, CollectionChange } from '../collection-audit.js';
+import { CollectionAudit } from '../collection-audit.js';
+import { CollectionChange } from '../collection-change.helper.js';
 import { MemberCoverage } from '../member-coverage.helper.js';
 import type {
     CollectionMemberStore,

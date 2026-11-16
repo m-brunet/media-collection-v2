@@ -3,7 +3,7 @@ import { Book } from '../domain/entities/book.entity.js';
 import { Isbn } from '../domain/value-objects/isbn.value-object.js';
 import { Price } from '../domain/value-objects/price.value-object.js';
 import { PublicationDate } from '../domain/value-objects/publication-date.value-object.js';
-import { BookSnapshot } from './book-audit.js';
+import { BookSnapshot } from './book-snapshot.helper.js';
 
 function book(coverFile: string | null) {
     return new Book({

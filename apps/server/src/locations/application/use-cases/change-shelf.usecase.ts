@@ -1,5 +1,6 @@
 import type { ChangeShelfUseCase } from '../ports/driving/change-shelf-use-case.interface.js';
-import { LocationAudit, LocationSnapshot } from '../location-audit.js';
+import { LocationAudit } from '../location-audit.js';
+import { LocationSnapshot } from '../location-snapshot.helper.js';
 import type { ShelfChanges, ShelfView } from '../location-views.js';
 import type { ShelfRepository } from '../ports/driven/shelf-repository.interface.js';
 import { LocationLoader } from '../services/location-loader.service.js';

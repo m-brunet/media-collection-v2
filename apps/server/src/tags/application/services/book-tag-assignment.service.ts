@@ -1,4 +1,4 @@
-import { TagSnapshot } from '../tag-audit.js';
+import { TagSnapshot } from '../tag-snapshot.helper.js';
 import type { BookTagStore } from '../ports/driven/book-tag-store.interface.js';
 import type { TagRepository } from '../ports/driven/tag-repository.interface.js';
 import { TagLoader } from './tag-loader.service.js';

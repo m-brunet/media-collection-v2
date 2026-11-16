@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Bookcase } from '../domain/entities/bookcase.entity.js';
 import { Shelf } from '../domain/entities/shelf.entity.js';
-import { LocationSnapshot } from './location-audit.js';
+import { LocationSnapshot } from './location-snapshot.helper.js';
 
 const at = '2026-01-01T00:00:00.000Z';
 const oak = () => new Bookcase({ id: 'oak', name: 'Oak', createdAt: at, updatedAt: at });

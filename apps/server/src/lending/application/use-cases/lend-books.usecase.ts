@@ -1,6 +1,7 @@
 import type { LendBooksUseCase } from '../ports/driving/lend-books-use-case.interface.js';
 import type { LendingOutcome, LendRequest } from '../lending-input.js';
-import { LoanAudit, LoanSnapshot } from '../loan-audit.js';
+import { LoanAudit } from '../loan-audit.js';
+import { LoanSnapshot } from '../loan-snapshot.helper.js';
 import type { LendableBooks } from '../ports/driven/lendable-books.interface.js';
 import type { LoanRepository } from '../ports/driven/loan-repository.interface.js';
 import { ReceiverResolver } from '../services/receiver-resolver.service.js';

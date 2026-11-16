@@ -1,5 +1,6 @@
 import type { CreateTagUseCase } from '../ports/driving/create-tag-use-case.interface.js';
-import { TagAudit, TagSnapshot } from '../tag-audit.js';
+import { TagAudit } from '../tag-audit.js';
+import { TagSnapshot } from '../tag-snapshot.helper.js';
 import type { TagView } from '../tag-views.js';
 import type { TagRepository } from '../ports/driven/tag-repository.interface.js';
 import { TagNaming } from '../services/tag-naming.service.js';

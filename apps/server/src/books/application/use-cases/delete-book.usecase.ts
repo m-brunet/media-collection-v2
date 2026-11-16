@@ -1,5 +1,6 @@
 import type { DeleteBookUseCase } from '../ports/driving/delete-book-use-case.interface.js';
-import { BookAudit, BookSnapshot } from '../book-audit.js';
+import { BookAudit } from '../book-audit.js';
+import { BookSnapshot } from '../book-snapshot.helper.js';
 import type { BookCollectionReader } from '../ports/driven/book-collection-reader.interface.js';
 import { BookOrganisationReader } from '../services/book-organisation-reader.service.js';
 import { BookRemoval } from '../services/book-removal.service.js';

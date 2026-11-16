@@ -1,5 +1,6 @@
 import type { OrganiseBookUseCase } from '../ports/driving/organise-book-use-case.interface.js';
-import { BookAudit, BookSnapshot } from '../book-audit.js';
+import { BookAudit } from '../book-audit.js';
+import { BookSnapshot } from '../book-snapshot.helper.js';
 import type { OrganisationRequest } from '../book-input.js';
 import type { BookView } from '../book-views.js';
 import { BookLoader } from '../services/book-loader.service.js';
