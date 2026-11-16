@@ -169,6 +169,16 @@ export class Credits {
                     used: 'credits.openLibrary.used',
                     changes: null,
                 },
+                {
+                    id: 'inventaire',
+                    name: 'Inventaire',
+                    author: 'Association Inventaire and its contributors',
+                    url: 'https://inventaire.io',
+                    licence: 'CC0 (data)',
+                    licenceUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+                    used: 'credits.inventaire.used',
+                    changes: null,
+                },
             ],
         },
         {

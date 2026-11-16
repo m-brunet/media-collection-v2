@@ -16,12 +16,19 @@ export function useVolumeCovers(wanted: readonly string[]): VolumeCovers {
         let timer: ReturnType<typeof setTimeout> | undefined;
         const queue = new VolumeCoverQueue(
             () => current.current,
-            (isbn) =>
-                api.request<VolumeCoverDto>('/books/lookups/volume-cover', {
+            async (isbn) => {
+                const cover = await api.request<VolumeCoverDto>('/books/lookups/volume-cover', {
                     method: 'POST',
                     body: { isbn },
                     passive: true,
-                }),
+                });
+
+                if (cover.kind === 'found') {
+                    await api.download('/books/lookups/covers/' + cover.token);
+                }
+
+                return cover;
+            },
             (milliseconds) =>
                 new Promise((resolve) => {
                     timer = setTimeout(resolve, milliseconds);

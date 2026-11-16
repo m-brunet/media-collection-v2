@@ -503,6 +503,8 @@ export const en = {
     'credits.bnf.used':
         'Book information and summaries in Find book. Source: Bibliothèque nationale de France.',
     'credits.openLibrary.used': 'Book information and covers in Find book.',
+    'credits.inventaire.used':
+        'Covers in Find book and Add volumes. The pictures keep their own copyright.',
     'credits.sharp.used': 'Removing the padding around covers.',
     'credits.libvips.used': 'Image decoding and encoding, bundled with sharp.',
     'credits.barcodeDetector.used':
@@ -650,6 +652,7 @@ export const en = {
     'reason.lookupCoverUnavailable': 'The source of this cover did not provide a usable image.',
     'source.bnf': 'BnF',
     'source.openlibrary': 'Open Library',
+    'source.inventaire': 'Inventaire',
     'form.noIsbn': 'This book has no ISBN',
     'form.title': 'Title',
     'form.titleGenerated':
