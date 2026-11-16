@@ -78,9 +78,47 @@ export const fr = {
         'Communiquez-le à la personne ; elle choisira son propre mot de passe à sa première connexion.',
     'accounts.create': 'Créer le compte',
     'accounts.created': 'Compte créé. Communiquez le mot de passe temporaire à son propriétaire.',
+    'reach.title': 'Où joindre la bibliothèque',
+    'reach.computer': 'Cet ordinateur',
+    'reach.home': 'Réseau de la maison',
+    'reach.internet': 'Internet',
+    'reach.computerNote': 'Seulement depuis un navigateur de cet ordinateur.',
+    'reach.homeNote':
+        'Téléphones et ordinateurs du réseau de la maison. Une adresse par carte réseau.',
+    'reach.internetOn': 'De partout, chiffré.',
+    'reach.internetHttp':
+        'De partout, mais sans chiffrement. À n’utiliser que si HTTPS ne fonctionne pas.',
+    'reach.internetSettingUp': 'Media Collection ouvre le port et obtient le certificat.',
+    'reach.internetWaiting':
+        'Une règle est nécessaire dans votre box. Voir Accès Internet ci-dessous.',
+    'reach.internetOff':
+        'Configurez l’accès Internet ci-dessous pour ouvrir la bibliothèque de partout.',
+    'reach.noAddress': 'Aucune adresse',
+    'reach.notSetUp': 'Non configuré',
+    'reach.notYet': 'Pas encore joignable',
+    'reach.on': 'Actif',
+    'reach.off': 'Inactif',
+    'reach.onHttps': 'Actif · HTTPS',
+    'reach.onHttp': 'Actif · non chiffré',
+    'reach.settingUp': 'Configuration',
+    'reach.needsHelp': 'Votre aide est nécessaire',
+    'reach.qrTitle': 'QR code',
+    'reach.qrInvite':
+        'Choisissez « Afficher le QR code » sur une adresse pour connecter un téléphone.',
+    'reach.qrShown': 'QR code affiché',
+    'setting.open': 'Ouvert',
+    'setting.closed': 'Fermé',
+    'internet.settingUpDetail':
+        'Media Collection cherche votre box, ouvre le port et obtient le certificat.',
+    'internet.waitingDetail':
+        'Ajoutez la règle ci-dessous dans votre box, puis vérifiez à nouveau.',
+    'internet.httpDetail': 'Seulement pour les téléphones qui ne peuvent pas utiliser HTTPS.',
+    'keepAwake.control': 'Garder éveillé',
+    'server.httpPortDetail':
+        'Libris et Leaf sur cet ordinateur et à la maison. À l’écoute sur le port {running}.',
+    'server.httpsPortDetail': 'Téléphones hors de la maison.',
     'server.title': 'Paramètres du serveur',
     'server.intro': 'Comment les navigateurs et les téléphones accèdent à cette bibliothèque.',
-    'server.listeners': 'Adresses actuelles',
     'server.qrShow': 'Afficher le QR code',
     'server.qrShowFor': 'Afficher le QR code pour {address}',
     'server.qrCaption': 'Scannez pour ouvrir Leaf à cette adresse',
@@ -91,8 +129,6 @@ export const fr = {
     'server.restartRequired':
         'Des paramètres enregistrés attendent un redémarrage. Fermez puis rouvrez l’application de bureau pour les appliquer.',
     'server.httpTitle': 'HTTP / interface web',
-    'server.httpIntro':
-        'Les navigateurs utilisent ce port pour accéder à Libris et Leaf. HTTP écoute sur le port {running} ; le port enregistré est {saved}.',
     'server.overrideCommandLine':
         'Un port imposé en ligne de commande est actif sur le port {port}. Retirez-le, puis fermez et rouvrez l’application de bureau pour utiliser le port enregistré.',
     'server.overrideEnvironment':
@@ -112,8 +148,6 @@ export const fr = {
     'server.portsIntro':
         'Chaque port est utilisé sur cet ordinateur et ouvert sous le même numéro sur votre box : les téléphones hors de chez vous l’utilisent aussi.',
     'server.httpsPortTitle': 'HTTPS / accès Internet',
-    'server.httpsPortIntro':
-        'Hors de chez vous, les téléphones ouvrent l’adresse HTTPS avec ce port. Let’s Encrypt vérifie toujours cet ordinateur sur le port 443 : il n’est ouvert que pendant chaque vérification.',
     'server.httpsPortSubmit': 'Enregistrer le port HTTPS',
     'server.httpsPortSavedActive': 'Port HTTPS enregistré. Ce port est déjà actif.',
     'server.httpsPortSavedRestart':
@@ -238,7 +272,6 @@ export const fr = {
         'HTTP n’est pas chiffré : les mots de passe et les données de la bibliothèque peuvent être lus sur les réseaux entre le téléphone et votre domicile. Ne l’utilisez que si HTTPS ne fonctionne pas.',
     'internet.httpOpen': 'Ouvrir HTTP sur Internet',
     'internet.httpClose': 'Fermer HTTP',
-    'internet.httpIsOpen': 'HTTP est ouvert sur Internet.',
     'internet.httpClosedByHttps':
         'HTTP a été fermé car HTTPS fonctionne. Les téléphones utilisent l’adresse HTTPS.',
     'internet.httpHttpsActive': 'HTTPS fonctionne, HTTP reste donc fermé.',

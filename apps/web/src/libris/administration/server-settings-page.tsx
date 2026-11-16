@@ -9,9 +9,9 @@ import { Notice } from '../../shared/ui/notice';
 import { LoadingState } from '../../shared/ui/states';
 import { TextAreaField } from '../../shared/ui/text-field';
 import { useAction } from '../../shared/use-action';
-import { AddressesPanel } from './addresses-panel';
 import { InternetAccessPanel } from './internet-access-panel';
 import { PortsPanel } from './ports-panel';
+import { ReachCards } from './reach-cards';
 
 const followInterval = 1500;
 
@@ -77,6 +77,11 @@ export function ServerSettingsPage() {
                     {settings.restartRequired && (
                         <Notice tone="warning">{t('server.restartRequired')}</Notice>
                     )}
+                    <ReachCards
+                        addresses={settings.running.addresses}
+                        internetAccess={settings.internetAccess}
+                        httpInternetAccess={settings.httpInternetAccess}
+                    />
                     <InternetAccessPanel
                         status={settings.internetAccess}
                         http={settings.httpInternetAccess}
@@ -95,18 +100,6 @@ export function ServerSettingsPage() {
                                 .then(setSettings, () => undefined)
                         }
                         onKeepAwake={(keepAwake) => setSettings({ ...settings, keepAwake })}
-                    />
-                    <AddressesPanel
-                        addresses={[
-                            ...settings.running.addresses,
-                            ...[
-                                settings.httpInternetAccess.origin,
-                                settings.internetAccess.origin,
-                            ].filter((origin): origin is string => origin !== null),
-                        ]}
-                        httpInternetAddress={settings.httpInternetAccess.origin}
-                        httpsPort={settings.running.httpsPort}
-                        httpsError={settings.running.httpsError}
                     />
                     <PortsPanel settings={settings} onSaved={setSettings} />
                     <details className="advanced-settings">

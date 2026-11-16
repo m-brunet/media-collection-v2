@@ -8,6 +8,8 @@ import { ConfirmDialog } from '../../shared/ui/confirm-dialog';
 import { Notice } from '../../shared/ui/notice';
 import { useAction } from '../../shared/use-action';
 import { ManualRule } from './manual-rule';
+import { SettingRow } from './setting-row';
+import { StatusPill } from './status-pill';
 
 const failures: Record<NonNullable<HttpInternetAccessStatus['failure']>['reason'], MessageKey> = {
     'no-router': 'internet.failure.no-router',
@@ -38,40 +40,40 @@ export function HttpInternetSection({
             });
             onChanged();
         });
+    const open = status.phase === 'open';
+    const closedByHttps = status.phase === 'off' && httpsActive;
 
     return (
-        <section className="internet-access__section" aria-labelledby="http-internet-title">
-            <h3 id="http-internet-title" className="internet-access__subtitle">
-                {t('internet.httpTitle')}
-            </h3>
-            <Notice tone="warning">{t('internet.httpWarning')}</Notice>
-            {status.phase === 'open' && (
+        <SettingRow
+            id="http-internet"
+            title={t('internet.httpTitle')}
+            detail={closedByHttps ? t('internet.httpHttpsActive') : t('internet.httpDetail')}
+            control={
                 <>
-                    <Notice tone="success">{t('internet.httpIsOpen')}</Notice>
-                    {failure && <Notice tone="warning">{failure}</Notice>}
-                    {status.manualRule && <ManualRule rule={status.manualRule} />}
+                    <StatusPill
+                        tone={open ? 'warn' : 'off'}
+                        label={t(open ? 'setting.open' : 'setting.closed')}
+                    />
+                    {open && (
+                        <Button busy={action.busy} onClick={close}>
+                            {t('internet.httpClose')}
+                        </Button>
+                    )}
+                    {status.phase === 'off' && !httpsActive && (
+                        <Button busy={action.busy} onClick={() => setConfirming(true)}>
+                            {t('internet.httpOpen')}
+                        </Button>
+                    )}
                 </>
-            )}
+            }
+        >
+            {!closedByHttps && <Notice tone="warning">{t('internet.httpWarning')}</Notice>}
             {status.phase === 'off' && status.closedByHttps && (
                 <Notice>{t('internet.httpClosedByHttps')}</Notice>
             )}
-            {status.phase === 'off' && failure && <Notice tone="error">{failure}</Notice>}
+            {failure && <Notice tone={open ? 'warning' : 'error'}>{failure}</Notice>}
+            {open && status.manualRule && <ManualRule rule={status.manualRule} />}
             {action.feedback && <Notice tone={action.feedback.tone}>{action.feedback.text}</Notice>}
-            <div className="actions">
-                {status.phase === 'open' && (
-                    <Button busy={action.busy} onClick={close}>
-                        {t('internet.httpClose')}
-                    </Button>
-                )}
-                {status.phase === 'off' && !httpsActive && (
-                    <Button busy={action.busy} onClick={() => setConfirming(true)}>
-                        {t('internet.httpOpen')}
-                    </Button>
-                )}
-            </div>
-            {status.phase === 'off' && httpsActive && !status.closedByHttps && (
-                <p className="muted">{t('internet.httpHttpsActive')}</p>
-            )}
             <ConfirmDialog
                 open={confirming}
                 title={t('internet.httpConfirmTitle')}
@@ -87,6 +89,6 @@ export function HttpInternetSection({
                 }}
                 onClose={() => setConfirming(false)}
             />
-        </section>
+        </SettingRow>
     );
 }

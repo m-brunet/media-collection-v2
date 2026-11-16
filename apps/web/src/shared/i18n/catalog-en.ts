@@ -73,9 +73,41 @@ export const en = {
         'Share it with the person; they choose their own password at first sign-in.',
     'accounts.create': 'Create account',
     'accounts.created': 'Account created. Share the temporary password with its owner.',
+    'reach.title': 'Where the library can be reached',
+    'reach.computer': 'This computer',
+    'reach.home': 'Home network',
+    'reach.internet': 'Internet',
+    'reach.computerNote': 'Only from a browser on this computer.',
+    'reach.homeNote': 'Phones and computers on your home network. One address per network adapter.',
+    'reach.internetOn': 'From anywhere, encrypted.',
+    'reach.internetHttp': 'From anywhere, but not encrypted. Use it only when HTTPS does not work.',
+    'reach.internetSettingUp': 'Media Collection is opening the port and getting the certificate.',
+    'reach.internetWaiting': 'A rule is needed in your router. See Internet access below.',
+    'reach.internetOff': 'Set up internet access below to open the library from anywhere.',
+    'reach.noAddress': 'No address',
+    'reach.notSetUp': 'Not set up',
+    'reach.notYet': 'Not reachable yet',
+    'reach.on': 'On',
+    'reach.off': 'Off',
+    'reach.onHttps': 'On · HTTPS',
+    'reach.onHttp': 'On · not encrypted',
+    'reach.settingUp': 'Setting up',
+    'reach.needsHelp': 'Needs your help',
+    'reach.qrTitle': 'QR code',
+    'reach.qrInvite': 'Choose “Show QR code” on an address to connect a phone.',
+    'reach.qrShown': 'QR code shown',
+    'setting.open': 'Open',
+    'setting.closed': 'Closed',
+    'internet.settingUpDetail':
+        'Media Collection is finding your router, opening the port and getting the certificate.',
+    'internet.waitingDetail': 'Add the rule below in your router, then check again.',
+    'internet.httpDetail': 'Only for phones that cannot use HTTPS.',
+    'keepAwake.control': 'Keep awake',
+    'server.httpPortDetail':
+        'Libris and Leaf on this computer and at home. Listening on port {running}.',
+    'server.httpsPortDetail': 'Phones outside your home.',
     'server.title': 'Server settings',
     'server.intro': 'How browsers and phones reach this library.',
-    'server.listeners': 'Current addresses',
     'server.qrShow': 'Show QR code',
     'server.qrShowFor': 'Show the QR code for {address}',
     'server.qrCaption': 'Scan to open Leaf at this address',
@@ -85,8 +117,6 @@ export const en = {
     'server.restartRequired':
         'Saved settings are waiting for a restart. Close and reopen the desktop application to apply them.',
     'server.httpTitle': 'HTTP / web interface',
-    'server.httpIntro':
-        'Browsers use this port to reach Libris and Leaf. HTTP is listening on port {running}; the saved port is {saved}.',
     'server.overrideCommandLine':
         'A command-line port override is active on port {port}. Remove it, then close and reopen the desktop application to use the saved port.',
     'server.overrideEnvironment':
@@ -106,8 +136,6 @@ export const en = {
     'server.portsIntro':
         'Each port is used on this computer and opened under the same number on your router, so phones outside your home use it too.',
     'server.httpsPortTitle': 'HTTPS / internet access',
-    'server.httpsPortIntro':
-        'Phones outside your home open the HTTPS address with this port. Let’s Encrypt still checks this computer on port 443: it is opened only during each check.',
     'server.httpsPortSubmit': 'Save HTTPS port',
     'server.httpsPortSavedActive': 'HTTPS port saved. This port is already active.',
     'server.httpsPortSavedRestart':
@@ -224,7 +252,6 @@ export const en = {
         'HTTP is not encrypted: passwords and library data can be read on the networks between the phone and your home. Use it only when HTTPS does not work.',
     'internet.httpOpen': 'Open HTTP to the internet',
     'internet.httpClose': 'Close HTTP',
-    'internet.httpIsOpen': 'HTTP is open to the internet.',
     'internet.httpClosedByHttps':
         'HTTP was closed because HTTPS works. Phones use the HTTPS address.',
     'internet.httpHttpsActive': 'HTTPS works, so HTTP stays closed.',

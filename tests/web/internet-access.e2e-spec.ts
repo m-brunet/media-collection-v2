@@ -203,7 +203,7 @@ describe('Internet access', () => {
 
         await page.getByRole('button', { name: 'Open HTTP to the internet' }).click();
         await page.getByRole('button', { name: 'Open without encryption' }).click();
-        await page.getByText('HTTP is open to the internet.').waitFor();
+        await page.getByRole('button', { name: 'Close HTTP' }).waitFor();
         await capture(page, 'internet-access-http-open');
 
         expect(await readQrCode(await qrCodeFor(page, origin))).toEqual([origin + '/leaf/']);
@@ -213,9 +213,9 @@ describe('Internet access', () => {
 
         await page.getByRole('button', { name: 'Open HTTP to the internet' }).click();
         await page.getByRole('button', { name: 'Open without encryption' }).click();
-        await page.getByText('HTTP is open to the internet.').waitFor();
+        await page.getByRole('button', { name: 'Close HTTP' }).waitFor();
         await page.getByRole('button', { name: 'Set up internet access' }).click();
-        await page.getByText('Internet access is on.').waitFor();
+        await page.getByRole('button', { name: 'Turn off internet access' }).waitFor();
 
         await page.getByText('HTTP was closed because HTTPS works.', { exact: false }).waitFor();
         expect(await page.getByRole('button', { name: 'Open HTTP to the internet' }).count()).toBe(
