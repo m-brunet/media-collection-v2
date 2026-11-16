@@ -59,6 +59,7 @@ export type ActivityEvent =
     | { kind: 'shelf-created' | 'shelf-deleted'; name: string; bookcase: string }
     | { kind: 'shelf-renamed'; from: string; to: string; bookcase: string }
     | { kind: 'shelf-moved'; name: string; from: string; to: string }
+    | { kind: 'books-placed'; shelf: string; bookcase: string; count: number }
     | { kind: 'kept-covers-deleted'; count: number };
 
 export type ActivityCategory = 'books' | 'manga' | 'comics';
@@ -77,6 +78,7 @@ export class ActivityProjection {
     private static readonly order: readonly (readonly string[])[] = [
         [
             'collection.volumes-added',
+            'shelf.books-placed',
             'book.created',
             'book.updated',
             'book.marked-owned',
@@ -156,6 +158,7 @@ export class ActivityProjection {
 
     private static readonly absorbs: Readonly<Record<string, readonly string[]>> = {
         'collection.volumes-added': ['book.created'],
+        'shelf.books-placed': ['book.organised'],
     };
 
     private static main(records: readonly ActivityRecord[]): ActivityRecord | undefined {
@@ -183,6 +186,8 @@ export class ActivityProjection {
                 return ActivityProjection.book('book-added', record);
             case 'collection.volumes-added':
                 return ActivityProjection.volumesAdded(after);
+            case 'shelf.books-placed':
+                return ActivityProjection.booksPlaced(after);
             case 'book.updated':
             case 'book.retitled':
                 return ActivityProjection.book('book-updated', record);
@@ -256,6 +261,18 @@ export class ActivityProjection {
 
         return typeof count === 'number' && count > 0
             ? { kind: 'kept-covers-deleted', count }
+            : null;
+    }
+
+    private static booksPlaced(after: Values): ActivityEvent | null {
+        const shelf = ActivityProjection.text(after, 'name');
+        const bookcase = ActivityProjection.text(after, 'bookcaseName');
+        const changed = [after?.placed, after?.moved].flatMap((ids) =>
+            Array.isArray(ids) ? ids : [],
+        );
+
+        return shelf && bookcase && changed.length > 0
+            ? { kind: 'books-placed', shelf, bookcase, count: changed.length }
             : null;
     }
 

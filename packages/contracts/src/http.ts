@@ -258,6 +258,23 @@ export interface BookBatchFieldsDto {
     read?: boolean;
 }
 
+export interface ShelfPlacementInputDto {
+    shelfId: string;
+    bookIds: string[];
+}
+
+export interface PlacedBookDto {
+    id: string;
+    title: string;
+}
+
+export interface ShelfPlacementDto {
+    shelf: BookLocationDto;
+    placed: PlacedBookDto[];
+    moved: (PlacedBookDto & { from: BookLocationDto })[];
+    unchanged: PlacedBookDto[];
+}
+
 export type BookBatchSkipReason = 'book-lent' | 'possible-duplicate' | 'title-not-generated';
 
 export interface BookBatchDto {
@@ -313,6 +330,7 @@ export interface BookListItemDto {
     ownership: BookOwnership;
     hasCover: boolean;
     collection: { name: string; volumeFrom: number; volumeTo: number } | null;
+    location: BookLocationDto | null;
     updatedAt: string;
     read: boolean | null;
     loan: BookLoanDto | null;
@@ -716,6 +734,7 @@ export type ActivityEventDto =
     | { kind: 'shelf-created' | 'shelf-deleted'; name: string; bookcase: string }
     | { kind: 'shelf-renamed'; from: string; to: string; bookcase: string }
     | { kind: 'shelf-moved'; name: string; from: string; to: string }
+    | { kind: 'books-placed'; shelf: string; bookcase: string; count: number }
     | { kind: 'kept-covers-deleted'; count: number };
 
 export interface ActivityEntryDto {

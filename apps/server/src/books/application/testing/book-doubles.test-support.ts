@@ -440,6 +440,7 @@ export class MemoryCatalog implements BookCatalog {
             ownership: book.details.ownership,
             hasCover: book.snapshot.coverFile !== null,
             collection: null,
+            location: null,
             updatedAt: book.snapshot.updatedAt,
             read: query.readerId === null ? null : false,
         }));

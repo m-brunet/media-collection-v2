@@ -60,6 +60,8 @@ import type { IdGenerator } from '../../../shared/application/ports/driven/id-ge
 import type { AuditedOperation } from '../../../shared/application/services/audited-operation.service.js';
 import { AuthorsController } from '../adapters/driving/web/authors.controller.js';
 import { BooksController } from '../adapters/driving/web/books.controller.js';
+import { ShelfPlacementController } from '../adapters/driving/web/shelf-placement.controller.js';
+import { PlaceBooksOnShelf } from '../../application/use-cases/place-books-on-shelf.usecase.js';
 import { BookBatchController } from '../adapters/driving/web/book-batch.controller.js';
 import { CoversController } from '../adapters/driving/web/covers.controller.js';
 import { CollectionReadingController } from '../adapters/driving/web/collection-reading.controller.js';
@@ -599,6 +601,16 @@ const useCaseProviders: Provider[] = [
         ) => new OrganiseBook(loader, organiser, viewer, operations),
     },
     {
+        provide: 'BOOKS_PLACE_ON_SHELF',
+        inject: [token.loader, token.shelfLocator, token.organiser, token.operations],
+        useFactory: (
+            loader: BookLoader,
+            shelves: ShelfLocator,
+            organiser: BookOrganiser,
+            operations: AuditedOperation,
+        ) => new PlaceBooksOnShelf(loader, shelves, organiser, operations),
+    },
+    {
         provide: 'BOOKS_GET',
         inject: [token.loader, token.viewer],
         useFactory: (loader: BookLoader, viewer: BookViewer) => new GetBook(loader, viewer),
@@ -770,6 +782,7 @@ export class BooksModule {
             module: BooksModule,
             controllers: [
                 BookBatchController,
+                ShelfPlacementController,
                 BooksController,
                 AuthorsController,
                 CoversController,

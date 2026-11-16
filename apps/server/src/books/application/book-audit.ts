@@ -2,6 +2,7 @@ export const BookAudit = {
     book: 'book',
     author: 'author',
     collection: 'collection',
+    shelf: 'shelf',
     created: 'book.created',
     updated: 'book.updated',
     deleted: 'book.deleted',
@@ -16,4 +17,5 @@ export const BookAudit = {
     batchEdited: 'collection.books-batch-edited',
     volumesAdded: 'collection.volumes-added',
     noteChanged: 'book.note-changed',
+    booksPlaced: 'shelf.books-placed',
 } as const;

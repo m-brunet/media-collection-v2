@@ -58,6 +58,7 @@ export interface CatalogBookItem {
     ownership: Ownership;
     hasCover: boolean;
     collection: { name: string; volumeFrom: number; volumeTo: number } | null;
+    location: BookLocation | null;
     updatedAt: string;
     read: boolean | null;
 }
