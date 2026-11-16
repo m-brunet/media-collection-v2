@@ -1,13 +1,15 @@
 import type { ApplicationDataEraser } from '../../../../application/ports/driven/application-data-eraser.interface.js';
+import type { LibraryEraser } from '../../../../application/ports/driven/library-eraser.interface.js';
+import type { KeptCoverStore } from '../../../../../books/application/ports/driven/kept-cover-store.interface.js';
 import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
-import type { KyselyLibraryEraser } from './kysely-library-eraser.adapter.js';
 
 export class KyselyApplicationDataEraser implements ApplicationDataEraser {
     private static readonly preferences = ['appearance', 'icon-set'];
 
     constructor(
         private readonly connections: DatabaseConnections,
-        private readonly library: KyselyLibraryEraser,
+        private readonly library: LibraryEraser,
+        private readonly kept: KeptCoverStore,
     ) {}
 
     async erase(keptAccountId: string, deleteKeptCovers: boolean): Promise<void> {
@@ -16,7 +18,7 @@ export class KyselyApplicationDataEraser implements ApplicationDataEraser {
         await this.library.erase();
 
         if (deleteKeptCovers) {
-            await db.deleteFrom('kept_covers').execute();
+            await this.kept.clear();
         }
 
         await db.deleteFrom('users').where('id', '!=', keptAccountId).execute();

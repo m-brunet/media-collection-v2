@@ -6,6 +6,7 @@ import { Database } from '../../apps/server/src/shared/infrastructure/adapters/d
 import { UuidGenerator } from '../../apps/server/src/shared/infrastructure/adapters/driven/runtime/uuid-generator.adapter.js';
 import { KyselyApplicationDataEraser } from '../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/kysely-application-data-eraser.adapter.js';
 import { KyselyLibraryEraser } from '../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/kysely-library-eraser.adapter.js';
+import { KyselyKeptCoverStore } from '../../apps/server/src/books/infrastructure/adapters/driven/persistence/kysely-kept-cover-store.adapter.js';
 import { KyselyCoverFileCleanup } from '../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/kysely-cover-file-cleanup.adapter.js';
 import { FileCoverStorage } from '../../apps/server/src/books/infrastructure/adapters/driven/filesystem/file-cover-storage.adapter.js';
 import { DataDirectories } from './data-directories.test-support.js';
@@ -56,12 +57,18 @@ async function installation() {
 const resetAt = new Date('2026-11-16T09:00:00.000Z');
 
 async function erase(database: Database, adminId: string, deleteKeptCovers = false) {
+    const kept = new KyselyKeptCoverStore(database.connections);
+
     await database.connections.run(() =>
         new KyselyApplicationDataEraser(
             database.connections,
-            new KyselyLibraryEraser(database.connections, new UuidGenerator(), {
-                now: () => resetAt,
-            }),
+            new KyselyLibraryEraser(
+                database.connections,
+                new UuidGenerator(),
+                { now: () => resetAt },
+                kept,
+            ),
+            kept,
         ).erase(adminId, deleteKeptCovers),
     );
 }
@@ -201,6 +208,7 @@ describe('application data eraser', () => {
         await new KyselyCoverFileCleanup(
             database.connections,
             new FileCoverStorage(directory),
+            new KyselyKeptCoverStore(database.connections),
         ).removeUnreferenced();
 
         await database.close();
@@ -218,6 +226,7 @@ describe('application data eraser', () => {
         await new KyselyCoverFileCleanup(
             database.connections,
             new FileCoverStorage(directory),
+            new KyselyKeptCoverStore(database.connections),
         ).removeUnreferenced();
 
         await database.close();
@@ -246,6 +255,7 @@ describe('cover file cleanup after a reset', () => {
         const cleanup = new KyselyCoverFileCleanup(
             database.connections,
             new FileCoverStorage(directory),
+            new KyselyKeptCoverStore(database.connections),
         );
 
         const removed = await cleanup.removeUnreferenced();

@@ -58,8 +58,9 @@ import { KyselyIconSetRepository } from '../../appearance/infrastructure/adapter
 import { MaintenanceModule } from '../../maintenance/infrastructure/config/maintenance.module.js';
 import { KyselyApplicationDataEraser } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-application-data-eraser.adapter.js';
 import { KyselyLibraryEraser } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-library-eraser.adapter.js';
+import { KyselyKeptCoverStore } from '../../books/infrastructure/adapters/driven/persistence/kysely-kept-cover-store.adapter.js';
 import { KyselyCoverFileCleanup } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-cover-file-cleanup.adapter.js';
-import { KyselyKeptCoverArchive } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-kept-cover-archive.adapter.js';
+import { StoredKeptCoverArchive } from '../../maintenance/infrastructure/adapters/driven/persistence/stored-kept-cover-archive.adapter.js';
 import { KyselyKeptCoverCount } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-kept-cover-count.adapter.js';
 import { FileCoverStorage } from '../../books/infrastructure/adapters/driven/filesystem/file-cover-storage.adapter.js';
 import { SetupAccess } from '../../identity/infrastructure/adapters/driving/web/setup-access.service.js';
@@ -172,6 +173,7 @@ export class BackendRuntime {
             const authentication = new AuthenticateSession(accounts, tokens);
             const renewal = new RenewSession(accounts, tokens);
             const sessions = new HttpSessions(secret, HttpApplication.uploadPaths);
+            const keptCoverStore = new KyselyKeptCoverStore(database.connections);
             const tls = new FileTlsStore(
                 database.connections,
                 options.dataDirectory,
@@ -321,15 +323,25 @@ export class BackendRuntime {
                             passwords: IdentityModule.administratorPassword(users, passwords),
                             eraser: new KyselyApplicationDataEraser(
                                 database.connections,
-                                new KyselyLibraryEraser(database.connections, ids, clock),
+                                new KyselyLibraryEraser(
+                                    database.connections,
+                                    ids,
+                                    clock,
+                                    keptCoverStore,
+                                ),
+                                keptCoverStore,
                             ),
                             covers: new KyselyCoverFileCleanup(
                                 database.connections,
                                 new FileCoverStorage(options.dataDirectory),
+                                keptCoverStore,
                             ),
-                            keptCovers: new KyselyKeptCoverCount(database.connections),
-                            keptCoverArchive: new KyselyKeptCoverArchive(
+                            keptCovers: new KyselyKeptCoverCount(
                                 database.connections,
+                                keptCoverStore,
+                            ),
+                            keptCoverArchive: new StoredKeptCoverArchive(
+                                keptCoverStore,
                                 new FileCoverStorage(options.dataDirectory),
                             ),
                             operations,

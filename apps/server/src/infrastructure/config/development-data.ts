@@ -13,6 +13,7 @@ import type { FinishCollectionUseCase } from '../../collections/application/port
 import { ImportV1Library } from '../../development-data/application/use-cases/import-v1-library.usecase.js';
 import { ResetDevelopmentData } from '../../development-data/application/use-cases/reset-development-data.usecase.js';
 import { KyselyLibraryEraser } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-library-eraser.adapter.js';
+import { KyselyKeptCoverStore } from '../../books/infrastructure/adapters/driven/persistence/kysely-kept-cover-store.adapter.js';
 import { KyselyCoverFileCleanup } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-cover-file-cleanup.adapter.js';
 import { IdentityModule } from '../../identity/infrastructure/config/identity.module.js';
 import { KyselyUserRepository } from '../../identity/infrastructure/adapters/driven/persistence/kysely-user.repository.js';
@@ -31,10 +32,16 @@ export class DevelopmentDataCommands {
 
         try {
             const report = await new ResetDevelopmentData(
-                new KyselyLibraryEraser(database.connections, ids, new SystemClock()),
+                new KyselyLibraryEraser(
+                    database.connections,
+                    ids,
+                    new SystemClock(),
+                    new KyselyKeptCoverStore(database.connections),
+                ),
                 new KyselyCoverFileCleanup(
                     database.connections,
                     new FileCoverStorage(dataDirectory),
+                    new KyselyKeptCoverStore(database.connections),
                 ),
                 database.connections,
             ).execute();
@@ -82,10 +89,16 @@ export class DevelopmentDataCommands {
                     new JsonV1Dump(source),
                     new CachedCoverDownloads(join(dirname(source), 'covers')),
                     IdentityModule.administrator(new KyselyUserRepository(database.connections)),
-                    new KyselyLibraryEraser(database.connections, ids, clock),
+                    new KyselyLibraryEraser(
+                        database.connections,
+                        ids,
+                        clock,
+                        new KyselyKeptCoverStore(database.connections),
+                    ),
                     new KyselyCoverFileCleanup(
                         database.connections,
                         new FileCoverStorage(dataDirectory),
+                        new KyselyKeptCoverStore(database.connections),
                     ),
                     database.connections,
                     context.get<ImportBookUseCase>('BOOKS_IMPORT', lookup),

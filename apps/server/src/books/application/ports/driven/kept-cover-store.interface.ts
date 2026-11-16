@@ -4,4 +4,6 @@ export interface KeptCoverStore {
     find(isbn13: string): Promise<KeptCover | null>;
     put(cover: KeptCover): Promise<void>;
     remove(isbn13: string): Promise<void>;
+    all(): Promise<KeptCover[]>;
+    clear(): Promise<number>;
 }

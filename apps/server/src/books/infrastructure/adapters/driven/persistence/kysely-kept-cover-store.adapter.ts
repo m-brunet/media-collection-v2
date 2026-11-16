@@ -18,7 +18,7 @@ export class KyselyKeptCoverStore implements KeptCoverStore {
             .where('isbn13', '=', isbn13)
             .executeTakeFirst();
 
-        return row ? { id: row.id, isbn13: row.isbn13, file: row.file, keptAt: row.kept_at } : null;
+        return row ? KyselyKeptCoverStore.cover(row) : null;
     }
 
     async put(cover: KeptCover): Promise<void> {
@@ -36,5 +36,30 @@ export class KyselyKeptCoverStore implements KeptCoverStore {
 
     async remove(isbn13: string): Promise<void> {
         await this.db.deleteFrom('kept_covers').where('isbn13', '=', isbn13).execute();
+    }
+
+    async all(): Promise<KeptCover[]> {
+        const rows = await this.db
+            .selectFrom('kept_covers')
+            .selectAll()
+            .orderBy('kept_at')
+            .execute();
+
+        return rows.map((row) => KyselyKeptCoverStore.cover(row));
+    }
+
+    async clear(): Promise<number> {
+        const deleted = await this.db.deleteFrom('kept_covers').executeTakeFirst();
+
+        return Number(deleted.numDeletedRows);
+    }
+
+    private static cover(row: {
+        id: string;
+        isbn13: string;
+        file: string;
+        kept_at: string;
+    }): KeptCover {
+        return { id: row.id, isbn13: row.isbn13, file: row.file, keptAt: row.kept_at };
     }
 }

@@ -1,14 +1,18 @@
+import type {
+    ErasedLibrary,
+    LibraryEraser,
+} from '../../../../application/ports/driven/library-eraser.interface.js';
+import type { KeptCoverStore } from '../../../../../books/application/ports/driven/kept-cover-store.interface.js';
 import type { Clock } from '../../../../../shared/application/ports/driven/clock.interface.js';
 import type { IdGenerator } from '../../../../../shared/application/ports/driven/id-generator.interface.js';
 import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
 
-export type ErasedLibrary = { books: number; authors: number; collections: number; loans: number };
-
-export class KyselyLibraryEraser {
+export class KyselyLibraryEraser implements LibraryEraser {
     constructor(
         private readonly connections: DatabaseConnections,
         private readonly ids: IdGenerator,
         private readonly clock: Clock,
+        private readonly kept: KeptCoverStore,
     ) {}
 
     async erase(): Promise<ErasedLibrary> {
@@ -46,9 +50,8 @@ export class KyselyLibraryEraser {
     }
 
     private async keepCovers(): Promise<void> {
-        const db = this.connections.current;
         const keptAt = this.clock.now().toISOString();
-        const covers = await db
+        const covers = await this.connections.current
             .selectFrom('books')
             .select(['isbn13', 'cover_file'])
             .where('isbn13', 'is not', null)
@@ -60,11 +63,7 @@ export class KyselyLibraryEraser {
                 continue;
             }
 
-            await db.deleteFrom('kept_covers').where('isbn13', '=', isbn13).execute();
-            await db
-                .insertInto('kept_covers')
-                .values({ id: this.ids.next(), isbn13, file, kept_at: keptAt })
-                .execute();
+            await this.kept.put({ id: this.ids.next(), isbn13, file, keptAt });
         }
     }
 }

@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { FileCoverStorage } from '../../apps/server/src/books/infrastructure/adapters/driven/filesystem/file-cover-storage.adapter.js';
 import { KyselyKeptCoverStore } from '../../apps/server/src/books/infrastructure/adapters/driven/persistence/kysely-kept-cover-store.adapter.js';
-import { KyselyKeptCoverArchive } from '../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/kysely-kept-cover-archive.adapter.js';
+import { StoredKeptCoverArchive } from '../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/stored-kept-cover-archive.adapter.js';
 import { KyselyCoverFileCleanup } from '../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/kysely-cover-file-cleanup.adapter.js';
 import { KyselyKeptCoverCount } from '../../apps/server/src/maintenance/infrastructure/adapters/driven/persistence/kysely-kept-cover-count.adapter.js';
 import { Database } from '../../apps/server/src/shared/infrastructure/adapters/driven/persistence/database.adapter.js';
@@ -49,7 +49,7 @@ async function archive() {
         database,
         store,
         covers,
-        archive: new KyselyKeptCoverArchive(database.connections, covers),
+        archive: new StoredKeptCoverArchive(store, covers),
     };
 }
 
@@ -134,11 +134,47 @@ describe('kept covers', () => {
     });
 });
 
+describe('kept cover store, as a whole', () => {
+    it('lists every kept cover, the oldest first', async () => {
+        const { store } = await empty();
+
+        await store.put({ ...kept('b.jpg', '9781635575637'), keptAt: '2026-11-16T09:00:00.000Z' });
+        await store.put({ ...kept('a.jpg'), keptAt: '2026-03-12T09:00:00.000Z' });
+
+        const all = await store.all();
+
+        expect(all.map((cover) => cover.file)).toEqual(['a.jpg', 'b.jpg']);
+    });
+
+    it('lists nothing when no cover is kept', async () => {
+        const { store } = await empty();
+
+        const all = await store.all();
+
+        expect(all).toEqual([]);
+    });
+
+    it('clears every kept cover and tells how many', async () => {
+        const { store } = await empty();
+
+        await store.put(kept('a.jpg'));
+        await store.put(kept('b.jpg', '9781635575637'));
+
+        const cleared = await store.clear();
+
+        expect(cleared).toBe(2);
+        expect(await store.all()).toEqual([]);
+    });
+});
+
 describe('kept cover count', () => {
     it('counts the book covers a reset would keep', async () => {
         const database = await populated();
 
-        const count = await new KyselyKeptCoverCount(database.connections).afterReset();
+        const count = await new KyselyKeptCoverCount(
+            database.connections,
+            new KyselyKeptCoverStore(database.connections),
+        ).afterReset();
 
         expect(count).toBe(1);
     });
@@ -148,7 +184,10 @@ describe('kept cover count', () => {
 
         await new KyselyKeptCoverStore(database.connections).put(kept('a.jpg'));
 
-        const count = await new KyselyKeptCoverCount(database.connections).afterReset();
+        const count = await new KyselyKeptCoverCount(
+            database.connections,
+            new KyselyKeptCoverStore(database.connections),
+        ).afterReset();
 
         expect(count).toBe(2);
     });
@@ -158,7 +197,10 @@ describe('kept cover count', () => {
 
         await new KyselyKeptCoverStore(database.connections).put(kept('a.jpg', '9781635575637'));
 
-        const count = await new KyselyKeptCoverCount(database.connections).afterReset();
+        const count = await new KyselyKeptCoverCount(
+            database.connections,
+            new KyselyKeptCoverStore(database.connections),
+        ).afterReset();
 
         expect(count).toBe(1);
     });
@@ -166,7 +208,10 @@ describe('kept cover count', () => {
     it('counts nothing in an empty library', async () => {
         const { database } = await empty();
 
-        const count = await new KyselyKeptCoverCount(database.connections).afterReset();
+        const count = await new KyselyKeptCoverCount(
+            database.connections,
+            new KyselyKeptCoverStore(database.connections),
+        ).afterReset();
 
         expect(count).toBe(0);
     });
@@ -227,7 +272,7 @@ describe('kept cover archive', () => {
         await store.put(kept(file));
         await subject.deleteAll();
 
-        await new KyselyCoverFileCleanup(database.connections, covers).removeUnreferenced();
+        await new KyselyCoverFileCleanup(database.connections, covers, store).removeUnreferenced();
 
         expect(await readdir(join(path, 'covers'))).toEqual([]);
     });
