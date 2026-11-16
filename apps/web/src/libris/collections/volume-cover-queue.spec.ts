@@ -27,8 +27,12 @@ function setup(replies: Record<string, VolumeCoverDto>, wanted: string[], sleeps
     return { queue, asked, waits, arrivals };
 }
 
+function volumes(count: number): string[] {
+    return Array.from({ length: count }, (_, index) => 'isbn-' + (index + 1));
+}
+
 describe('VolumeCoverQueue', () => {
-    it('asks one cover after the other, in the order wanted', async () => {
+    it('asks for the wanted covers, in the order wanted', async () => {
         const { queue, asked, arrivals } = setup({ a: { kind: 'found', token: 'token-a' } }, [
             'a',
             'b',
@@ -43,12 +47,38 @@ describe('VolumeCoverQueue', () => {
         ]);
     });
 
-    it('asks the next cover as soon as one has answered: the server paces the sources', async () => {
-        const { queue, waits } = setup({}, ['a', 'b']);
+    it('asks for ten covers together, so the server can group them in one request', async () => {
+        const started: string[] = [];
+        const queue: VolumeCoverQueue = new VolumeCoverQueue(
+            () => volumes(12),
+            (isbn) => {
+                started.push(isbn);
+
+                return new Promise(() => undefined);
+            },
+            async () => undefined,
+            () => undefined,
+        );
+
+        void queue.run();
+
+        expect(started).toEqual(volumes(10));
+    });
+
+    it('asks for the following covers once the first ten have answered', async () => {
+        const { queue, asked } = setup({}, volumes(12));
 
         await queue.run();
 
-        expect(waits).toEqual([VolumeCoverQueue.idleWait]);
+        expect(asked).toEqual(volumes(12));
+    });
+
+    it('shows each cover as soon as it has answered', async () => {
+        const { queue, arrivals } = setup({}, ['a', 'b']);
+
+        await queue.run();
+
+        expect(arrivals.map((covers) => covers.size)).toEqual([1, 2]);
     });
 
     it('never asks again for a cover the server did not give', async () => {

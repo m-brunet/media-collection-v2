@@ -166,11 +166,16 @@ it("offers the BnF's title as a suggestion", async () => {
     expect(within(rowOf(2)).getByRole('button', { name: 'Use Gunnm Vol. 2' })).toBeVisible();
 });
 
-it('shows the cover of a volume once it arrives', async () => {
-    const api = library().on('POST /books/lookups/volume-cover', () => ({
-        status: 200,
-        body: { kind: 'found', token: 'token-2' },
-    }));
+it('shows the cover of a volume once its picture has arrived', async () => {
+    const api = library()
+        .on('POST /books/lookups/volume-cover', () => ({
+            status: 200,
+            body: { kind: 'found', token: 'token-2' },
+        }))
+        .on('GET /books/lookups/covers/token-2', () => ({
+            status: 200,
+            body: new Blob(['cover'], { type: 'image/jpeg' }),
+        }));
 
     await review(api);
 
@@ -178,6 +183,22 @@ it('shows the cover of a volume once it arrives', async () => {
         'src',
         '/api/books/lookups/covers/token-2',
     );
+});
+
+it('shows no cover for a volume whose picture could not be downloaded', async () => {
+    const api = library()
+        .on('POST /books/lookups/volume-cover', () => ({
+            status: 200,
+            body: { kind: 'found', token: 'token-2' },
+        }))
+        .on('GET /books/lookups/covers/token-2', () => ({ status: 404 }));
+
+    await review(api);
+    await vi.waitFor(() =>
+        expect(api.calls.map((call) => call.route)).toContain('GET /books/lookups/covers/token-2'),
+    );
+
+    expect(screen.queryByRole('img', { name: 'Cover of volume 2' })).not.toBeInTheDocument();
 });
 
 it('adds the ticked volumes with their edition, ownership and title, then reports', async () => {

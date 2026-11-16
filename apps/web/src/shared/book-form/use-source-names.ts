@@ -4,6 +4,7 @@ import { useI18n } from '../i18n/i18n-context';
 const known: Record<string, MessageKey> = {
     bnf: 'source.bnf',
     openlibrary: 'source.openlibrary',
+    inventaire: 'source.inventaire',
 };
 
 export function useSourceNames() {

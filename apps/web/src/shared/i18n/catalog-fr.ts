@@ -533,6 +533,8 @@ export const fr = {
     'credits.bnf.used':
         'Informations et résumés des livres dans Trouver un livre. Source : Bibliothèque nationale de France.',
     'credits.openLibrary.used': 'Informations et couvertures des livres dans Trouver un livre.',
+    'credits.inventaire.used':
+        'Couvertures dans Trouver un livre et Ajouter des volumes. Les images restent soumises à leur droit d’auteur.',
     'credits.sharp.used': 'Retrait des marges autour des couvertures.',
     'credits.libvips.used': 'Décodage et encodage des images, fourni avec sharp.',
     'credits.barcodeDetector.used':
@@ -687,6 +689,7 @@ export const fr = {
         'La source de cette couverture n’a pas fourni d’image utilisable.',
     'source.bnf': 'BnF',
     'source.openlibrary': 'Open Library',
+    'source.inventaire': 'Inventaire',
     'form.noIsbn': 'Ce livre n’a pas d’ISBN',
     'form.title': 'Titre',
     'form.titleGenerated':
