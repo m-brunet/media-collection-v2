@@ -6,8 +6,8 @@ import { useI18n } from '../../shared/i18n/i18n-context';
 import { Button } from '../../shared/ui/button';
 import { Panel } from '../../shared/ui/layout';
 import { Notice } from '../../shared/ui/notice';
-import { TextField } from '../../shared/ui/text-field';
 import { useAction } from '../../shared/use-action';
+import { SettingIds, SettingRow } from './setting-row';
 
 const overrideNotice: Record<
     NonNullable<ServerStatus['running']['httpPortOverride']>['source'],
@@ -65,18 +65,39 @@ export function PortsPanel({
             );
         }, success);
     };
+    const httpsDetail = [
+        t('server.httpsPortDetail'),
+        settings.running.httpsPort
+            ? t('server.httpsRunning', { port: settings.running.httpsPort })
+            : t('server.httpsStopped'),
+    ].join(' ');
 
     return (
         <Panel title={t('server.portsTitle')}>
             <p className="muted">{t('server.portsIntro')}</p>
-            <div className="panel-grid">
-                <form className="form" onSubmit={submitHttp} aria-label={t('server.httpTitle')}>
-                    <p className="muted">
-                        {t('server.httpIntro', {
-                            running: settings.running.httpPort,
-                            saved: settings.configured.http.port,
-                        })}
-                    </p>
+            <div className="setting-rows">
+                <SettingRow
+                    id="http-port"
+                    title={t('server.httpPort')}
+                    detail={t('server.httpPortDetail', { running: settings.running.httpPort })}
+                    control={
+                        <form
+                            className="setting-row__form"
+                            onSubmit={submitHttp}
+                            aria-label={t('server.httpTitle')}
+                        >
+                            <PortField
+                                id="http-port"
+                                name="httpPort"
+                                label={t('server.httpPort')}
+                                value={settings.configured.http.port}
+                            />
+                            <Button type="submit" disabled={saving} busy={http.busy}>
+                                {t('server.httpSubmit')}
+                            </Button>
+                        </form>
+                    }
+                >
                     {settings.running.httpPortOverride && (
                         <Notice tone="warning">
                             {t(overrideNotice[settings.running.httpPortOverride.source], {
@@ -84,17 +105,6 @@ export function PortsPanel({
                             })}
                         </Notice>
                     )}
-                    <TextField
-                        label={t('server.httpPort')}
-                        name="httpPort"
-                        type="number"
-                        defaultValue={settings.configured.http.port}
-                        hint={t('server.portRule')}
-                        min={1024}
-                        max={65535}
-                        step={1}
-                        required
-                    />
                     {settings.configured.http.port !== settings.running.httpPort && (
                         <div>
                             <p>{t('server.nextAddresses')}</p>
@@ -112,39 +122,71 @@ export function PortsPanel({
                     {http.feedback && (
                         <Notice tone={http.feedback.tone}>{http.feedback.text}</Notice>
                     )}
-                    <div className="actions">
-                        <Button type="submit" variant="primary" disabled={saving} busy={http.busy}>
-                            {t('server.httpSubmit')}
-                        </Button>
-                    </div>
-                </form>
-                <form
-                    className="form"
-                    onSubmit={submitHttps}
-                    aria-label={t('server.httpsPortTitle')}
+                </SettingRow>
+                <SettingRow
+                    id="https-port"
+                    title={t('server.httpsPort')}
+                    detail={httpsDetail}
+                    control={
+                        <form
+                            className="setting-row__form"
+                            onSubmit={submitHttps}
+                            aria-label={t('server.httpsPortTitle')}
+                        >
+                            <PortField
+                                id="https-port"
+                                name="httpsPort"
+                                label={t('server.httpsPort')}
+                                value={settings.configured.tls.port}
+                            />
+                            <Button type="submit" disabled={saving} busy={https.busy}>
+                                {t('server.httpsPortSubmit')}
+                            </Button>
+                        </form>
+                    }
                 >
-                    <p className="muted">{t('server.httpsPortIntro')}</p>
-                    <TextField
-                        label={t('server.httpsPort')}
-                        name="httpsPort"
-                        type="number"
-                        defaultValue={settings.configured.tls.port}
-                        hint={t('server.portRule')}
-                        min={1024}
-                        max={65535}
-                        step={1}
-                        required
-                    />
+                    {settings.running.httpsError && (
+                        <Notice tone="error">{settings.running.httpsError}</Notice>
+                    )}
                     {https.feedback && (
                         <Notice tone={https.feedback.tone}>{https.feedback.text}</Notice>
                     )}
-                    <div className="actions">
-                        <Button type="submit" variant="primary" disabled={saving} busy={https.busy}>
-                            {t('server.httpsPortSubmit')}
-                        </Button>
-                    </div>
-                </form>
+                </SettingRow>
             </div>
         </Panel>
+    );
+}
+
+function PortField({
+    id,
+    name,
+    label,
+    value,
+}: {
+    id: string;
+    name: string;
+    label: string;
+    value: number;
+}) {
+    const { t } = useI18n();
+
+    return (
+        <>
+            <input
+                name={name}
+                type="number"
+                className="field__control setting-row__field"
+                defaultValue={value}
+                min={1024}
+                max={65535}
+                step={1}
+                required
+                aria-label={label}
+                aria-describedby={SettingIds.detail(id) + ' ' + id + '-rule'}
+            />
+            <span id={id + '-rule'} className="visually-hidden">
+                {t('server.portRule')}
+            </span>
+        </>
     );
 }

@@ -1009,3 +1009,240 @@ it('asks for a new code when the shown one expires', async () => {
         ),
     );
 });
+
+async function card(name: 'This computer' | 'Home network' | 'Internet') {
+    return screen.findByRole('region', { name });
+}
+
+function row(title: string) {
+    const heading = screen.getByRole('heading', { name: title, level: 3 });
+
+    return heading.closest('.setting-row') as HTMLElement;
+}
+
+it('puts each address in the card of the place it reaches', async () => {
+    administrator(withAddresses(status(active, false, { httpInternetAccess: httpOpen })));
+
+    renderPage();
+
+    expect(
+        within(await card('This computer'))
+            .getAllByRole('link')
+            .map((link) => link.textContent),
+    ).toEqual(['http://127.0.0.1:34345']);
+    expect(
+        within(await card('Home network'))
+            .getAllByRole('link')
+            .map((link) => link.textContent),
+    ).toEqual(['http://100.95.86.107:34345', 'http://192.168.1.99:34345']);
+    expect(
+        within(await card('Internet'))
+            .getAllByRole('link')
+            .map((link) => link.textContent),
+    ).toEqual(['https://' + publicAddress + ':3443', 'http://' + publicAddress + ':34345']);
+});
+it('gives each home address its own QR code button', async () => {
+    administrator(withAddresses(status()));
+
+    renderPage();
+
+    expect(
+        within(await card('Home network')).getAllByRole('button', {
+            name: /^Show the QR code for/,
+        }),
+    ).toHaveLength(2);
+});
+it('keeps the card of a place without an address, marked Off', async () => {
+    administrator(status());
+
+    renderPage();
+    const home = await card('Home network');
+
+    expect(within(home).getByText('Off')).toBeInTheDocument();
+    expect(within(home).getByText('No address')).toBeInTheDocument();
+});
+it('marks the computer reachable from its own browser', async () => {
+    administrator(status());
+
+    renderPage();
+
+    expect(within(await card('This computer')).getByText('On')).toBeInTheDocument();
+});
+it('says internet access is not set up', async () => {
+    administrator(status());
+
+    renderPage();
+    const internet = await card('Internet');
+
+    expect(within(internet).getByText('Off')).toBeInTheDocument();
+    expect(within(internet).getByText('Not set up')).toBeInTheDocument();
+});
+it('says internet access is being set up', async () => {
+    administrator(status(internetAccess({ phase: 'setting-up', step: 'router' })));
+
+    renderPage();
+    const internet = await card('Internet');
+
+    expect(within(internet).getByText('Setting up')).toBeInTheDocument();
+    expect(within(internet).getByText('Not reachable yet')).toBeInTheDocument();
+});
+it('says internet access needs a rule in the router', async () => {
+    administrator(status(waiting));
+
+    renderPage();
+
+    expect(within(await card('Internet')).getByText('Needs your help')).toBeInTheDocument();
+});
+it('says internet access works over HTTPS, with the certificate date', async () => {
+    administrator(status(active));
+
+    renderPage();
+    const internet = await card('Internet');
+
+    expect(within(internet).getByText('On · HTTPS')).toBeInTheDocument();
+    expect(
+        within(internet).getByText(/^From anywhere, encrypted. Certificate valid until/),
+    ).toBeInTheDocument();
+});
+it('says the internet address is not encrypted while HTTP is open', async () => {
+    administrator(status(undefined, false, { httpInternetAccess: httpOpen }));
+
+    renderPage();
+
+    expect(within(await card('Internet')).getByText('On · not encrypted')).toBeInTheDocument();
+});
+it('asks for no sign-in code before an address is chosen', async () => {
+    const api = pairable(withAddresses(status()));
+
+    renderPage();
+    await card('Home network');
+
+    expect(
+        screen.getByText('Choose “Show QR code” on an address to connect a phone.'),
+    ).toBeInTheDocument();
+    expect(api.calls.map((call) => call.route)).not.toContain('POST /auth/pairing-codes');
+});
+it('asks for a sign-in code for the chosen address and outlines its card', async () => {
+    const api = pairable(withAddresses(status()));
+
+    renderPage();
+
+    await showQrCode('http://192.168.1.99:34345');
+
+    await screen.findByText(/This code signs a phone in as alex/);
+    expect(api.calls).toContainEqual({
+        route: 'POST /auth/pairing-codes',
+        body: { address: 'http://192.168.1.99:34345' },
+    });
+    expect(await card('Home network')).toHaveClass('place-card--current');
+    expect(await card('This computer')).not.toHaveClass('place-card--current');
+    expect(
+        screen.getByRole('button', { name: 'Show the QR code for http://192.168.1.99:34345' }),
+    ).toHaveTextContent('QR code shown');
+});
+it('announces the QR code when it changes', async () => {
+    administrator(withAddresses(status()));
+
+    renderPage();
+    await card('Home network');
+
+    expect(screen.getByRole('complementary', { name: 'QR code' })).toHaveAttribute(
+        'aria-live',
+        'polite',
+    );
+});
+it('gives the HTTPS row its state as text', async () => {
+    administrator(status(waiting));
+
+    renderPage();
+    await screen.findByRole('button', { name: 'Check again' });
+    const https = row('HTTPS from the internet (recommended)');
+
+    expect(within(https).getByText('Needs your help')).toBeInTheDocument();
+    expect(
+        within(https).getByText('Add the rule below in your router, then check again.'),
+    ).toBeInTheDocument();
+    expect(within(https).getByText('Add the rule in your router')).toBeInTheDocument();
+});
+it('marks HTTP to the internet closed, then open', async () => {
+    administrator(status(undefined, false, { httpInternetAccess: httpOpen }));
+
+    renderPage();
+    await screen.findByRole('button', { name: 'Close HTTP' });
+
+    expect(
+        within(row('HTTP from the internet (not encrypted)')).getByText('Open'),
+    ).toBeInTheDocument();
+});
+it('shows the HTTP port confirmation under the HTTP port row', async () => {
+    administrator(status()).on('PUT /server-settings/http', () => ({
+        status: 200,
+        body: status(),
+    }));
+
+    renderPage();
+    const form = await screen.findByRole('form', { name: 'HTTP / web interface' });
+
+    await userEvent.click(within(form).getByRole('button', { name: 'Save HTTP port' }));
+
+    expect(
+        within(row('HTTP port')).getByText('HTTP port saved. This port is already active.'),
+    ).toBeInTheDocument();
+});
+it('shows the HTTPS port confirmation under the HTTPS port row', async () => {
+    administrator(status()).on('PUT /server-settings/https-port', () => ({
+        status: 200,
+        body: status(),
+    }));
+
+    renderPage();
+    const form = await screen.findByRole('form', { name: 'HTTPS / internet access' });
+
+    await userEvent.click(within(form).getByRole('button', { name: 'Save HTTPS port' }));
+
+    expect(
+        await within(row('HTTPS port')).findByText(/^HTTPS port saved. Close and reopen/),
+    ).toBeInTheDocument();
+});
+it('says whether HTTPS is running in the HTTPS port row', async () => {
+    administrator(status());
+
+    renderPage();
+    await card('Internet');
+
+    expect(
+        within(row('HTTPS port')).getByText('Phones outside your home. HTTPS is not running.'),
+    ).toBeInTheDocument();
+});
+it('shows the addresses after applying the saved port under the HTTP port row', async () => {
+    const current = status();
+
+    administrator({ ...current, configured: { ...current.configured, http: { port: 4000 } } });
+
+    renderPage();
+    await card('Internet');
+
+    expect(within(row('HTTP port')).getByText('http://127.0.0.1:4000')).toBeInTheDocument();
+});
+it('puts the restart notice above the cards', async () => {
+    administrator(status(undefined, false, { restartRequired: true }));
+
+    renderPage();
+    const notice = await screen.findByText(/^Saved settings are waiting for a restart/);
+    const cards = await card('This computer');
+
+    expect(notice.compareDocumentPosition(cards) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+});
+it('gives the keep awake box its row title and explanation', async () => {
+    administrator(status());
+
+    renderPage();
+
+    expect(
+        await screen.findByRole('checkbox', {
+            name: 'Keep this computer awake while Media Collection runs',
+            description:
+                'Leaf only works while this computer is on and awake. The screen can still turn off.',
+        }),
+    ).toBeInTheDocument();
+});

@@ -6,6 +6,7 @@ import type { MessageKey } from '../../shared/i18n/catalog-en';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Button } from '../../shared/ui/button';
 import { Notice } from '../../shared/ui/notice';
+import { SettingIds, SettingRow } from './setting-row';
 
 const refusals: Record<string, MessageKey> = {
     'domain-unresolved': 'internet.domainRefused.unresolved',
@@ -65,33 +66,34 @@ export function DomainNameSection({
     };
 
     return (
-        <form
-            className="internet-access__domain"
-            aria-label={t('internet.domain')}
-            onSubmit={(event: FormEvent<HTMLFormElement>) => {
-                event.preventDefault();
+        <SettingRow
+            id={id}
+            title={t('internet.domain')}
+            detail={domainName && httpsOn ? t('internet.domainLocked') : t('internet.domainHint')}
+            control={
+                <form
+                    className="setting-row__form"
+                    aria-label={t('internet.domain')}
+                    onSubmit={(event: FormEvent<HTMLFormElement>) => {
+                        event.preventDefault();
 
-                if (canSave) {
-                    void save(value.trim());
-                }
-            }}
-        >
-            <div className="field">
-                <label htmlFor={id} className="field__label">
-                    {t('internet.domain')}
-                </label>
-                <div className="internet-access__domain-row">
+                        if (canSave) {
+                            void save(value.trim());
+                        }
+                    }}
+                >
                     <input
-                        id={id}
+                        id={id + '-field'}
                         name="domain"
-                        className="field__control"
+                        className="field__control setting-row__field setting-row__field--wide"
                         value={value}
                         onChange={(event) => setValue(event.target.value)}
                         placeholder="home.example.com"
                         autoComplete="off"
                         spellCheck={false}
                         maxLength={253}
-                        aria-describedby={id + '-hint'}
+                        aria-labelledby={SettingIds.title(id)}
+                        aria-describedby={SettingIds.detail(id)}
                     />
                     <Button type="submit" busy={busy} disabled={!canSave}>
                         {t('internet.domainSave')}
@@ -99,13 +101,10 @@ export function DomainNameSection({
                     <Button busy={busy} disabled={!canRemove} onClick={() => void save(null)}>
                         {t('internet.domainRemove')}
                     </Button>
-                </div>
-                <p id={id + '-hint'} className="field__hint">
-                    {t('internet.domainHint')}
-                </p>
-            </div>
+                </form>
+            }
+        >
             {feedback && <Notice tone={feedback.tone}>{feedback.text}</Notice>}
-            {domainName && httpsOn && <p className="muted">{t('internet.domainLocked')}</p>}
-        </form>
+        </SettingRow>
     );
 }

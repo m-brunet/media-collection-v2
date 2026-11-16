@@ -15,6 +15,9 @@ import { useAction } from '../../shared/use-action';
 import { DomainNameSection } from './domain-name-section';
 import { HttpInternetSection } from './http-internet-section';
 import { ManualRule } from './manual-rule';
+import { SettingIds, SettingRow } from './setting-row';
+import type { PillTone } from './status-pill';
+import { StatusPill } from './status-pill';
 
 const steps = [
     { step: 'router', label: 'internet.stepRouter' },
@@ -73,39 +76,52 @@ export function InternetAccessPanel({
 
     return (
         <Panel title={t('internet.title')}>
-            <div className="internet-access">
-                <p className="muted">{t('internet.intro')}</p>
+            <p className="muted">{t('internet.intro')}</p>
+            <div className="setting-rows">
+                <HttpsInternetSection status={status} onStatus={onStatus} />
                 <DomainNameSection
                     domainName={domainName}
                     httpsOn={status.phase !== 'off'}
                     onSaved={onRefresh}
                 />
-                <HttpsInternetSection status={status} onStatus={onStatus} />
                 <HttpInternetSection
                     status={http}
                     httpsActive={status.phase === 'active'}
                     onChanged={onRefresh}
                 />
-                <label className="checkbox">
-                    <input
-                        type="checkbox"
-                        checked={keepAwake}
-                        disabled={awake.busy}
-                        onChange={(event) => changeKeepAwake(event.currentTarget.checked)}
-                        aria-describedby="keep-awake-hint"
-                    />
-                    {t('keepAwake.label')}
-                </label>
-                <p id="keep-awake-hint" className="muted">
-                    {t('keepAwake.hint')}
-                </p>
-                {awake.feedback && (
-                    <Notice tone={awake.feedback.tone}>{awake.feedback.text}</Notice>
-                )}
+                <SettingRow
+                    id="keep-awake"
+                    title={t('keepAwake.label')}
+                    detail={t('keepAwake.hint')}
+                    control={
+                        <label className="checkbox">
+                            <input
+                                type="checkbox"
+                                checked={keepAwake}
+                                disabled={awake.busy}
+                                onChange={(event) => changeKeepAwake(event.currentTarget.checked)}
+                                aria-labelledby={SettingIds.title('keep-awake')}
+                                aria-describedby={SettingIds.detail('keep-awake')}
+                            />
+                            <span aria-hidden="true">{t('keepAwake.control')}</span>
+                        </label>
+                    }
+                >
+                    {awake.feedback && (
+                        <Notice tone={awake.feedback.tone}>{awake.feedback.text}</Notice>
+                    )}
+                </SettingRow>
             </div>
         </Panel>
     );
 }
+
+const phasePills: Record<InternetAccessStatus['phase'], { tone: PillTone; label: MessageKey }> = {
+    off: { tone: 'off', label: 'reach.off' },
+    'setting-up': { tone: 'off', label: 'reach.settingUp' },
+    'waiting-for-port': { tone: 'warn', label: 'reach.needsHelp' },
+    active: { tone: 'on', label: 'reach.on' },
+};
 
 function HttpsInternetSection({
     status,
@@ -166,85 +182,102 @@ function HttpsInternetSection({
                 }),
             ),
         );
+    const pill = phasePills[status.phase];
+    const detail =
+        status.phase === 'off' ? (
+            <>
+                {t('internet.terms')}{' '}
+                <a href={termsAddress} target="_blank" rel="noreferrer">
+                    {t('internet.termsLink')}
+                </a>
+            </>
+        ) : status.phase === 'setting-up' ? (
+            t('internet.settingUpDetail')
+        ) : status.phase === 'waiting-for-port' ? (
+            t('internet.waitingDetail')
+        ) : status.allowances && !checking ? (
+            <Allowances status={status} allowances={status.allowances} />
+        ) : (
+            t('internet.active')
+        );
 
     return (
-        <section className="internet-access__section" aria-labelledby="https-internet-title">
-            <h3 id="https-internet-title" className="internet-access__subtitle">
-                {t('internet.httpsTitle')}
-            </h3>
-            {status.phase === 'setting-up' && <SetupSteps current={status.step} />}
-            {status.phase === 'active' && status.origin && status.certificate && (
+        <SettingRow
+            id="https-internet"
+            title={t('internet.httpsTitle')}
+            detail={detail}
+            control={
                 <>
-                    <Notice tone="success">{t('internet.active')}</Notice>
-                    {status.addressMoved && (
-                        <Notice tone="warning" onClose={dismissAddressNotice}>
-                            {t('internet.addressMoved', { address: status.origin })}
-                            {status.mapping === 'manual' && ' ' + t('internet.addressMovedByHand')}
-                        </Notice>
+                    <StatusPill tone={pill.tone} label={t(pill.label)} />
+                    {status.phase === 'off' && (
+                        <Button
+                            variant="primary"
+                            busy={action.busy}
+                            disabled={blocked}
+                            onClick={start}
+                        >
+                            {t('internet.setUp')}
+                        </Button>
                     )}
-                    <p>
-                        {t('internet.validUntil', {
-                            date: dates.dateTime(status.certificate.expiresAt),
-                        })}
-                    </p>
-                    {checking && <Notice tone="info">{t('internet.checking')}</Notice>}
-                    {failure && !checking && (
-                        <Notice tone="warning">
-                            {status.awaitingCheck
-                                ? t('internet.awaitingCheck', { reason: failure })
-                                : t('internet.lastFailure', {
-                                      reason: failure,
-                                      date: status.nextAttemptAt
-                                          ? dates.dateTime(status.nextAttemptAt)
-                                          : '',
-                                  })}
-                        </Notice>
+                    {(status.phase === 'waiting-for-port' ||
+                        (status.phase === 'active' && status.awaitingCheck && !checking)) && (
+                        <Button
+                            variant="primary"
+                            busy={action.busy}
+                            disabled={blocked}
+                            onClick={check}
+                        >
+                            {t('internet.check')}
+                        </Button>
                     )}
-                    {status.mapping === 'manual' && <RulesByHand status={status} />}
+                    {(status.phase === 'active' || status.phase === 'waiting-for-port') && (
+                        <Button variant="secondary" onClick={() => setTurningOff(true)}>
+                            {t('internet.turnOff')}
+                        </Button>
+                    )}
                 </>
-            )}
-            {status.phase === 'waiting-for-port' && (
-                <>
-                    {failure && <Notice tone="warning">{failure}</Notice>}
-                    <RulesByHand status={status} />
-                </>
-            )}
+            }
+        >
             {status.phase === 'off' && failure && <Notice tone="error">{failure}</Notice>}
+            {status.phase === 'setting-up' && <SetupSteps current={status.step} />}
+            {status.phase === 'waiting-for-port' && failure && (
+                <Notice tone="warning">{failure}</Notice>
+            )}
+            {status.phase === 'active' && status.addressMoved && status.origin && (
+                <Notice tone="warning" onClose={dismissAddressNotice}>
+                    {t('internet.addressMoved', { address: status.origin })}
+                    {status.mapping === 'manual' && ' ' + t('internet.addressMovedByHand')}
+                </Notice>
+            )}
+            {checking && <Notice tone="info">{t('internet.checking')}</Notice>}
+            {status.phase === 'active' && failure && !checking && (
+                <Notice tone="warning">
+                    {status.awaitingCheck
+                        ? t('internet.awaitingCheck', { reason: failure })
+                        : t('internet.lastFailure', {
+                              reason: failure,
+                              date: status.nextAttemptAt
+                                  ? dates.dateTime(status.nextAttemptAt)
+                                  : '',
+                          })}
+                </Notice>
+            )}
             {status.retryAfter && (
                 <Notice tone="warning">
                     {t('internet.retryAfter', { date: dates.dateTime(status.retryAfter) })}
                 </Notice>
             )}
-            {status.allowances && !checking && (
-                <Allowances status={status} allowances={status.allowances} />
-            )}
-            {action.feedback && <Notice tone={action.feedback.tone}>{action.feedback.text}</Notice>}
-            {status.phase === 'off' && (
+            {status.allowances && status.phase !== 'active' && (
                 <p className="muted">
-                    {t('internet.terms')}{' '}
-                    <a href={termsAddress} target="_blank" rel="noreferrer">
-                        {t('internet.termsLink')}
-                    </a>
+                    <Allowances status={status} allowances={status.allowances} />
                 </p>
             )}
-            <div className="actions">
-                {status.phase === 'off' && (
-                    <Button variant="primary" busy={action.busy} disabled={blocked} onClick={start}>
-                        {t('internet.setUp')}
-                    </Button>
-                )}
-                {(status.phase === 'waiting-for-port' ||
-                    (status.phase === 'active' && status.awaitingCheck && !checking)) && (
-                    <Button variant="primary" busy={action.busy} disabled={blocked} onClick={check}>
-                        {t('internet.check')}
-                    </Button>
-                )}
-                {(status.phase === 'active' || status.phase === 'waiting-for-port') && (
-                    <Button variant="secondary" onClick={() => setTurningOff(true)}>
-                        {t('internet.turnOff')}
-                    </Button>
-                )}
-            </div>
+            {status.allowances && !checking && <ProbablyRefused allowances={status.allowances} />}
+            {(status.phase === 'waiting-for-port' ||
+                (status.phase === 'active' && status.mapping === 'manual')) && (
+                <RulesByHand status={status} />
+            )}
+            {action.feedback && <Notice tone={action.feedback.tone}>{action.feedback.text}</Notice>}
             <ConfirmDialog
                 open={replacing}
                 title={t('internet.replaceTitle')}
@@ -272,7 +305,7 @@ function HttpsInternetSection({
                 }}
                 onClose={() => setTurningOff(false)}
             />
-        </section>
+        </SettingRow>
     );
 }
 
@@ -313,26 +346,39 @@ function Allowances({
     status: InternetAccessStatus;
     allowances: NonNullable<InternetAccessStatus['allowances']>;
 }) {
-    const { t, dates } = useI18n();
+    const { t } = useI18n();
     const name = status.domain ?? status.publicAddress ?? status.certificate?.address ?? '';
-    const empty = [allowances.certificates.nextAt, allowances.checks.nextAt]
-        .filter((date): date is string => date !== null)
-        .sort()
-        .at(-1);
 
     return (
-        <div className="internet-access__allowances">
-            <p>
+        <>
+            <span>
                 {t('internet.allowanceCertificates', {
                     name,
                     count: allowances.certificates.left,
                 })}{' '}
                 {t('internet.allowanceChecks', { count: allowances.checks.left })}
-            </p>
-            {empty && <p>{t('internet.probablyRefused', { date: dates.dateTime(empty) })}</p>}
-            <p className="muted">{t('internet.allowanceEstimate')}</p>
-        </div>
+            </span>{' '}
+            <span>{t('internet.allowanceEstimate')}</span>
+        </>
     );
+}
+
+function ProbablyRefused({
+    allowances,
+}: {
+    allowances: NonNullable<InternetAccessStatus['allowances']>;
+}) {
+    const { t, dates } = useI18n();
+    const empty = [allowances.certificates.nextAt, allowances.checks.nextAt]
+        .filter((date): date is string => date !== null)
+        .sort()
+        .at(-1);
+
+    return empty ? (
+        <Notice tone="warning">
+            {t('internet.probablyRefused', { date: dates.dateTime(empty) })}
+        </Notice>
+    ) : null;
 }
 
 function SetupSteps({ current }: { current: InternetAccessStatus['step'] }) {
