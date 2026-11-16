@@ -806,7 +806,7 @@ export class BooksModule {
     // Inventaire enforces a limit it does not publish and answers 429 beyond it
     // (https://api.inventaire.io); the 10 seconds of its robots.txt are for web crawlers.
     // The Sudoc's robots.txt asks for 5 seconds between requests.
-    static readonly lookupDelaySeconds = { bnf: 3, openLibrary: 2, inventaire: 3, sudoc: 7 };
+    static readonly lookupDelaySeconds = { bnf: 3, openLibrary: 2, inventaire: 5, sudoc: 7 };
 
     static lookupSources(
         clock: Clock,
