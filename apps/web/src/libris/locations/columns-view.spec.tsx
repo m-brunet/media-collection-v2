@@ -258,6 +258,28 @@ it('invites to add a shelf to a bookcase without shelves', async () => {
     ).toBeInTheDocument();
 });
 
+it('opens the screen to add books from the shelf header', async () => {
+    api();
+    const router = show();
+
+    await table();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add books' }));
+
+    expect(router.state.location.pathname + router.state.location.search).toBe(
+        '/bookshelves/shelves/s3/add-books?location=none',
+    );
+});
+
+it('offers a Guest no way to add books to a shelf', async () => {
+    api('guest');
+    show();
+
+    await table();
+
+    expect(screen.queryByRole('button', { name: 'Add books' })).not.toBeInTheDocument();
+});
+
 it('shows a Guest the books without managing or moving them', async () => {
     api('guest');
     show();

@@ -281,6 +281,22 @@ it('opens the shelf actions from its menu', async () => {
     expect(screen.getByRole('dialog', { name: 'Move Shelf 3' })).toBeInTheDocument();
 });
 
+it('opens the screen to add books from the shelf menu, first of its actions', async () => {
+    api();
+    const router = show();
+
+    await shelf3();
+    await userEvent.click(screen.getByRole('button', { name: 'Shelf 3 actions' }));
+    const items = screen.getAllByRole('menuitem');
+
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Add books' }));
+
+    expect(items[0]).toHaveAccessibleName('Add books');
+    expect(router.state.location.pathname + router.state.location.search).toBe(
+        '/bookshelves/shelves/s3/add-books?location=none',
+    );
+});
+
 it('says when a shelf has no book', async () => {
     api();
     show();

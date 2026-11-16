@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import type { BookListItemDto, ShelfDto } from '../../../../../packages/contracts/src/http';
 import { BookFormat } from '../../shared/book-form/book-format.util';
 import { useI18n } from '../../shared/i18n/i18n-context';
@@ -10,6 +10,7 @@ import { LoadingState } from '../../shared/ui/states';
 import { BookCover } from '../books/book-cover';
 import { BookFilter } from '../filters/book-filter.util';
 import type { LocationEditing } from './location-dialogs';
+import { ShelfPlacement } from './shelf-placement.util';
 import { RibbonWindow } from './ribbon-window.util';
 import { useElementWidth } from './use-element-width';
 import { useInView } from './use-in-view';
@@ -68,6 +69,7 @@ export function RibbonShelf({
     onEdit(editing: LocationEditing): void;
 }) {
     const { t } = useI18n();
+    const navigate = useNavigate();
     const counts = useLocationCounts();
     const strip = useRef<HTMLDivElement>(null);
     const width = useElementWidth(strip);
@@ -92,6 +94,11 @@ export function RibbonShelf({
                         <MenuButton
                             label={t('ribbons.shelfActions', { name: shelf.name })}
                             actions={[
+                                {
+                                    label: t('shelf.addBooks'),
+                                    icon: 'add',
+                                    onSelect: () => navigate(ShelfPlacement.opening(shelf.id)),
+                                },
                                 {
                                     label: t('shelf.rename'),
                                     icon: 'edit',

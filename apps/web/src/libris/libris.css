@@ -3718,3 +3718,113 @@ a.wall-tile:hover .wall-tile__title {
     clip: rect(0 0 0 0);
     white-space: nowrap;
 }
+
+.add-books {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    height: 100%;
+    min-height: 0;
+}
+
+.add-books__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.add-books__toolbar .search-field {
+    flex: 0 1 340px;
+}
+
+.add-books__toolbar .applied-filters {
+    flex: 1;
+}
+
+.add-books__fixed {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 0 var(--space-3);
+    border: var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+}
+
+.add-books__panel {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 320px;
+    max-height: calc(100vh - 260px);
+    padding: 0;
+    overflow: hidden;
+}
+
+.add-books__count,
+.add-books__footer {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-5);
+    font-size: var(--text-sm);
+}
+
+.add-books__footer {
+    border-top: var(--border);
+}
+
+.add-books__spacer {
+    flex: 1;
+}
+
+.add-books__chosen {
+    font-weight: 500;
+}
+
+.add-books__table th:nth-child(4),
+.add-books__table td:nth-child(4) {
+    width: 20%;
+}
+
+.add-books__tick {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-width: 0;
+    color: var(--color-text);
+    cursor: pointer;
+}
+
+.add-books__tick span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.add-books__row--chosen {
+    background: color-mix(in srgb, var(--color-selected) 55%, transparent);
+}
+
+.add-books__row--here > td {
+    opacity: 0.45;
+}
+
+.add-books__row--here > td:nth-child(4) {
+    opacity: 1;
+}
+
+.add-books__row--here .add-books__tick {
+    cursor: default;
+}
+
+.add-books__here {
+    padding: 2px var(--space-2);
+    border: var(--border);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-xs);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}

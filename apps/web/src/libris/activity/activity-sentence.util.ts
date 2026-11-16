@@ -41,6 +41,7 @@ export class ActivitySentence {
         'tag-deleted': 'activity.tagDeleted',
         'receiver-created': 'activity.receiverCreated',
         'kept-covers-deleted': 'activity.keptCoversDeleted',
+        'books-placed': 'activity.booksPlaced',
     };
 
     private static readonly consequences: Partial<Record<Kind, MessageKey>> = {
@@ -75,6 +76,14 @@ export class ActivitySentence {
             return t(event.count === 1 ? 'activity.volumeAdded' : 'activity.volumesAdded', {
                 name: event.name,
                 count: event.count,
+            });
+        }
+
+        if (event.kind === 'books-placed') {
+            return t(event.count === 1 ? 'activity.bookPlaced' : 'activity.booksPlaced', {
+                count: event.count,
+                bookcase: event.bookcase,
+                shelf: event.shelf,
             });
         }
 

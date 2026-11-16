@@ -20,7 +20,15 @@ import {
 import { useFilterLabels } from './use-filter-labels';
 import { TagFilter } from './tag-filter';
 
-export function FiltersPage({ listing }: { listing: 'books' | 'collections' }) {
+export function FiltersPage({
+    listing,
+    returnTo,
+    ownedOnly = false,
+}: {
+    listing: 'books' | 'collections';
+    returnTo?: string;
+    ownedOnly?: boolean;
+}) {
     const { t } = useI18n();
     const { account } = useSession();
     const navigate = useNavigate();
@@ -48,7 +56,9 @@ export function FiltersPage({ listing }: { listing: 'books' | 'collections' }) {
                 onSubmit={(event) => {
                     event.preventDefault();
                     navigate(
-                        '/' + listing + '?' + BookFilter.write(filter, parameters).toString(),
+                        (returnTo ?? '/' + listing) +
+                            '?' +
+                            BookFilter.write(filter, parameters).toString(),
                         {
                             state: choicesGiven,
                         },
@@ -108,17 +118,21 @@ export function FiltersPage({ listing }: { listing: 'books' | 'collections' }) {
                             {guest ? t('filters.otherCriteriaGuest') : t('filters.otherCriteria')}
                         </h2>
                         <div className="choice-field-pairs">
-                            <ChoiceField
-                                label={t('filters.ownership')}
-                                summary={summary('ownership', t('filters.anyOwnership'))}
-                                options={BookFormat.ownerships.map((ownership: BookOwnership) => ({
-                                    value: ownership,
-                                    label: t(BookFormat.ownership(ownership)),
-                                }))}
-                                filter={filter}
-                                field="ownership"
-                                onChange={setFilter}
-                            />
+                            {!ownedOnly && (
+                                <ChoiceField
+                                    label={t('filters.ownership')}
+                                    summary={summary('ownership', t('filters.anyOwnership'))}
+                                    options={BookFormat.ownerships.map(
+                                        (ownership: BookOwnership) => ({
+                                            value: ownership,
+                                            label: t(BookFormat.ownership(ownership)),
+                                        }),
+                                    )}
+                                    filter={filter}
+                                    field="ownership"
+                                    onChange={setFilter}
+                                />
+                            )}
                             <ChoiceField
                                 label={t('filters.cover')}
                                 summary={summary('cover', t('filters.anyCover'))}

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { ComponentType } from 'react';
-import { useSearchParams } from 'react-router';
+import { useLocation, useSearchParams } from 'react-router';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { useSession } from '../../shared/session/session-context';
 import { Button } from '../../shared/ui/button';
@@ -47,7 +47,8 @@ export function BookshelvesPage() {
     const [parameters, setParameters] = useSearchParams();
     const { view, choice } = useViewChoice(views, 'media-collection.bookshelves-view');
     const [editing, setEditing] = useState<LocationEditing | null>(null);
-    const [done, setDone] = useState<string | null>(null);
+    const arrival = (useLocation().state as { done?: string } | null)?.done ?? null;
+    const [done, setDone] = useState<string | null>(arrival);
 
     if (failure) {
         return (
