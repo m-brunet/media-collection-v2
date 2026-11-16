@@ -196,7 +196,7 @@ Accepted tradeoff: anyone able to use the application under the host OS account 
 
 ## Data reset
 
-Only the first administrator can reset the installation to its initial-data state. Keep its current username and password; delete books, collections, locations, tags, receivers, loans, activity/audit history, other users, and application preferences. The covers of books that have an ISBN are kept under that ISBN (issue #105), so a book added again finds its cover; the reset dialog offers "Also delete the N kept covers", unticked by default. Covers of books without an ISBN are deleted. The deleted history must not be represented as surviving this reset.
+Only the first administrator can reset the installation to its initial-data state. Keep its current username and password; delete books, collections, locations, tags, receivers, loans, activity/audit history, other users, and application preferences. The covers of books that have an ISBN are kept under that ISBN (issue #105), so a book added again finds its cover; the reset dialog offers "Also delete the N kept covers", unticked by default. Covers of books without an ISBN are deleted. Outside a reset, the Admin can delete the kept covers from the Accounts page (issue #106). The deleted history must not be represented as surviving this reset.
 
 Require the current Admin password and explicit confirmation explaining erased data and retained Admin credentials. Preserve separately saved backups; after reset, clear saved preferences to defaults, end all sessions, and return to login with Admin credentials still valid. Do not delete external startup overrides by inference. See [release expectations](../operations/release-expectations.md); implementation mechanisms remain with technical agents.
 
