@@ -42,7 +42,18 @@ export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
                     .onRef('reading_statuses.book_id', '=', 'books.id')
                     .on('reading_statuses.user_id', '=', query.readerId ?? ''),
             )
+            .leftJoin('book_shelves as placement', 'placement.book_id', 'books.id')
+            .leftJoin('shelves as placed_shelf', 'placed_shelf.id', 'placement.shelf_id')
+            .leftJoin(
+                'bookcases as placed_bookcase',
+                'placed_bookcase.id',
+                'placed_shelf.bookcase_id',
+            )
             .select([
+                'placed_shelf.id as shelf_id',
+                'placed_shelf.name as shelf_name',
+                'placed_bookcase.id as bookcase_id',
+                'placed_bookcase.name as bookcase_name',
                 'books.id',
                 'books.title',
                 'books.category',
@@ -98,6 +109,15 @@ export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
                                   row.volume_to,
                                   'a collection book has a last volume',
                               ),
+                          },
+                location:
+                    row.shelf_id === null || row.bookcase_id === null
+                        ? null
+                        : {
+                              bookcaseId: row.bookcase_id,
+                              bookcaseName: row.bookcase_name ?? '',
+                              shelfId: row.shelf_id,
+                              shelfName: row.shelf_name ?? '',
                           },
                 updatedAt: row.updated_at,
                 read: query.readerId === null ? null : Boolean(row.read),

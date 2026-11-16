@@ -23,6 +23,7 @@ export class ActivityEligibility {
         'shelf.renamed',
         'shelf.moved',
         'shelf.deleted',
+        'shelf.books-placed',
         'tag.created',
         'tag.renamed',
         'tag.deleted',

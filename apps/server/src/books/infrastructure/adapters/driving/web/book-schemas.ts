@@ -53,6 +53,11 @@ export const organisationSchema = z
         (organisation) => organisation.shelfId !== undefined || organisation.tags !== undefined,
     );
 
+export const shelfPlacementSchema = z.strictObject({
+    shelfId: idSchema,
+    bookIds: z.array(idSchema).min(1).max(100),
+});
+
 export const bookBatchSchema = z.strictObject({
     collectionId: idSchema,
     bookIds: z.array(idSchema).min(1).max(1000),

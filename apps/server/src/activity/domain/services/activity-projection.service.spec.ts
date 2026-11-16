@@ -39,6 +39,44 @@ describe('ActivityProjection', () => {
             also: [],
         });
     });
+    it('describes books placed on a shelf as one event, with the books placed and moved', () => {
+        const placed = operation(
+            record('shelf.books-placed', {
+                name: 'Shelf 3',
+                bookcaseName: 'Oak',
+                placed: ['b1', 'b2'],
+                moved: ['b3'],
+                unchanged: ['b4'],
+            }),
+            record('book.organised', { title: 'Dune', location: { shelfId: 's3' }, tags: [] }),
+            record('book.organised', { title: 'Emma', location: { shelfId: 's3' }, tags: [] }),
+        );
+
+        const entry = ActivityProjection.entry(placed);
+
+        expect(entry?.event).toEqual({
+            kind: 'books-placed',
+            shelf: 'Shelf 3',
+            bookcase: 'Oak',
+            count: 3,
+        });
+        expect(entry?.also).toEqual([]);
+    });
+    it('shows nothing when every book was already on the shelf', () => {
+        const placed = operation(
+            record('shelf.books-placed', {
+                name: 'Shelf 3',
+                bookcaseName: 'Oak',
+                placed: [],
+                moved: [],
+                unchanged: ['b4'],
+            }),
+        );
+
+        const entry = ActivityProjection.entry(placed);
+
+        expect(entry).toBeNull();
+    });
     it('describes the deletion of the kept covers with their number', () => {
         const deleted = operation(
             record('maintenance.kept-covers-deleted', { keptCovers: 0 }, { keptCovers: 437 }),

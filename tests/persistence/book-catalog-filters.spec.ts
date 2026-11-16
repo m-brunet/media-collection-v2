@@ -26,6 +26,32 @@ async function titles(
     return page.items.map((item) => item.title);
 }
 
+describe('KyselyBookCatalog locations', () => {
+    it('gives each listed book its shelf and bookcase, or none', async () => {
+        const current = await LibraryRows.open();
+        const oak = await current.bookcase('Oak');
+        const top = await current.shelf(oak);
+
+        await current.book({ title: 'A placed', shelfId: top });
+        await current.book({ title: 'B loose' });
+
+        const page = await current.catalog.search({
+            search: '',
+            sort: 'title',
+            direction: 'asc',
+            offset: 0,
+            limit: 48,
+            readerId: null,
+            filter: BookFilter.of({}),
+        });
+
+        expect(page.items.map((item) => item.location)).toEqual([
+            { bookcaseId: oak, bookcaseName: 'Oak', shelfId: top, shelfName: 'Top' },
+            null,
+        ]);
+    });
+});
+
 describe('KyselyBookCatalog filters', () => {
     it('accepts either chosen category but requires ownership and location (example 8)', async () => {
         const current = await LibraryRows.open();

@@ -37,6 +37,11 @@ describe('ActivityEligibility', () => {
 
         expect(included).toEqual([true, true, true, true]);
     });
+    it('includes books placed on a shelf', () => {
+        const included = ActivityEligibility.includes('shelf.books-placed');
+
+        expect(included).toBe(true);
+    });
     it('includes the deletion of the kept covers', () => {
         const included = ActivityEligibility.includes('maintenance.kept-covers-deleted');
 
