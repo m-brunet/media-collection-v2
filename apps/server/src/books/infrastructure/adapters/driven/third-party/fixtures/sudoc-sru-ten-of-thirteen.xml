@@ -1,0 +1,1213 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<?xml-stylesheet type="text/xsl" href="https://www.sudoc.abes.fr/cbs/sru/DB=2.1/?xsl=searchRetrieveResponse" ?>
+<srw:searchRetrieveResponse xmlns:srw="http://www.loc.gov/zing/srw/"
+			    xmlns:dc="http://purl.org/dc/elements/1.1/"
+			    xmlns:diag="http://www.loc.gov/zing/srw/diagnostic/"
+			    xmlns:xcql="http://www.loc.gov/zing/cql/xcql/">
+    <srw:version>1.1</srw:version>
+    <srw:numberOfRecords>10</srw:numberOfRecords>
+    <srw:resultSetId>SIDdb3d5350-8fS2380</srw:resultSetId>
+    <srw:records>
+    
+
+
+<srw:record>
+<srw:recordSchema>unimarc</srw:recordSchema>
+<srw:recordPacking>xml</srw:recordPacking>
+<srw:recordData>
+<record>
+<controlfield tag="005">20221209193631.000</controlfield>
+<leader>     cam0 22        450 </leader>
+<controlfield tag="001">113005474</controlfield>
+<controlfield tag="003">http://www.sudoc.fr/113005474</controlfield>
+<datafield tag="035" ind1=" " ind2=" "><subfield code="a">(OCoLC)470751018</subfield></datafield>
+<datafield tag="010" ind1=" " ind2=" "><subfield code="a">2-7234-5636-6</subfield>
+<subfield code="b">br</subfield>
+<subfield code="d">6,50 EUR</subfield></datafield>
+<datafield tag="010" ind1=" " ind2=" "><subfield code="a">978-2-7234-5636-4</subfield></datafield>
+<datafield tag="073" ind1=" " ind2="0"><subfield code="a">9782723456364</subfield></datafield>
+<datafield tag="021" ind1=" " ind2=" "><subfield code="a">FR</subfield>
+<subfield code="b">DLE-20061212-59349</subfield></datafield>
+<datafield tag="035" ind1=" " ind2=" "><subfield code="a">FRBNF409543420000001</subfield>
+<subfield code="z">FRBNF40954342</subfield></datafield>
+<datafield tag="100" ind1=" " ind2=" "><subfield code="a">20070306d2006    m  y0frey50      ba</subfield></datafield>
+<datafield tag="101" ind1="1" ind2=" "><subfield code="a">fre</subfield>
+<subfield code="c">jpn</subfield>
+<subfield code="2">639-2</subfield></datafield>
+<datafield tag="105" ind1=" " ind2=" "><subfield code="a">a   t   000ay</subfield></datafield>
+<datafield tag="106" ind1=" " ind2=" "><subfield code="a">r</subfield></datafield>
+<datafield tag="181" ind1=" " ind2=" "><subfield code="6">z01</subfield>
+<subfield code="c">txt</subfield>
+<subfield code="2">rdacontent</subfield></datafield>
+<datafield tag="181" ind1=" " ind2=" "><subfield code="6">z02</subfield>
+<subfield code="c">sti</subfield>
+<subfield code="2">rdacontent</subfield></datafield>
+<datafield tag="181" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="a">i#</subfield>
+<subfield code="b">xxxe##</subfield></datafield>
+<datafield tag="181" ind1=" " ind2="1"><subfield code="6">z02</subfield>
+<subfield code="a">b#</subfield>
+<subfield code="b">xb2e##</subfield></datafield>
+<datafield tag="182" ind1=" " ind2=" "><subfield code="6">z01</subfield>
+<subfield code="c">n</subfield>
+<subfield code="2">rdamedia</subfield></datafield>
+<datafield tag="182" ind1=" " ind2=" "><subfield code="6">z02</subfield>
+<subfield code="c">n</subfield>
+<subfield code="2">rdamedia</subfield></datafield>
+<datafield tag="182" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="a">n</subfield></datafield>
+<datafield tag="182" ind1=" " ind2="1"><subfield code="6">z02</subfield>
+<subfield code="a">n</subfield></datafield>
+<datafield tag="183" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="a">nga</subfield>
+<subfield code="2">RDAfrCarrier</subfield></datafield>
+<datafield tag="102" ind1=" " ind2=" "><subfield code="a">FR</subfield></datafield>
+<datafield tag="200" ind1="1" ind2=" "><subfield code="a">Claymore</subfield>
+<subfield code="h">1</subfield>
+<subfield code="i">La tueuse aux yeux d&apos;argent</subfield>
+<subfield code="f">Norihiro Yagi</subfield>
+<subfield code="g">[traduction Anthony Prezman et Satoko Fujimoto]</subfield></datafield>
+<datafield tag="517" ind1="|" ind2=" "><subfield code="a">La tueuse aux yeux d&apos;argent</subfield></datafield>
+<datafield tag="700" ind1=" " ind2="1"><subfield code="3">153886722</subfield>
+<subfield code="a">Yagi</subfield>
+<subfield code="b">Norihiro</subfield>
+<subfield code="f">1968-....</subfield>
+<subfield code="4">070</subfield></datafield>
+<datafield tag="701" ind1=" " ind2="1"><subfield code="3">082330778</subfield>
+<subfield code="a">Fujimoto</subfield>
+<subfield code="b">Satoko</subfield>
+<subfield code="f">19..-....</subfield>
+<subfield code="c">traductrice</subfield>
+<subfield code="4">730</subfield></datafield>
+<datafield tag="701" ind1=" " ind2="1"><subfield code="3">057793123</subfield>
+<subfield code="a">Prezman</subfield>
+<subfield code="b">Anthony</subfield>
+<subfield code="4">730</subfield></datafield>
+<datafield tag="712" ind1="0" ind2="2"><subfield code="3">079201369</subfield>
+<subfield code="a">Glénat</subfield>
+<subfield code="c">Grenoble, Isère, France</subfield>
+<subfield code="c">1969-....</subfield>
+<subfield code="4">650</subfield></datafield>
+<datafield tag="801" ind1=" " ind2="3"><subfield code="a">FR</subfield>
+<subfield code="b">Abes</subfield>
+<subfield code="c">20221209</subfield>
+<subfield code="g">AFNOR</subfield></datafield>
+<datafield tag="214" ind1=" " ind2="0"><subfield code="a">Grenoble</subfield>
+<subfield code="c">Glénat</subfield>
+<subfield code="d">DL 2006</subfield></datafield>
+<datafield tag="215" ind1=" " ind2=" "><subfield code="a">1 vol. (186 p.)</subfield>
+<subfield code="c">ill., couv. ill., jaquette ill. en coul.</subfield>
+<subfield code="d">18 cm</subfield></datafield>
+<datafield tag="225" ind1="0" ind2=" "><subfield code="a">Shonen manga</subfield></datafield>
+<datafield tag="410" ind1=" " ind2="|"><subfield code="0">076257894</subfield>
+<subfield code="t">Shonen manga</subfield>
+<subfield code="x">1761-2268</subfield></datafield>
+<datafield tag="606" ind1=" " ind2=" "><subfield code="3">033824185</subfield>
+<subfield code="a">Mangas</subfield>
+<subfield code="2">rameau</subfield></datafield>
+<datafield tag="608" ind1=" " ind2=" "><subfield code="3">027220796</subfield>
+<subfield code="a">Bandes dessinées</subfield>
+<subfield code="2">rameau</subfield></datafield>
+<datafield tag="676" ind1=" " ind2=" "><subfield code="a">741.5</subfield>
+<subfield code="v">21</subfield></datafield>
+<datafield tag="686" ind1=" " ind2=" "><subfield code="a">803</subfield>
+<subfield code="2">Cadre de classement de la Bibliographie nationale française</subfield></datafield>
+<datafield tag="305" ind1=" " ind2=" "><subfield code="a">Réimpressions : 2008, 2015</subfield></datafield>
+<datafield tag="801" ind1=" " ind2="0"><subfield code="a">FR</subfield>
+<subfield code="b">BNF</subfield>
+<subfield code="c">20061212</subfield>
+<subfield code="g">AFNOR</subfield>
+<subfield code="2">intermrc</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">630142101:494580232</subfield>
+<subfield code="b">630142101</subfield>
+<subfield code="a">M CLA 1</subfield>
+<subfield code="j">g</subfield></datafield>
+<datafield tag="915" ind1=" " ind2=" "><subfield code="5">590092102:619602589</subfield>
+<subfield code="a">591411</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">590092102:619602589</subfield>
+<subfield code="b">590092102</subfield>
+<subfield code="a">BD CLA</subfield>
+<subfield code="j">u</subfield></datafield>
+<datafield tag="915" ind1=" " ind2=" "><subfield code="5">692662101:379921456</subfield>
+<subfield code="b">20192051</subfield></datafield>
+<datafield tag="917" ind1=" " ind2=" "><subfield code="5">692662101:379921456</subfield>
+<subfield code="a">abaa</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">692662101:379921456</subfield>
+<subfield code="b">692662101</subfield>
+<subfield code="a">BD M CLA</subfield>
+<subfield code="j">g</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">315552355:874125138</subfield>
+<subfield code="b">315552355</subfield>
+<subfield code="a">BD YAG</subfield>
+<subfield code="j">g</subfield></datafield>
+<datafield tag="915" ind1=" " ind2=" "><subfield code="5">596062101:596392362</subfield>
+<subfield code="b">3002400633811</subfield></datafield>
+<datafield tag="917" ind1=" " ind2=" "><subfield code="5">596062101:596392362</subfield>
+<subfield code="a">aaac</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">596062101:596392362</subfield>
+<subfield code="b">596062101</subfield>
+<subfield code="d">MHOUY</subfield>
+<subfield code="l">DETP</subfield>
+<subfield code="a">MAN CLA 1</subfield>
+<subfield code="j">u</subfield></datafield>
+<datafield tag="999" ind1=" " ind2=" "><subfield code="5">596062101:596392362</subfield>
+<subfield code="c">j</subfield></datafield>
+<datafield tag="915" ind1=" " ind2=" "><subfield code="5">786462101:38436215X</subfield>
+<subfield code="b">1320581684</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">786462101:38436215X</subfield>
+<subfield code="b">786462101</subfield>
+<subfield code="a">741 YAG</subfield>
+<subfield code="j">g</subfield></datafield></record></srw:recordData><srw:recordPosition>1</srw:recordPosition>
+</srw:record>
+
+<srw:record>
+<srw:recordSchema>unimarc</srw:recordSchema>
+<srw:recordPacking>xml</srw:recordPacking>
+<srw:recordData>
+<record>
+<controlfield tag="005">20220907065216.000</controlfield>
+<leader>     cam0 22        450 </leader>
+<controlfield tag="001">07393254X</controlfield>
+<controlfield tag="003">http://www.sudoc.fr/07393254X</controlfield>
+<datafield tag="035" ind1=" " ind2=" "><subfield code="a">(OCoLC)491562399</subfield></datafield>
+<datafield tag="010" ind1=" " ind2=" "><subfield code="a">978-2-8001-0017-3</subfield>
+<subfield code="b">rel.</subfield></datafield>
+<datafield tag="010" ind1=" " ind2=" "><subfield code="a">2-8001-0017-6</subfield>
+<subfield code="b">rel.</subfield></datafield>
+<datafield tag="100" ind1=" " ind2=" "><subfield code="a">20030901d1995    a  y0frey50      ba</subfield></datafield>
+<datafield tag="101" ind1="0" ind2=" "><subfield code="a">fre</subfield>
+<subfield code="g">fre</subfield>
+<subfield code="2">639-2</subfield></datafield>
+<datafield tag="105" ind1=" " ind2=" "><subfield code="a">a   t   000ay</subfield></datafield>
+<datafield tag="106" ind1=" " ind2=" "><subfield code="a">r</subfield></datafield>
+<datafield tag="181" ind1=" " ind2=" "><subfield code="6">z01</subfield>
+<subfield code="c">txt</subfield>
+<subfield code="2">rdacontent</subfield></datafield>
+<datafield tag="181" ind1=" " ind2=" "><subfield code="6">z02</subfield>
+<subfield code="c">sti</subfield>
+<subfield code="2">rdacontent</subfield></datafield>
+<datafield tag="181" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="a">i#</subfield>
+<subfield code="b">xxxe##</subfield></datafield>
+<datafield tag="181" ind1=" " ind2="1"><subfield code="6">z02</subfield>
+<subfield code="a">b#</subfield>
+<subfield code="b">xb2e##</subfield></datafield>
+<datafield tag="182" ind1=" " ind2=" "><subfield code="6">z01</subfield>
+<subfield code="c">n</subfield>
+<subfield code="2">rdamedia</subfield></datafield>
+<datafield tag="182" ind1=" " ind2=" "><subfield code="6">z02</subfield>
+<subfield code="c">n</subfield>
+<subfield code="2">rdamedia</subfield></datafield>
+<datafield tag="182" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="a">n</subfield></datafield>
+<datafield tag="182" ind1=" " ind2="1"><subfield code="6">z02</subfield>
+<subfield code="a">n</subfield></datafield>
+<datafield tag="102" ind1=" " ind2=" "><subfield code="a">FR</subfield></datafield>
+<datafield tag="200" ind1="1" ind2=" "><subfield code="a">Spirou et Fantasio</subfield>
+<subfield code="h">15</subfield>
+<subfield code="i">Z comme Zorglub</subfield>
+<subfield code="f">Franquin et Greg</subfield>
+<subfield code="g">décors Jidéhem</subfield></datafield>
+<datafield tag="700" ind1=" " ind2="1"><subfield code="3">026873559</subfield>
+<subfield code="a">Franquin</subfield>
+<subfield code="b">André</subfield>
+<subfield code="f">1924-1997</subfield>
+<subfield code="4">070</subfield></datafield>
+<datafield tag="701" ind1=" " ind2="1"><subfield code="3">02690201X</subfield>
+<subfield code="a">Greg</subfield>
+<subfield code="f">1931-1999</subfield>
+<subfield code="4">070</subfield></datafield>
+<datafield tag="702" ind1=" " ind2="1"><subfield code="3">026938456</subfield>
+<subfield code="a">Jidéhem</subfield>
+<subfield code="f">1935-2017</subfield>
+<subfield code="4">070</subfield></datafield>
+<datafield tag="801" ind1=" " ind2="3"><subfield code="a">FR</subfield>
+<subfield code="b">Abes</subfield>
+<subfield code="c">20220907</subfield>
+<subfield code="g">AFNOR</subfield></datafield>
+<datafield tag="210" ind1=" " ind2=" "><subfield code="a">Paris</subfield>
+<subfield code="c">Dupuis</subfield>
+<subfield code="d">1995</subfield></datafield>
+<datafield tag="215" ind1=" " ind2=" "><subfield code="a">1 vol. (63 p.)</subfield>
+<subfield code="c">ill. en coul., couv. ill. en coul.</subfield>
+<subfield code="d">30 cm</subfield></datafield>
+<datafield tag="461" ind1=" " ind2="|"><subfield code="t">Spirou et Fantasio</subfield>
+<subfield code="v">15</subfield></datafield>
+<datafield tag="225" ind1="1" ind2=" "><subfield code="a">Spirou et Fantasio</subfield>
+<subfield code="x">0772-0262</subfield>
+<subfield code="v">15</subfield></datafield>
+<datafield tag="410" ind1=" " ind2="|"><subfield code="0">013788353</subfield>
+<subfield code="t">Spirou et Fantasio</subfield>
+<subfield code="c">[Paris]</subfield>
+<subfield code="d">Dupuis</subfield>
+<subfield code="p">30 cm</subfield>
+<subfield code="v">15</subfield></datafield>
+<datafield tag="606" ind1=" " ind2=" "><subfield code="3">157157520</subfield>
+<subfield code="a">Bandes dessinées humoristiques</subfield>
+<subfield code="2">rameau</subfield></datafield>
+<datafield tag="330" ind1=" " ind2=" "><subfield code="a">Zorglub, un scientifique à la fois loufoque et dangereux, veut collaborer avec Champignac.</subfield>
+<subfield code="2">Babelio</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">130012224:378423428</subfield>
+<subfield code="b">130012224</subfield>
+<subfield code="a">BD FRA</subfield>
+<subfield code="j">g</subfield></datafield>
+<datafield tag="991" ind1=" " ind2=" "><subfield code="5">130012224:378423428</subfield>
+<subfield code="a">Exemplaire créé automatiquement par l&apos;ABES</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">621192101:472544217</subfield>
+<subfield code="b">621192101</subfield>
+<subfield code="a">BD SPI 15</subfield>
+<subfield code="j">g</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">301892102:184268931</subfield>
+<subfield code="b">301892102</subfield>
+<subfield code="a">BD FRA</subfield>
+<subfield code="j">g</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">480952201:46019061X</subfield>
+<subfield code="b">480952201</subfield>
+<subfield code="a">BD FRA</subfield>
+<subfield code="j">u</subfield></datafield>
+<datafield tag="991" ind1=" " ind2=" "><subfield code="5">480952201:46019061X</subfield>
+<subfield code="a">exemplaire créé automatiquement par l&apos;ABES</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">914712302:880641959</subfield>
+<subfield code="b">914712302</subfield>
+<subfield code="j">u</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">574632119:58215894X</subfield>
+<subfield code="b">574632119</subfield>
+<subfield code="j">s</subfield></datafield>
+<datafield tag="991" ind1=" " ind2=" "><subfield code="5">574632119:58215894X</subfield>
+<subfield code="a">exemplaire créé automatiquement par l&apos;ABES</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">751195202:378077686</subfield>
+<subfield code="b">751195202</subfield>
+<subfield code="j">g</subfield></datafield>
+<datafield tag="991" ind1=" " ind2=" "><subfield code="5">751195202:378077686</subfield>
+<subfield code="a">Exemplaire créé automatiquement par l&apos;ABES</subfield></datafield></record></srw:recordData><srw:recordPosition>2</srw:recordPosition>
+</srw:record>
+
+<srw:record>
+<srw:recordSchema>unimarc</srw:recordSchema>
+<srw:recordPacking>xml</srw:recordPacking>
+<srw:recordData>
+<record>
+<controlfield tag="005">20250513013627.000</controlfield>
+<leader>     cam0 22        450 </leader>
+<controlfield tag="001">282739114</controlfield>
+<controlfield tag="003">http://www.sudoc.fr/282739114</controlfield>
+<datafield tag="035" ind1=" " ind2=" "><subfield code="a">(OCoLC)1519345577</subfield></datafield>
+<datafield tag="010" ind1=" " ind2=" "><subfield code="a">979-10-327-1931-2</subfield>
+<subfield code="b">br.</subfield>
+<subfield code="d">7,95 EUR</subfield></datafield>
+<datafield tag="073" ind1=" " ind2="0"><subfield code="a">9791032719312</subfield></datafield>
+<datafield tag="035" ind1=" " ind2=" "><subfield code="a">FRBNF476388280000005</subfield>
+<subfield code="z">FRBNF47638828</subfield></datafield>
+<datafield tag="033" ind1=" " ind2=" "><subfield code="a">http://catalogue.bnf.fr/ark:/12148/cb47638828m</subfield></datafield>
+<datafield tag="100" ind1=" " ind2=" "><subfield code="a">20250122d2025    m  y0frey50      ba</subfield></datafield>
+<datafield tag="101" ind1="1" ind2=" "><subfield code="a">fre</subfield>
+<subfield code="c">jpn</subfield>
+<subfield code="2">639-2</subfield></datafield>
+<datafield tag="105" ind1=" " ind2=" "><subfield code="a">y   t   00|a|</subfield></datafield>
+<datafield tag="106" ind1=" " ind2=" "><subfield code="a">r</subfield></datafield>
+<datafield tag="181" ind1=" " ind2=" "><subfield code="6">z01</subfield>
+<subfield code="c">txt</subfield>
+<subfield code="2">rdacontent</subfield></datafield>
+<datafield tag="181" ind1=" " ind2=" "><subfield code="6">z02</subfield>
+<subfield code="c">sti</subfield>
+<subfield code="2">rdacontent</subfield></datafield>
+<datafield tag="181" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="a">i#</subfield>
+<subfield code="b">xxxe##</subfield></datafield>
+<datafield tag="181" ind1=" " ind2="1"><subfield code="6">z02</subfield>
+<subfield code="a">b#</subfield>
+<subfield code="b">xb2e##</subfield></datafield>
+<datafield tag="182" ind1=" " ind2=" "><subfield code="6">z01</subfield>
+<subfield code="c">n</subfield>
+<subfield code="2">rdamedia</subfield></datafield>
+<datafield tag="182" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="6">z02</subfield>
+<subfield code="a">n</subfield></datafield>
+<datafield tag="183" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="a">nga</subfield>
+<subfield code="2">RDAfrCarrier</subfield></datafield>
+<datafield tag="102" ind1=" " ind2=" "><subfield code="a">FR</subfield></datafield>
+<datafield tag="200" ind1="1" ind2=" "><subfield code="a">Darwin&apos;s game</subfield>
+<subfield code="h">30</subfield>
+<subfield code="f">Flipflops</subfield>
+<subfield code="g">traduction: David Le Quéré</subfield></datafield>
+<datafield tag="710" ind1="0" ind2="2"><subfield code="3">190020830</subfield>
+<subfield code="a">Flipflops</subfield>
+<subfield code="4">070</subfield></datafield>
+<datafield tag="801" ind1=" " ind2="3"><subfield code="a">FR</subfield>
+<subfield code="b">Abes</subfield>
+<subfield code="c">20250513</subfield>
+<subfield code="g">AFNOR</subfield></datafield>
+<datafield tag="214" ind1=" " ind2="0"><subfield code="a">[Paris]</subfield>
+<subfield code="c">Ki-oon</subfield>
+<subfield code="d">DL 2025</subfield></datafield>
+<datafield tag="215" ind1=" " ind2=" "><subfield code="a">1 vol. (non paginé [ca 192] p.)</subfield>
+<subfield code="c">ill.</subfield>
+<subfield code="d">18 cm</subfield></datafield>
+<datafield tag="461" ind1=" " ind2="|"><subfield code="t">Darwin&apos;s game</subfield>
+<subfield code="v">30</subfield></datafield>
+<datafield tag="225" ind1=" " ind2=" "><subfield code="a">Darwin&apos;s game</subfield>
+<subfield code="v">30</subfield></datafield>
+<datafield tag="454" ind1=" " ind2="|"><subfield code="t">Darwin&apos;s Game</subfield></datafield>
+<datafield tag="300" ind1=" " ind2=" "><subfield code="a">Trad. du japonais</subfield></datafield>
+<datafield tag="608" ind1=" " ind2=" "><subfield code="3">033824185</subfield>
+<subfield code="a">Mangas</subfield>
+<subfield code="2">rameau</subfield></datafield>
+<datafield tag="801" ind1=" " ind2="0"><subfield code="a">FR</subfield>
+<subfield code="b">FR-751131015</subfield>
+<subfield code="c">20250117</subfield>
+<subfield code="g">AFNOR</subfield>
+<subfield code="2">intermrc</subfield></datafield>
+<datafield tag="330" ind1=" " ind2=" "><subfield code="a">Kaname a réussi à attirer l&apos;attention d&apos;Izaya Shido en gagnant un combat contre des adversaires surpuissants et en expédiant l&apos;événement « Chasse au trésor » à une vitesse record... mais ses ennemis aussi ont remarqué sa présence. Pour contrer les Greeds, le voyageur temporel et le gardien de monde prennent un risque énorme : celui de neutraliser tous les sigils ! Ils ignorent que le professeur Shirogane s&apos;est ménagé un accès indépendant au Darwin&apos;s Game... Avec ce nouveau maître de Jeu, l&apos;humanité possède-t-elle encore une chance ? Après avoir traversé le temps et les dimensions, Kaname est prêt pour le combat final. C&apos;est le sort de notre espèce tout entière qui se joue dans ce dernier tome de Darwin&apos;s Game !</subfield>
+<subfield code="2">éditeur</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">751052108:850849578</subfield>
+<subfield code="b">751052108</subfield>
+<subfield code="a">BD DAR</subfield>
+<subfield code="j">g</subfield></datafield></record></srw:recordData><srw:recordPosition>3</srw:recordPosition>
+</srw:record>
+
+<srw:record>
+<srw:recordSchema>unimarc</srw:recordSchema>
+<srw:recordPacking>xml</srw:recordPacking>
+<srw:recordData>
+<record>
+<controlfield tag="005">20221108181750.000</controlfield>
+<leader>     cam0 22        450 </leader>
+<controlfield tag="001">233927972</controlfield>
+<controlfield tag="003">http://www.sudoc.fr/233927972</controlfield>
+<datafield tag="035" ind1=" " ind2=" "><subfield code="a">(OCoLC)1089202845</subfield></datafield>
+<datafield tag="010" ind1=" " ind2=" "><subfield code="a">979-10-327-0320-5</subfield>
+<subfield code="b">br.</subfield>
+<subfield code="d">7,65 EUR</subfield></datafield>
+<datafield tag="073" ind1=" " ind2="0"><subfield code="a">9791032703205</subfield></datafield>
+<datafield tag="020" ind1=" " ind2=" "><subfield code="a">FR</subfield>
+<subfield code="b">01907591</subfield></datafield>
+<datafield tag="021" ind1=" " ind2=" "><subfield code="a">FR</subfield>
+<subfield code="b">DLE-20181212-79910</subfield></datafield>
+<datafield tag="035" ind1=" " ind2=" "><subfield code="a">FRBNF456359110000006</subfield>
+<subfield code="z">FRBNF45635911</subfield></datafield>
+<datafield tag="033" ind1=" " ind2=" "><subfield code="a">http://catalogue.bnf.fr/ark:/12148/cb456359115</subfield></datafield>
+<datafield tag="100" ind1=" " ind2=" "><subfield code="a">20190211d2018    m  y0frey50      ba</subfield></datafield>
+<datafield tag="101" ind1="1" ind2=" "><subfield code="a">fre</subfield>
+<subfield code="c">jpn</subfield>
+<subfield code="2">639-2</subfield></datafield>
+<datafield tag="105" ind1=" " ind2=" "><subfield code="a">a   t   000ay</subfield></datafield>
+<datafield tag="106" ind1=" " ind2=" "><subfield code="a">r</subfield></datafield>
+<datafield tag="181" ind1=" " ind2=" "><subfield code="6">z01</subfield>
+<subfield code="c">txt</subfield>
+<subfield code="2">rdacontent</subfield></datafield>
+<datafield tag="181" ind1=" " ind2=" "><subfield code="6">z02</subfield>
+<subfield code="c">sti</subfield>
+<subfield code="2">rdacontent</subfield></datafield>
+<datafield tag="181" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="a">i#</subfield>
+<subfield code="b">xxxe##</subfield></datafield>
+<datafield tag="181" ind1=" " ind2="1"><subfield code="6">z02</subfield>
+<subfield code="a">b#</subfield>
+<subfield code="b">xb2e##</subfield></datafield>
+<datafield tag="182" ind1=" " ind2=" "><subfield code="6">z01</subfield>
+<subfield code="c">n</subfield>
+<subfield code="2">rdamedia</subfield></datafield>
+<datafield tag="182" ind1=" " ind2=" "><subfield code="6">z02</subfield>
+<subfield code="c">n</subfield>
+<subfield code="2">rdamedia</subfield></datafield>
+<datafield tag="182" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="a">n</subfield></datafield>
+<datafield tag="182" ind1=" " ind2="1"><subfield code="6">z02</subfield>
+<subfield code="a">n</subfield></datafield>
+<datafield tag="183" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="a">nga</subfield>
+<subfield code="2">RDAfrCarrier</subfield></datafield>
+<datafield tag="102" ind1=" " ind2=" "><subfield code="a">FR</subfield></datafield>
+<datafield tag="200" ind1="1" ind2=" "><subfield code="a">Darwin&apos;s game</subfield>
+<subfield code="h">15</subfield>
+<subfield code="f">Flipflops</subfield>
+<subfield code="g">Traduction : David Le Quéré</subfield></datafield>
+<datafield tag="701" ind1=" " ind2="1"><subfield code="3">138468818</subfield>
+<subfield code="a">Le Quéré</subfield>
+<subfield code="b">David</subfield>
+<subfield code="f">19..-....</subfield>
+<subfield code="c">traducteur</subfield>
+<subfield code="4">730</subfield></datafield>
+<datafield tag="710" ind1="0" ind2="2"><subfield code="3">190020830</subfield>
+<subfield code="a">Flipflops</subfield>
+<subfield code="4">070</subfield></datafield>
+<datafield tag="801" ind1=" " ind2="3"><subfield code="a">FR</subfield>
+<subfield code="b">Abes</subfield>
+<subfield code="c">20221108</subfield>
+<subfield code="g">AFNOR</subfield></datafield>
+<datafield tag="214" ind1=" " ind2="3"><subfield code="a">86-Ligugé</subfield>
+<subfield code="c">Aubin impr.</subfield></datafield>
+<datafield tag="214" ind1=" " ind2="0"><subfield code="a">[Paris]</subfield>
+<subfield code="c">Ki-oon</subfield>
+<subfield code="d">DL 2018</subfield></datafield>
+<datafield tag="215" ind1=" " ind2=" "><subfield code="a">1 vol. (non paginé [ca 188] p.)</subfield>
+<subfield code="c">ill.</subfield>
+<subfield code="d">18 cm</subfield></datafield>
+<datafield tag="461" ind1=" " ind2="|"><subfield code="t">Darwin&apos;s game</subfield>
+<subfield code="v">15</subfield></datafield>
+<datafield tag="225" ind1="1" ind2=" "><subfield code="a">Darwin&apos;s game</subfield>
+<subfield code="v">15</subfield></datafield>
+<datafield tag="454" ind1=" " ind2="|"><subfield code="t">Darwin&apos;s game</subfield>
+<subfield code="d">cop. 2018</subfield></datafield>
+<datafield tag="606" ind1=" " ind2=" "><subfield code="3">033824185</subfield>
+<subfield code="a">Mangas</subfield>
+<subfield code="2">rameau</subfield></datafield>
+<datafield tag="608" ind1=" " ind2=" "><subfield code="a">Bandes dessinées</subfield>
+<subfield code="2">CNLJ</subfield></datafield>
+<datafield tag="686" ind1=" " ind2=" "><subfield code="a">805</subfield>
+<subfield code="2">Cadre de classement de la Bibliographie nationale française</subfield></datafield>
+<datafield tag="302" ind1=" " ind2=" "><subfield code="a">Trad. du japonais</subfield></datafield>
+<datafield tag="801" ind1=" " ind2="0"><subfield code="a">FR</subfield>
+<subfield code="b">FR-751131015</subfield>
+<subfield code="c">20181212</subfield>
+<subfield code="g">AFNOR</subfield>
+<subfield code="2">intermrc</subfield></datafield>
+<datafield tag="330" ind1=" " ind2=" "><subfield code="a">&quot;Depuis que le clan des Boss de l’évolution pratique l’élevage de joueurs, les choses ont bien changé dans le lycée de Kaname. Accompagné de Shuka, il décide alors d’intervenir et découvre qu’un certain M. Ieiri serait à l’origine de ces manigances… Mais dans quel but ? Pendant ce temps, dans le village blanc, Ryuji se fait attaquer par un mystérieux individu arborant le blason des Eighth. Bien déterminés à en découdre avec cet insaisissable ennemi, les Sunset Ravens se mobilisent pour mener l’enquête… Tandis que chacun devient suspect, la paisible retraite prend des allures de huis clos mortel !&quot; (4 ème de couv.)</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">372612104:651563151</subfield>
+<subfield code="b">372612104</subfield>
+<subfield code="a">BD FLI dar</subfield>
+<subfield code="j">u</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">751052108:761717684</subfield>
+<subfield code="b">751052108</subfield>
+<subfield code="a">BD DAR</subfield>
+<subfield code="j">g</subfield></datafield></record></srw:recordData><srw:recordPosition>4</srw:recordPosition>
+</srw:record>
+
+<srw:record>
+<srw:recordSchema>unimarc</srw:recordSchema>
+<srw:recordPacking>xml</srw:recordPacking>
+<srw:recordData>
+<record>
+<controlfield tag="005">20231128034523.000</controlfield>
+<leader>     cam0 22        450 </leader>
+<controlfield tag="001">193631474</controlfield>
+<controlfield tag="003">http://www.sudoc.fr/193631474</controlfield>
+<datafield tag="035" ind1=" " ind2=" "><subfield code="a">(OCoLC)951171023</subfield></datafield>
+<datafield tag="010" ind1=" " ind2=" "><subfield code="a">978-2-8112-1710-5</subfield>
+<subfield code="b">br.</subfield>
+<subfield code="d">8,20 EUR</subfield></datafield>
+<datafield tag="073" ind1=" " ind2="0"><subfield code="a">9782811217105</subfield></datafield>
+<datafield tag="021" ind1=" " ind2=" "><subfield code="a">FR</subfield>
+<subfield code="b">DLE-20160419-24403</subfield></datafield>
+<datafield tag="035" ind1=" " ind2=" "><subfield code="a">FRBNF450228660000005</subfield>
+<subfield code="z">FRBNF45022866</subfield></datafield>
+<datafield tag="033" ind1=" " ind2=" "><subfield code="a">http://catalogue.bnf.fr/ark:/12148/cb450228666</subfield></datafield>
+<datafield tag="100" ind1=" " ind2=" "><subfield code="a">20160609d2016    m  y0frey50      ba</subfield></datafield>
+<datafield tag="101" ind1="1" ind2=" "><subfield code="a">fre</subfield>
+<subfield code="c">eng</subfield>
+<subfield code="2">639-2</subfield></datafield>
+<datafield tag="105" ind1=" " ind2=" "><subfield code="a">b   z   000ay</subfield></datafield>
+<datafield tag="106" ind1=" " ind2=" "><subfield code="a">r</subfield></datafield>
+<datafield tag="181" ind1=" " ind2=" "><subfield code="6">z01</subfield>
+<subfield code="c">txt</subfield>
+<subfield code="2">rdacontent</subfield></datafield>
+<datafield tag="181" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="a">i#</subfield>
+<subfield code="b">xxxe##</subfield></datafield>
+<datafield tag="182" ind1=" " ind2=" "><subfield code="6">z01</subfield>
+<subfield code="c">n</subfield>
+<subfield code="2">rdamedia</subfield></datafield>
+<datafield tag="182" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="a">n</subfield></datafield>
+<datafield tag="183" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="a">nga</subfield>
+<subfield code="2">RDAfrCarrier</subfield></datafield>
+<datafield tag="102" ind1=" " ind2=" "><subfield code="a">FR</subfield></datafield>
+<datafield tag="320" ind1=" " ind2=" "><subfield code="a">Glossaire</subfield></datafield>
+<datafield tag="200" ind1="1" ind2=" "><subfield code="a">La guilde des magiciens</subfield>
+<subfield code="f">Trudi Canavan</subfield>
+<subfield code="g">traduit de l&apos;anglais (Australie) par Justine Niogret</subfield></datafield>
+<datafield tag="700" ind1=" " ind2="1"><subfield code="3">124356109</subfield>
+<subfield code="a">Canavan</subfield>
+<subfield code="b">Trudi</subfield>
+<subfield code="f">19..-....</subfield>
+<subfield code="4">070</subfield></datafield>
+<datafield tag="702" ind1=" " ind2="1"><subfield code="3">12435615X</subfield>
+<subfield code="a">Niogret</subfield>
+<subfield code="b">Justine</subfield>
+<subfield code="f">1978-....</subfield>
+<subfield code="4">730</subfield></datafield>
+<datafield tag="801" ind1=" " ind2="3"><subfield code="a">FR</subfield>
+<subfield code="b">Abes</subfield>
+<subfield code="c">20231128</subfield>
+<subfield code="g">AFNOR</subfield></datafield>
+<datafield tag="214" ind1=" " ind2="0"><subfield code="a">Paris</subfield>
+<subfield code="c">Milady</subfield>
+<subfield code="d">DL 2016</subfield></datafield>
+<datafield tag="215" ind1=" " ind2=" "><subfield code="a">1 vol. (476 p.)</subfield>
+<subfield code="c">ill.</subfield>
+<subfield code="d">18 cm</subfield></datafield>
+<datafield tag="461" ind1=" " ind2="|"><subfield code="t">La trilogie du magicien noir</subfield>
+<subfield code="v">1</subfield></datafield>
+<datafield tag="225" ind1="1" ind2=" "><subfield code="a">La trilogie du magicien noir</subfield>
+<subfield code="v">1</subfield></datafield>
+<datafield tag="454" ind1=" " ind2="|"><subfield code="t">The magicians&apos; guild</subfield>
+<subfield code="d">cop. 2001</subfield></datafield>
+<datafield tag="686" ind1=" " ind2=" "><subfield code="a">803</subfield>
+<subfield code="2">Cadre de classement de la Bibliographie nationale française</subfield></datafield>
+<datafield tag="304" ind1=" " ind2=" "><subfield code="a">Traduit de : &quot;The black magician trilogy. The magicians&apos; guild&quot;</subfield></datafield>
+<datafield tag="801" ind1=" " ind2="0"><subfield code="a">FR</subfield>
+<subfield code="b">FR-751131015</subfield>
+<subfield code="c">20160419</subfield>
+<subfield code="g">AFNOR</subfield>
+<subfield code="2">intermrc</subfield></datafield>
+<datafield tag="330" ind1=" " ind2=" "><subfield code="a">&quot;Pour nettoyer la ville des indésirables, les magiciens d’Imardin parcourent les rues, protégés par un bouclier magique. Ils redoutent en effet les représailles de ceux qu’ils persécutent, vagabonds, orphelins et rebelles. Lorsque la pierre lancée par une jeune fille en colère traverse leur protection et assomme l’un des mages, c’est la stupéfaction. Ce que la Guilde des magiciens redoutait depuis si longtemps est arrivé : une magicienne inexpérimentée est en liberté dans les rues ! Il faut la retrouver avant que son pouvoir ne la détruise et toute la ville avec.&quot; [Source : 4e de couv.]</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">200962101:566030179</subfield>
+<subfield code="b">200962101</subfield>
+<subfield code="a">F TRI 1/</subfield>
+<subfield code="j">u</subfield></datafield>
+<datafield tag="915" ind1=" " ind2=" "><subfield code="5">914712101:557390710</subfield>
+<subfield code="a">9530924634</subfield>
+<subfield code="b">9530924634</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">914712101:557390710</subfield>
+<subfield code="b">914712101</subfield>
+<subfield code="a">808.76 CAN mag 1</subfield>
+<subfield code="j">g</subfield></datafield></record></srw:recordData><srw:recordPosition>5</srw:recordPosition>
+</srw:record>
+
+<srw:record>
+<srw:recordSchema>unimarc</srw:recordSchema>
+<srw:recordPacking>xml</srw:recordPacking>
+<srw:recordData>
+<record>
+<controlfield tag="005">20231126184129.000</controlfield>
+<leader>     cam0 22        450 </leader>
+<controlfield tag="001">170905977</controlfield>
+<controlfield tag="003">http://www.sudoc.fr/170905977</controlfield>
+<datafield tag="010" ind1=" " ind2=" "><subfield code="a">978-2-8112-0912-4</subfield>
+<subfield code="b">br</subfield>
+<subfield code="d">10,20 EUR</subfield></datafield>
+<datafield tag="073" ind1=" " ind2="0"><subfield code="a">9782811209124</subfield></datafield>
+<datafield tag="020" ind1=" " ind2=" "><subfield code="a">FR</subfield>
+<subfield code="b">01336229</subfield></datafield>
+<datafield tag="021" ind1=" " ind2=" "><subfield code="a">FR</subfield>
+<subfield code="b">DLE-20130625-34549</subfield></datafield>
+<datafield tag="035" ind1=" " ind2=" "><subfield code="a">FRBNF436201320000002</subfield>
+<subfield code="z">FRBNF43620132</subfield></datafield>
+<datafield tag="033" ind1=" " ind2=" "><subfield code="a">http://catalogue.bnf.fr/ark:/12148/cb436201327</subfield></datafield>
+<datafield tag="100" ind1=" " ind2=" "><subfield code="a">20130724d2013    m  y0frey50      ba</subfield></datafield>
+<datafield tag="101" ind1="1" ind2=" "><subfield code="a">fre</subfield>
+<subfield code="c">eng</subfield>
+<subfield code="2">639-2</subfield></datafield>
+<datafield tag="105" ind1=" " ind2=" "><subfield code="a">y   z   00|a|</subfield></datafield>
+<datafield tag="106" ind1=" " ind2=" "><subfield code="a">r</subfield></datafield>
+<datafield tag="181" ind1=" " ind2=" "><subfield code="6">z01</subfield>
+<subfield code="c">txt</subfield>
+<subfield code="2">rdacontent</subfield></datafield>
+<datafield tag="181" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="a">i#</subfield>
+<subfield code="b">xxxe##</subfield></datafield>
+<datafield tag="182" ind1=" " ind2=" "><subfield code="6">z01</subfield>
+<subfield code="c">n</subfield>
+<subfield code="2">rdamedia</subfield></datafield>
+<datafield tag="182" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="a">n</subfield></datafield>
+<datafield tag="102" ind1=" " ind2=" "><subfield code="a">FR</subfield></datafield>
+<datafield tag="200" ind1="1" ind2=" "><subfield code="a">Pair de l&apos;empire</subfield>
+<subfield code="f">Raymond E. Feist &amp; Janny Wurts</subfield>
+<subfield code="g">traduit de l&apos;anglais (États-Unis) par Anne Vétillard</subfield></datafield>
+<datafield tag="700" ind1=" " ind2="1"><subfield code="3">029467500</subfield>
+<subfield code="a">Feist</subfield>
+<subfield code="b">Raymond Elias</subfield>
+<subfield code="f">1945-....</subfield>
+<subfield code="4">070</subfield></datafield>
+<datafield tag="701" ind1=" " ind2="1"><subfield code="3">077718070</subfield>
+<subfield code="a">Wurts</subfield>
+<subfield code="b">Janny</subfield>
+<subfield code="f">19..-....</subfield>
+<subfield code="4">070</subfield></datafield>
+<datafield tag="702" ind1=" " ind2="1"><subfield code="3">030824311</subfield>
+<subfield code="a">Vétillard</subfield>
+<subfield code="b">Anne</subfield>
+<subfield code="f">1963-2024</subfield>
+<subfield code="4">730</subfield></datafield>
+<datafield tag="801" ind1=" " ind2="3"><subfield code="a">FR</subfield>
+<subfield code="b">Abes</subfield>
+<subfield code="c">20231126</subfield>
+<subfield code="g">AFNOR</subfield></datafield>
+<datafield tag="210" ind1=" " ind2=" "><subfield code="a">Paris</subfield>
+<subfield code="c">Milady</subfield>
+<subfield code="d">impr. 2013</subfield>
+<subfield code="e">impr. en Italie</subfield></datafield>
+<datafield tag="215" ind1=" " ind2=" "><subfield code="a">1 vol. (895 p.)</subfield>
+<subfield code="c">carte, couv. ill. en coul.</subfield>
+<subfield code="d">18 cm</subfield></datafield>
+<datafield tag="461" ind1=" " ind2="|"><subfield code="t">La trilogie de l&apos;empire</subfield>
+<subfield code="v">2</subfield></datafield>
+<datafield tag="225" ind1="1" ind2=" "><subfield code="a">La  trilogie de l&apos;empire</subfield>
+<subfield code="v">2</subfield></datafield>
+<datafield tag="454" ind1=" " ind2="|"><subfield code="t">Servant of the empire</subfield></datafield>
+<datafield tag="686" ind1=" " ind2=" "><subfield code="a">803</subfield>
+<subfield code="2">Cadre de classement de la Bibliographie nationale française</subfield></datafield>
+<datafield tag="801" ind1=" " ind2="0"><subfield code="a">FR</subfield>
+<subfield code="b">FR-751131015</subfield>
+<subfield code="c">20130625</subfield>
+<subfield code="g">AFNOR</subfield>
+<subfield code="2">intermrc</subfield></datafield>
+<datafield tag="915" ind1=" " ind2=" "><subfield code="5">682242105:759962405</subfield>
+<subfield code="b">0343521786</subfield></datafield>
+<datafield tag="917" ind1=" " ind2=" "><subfield code="5">682242105:759962405</subfield>
+<subfield code="a">xxax</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">682242105:759962405</subfield>
+<subfield code="b">682242105</subfield>
+<subfield code="j">u</subfield></datafield>
+<datafield tag="999" ind1=" " ind2=" "><subfield code="5">682242105:759962405</subfield>
+<subfield code="c">c</subfield></datafield></record></srw:recordData><srw:recordPosition>6</srw:recordPosition>
+</srw:record>
+
+<srw:record>
+<srw:recordSchema>unimarc</srw:recordSchema>
+<srw:recordPacking>xml</srw:recordPacking>
+<srw:recordData>
+<record>
+<controlfield tag="005">20241016104643.000</controlfield>
+<leader>     cam0 22        450 </leader>
+<controlfield tag="001">155435671</controlfield>
+<controlfield tag="003">http://www.sudoc.fr/155435671</controlfield>
+<datafield tag="035" ind1=" " ind2=" "><subfield code="a">(OCoLC)762875517</subfield></datafield>
+<datafield tag="010" ind1=" " ind2=" "><subfield code="a">978-2-253-15763-2</subfield>
+<subfield code="b">br</subfield>
+<subfield code="d">6,95 EUR</subfield></datafield>
+<datafield tag="073" ind1=" " ind2="0"><subfield code="a">9782253157632</subfield></datafield>
+<datafield tag="021" ind1=" " ind2=" "><subfield code="a">FR</subfield>
+<subfield code="b">DLE-20110907-46706</subfield></datafield>
+<datafield tag="035" ind1=" " ind2=" "><subfield code="a">FRBNF425006200000007</subfield>
+<subfield code="z">FRBNF42500620</subfield></datafield>
+<datafield tag="033" ind1=" " ind2=" "><subfield code="a">http://catalogue.bnf.fr/ark:/12148/cb42500620w</subfield></datafield>
+<datafield tag="100" ind1=" " ind2=" "><subfield code="a">20111005d2011    m  y0frey50      ba</subfield></datafield>
+<datafield tag="101" ind1="1" ind2=" "><subfield code="a">fre</subfield>
+<subfield code="c">eng</subfield>
+<subfield code="2">639-2</subfield></datafield>
+<datafield tag="105" ind1=" " ind2=" "><subfield code="a">y   z   00|a|</subfield></datafield>
+<datafield tag="106" ind1=" " ind2=" "><subfield code="a">r</subfield></datafield>
+<datafield tag="181" ind1=" " ind2=" "><subfield code="6">z01</subfield>
+<subfield code="c">txt</subfield>
+<subfield code="2">rdacontent</subfield></datafield>
+<datafield tag="181" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="a">i#</subfield>
+<subfield code="b">xxxe##</subfield></datafield>
+<datafield tag="182" ind1=" " ind2=" "><subfield code="6">z01</subfield>
+<subfield code="c">n</subfield>
+<subfield code="2">rdamedia</subfield></datafield>
+<datafield tag="182" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="a">n</subfield></datafield>
+<datafield tag="102" ind1=" " ind2=" "><subfield code="a">FR</subfield></datafield>
+<datafield tag="200" ind1="1" ind2=" "><subfield code="a">Graceling</subfield>
+<subfield code="f">Kristin Cashore</subfield>
+<subfield code="g">traduit de l&apos;anglais (États-Unis) par Raphaële Eschenbrenner</subfield></datafield>
+<datafield tag="700" ind1=" " ind2="1"><subfield code="3">137395604</subfield>
+<subfield code="a">Cashore</subfield>
+<subfield code="b">Kristin</subfield>
+<subfield code="4">070</subfield></datafield>
+<datafield tag="702" ind1=" " ind2="1"><subfield code="3">057693765</subfield>
+<subfield code="a">Eschenbrenner</subfield>
+<subfield code="b">Raphaële</subfield>
+<subfield code="f">19..-....</subfield>
+<subfield code="4">730</subfield></datafield>
+<datafield tag="801" ind1=" " ind2="3"><subfield code="a">FR</subfield>
+<subfield code="b">Abes</subfield>
+<subfield code="c">20241016</subfield>
+<subfield code="g">AFNOR</subfield></datafield>
+<datafield tag="210" ind1=" " ind2=" "><subfield code="a">Paris</subfield>
+<subfield code="c">Librairie générale français</subfield>
+<subfield code="d">impr. 2011</subfield>
+<subfield code="e">impr. en Espagne</subfield></datafield>
+<datafield tag="215" ind1=" " ind2=" "><subfield code="a">1 vol. (413 p.)</subfield>
+<subfield code="c">carte, couv. ill. en coul.</subfield>
+<subfield code="d">18 cm</subfield></datafield>
+<datafield tag="225" ind1="1" ind2=" "><subfield code="a">Le livre de poche</subfield>
+<subfield code="v">32213</subfield></datafield>
+<datafield tag="410" ind1=" " ind2="|"><subfield code="0">00101790X</subfield>
+<subfield code="t">Le Livre de poche</subfield>
+<subfield code="x">0248-3653</subfield>
+<subfield code="v">32213</subfield></datafield>
+<datafield tag="686" ind1=" " ind2=" "><subfield code="a">803</subfield>
+<subfield code="2">Cadre de classement de la Bibliographie nationale française</subfield></datafield>
+<datafield tag="801" ind1=" " ind2="0"><subfield code="a">FR</subfield>
+<subfield code="b">FR-751131015</subfield>
+<subfield code="c">20110907</subfield>
+<subfield code="g">AFNOR</subfield>
+<subfield code="2">intermrc</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">591782301:58962167X</subfield>
+<subfield code="b">591782301</subfield>
+<subfield code="a">809.3 CAS</subfield>
+<subfield code="j">u</subfield></datafield>
+<datafield tag="991" ind1=" " ind2=" "><subfield code="5">591782301:58962167X</subfield>
+<subfield code="a">exemplaire créé automatiquement par l&apos;ABES</subfield></datafield></record></srw:recordData><srw:recordPosition>7</srw:recordPosition>
+</srw:record>
+
+<srw:record>
+<srw:recordSchema>unimarc</srw:recordSchema>
+<srw:recordPacking>xml</srw:recordPacking>
+<srw:recordData>
+<record>
+<controlfield tag="005">20230831140214.000</controlfield>
+<leader>     cam0 22        450 </leader>
+<controlfield tag="001">137739079</controlfield>
+<controlfield tag="003">http://www.sudoc.fr/137739079</controlfield>
+<datafield tag="035" ind1=" " ind2=" "><subfield code="a">(OCoLC)495298415</subfield></datafield>
+<datafield tag="010" ind1=" " ind2=" "><subfield code="a">978-2-7234-7193-0</subfield>
+<subfield code="b">br</subfield></datafield>
+<datafield tag="073" ind1=" " ind2="0"><subfield code="a">9782723471930</subfield></datafield>
+<datafield tag="100" ind1=" " ind2=" "><subfield code="a">20091106d2009    m  y0frey50      ba</subfield></datafield>
+<datafield tag="101" ind1="1" ind2=" "><subfield code="a">fre</subfield>
+<subfield code="c">jpn</subfield>
+<subfield code="2">639-2</subfield></datafield>
+<datafield tag="105" ind1=" " ind2=" "><subfield code="a">a   t   000ay</subfield></datafield>
+<datafield tag="106" ind1=" " ind2=" "><subfield code="a">r</subfield></datafield>
+<datafield tag="181" ind1=" " ind2=" "><subfield code="6">z01</subfield>
+<subfield code="c">txt</subfield>
+<subfield code="2">rdacontent</subfield></datafield>
+<datafield tag="181" ind1=" " ind2=" "><subfield code="6">z02</subfield>
+<subfield code="c">sti</subfield>
+<subfield code="2">rdacontent</subfield></datafield>
+<datafield tag="181" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="a">i#</subfield>
+<subfield code="b">xxxe##</subfield></datafield>
+<datafield tag="181" ind1=" " ind2="1"><subfield code="6">z02</subfield>
+<subfield code="a">b#</subfield>
+<subfield code="b">xb2e##</subfield></datafield>
+<datafield tag="182" ind1=" " ind2=" "><subfield code="6">z01</subfield>
+<subfield code="c">n</subfield>
+<subfield code="2">rdamedia</subfield></datafield>
+<datafield tag="182" ind1=" " ind2=" "><subfield code="6">z02</subfield>
+<subfield code="c">n</subfield>
+<subfield code="2">rdamedia</subfield></datafield>
+<datafield tag="182" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="a">n</subfield></datafield>
+<datafield tag="182" ind1=" " ind2="1"><subfield code="6">z02</subfield>
+<subfield code="a">n</subfield></datafield>
+<datafield tag="183" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="a">nga</subfield>
+<subfield code="2">RDAfrCarrier</subfield></datafield>
+<datafield tag="102" ind1=" " ind2=" "><subfield code="a">FR</subfield></datafield>
+<datafield tag="200" ind1="1" ind2=" "><subfield code="a">Claymore</subfield>
+<subfield code="h">15</subfield>
+<subfield code="i">les sources du conflit</subfield>
+<subfield code="f">Norihiro Yagi</subfield>
+<subfield code="g">traduction : Anthony Prezman et Satoko Fujimoto</subfield></datafield>
+<datafield tag="700" ind1=" " ind2="1"><subfield code="3">153886722</subfield>
+<subfield code="a">Yagi</subfield>
+<subfield code="b">Norihiro</subfield>
+<subfield code="f">1968-....</subfield>
+<subfield code="4">070</subfield></datafield>
+<datafield tag="702" ind1=" " ind2="1"><subfield code="3">082330778</subfield>
+<subfield code="a">Fujimoto</subfield>
+<subfield code="b">Satoko</subfield>
+<subfield code="f">19..-....</subfield>
+<subfield code="c">traductrice</subfield>
+<subfield code="4">730</subfield></datafield>
+<datafield tag="702" ind1=" " ind2="1"><subfield code="3">057793123</subfield>
+<subfield code="a">Prezman</subfield>
+<subfield code="b">Anthony</subfield>
+<subfield code="4">730</subfield></datafield>
+<datafield tag="712" ind1="0" ind2="2"><subfield code="3">079201369</subfield>
+<subfield code="a">Glénat</subfield>
+<subfield code="c">Grenoble, Isère, France</subfield>
+<subfield code="c">1969-....</subfield>
+<subfield code="4">650</subfield></datafield>
+<datafield tag="801" ind1=" " ind2="3"><subfield code="a">FR</subfield>
+<subfield code="b">Abes</subfield>
+<subfield code="c">20230831</subfield>
+<subfield code="g">AFNOR</subfield></datafield>
+<datafield tag="214" ind1=" " ind2="0"><subfield code="a">Grenoble</subfield>
+<subfield code="c">Glénat</subfield>
+<subfield code="d">DL 2009</subfield></datafield>
+<datafield tag="215" ind1=" " ind2=" "><subfield code="a">1 vol. (196 p.)</subfield>
+<subfield code="c">ill., couv. ill., jaquette ill. en coul.</subfield>
+<subfield code="d">18 cm</subfield></datafield>
+<datafield tag="461" ind1=" " ind2="|"><subfield code="t">Claymore</subfield>
+<subfield code="v">15</subfield></datafield>
+<datafield tag="225" ind1="1" ind2=" "><subfield code="a">Shonen manga</subfield>
+<subfield code="x">1253-1928 [sic]</subfield></datafield>
+<datafield tag="410" ind1=" " ind2="|"><subfield code="0">076257894</subfield>
+<subfield code="t">Shonen manga</subfield>
+<subfield code="x">1761-2268</subfield></datafield>
+<datafield tag="300" ind1=" " ind2=" "><subfield code="a">ISSN exact : 1761-2268</subfield></datafield>
+<datafield tag="300" ind1=" " ind2=" "><subfield code="a">Trad. du japonais</subfield></datafield>
+<datafield tag="608" ind1=" " ind2=" "><subfield code="3">027220796</subfield>
+<subfield code="a">Bandes dessinées</subfield>
+<subfield code="2">rameau</subfield></datafield>
+<datafield tag="305" ind1=" " ind2=" "><subfield code="a">Autre tirage : 2015</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">630142101:494650125</subfield>
+<subfield code="b">630142101</subfield>
+<subfield code="a">M CLA 15</subfield>
+<subfield code="j">g</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">590092102:796062234</subfield>
+<subfield code="b">590092102</subfield>
+<subfield code="a">BD CLA</subfield>
+<subfield code="j">u</subfield></datafield>
+<datafield tag="915" ind1=" " ind2=" "><subfield code="5">692662101:379954834</subfield>
+<subfield code="b">20192067</subfield></datafield>
+<datafield tag="917" ind1=" " ind2=" "><subfield code="5">692662101:379954834</subfield>
+<subfield code="a">abaa</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">692662101:379954834</subfield>
+<subfield code="b">692662101</subfield>
+<subfield code="a">BD M CLA</subfield>
+<subfield code="j">g</subfield></datafield>
+<datafield tag="915" ind1=" " ind2=" "><subfield code="5">596062101:596400411</subfield>
+<subfield code="b">3002400633823</subfield></datafield>
+<datafield tag="917" ind1=" " ind2=" "><subfield code="5">596062101:596400411</subfield>
+<subfield code="a">aaac</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">596062101:596400411</subfield>
+<subfield code="b">596062101</subfield>
+<subfield code="d">MHOUY</subfield>
+<subfield code="l">MAGAP</subfield>
+<subfield code="a">MAN CLA 15</subfield>
+<subfield code="j">u</subfield></datafield>
+<datafield tag="999" ind1=" " ind2=" "><subfield code="5">596062101:596400411</subfield>
+<subfield code="c">j</subfield></datafield>
+<datafield tag="915" ind1=" " ind2=" "><subfield code="5">786462101:389086673</subfield>
+<subfield code="b">1320587679</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">786462101:389086673</subfield>
+<subfield code="b">786462101</subfield>
+<subfield code="a">741 YAG</subfield>
+<subfield code="j">g</subfield></datafield></record></srw:recordData><srw:recordPosition>8</srw:recordPosition>
+</srw:record>
+
+<srw:record>
+<srw:recordSchema>unimarc</srw:recordSchema>
+<srw:recordPacking>xml</srw:recordPacking>
+<srw:recordData>
+<record>
+<controlfield tag="005">20260618100823.000</controlfield>
+<leader>     cam0 22        450 </leader>
+<controlfield tag="001">117150576</controlfield>
+<controlfield tag="003">http://www.sudoc.fr/117150576</controlfield>
+<datafield tag="035" ind1=" " ind2=" "><subfield code="a">(OCoLC)470550629</subfield></datafield>
+<datafield tag="010" ind1=" " ind2=" "><subfield code="a">978-2-07-061455-4</subfield>
+<subfield code="b">br.</subfield>
+<subfield code="d">25 EUR</subfield></datafield>
+<datafield tag="073" ind1=" " ind2="0"><subfield code="a">9782070614554</subfield></datafield>
+<datafield tag="021" ind1=" " ind2=" "><subfield code="a">FR</subfield>
+<subfield code="b">DLE-20070719-36765</subfield></datafield>
+<datafield tag="035" ind1=" " ind2=" "><subfield code="a">FRBNF410774070000006</subfield>
+<subfield code="z">FRBNF41077407</subfield></datafield>
+<datafield tag="033" ind1=" " ind2=" "><subfield code="a">http://catalogue.bnf.fr/ark:/12148/cb410774078</subfield></datafield>
+<datafield tag="100" ind1=" " ind2=" "><subfield code="a">20070830h20072007a  y0frey50      ba</subfield></datafield>
+<datafield tag="101" ind1="1" ind2=" "><subfield code="a">fre</subfield>
+<subfield code="c">eng</subfield>
+<subfield code="2">639-2</subfield></datafield>
+<datafield tag="105" ind1=" " ind2=" "><subfield code="a">a   z   000ay</subfield></datafield>
+<datafield tag="106" ind1=" " ind2=" "><subfield code="a">r</subfield></datafield>
+<datafield tag="181" ind1=" " ind2=" "><subfield code="6">z01</subfield>
+<subfield code="c">txt</subfield>
+<subfield code="2">rdacontent</subfield></datafield>
+<datafield tag="181" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="a">i#</subfield>
+<subfield code="b">xxxe##</subfield></datafield>
+<datafield tag="182" ind1=" " ind2=" "><subfield code="6">z01</subfield>
+<subfield code="c">n</subfield>
+<subfield code="2">rdamedia</subfield></datafield>
+<datafield tag="182" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="a">n</subfield></datafield>
+<datafield tag="183" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="a">nga</subfield>
+<subfield code="2">RDAfrCarrier</subfield></datafield>
+<datafield tag="102" ind1=" " ind2=" "><subfield code="a">FR</subfield></datafield>
+<datafield tag="200" ind1="1" ind2=" "><subfield code="a">À la croisée des mondes</subfield>
+<subfield code="e">l&apos;intégrale</subfield>
+<subfield code="f">Philip Pullman</subfield>
+<subfield code="g">traduit de l&apos;anglais par Jean Esch</subfield></datafield>
+<datafield tag="700" ind1=" " ind2="1"><subfield code="3">030662109</subfield>
+<subfield code="a">Pullman</subfield>
+<subfield code="b">Philip</subfield>
+<subfield code="f">1946-....</subfield>
+<subfield code="4">070</subfield></datafield>
+<datafield tag="701" ind1=" " ind2="1"><subfield code="3">028823990</subfield>
+<subfield code="a">Esch</subfield>
+<subfield code="b">Jean</subfield>
+<subfield code="f">1962-....</subfield>
+<subfield code="4">730</subfield></datafield>
+<datafield tag="801" ind1=" " ind2="3"><subfield code="a">FR</subfield>
+<subfield code="b">Abes</subfield>
+<subfield code="c">20260618</subfield>
+<subfield code="g">AFNOR</subfield></datafield>
+<datafield tag="214" ind1=" " ind2="0"><subfield code="a">[Paris]</subfield>
+<subfield code="c">Gallimard</subfield>
+<subfield code="d">DL 2007</subfield></datafield>
+<datafield tag="215" ind1=" " ind2=" "><subfield code="a">1 volume (1024 pages)</subfield>
+<subfield code="c">illustrations, couverture illustrée en couleur</subfield>
+<subfield code="d">24 cm</subfield></datafield>
+<datafield tag="454" ind1=" " ind2="|"><subfield code="t">Northern lights</subfield>
+<subfield code="d">cop. 1995</subfield></datafield>
+<datafield tag="454" ind1=" " ind2="|"><subfield code="t">The subtle knife</subfield>
+<subfield code="d">cop. 1997</subfield></datafield>
+<datafield tag="454" ind1=" " ind2="|"><subfield code="t">The amber spyglass</subfield>
+<subfield code="d">cop. 2000</subfield></datafield>
+<datafield tag="464" ind1=" " ind2="|"><subfield code="t">Les royaumes du Nord</subfield></datafield>
+<datafield tag="464" ind1=" " ind2="|"><subfield code="t">La tour des anges</subfield></datafield>
+<datafield tag="464" ind1=" " ind2="|"><subfield code="t">Le miroir d&apos;ambre</subfield></datafield>
+<datafield tag="606" ind1=" " ind2=" "><subfield code="3">14242188X</subfield>
+<subfield code="a">Fantasy pour la jeunesse</subfield>
+<subfield code="2">rameau</subfield></datafield>
+<datafield tag="608" ind1=" " ind2=" "><subfield code="3">262668742</subfield>
+<subfield code="a">Roman fantastique pour la jeunesse</subfield>
+<subfield code="2">rameau</subfield></datafield>
+<datafield tag="686" ind1=" " ind2=" "><subfield code="a">809</subfield>
+<subfield code="2">Cadre de classement de la Bibliographie nationale française</subfield></datafield>
+<datafield tag="801" ind1=" " ind2="0"><subfield code="a">FR</subfield>
+<subfield code="b">BNF</subfield>
+<subfield code="c">20070719</subfield>
+<subfield code="g">AFNOR</subfield>
+<subfield code="2">intermrc</subfield></datafield>
+<datafield tag="330" ind1=" " ind2=" "><subfield code="a">A la croisée des mondes est une grande histoire en trois parties, qui entraîne ses lecteurs à travers trois univers à la fois proches et différents du nôtre. Voici cette grande histoire, animée d&apos;un souffle puissant et d&apos;un imaginaire éblouissant. (Résumé Decitre)</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">973022101:490731325</subfield>
+<subfield code="b">973022101</subfield>
+<subfield code="c">BU-GUYANE</subfield>
+<subfield code="j">u</subfield></datafield>
+<datafield tag="991" ind1=" " ind2=" "><subfield code="5">973022101:490731325</subfield>
+<subfield code="a">exemplaire créé automatiquement par l&apos;ABES</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">620412212:612873013</subfield>
+<subfield code="b">620412212</subfield>
+<subfield code="c">Fonds Robinson</subfield>
+<subfield code="a">F PUL A</subfield>
+<subfield code="j">u</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">330632212:345953088</subfield>
+<subfield code="b">330632212</subfield>
+<subfield code="a">R PUL</subfield>
+<subfield code="j">u</subfield></datafield>
+<datafield tag="991" ind1=" " ind2=" "><subfield code="5">330632212:345953088</subfield>
+<subfield code="a">Exemplaire créé automatiquement par l&apos;ABES</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">331922302:535284322</subfield>
+<subfield code="b">331922302</subfield>
+<subfield code="a">J.R PULL</subfield>
+<subfield code="j">g</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">384212103:583876846</subfield>
+<subfield code="b">384212103</subfield>
+<subfield code="j">g</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">870852107:40214452X</subfield>
+<subfield code="b">870852107</subfield>
+<subfield code="c">LITTERATURE</subfield>
+<subfield code="j">u</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">988182201:52479801X</subfield>
+<subfield code="b">988182201</subfield>
+<subfield code="a">R PUL à</subfield>
+<subfield code="j">s</subfield></datafield>
+<datafield tag="915" ind1=" " ind2=" "><subfield code="5">661362102:61164861X</subfield>
+<subfield code="b">0PEL0265149</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">661362102:61164861X</subfield>
+<subfield code="b">661362102</subfield>
+<subfield code="a">828.91 PULL</subfield>
+<subfield code="j">u</subfield></datafield>
+<datafield tag="999" ind1=" " ind2=" "><subfield code="5">661362102:61164861X</subfield>
+<subfield code="f">CXR</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">674822320:329797735</subfield>
+<subfield code="b">674822320</subfield>
+<subfield code="a">R PUL</subfield>
+<subfield code="j">s</subfield></datafield>
+<datafield tag="915" ind1=" " ind2=" "><subfield code="5">315552318:39679789X</subfield>
+<subfield code="b">032462</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">315552318:39679789X</subfield>
+<subfield code="b">315552318</subfield>
+<subfield code="a">A-843SF PULL</subfield>
+<subfield code="j">u</subfield></datafield>
+<datafield tag="991" ind1=" " ind2=" "><subfield code="5">315552318:39679789X</subfield>
+<subfield code="a">exemplaire créé automatiquement par l&apos;ABES</subfield></datafield>
+<datafield tag="915" ind1=" " ind2=" "><subfield code="5">596062101:55195454X</subfield>
+<subfield code="b">3002400628386</subfield></datafield>
+<datafield tag="917" ind1=" " ind2=" "><subfield code="5">596062101:55195454X</subfield>
+<subfield code="a">aaac</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">596062101:55195454X</subfield>
+<subfield code="b">596062101</subfield>
+<subfield code="d">MHOUY</subfield>
+<subfield code="l">SDLLP</subfield>
+<subfield code="a">PR 6066 PUL</subfield>
+<subfield code="j">u</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">930792103:586340831</subfield>
+<subfield code="b">930792103</subfield>
+<subfield code="a">R PUL</subfield>
+<subfield code="j">g</subfield></datafield>
+<datafield tag="991" ind1=" " ind2=" "><subfield code="5">930792103:586340831</subfield>
+<subfield code="a">exemplaire créé automatiquement par l&apos;ABES</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">914772301:561941483</subfield>
+<subfield code="b">914772301</subfield>
+<subfield code="a">SF.PUL.ALA</subfield>
+<subfield code="j">u</subfield></datafield>
+<datafield tag="991" ind1=" " ind2=" "><subfield code="5">914772301:561941483</subfield>
+<subfield code="a">exemplaire créé automatiquement par l&apos;ABES</subfield></datafield></record></srw:recordData><srw:recordPosition>9</srw:recordPosition>
+</srw:record>
+
+<srw:record>
+<srw:recordSchema>unimarc</srw:recordSchema>
+<srw:recordPacking>xml</srw:recordPacking>
+<srw:recordData>
+<record>
+<controlfield tag="005">20260507152618.000</controlfield>
+<leader>     cam0 22        450 </leader>
+<controlfield tag="001">049846248</controlfield>
+<controlfield tag="003">http://www.sudoc.fr/049846248</controlfield>
+<datafield tag="035" ind1=" " ind2=" "><subfield code="a">(OCoLC)490536064</subfield></datafield>
+<datafield tag="010" ind1=" " ind2=" "><subfield code="a">2-7234-1900-2</subfield>
+<subfield code="b">br.</subfield>
+<subfield code="d">6,50 EUR</subfield></datafield>
+<datafield tag="073" ind1=" " ind2="0"><subfield code="a">9782723419000</subfield></datafield>
+<datafield tag="020" ind1=" " ind2=" "><subfield code="a">FR</subfield>
+<subfield code="b">00005502</subfield></datafield>
+<datafield tag="021" ind1=" " ind2=" "><subfield code="a">FR</subfield>
+<subfield code="b">DL 99-30021 (D4)</subfield></datafield>
+<datafield tag="035" ind1=" " ind2=" "><subfield code="a">frBN024585733</subfield></datafield>
+<datafield tag="035" ind1=" " ind2=" "><subfield code="a">FRBNF369797130000001</subfield>
+<subfield code="z">FRBNF36979713</subfield></datafield>
+<datafield tag="033" ind1=" " ind2=" "><subfield code="a">http://catalogue.bnf.fr/ark:/12148/cb36979713n</subfield></datafield>
+<datafield tag="100" ind1=" " ind2=" "><subfield code="a">19990707h19951995k  y0frey50      ba</subfield></datafield>
+<datafield tag="101" ind1="1" ind2=" "><subfield code="a">fre</subfield>
+<subfield code="c">jpn</subfield>
+<subfield code="2">639-2</subfield></datafield>
+<datafield tag="105" ind1=" " ind2=" "><subfield code="a">a   t   000ay</subfield></datafield>
+<datafield tag="106" ind1=" " ind2=" "><subfield code="a">r</subfield></datafield>
+<datafield tag="181" ind1=" " ind2=" "><subfield code="6">z01</subfield>
+<subfield code="c">txt</subfield>
+<subfield code="2">rdacontent</subfield></datafield>
+<datafield tag="181" ind1=" " ind2=" "><subfield code="6">z02</subfield>
+<subfield code="c">sti</subfield>
+<subfield code="2">rdacontent</subfield></datafield>
+<datafield tag="181" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="a">i#</subfield>
+<subfield code="b">xxxe##</subfield></datafield>
+<datafield tag="181" ind1=" " ind2="1"><subfield code="6">z02</subfield>
+<subfield code="a">b#</subfield>
+<subfield code="b">xb2e##</subfield></datafield>
+<datafield tag="182" ind1=" " ind2=" "><subfield code="6">z01</subfield>
+<subfield code="c">n</subfield>
+<subfield code="2">rdamedia</subfield></datafield>
+<datafield tag="182" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="6">z02</subfield>
+<subfield code="a">n</subfield></datafield>
+<datafield tag="183" ind1=" " ind2="1"><subfield code="6">z01</subfield>
+<subfield code="a">nga</subfield>
+<subfield code="2">RDAfrCarrier</subfield></datafield>
+<datafield tag="102" ind1=" " ind2=" "><subfield code="a">FR</subfield></datafield>
+<datafield tag="200" ind1="1" ind2=" "><subfield code="a">Gunnm</subfield>
+<subfield code="h">Tome 1</subfield>
+<subfield code="f">Yukito Kishiro</subfield>
+<subfield code="g">[traduction par Yvan Jacquet]</subfield>
+<subfield code="g">lettrage de Géraldine Laplanche</subfield></datafield>
+<datafield tag="700" ind1=" " ind2="1"><subfield code="3">034604103</subfield>
+<subfield code="a">Kishiro</subfield>
+<subfield code="b">Yukito</subfield>
+<subfield code="f">1967-....</subfield>
+<subfield code="4">070</subfield></datafield>
+<datafield tag="702" ind1=" " ind2="1"><subfield code="3">03458515X</subfield>
+<subfield code="a">Jacquet</subfield>
+<subfield code="b">Yvan</subfield>
+<subfield code="f">19..-....</subfield>
+<subfield code="4">730</subfield></datafield>
+<datafield tag="702" ind1=" " ind2="1"><subfield code="3">127423044</subfield>
+<subfield code="a">Laplanche</subfield>
+<subfield code="b">Géraldine</subfield>
+<subfield code="f">19..-....</subfield>
+<subfield code="c">lettreur</subfield>
+<subfield code="4">440</subfield></datafield>
+<datafield tag="712" ind1="0" ind2="2"><subfield code="3">079201369</subfield>
+<subfield code="a">Glénat</subfield>
+<subfield code="c">Grenoble, Isère, France</subfield>
+<subfield code="c">1969-....</subfield>
+<subfield code="4">650</subfield></datafield>
+<datafield tag="801" ind1=" " ind2="3"><subfield code="a">FR</subfield>
+<subfield code="b">Abes</subfield>
+<subfield code="c">20260507</subfield>
+<subfield code="g">AFNOR</subfield></datafield>
+<datafield tag="210" ind1=" " ind2=" "><subfield code="a">Grenoble</subfield>
+<subfield code="c">Glénat</subfield>
+<subfield code="d">DL 1995, cop. 1995</subfield>
+<subfield code="e">45-Manchecourt</subfield>
+<subfield code="g">Impr. Maury-Eurolivres</subfield></datafield>
+<datafield tag="215" ind1=" " ind2=" "><subfield code="a">1 volume (218 pages)</subfield>
+<subfield code="c">tout en illustrations, couverture illustrée en couleurs</subfield>
+<subfield code="d">18 cm</subfield></datafield>
+<datafield tag="225" ind1="0" ind2=" "><subfield code="a">Collection Manga</subfield></datafield>
+<datafield tag="410" ind1=" " ind2="|"><subfield code="0">04050770X</subfield>
+<subfield code="t">Collection Manga (Grenoble)</subfield>
+<subfield code="x">1275-7055</subfield></datafield>
+<datafield tag="454" ind1=" " ind2="|"><subfield code="t">Gunnm</subfield></datafield>
+<datafield tag="608" ind1=" " ind2=" "><subfield code="3">033824185</subfield>
+<subfield code="a">Mangas</subfield>
+<subfield code="3">027262162</subfield>
+<subfield code="y">Japon</subfield>
+<subfield code="2">rameau</subfield></datafield>
+<datafield tag="676" ind1=" " ind2=" "><subfield code="a">800</subfield></datafield>
+<datafield tag="675" ind1=" " ind2=" "><subfield code="a">823</subfield>
+<subfield code="v">Éd. 1967</subfield></datafield>
+<datafield tag="304" ind1=" " ind2=" "><subfield code="a">Traduit de &quot; Gunnm &quot;</subfield></datafield>
+<datafield tag="305" ind1=" " ind2=" "><subfield code="a">Autres tirages : 2005, 2008, 2010</subfield></datafield>
+<datafield tag="801" ind1=" " ind2="3"><subfield code="a">FR</subfield>
+<subfield code="b">BN</subfield>
+<subfield code="c">20000523</subfield>
+<subfield code="g">AFNOR</subfield></datafield>
+<datafield tag="915" ind1=" " ind2=" "><subfield code="5">840072101:452623944</subfield>
+<subfield code="b">0213261675</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">840072101:452623944</subfield>
+<subfield code="b">840072101</subfield>
+<subfield code="c">Bandes dessinées</subfield>
+<subfield code="a">BD KIS Gun-1</subfield>
+<subfield code="j">g</subfield></datafield>
+<datafield tag="992" ind1=" " ind2=" "><subfield code="5">840072101:452623944</subfield>
+<subfield code="a">741.5</subfield>
+<subfield code="2">cdd</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">263622201:63282008X</subfield>
+<subfield code="b">263622201</subfield>
+<subfield code="j">g</subfield></datafield>
+<datafield tag="991" ind1=" " ind2=" "><subfield code="5">263622201:63282008X</subfield>
+<subfield code="a">exemplaire créé automatiquement par l&apos;ABES</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">180332301:655682627</subfield>
+<subfield code="b">180332301</subfield>
+<subfield code="a">EN 20-82</subfield>
+<subfield code="j">g</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">764512228:337987041</subfield>
+<subfield code="b">764512228</subfield>
+<subfield code="a">M KIS g</subfield>
+<subfield code="j">u</subfield></datafield>
+<datafield tag="991" ind1=" " ind2=" "><subfield code="5">764512228:337987041</subfield>
+<subfield code="a">Exemplaire créé automatiquement par l&apos;ABES</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">315552210:345632060</subfield>
+<subfield code="b">315552210</subfield>
+<subfield code="a">JMANG24.1</subfield>
+<subfield code="j">g</subfield></datafield>
+<datafield tag="915" ind1=" " ind2=" "><subfield code="5">574632302:834744848</subfield>
+<subfield code="b">BMTZ003586</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">574632302:834744848</subfield>
+<subfield code="b">574632302</subfield>
+<subfield code="a">BD KIS</subfield>
+<subfield code="j">s</subfield></datafield>
+<datafield tag="930" ind1=" " ind2=" "><subfield code="5">765752301:805357211</subfield>
+<subfield code="b">765752301</subfield>
+<subfield code="a">M GUN</subfield>
+<subfield code="j">u</subfield></datafield></record></srw:recordData><srw:recordPosition>10</srw:recordPosition>
+</srw:record>
+</srw:records>
+    <srw:echoedSearchRetrieveRequest>
+	<srw:version>1.1</srw:version>
+	<srw:query>isb=9782070614554 or isb=9782253174011 or isb=9782723419000 or isb=9782723471930 or isb=9791032719312 or isb=9782800100173 or isb=9782800170138 or isb=9782808514651 or isb=9782253157632 or isb=9782723456364 or isb=9791032703205 or isb=9782811209124 or isb=9782811217105</srw:query>
+	<srw:xQuery><xcql:triple><xcql:boolean> <xcql:value>or</xcql:value></xcql:boolean><xcql:leftOperand><xcql:triple><xcql:boolean> <xcql:value>or</xcql:value></xcql:boolean><xcql:leftOperand><xcql:triple><xcql:boolean> <xcql:value>or</xcql:value></xcql:boolean><xcql:leftOperand><xcql:triple><xcql:boolean> <xcql:value>or</xcql:value></xcql:boolean><xcql:leftOperand><xcql:triple><xcql:boolean> <xcql:value>or</xcql:value></xcql:boolean><xcql:leftOperand><xcql:triple><xcql:boolean> <xcql:value>or</xcql:value></xcql:boolean><xcql:leftOperand><xcql:triple><xcql:boolean> <xcql:value>or</xcql:value></xcql:boolean><xcql:leftOperand><xcql:triple><xcql:boolean> <xcql:value>or</xcql:value></xcql:boolean><xcql:leftOperand><xcql:triple><xcql:boolean> <xcql:value>or</xcql:value></xcql:boolean><xcql:leftOperand><xcql:triple><xcql:boolean> <xcql:value>or</xcql:value></xcql:boolean><xcql:leftOperand><xcql:triple><xcql:boolean> <xcql:value>or</xcql:value></xcql:boolean><xcql:leftOperand><xcql:triple><xcql:boolean> <xcql:value>or</xcql:value></xcql:boolean><xcql:leftOperand><xcql:searchClause><xcql:index>isb</xcql:index><xcql:relation><xcql:value>=</xcql:value></xcql:relation><xcql:term>9782070614554</xcql:term></xcql:searchClause></xcql:leftOperand><xcql:rightOperand><xcql:searchClause><xcql:index>isb</xcql:index><xcql:relation><xcql:value>=</xcql:value></xcql:relation><xcql:term>9782253174011</xcql:term></xcql:searchClause></xcql:rightOperand></xcql:triple></xcql:leftOperand><xcql:rightOperand><xcql:searchClause><xcql:index>isb</xcql:index><xcql:relation><xcql:value>=</xcql:value></xcql:relation><xcql:term>9782723419000</xcql:term></xcql:searchClause></xcql:rightOperand></xcql:triple></xcql:leftOperand><xcql:rightOperand><xcql:searchClause><xcql:index>isb</xcql:index><xcql:relation><xcql:value>=</xcql:value></xcql:relation><xcql:term>9782723471930</xcql:term></xcql:searchClause></xcql:rightOperand></xcql:triple></xcql:leftOperand><xcql:rightOperand><xcql:searchClause><xcql:index>isb</xcql:index><xcql:relation><xcql:value>=</xcql:value></xcql:relation><xcql:term>9791032719312</xcql:term></xcql:searchClause></xcql:rightOperand></xcql:triple></xcql:leftOperand><xcql:rightOperand><xcql:searchClause><xcql:index>isb</xcql:index><xcql:relation><xcql:value>=</xcql:value></xcql:relation><xcql:term>9782800100173</xcql:term></xcql:searchClause></xcql:rightOperand></xcql:triple></xcql:leftOperand><xcql:rightOperand><xcql:searchClause><xcql:index>isb</xcql:index><xcql:relation><xcql:value>=</xcql:value></xcql:relation><xcql:term>9782800170138</xcql:term></xcql:searchClause></xcql:rightOperand></xcql:triple></xcql:leftOperand><xcql:rightOperand><xcql:searchClause><xcql:index>isb</xcql:index><xcql:relation><xcql:value>=</xcql:value></xcql:relation><xcql:term>9782808514651</xcql:term></xcql:searchClause></xcql:rightOperand></xcql:triple></xcql:leftOperand><xcql:rightOperand><xcql:searchClause><xcql:index>isb</xcql:index><xcql:relation><xcql:value>=</xcql:value></xcql:relation><xcql:term>9782253157632</xcql:term></xcql:searchClause></xcql:rightOperand></xcql:triple></xcql:leftOperand><xcql:rightOperand><xcql:searchClause><xcql:index>isb</xcql:index><xcql:relation><xcql:value>=</xcql:value></xcql:relation><xcql:term>9782723456364</xcql:term></xcql:searchClause></xcql:rightOperand></xcql:triple></xcql:leftOperand><xcql:rightOperand><xcql:searchClause><xcql:index>isb</xcql:index><xcql:relation><xcql:value>=</xcql:value></xcql:relation><xcql:term>9791032703205</xcql:term></xcql:searchClause></xcql:rightOperand></xcql:triple></xcql:leftOperand><xcql:rightOperand><xcql:searchClause><xcql:index>isb</xcql:index><xcql:relation><xcql:value>=</xcql:value></xcql:relation><xcql:term>9782811209124</xcql:term></xcql:searchClause></xcql:rightOperand></xcql:triple></xcql:leftOperand><xcql:rightOperand><xcql:searchClause><xcql:index>isb</xcql:index><xcql:relation><xcql:value>=</xcql:value></xcql:relation><xcql:term>9782811217105</xcql:term></xcql:searchClause></xcql:rightOperand></xcql:triple></srw:xQuery>
+	<startRecord>1</startRecord>
+	<maximumRecords>50</maximumRecords>
+	<srw:recordPacking>xml</srw:recordPacking>
+	<srw:recordSchema>unimarc</srw:recordSchema>
+	
+	<srw:stylesheet>https://www.sudoc.abes.fr/cbs/sru/DB=2.1/?xsl=searchRetrieveResponse</srw:stylesheet>
+    </srw:echoedSearchRetrieveRequest>
+    <diag:diagnostics>
+        <diag:uri>info:srw/diagnostic/1/0</diag:uri>
+	
+	
+    </diag:diagnostics>
+    <srw:extraResponseData>
+	<rob:authenticationToken xmlns:rob="info:srw/extension/2/auth-1.0">U10178,Klecteurweb,D2.1,Edb3d5350-8f,I250,B341720009,SY,QDEF,A%5C9008+1,,J,H2-26,,29,,34,,39,,44,,49-50,,53-78,,80-87,NLECTEUR+PSI,R10.34.103.198,FN,MNNN</rob:authenticationToken>
+        <mg:resultGrouping xmlns:mg="info:srw/extension/5/metadata-grouping-v1.0">
+	    
+	    <mg:grouping key="9001" description="Type de document"></mg:grouping>
+	    
+	    <mg:grouping key="9000" description="Année de publication"></mg:grouping>
+	    
+	    <mg:grouping key="9005" description="Pays de publication"></mg:grouping>
+	    
+	    <mg:grouping key="9004" description="Langue du document"></mg:grouping>
+	    
+
+	
+	</mg:resultGrouping>
+	
+    </srw:extraResponseData>
+</srw:searchRetrieveResponse>

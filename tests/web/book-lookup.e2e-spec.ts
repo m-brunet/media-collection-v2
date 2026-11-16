@@ -141,8 +141,45 @@ describe('Find book', () => {
             '/bnf/SRU',
             '/inventaire/api/entities/by-uris',
             '/openlibrary/api/books',
+            '/sudoc/services/isbn2ppn/' + ewilan,
+            '/sudoc/sru',
         ]);
         await capture(page, 'lookup-saved-details');
+    });
+
+    it('fills the form from a record only the Sudoc has, one no library holds', async () => {
+        const bitterblue = '9782253174011';
+
+        sources.sudocWithoutHolding(bitterblue, 'sudoc-record-bitterblue.xml');
+        const page = await addBookWith(bitterblue);
+
+        await page.getByRole('button', { name: 'Find book' }).click();
+        const review = page.getByRole('dialog', { name: 'Review the lookup result' });
+
+        await review.getByText('from Sudoc').first().waitFor();
+        await review.getByRole('button', { name: 'Use these values' }).click();
+
+        expect(await page.getByLabel(/^Title/).inputValue()).toBe('Bitterblue');
+        expect(sourceRequests().filter((path) => path.startsWith('/sudoc/'))).toEqual([
+            '/sudoc/sru',
+            '/sudoc/services/isbn2ppn/' + bitterblue,
+            '/sudoc/253174011.xml',
+        ]);
+    });
+
+    it('asks the Sudoc nothing more once its search has the record', async () => {
+        const bitterblue = '9782253174011';
+
+        sources.sudoc(bitterblue, 'sudoc-record-bitterblue.xml');
+        const page = await addBookWith(bitterblue);
+
+        await page.getByRole('button', { name: 'Find book' }).click();
+        const review = page.getByRole('dialog', { name: 'Review the lookup result' });
+
+        await review.getByText('from Sudoc').first().waitFor();
+        expect(sourceRequests().filter((path) => path.startsWith('/sudoc/'))).toEqual([
+            '/sudoc/sru',
+        ]);
     });
 
     it('offers the other source’s value as an alternative and uses the one picked', async () => {

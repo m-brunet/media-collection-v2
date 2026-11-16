@@ -1,4 +1,5 @@
 import type { BookCategory } from '../../../../domain/entities/book.entity.js';
+import { Isbn } from '../../../../domain/value-objects/isbn.value-object.js';
 import { LookupAnswer } from '../../../../domain/value-objects/lookup-answer.value-object.js';
 import { NameKey } from '../../../../../shared/domain/name-key.helper.js';
 import { Required } from '../../../../../shared/domain/required.helper.js';
@@ -6,7 +7,8 @@ import { Required } from '../../../../../shared/domain/required.helper.js';
 type Subfields = Map<string, string[]>;
 type Fields = Map<string, Subfields[]>;
 
-// A UNIMARC record of the BnF general catalogue. Fields used: 010 ISBN, 101 language (and
+// A UNIMARC record of the BnF general catalogue or of the Sudoc. Fields used: 010 ISBN and 073
+// EAN, 101 language (and
 // original language), 200 title (subtitle and volume), 210/214 publisher and date, 215 extent, 330
 // summary, 225 publisher's collection (see `publisherCollection`), 461 series and volume, 608 and 686 category (see `category`), 70X persons and 71X
 // organisations as authors (see `authors`).
@@ -29,6 +31,16 @@ export class UnimarcRecord {
         return (this.fields.get('010') ?? []).flatMap((entry) => entry.get('a') ?? []);
     }
 
+    get isbn13s(): string[] {
+        const numbers = [...this.isbns, ...this.values('073', 'a')];
+
+        return [...new Set(numbers.flatMap((number) => Isbn.equivalent(number) ?? []))];
+    }
+
+    private values(tag: string, code: string): string[] {
+        return (this.fields.get(tag) ?? []).flatMap((entry) => entry.get(code) ?? []);
+    }
+
     get subtitle(): string | null {
         return this.fields.get('200')?.[0]?.get('e')?.[0] ?? null;
     }
@@ -43,10 +55,11 @@ export class UnimarcRecord {
         const title = [first('200', 'a'), first('200', 'h'), first('200', 'i')]
             .filter(Boolean)
             .join('. ');
-        const imprint = fields.has('214') ? '214' : '210';
-        const year = (first(imprint, 'd') ?? '').match(/(\d{4})/)?.[1];
-        // "1 vol. (257 p.)", "856 p.", "380 p", "1 vol. (non paginé [ca 176] p.)".
-        const pages = (first('215', 'a') ?? '').match(/(\d+)\]?\s*p(?:\.|\b)/)?.[1];
+        const imprint = UnimarcRecord.imprint(fields);
+        const year = (imprint?.get('d')?.[0] ?? '').match(/(\d{4})/)?.[1];
+        // "1 vol. (257 p.)", "856 p.", "380 p", "1 vol. (non paginé [ca 176] p.)", and in the
+        // Sudoc "1 volume (218 pages)".
+        const pages = (first('215', 'a') ?? '').match(/(\d+)\]?\s*p(?:ages?\b|\.|\b)/)?.[1];
         const summary = first('330', 'a');
         // The series field, or else a title with its volume number ("La Passe-miroir", 1).
         const titleVolume = (first('200', 'h') ?? '').match(/^\D*(\d+)\D*$/)?.[1];
@@ -58,7 +71,7 @@ export class UnimarcRecord {
         return LookupAnswer.of({
             title,
             authors: UnimarcRecord.authors(fields),
-            publisher: first(imprint, 'c'),
+            publisher: imprint?.get('c')?.[0] ?? null,
             publisherCollection: UnimarcRecord.publisherCollection(fields, seriesName),
             publicationDate: year ? { year: Number(year), month: null } : null,
             pageCount: pages ? Number(pages) : null,
@@ -71,6 +84,14 @@ export class UnimarcRecord {
                     : null,
             category: UnimarcRecord.category(fields),
         });
+    }
+
+    // 214 replaces 210 in newer records. A record may hold several: the publisher's carries the
+    // date, the printer's ("86-Ligugé : Aubin impr.") does not.
+    private static imprint(fields: Fields): Subfields | null {
+        const entries = fields.get('214') ?? fields.get('210') ?? [];
+
+        return entries.find((entry) => entry.has('d')) ?? entries[0] ?? null;
     }
 
     // 225 $a is a series statement: the publisher's collection ("Le livre de poche"), but often
@@ -121,7 +142,9 @@ export class UnimarcRecord {
             [entry.get('a')?.[0], entry.get('b')?.[0]].filter(Boolean).join('. ');
 
         return [
-            ...people(['700', '701']).map(person),
+            ...people(['700', '701'])
+                .filter((entry) => !UnimarcRecord.translator(entry))
+                .map(person),
             ...people(['702']).filter(UnimarcRecord.authorRole).map(person),
             ...people(['710', '711']).map(organisation),
             ...people(['712']).filter(UnimarcRecord.authorRole).map(organisation),
@@ -132,10 +155,22 @@ export class UnimarcRecord {
         const codes = entry.get('4') ?? [];
         const roles = (entry.get('c') ?? []).join(' ');
 
+        if (/lettr/i.test(roles)) {
+            return false;
+        }
+
         return (
             codes.some((code) => UnimarcRecord.authorCodes.includes(code)) ||
             /auteur du texte|^auteur$|illustrat|dessinat|scénari/i.test(roles.trim())
         );
+    }
+
+    // The Sudoc lists translators as alternative responsibilities (701) with the relator code
+    // 730; the BnF lists them as secondary ones (702).
+    private static translator(entry: Subfields): boolean {
+        const codes = entry.get('4') ?? [];
+
+        return codes.length > 0 && codes.every((code) => code === '730');
     }
 
     // UNIMARC relator codes: 070 author, 440 illustrator, 690 scenarist.

@@ -82,6 +82,7 @@ class ScriptedDownloader implements CoverDownloader {
 
 export class ScriptedLookupSources implements BookLookupSources {
     readonly bnf = new ScriptedSource<LookupAnswer>('bnf');
+    readonly sudoc = new ScriptedSource<LookupAnswer>('sudoc');
     readonly openLibrary = new ScriptedSource<LookupAnswer>('openlibrary');
     readonly openLibraryCovers = new ScriptedSource<CoverOffer[]>('openlibrary');
     readonly inventaireCovers = new ScriptedSource<CoverOffer[]>('inventaire');
@@ -99,12 +100,12 @@ export class ScriptedLookupSources implements BookLookupSources {
         },
         new PublicAddresses(async () => ['93.184.215.14']),
     );
-    readonly information = [this.bnf, this.openLibrary];
+    readonly information = [this.bnf, this.sudoc, this.openLibrary];
     readonly covers = [this.inventaireCovers, this.openLibraryCovers];
     readonly series = new ScriptedSeries();
 
-    knows(name: 'bnf' | 'openlibrary', isbn13: string, fields: LookupAnswerFields): void {
-        const source = name === 'bnf' ? this.bnf : this.openLibrary;
+    knows(name: 'bnf' | 'sudoc' | 'openlibrary', isbn13: string, fields: LookupAnswerFields): void {
+        const source = { bnf: this.bnf, sudoc: this.sudoc, openlibrary: this.openLibrary }[name];
 
         source.answer(isbn13, { kind: 'found', value: LookupAnswer.of(fields) });
     }

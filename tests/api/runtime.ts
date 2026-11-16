@@ -28,6 +28,8 @@ export interface RuntimeOptions {
         bnf: string;
         openLibrary: string;
         inventaire: string;
+        sudoc: string;
+        sudocRecords: string;
         delaySeconds: number;
     };
     internetAccess?: { externalAddress: string | null; accepts: boolean; domainAddress?: string };

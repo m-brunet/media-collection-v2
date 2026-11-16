@@ -156,6 +156,61 @@ describe('POST /api/books/lookups', () => {
         expect(response.body).toMatchObject({ kind: 'looked-up', found: false, unavailable: [] });
     });
 
+    it('adds what the Sudoc knows to a record the BnF found, the BnF first (example 29)', async () => {
+        sources().knows('bnf', isbn, {
+            title: "D'un monde à l'autre",
+            publicationDate: { year: 2006, month: null },
+        });
+        sources().knows('sudoc', isbn, {
+            title: "D'un monde à l'autre",
+            publicationDate: { year: 2007, month: null },
+            pageCount: 257,
+        });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookLookupDto>('/books/lookups', 'POST', { isbn });
+
+        expect(response.body).toMatchObject({
+            fields: {
+                title: [{ value: "D'un monde à l'autre", sources: ['bnf', 'sudoc'] }],
+                publicationDate: [
+                    { value: { year: 2006, month: null }, sources: ['bnf'] },
+                    { value: { year: 2007, month: null }, sources: ['sudoc'] },
+                ],
+                pageCount: [{ value: 257, sources: ['sudoc'] }],
+            },
+            unavailable: [],
+        });
+    });
+
+    it('still asks the Sudoc when the BnF cannot answer', async () => {
+        sources().bnf.answer(isbn, 'fail');
+        sources().knows('sudoc', isbn, { title: 'Bitterblue' });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookLookupDto>('/books/lookups', 'POST', { isbn });
+
+        expect(response.body).toMatchObject({
+            found: true,
+            fields: { title: [{ value: 'Bitterblue', sources: ['sudoc'] }] },
+            unavailable: [{ source: 'bnf', reason: 'failed' }],
+        });
+    });
+
+    it('keeps the other sources when the Sudoc asks to wait', async () => {
+        sources().knows('bnf', isbn, { title: "D'un monde à l'autre" });
+        sources().sudoc.answer(isbn, { kind: 'limited', retryAt: null });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookLookupDto>('/books/lookups', 'POST', { isbn });
+
+        expect(response.body).toMatchObject({
+            found: true,
+            fields: { title: [{ value: "D'un monde à l'autre", sources: ['bnf'] }] },
+            unavailable: [{ source: 'sudoc', reason: 'limited' }],
+        });
+    });
+
     it('names a source that could not answer (example 20)', async () => {
         sources().bnf.answer(isbn, 'fail');
         sources().knows('openlibrary', isbn, { title: "La quête d'Ewilan" });

@@ -22,7 +22,12 @@ export class SourceHttp {
         private readonly now: () => Date = () => new Date(),
     ) {}
 
-    async get(url: string, accept: string, turn: SourceTurn): Promise<SourceResponse> {
+    async get(
+        url: string,
+        accept: string,
+        turn: SourceTurn,
+        expected: readonly number[] = [],
+    ): Promise<SourceResponse> {
         const outcome = await this.queue.send(turn, async () => {
             const answer = await this.fetcher(url, {
                 headers: { 'User-Agent': SourceHttp.userAgent, Accept: accept },
@@ -46,7 +51,7 @@ export class SourceHttp {
             return { kind: 'limited', retryAt: this.retryAt(response.headers.get('Retry-After')) };
         }
 
-        if (!response.ok) {
+        if (!response.ok && !expected.includes(response.status)) {
             throw new Error(url + ' answered ' + response.status);
         }
 

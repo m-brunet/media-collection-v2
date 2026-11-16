@@ -30,9 +30,12 @@ import { KeptCovers } from '../services/kept-covers.service.js';
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 import type {
     LookupSource,
+    SourceBatchReply,
+    SourceRefusal,
     SourceReply,
     SourceTurn,
 } from '../ports/driven/lookup-source.interface.js';
+import { SourceDesk } from '../services/source-desk.service.js';
 import { SourceQueue } from '../services/source-queue.service.js';
 import type { LookupCoverRegistry } from '../ports/driven/lookup-cover-registry.interface.js';
 import type { CoverDownloader } from '../ports/driven/cover-downloader.interface.js';
@@ -224,6 +227,7 @@ export class ScriptedSource<T> implements LookupSource<T> {
     readonly requests: string[][] = [];
     readonly turns: SourceTurn[] = [];
     readonly unknown = new Set<string>();
+    readonly unsettled = new Map<string, SourceRefusal | 'failed'>();
 
     constructor(
         readonly name: string,
@@ -231,10 +235,7 @@ export class ScriptedSource<T> implements LookupSource<T> {
         readonly batchSize = 1,
     ) {}
 
-    async find(
-        isbn13s: readonly string[],
-        turn: SourceTurn,
-    ): Promise<SourceReply<ReadonlyMap<string, T>>> {
+    async find(isbn13s: readonly string[], turn: SourceTurn): Promise<SourceBatchReply<T>> {
         const reply = this.reply;
 
         this.asked.push(...isbn13s);
@@ -253,15 +254,16 @@ export class ScriptedSource<T> implements LookupSource<T> {
             return reply;
         }
 
-        return {
-            kind: 'found',
-            value: new Map(
-                isbn13s
-                    .toReversed()
-                    .filter((isbn13) => !this.unknown.has(isbn13))
-                    .map((isbn13) => [isbn13, reply.value]),
-            ),
-        };
+        const value = new Map(
+            isbn13s
+                .toReversed()
+                .filter((isbn13) => !this.unknown.has(isbn13) && !this.unsettled.has(isbn13))
+                .map((isbn13) => [isbn13, reply.value]),
+        );
+
+        return this.unsettled.size > 0
+            ? { kind: 'partial', value, unsettled: this.unsettled }
+            : { kind: 'found', value };
     }
 }
 
@@ -273,15 +275,13 @@ export class SourceProbe {
     }
 
     static async one<T>(source: LookupSource<T>, isbn13: string): Promise<SourceReply<T>> {
-        const reply = await source.find([isbn13], SourceProbe.turn);
+        const reply = SourceDesk.replyFor(await source.find([isbn13], SourceProbe.turn), isbn13);
 
-        if (reply.kind !== 'found') {
-            return reply;
+        if (reply === 'failed') {
+            throw new Error(source.name + ' left ' + isbn13 + ' unanswered');
         }
 
-        const value = reply.value.get(isbn13);
-
-        return value === undefined ? { kind: 'none' } : { kind: 'found', value };
+        return reply;
     }
 }
 

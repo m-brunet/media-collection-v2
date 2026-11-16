@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<record>
+  <leader>     cam0 22        450 </leader>
+  <controlfield tag="001">171390849</controlfield>
+  <controlfield tag="003">https://www.sudoc.fr/171390849</controlfield>
+  <controlfield tag="004">20130907</controlfield>
+  <controlfield tag="005">20231126185053.000</controlfield>
+  <controlfield tag="006">4994</controlfield>
+  <controlfield tag="007">1999</controlfield>
+  <controlfield tag="008">Aax3</controlfield>
+  <datafield tag="010" ind1="#" ind2="#">
+    <subfield code="a">978-2-253-17401-1</subfield>
+    <subfield code="b">br</subfield>
+    <subfield code="d">8,60 EUR</subfield>
+  </datafield>
+  <datafield tag="020" ind1="#" ind2="#">
+    <subfield code="a">FR</subfield>
+    <subfield code="b">01344736</subfield>
+  </datafield>
+  <datafield tag="021" ind1="#" ind2="#">
+    <subfield code="a">FR</subfield>
+    <subfield code="b">DLE-20130726-41743</subfield>
+  </datafield>
+  <datafield tag="033" ind1="#" ind2="#">
+    <subfield code="a">http://catalogue.bnf.fr/ark:/12148/cb43641192r</subfield>
+    <subfield code="2">BNF</subfield>
+    <subfield code="d">20180731</subfield>
+  </datafield>
+  <datafield tag="035" ind1="#" ind2="#">
+    <subfield code="a">FRBNF436411920000002</subfield>
+    <subfield code="z">FRBNF43641192</subfield>
+    <subfield code="d">20180731</subfield>
+  </datafield>
+  <datafield tag="073" ind1="#" ind2="0">
+    <subfield code="a">9782253174011</subfield>
+  </datafield>
+  <datafield tag="100" ind1="#" ind2="#">
+    <subfield code="a">20130907d2013    m  y0frey50      ba</subfield>
+  </datafield>
+  <datafield tag="101" ind1="1" ind2="#">
+    <subfield code="a">fre</subfield>
+    <subfield code="c">eng</subfield>
+    <subfield code="2">639-2</subfield>
+  </datafield>
+  <datafield tag="102" ind1="#" ind2="#">
+    <subfield code="a">FR</subfield>
+  </datafield>
+  <datafield tag="104" ind1="#" ind2="#">
+    <subfield code="a">m</subfield>
+    <subfield code="b">y</subfield>
+    <subfield code="c">y</subfield>
+    <subfield code="d">ba</subfield>
+    <subfield code="e">0</subfield>
+    <subfield code="f">fre</subfield>
+  </datafield>
+  <datafield tag="105" ind1="#" ind2="#">
+    <subfield code="a">||||z   00|a|</subfield>
+  </datafield>
+  <datafield tag="106" ind1="#" ind2="#">
+    <subfield code="a">r</subfield>
+  </datafield>
+  <datafield tag="181" ind1="#" ind2="#">
+    <subfield code="6">z01</subfield>
+    <subfield code="c">txt</subfield>
+    <subfield code="2">rdacontent</subfield>
+  </datafield>
+  <datafield tag="181" ind1="#" ind2="1">
+    <subfield code="6">z01</subfield>
+    <subfield code="a">i#</subfield>
+    <subfield code="b">xxxe##</subfield>
+  </datafield>
+  <datafield tag="182" ind1="#" ind2="#">
+    <subfield code="6">z01</subfield>
+    <subfield code="c">n</subfield>
+    <subfield code="2">rdamedia</subfield>
+  </datafield>
+  <datafield tag="182" ind1="#" ind2="1">
+    <subfield code="6">z01</subfield>
+    <subfield code="a">n</subfield>
+  </datafield>
+  <datafield tag="200" ind1="1" ind2="#">
+    <subfield code="a">Bitterblue</subfield>
+    <subfield code="f">Kristin Cashore</subfield>
+    <subfield code="g">traduit de l&apos;anglais par Alexandra Maillard</subfield>
+  </datafield>
+  <datafield tag="210" ind1="#" ind2="#">
+    <subfield code="a">Paris</subfield>
+    <subfield code="c">Librairie générale française</subfield>
+    <subfield code="d">impr. 2013</subfield>
+    <subfield code="e">45-Malesherbes</subfield>
+    <subfield code="g">Maury impr.</subfield>
+  </datafield>
+  <datafield tag="215" ind1="#" ind2="#">
+    <subfield code="a">1 vol. (757 p.)</subfield>
+    <subfield code="c">ill., couv. ill. en coul.</subfield>
+    <subfield code="d">18 cm</subfield>
+  </datafield>
+  <datafield tag="225" ind1="1" ind2="#">
+    <subfield code="a">Le  livre de poche</subfield>
+    <subfield code="v">32987</subfield>
+  </datafield>
+  <datafield tag="410" ind1="#" ind2="#">
+    <subfield code="0">00101790X</subfield>
+    <subfield code="t">Le Livre de poche</subfield>
+    <subfield code="x">0248-3653</subfield>
+    <subfield code="v">32987</subfield>
+  </datafield>
+  <datafield tag="454" ind1="#" ind2="#">
+    <subfield code="t">Bitterblue</subfield>
+  </datafield>
+  <datafield tag="686" ind1="#" ind2="#">
+    <subfield code="a">803</subfield>
+    <subfield code="2">Cadre de classement de la Bibliographie nationale française</subfield>
+  </datafield>
+  <datafield tag="700" ind1="#" ind2="1">
+    <subfield code="3">137395604</subfield>
+    <subfield code="a">Cashore</subfield>
+    <subfield code="b">Kristin</subfield>
+    <subfield code="4">070</subfield>
+  </datafield>
+  <datafield tag="702" ind1="#" ind2="1">
+    <subfield code="3">13739683X</subfield>
+    <subfield code="a">Maillard</subfield>
+    <subfield code="b">Alexandra</subfield>
+    <subfield code="4">730</subfield>
+  </datafield>
+  <datafield tag="801" ind1="#" ind2="3">
+    <subfield code="a">FR</subfield>
+    <subfield code="b">Abes</subfield>
+    <subfield code="c">20231126</subfield>
+    <subfield code="g">AFNOR</subfield>
+  </datafield>
+  <datafield tag="801" ind1="#" ind2="0">
+    <subfield code="a">FR</subfield>
+    <subfield code="b">FR-751131015</subfield>
+    <subfield code="c">20130726</subfield>
+    <subfield code="g">AFNOR</subfield>
+    <subfield code="2">intermrc</subfield>
+  </datafield>
+</record>

@@ -87,6 +87,7 @@ import { FetchCoverFromAddress } from '../../application/use-cases/fetch-cover-f
 import type { CoverOffer } from '../../domain/services/cover-combination.service.js';
 import type { LookupAnswer } from '../../domain/value-objects/lookup-answer.value-object.js';
 import { MemoryLookupCoverRegistry } from '../adapters/driven/memory/memory-lookup-cover-registry.adapter.js';
+import { SudocCatalogue } from '../adapters/driven/third-party/sudoc-catalogue.adapter.js';
 import { BnfCatalogue } from '../adapters/driven/third-party/bnf-catalogue.adapter.js';
 import { HttpCoverDownloader } from '../adapters/driven/third-party/http-cover-downloader.adapter.js';
 import { PublicAddresses } from '../adapters/driven/third-party/public-addresses.adapter.js';
@@ -791,7 +792,8 @@ export class BooksModule {
     // second to clients that send no contact email (https://openlibrary.org/developers/api).
     // Inventaire enforces a limit it does not publish and answers 429 beyond it
     // (https://api.inventaire.io); the 10 seconds of its robots.txt are for web crawlers.
-    static readonly lookupDelaySeconds = { bnf: 3, openLibrary: 2, inventaire: 3 };
+    // The Sudoc's robots.txt asks for 5 seconds between requests.
+    static readonly lookupDelaySeconds = { bnf: 3, openLibrary: 2, inventaire: 3, sudoc: 7 };
 
     static lookupSources(
         clock: Clock,
@@ -799,6 +801,8 @@ export class BooksModule {
             bnf?: string;
             openLibrary?: string;
             inventaire?: string;
+            sudoc?: string;
+            sudocRecords?: string;
             delaySeconds?: number;
         } = {},
     ): BookLookupSources {
@@ -809,6 +813,7 @@ export class BooksModule {
             clock,
         );
         const inventaireQueue = new SourceQueue(settings.delaySeconds ?? delays.inventaire, clock);
+        const sudocQueue = new SourceQueue(settings.delaySeconds ?? delays.sudoc, clock);
         const bnf = new SourceHttp(bnfQueue);
         const openLibrary = new OpenLibraryRecords(
             new SourceHttp(openLibraryQueue),
@@ -818,6 +823,11 @@ export class BooksModule {
         return {
             information: [
                 new BnfCatalogue(bnf, settings.bnf),
+                new SudocCatalogue(
+                    new SourceHttp(sudocQueue),
+                    settings.sudoc,
+                    settings.sudocRecords,
+                ),
                 new OpenLibraryInformation(openLibrary),
             ],
             covers: [
