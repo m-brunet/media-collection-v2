@@ -37,6 +37,24 @@ The Bookshelves page lists the bookcases beside the detail of the selected shelf
 - The list never grows taller than the page: it has its own scrollbar and the detail panel beside it stays in view. The shelves of a collapsed bookcase are out of the keyboard Tab order.
 - The Libris book form is not affected: it chooses a location with two short drop-downs, bookcase then shelf.
 
+### Adding many books to a shelf
+
+Decided 2026-11-16, issue #101. Design: Doop, page "Issue 101 · Add books to a shelf".
+
+- **Where it starts:** *Add books* is the first of the shelf actions in the three Bookshelves views: the Wall panel, the actions menu of each Ribbons strip, and the header of the Columns books column. Guests have no such action, and the screen is not reachable for them.
+- **Picking screen:** a screen of its own, "Add books to *Shelf*", with the bookcase name and the shelf's current book count. *Cancel* returns to the Bookshelves page with the same bookcase and shelf selected.
+- **Finding the books:** the Library's search and advanced filters. The screen opens on *No physical location*; removing that filter shows shelved books too. These choices are not remembered. *Owned* is the fixed scope of the screen, shown as a locked choice; the advanced filters of this screen offer no ownership choice. A Not Owned book can still be given a shelf elsewhere.
+- **Table:** a tick box and *Title*, then *Author*, *Collection*, *Location* and *Status*, without covers. It scrolls in place and loads the following books as it scrolls.
+  - A book on another shelf can be ticked and moves; its current location is shown.
+  - A book already on this shelf is dimmed, marked "Already here" and cannot be ticked.
+  - A lent book can be ticked, shown as "Lent to *Name*"; lending keeps the shelf.
+- **Limit:** 100 books at most per operation. *Select all* ticks every matching book that is not already on the shelf, and is available when at most 100 books match; above that it is disabled, with "Up to 100 books at once. Narrow the search to select them all." Ticking a 101st book by hand is refused with the same explanation. The selection is kept while the search or the filters change, and while the advanced filters are open.
+- **Footer:** "38 books chosen", then what will happen: "29 placed on Shelf 3 · 9 moved from Hallway – Shelf 1 and Lounge · left – Shelf 2". The primary button reads "Place 38 books on Shelf 3" and is disabled while nothing is chosen.
+- **After saving:** back on the Bookshelves page, on that shelf, with the counts updated and a message that repeats the summary. A refused save shows the error and keeps the screen and the selection.
+- **Server rules:** Owner and Admin only. All or nothing: an unknown shelf, an unknown book, a Not Owned book or more than 100 books rejects the whole request, and no book changes. A book that reached the shelf since the screen was loaded is reported as unchanged, not as an error. Tags are never changed.
+- **Activity:** one entry for the whole operation, "You placed 38 books on Study · oak – Shelf 3", counting the books placed and moved. An operation that changed no book shows nothing.
+- Out of scope: ticking books in My books, and Leaf.
+
 ## Tags
 
 Tags are reusable and a book can have several. Owners/Admin can create tags directly while editing a book and manage them from a dedicated interface. Guests can view and filter by tags, but cannot manage tags or assignments.
@@ -84,6 +102,11 @@ Collection ownership/completeness totals always describe the entire collection, 
 13. Books offer title/date-added/publication-date sorting in either direction; missing publication dates stay last. Collections offer name sorting only.
 14. Case/accent-insensitive partial text matches and equivalent ISBN-10/13 searches find existing records without requiring exact display spelling.
 15. Without cover plus Without price finds the books missing both, owned or not; checking both choices of one of them removes that restriction. In the collection listing, Without cover lists each collection with at least one volume without a cover, and its totals still describe the whole collection.
+16. Open *Add books* on Shelf 3: the screen lists the Owned books without a location. Tick five of them: the footer reads "5 books chosen" and "5 placed on Shelf 3 · none moved from another shelf", and the button "Place 5 books on Shelf 3".
+17. Remove *No physical location* and search "pratchett": 41 books match, 3 of them "Already here" and not tickable. *Select all* ticks the 38 others; the footer counts the books placed and the books moved, naming the shelves they leave.
+18. 214 books match: *Select all* is disabled with "Up to 100 books at once. Narrow the search to select them all."
+19. Save 38 books of which one was shelved there in the meantime: 37 are placed or moved, one is reported as already there, and nothing fails.
+20. One of the chosen books was deleted meanwhile: the save is refused, no book changes, and the screen keeps the selection.
 
 ## Assigned follow-ups
 
