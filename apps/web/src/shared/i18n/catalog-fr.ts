@@ -553,6 +553,8 @@ export const fr = {
     'credits.ibmPlexMono.used': 'Codes et petites étiquettes (ISBN, titres de section).',
     'credits.bnf.used':
         'Informations et résumés des livres dans Trouver un livre. Source : Bibliothèque nationale de France.',
+    'credits.sudoc.used':
+        'Informations et résumés des livres dans Trouver un livre. Source : Sudoc, Abes.',
     'credits.openLibrary.used': 'Informations et couvertures des livres dans Trouver un livre.',
     'credits.inventaire.used':
         'Couvertures dans Trouver un livre et Ajouter des volumes. Les images restent soumises à leur droit d’auteur.',
@@ -709,6 +711,7 @@ export const fr = {
     'reason.lookupCoverUnavailable':
         'La source de cette couverture n’a pas fourni d’image utilisable.',
     'source.bnf': 'BnF',
+    'source.sudoc': 'Sudoc',
     'source.openlibrary': 'Open Library',
     'source.inventaire': 'Inventaire',
     'source.libris': 'votre bibliothèque',

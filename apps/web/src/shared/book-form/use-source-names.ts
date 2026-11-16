@@ -3,6 +3,7 @@ import { useI18n } from '../i18n/i18n-context';
 
 const known: Record<string, MessageKey> = {
     bnf: 'source.bnf',
+    sudoc: 'source.sudoc',
     openlibrary: 'source.openlibrary',
     inventaire: 'source.inventaire',
     libris: 'source.libris',
