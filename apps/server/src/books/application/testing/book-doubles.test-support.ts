@@ -345,6 +345,10 @@ export class MemoryCovers implements CoverStorage {
         return this.files.get(file) ?? null;
     }
 
+    async size(file: string): Promise<number | null> {
+        return this.files.get(file)?.bytes.length ?? null;
+    }
+
     async remove(file: string): Promise<void> {
         this.files.delete(file);
     }

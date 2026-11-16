@@ -29,6 +29,7 @@ export class ActivityEligibility {
         'loan.lent',
         'loan.returned',
         'receiver.created',
+        'maintenance.kept-covers-deleted',
     ];
 
     static includes(category: string): boolean {

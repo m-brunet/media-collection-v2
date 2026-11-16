@@ -37,6 +37,22 @@ describe('ActivityEligibility', () => {
 
         expect(included).toEqual([true, true, true, true]);
     });
+    it('includes the deletion of the kept covers', () => {
+        const included = ActivityEligibility.includes('maintenance.kept-covers-deleted');
+
+        expect(included).toBe(true);
+    });
+    it('leaves the data reset and the backups out', () => {
+        const categories = [
+            'maintenance.data-reset',
+            'maintenance.backup-created',
+            'maintenance.backup-restored',
+        ];
+
+        const included = categories.map((category) => ActivityEligibility.includes(category));
+
+        expect(included).toEqual([false, false, false]);
+    });
     it('includes lending and returns', () => {
         const categories = ['loan.lent', 'loan.returned', 'receiver.created'];
 

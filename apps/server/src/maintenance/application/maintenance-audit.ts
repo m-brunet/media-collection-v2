@@ -4,6 +4,7 @@ export const MaintenanceAudit = {
     backupCreated: 'maintenance.backup-created',
     backupRestored: 'maintenance.backup-restored',
     dataReset: 'maintenance.data-reset',
+    keptCoversDeleted: 'maintenance.kept-covers-deleted',
 } as const;
 
 export interface MaintenanceRecord {

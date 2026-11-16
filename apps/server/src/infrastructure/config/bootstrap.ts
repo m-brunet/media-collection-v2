@@ -59,6 +59,7 @@ import { MaintenanceModule } from '../../maintenance/infrastructure/config/maint
 import { KyselyApplicationDataEraser } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-application-data-eraser.adapter.js';
 import { KyselyLibraryEraser } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-library-eraser.adapter.js';
 import { KyselyCoverFileCleanup } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-cover-file-cleanup.adapter.js';
+import { KyselyKeptCoverArchive } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-kept-cover-archive.adapter.js';
 import { KyselyKeptCoverCount } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-kept-cover-count.adapter.js';
 import { FileCoverStorage } from '../../books/infrastructure/adapters/driven/filesystem/file-cover-storage.adapter.js';
 import { SetupAccess } from '../../identity/infrastructure/adapters/driving/web/setup-access.service.js';
@@ -327,6 +328,10 @@ export class BackendRuntime {
                                 new FileCoverStorage(options.dataDirectory),
                             ),
                             keptCovers: new KyselyKeptCoverCount(database.connections),
+                            keptCoverArchive: new KyselyKeptCoverArchive(
+                                database.connections,
+                                new FileCoverStorage(options.dataDirectory),
+                            ),
                             operations,
                             sessions,
                         }),

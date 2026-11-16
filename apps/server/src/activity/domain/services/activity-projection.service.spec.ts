@@ -39,6 +39,24 @@ describe('ActivityProjection', () => {
             also: [],
         });
     });
+    it('describes the deletion of the kept covers with their number', () => {
+        const deleted = operation(
+            record('maintenance.kept-covers-deleted', { keptCovers: 0 }, { keptCovers: 437 }),
+        );
+
+        const entry = ActivityProjection.entry(deleted);
+
+        expect(entry?.event).toEqual({ kind: 'kept-covers-deleted', count: 437 });
+    });
+    it('shows nothing when no kept cover was deleted', () => {
+        const deleted = operation(
+            record('maintenance.kept-covers-deleted', { keptCovers: 0 }, { keptCovers: 0 }),
+        );
+
+        const entry = ActivityProjection.entry(deleted);
+
+        expect(entry).toBeNull();
+    });
     it('describes a Not Owned book added like any other book', () => {
         const added = operation(record('book.created', { title: 'Dune', ownership: 'not_owned' }));
 
