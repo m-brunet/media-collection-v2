@@ -72,6 +72,24 @@ describe('BookFilter.write', () => {
 
         expect(result).toEqual(filter);
     });
+    it('round-trips the publishers and No publisher through the address', () => {
+        const filter = {
+            ...BookFilter.empty(),
+            publisher: ['Glénat', 'none'],
+            noPublisher: ['true' as const],
+        };
+
+        const result = BookFilter.read(BookFilter.write(filter));
+
+        expect(result).toEqual(filter);
+    });
+    it('ignores another No publisher value than true', () => {
+        const parameters = new URLSearchParams('noPublisher=yes');
+
+        const result = BookFilter.read(parameters);
+
+        expect(result.noPublisher).toEqual([]);
+    });
     it('writes the cover and price choices to the address', () => {
         const filter = {
             ...BookFilter.empty(),

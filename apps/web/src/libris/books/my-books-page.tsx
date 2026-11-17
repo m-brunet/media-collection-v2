@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router';
 import type { BookListItemDto, BookListPageDto } from '../../../../../packages/contracts/src/http';
@@ -17,42 +18,146 @@ import { AppliedFilters, useListingFilter } from '../filters/applied-filters';
 import { useListMemory } from '../filters/use-list-memory';
 import { BookFilter } from '../filters/book-filter.util';
 import { Required } from '../../shared/required.util';
+import type { BatchBooksView } from '../batch/batch-editor';
+import { BatchEditor } from '../batch/batch-editor';
+import type { WallTile } from '../collections/collection-wall';
 
 const pageSize = 48;
+const batchLimit = 1000;
 
 interface Listing {
     query: string;
+    version: number;
     total: number;
     items: BookListItemDto[];
 }
 
-function BookCard({ book }: { book: BookListItemDto }) {
+function BookCard({
+    book,
+    tile,
+    onClick,
+}: {
+    book: BookListItemDto;
+    tile?: WallTile;
+    onClick?(): void;
+}) {
     const { t } = useI18n();
-    const status = BookFormat.status(book).map((key) => t(key));
+    const status =
+        tile?.sub ??
+        BookFormat.status(book)
+            .map((key) => t(key))
+            .join(' · ');
     const volumes = book.collection
         ? CollectionFormat.volumes(book.collection.volumeFrom, book.collection.volumeTo)
         : null;
+    const cover = (
+        <BookCover
+            src={book.hasCover ? BookFormat.cover(book.id, book.updatedAt) : null}
+            title={book.title}
+        />
+    );
+    const content = (
+        <>
+            {tile ? (
+                <span className="book-card__cover">
+                    {cover}
+                    {tile.check && (
+                        <span className="wall-tile__check" aria-hidden="true">
+                            {tile.chosen && <Icon name="check" size={14} />}
+                        </span>
+                    )}
+                    {tile.badge && (
+                        <span className={'wall-tile__badge wall-tile__badge--' + tile.badge.tone}>
+                            {tile.badge.label}
+                        </span>
+                    )}
+                </span>
+            ) : (
+                cover
+            )}
+            <span className="book-card__title">{book.title}</span>
+            <span className="book-card__authors">{book.authors.join(', ')}</span>
+            {book.collection && volumes && (
+                <span className="book-card__collection">
+                    {t('books.collection', {
+                        name: book.collection.name,
+                        volumes: t(volumes.key, volumes.values),
+                    })}
+                </span>
+            )}
+            <span className="book-card__status">{status}</span>
+        </>
+    );
+
+    if (!tile) {
+        return (
+            <li>
+                <Link to={'/books/' + book.id} className="book-card">
+                    {content}
+                </Link>
+            </li>
+        );
+    }
+
+    const className = [
+        'book-card',
+        'book-card--batch',
+        tile.chosen ? 'book-card--chosen' : null,
+        tile.dimmed ? 'book-card--dimmed' : null,
+        onClick && tile.pressed && !tile.check ? 'book-card--focused' : null,
+    ]
+        .filter(Boolean)
+        .join(' ');
 
     return (
         <li>
-            <Link to={'/books/' + book.id} className="book-card">
-                <BookCover
-                    src={book.hasCover ? BookFormat.cover(book.id, book.updatedAt) : null}
-                    title={book.title}
-                />
-                <span className="book-card__title">{book.title}</span>
-                <span className="book-card__authors">{book.authors.join(', ')}</span>
-                {book.collection && volumes && (
-                    <span className="book-card__collection">
-                        {t('books.collection', {
-                            name: book.collection.name,
-                            volumes: t(volumes.key, volumes.values),
-                        })}
-                    </span>
-                )}
-                <span className="book-card__status">{status.join(' · ')}</span>
-            </Link>
+            {onClick ? (
+                <button
+                    type="button"
+                    className={className}
+                    aria-label={[book.title, tile.sub, tile.badge?.label]
+                        .filter(Boolean)
+                        .join(', ')}
+                    aria-pressed={tile.pressed ?? false}
+                    disabled={tile.disabled}
+                    onClick={onClick}
+                >
+                    {content}
+                </button>
+            ) : (
+                <div className={className}>{content}</div>
+            )}
         </li>
+    );
+}
+
+function BatchBooks({
+    view,
+    books,
+    more,
+}: {
+    view: BatchBooksView;
+    books: BookListItemDto[];
+    more: ReactNode;
+}) {
+    return (
+        <section aria-label={view.eyebrow}>
+            <div className="collection-wall__heading">
+                <span className="eyebrow">{view.eyebrow}</span>
+                {view.hint && <span className="muted">{view.hint}</span>}
+            </div>
+            <ul className="book-grid">
+                {books.map((book) => (
+                    <BookCard
+                        key={book.id}
+                        book={book}
+                        tile={view.tile(book.id)}
+                        onClick={view.onClick && (() => view.onClick?.(book.id))}
+                    />
+                ))}
+            </ul>
+            {view.step === 'choose' && more}
+        </section>
     );
 }
 
@@ -80,6 +185,8 @@ export function MyBooksPage() {
     const restoring = useListMemory('books');
     const filtered = BookFilter.active(filters.filter);
     const [libraryTotal, setLibraryTotal] = useState<number | null>(null);
+    const [batching, setBatching] = useState(false);
+    const [version, setVersion] = useState(0);
     const query =
         new URLSearchParams({
             search,
@@ -139,7 +246,7 @@ export function MyBooksPage() {
         let current = true;
 
         fetchPage(0).then(
-            (page) => current && setListing({ query, ...page }),
+            (page) => current && setListing({ query, version, ...page }),
             (error: unknown) =>
                 current && setFailure({ query, text: t(ApiErrorMessage.key(error)) }),
         );
@@ -147,7 +254,7 @@ export function MyBooksPage() {
         return () => {
             current = false;
         };
-    }, [fetchPage, query, restoring, t]);
+    }, [fetchPage, query, restoring, t, version]);
 
     const loadMore = async () => {
         if (!listing) {
@@ -166,10 +273,24 @@ export function MyBooksPage() {
             setLoadingMore(false);
         }
     };
-    const current = listing?.query === query ? listing : null;
+    const current = listing?.query === query && listing.version === version ? listing : null;
     const error = failure?.query === query ? failure.text : null;
     const narrowed = Boolean(search) || filtered;
     const libraryEmpty = current && current.total === 0 && !narrowed;
+    const more = (shown: Listing) =>
+        shown.items.length < shown.total && (
+            <div className="book-grid__more">
+                <Button busy={loadingMore} onClick={() => void loadMore()}>
+                    {t('books.loadMore')}
+                </Button>
+                <span className="muted">
+                    {t('books.showing', {
+                        shown: shown.items.length,
+                        total: shown.total,
+                    })}
+                </span>
+            </div>
+        );
     const clearAll = () => {
         setTyped('');
         setParameters(BookFilter.write(BookFilter.empty(), new URLSearchParams()), {
@@ -189,10 +310,22 @@ export function MyBooksPage() {
                         : undefined
                 }
                 actions={
-                    editor && (
-                        <Button variant="primary" icon="add" onClick={() => navigate('/books/new')}>
-                            {t('books.add')}
-                        </Button>
+                    editor &&
+                    !batching && (
+                        <>
+                            {current && current.items.length > 0 && (
+                                <Button onClick={() => setBatching(true)}>
+                                    {t('batch.editSeveral')}
+                                </Button>
+                            )}
+                            <Button
+                                variant="primary"
+                                icon="add"
+                                onClick={() => navigate('/books/new')}
+                            >
+                                {t('books.add')}
+                            </Button>
+                        </>
                     )
                 }
             />
@@ -215,7 +348,7 @@ export function MyBooksPage() {
                         {t('books.deleted', { title: deleted })}
                     </Notice>
                 )}
-                {!libraryEmpty && (
+                {!libraryEmpty && !batching && (
                     <div className="book-toolbar">
                         <div className="search-field">
                             <Icon name="search" className="search-field__icon" />
@@ -264,7 +397,7 @@ export function MyBooksPage() {
                         </select>
                     </div>
                 )}
-                {!libraryEmpty && (filtered || (current && search)) && (
+                {!libraryEmpty && !batching && (filtered || (current && search)) && (
                     <div className="applied-row">
                         <AppliedFilters
                             filter={filters.filter}
@@ -329,26 +462,32 @@ export function MyBooksPage() {
                         }
                     />
                 )}
-                {current && current.items.length > 0 && (
+                {current && current.items.length > 0 && editor && batching && (
+                    <BatchEditor
+                        books={current.items.map((book) => ({
+                            id: book.id,
+                            owned: book.ownership === 'owned',
+                        }))}
+                        limit={batchLimit}
+                        savedHint={t('batch.wallSavedHintLibrary')}
+                        onSaved={() => undefined}
+                        onExit={() => {
+                            setBatching(false);
+                            setVersion((value) => value + 1);
+                        }}
+                        renderBooks={(view) => (
+                            <BatchBooks view={view} books={current.items} more={more(current)} />
+                        )}
+                    />
+                )}
+                {current && current.items.length > 0 && !batching && (
                     <>
                         <ul className="book-grid">
                             {current.items.map((book) => (
                                 <BookCard key={book.id} book={book} />
                             ))}
                         </ul>
-                        {current.items.length < current.total && (
-                            <div className="book-grid__more">
-                                <Button busy={loadingMore} onClick={() => void loadMore()}>
-                                    {t('books.loadMore')}
-                                </Button>
-                                <span className="muted">
-                                    {t('books.showing', {
-                                        shown: current.items.length,
-                                        total: current.total,
-                                    })}
-                                </span>
-                            </div>
-                        )}
+                        {more(current)}
                     </>
                 )}
             </div>

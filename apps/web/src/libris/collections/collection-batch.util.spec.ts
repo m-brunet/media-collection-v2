@@ -1,65 +1,6 @@
 import { expect, it } from 'vitest';
-import type {
-    BookBatchDto,
-    CollectionDetailsDto,
-    CollectionMemberDto,
-} from '../../../../../packages/contracts/src/http';
+import type { BookBatchDto } from '../../../../../packages/contracts/src/http';
 import { CollectionBatch } from './collection-batch.util';
-
-function member(id: string, overrides: Partial<CollectionMemberDto> = {}): CollectionMemberDto {
-    return {
-        id,
-        title: id,
-        isbn: null,
-        publisher: null,
-        category: 'manga',
-        ownership: 'owned',
-        hasCover: false,
-        updatedAt: '2026-01-01T00:00:00.000Z',
-        volumeFrom: 1,
-        volumeTo: 1,
-        ...overrides,
-    };
-}
-
-function collection(volumes: CollectionDetailsDto['volumes']): CollectionDetailsDto {
-    return {
-        id: 'c1',
-        name: 'Gunnm',
-        category: 'comics',
-        includesVolumeZero: false,
-        finished: false,
-        bookCount: 3,
-        expectedFrom: 1,
-        expectedTo: 3,
-        expectedCount: 3,
-        ownedCount: 2,
-        missingCount: 1,
-        lastOwned: 2,
-        previews: [],
-        volumes,
-    };
-}
-
-const omnibus = member('omnibus', { volumeFrom: 1, volumeTo: 2 });
-const gunnm = collection([
-    { from: 1, to: 1, state: 'owned', books: [member('one'), omnibus] },
-    { from: 2, to: 2, state: 'owned', books: [omnibus] },
-    {
-        from: 3,
-        to: 3,
-        state: 'planned',
-        books: [member('three', { ownership: 'not-owned', volumeFrom: 3, volumeTo: 3 })],
-    },
-]);
-
-it('selects the owned books only', () => {
-    const subject = gunnm;
-
-    const result = CollectionBatch.owned(subject);
-
-    expect(result).toEqual(['omnibus', 'one']);
-});
 
 it('sends no field left unchanged', () => {
     const draft = CollectionBatch.draft();

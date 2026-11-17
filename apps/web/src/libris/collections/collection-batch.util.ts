@@ -6,13 +6,11 @@ import type {
     BookBatchFillable,
     BookBatchSkipReason,
     BookOwnership,
-    CollectionDetailsDto,
 } from '../../../../../packages/contracts/src/http';
 import type { DraftAuthor, DraftTag } from '../../shared/book-form/book-draft.util';
 import { BookDraft } from '../../shared/book-form/book-draft.util';
 import { BookFormat } from '../../shared/book-form/book-format.util';
 import type { MessageKey } from '../../shared/i18n/catalog-en';
-import { CollectionCovers } from './collection-covers.util';
 import { Required } from '../../shared/required.util';
 
 export type ChoiceMode = 'keep' | 'set' | 'fill' | 'clear';
@@ -103,6 +101,7 @@ const skipReasons: Record<BookBatchSkipReason, MessageKey> = {
     'book-lent': 'batch.skip.lent',
     'possible-duplicate': 'batch.skip.duplicate',
     'title-not-generated': 'batch.skip.books',
+    'not-in-collection': 'batch.skip.noCollection',
 };
 
 export class CollectionBatch {
@@ -166,12 +165,6 @@ export class CollectionBatch {
             default:
                 return { ...removed, [field]: initial[field] };
         }
-    }
-
-    static owned(collection: CollectionDetailsDto): string[] {
-        return CollectionCovers.books(collection)
-            .filter((book) => book.ownership === 'owned')
-            .map((book) => book.id);
     }
 
     static problem(draft: BatchDraft): BatchProblem | null {

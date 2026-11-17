@@ -71,6 +71,39 @@ it('returns to the Library with the combined criteria, keeping the search', asyn
     );
 });
 
+it('suggests the existing publishers and keeps the chosen ones', async () => {
+    api().on('GET /publishers', () => ({ status: 200, body: ['Glénat', 'Glénat Manga'] }));
+    const router = show('/books/filters');
+
+    await screen.findByRole('radiogroup', { name: 'Fantasy' });
+    await userEvent.click(screen.getByText('Select publishers'));
+    await userEvent.type(screen.getByRole('searchbox', { name: 'Search publishers' }), 'gle');
+    await userEvent.click(await screen.findByRole('checkbox', { name: 'Glénat' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Show results' }));
+
+    expect(router.state.location.search).toBe('?publisher=Gl%C3%A9nat');
+});
+
+it('chooses the books without a publisher', async () => {
+    api();
+    const router = show('/books/filters');
+
+    await screen.findByRole('radiogroup', { name: 'Fantasy' });
+    await userEvent.click(screen.getByText('Select publishers'));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'No publisher' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Show results' }));
+
+    expect(router.state.location.search).toBe('?noPublisher=true');
+});
+
+it('shows the chosen publishers in the publisher field', async () => {
+    api();
+
+    show('/books/filters?publisher=Gl%C3%A9nat&noPublisher=true');
+
+    expect(await screen.findByText('No publisher · Glénat')).toBeInTheDocument();
+});
+
 it('returns to the screen it was opened for, without an ownership choice', async () => {
     api();
     const router = renderRoute('/shelf/filters?location=none', {

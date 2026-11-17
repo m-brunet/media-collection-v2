@@ -12,6 +12,7 @@ export interface ChoiceOption {
     value: string;
     label: string;
     nested?: boolean;
+    field?: FilterKey;
 }
 
 export function ChoiceField({
@@ -54,10 +55,18 @@ export function ChoiceField({
                                     <label className="checkbox">
                                         <input
                                             type="checkbox"
-                                            checked={BookFilter.has(filter, field, option.value)}
+                                            checked={BookFilter.has(
+                                                filter,
+                                                option.field ?? field,
+                                                option.value,
+                                            )}
                                             onChange={() =>
                                                 onChange(
-                                                    BookFilter.toggle(filter, field, option.value),
+                                                    BookFilter.toggle(
+                                                        filter,
+                                                        option.field ?? field,
+                                                        option.value,
+                                                    ),
                                                 )
                                             }
                                         />
@@ -156,6 +165,68 @@ export function SearchedChoices({
                 type="search"
                 className="field__control"
                 placeholder={placeholder}
+                value={typed}
+                onChange={(event) => setTyped(event.target.value)}
+            />
+        </ChoiceField>
+    );
+}
+
+export function PublisherChoices({
+    filter,
+    onChange,
+}: {
+    filter: Filter;
+    onChange(filter: Filter): void;
+}) {
+    const { t } = useI18n();
+    const [typed, setTyped] = useState('');
+    const [found, setFound] = useState<string[]>([]);
+
+    useEffect(() => {
+        let current = true;
+        const timer = setTimeout(() => {
+            api.request<string[]>('/publishers?search=' + encodeURIComponent(typed.trim())).then(
+                (names) => current && setFound(names),
+                () => current && setFound([]),
+            );
+        }, 200);
+
+        return () => {
+            current = false;
+            clearTimeout(timer);
+        };
+    }, [typed]);
+
+    const none = t('filters.noPublisher');
+    const options: ChoiceOption[] = [
+        { value: 'true', label: none, field: 'noPublisher' },
+        ...filter.publisher.map((name) => ({ value: name, label: name })),
+        ...found
+            .filter((name) => !filter.publisher.includes(name))
+            .map((name) => ({ value: name, label: name })),
+    ];
+    const summary =
+        [...(filter.noPublisher.length > 0 ? [none] : []), ...filter.publisher].join(' · ') ||
+        t('filters.anyPublisher');
+
+    return (
+        <ChoiceField
+            label={t('filters.publisher')}
+            summary={summary}
+            options={options}
+            filter={filter}
+            field="publisher"
+            onChange={onChange}
+        >
+            <label className="visually-hidden" htmlFor="filter-search-publisher">
+                {t('filters.searchPublishers')}
+            </label>
+            <input
+                id="filter-search-publisher"
+                type="search"
+                className="field__control"
+                placeholder={t('filters.searchPublishers')}
                 value={typed}
                 onChange={(event) => setTyped(event.target.value)}
             />
