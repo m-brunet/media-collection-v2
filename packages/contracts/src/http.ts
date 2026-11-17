@@ -210,6 +210,7 @@ export interface BookInputDto {
     pageCount: number | null;
     price: string | null;
     confirmDistinct?: boolean;
+    publisherDistinct?: boolean;
     collection: MembershipDto | null;
     replacePlanned?: string[];
     shelfId: string | null;
@@ -352,6 +353,11 @@ export interface BookFilterParams {
     reading?: ('read' | 'unread')[];
     tag?: string[];
     notTag?: string[];
+}
+
+export interface SimilarPublisherDetails {
+    name: string;
+    candidates: string[];
 }
 
 export interface SimilarAuthorDetails {

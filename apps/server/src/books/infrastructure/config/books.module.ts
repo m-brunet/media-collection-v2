@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { ValueProviders } from '../../../shared/infrastructure/config/value-providers.helper.js';
 import type { AuthorRepository } from '../../application/ports/driven/author-repository.interface.js';
 import type { BookCatalog } from '../../application/ports/driven/book-catalog.interface.js';
+import type { PublisherCatalog } from '../../application/ports/driven/publisher-catalog.interface.js';
 import type { BookCollectionReader } from '../../application/ports/driven/book-collection-reader.interface.js';
 import type { BookRepository } from '../../application/ports/driven/book-repository.interface.js';
 import type { CollectionOwnedBooks } from '../../application/ports/driven/collection-owned-books.interface.js';
@@ -20,6 +21,8 @@ import type { TagAssignment } from '../../application/ports/driven/tag-assignmen
 import type { ShelfLocator } from '../../application/ports/driven/shelf-locator.interface.js';
 import type { TagFinder } from '../../application/ports/driven/tag-finder.interface.js';
 import { AuthorMatcher } from '../../application/services/author-matcher.service.js';
+import { PublisherMatcher } from '../../application/services/publisher-matcher.service.js';
+import { FindPublishers } from '../../application/use-cases/find-publishers.usecase.js';
 import { AuthorResolver } from '../../application/services/author-resolver.service.js';
 import { BookBatchPlanner } from '../../application/services/book-batch-planner.service.js';
 import { BookDetailsBuilder } from '../../application/services/book-details-builder.service.js';
@@ -59,6 +62,7 @@ import type { Clock } from '../../../shared/application/ports/driven/clock.inter
 import type { IdGenerator } from '../../../shared/application/ports/driven/id-generator.interface.js';
 import type { AuditedOperation } from '../../../shared/application/services/audited-operation.service.js';
 import { AuthorsController } from '../adapters/driving/web/authors.controller.js';
+import { PublishersController } from '../adapters/driving/web/publishers.controller.js';
 import { BooksController } from '../adapters/driving/web/books.controller.js';
 import { ShelfPlacementController } from '../adapters/driving/web/shelf-placement.controller.js';
 import { PlaceBooksOnShelf } from '../../application/use-cases/place-books-on-shelf.usecase.js';
@@ -119,6 +123,7 @@ export interface BooksDependencies {
     books: BookRepository;
     authors: AuthorRepository;
     catalog: BookCatalog;
+    publishers: PublisherCatalog;
     readings: ReadingStatusStore;
     notes: PersonalNoteStore;
     covers: CoverStorage;
@@ -145,6 +150,7 @@ const token = {
     books: 'BOOKS_REPOSITORY',
     authors: 'BOOKS_AUTHOR_REPOSITORY',
     catalog: 'BOOKS_CATALOG',
+    publishers: 'BOOKS_PUBLISHER_CATALOG',
     readings: 'BOOKS_READING_STATUSES',
     notes: 'BOOKS_PERSONAL_NOTES',
     covers: 'BOOKS_COVER_STORAGE',
@@ -165,6 +171,7 @@ const token = {
     operations: 'BOOKS_AUDITED_OPERATION',
     authorResolver: 'BOOKS_AUTHOR_RESOLVER',
     builder: 'BOOKS_DETAILS_BUILDER',
+    publisherMatcher: 'BOOKS_PUBLISHER_MATCHER',
     batchPlanner: 'BOOKS_BATCH_PLANNER',
     identity: 'BOOKS_IDENTITY_CHECK',
     loader: 'BOOKS_LOADER',
@@ -250,9 +257,15 @@ const serviceProviders: Provider[] = [
             new AuthorResolver(authors, ids, clock),
     },
     {
+        provide: token.publisherMatcher,
+        inject: [token.publishers],
+        useFactory: (publishers: PublisherCatalog) => new PublisherMatcher(publishers),
+    },
+    {
         provide: token.builder,
-        inject: [token.authorResolver],
-        useFactory: (resolver: AuthorResolver) => new BookDetailsBuilder(resolver),
+        inject: [token.authorResolver, token.publisherMatcher],
+        useFactory: (resolver: AuthorResolver, publishers: PublisherMatcher) =>
+            new BookDetailsBuilder(resolver, publishers),
     },
     {
         provide: token.identity,
@@ -378,6 +391,7 @@ const useCaseProviders: Provider[] = [
             token.lookupCovers,
             token.authors,
             token.keptCovers,
+            token.publisherMatcher,
         ],
         useFactory: (
             books: BookRepository,
@@ -385,6 +399,7 @@ const useCaseProviders: Provider[] = [
             registry: LookupCoverRegistry,
             authors: AuthorRepository,
             kept: KeptCovers,
+            publishers: PublisherMatcher,
         ) =>
             new LookUpBook(
                 books,
@@ -393,6 +408,7 @@ const useCaseProviders: Provider[] = [
                 registry,
                 new AuthorMatcher(authors),
                 kept,
+                publishers,
             ),
     },
     {
@@ -436,13 +452,27 @@ const useCaseProviders: Provider[] = [
     },
     {
         provide: 'BOOKS_FIND_MISSING_VOLUMES',
-        inject: [token.collectionVolumes, token.lookupChains, token.books, token.authors],
+        inject: [
+            token.collectionVolumes,
+            token.lookupChains,
+            token.books,
+            token.authors,
+            token.publisherMatcher,
+        ],
         useFactory: (
             collections: CollectionVolumes,
             chains: LookupChains,
             books: BookRepository,
             authors: AuthorRepository,
-        ) => new FindMissingVolumes(collections, chains.series, books, new AuthorMatcher(authors)),
+            publishers: PublisherMatcher,
+        ) =>
+            new FindMissingVolumes(
+                collections,
+                chains.series,
+                books,
+                new AuthorMatcher(authors),
+                publishers,
+            ),
     },
     {
         provide: 'BOOKS_FETCH_COVER_FROM_ADDRESS',
@@ -532,6 +562,7 @@ const useCaseProviders: Provider[] = [
             token.organiser,
             token.readings,
             token.operations,
+            token.publisherMatcher,
         ],
         useFactory: (
             planner: BookBatchPlanner,
@@ -542,6 +573,7 @@ const useCaseProviders: Provider[] = [
             organiser: BookOrganiser,
             readings: ReadingStatusStore,
             operations: AuditedOperation,
+            publishers: PublisherMatcher,
         ) =>
             new EditBooksInBatch(
                 planner,
@@ -552,6 +584,7 @@ const useCaseProviders: Provider[] = [
                 organiser,
                 readings,
                 operations,
+                publishers,
             ),
     },
     {
@@ -624,6 +657,11 @@ const useCaseProviders: Provider[] = [
         provide: 'BOOKS_FIND_AUTHORS',
         inject: [token.authors],
         useFactory: (authors: AuthorRepository) => new FindAuthors(authors),
+    },
+    {
+        provide: 'BOOKS_FIND_PUBLISHERS',
+        inject: [token.publisherMatcher],
+        useFactory: (publishers: PublisherMatcher) => new FindPublishers(publishers),
     },
     {
         provide: 'BOOKS_NAME_AUTHORS',
@@ -785,6 +823,7 @@ export class BooksModule {
                 ShelfPlacementController,
                 BooksController,
                 AuthorsController,
+                PublishersController,
                 CoversController,
                 PersonalReadingController,
                 CollectionReadingController,

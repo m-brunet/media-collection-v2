@@ -158,7 +158,7 @@ describe('Adding books', () => {
         const page = await signedIn('camille');
 
         await page.goto('/books/new');
-        expect(await page.getByLabel('Publisher').isVisible()).toBe(false);
+        expect(await page.getByLabel('Publisher', { exact: true }).isVisible()).toBe(false);
         await page.getByLabel('This book has no ISBN').check();
         await page.getByLabel(/^Title/).fill('Carnet de voyage');
         await page.getByRole('combobox', { name: 'Add author' }).fill('susanna');

@@ -72,6 +72,7 @@ function setup(members: CollectionVolumeMember[] = gunnm, category: 'books' | 'm
             new SeriesLookup(series),
             current.books,
             new AuthorMatcher(current.authors),
+            current.publishers,
         ),
     };
 }
@@ -313,5 +314,20 @@ describe('FindMissingVolumes', () => {
         const result = useCase.execute(owner, 'gunnm', 206);
 
         await expect(result).rejects.toMatchObject({ reason: 'volumes-too-many' });
+    });
+
+    it("offers an edition's publisher under the existing spelling of its key", async () => {
+        const { useCase, series, current } = setup();
+
+        await BookDoubles.saved(current, { publisher: 'Kana', isbn: '9780306406157' });
+        series.editionsReply = { kind: 'found', value: [five] };
+        series.pages = [page([entry('9782723434775', 3, { publisher: 'KANA' })])];
+
+        const result = await useCase.execute(owner, 'gunnm', 3);
+
+        expect(
+            result.kind === 'found' &&
+                result.rows.map((row) => row.editions.map((edition) => edition.publishers)),
+        ).toEqual([[['Kana']]]);
     });
 });

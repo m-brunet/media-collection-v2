@@ -256,4 +256,23 @@ describe('AddVolumes', () => {
 
         await expect(result).rejects.toMatchObject({ reason: 'title-missing' });
     });
+
+    it('saves the publisher of every volume under the existing spelling, without asking', async () => {
+        const { current, anchor, collectionId } = await gunnm();
+
+        const result = await useCase(current).execute(owner, {
+            collectionId,
+            anchorBookId: anchor.id,
+            volumes: [
+                row(2, '9782723434324', { publisher: 'GLENAT' }),
+                row(3, '9782723434331', { publisher: 'Glénatt' }),
+            ],
+        });
+
+        const publishers = result.added.map(
+            (added) => current.books.books.get(added.bookId)!.details.publisher,
+        );
+
+        expect(publishers).toEqual(['Glénat', 'Glénatt']);
+    });
 });

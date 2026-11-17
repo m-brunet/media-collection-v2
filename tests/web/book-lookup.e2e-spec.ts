@@ -191,7 +191,9 @@ describe('Find book', () => {
         await review.getByRole('radio', { name: /Le livre de poche/ }).click();
         await review.getByRole('button', { name: 'Use these values' }).click();
 
-        expect(await page.getByLabel('Publisher').inputValue()).toBe('Le livre de poche');
+        expect(await page.getByLabel('Publisher', { exact: true }).inputValue()).toBe(
+            'Le livre de poche',
+        );
     });
 
     it('opens the book that already has this ISBN without asking any source', async () => {
@@ -217,7 +219,7 @@ describe('Find book', () => {
         await conflicts.getByRole('button', { name: 'Apply' }).click();
 
         expect(await page.getByLabel(/^Title/).inputValue()).toBe('Ewilan, tome 1');
-        expect(await page.getByLabel('Publisher').inputValue()).toBe(
+        expect(await page.getByLabel('Publisher', { exact: true }).inputValue()).toBe(
             'Librairie générale française',
         );
     });
@@ -263,7 +265,9 @@ describe('Find book', () => {
 
         await review.getByRole('button', { name: 'Use these values' }).click();
 
-        expect(await page.getByLabel('Publisher').inputValue()).toBe('Le livre de poche');
+        expect(await page.getByLabel('Publisher', { exact: true }).inputValue()).toBe(
+            'Le livre de poche',
+        );
         await page
             .getByText('Some sources did not answer (BnF); the values found may be incomplete.')
             .waitFor();

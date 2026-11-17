@@ -23,6 +23,7 @@ function setUp() {
             current.organiser,
             current.readings,
             current.operations,
+            current.publishers,
         ),
     };
 }
@@ -319,5 +320,36 @@ describe('EditBooksInBatch', () => {
         const result = useCase.execute(guest, batch([one.id], { publisher: 'Glénat' }, true));
 
         await expect(result).rejects.toMatchObject({ code: 'forbidden' });
+    });
+    it('saves the publisher under the existing spelling of its key', async () => {
+        const { current, useCase } = setUp();
+        const one = await BookDoubles.volume(current, 1, { publisher: 'Glénat' });
+        const two = await BookDoubles.volume(current, 2);
+
+        const result = await useCase.execute(owner, batch([two.id], { publisher: 'GLENAT' }));
+
+        expect(result.books[0]).toMatchObject({ after: { publisher: 'Glénat' } });
+        expect(current.books.books.get(two.id)!.details.publisher).toBe('Glénat');
+        expect(current.books.books.get(one.id)!.details.publisher).toBe('Glénat');
+    });
+    it('plans the publisher under the existing spelling of its key', async () => {
+        const { current, useCase } = setUp();
+
+        await BookDoubles.volume(current, 1, { publisher: 'Glénat' });
+        const two = await BookDoubles.volume(current, 2);
+
+        const result = await useCase.execute(owner, batch([two.id], { publisher: 'glenat' }, true));
+
+        expect(result.books[0]).toMatchObject({ after: { publisher: 'Glénat' } });
+    });
+    it('saves a close publisher spelling without asking', async () => {
+        const { current, useCase } = setUp();
+
+        await BookDoubles.volume(current, 1, { publisher: 'Glénat' });
+        const two = await BookDoubles.volume(current, 2);
+
+        await useCase.execute(owner, batch([two.id], { publisher: 'Glénatt' }));
+
+        expect(current.books.books.get(two.id)!.details.publisher).toBe('Glénatt');
     });
 });

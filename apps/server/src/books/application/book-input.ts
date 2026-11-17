@@ -16,6 +16,7 @@ export interface BookInput {
     category: BookCategory;
     ownership: Ownership;
     publisher: string | null;
+    publisherDistinct?: boolean;
     publicationYear: number | null;
     publicationMonth: number | null;
     summary: string | null;

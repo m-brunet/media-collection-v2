@@ -138,6 +138,52 @@ describe('POST /api/books', () => {
             details: { name: 'Sam Tayler', candidates: [{ name: 'Sam Taylor' }] },
         });
     });
+    it('saves a publisher of an existing key under the existing spelling', async () => {
+        await created({ publisher: 'Glénat' });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookDto>(
+            '/books',
+            'POST',
+            BookInputFixture.of({ isbn: '9780306406157', publisher: 'GLENAT ' }),
+        );
+
+        expect(response.status).toBe(201);
+        expect(response.body.publisher).toBe('Glénat');
+    });
+    it('asks before saving a publisher spelling close to an existing one', async () => {
+        await created({ publisher: 'Glénat' });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call(
+            '/books',
+            'POST',
+            BookInputFixture.of({ isbn: '9780306406157', publisher: 'Glénatt' }),
+        );
+
+        expect(response.status).toBe(409);
+        expect(response.body).toMatchObject({
+            reason: 'publisher-similar',
+            details: { name: 'Glénatt', candidates: ['Glénat'] },
+        });
+    });
+    it('keeps a close publisher spelling once confirmed as different', async () => {
+        await created({ publisher: 'Glénat' });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookDto>(
+            '/books',
+            'POST',
+            BookInputFixture.of({
+                isbn: '9780306406157',
+                publisher: 'Glénatt',
+                publisherDistinct: true,
+            }),
+        );
+
+        expect(response.status).toBe(201);
+        expect(response.body.publisher).toBe('Glénatt');
+    });
     it('warns about a possible duplicate of a book without ISBN', async () => {
         await created({ isbn: null, noIsbn: true });
         const client = await app.authenticatedClient(owner);

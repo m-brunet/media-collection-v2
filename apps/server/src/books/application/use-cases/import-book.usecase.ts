@@ -130,6 +130,7 @@ export class ImportBook implements ImportBookUseCase {
             category: imported.category,
             ownership: imported.ownership,
             publisher: imported.publisher,
+            publisherDistinct: true,
             publicationYear: null,
             publicationMonth: null,
             summary: null,

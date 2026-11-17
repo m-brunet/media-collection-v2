@@ -70,6 +70,15 @@ export class LookupAnswer {
         return LookupAnswer.of({ ...this, authors });
     }
 
+    withPublishers(spelling: (publisher: string) => string): LookupAnswer {
+        return LookupAnswer.of({
+            ...this,
+            publisher: this.publisher === null ? null : spelling(this.publisher),
+            publisherCollection:
+                this.publisherCollection === null ? null : spelling(this.publisherCollection),
+        });
+    }
+
     get empty(): boolean {
         return (
             !this.title &&

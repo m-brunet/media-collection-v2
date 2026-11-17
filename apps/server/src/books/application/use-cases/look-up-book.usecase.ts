@@ -5,6 +5,7 @@ import type {
 import type { BookRepository } from '../ports/driven/book-repository.interface.js';
 import type { LookupCoverRegistry } from '../ports/driven/lookup-cover-registry.interface.js';
 import type { AuthorMatcher, AuthorSpelling } from '../services/author-matcher.service.js';
+import type { PublisherMatcher } from '../services/publisher-matcher.service.js';
 import { KeptCovers } from '../services/kept-covers.service.js';
 import type { SourceLink, SourceUnavailability } from '../services/source-chain.service.js';
 import type { CoverOffer } from '../../domain/services/cover-combination.service.js';
@@ -26,6 +27,7 @@ export class LookUpBook implements LookUpBookUseCase {
         private readonly registry: LookupCoverRegistry,
         private readonly authors: AuthorMatcher,
         private readonly kept: KeptCovers,
+        private readonly publishers: PublisherMatcher,
     ) {}
 
     async execute(actor: Actor, isbn: string): Promise<BookLookup> {
@@ -107,12 +109,15 @@ export class LookUpBook implements LookUpBookUseCase {
         const fields = new LookupCombination();
         const names = [...new Set(answers.flatMap(({ answer }) => answer.authors))];
         const existing = await this.authors.existing(names);
+        const publishers = await this.publishers.names();
         const authorSpellings: AuthorSpelling[] = [];
 
         for (const { source, answer } of answers) {
             fields.add(
                 source,
-                answer.withAuthors(answer.authors.map((name) => existing.get(name) ?? name)),
+                answer
+                    .withAuthors(answer.authors.map((name) => existing.get(name) ?? name))
+                    .withPublishers((publisher) => publishers.same(publisher) ?? publisher),
             );
         }
 

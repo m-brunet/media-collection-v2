@@ -159,6 +159,7 @@ export class AddVolumes implements AddVolumesUseCase {
             category: details.category,
             ownership: volume.ownership,
             publisher: volume.publisher ?? details.publisher,
+            publisherDistinct: true,
             publicationYear: volume.publicationYear,
             publicationMonth: null,
             summary: volume.summary,
