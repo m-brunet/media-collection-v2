@@ -79,6 +79,7 @@ export class ActivityProjection {
     private static readonly order: readonly (readonly string[])[] = [
         [
             'collection.books-batch-edited',
+            'library.books-batch-edited',
             'collection.volumes-added',
             'shelf.books-placed',
             'book.created',
@@ -167,6 +168,7 @@ export class ActivityProjection {
 
     private static readonly absorbs: Readonly<Record<string, readonly string[]>> = {
         'collection.books-batch-edited': ActivityProjection.batchEdits,
+        'library.books-batch-edited': ActivityProjection.batchEdits,
         'collection.volumes-added': ['book.created'],
         'shelf.books-placed': ['book.organised'],
     };
@@ -197,6 +199,7 @@ export class ActivityProjection {
             case 'collection.volumes-added':
                 return ActivityProjection.volumesAdded(after);
             case 'collection.books-batch-edited':
+            case 'library.books-batch-edited':
                 return ActivityProjection.booksEdited(before, operation);
             case 'shelf.books-placed':
                 return ActivityProjection.booksPlaced(after);

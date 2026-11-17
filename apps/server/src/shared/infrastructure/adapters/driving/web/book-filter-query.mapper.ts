@@ -12,6 +12,7 @@ export class BookFilterQueryMapper {
         return BookFilter.of({
             categories: params.category,
             authorIds: params.author.map(id),
+            publishers: { names: params.publisher, none: params.noPublisher === 'true' },
             collections: {
                 ids: params.collection.filter((value) => value !== 'none').map(id),
                 none: params.collection.includes('none'),

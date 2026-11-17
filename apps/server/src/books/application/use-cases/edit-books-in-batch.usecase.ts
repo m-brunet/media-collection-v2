@@ -48,9 +48,9 @@ export class EditBooksInBatch implements EditBooksInBatchUseCase {
 
         return this.operations.run(
             {
-                category: BookAudit.batchEdited,
+                category: asked.collectionId ? BookAudit.batchEdited : BookAudit.libraryBatchEdited,
                 actorId: actor.id,
-                subjectType: BookAudit.collection,
+                subjectType: asked.collectionId ? BookAudit.collection : BookAudit.library,
                 subjectId: asked.collectionId,
             },
             async () => {
@@ -71,9 +71,9 @@ export class EditBooksInBatch implements EditBooksInBatchUseCase {
 
                 return {
                     result: EditBooksInBatch.view(plan, true),
-                    before: { name: plan.collection.name, bookIds: [...request.bookIds] },
+                    before: { ...EditBooksInBatch.named(plan), bookIds: [...request.bookIds] },
                     after: {
-                        name: plan.collection.name,
+                        ...EditBooksInBatch.named(plan),
                         edited: plan.planned
                             .filter((planned) => EditBooksInBatch.changed(planned))
                             .map((planned) => planned.book.id),
@@ -119,7 +119,7 @@ export class EditBooksInBatch implements EditBooksInBatchUseCase {
             related.push(EditBooksInBatch.bookChange(planned));
         }
 
-        if (planned.ownershipChanged) {
+        if (planned.ownershipChanged && collection) {
             const membership = await this.collections.assign(
                 {
                     id: book.id,
@@ -158,6 +158,10 @@ export class EditBooksInBatch implements EditBooksInBatchUseCase {
         }
 
         return related;
+    }
+
+    private static named(plan: BookBatchPlan): { name?: string } {
+        return plan.collection ? { name: plan.collection.name } : {};
     }
 
     private static bookChange(planned: PlannedBook): RelatedChange {

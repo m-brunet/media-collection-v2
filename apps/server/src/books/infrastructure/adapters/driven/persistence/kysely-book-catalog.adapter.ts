@@ -27,7 +27,12 @@ export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
     }
 
     async search(query: BookListQuery): Promise<CatalogPage> {
-        const filter = this.matching(query.search, query.filter, query.readerId);
+        const filter = this.matching(
+            query.search,
+            query.filter,
+            query.readerId,
+            await this.spellings(query.filter),
+        );
         const counted = await this.db
             .selectFrom('books')
             .select((eb) => eb.fn.countAll<number>().as('total'))
@@ -135,10 +140,28 @@ export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
             .innerJoin('books', 'books.id', 'collection_books.book_id')
             .select('collection_books.collection_id')
             .distinct()
-            .where(this.matching(search, filter, readerId))
+            .where(this.matching(search, filter, readerId, await this.spellings(filter)))
             .execute();
 
         return rows.map((row) => row.collection_id);
+    }
+
+    private async spellings(filter: BookFilter): Promise<string[]> {
+        if (filter.publishers.names.length === 0) {
+            return [];
+        }
+
+        const keys = new Set(filter.publishers.names.map((name) => NameKey.of(name)));
+        const rows = await this.db
+            .selectFrom('books')
+            .select('books.publisher')
+            .distinct()
+            .where('books.publisher', 'is not', null)
+            .execute();
+
+        return rows.flatMap((row) =>
+            row.publisher !== null && keys.has(NameKey.of(row.publisher)) ? [row.publisher] : [],
+        );
     }
 
     async authorsOf(bookId: string): Promise<AuthorView[]> {
@@ -151,15 +174,20 @@ export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
             .execute();
     }
 
-    private matching(search: string, filter: BookFilter, readerId: string | null) {
+    private matching(
+        search: string,
+        filter: BookFilter,
+        readerId: string | null,
+        spellings: readonly string[],
+    ) {
         const text = this.text(search);
-        const criteria = this.criteria(filter, readerId);
+        const criteria = this.criteria(filter, readerId, spellings);
 
         return (eb: ExpressionBuilder<DatabaseSchema, 'books'>) =>
             eb.and([text(eb), ...criteria(eb)]);
     }
 
-    private criteria(filter: BookFilter, readerId: string | null) {
+    private criteria(filter: BookFilter, readerId: string | null, spellings: readonly string[]) {
         return (eb: ExpressionBuilder<DatabaseSchema, 'books'>) => [
             ...(filter.categories.length > 0
                 ? [eb('books.category', 'in', filter.categories)]
@@ -180,6 +208,7 @@ export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
                       ),
                   ]
                 : []),
+            ...this.publisher(eb, filter.publishers, spellings),
             ...this.collection(eb, filter.collections),
             ...this.location(eb, filter.locations),
             ...this.reading(eb, filter.reading, readerId),
@@ -208,6 +237,25 @@ export class KyselyBookCatalog implements BookCatalog, CollectionBookSearch {
         }
 
         return [choices[0] === 'with' ? eb(column, 'is not', null) : eb(column, 'is', null)];
+    }
+
+    private publisher(
+        eb: ExpressionBuilder<DatabaseSchema, 'books'>,
+        publishers: BookFilter['publishers'],
+        spellings: readonly string[],
+    ) {
+        if (publishers.names.length === 0 && !publishers.none) {
+            return [];
+        }
+
+        return [
+            eb.or([
+                ...(spellings.length > 0 ? [eb('books.publisher', 'in', [...spellings])] : []),
+                ...(publishers.none
+                    ? [eb('books.publisher', 'is', null), eb('books.publisher', '=', '')]
+                    : []),
+            ]),
+        ];
     }
 
     private collection(

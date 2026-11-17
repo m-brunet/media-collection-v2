@@ -33,7 +33,7 @@ import { Required } from '../../../shared/domain/required.helper.js';
 
 export interface PlannedBook {
     book: Book;
-    collection: BookCollection;
+    collection: BookCollection | null;
     entry: BookBatchEntry;
     detailsChanged: boolean;
     ownershipChanged: boolean;
@@ -43,7 +43,7 @@ export interface PlannedBook {
 }
 
 export interface BookBatchPlan {
-    collection: { id: string; name: string };
+    collection: { id: string; name: string } | null;
     planned: PlannedBook[];
     skipped: BookBatchSkip[];
 }
@@ -106,7 +106,7 @@ export class BookBatchPlanner {
         const skipped: BookBatchSkip[] = [];
 
         for (const { book, collection } of members) {
-            const reason = await this.skipReason(book, values);
+            const reason = await this.skipReason(book, collection, values);
             const outcome = reason ? reason : await this.planBook(book, collection, values);
 
             if (typeof outcome === 'string') {
@@ -116,27 +116,29 @@ export class BookBatchPlanner {
             }
         }
 
+        const first = Required.at(members, 0, 'a batch has at least one book').collection;
+
         return {
-            collection: {
-                id: request.collectionId,
-                name: Required.at(members, 0, 'a batch has at least one book').collection.name,
-            },
+            collection:
+                request.collectionId && first
+                    ? { id: request.collectionId, name: first.name }
+                    : null,
             planned,
             skipped,
         };
     }
 
     private async members(
-        collectionId: string,
+        collectionId: string | null,
         bookIds: readonly string[],
-    ): Promise<{ book: Book; collection: BookCollection }[]> {
+    ): Promise<{ book: Book; collection: BookCollection | null }[]> {
         const members = [];
 
         for (const bookId of bookIds) {
             const book = await this.loader.load(bookId);
             const collection = await this.memberships.of(bookId);
 
-            if (collection?.id !== collectionId) {
+            if (collectionId !== null && collection?.id !== collectionId) {
                 throw new Failure(
                     'invalid_input',
                     'Every book of a batch must belong to its collection.',
@@ -150,11 +152,19 @@ export class BookBatchPlanner {
         return members;
     }
 
-    private async skipReason(book: Book, values: BatchValues): Promise<BookBatchSkipReason | null> {
+    private async skipReason(
+        book: Book,
+        collection: BookCollection | null,
+        values: BatchValues,
+    ): Promise<BookBatchSkipReason | null> {
         const { changes } = values;
 
         if (changes.generatedTitles && !Book.generatesTitle(book.details.category)) {
             return 'title-not-generated';
+        }
+
+        if (changes.generatedTitles && !collection) {
+            return 'not-in-collection';
         }
 
         if (
@@ -170,7 +180,7 @@ export class BookBatchPlanner {
 
     private async planBook(
         book: Book,
-        collection: BookCollection,
+        collection: BookCollection | null,
         values: BatchValues,
     ): Promise<PlannedBook | BookBatchSkipReason> {
         const previous = book.details;
@@ -178,7 +188,7 @@ export class BookBatchPlanner {
 
         book.edit(next, values.now);
 
-        if (values.changes.generatedTitles) {
+        if (values.changes.generatedTitles && collection) {
             book.useGeneratedTitle(collection, values.now);
         }
 

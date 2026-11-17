@@ -580,4 +580,21 @@ describe('ActivityProjection', () => {
 
         expect(entry?.also).toEqual([{ kind: 'collection-updated', name: 'Higehiro' }]);
     });
+    it('describes a batch edit from the Library as the same event', () => {
+        const edited = operation(
+            record(
+                'library.books-batch-edited',
+                { edited: ['b1'] },
+                { bookIds: ['b1'] },
+                {
+                    subjectId: null,
+                },
+            ),
+            retagged('b1', 'Dune'),
+        );
+
+        const entry = ActivityProjection.entry(edited);
+
+        expect(entry?.event).toEqual({ kind: 'books-edited', titles: ['Dune'] });
+    });
 });

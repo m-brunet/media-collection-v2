@@ -650,6 +650,18 @@ describe('GET /api/collections with filters', () => {
 
         expect(response.body.items.map((item) => item.name)).toEqual(['Dune']);
     });
+    it('keeps a collection when one of its books has the chosen publisher', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        await book(membership('Batman', 1), { publisher: 'Urban Comics' });
+        await book(membership('Dune', 1), { publisher: 'Glénat' });
+
+        const response = await client.call<CollectionListPageDto>(
+            '/collections?publisher=urban%20comics',
+        );
+
+        expect(response.body.items.map((item) => item.name)).toEqual(['Batman']);
+    });
     it('keeps whole-collection counts for a collection found through one book', async () => {
         for (let volume = 1; volume <= 8; volume++) {
             await book(membership('Akira', volume));

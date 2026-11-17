@@ -26,4 +26,25 @@ describe('bookFilterQuery', () => {
 
         expect(result.success).toBe(false);
     });
+    it('reads a single publisher as a list, without its outer spaces', () => {
+        const query = { publisher: ' Glénat ' };
+
+        const result = schema.parse(query);
+
+        expect(result.publisher).toEqual(['Glénat']);
+    });
+    it('rejects an empty publisher', () => {
+        const query = { publisher: '  ' };
+
+        const result = schema.safeParse(query);
+
+        expect(result.success).toBe(false);
+    });
+    it('rejects another No publisher value than true', () => {
+        const query = { noPublisher: 'yes' };
+
+        const result = schema.safeParse(query);
+
+        expect(result.success).toBe(false);
+    });
 });
