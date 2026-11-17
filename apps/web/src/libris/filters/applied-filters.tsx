@@ -13,6 +13,8 @@ const kinds: Partial<Record<FilterEntry['key'], MessageKey>> = {
     tag: 'filters.kind.tag',
     notTag: 'filters.kind.tag',
     author: 'filters.kind.author',
+    publisher: 'filters.kind.publisher',
+    noPublisher: 'filters.kind.publisher',
     collection: 'filters.kind.collection',
 };
 

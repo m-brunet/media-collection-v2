@@ -24,6 +24,8 @@ export class BookFilter {
     static readonly keys: readonly FilterKey[] = [
         'category',
         'author',
+        'publisher',
+        'noPublisher',
         'collection',
         'location',
         'ownership',
@@ -38,6 +40,8 @@ export class BookFilter {
         return {
             category: [],
             author: [],
+            publisher: [],
+            noPublisher: [],
             collection: [],
             location: [],
             ownership: [],
@@ -57,6 +61,8 @@ export class BookFilter {
                 categories.includes(value as BookCategory),
             ),
             author: all('author'),
+            publisher: all('publisher'),
+            noPublisher: all('noPublisher').filter((value): value is 'true' => value === 'true'),
             collection: all('collection'),
             location: all('location'),
             ownership: all('ownership').filter((value): value is BookOwnership =>

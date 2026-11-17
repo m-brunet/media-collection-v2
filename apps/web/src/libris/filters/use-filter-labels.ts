@@ -72,6 +72,10 @@ export function useFilterLabels(filter: Filter) {
                     return t(BookFormat.reading(value === 'read'));
                 case 'author':
                     return authors?.get(value) ?? t('filters.someAuthor');
+                case 'publisher':
+                    return value;
+                case 'noPublisher':
+                    return t('filters.noPublisher');
                 case 'collection':
                     return value === 'none'
                         ? t('filters.noCollection')

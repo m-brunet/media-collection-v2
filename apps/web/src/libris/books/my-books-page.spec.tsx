@@ -203,6 +203,29 @@ it('names the cover and price filters on their chips', async () => {
     ).toBeInTheDocument();
 });
 
+it('names the chosen publishers on their chips and removes one', async () => {
+    filteredApi({ total: 1, items: [bookItem()] }, 842);
+    const router = show('/books?publisher=Gl%C3%A9nat&noPublisher=true');
+
+    await userEvent.click(
+        await screen.findByRole('button', { name: 'Remove the filter No publisher' }),
+    );
+
+    expect(screen.getByRole('button', { name: 'Remove the filter Glénat' })).toBeInTheDocument();
+    expect(router.state.location.search).toBe('?publisher=Gl%C3%A9nat');
+});
+
+it('asks the server for the books of the chosen publishers', async () => {
+    const api = filteredApi({ total: 1, items: [bookItem()] }, 842);
+
+    show('/books?publisher=Gl%C3%A9nat&noPublisher=true');
+
+    await screen.findByRole('link', { name: /Piranesi/ });
+    expect(api.calls.map((call) => call.route)).toContain(
+        'GET /books?search=&sort=title&direction=asc&limit=48&publisher=Gl%C3%A9nat&noPublisher=true&offset=0',
+    );
+});
+
 it('names the chosen author and collection of a bookmarked filter', async () => {
     filteredApi({ total: 1, items: [bookItem()] }, 842)
         .on('GET /authors/by-id', () => ({

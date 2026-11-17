@@ -14,6 +14,7 @@ import {
     ChoiceField,
     locationOptions,
     SearchedChoices,
+    PublisherChoices,
     searchAuthors,
     searchCollections,
 } from './filter-fields';
@@ -90,6 +91,7 @@ export function FiltersPage({
                             search={searchAuthors}
                             onChange={setFilter}
                         />
+                        <PublisherChoices filter={filter} onChange={setFilter} />
                         {!collections && (
                             <SearchedChoices
                                 label={t('filters.collection')}

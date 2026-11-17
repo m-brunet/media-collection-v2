@@ -25,7 +25,7 @@ export function useBatchEdit({
     onPlanned,
     onSaved,
 }: {
-    collectionId: string;
+    collectionId?: string;
     onPlanned(summary: BookBatchDto): void;
     onSaved(result: BookBatchDto): void;
 }) {
@@ -41,7 +41,7 @@ export function useBatchEdit({
         }
 
         const body: BookBatchInputDto = {
-            collectionId,
+            ...(collectionId ? { collectionId } : {}),
             bookIds,
             preview,
             changes: CollectionBatch.changes(draft),
