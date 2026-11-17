@@ -60,7 +60,7 @@ export const shelfPlacementSchema = z.strictObject({
 });
 
 export const bookBatchSchema = z.strictObject({
-    collectionId: idSchema,
+    collectionId: idSchema.optional(),
     bookIds: z.array(idSchema).min(1).max(1000),
     preview: z.boolean(),
     changes: z

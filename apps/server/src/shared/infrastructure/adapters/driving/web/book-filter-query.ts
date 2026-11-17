@@ -14,6 +14,8 @@ const located = /^(bookcase|shelf):[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
 export const bookFilterQuery = {
     category: RepeatedParameter.of(z.enum(['books', 'manga', 'comics'])),
     author: RepeatedParameter.of(idSchema),
+    publisher: RepeatedParameter.of(z.string().trim().min(1).max(1000)),
+    noPublisher: z.literal('true').optional(),
     collection: RepeatedParameter.of(z.union([idSchema, z.literal('none')])),
     location: RepeatedParameter.of(z.union([z.literal('none'), z.string().regex(located)])),
     ownership: RepeatedParameter.of(z.enum(['owned', 'not-owned'])),

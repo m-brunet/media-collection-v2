@@ -15,6 +15,8 @@ export const BookAudit = {
     readingStatusChanged: 'book.reading-status-changed',
     collectionReadingChanged: 'collection.reading-status-changed',
     batchEdited: 'collection.books-batch-edited',
+    libraryBatchEdited: 'library.books-batch-edited',
+    library: 'library',
     volumesAdded: 'collection.volumes-added',
     noteChanged: 'book.note-changed',
     booksPlaced: 'shelf.books-placed',

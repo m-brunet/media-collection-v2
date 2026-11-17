@@ -17,6 +17,9 @@ export class BookBatchController {
         @Body({ schema: bookBatchSchema }) input: z.infer<typeof bookBatchSchema>,
         @Req() request: AuthenticatedRequest,
     ): Promise<BookBatchDto> {
-        return this.editInBatch.execute(request.actor, input);
+        return this.editInBatch.execute(request.actor, {
+            ...input,
+            collectionId: input.collectionId ?? null,
+        });
     }
 }

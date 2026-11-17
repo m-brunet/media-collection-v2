@@ -241,7 +241,7 @@ export interface BookBatchChangesDto {
 export type BookBatchFillable = 'publisher' | 'price' | 'shelfId';
 
 export interface BookBatchInputDto {
-    collectionId: string;
+    collectionId?: string;
     bookIds: string[];
     preview: boolean;
     changes: BookBatchChangesDto;
@@ -276,10 +276,14 @@ export interface ShelfPlacementDto {
     unchanged: PlacedBookDto[];
 }
 
-export type BookBatchSkipReason = 'book-lent' | 'possible-duplicate' | 'title-not-generated';
+export type BookBatchSkipReason =
+    | 'book-lent'
+    | 'possible-duplicate'
+    | 'title-not-generated'
+    | 'not-in-collection';
 
 export interface BookBatchDto {
-    collection: { id: string; name: string };
+    collection: { id: string; name: string } | null;
     saved: boolean;
     books: { id: string; title: string; before: BookBatchFieldsDto; after: BookBatchFieldsDto }[];
     skipped: { id: string; title: string; reason: BookBatchSkipReason }[];
@@ -345,6 +349,8 @@ export interface BookListPageDto {
 export interface BookFilterParams {
     category?: BookCategory[];
     author?: string[];
+    publisher?: string[];
+    noPublisher?: 'true'[];
     collection?: string[];
     location?: string[];
     ownership?: BookOwnership[];

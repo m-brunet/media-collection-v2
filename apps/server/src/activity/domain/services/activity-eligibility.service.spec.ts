@@ -47,6 +47,11 @@ describe('ActivityEligibility', () => {
 
         expect(included).toBe(true);
     });
+    it('includes the batch edit of books from the Library', () => {
+        const included = ActivityEligibility.includes('library.books-batch-edited');
+
+        expect(included).toBe(true);
+    });
     it('includes the deletion of the kept covers', () => {
         const included = ActivityEligibility.includes('maintenance.kept-covers-deleted');
 

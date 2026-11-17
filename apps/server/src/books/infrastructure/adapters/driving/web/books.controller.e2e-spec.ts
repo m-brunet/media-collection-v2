@@ -1360,7 +1360,69 @@ describe('GET /api/books with filters', () => {
 
         expect(response.status).toBe(400);
     });
+    it('filters on a publisher whatever the spelling saved before the comparison', async () => {
+        const glenat = await created({ title: 'Akira', isbn: null, noIsbn: true, publisher: null });
+
+        await spelled(glenat, ' GLENAT ');
+        await created({ title: 'Dune', isbn: null, noIsbn: true, publisher: 'Kana' });
+
+        const result = await titles('publisher=Gl%C3%A9nat');
+
+        expect(result).toEqual(['Akira']);
+    });
+    it('filters on any of several publishers', async () => {
+        await created({ title: 'Akira', isbn: null, noIsbn: true, publisher: 'Glénat' });
+        await created({ title: 'Dune', isbn: null, noIsbn: true, publisher: 'Kana' });
+        await created({ title: 'Emma', isbn: null, noIsbn: true, publisher: 'Pika' });
+
+        const result = await titles('publisher=glenat&publisher=kana');
+
+        expect(result).toEqual(['Akira', 'Dune']);
+    });
+    it('filters on the books without a publisher', async () => {
+        await created({ title: 'Akira', isbn: null, noIsbn: true, publisher: 'Glénat' });
+        await created({ title: 'Dune', isbn: null, noIsbn: true, publisher: null });
+
+        const result = await titles('noPublisher=true');
+
+        expect(result).toEqual(['Dune']);
+    });
+    it('finds no book for a publisher nobody uses', async () => {
+        await created({ title: 'Akira', isbn: null, noIsbn: true, publisher: 'Glénat' });
+
+        const result = await titles('publisher=Delcourt');
+
+        expect(result).toEqual([]);
+    });
+    it('combines the publisher with the other filters', async () => {
+        await created({
+            title: 'Akira',
+            isbn: null,
+            noIsbn: true,
+            publisher: 'Glénat',
+            category: 'manga',
+        });
+        await created({ title: 'Blacksad', isbn: null, noIsbn: true, publisher: 'Glénat' });
+
+        const result = await titles('publisher=Gl%C3%A9nat&category=manga');
+
+        expect(result).toEqual(['Akira']);
+    });
+    it('lets a Guest filter on a publisher', async () => {
+        await created({ title: 'Akira', isbn: null, noIsbn: true, publisher: 'Glénat' });
+
+        const result = await titles('publisher=glenat', guest);
+
+        expect(result).toEqual(['Akira']);
+    });
 });
+
+async function spelled(saved: BookDto, publisher: string) {
+    const book = (await app.dependencies.books.books.findById(saved.id))!;
+
+    book.edit({ ...book.details, publisher }, new Date().toISOString());
+    await app.dependencies.books.books.save(book);
+}
 
 async function lentTo(receiverName: string, ...books: BookDto[]) {
     return new LendingArrangement(app.dependencies).lend({ name: receiverName }, ...books);

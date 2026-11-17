@@ -32,6 +32,19 @@ function batch(bookIds: string[], changes: BookBatchChanges, preview = false): B
     return { collectionId: 'collection-Gunnm', bookIds, changes, preview };
 }
 
+function library(bookIds: string[], changes: BookBatchChanges, preview = false): BookBatchRequest {
+    return { collectionId: null, bookIds, changes, preview };
+}
+
+function akira(current: ReturnType<typeof BookDoubles.library>) {
+    return BookDoubles.saved(current, {
+        title: 'Akira',
+        isbn: BookDoubles.volumeIsbns[2],
+        category: 'manga',
+        collection: { collection: { name: 'Akira' }, volumeFrom: 1, volumeTo: 1 },
+    });
+}
+
 describe('EditBooksInBatch', () => {
     it('saves the changes of every chosen book', async () => {
         const { current, useCase } = setUp();
@@ -351,5 +364,130 @@ describe('EditBooksInBatch', () => {
         await useCase.execute(owner, batch([two.id], { publisher: 'Glénatt' }));
 
         expect(current.books.books.get(two.id)!.details.publisher).toBe('Glénatt');
+    });
+    describe('from the Library', () => {
+        it('saves the changes of books in different collections and in none', async () => {
+            const { current, useCase } = setUp();
+            const gunnm = await BookDoubles.volume(current, 1);
+            const other = await akira(current);
+            const single = await BookDoubles.saved(current);
+
+            await useCase.execute(
+                owner,
+                library([gunnm.id, other.id, single.id], { publisher: 'Glénat' }),
+            );
+
+            expect(
+                [gunnm, other, single].map(
+                    (book) => current.books.books.get(book.id)!.details.publisher,
+                ),
+            ).toEqual(['Glénat', 'Glénat', 'Glénat']);
+        });
+        it('names no collection in the result', async () => {
+            const { current, useCase } = setUp();
+            const gunnm = await BookDoubles.volume(current, 1);
+
+            const result = await useCase.execute(
+                owner,
+                library([gunnm.id], { publisher: 'Glénat' }, true),
+            );
+
+            expect(result.collection).toBeNull();
+        });
+        it('changes the ownership of a book in no collection', async () => {
+            const { current, useCase } = setUp();
+            const single = await BookDoubles.saved(current);
+
+            await useCase.execute(owner, library([single.id], { ownership: 'not-owned' }));
+
+            expect(current.books.books.get(single.id)!.details.ownership).toBe('not-owned');
+        });
+        it('applies the collection rules to the ownership of a book in a collection', async () => {
+            const { current, useCase } = setUp();
+            const gunnm = await BookDoubles.volume(current, 1);
+            const reopened = {
+                category: 'collection.reopened',
+                subjectType: 'collection',
+                subjectId: 'collection-Gunnm',
+                before: { finished: true },
+                after: { finished: false },
+            };
+
+            current.collections.changes = [reopened];
+
+            await useCase.execute(owner, library([gunnm.id], { ownership: 'not-owned' }));
+
+            expect(current.trail.entries).toContainEqual(expect.objectContaining(reopened));
+        });
+        it('leaves out of the generated titles a book in no collection', async () => {
+            const { current, useCase } = setUp();
+            const single = await BookDoubles.saved(current, { title: 'Akira', category: 'manga' });
+
+            const result = await useCase.execute(
+                owner,
+                library([single.id], { generatedTitles: true }),
+            );
+
+            expect(result.skipped).toEqual([
+                { id: single.id, title: 'Akira', reason: 'not-in-collection' },
+            ]);
+        });
+        it('keeps the usual reason for a Books book in no collection', async () => {
+            const { current, useCase } = setUp();
+            const single = await BookDoubles.saved(current, { title: 'Dune', category: 'books' });
+
+            const result = await useCase.execute(
+                owner,
+                library([single.id], { generatedTitles: true }),
+            );
+
+            expect(result.skipped[0]!.reason).toBe('title-not-generated');
+        });
+        it('gives the generated title to a book in a collection', async () => {
+            const { current, useCase } = setUp();
+            const gunnm = await BookDoubles.volume(current, 1, { title: 'Gunnm, the first' });
+
+            await useCase.execute(owner, library([gunnm.id], { generatedTitles: true }));
+
+            expect(current.books.books.get(gunnm.id)!.details.title).toBe('Gunnm Vol. 1');
+        });
+        it('leaves out a lent book set to Not owned', async () => {
+            const { current, useCase } = setUp();
+            const single = await BookDoubles.saved(current);
+
+            current.loans.lend(single.id);
+
+            const result = await useCase.execute(
+                owner,
+                library([single.id], { ownership: 'not-owned' }),
+            );
+
+            expect(result.skipped[0]!.reason).toBe('book-lent');
+        });
+        it('records one Library batch entry with each book change as a related change', async () => {
+            const { current, useCase } = setUp();
+            const single = await BookDoubles.saved(current, { title: 'Dune' });
+
+            current.trail.entries.length = 0;
+
+            await useCase.execute(owner, library([single.id], { publisher: 'Glénat' }));
+
+            expect(current.trail.entries).toEqual([
+                expect.objectContaining({
+                    category: 'library.books-batch-edited',
+                    outcome: 'successful',
+                    subjectType: 'library',
+                    subjectId: null,
+                    before: { bookIds: [single.id] },
+                    after: { edited: [single.id], skipped: [] },
+                }),
+                expect.objectContaining({
+                    category: 'book.updated',
+                    subjectId: single.id,
+                    before: { title: 'Dune', publisher: null },
+                    after: { title: 'Dune', publisher: 'Glénat' },
+                }),
+            ]);
+        });
     });
 });

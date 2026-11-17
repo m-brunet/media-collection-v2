@@ -347,3 +347,50 @@ describe('POST /api/books/batch-edit', () => {
         expect(response.status).toBe(400);
     });
 });
+
+describe('POST /api/books/batch-edit from the Library', () => {
+    it('previews books of different collections and of none without a collection', async () => {
+        const first = await volume(1, { category: 'manga' });
+        const single = await book({ title: 'Akira', category: 'manga' });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookBatchDto>('/books/batch-edit', 'POST', {
+            bookIds: [first.id, single.id],
+            preview: true,
+            changes: { publisher: 'Glénat', generatedTitles: true },
+        });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toMatchObject({
+            collection: null,
+            saved: false,
+            books: [{ id: first.id, after: { publisher: 'Glénat' } }],
+            skipped: [{ id: single.id, reason: 'not-in-collection' }],
+        });
+    });
+    it('saves the changes of books without a collection', async () => {
+        const single = await book({ title: 'Dune' });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookBatchDto>('/books/batch-edit', 'POST', {
+            bookIds: [single.id],
+            preview: false,
+            changes: { publisher: 'Glénat' },
+        });
+
+        expect(response.body.saved).toBe(true);
+        expect((await stored(single)).publisher).toBe('Glénat');
+    });
+    it('refuses a Guest', async () => {
+        const single = await book({ title: 'Dune' });
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call('/books/batch-edit', 'POST', {
+            bookIds: [single.id],
+            preview: true,
+            changes: { publisher: 'Glénat' },
+        });
+
+        expect(response.status).toBe(403);
+    });
+});

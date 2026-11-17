@@ -18,7 +18,7 @@ export interface BookBatchChanges {
 }
 
 export interface BookBatchRequest {
-    collectionId: string;
+    collectionId: string | null;
     bookIds: readonly string[];
     changes: BookBatchChanges;
     preview: boolean;
@@ -45,7 +45,11 @@ export const bookBatchDetailFields: readonly (keyof BookBatchFields)[] = [
     'authors',
 ];
 
-export type BookBatchSkipReason = 'book-lent' | 'possible-duplicate' | 'title-not-generated';
+export type BookBatchSkipReason =
+    | 'book-lent'
+    | 'possible-duplicate'
+    | 'title-not-generated'
+    | 'not-in-collection';
 
 export interface BookBatchEntry {
     id: string;
@@ -61,7 +65,7 @@ export interface BookBatchSkip {
 }
 
 export interface BookBatchView {
-    collection: { id: string; name: string };
+    collection: { id: string; name: string } | null;
     saved: boolean;
     books: BookBatchEntry[];
     skipped: BookBatchSkip[];

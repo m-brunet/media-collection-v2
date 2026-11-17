@@ -9,6 +9,7 @@ function params(overrides: Partial<BookFilterParams> = {}): BookFilterParams {
     return {
         category: [],
         author: [],
+        publisher: [],
         collection: [],
         location: [],
         ownership: [],
@@ -28,6 +29,13 @@ describe('BookFilterQueryMapper', () => {
         const result = BookFilterQueryMapper.toFilter(query);
 
         expect(result.isEmpty()).toBe(true);
+    });
+    it('reads the chosen publishers and No publisher', () => {
+        const query = params({ publisher: ['Glénat', 'Kana'], noPublisher: 'true' });
+
+        const result = BookFilterQueryMapper.toFilter(query);
+
+        expect(result.publishers).toEqual({ names: ['Glénat', 'Kana'], none: true });
     });
     it('separates collection ids from No collection', () => {
         const query = params({ collection: [lower, 'none'] });

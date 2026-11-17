@@ -8,6 +8,7 @@ export type FilteredPresence = 'with' | 'without';
 export interface BookFilterCriteria {
     categories: FilteredCategory[];
     authorIds: string[];
+    publishers: { names: string[]; none: boolean };
     collections: { ids: string[]; none: boolean };
     locations: { bookcaseIds: string[]; shelfIds: string[]; none: boolean };
     ownerships: FilteredOwnership[];
@@ -20,6 +21,7 @@ export interface BookFilterCriteria {
 export class BookFilter implements BookFilterCriteria {
     readonly categories: FilteredCategory[];
     readonly authorIds: string[];
+    readonly publishers: { names: string[]; none: boolean };
     readonly collections: { ids: string[]; none: boolean };
     readonly locations: { bookcaseIds: string[]; shelfIds: string[]; none: boolean };
     readonly ownerships: FilteredOwnership[];
@@ -31,6 +33,7 @@ export class BookFilter implements BookFilterCriteria {
     private constructor(criteria: BookFilterCriteria) {
         this.categories = criteria.categories;
         this.authorIds = criteria.authorIds;
+        this.publishers = criteria.publishers;
         this.collections = criteria.collections;
         this.locations = criteria.locations;
         this.ownerships = criteria.ownerships;
@@ -44,6 +47,7 @@ export class BookFilter implements BookFilterCriteria {
         return new BookFilter({
             categories: criteria.categories ?? [],
             authorIds: criteria.authorIds ?? [],
+            publishers: criteria.publishers ?? { names: [], none: false },
             collections: criteria.collections ?? { ids: [], none: false },
             locations: criteria.locations ?? { bookcaseIds: [], shelfIds: [], none: false },
             ownerships: criteria.ownerships ?? [],
@@ -62,6 +66,8 @@ export class BookFilter implements BookFilterCriteria {
         return (
             this.categories.length === 0 &&
             this.authorIds.length === 0 &&
+            this.publishers.names.length === 0 &&
+            !this.publishers.none &&
             this.collections.ids.length === 0 &&
             !this.collections.none &&
             this.locations.bookcaseIds.length === 0 &&
