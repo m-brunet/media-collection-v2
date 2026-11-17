@@ -101,7 +101,12 @@ describe('POST /api/collections/:id/missing-volumes/search', () => {
         expect(response.body).toMatchObject({
             kind: 'found',
             series: 'Gunnm',
-            rows: [{ volume: 2, editions: [{ isbn13: '9782723434324' }] }],
+            rows: [
+                {
+                    volume: 2,
+                    editions: [{ isbn13: '9782723434324', title: 'Les anges rouillés' }],
+                },
+            ],
         });
     });
 

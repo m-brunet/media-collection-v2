@@ -71,16 +71,34 @@ export class LookupAnswer {
     }
 
     withAuthors(authors: readonly string[]): LookupAnswer {
-        return LookupAnswer.of({ ...this, authors });
+        return this.respelled([...new Set(authors)], this.publisher, this.publisherCollection);
     }
 
     withPublishers(spelling: (publisher: string) => string): LookupAnswer {
-        return LookupAnswer.of({
-            ...this,
-            publisher: this.publisher === null ? null : spelling(this.publisher),
-            publisherCollection:
-                this.publisherCollection === null ? null : spelling(this.publisherCollection),
-        });
+        return this.respelled(
+            this.authors,
+            this.publisher === null ? null : spelling(this.publisher),
+            this.publisherCollection === null ? null : spelling(this.publisherCollection),
+        );
+    }
+
+    private respelled(
+        authors: readonly string[],
+        publisher: string | null,
+        publisherCollection: string | null,
+    ): LookupAnswer {
+        return new LookupAnswer(
+            this.title,
+            authors,
+            publisher,
+            publisherCollection,
+            this.publicationDate,
+            this.pageCount,
+            this.summary,
+            this.editionLanguage,
+            this.series,
+            this.category,
+        );
     }
 
     get empty(): boolean {
@@ -104,6 +122,7 @@ export class LookupAnswer {
         'co',
         'inc',
         'ltd',
+        'bros',
         'jr',
         'sr',
     ];
@@ -115,7 +134,7 @@ export class LookupAnswer {
     }
 
     private static cleaned(value: string | null | undefined): string | null {
-        let name = LookupAnswer.text(value) ?? '';
+        let name = LookupAnswer.text(value?.normalize('NFC')) ?? '';
 
         for (;;) {
             const shorter = LookupAnswer.withoutEnding(name);
@@ -137,7 +156,11 @@ export class LookupAnswer {
             return name;
         }
 
-        const word = /\p{L}+$/u.exec(name.slice(0, -1))?.[0].toLowerCase() ?? '';
+        const word =
+            name
+                .slice(0, -1)
+                .match(/\p{L}+$/u)?.[0]
+                .toLowerCase() ?? '';
 
         return word.length === 1 || LookupAnswer.abbreviations.includes(word)
             ? name
