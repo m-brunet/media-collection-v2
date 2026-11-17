@@ -6,11 +6,15 @@ import { Isbn } from '../../domain/value-objects/isbn.value-object.js';
 import { Price } from '../../domain/value-objects/price.value-object.js';
 import { PublicationDate } from '../../domain/value-objects/publication-date.value-object.js';
 import { AuthorResolver } from './author-resolver.service.js';
+import { PublisherMatcher } from './publisher-matcher.service.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { Required } from '../../../shared/domain/required.helper.js';
 
 export class BookDetailsBuilder {
-    constructor(private readonly authors: AuthorResolver) {}
+    constructor(
+        private readonly authors: AuthorResolver,
+        private readonly publishers: PublisherMatcher,
+    ) {}
 
     async build(input: BookInput): Promise<BookDetails> {
         const isbn = input.noIsbn || !input.isbn?.trim() ? null : Isbn.parse(input.isbn);
@@ -33,7 +37,10 @@ export class BookDetailsBuilder {
             authorIds: await this.authors.resolve(input.authors),
             category: input.category,
             ownership: input.ownership,
-            publisher: input.publisher,
+            publisher: await this.publishers.resolve(
+                input.publisher,
+                input.publisherDistinct === true,
+            ),
             publicationDate: PublicationDate.from(input.publicationYear, input.publicationMonth),
             summary: input.summary,
             pageCount: input.pageCount,

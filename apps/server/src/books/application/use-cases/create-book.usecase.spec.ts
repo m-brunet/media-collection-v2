@@ -430,4 +430,48 @@ describe('CreateBook titles', () => {
             after: expect.objectContaining({ title: 'Gunnm Vol. 3', titleGenerated: true }),
         });
     });
+    it('saves a publisher of an existing key under the existing spelling', async () => {
+        const current = BookDoubles.library();
+
+        await BookDoubles.saved(current, { publisher: 'Glénat', isbn: '9780306406157' });
+
+        const result = await subject(current).execute(
+            owner,
+            BookDoubles.input({ publisher: 'glenat ' }),
+            false,
+        );
+
+        expect(result.publisher).toBe('Glénat');
+    });
+    it('asks before saving a publisher spelling close to an existing one', async () => {
+        const current = BookDoubles.library();
+
+        await BookDoubles.saved(current, { publisher: 'Glénat', isbn: '9780306406157' });
+
+        const result = subject(current).execute(
+            owner,
+            BookDoubles.input({ publisher: 'Glénatt' }),
+            false,
+        );
+
+        await expect(result).rejects.toMatchObject({
+            code: 'conflict',
+            reason: 'publisher-similar',
+            details: { name: 'Glénatt', candidates: ['Glénat'] },
+        });
+        expect(current.books.books.size).toBe(1);
+    });
+    it('keeps a close publisher spelling once confirmed as different', async () => {
+        const current = BookDoubles.library();
+
+        await BookDoubles.saved(current, { publisher: 'Glénat', isbn: '9780306406157' });
+
+        const result = await subject(current).execute(
+            owner,
+            BookDoubles.input({ publisher: 'Glénatt', publisherDistinct: true }),
+            false,
+        );
+
+        expect(result.publisher).toBe('Glénatt');
+    });
 });

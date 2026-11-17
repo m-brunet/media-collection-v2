@@ -400,4 +400,21 @@ describe('UpdateBook titles', () => {
 
         expect(result).toMatchObject({ title: 'Gunnm Vol. 3', titleGenerated: false });
     });
+    it('does not ask again about the publisher spelling the book already has', async () => {
+        const current = BookDoubles.library();
+
+        await BookDoubles.saved(current, { publisher: 'Glénat', isbn: '9780306406157' });
+        const book = await BookDoubles.saved(current, {
+            publisher: 'Glénatt',
+            publisherDistinct: true,
+        });
+
+        const result = await subject(current).execute(
+            owner,
+            book.id,
+            BookDoubles.input({ title: 'Piranesi (paperback)', publisher: 'Glénatt' }),
+        );
+
+        expect(result).toMatchObject({ title: 'Piranesi (paperback)', publisher: 'Glénatt' });
+    });
 });

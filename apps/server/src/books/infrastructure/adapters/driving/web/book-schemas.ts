@@ -41,6 +41,7 @@ export const bookInputSchema = z.strictObject({
     pageCount: z.number().int().nullable(),
     price: BookFields.text(40),
     confirmDistinct: z.boolean().optional(),
+    publisherDistinct: z.boolean().optional(),
     collection: membership.nullable(),
     replacePlanned: z.array(idSchema).max(100).optional(),
     shelfId: idSchema.nullable(),

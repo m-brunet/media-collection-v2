@@ -90,3 +90,25 @@ it("tidies the publisher's collection and drops an empty one", () => {
         null,
     ]);
 });
+it('respells the publisher and the publisher’s collection', () => {
+    const answer = LookupAnswer.of({
+        title: 'Gunnm',
+        publisher: 'GLENAT',
+        publisherCollection: 'Seinen',
+    });
+
+    const result = answer.withPublishers((publisher) => publisher.toLowerCase());
+
+    expect(result).toMatchObject({
+        title: 'Gunnm',
+        publisher: 'glenat',
+        publisherCollection: 'seinen',
+    });
+});
+it('respells no publisher when the source gives none', () => {
+    const answer = LookupAnswer.of({ title: 'Gunnm' });
+
+    const result = answer.withPublishers(() => 'Glénat');
+
+    expect(result).toMatchObject({ publisher: null, publisherCollection: null });
+});

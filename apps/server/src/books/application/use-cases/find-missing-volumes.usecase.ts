@@ -10,10 +10,12 @@ import type {
     CollectionVolumesView,
 } from '../ports/driven/collection-volumes.interface.js';
 import type { AuthorMatcher } from '../services/author-matcher.service.js';
+import type { PublisherMatcher } from '../services/publisher-matcher.service.js';
 import type { SeriesLookup, SeriesReply } from '../services/series-lookup.service.js';
 import type { OwnedVolume, VolumeEdition } from '../../domain/services/series-volumes.service.js';
 import { SeriesVolumes } from '../../domain/services/series-volumes.service.js';
 import type { LookupAnswer } from '../../domain/value-objects/lookup-answer.value-object.js';
+import type { PublisherNames } from '../../domain/value-objects/publisher-names.value-object.js';
 import { GeneratedTitle } from '../../domain/value-objects/generated-title.value-object.js';
 import { Isbn } from '../../domain/value-objects/isbn.value-object.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
@@ -31,6 +33,7 @@ export class FindMissingVolumes implements FindMissingVolumesUseCase {
         private readonly series: SeriesLookup,
         private readonly books: BookRepository,
         private readonly authors: AuthorMatcher,
+        private readonly publishers: PublisherMatcher,
     ) {}
 
     async execute(
@@ -109,13 +112,14 @@ export class FindMissingVolumes implements FindMissingVolumesUseCase {
             ...new Set(found.flatMap((row) => row.editions.flatMap((e) => e.answer.authors))),
         ];
         const existing = await this.authors.existing(names);
+        const publishers = await this.publishers.names();
         const rows = [];
 
         for (const row of found) {
             const editions: MissingVolumeEdition[] = [];
 
             for (const edition of row.editions) {
-                editions.push(await this.edition(edition, existing));
+                editions.push(await this.edition(edition, existing, publishers));
             }
 
             rows.push({
@@ -134,8 +138,11 @@ export class FindMissingVolumes implements FindMissingVolumesUseCase {
     private async edition(
         edition: VolumeEdition,
         existing: ReadonlyMap<string, string>,
+        publishers: PublisherNames,
     ): Promise<MissingVolumeEdition> {
-        const { answer } = edition;
+        const answer = edition.answer.withPublishers(
+            (publisher) => publishers.same(publisher) ?? publisher,
+        );
 
         return {
             isbn13: edition.isbn13,

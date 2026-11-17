@@ -69,6 +69,7 @@ import { KyselyCollectionMemberStore } from '../../../apps/server/src/collection
 import { KyselyBookRepository } from '../../../apps/server/src/books/infrastructure/adapters/driven/persistence/kysely-book.repository.js';
 import { KyselyAuthorRepository } from '../../../apps/server/src/books/infrastructure/adapters/driven/persistence/kysely-author.repository.js';
 import { KyselyBookCatalog } from '../../../apps/server/src/books/infrastructure/adapters/driven/persistence/kysely-book-catalog.adapter.js';
+import { KyselyPublisherCatalog } from '../../../apps/server/src/books/infrastructure/adapters/driven/persistence/kysely-publisher-catalog.adapter.js';
 import { KyselyReadingStatusRepository } from '../../../apps/server/src/books/infrastructure/adapters/driven/persistence/kysely-reading-status.repository.js';
 import { KyselyPersonalNoteRepository } from '../../../apps/server/src/books/infrastructure/adapters/driven/persistence/kysely-personal-note.repository.js';
 import { FileCoverStorage } from '../../../apps/server/src/books/infrastructure/adapters/driven/filesystem/file-cover-storage.adapter.js';
@@ -143,6 +144,7 @@ export class TestApp {
                 books: new KyselyBookRepository(database.connections),
                 authors: new KyselyAuthorRepository(database.connections),
                 catalog: new KyselyBookCatalog(database.connections),
+                publishers: new KyselyPublisherCatalog(database.connections),
                 readings: new KyselyReadingStatusRepository(database.connections),
                 notes: new KyselyPersonalNoteRepository(database.connections),
                 covers: new FileCoverStorage(directory),

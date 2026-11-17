@@ -29,6 +29,7 @@ import { KyselyCollectionMemberStore } from '../../collections/infrastructure/ad
 import { KyselyBookRepository } from '../../books/infrastructure/adapters/driven/persistence/kysely-book.repository.js';
 import { KyselyAuthorRepository } from '../../books/infrastructure/adapters/driven/persistence/kysely-author.repository.js';
 import { KyselyBookCatalog } from '../../books/infrastructure/adapters/driven/persistence/kysely-book-catalog.adapter.js';
+import { KyselyPublisherCatalog } from '../../books/infrastructure/adapters/driven/persistence/kysely-publisher-catalog.adapter.js';
 import { KyselyReadingStatusRepository } from '../../books/infrastructure/adapters/driven/persistence/kysely-reading-status.repository.js';
 import { KyselyPersonalNoteRepository } from '../../books/infrastructure/adapters/driven/persistence/kysely-personal-note.repository.js';
 import { FileCoverStorage } from '../../books/infrastructure/adapters/driven/filesystem/file-cover-storage.adapter.js';
@@ -79,6 +80,7 @@ export class LibraryModules {
                     books,
                     authors: new KyselyAuthorRepository(connections),
                     catalog,
+                    publishers: new KyselyPublisherCatalog(connections),
                     readings: new KyselyReadingStatusRepository(connections),
                     notes: new KyselyPersonalNoteRepository(connections),
                     covers: new FileCoverStorage(dataDirectory),

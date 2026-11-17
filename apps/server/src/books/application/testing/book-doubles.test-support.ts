@@ -60,6 +60,9 @@ import type {
 import { AuthorResolver } from '../services/author-resolver.service.js';
 import { BookBatchPlanner } from '../services/book-batch-planner.service.js';
 import { BookDetailsBuilder } from '../services/book-details-builder.service.js';
+import { PublisherMatcher } from '../services/publisher-matcher.service.js';
+import type { PublisherCatalog } from '../ports/driven/publisher-catalog.interface.js';
+import type { PublisherUsage } from '../../domain/value-objects/publisher-names.value-object.js';
 import { BookIdentityCheck } from '../services/book-identity-check.service.js';
 import { BookLoader } from '../services/book-loader.service.js';
 import { BookOrganisationReader } from '../services/book-organisation-reader.service.js';
@@ -121,6 +124,24 @@ export class MemoryBooks implements BookRepository {
 
     async delete(id: string): Promise<void> {
         this.books.delete(id);
+    }
+}
+
+export class MemoryPublishers implements PublisherCatalog {
+    constructor(private readonly books: MemoryBooks) {}
+
+    async usages(): Promise<PublisherUsage[]> {
+        const counts = new Map<string, number>();
+
+        for (const book of this.books.books.values()) {
+            const { publisher } = book.details;
+
+            if (publisher !== null) {
+                counts.set(publisher, (counts.get(publisher) ?? 0) + 1);
+            }
+        }
+
+        return [...counts].map(([name, books]) => ({ name, books }));
     }
 }
 
@@ -801,7 +822,8 @@ export class BookDoubles {
         const clock = { now: () => new Date('2026-03-01T10:00:00Z') };
         const identity = new BookIdentityCheck(books, authors);
         const resolver = new AuthorResolver(authors, ids, clock);
-        const builder = new BookDetailsBuilder(resolver);
+        const publishers = new PublisherMatcher(new MemoryPublishers(books));
+        const builder = new BookDetailsBuilder(resolver, publishers);
         const titles = new GeneratedTitleSync(books, identity, clock);
         const removal = new BookRemoval(books, authors, collections, loader, guard, loans);
         const keptStore = new MemoryKeptCovers();
@@ -828,6 +850,7 @@ export class BookDoubles {
             clock,
             operations: AuditDoubles.auditedOperation(trail),
             resolver,
+            publishers,
             builder,
             planner: new BookBatchPlanner(
                 loader,
