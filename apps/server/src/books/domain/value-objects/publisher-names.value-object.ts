@@ -40,6 +40,17 @@ export class PublisherNames {
         );
     }
 
+    static besides(usages: readonly PublisherUsage[], own: string | null): PublisherNames {
+        const edited = own?.trim();
+        const index = usages.findIndex((usage) => usage.name.trim() === edited);
+
+        return PublisherNames.of(
+            usages.map((usage, position) =>
+                position === index ? { ...usage, books: usage.books - 1 } : usage,
+            ),
+        );
+    }
+
     has(name: string): boolean {
         return this.exact.has(name.trim());
     }

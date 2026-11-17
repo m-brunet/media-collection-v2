@@ -104,7 +104,7 @@ const skipReasons: Record<BookBatchSkipReason, MessageKey> = {
     'not-in-collection': 'batch.skip.noCollection',
 };
 
-export class CollectionBatch {
+export class BookBatch {
     static draft(): BatchDraft {
         return {
             fields: [],
@@ -152,7 +152,7 @@ export class CollectionBatch {
     }
 
     static remove(draft: BatchDraft, field: BatchField): BatchDraft {
-        const initial = CollectionBatch.draft();
+        const initial = BookBatch.draft();
         const removed = { ...draft, fields: draft.fields.filter((added) => added !== field) };
 
         switch (field) {
@@ -174,15 +174,15 @@ export class CollectionBatch {
             }
         }
 
-        if (CollectionBatch.takesValue(draft.publisher.mode) && !draft.publisher.value.trim()) {
+        if (BookBatch.takesValue(draft.publisher.mode) && !draft.publisher.value.trim()) {
             return 'publisher';
         }
 
-        if (CollectionBatch.takesValue(draft.price.mode) && !draft.price.value.trim()) {
+        if (BookBatch.takesValue(draft.price.mode) && !draft.price.value.trim()) {
             return 'price';
         }
 
-        if (CollectionBatch.takesValue(draft.shelf.mode) && !draft.shelf.shelfId) {
+        if (BookBatch.takesValue(draft.shelf.mode) && !draft.shelf.shelfId) {
             return 'shelf';
         }
 
@@ -190,7 +190,7 @@ export class CollectionBatch {
             return 'authors';
         }
 
-        return Object.keys(CollectionBatch.changes(draft)).length === 0 ? 'nothing' : null;
+        return Object.keys(BookBatch.changes(draft)).length === 0 ? 'nothing' : null;
     }
 
     static changes(draft: BatchDraft): BookBatchChangesDto {
@@ -201,11 +201,11 @@ export class CollectionBatch {
         }
 
         if (draft.publisher.mode !== 'keep') {
-            changes.publisher = CollectionBatch.text(draft.publisher);
+            changes.publisher = BookBatch.text(draft.publisher);
         }
 
         if (draft.price.mode !== 'keep') {
-            changes.price = CollectionBatch.text(draft.price);
+            changes.price = BookBatch.text(draft.price);
         }
 
         if (draft.shelf.mode !== 'keep') {
@@ -235,7 +235,7 @@ export class CollectionBatch {
             changes.generatedTitles = true;
         }
 
-        const filled = CollectionBatch.filled(draft);
+        const filled = BookBatch.filled(draft);
 
         if (filled.length > 0) {
             changes.onlyIfEmpty = filled;
@@ -292,8 +292,8 @@ export class CollectionBatch {
             if (field in after) {
                 lines.push({
                     label: Required.value(fieldLabels[field], 'every listed field has a label'),
-                    before: CollectionBatch.value(field, before, locale),
-                    after: CollectionBatch.value(field, after, locale),
+                    before: BookBatch.value(field, before, locale),
+                    after: BookBatch.value(field, after, locale),
                 });
             }
         }
@@ -305,7 +305,7 @@ export class CollectionBatch {
         const groups = new Map<MessageKey, ChangedBook[]>();
 
         for (const book of summary.books) {
-            for (const line of CollectionBatch.lines(book.before, book.after, locale)) {
+            for (const line of BookBatch.lines(book.before, book.after, locale)) {
                 const changed = { id: book.id, title: book.title, ...line };
 
                 groups.set(line.label, [...(groups.get(line.label) ?? []), changed]);
@@ -314,7 +314,7 @@ export class CollectionBatch {
 
         return [...groups].map(([label, books]) => ({
             label,
-            after: CollectionBatch.common(books.map((book) => book.after)),
+            after: BookBatch.common(books.map((book) => book.after)),
             books: books.map(({ id, title, before, after }) => ({ id, title, before, after })),
             others: summary.books.length - books.length,
         }));
@@ -325,7 +325,7 @@ export class CollectionBatch {
 
         for (const book of summary.books) {
             outcomes.set(book.id, {
-                changes: CollectionBatch.lines(book.before, book.after, locale).length,
+                changes: BookBatch.lines(book.before, book.after, locale).length,
             });
         }
 

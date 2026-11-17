@@ -31,10 +31,9 @@ export class EditBooksInBatch implements EditBooksInBatchUseCase {
         private readonly operations: AuditedOperation,
     ) {}
 
-    async execute(actor: Actor, asked: BookBatchRequest): Promise<BookBatchView> {
-        if (asked.preview) {
+    async execute(actor: Actor, request: BookBatchRequest): Promise<BookBatchView> {
+        if (request.preview) {
             ActorAuthorization.requireLibraryEditor(actor);
-            const request = asked;
             const choices = request.changes.authors;
             const authors = choices ? await this.resolver.match(choices) : null;
 
@@ -46,14 +45,15 @@ export class EditBooksInBatch implements EditBooksInBatchUseCase {
 
         return this.operations.run(
             {
-                category: asked.collectionId ? BookAudit.batchEdited : BookAudit.libraryBatchEdited,
+                category: request.collectionId
+                    ? BookAudit.batchEdited
+                    : BookAudit.libraryBatchEdited,
                 actorId: actor.id,
-                subjectType: asked.collectionId ? BookAudit.collection : BookAudit.library,
-                subjectId: asked.collectionId,
+                subjectType: request.collectionId ? BookAudit.collection : BookAudit.library,
+                subjectId: request.collectionId,
             },
             async () => {
                 ActorAuthorization.requireLibraryEditor(actor);
-                const request = asked;
                 const authors = await this.resolvedAuthors(request);
                 const plan = await this.planner.plan(actor.id, request, authors);
                 const related: RelatedChange[] = [];

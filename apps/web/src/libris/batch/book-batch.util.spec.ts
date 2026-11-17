@@ -1,18 +1,18 @@
 import { expect, it } from 'vitest';
 import type { BookBatchDto } from '../../../../../packages/contracts/src/http';
-import { CollectionBatch } from './collection-batch.util';
+import { BookBatch } from './book-batch.util';
 
 it('sends no field left unchanged', () => {
-    const draft = CollectionBatch.draft();
+    const draft = BookBatch.draft();
 
-    const result = CollectionBatch.changes(draft);
+    const result = BookBatch.changes(draft);
 
     expect(result).toEqual({});
 });
 
 it('sends the value of a field set to a value', () => {
     const draft = {
-        ...CollectionBatch.draft(),
+        ...BookBatch.draft(),
         ownership: 'not-owned' as const,
         publisher: { mode: 'set' as const, value: ' Glénat ' },
         price: { mode: 'set' as const, value: '6,90' },
@@ -21,7 +21,7 @@ it('sends the value of a field set to a value', () => {
         generatedTitles: true,
     };
 
-    const result = CollectionBatch.changes(draft);
+    const result = BookBatch.changes(draft);
 
     expect(result).toEqual({
         ownership: 'not-owned',
@@ -35,26 +35,26 @@ it('sends the value of a field set to a value', () => {
 
 it('sends an explicit null for a cleared field', () => {
     const draft = {
-        ...CollectionBatch.draft(),
+        ...BookBatch.draft(),
         publisher: { mode: 'clear' as const, value: 'Glénat' },
         price: { mode: 'clear' as const, value: '' },
         shelf: { mode: 'clear' as const, bookcaseId: null, shelfId: null },
     };
 
-    const result = CollectionBatch.changes(draft);
+    const result = BookBatch.changes(draft);
 
     expect(result).toEqual({ publisher: null, price: null, shelfId: null });
 });
 
 it('sends the value of a field filled if empty and names it as filled only', () => {
     const draft = {
-        ...CollectionBatch.draft(),
+        ...BookBatch.draft(),
         publisher: { mode: 'fill' as const, value: ' Glénat ' },
         price: { mode: 'set' as const, value: '6.90' },
         shelf: { mode: 'fill' as const, bookcaseId: 'case', shelfId: 'top' },
     };
 
-    const result = CollectionBatch.changes(draft);
+    const result = BookBatch.changes(draft);
 
     expect(result).toEqual({
         publisher: 'Glénat',
@@ -66,19 +66,19 @@ it('sends the value of a field filled if empty and names it as filled only', () 
 
 it('sends the tags to add and to remove by identifier', () => {
     const draft = {
-        ...CollectionBatch.draft(),
+        ...BookBatch.draft(),
         addTags: [{ id: 'cyberpunk', name: 'Cyberpunk' }],
         removeTags: [{ id: 'old', name: 'Old' }],
     };
 
-    const result = CollectionBatch.changes(draft);
+    const result = BookBatch.changes(draft);
 
     expect(result).toEqual({ tags: { add: ['cyberpunk'], remove: ['old'] } });
 });
 
 it('sends the typed authors in order, new ones by name', () => {
     const draft = {
-        ...CollectionBatch.draft(),
+        ...BookBatch.draft(),
         replaceAuthors: true,
         authors: [
             { id: null, name: 'Ana', distinct: true },
@@ -86,62 +86,62 @@ it('sends the typed authors in order, new ones by name', () => {
         ],
     };
 
-    const result = CollectionBatch.changes(draft);
+    const result = BookBatch.changes(draft);
 
     expect(result).toEqual({ authors: [{ name: 'Ana', distinct: true }, { id: 'kishiro' }] });
 });
 
 it('asks for at least one change', () => {
-    const draft = CollectionBatch.draft();
+    const draft = BookBatch.draft();
 
-    const result = CollectionBatch.problem(draft);
+    const result = BookBatch.problem(draft);
 
     expect(result).toBe('nothing');
 });
 
 it('asks for a value when a field is set to an empty one', () => {
-    const draft = { ...CollectionBatch.draft(), publisher: { mode: 'set' as const, value: ' ' } };
+    const draft = { ...BookBatch.draft(), publisher: { mode: 'set' as const, value: ' ' } };
 
-    const result = CollectionBatch.problem(draft);
+    const result = BookBatch.problem(draft);
 
     expect(result).toBe('publisher');
 });
 
 it('asks for a value when a field is filled with an empty one', () => {
-    const draft = { ...CollectionBatch.draft(), price: { mode: 'fill' as const, value: ' ' } };
+    const draft = { ...BookBatch.draft(), price: { mode: 'fill' as const, value: ' ' } };
 
-    const result = CollectionBatch.problem(draft);
+    const result = BookBatch.problem(draft);
 
     expect(result).toBe('price');
 });
 
 it('asks for a shelf when filling the shelf without choosing one', () => {
     const draft = {
-        ...CollectionBatch.draft(),
+        ...BookBatch.draft(),
         shelf: { mode: 'fill' as const, bookcaseId: null, shelfId: null },
     };
 
-    const result = CollectionBatch.problem(draft);
+    const result = BookBatch.problem(draft);
 
     expect(result).toBe('shelf');
 });
 
 it('asks for authors when replacing them with none', () => {
-    const draft = { ...CollectionBatch.draft(), replaceAuthors: true };
+    const draft = { ...BookBatch.draft(), replaceAuthors: true };
 
-    const result = CollectionBatch.problem(draft);
+    const result = BookBatch.problem(draft);
 
     expect(result).toBe('authors');
 });
 
 it('uses the chosen existing author for a similar typed name', () => {
     const draft = {
-        ...CollectionBatch.draft(),
+        ...BookBatch.draft(),
         replaceAuthors: true,
         authors: [{ id: null, name: 'Yukito Kishir', distinct: false }],
     };
 
-    const result = CollectionBatch.resolveAuthor(draft, 'yukito kishir', {
+    const result = BookBatch.resolveAuthor(draft, 'yukito kishir', {
         id: 'kishiro',
         name: 'Yukito Kishiro',
     });
@@ -153,7 +153,7 @@ it('describes each changed field from its old to its new value', () => {
     const before = { title: 'Gunnm, the first', publisher: null, priceCents: 690 };
     const after = { title: 'Gunnm Vol. 1', publisher: 'Glénat', priceCents: null };
 
-    const result = CollectionBatch.lines(before, after, 'en-GB');
+    const result = BookBatch.lines(before, after, 'en-GB');
 
     expect(result).toEqual([
         {
@@ -170,7 +170,7 @@ it('says that a generated title is kept as a hand-written one', () => {
     const before = { titleGenerated: true };
     const after = { titleGenerated: false };
 
-    const result = CollectionBatch.lines(before, after, 'en-GB');
+    const result = BookBatch.lines(before, after, 'en-GB');
 
     expect(result).toEqual([
         { label: 'form.title', before: { key: 'batch.generated' }, after: { key: 'batch.kept' } },
@@ -183,7 +183,7 @@ it('describes a shelf by its bookcase', () => {
         location: { bookcaseId: 'oak', bookcaseName: 'Oak', shelfId: 'top', shelfName: 'Top' },
     };
 
-    const result = CollectionBatch.lines(before, after, 'en-GB');
+    const result = BookBatch.lines(before, after, 'en-GB');
 
     expect(result).toEqual([
         {
@@ -197,24 +197,24 @@ it('describes a shelf by its bookcase', () => {
 it('names the reason a book was left out', () => {
     const reason = 'book-lent' as const;
 
-    const result = CollectionBatch.skipReason(reason);
+    const result = BookBatch.skipReason(reason);
 
     expect(result).toBe('batch.skip.lent');
 });
 
 it('adds a change card with a value to set by default', () => {
-    const draft = CollectionBatch.draft();
+    const draft = BookBatch.draft();
 
-    const result = CollectionBatch.add(draft, 'publisher');
+    const result = BookBatch.add(draft, 'publisher');
 
     expect(result.fields).toEqual(['publisher']);
     expect(result.publisher).toEqual({ mode: 'set', value: '' });
 });
 
 it('replaces the authors and uses the generated titles once their cards are added', () => {
-    const draft = CollectionBatch.add(CollectionBatch.draft(), 'authors');
+    const draft = BookBatch.add(BookBatch.draft(), 'authors');
 
-    const result = CollectionBatch.add(draft, 'titles');
+    const result = BookBatch.add(draft, 'titles');
 
     expect(result.fields).toEqual(['authors', 'titles']);
     expect(result.replaceAuthors).toBe(true);
@@ -222,52 +222,49 @@ it('replaces the authors and uses the generated titles once their cards are adde
 });
 
 it('adds a change card only once', () => {
-    const draft = CollectionBatch.add(CollectionBatch.draft(), 'tags');
+    const draft = BookBatch.add(BookBatch.draft(), 'tags');
 
-    const result = CollectionBatch.add(draft, 'tags');
+    const result = BookBatch.add(draft, 'tags');
 
     expect(result.fields).toEqual(['tags']);
 });
 
 it('forgets the value of a removed change card', () => {
     const draft = {
-        ...CollectionBatch.add(CollectionBatch.draft(), 'price'),
+        ...BookBatch.add(BookBatch.draft(), 'price'),
         price: { mode: 'fill' as const, value: '6.90' },
     };
 
-    const result = CollectionBatch.remove(draft, 'price');
+    const result = BookBatch.remove(draft, 'price');
 
     expect(result.fields).toEqual([]);
-    expect(CollectionBatch.changes(result)).toEqual({});
+    expect(BookBatch.changes(result)).toEqual({});
 });
 
 it('forgets the tags of a removed tags card', () => {
     const draft = {
-        ...CollectionBatch.add(CollectionBatch.draft(), 'tags'),
+        ...BookBatch.add(BookBatch.draft(), 'tags'),
         addTags: [{ id: 'shonen', name: 'Shonen' }],
     };
 
-    const result = CollectionBatch.remove(draft, 'tags');
+    const result = BookBatch.remove(draft, 'tags');
 
     expect(result.addTags).toEqual([]);
-    expect(CollectionBatch.changes(result)).toEqual({});
+    expect(BookBatch.changes(result)).toEqual({});
 });
 
 it('offers the change cards not added yet, in form order', () => {
-    const draft = CollectionBatch.add(
-        CollectionBatch.add(CollectionBatch.draft(), 'tags'),
-        'ownership',
-    );
+    const draft = BookBatch.add(BookBatch.add(BookBatch.draft(), 'tags'), 'ownership');
 
-    const result = CollectionBatch.remaining(draft);
+    const result = BookBatch.remaining(draft);
 
     expect(result).toEqual(['publisher', 'price', 'shelf', 'authors', 'read', 'titles']);
 });
 
 it('asks for a reading status when its card has no choice yet', () => {
-    const draft = CollectionBatch.add(CollectionBatch.draft(), 'read');
+    const draft = BookBatch.add(BookBatch.draft(), 'read');
 
-    const result = CollectionBatch.problem(draft);
+    const result = BookBatch.problem(draft);
 
     expect(result).toBe('read');
 });
@@ -298,7 +295,7 @@ function plan(): BookBatchDto {
 it('groups the planned changes by field, with the books each one reaches', () => {
     const summary = plan();
 
-    const result = CollectionBatch.byChange(summary, 'en-GB');
+    const result = BookBatch.byChange(summary, 'en-GB');
 
     expect(result).toEqual([
         {
@@ -345,7 +342,7 @@ it('gives no common new value to a change that differs per book', () => {
         ],
     };
 
-    const result = CollectionBatch.byChange(summary, 'en-GB');
+    const result = BookBatch.byChange(summary, 'en-GB');
 
     expect(result.map((group) => group.after)).toEqual([null]);
 });
@@ -353,7 +350,7 @@ it('gives no common new value to a change that differs per book', () => {
 it('counts the changes of each book and marks the books left out', () => {
     const summary = plan();
 
-    const result = CollectionBatch.outcomes(summary, 'en-GB');
+    const result = BookBatch.outcomes(summary, 'en-GB');
 
     expect([...result]).toEqual([
         ['one', { changes: 2 }],
@@ -366,7 +363,7 @@ it('counts the changes of each book and marks the books left out', () => {
 it('counts the books that change', () => {
     const summary = plan();
 
-    const result = CollectionBatch.changed(summary);
+    const result = BookBatch.changed(summary);
 
     expect(result).toBe(2);
 });
@@ -374,27 +371,27 @@ it('counts the books that change', () => {
 it('keeps only the plan of one book', () => {
     const summary = plan();
 
-    const result = CollectionBatch.only(summary, 'four');
+    const result = BookBatch.only(summary, 'four');
 
     expect(result.books).toEqual([]);
     expect(result.skipped).toEqual([{ id: 'four', title: 'Gunnm 4', reason: 'book-lent' }]);
 });
 
 it('says when a planned change only fills the books without a value', () => {
-    const draft = { ...CollectionBatch.draft(), price: { mode: 'fill' as const, value: '6.90' } };
+    const draft = { ...BookBatch.draft(), price: { mode: 'fill' as const, value: '6.90' } };
 
-    const result = CollectionBatch.fillsOnly(draft, 'batch.price');
+    const result = BookBatch.fillsOnly(draft, 'batch.price');
 
     expect(result).toBe(true);
 });
 
 it('says when a planned change sets every book', () => {
     const draft = {
-        ...CollectionBatch.draft(),
+        ...BookBatch.draft(),
         publisher: { mode: 'set' as const, value: 'Kana' },
     };
 
-    const result = CollectionBatch.fillsOnly(draft, 'form.publisher');
+    const result = BookBatch.fillsOnly(draft, 'form.publisher');
 
     expect(result).toBe(false);
 });

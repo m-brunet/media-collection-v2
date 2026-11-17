@@ -24,7 +24,7 @@ export class PublisherMatcher {
             return name;
         }
 
-        const names = await this.others(own);
+        const names = PublisherNames.besides(await this.catalog.usages(), own);
 
         if (names.has(name)) {
             return name;
@@ -42,17 +42,5 @@ export class PublisherMatcher {
         }
 
         return name;
-    }
-
-    private async others(own: string | null): Promise<PublisherNames> {
-        const usages = await this.catalog.usages();
-        const edited = own?.trim();
-        const index = usages.findIndex((usage) => usage.name.trim() === edited);
-
-        return PublisherNames.of(
-            usages.map((usage, position) =>
-                position === index ? { ...usage, books: usage.books - 1 } : usage,
-            ),
-        );
     }
 }

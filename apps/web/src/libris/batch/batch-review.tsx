@@ -2,9 +2,9 @@ import { useId, useState } from 'react';
 import type { BookBatchDto } from '../../../../../packages/contracts/src/http';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Button } from '../../shared/ui/button';
-import type { BatchDraft, ChangeGroup, Shown } from './collection-batch.util';
-import { CollectionBatch } from './collection-batch.util';
-import { BatchChoice } from './collection-batch-choice';
+import type { BatchDraft, ChangeGroup, Shown } from './book-batch.util';
+import { BookBatch } from './book-batch.util';
+import { BatchChoice } from './batch-choice';
 
 type Grouping = 'change' | 'book';
 
@@ -29,7 +29,7 @@ function GroupCard({ group, draft }: { group: ChangeGroup; draft: BatchDraft }) 
     const shown = useShown();
     const field =
         t(group.label) +
-        (CollectionBatch.fillsOnly(draft, group.label) ? ' · ' + t('batch.onlyWhereEmpty') : '');
+        (BookBatch.fillsOnly(draft, group.label) ? ' · ' + t('batch.onlyWhereEmpty') : '');
     const titled = group.label !== 'form.title';
     const common = titled ? group.after : null;
 
@@ -82,7 +82,7 @@ function LeftOut({ summary }: { summary: BookBatchDto }) {
                         <p className="batch-change__value">{skip.title}</p>
                         <p className="batch-change__books">
                             {t('batch.leftOutBody', {
-                                reason: t(CollectionBatch.skipReason(skip.reason)),
+                                reason: t(BookBatch.skipReason(skip.reason)),
                             })}
                         </p>
                     </li>
@@ -94,7 +94,7 @@ function LeftOut({ summary }: { summary: BookBatchDto }) {
 
 function ByChange({ summary, draft }: { summary: BookBatchDto; draft: BatchDraft }) {
     const { t, locale } = useI18n();
-    const groups = CollectionBatch.byChange(summary, locale);
+    const groups = BookBatch.byChange(summary, locale);
 
     return (
         <>
@@ -121,7 +121,7 @@ function ByBook({ summary }: { summary: BookBatchDto }) {
             {summary.books.length > 0 && (
                 <ul className="batch-review__cards" aria-label={t('batch.changesLabel')}>
                     {summary.books.map((book) => {
-                        const lines = CollectionBatch.lines(book.before, book.after, locale);
+                        const lines = BookBatch.lines(book.before, book.after, locale);
 
                         return (
                             <li key={book.id} className="batch-change">
@@ -148,7 +148,7 @@ function ByBook({ summary }: { summary: BookBatchDto }) {
     );
 }
 
-export function CollectionBatchReview({
+export function BatchReview({
     summary,
     draft,
     focus,
@@ -162,7 +162,7 @@ export function CollectionBatchReview({
     const { t } = useI18n();
     const groupId = useId();
     const [grouping, setGrouping] = useState<Grouping>('change');
-    const focused = focus ? CollectionBatch.only(summary, focus) : summary;
+    const focused = focus ? BookBatch.only(summary, focus) : summary;
     const focusTitle = [...focused.books, ...focused.skipped].find(
         (book) => book.id === focus,
     )?.title;

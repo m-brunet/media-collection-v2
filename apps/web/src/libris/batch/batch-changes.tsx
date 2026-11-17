@@ -10,10 +10,10 @@ import { AuthorPicker } from '../books/author-picker';
 import { LocationField } from '../books/location-field';
 import { TagPicker } from '../books/tag-picker';
 import { useBookcases } from '../locations/use-bookcases';
-import type { BatchDraft, BatchField, ChoiceMode, TextChoice } from './collection-batch.util';
-import { CollectionBatch } from './collection-batch.util';
+import type { BatchDraft, BatchField, ChoiceMode, TextChoice } from './book-batch.util';
+import { BookBatch } from './book-batch.util';
 import { PublisherSuggestions } from '../../shared/book-form/publisher-suggestions';
-import { BatchChoice } from './collection-batch-choice';
+import { BatchChoice } from './batch-choice';
 
 type ValueMode = Exclude<ChoiceMode, 'keep'>;
 
@@ -34,7 +34,7 @@ function ChangeCard({
 }) {
     const { t } = useI18n();
     const titleId = useId();
-    const label = t(CollectionBatch.fieldLabel(field));
+    const label = t(BookBatch.fieldLabel(field));
 
     return (
         <section className={'batch-card batch-card--' + field} aria-labelledby={titleId}>
@@ -111,10 +111,10 @@ function TextChange({
                 mode={choice.mode}
                 onChange={(mode) => onChange({ ...choice, mode })}
             />
-            {CollectionBatch.takesValue(choice.mode) && (
+            {BookBatch.takesValue(choice.mode) && (
                 <TextField
                     label={t('batch.newValue', {
-                        field: t(CollectionBatch.fieldLabel(field)),
+                        field: t(BookBatch.fieldLabel(field)),
                     })}
                     inputMode={field === 'price' ? 'decimal' : undefined}
                     autoComplete={field === 'publisher' ? 'off' : undefined}
@@ -123,7 +123,7 @@ function TextChange({
                     onChange={(event) => onChange({ ...choice, value: event.target.value })}
                 />
             )}
-            {field === 'publisher' && CollectionBatch.takesValue(choice.mode) && (
+            {field === 'publisher' && BookBatch.takesValue(choice.mode) && (
                 <PublisherSuggestions id={titleId + '-publishers'} typed={choice.value} />
             )}
             <Hint field={field} mode={choice.mode} />
@@ -180,7 +180,7 @@ function FieldChange({
                         mode={draft.shelf.mode}
                         onChange={(mode) => set('shelf', { ...draft.shelf, mode })}
                     />
-                    {CollectionBatch.takesValue(draft.shelf.mode) && bookcases && (
+                    {BookBatch.takesValue(draft.shelf.mode) && bookcases && (
                         <LocationField
                             bookcases={bookcases}
                             shelfId={draft.shelf.shelfId}
@@ -244,7 +244,7 @@ function FieldChange({
     }
 }
 
-export function CollectionBatchChanges({
+export function BatchChanges({
     draft,
     onChange,
 }: {
@@ -254,7 +254,7 @@ export function CollectionBatchChanges({
     const { t } = useI18n();
     const { bookcases } = useBookcases();
     const chipsId = useId();
-    const remaining = CollectionBatch.remaining(draft);
+    const remaining = BookBatch.remaining(draft);
     const empty = draft.fields.length === 0;
 
     return (
@@ -266,7 +266,7 @@ export function CollectionBatchChanges({
                         <ChangeCard
                             key={field}
                             field={field}
-                            onRemove={() => onChange(CollectionBatch.remove(draft, field))}
+                            onRemove={() => onChange(BookBatch.remove(draft, field))}
                         >
                             {(titleId) => (
                                 <FieldChange
@@ -292,10 +292,10 @@ export function CollectionBatchChanges({
                                 key={field}
                                 type="button"
                                 className="batch-chip"
-                                onClick={() => onChange(CollectionBatch.add(draft, field))}
+                                onClick={() => onChange(BookBatch.add(draft, field))}
                             >
                                 <Icon name="add" size={14} />
-                                {t(CollectionBatch.fieldLabel(field))}
+                                {t(BookBatch.fieldLabel(field))}
                             </button>
                         ))}
                     </div>

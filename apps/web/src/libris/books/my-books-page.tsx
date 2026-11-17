@@ -20,7 +20,7 @@ import { BookFilter } from '../filters/book-filter.util';
 import { Required } from '../../shared/required.util';
 import type { BatchBooksView } from '../batch/batch-editor';
 import { BatchEditor } from '../batch/batch-editor';
-import type { WallTile } from '../collections/collection-wall';
+import type { CoverTile } from '../batch/cover-tile';
 
 const pageSize = 48;
 const batchLimit = 1000;
@@ -38,7 +38,7 @@ function BookCard({
     onClick,
 }: {
     book: BookListItemDto;
-    tile?: WallTile;
+    tile?: CoverTile;
     onClick?(): void;
 }) {
     const { t } = useI18n();
