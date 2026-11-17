@@ -89,7 +89,7 @@ export class SeriesSearch {
         name: string,
         reply: Exclude<SeriesReply, { kind: 'found' }>,
     ): void {
-        if (reply.kind === 'none' || unavailable.some((known) => known.name === name)) {
+        if (reply.kind === 'none') {
             return;
         }
 

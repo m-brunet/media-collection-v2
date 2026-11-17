@@ -94,7 +94,7 @@ describe('SeriesSearch', () => {
         expect(result).toEqual({ anchor: null, found: new Map(), unavailable: [] });
     });
 
-    it('lists once a catalogue that could not answer, with its time to retry', async () => {
+    it('lists a catalogue that could not answer, with its time to retry', async () => {
         const { bnf, search } = setup();
         const retryAt = new Date('2026-03-01T10:05:00Z');
 

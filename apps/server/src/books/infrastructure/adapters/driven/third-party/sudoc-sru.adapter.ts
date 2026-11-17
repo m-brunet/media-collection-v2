@@ -9,7 +9,8 @@ export type SudocSruPage = { kind: 'ok'; records: UnimarcRecord[]; total: number
 
 // The SRU service of the Sudoc (version 1.1, UNIMARC records). It gives at most 50 records per
 // request. Its indexes: `isb` (ISBN), `mti` (words of the title) and `edi` (publisher). A word
-// with an accent finds nothing in `edi`: "Glénat" must be asked as "Glenat".
+// with an accent finds nothing in `edi`: "Glénat" must be asked as "Glenat". Every word asked
+// must be in the record.
 export class SudocSru {
     static readonly address = 'https://www.sudoc.abes.fr/cbs/sru/';
     static readonly pageSize = 50;

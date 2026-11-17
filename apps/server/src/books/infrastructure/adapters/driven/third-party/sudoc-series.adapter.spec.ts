@@ -23,6 +23,11 @@ function catalogue(body: string, status = 200, headers: Record<string, string> =
 const nothingFound =
     '<srw:searchRetrieveResponse><srw:numberOfRecords>0</srw:numberOfRecords></srw:searchRetrieveResponse>';
 
+const many = recorded('sudoc-series-darwins-game.xml').replace(
+    /numberOfRecords>\d+</,
+    'numberOfRecords>9999<',
+);
+
 describe('SudocSeries', () => {
     it('reads the edition of an owned volume from its ISBN, with its series and publisher', async () => {
         const { source } = catalogue(recorded('sudoc-series-edition-kenshin-3.xml'));
@@ -102,6 +107,48 @@ describe('SudocSeries', () => {
         await source.volumes('Love and war or not', 'Kana', 1, SourceProbe.turn);
 
         expect(requests[0]!.searchParams.get('query')).toBe('mti=Love war and edi=Kana');
+    });
+
+    it('leaves the words for "publisher" out of the publisher name', async () => {
+        const { source, requests } = catalogue(nothingFound);
+
+        await source.volumes('Fairy tail', 'Pika éd.', 1, SourceProbe.turn);
+
+        expect(requests[0]!.searchParams.get('query')).toBe('mti=Fairy tail and edi=Pika');
+    });
+
+    it('keeps a publisher name made only of such a word', async () => {
+        const { source, requests } = catalogue(nothingFound);
+
+        await source.volumes('Fairy tail', 'Éditions', 1, SourceProbe.turn);
+
+        expect(requests[0]!.searchParams.get('query')).toBe('mti=Fairy tail and edi=Editions');
+    });
+
+    it('asks a typographic apostrophe as a plain one, and a ligature as two letters', async () => {
+        const { source, requests } = catalogue(nothingFound);
+
+        await source.volumes('Darwin’s game', 'Œil du loup', 1, SourceProbe.turn);
+
+        expect(requests[0]!.searchParams.get('query')).toBe(
+            "mti=Darwin's game and edi=Oeil du loup",
+        );
+    });
+
+    it('tells a next page up to the tenth one of a search matching many records', async () => {
+        const { source } = catalogue(many);
+
+        const page = await source.volumes("Darwin's game", 'Ki-oon', 401, SourceProbe.turn);
+
+        expect(page.kind === 'found' && page.value.next).toBe(451);
+    });
+
+    it('stops after ten pages of a search matching many records', async () => {
+        const { source } = catalogue(many);
+
+        const page = await source.volumes("Darwin's game", 'Ki-oon', 451, SourceProbe.turn);
+
+        expect(page.kind === 'found' && page.value.next).toBeNull();
     });
 
     it('asks nothing for a series name without a word', async () => {

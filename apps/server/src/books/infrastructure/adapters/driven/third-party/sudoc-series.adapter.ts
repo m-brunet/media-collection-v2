@@ -13,7 +13,14 @@ import type { UnimarcRecord } from './unimarc-record.adapter.js';
 
 export class SudocSeries implements SeriesCatalogue {
     static readonly maximumEditionPages = 2;
+    static readonly maximumVolumePages = 10;
     private static readonly operators: readonly string[] = ['and', 'or', 'not'];
+    private static readonly publisherWords: readonly string[] = [
+        'ed',
+        'eds',
+        'edition',
+        'editions',
+    ];
 
     readonly name = 'sudoc';
 
@@ -58,7 +65,7 @@ export class SudocSeries implements SeriesCatalogue {
         turn: SourceTurn,
     ): Promise<SourceReply<SeriesPage>> {
         const title = SudocSeries.term(series);
-        const name = SudocSeries.term(publisher);
+        const name = SudocSeries.publisher(publisher);
 
         if (!title || !name) {
             return { kind: 'none' };
@@ -80,7 +87,10 @@ export class SudocSeries implements SeriesCatalogue {
             kind: 'found',
             value: {
                 records: page.records.map(SudocSeries.record),
-                next: next <= page.total ? next : null,
+                next:
+                    next <= page.total && next <= SudocSeries.maximumVolumePages * SudocSru.pageSize
+                        ? next
+                        : null,
             },
         };
     }
@@ -89,8 +99,20 @@ export class SudocSeries implements SeriesCatalogue {
         return { isbns: record.isbns, subtitle: record.subtitle, answer: record.answer };
     }
 
+    private static publisher(value: string): string {
+        const words = SudocSeries.term(value).split(' ');
+        const names = words.filter(
+            (word) => !SudocSeries.publisherWords.includes(word.toLowerCase()),
+        );
+
+        return (names.length > 0 ? names : words).join(' ');
+    }
+
     private static term(value: string): string {
         return value
+            .replace(/[’‘]/g, "'")
+            .replace(/œ/g, 'oe')
+            .replace(/Œ/g, 'Oe')
             .normalize('NFD')
             .replace(/\p{M}/gu, '')
             .replace(/[^\p{L}\p{N}'-]+/gu, ' ')
