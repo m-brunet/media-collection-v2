@@ -16,6 +16,7 @@ export class ActivityEligibility {
         'collection.deleted',
         'collection.removed',
         'collection.volumes-added',
+        'collection.books-batch-edited',
         'bookcase.created',
         'bookcase.renamed',
         'bookcase.deleted',

@@ -11,6 +11,7 @@ export class ActivitySentence {
     private static readonly sentences: Record<Kind, MessageKey> = {
         'book-added': 'activity.bookAdded',
         'book-updated': 'activity.bookUpdated',
+        'books-edited': 'activity.booksEdited',
         'book-marked-owned': 'activity.bookMarkedOwned',
         'book-deleted': 'activity.bookDeleted',
         'book-relocated': 'activity.bookRelocated',
@@ -53,7 +54,17 @@ export class ActivitySentence {
         'receiver-created': 'activity.also.receiverCreated',
     };
 
+    static readonly listedTitles = 5;
+
     static main(event: ActivityEventDto, t: Translate): string {
+        if (event.kind === 'books-edited') {
+            const [title] = event.titles;
+
+            return event.titles.length === 1 && title
+                ? t('activity.bookUpdated', { title })
+                : t('activity.booksEdited', { count: event.titles.length });
+        }
+
         if (event.kind === 'books-lent' || event.kind === 'books-returned') {
             const one = event.titles.length === 1;
             const key =
@@ -112,6 +123,24 @@ export class ActivitySentence {
         return t(ActivitySentence.sentences[event.kind], ActivitySentence.values(event, t));
     }
 
+    static titles(event: ActivityEventDto, t: Translate): string | null {
+        if (event.kind !== 'books-edited' || event.titles.length < 2) {
+            return null;
+        }
+
+        const listed = event.titles.slice(0, ActivitySentence.listedTitles).join(' · ');
+        const more = event.titles.length - ActivitySentence.listedTitles;
+
+        if (more <= 0) {
+            return listed;
+        }
+
+        return t(more === 1 ? 'activity.editedTitlesOneMore' : 'activity.editedTitlesMore', {
+            titles: listed,
+            count: more,
+        });
+    }
+
     static also(events: readonly ActivityEventDto[], t: Translate): string | null {
         if (events.length === 0) {
             return null;
@@ -131,6 +160,10 @@ export class ActivitySentence {
     private static values(event: ActivityEventDto, t: Translate): MessageValues {
         if ('title' in event) {
             return { title: event.title ?? t('activity.aBook') };
+        }
+
+        if (event.kind === 'books-edited') {
+            return { count: event.titles.length };
         }
 
         if ('titles' in event) {

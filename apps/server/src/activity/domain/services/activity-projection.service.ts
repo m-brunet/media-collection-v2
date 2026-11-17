@@ -50,6 +50,7 @@ export type ActivityEvent =
     | { kind: NamedEventKind; name: string }
     | { kind: RenamedEventKind; from: string; to: string }
     | { kind: 'volumes-added'; name: string; count: number }
+    | { kind: 'books-edited'; titles: string[] }
     | {
           kind: 'collection-category-changed';
           name: string;
@@ -77,6 +78,7 @@ type Values = Record<string, unknown> | null;
 export class ActivityProjection {
     private static readonly order: readonly (readonly string[])[] = [
         [
+            'collection.books-batch-edited',
             'collection.volumes-added',
             'shelf.books-placed',
             'book.created',
@@ -156,7 +158,15 @@ export class ActivityProjection {
         'book.category-changed',
     ];
 
+    private static readonly batchEdits: readonly string[] = [
+        'book.updated',
+        'book.organised',
+        'book.retitled',
+        'book.marked-owned',
+    ];
+
     private static readonly absorbs: Readonly<Record<string, readonly string[]>> = {
+        'collection.books-batch-edited': ActivityProjection.batchEdits,
         'collection.volumes-added': ['book.created'],
         'shelf.books-placed': ['book.organised'],
     };
@@ -186,6 +196,8 @@ export class ActivityProjection {
                 return ActivityProjection.book('book-added', record);
             case 'collection.volumes-added':
                 return ActivityProjection.volumesAdded(after);
+            case 'collection.books-batch-edited':
+                return ActivityProjection.booksEdited(before, operation);
             case 'shelf.books-placed':
                 return ActivityProjection.booksPlaced(after);
             case 'book.updated':
@@ -276,6 +288,34 @@ export class ActivityProjection {
             : null;
     }
 
+    private static booksEdited(
+        before: Values,
+        operation: readonly ActivityRecord[],
+    ): ActivityEvent | null {
+        const order = Array.isArray(before?.bookIds) ? before.bookIds : [];
+        const titles = new Map<string, string | null>();
+
+        for (const record of operation) {
+            if (record.subjectId && ActivityProjection.batchEdits.includes(record.category)) {
+                titles.set(
+                    record.subjectId,
+                    titles.get(record.subjectId) ?? ActivityProjection.title(record),
+                );
+            }
+        }
+
+        const position = (id: string) => {
+            const index = order.indexOf(id);
+
+            return index < 0 ? order.length : index;
+        };
+        const edited = [...titles.entries()]
+            .sort(([a], [b]) => position(a) - position(b))
+            .flatMap(([, title]) => (title ? [title] : []));
+
+        return edited.length > 0 ? { kind: 'books-edited', titles: edited } : null;
+    }
+
     private static volumesAdded(after: Values): ActivityEvent | null {
         const name = ActivityProjection.text(after, 'name');
         const added = after?.added;
@@ -286,12 +326,15 @@ export class ActivityProjection {
     }
 
     private static book(kind: BookEventKind, record: ActivityRecord): ActivityEvent {
-        const title =
+        return { kind, title: ActivityProjection.title(record) };
+    }
+
+    private static title(record: ActivityRecord): string | null {
+        return (
             ActivityProjection.text(record.after, 'title') ??
             ActivityProjection.text(record.before, 'title') ??
-            record.currentTitle;
-
-        return { kind, title };
+            record.currentTitle
+        );
     }
 
     private static organised(before: Values, after: Values): BookEventKind {
