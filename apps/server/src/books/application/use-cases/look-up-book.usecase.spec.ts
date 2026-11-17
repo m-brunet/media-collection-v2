@@ -422,6 +422,29 @@ describe('LookUpBook', () => {
             });
         });
 
+        it("fills in an existing author's name as saved, even with a final period", async () => {
+            const { books, authors, kept, publishers } = BookDoubles.library();
+            const bnf = new ScriptedSource('bnf', answer({ authors: ['Franquin.'] }));
+
+            await authors.create(
+                new Author({ id: 'a2', name: 'Franquin.', createdAt: '2026-03-01T10:00:00Z' }),
+            );
+
+            const result = await new LookUpBook(
+                books,
+                chain(bnf),
+                null,
+                new MemoryCoverRegistry(),
+                new AuthorMatcher(authors),
+                kept,
+                publishers,
+            ).execute(owner, '9782253164692');
+
+            expect(result).toMatchObject({
+                fields: { authors: [{ value: ['Franquin.'], sources: ['bnf'] }] },
+            });
+        });
+
         it('offers no other spelling for the same name', async () => {
             const bnf = new ScriptedSource('bnf', answer({ authors: ["FLIPFLOP'S"] }));
 

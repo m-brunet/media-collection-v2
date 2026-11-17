@@ -233,3 +233,25 @@ it('keeps the period of Jr. after an author', () => {
 
     expect(answer.authors).toEqual(['Robert Downey Jr.']);
 });
+
+it('removes the final period of a name written with decomposed accents', () => {
+    const answer = LookupAnswer.of({ authors: ['Rene\u0301e.'] });
+
+    expect(answer.authors).toEqual(['Renée']);
+});
+
+it('keeps the spelling of the authors it is given, even with a final period', () => {
+    const answer = LookupAnswer.of({ authors: ['Franquin'] });
+
+    const result = answer.withAuthors(['Franquin.']);
+
+    expect(result.authors).toEqual(['Franquin.']);
+});
+
+it('keeps the spelling of the publisher it is given, even with a final separator', () => {
+    const answer = LookupAnswer.of({ publisher: 'Glénat' });
+
+    const result = answer.withPublishers(() => 'Glénat :');
+
+    expect(result.publisher).toBe('Glénat :');
+});

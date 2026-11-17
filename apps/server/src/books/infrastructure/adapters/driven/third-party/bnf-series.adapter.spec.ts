@@ -160,6 +160,7 @@ describe('BnfSeries', () => {
             '9782344017517',
         ]);
         expect(volumes.editions(3)[0]?.isbn13).toBe('9782723434775');
+        expect(volumes.editions(2)[0]?.isbn13).toBe('9782723419062');
     });
 
     it("finds One Piece's volumes catalogued under their own title or as an original edition", async () => {
