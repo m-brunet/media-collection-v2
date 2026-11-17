@@ -27,14 +27,29 @@ describe('SuggestionList', () => {
 
         expect(suggestions.map((suggestion) => suggestion.key)).toEqual(['a', 'b', 'c', 'd', 'e']);
     });
+    it('leaves out a name that no longer matches what is typed', () => {
+        const suggestions = SuggestionList.of(authors, 'yukit');
+
+        expect(suggestions).toEqual([{ key: 'a1', label: 'Yukito Kishiro' }]);
+    });
+    it('matches what is typed anywhere in the name, whatever its case and accents', () => {
+        const suggestions = SuggestionList.of([{ id: 'a3', name: 'Hergé' }], 'ERGE');
+
+        expect(suggestions).toEqual([{ key: 'a3', label: 'Hergé' }]);
+    });
     it('leaves out a name already chosen, whatever its case and accents', () => {
-        const suggestions = SuggestionList.of(authors, 'yuk', ['YUKI KODAMA']);
+        const suggestions = SuggestionList.of(authors, 'yuk', ['YÛKI KODAMA']);
 
         expect(suggestions).toEqual([{ key: 'a1', label: 'Yukito Kishiro' }]);
     });
     it('leaves out the name exactly as typed', () => {
-        const suggestions = SuggestionList.of(authors, 'Yuki Kodama');
+        const collections = [
+            { id: 'c1', name: 'Gunnm' },
+            { id: 'c2', name: 'Gunnm Last Order' },
+        ];
 
-        expect(suggestions).toEqual([{ key: 'a1', label: 'Yukito Kishiro' }]);
+        const suggestions = SuggestionList.of(collections, 'Gunnm');
+
+        expect(suggestions).toEqual([{ key: 'c2', label: 'Gunnm Last Order' }]);
     });
 });

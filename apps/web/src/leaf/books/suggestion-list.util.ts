@@ -18,11 +18,13 @@ export class SuggestionList {
         }
 
         const used = new Set(taken.map((name) => BookDraft.nameKey(name)));
+        const search = BookDraft.nameKey(typed);
 
         return candidates
             .filter(
                 (candidate) =>
                     candidate.name.trim() !== typed.trim() &&
+                    BookDraft.nameKey(candidate.name).includes(search) &&
                     !used.has(BookDraft.nameKey(candidate.name)),
             )
             .slice(0, SuggestionList.limit)

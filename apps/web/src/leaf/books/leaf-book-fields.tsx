@@ -177,6 +177,7 @@ function NameList({
                     error={error}
                     value={typed}
                     suggestions={suggestions}
+                    suggesting={onChoose !== undefined}
                     onChange={type}
                     onChoose={(suggestion) => {
                         onChoose?.(suggestion);

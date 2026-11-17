@@ -626,6 +626,32 @@ it('still adds a new author typed in full with Add', async () => {
     expect(authorsField()).toHaveValue('');
 });
 
+it('adds the typed name with Add while suggestions are listed', async () => {
+    knownAuthors();
+    open();
+    await screen.findByLabelText(/^Title/);
+    await userEvent.type(authorsField(), 'Susan');
+    await screen.findByRole('option', { name: 'Susan Cooper' });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add author' }));
+
+    expect(within(screen.getByRole('list', { name: 'Authors' })).getByText('Susan')).toBeVisible();
+});
+
+it('does not suggest a collection that no longer matches what is typed', async () => {
+    knownCollections();
+    open();
+    await userEvent.click(await screen.findByRole('checkbox', { name: 'Part of a collection' }));
+    const field = screen.getByRole('combobox', { name: /Collection name/ });
+
+    await userEvent.type(field, 'all');
+    await screen.findByRole('option', { name: 'All You Need Is Kill' });
+
+    await userEvent.type(field, 'x');
+
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+});
+
 it('shows no author list when no existing author matches', async () => {
     api.on('GET /authors', () => ({ status: 200, body: [] }));
     open();
