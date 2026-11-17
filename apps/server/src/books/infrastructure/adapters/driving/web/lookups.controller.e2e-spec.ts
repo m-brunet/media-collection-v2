@@ -91,6 +91,25 @@ describe('POST /api/books/lookups', () => {
         expect(JSON.stringify(response.body)).not.toContain(coverAddress);
     });
 
+    it('offers what a source wrote without its final punctuation', async () => {
+        sources().knows('bnf', isbn, {
+            title: 'Zorglub.',
+            authors: ['Franquin,'],
+            publisher: 'Dupuis :',
+        });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookLookupDto>('/books/lookups', 'POST', { isbn });
+
+        expect(response.body).toMatchObject({
+            fields: {
+                title: [{ value: 'Zorglub', sources: ['bnf'] }],
+                authors: [{ value: ['Franquin'], sources: ['bnf'] }],
+                publisher: [{ value: 'Dupuis', sources: ['bnf'] }],
+            },
+        });
+    });
+
     it("offers the publisher's collection after the publisher, apart from an abbreviation", async () => {
         sources().knows('bnf', isbn, {
             title: "D'un monde à l'autre",

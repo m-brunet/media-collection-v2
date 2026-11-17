@@ -46,15 +46,19 @@ export class LookupAnswer {
 
     static of(fields: LookupAnswerFields): LookupAnswer {
         const authors = [
-            ...new Set((fields.authors ?? []).map((name) => name.trim()).filter(Boolean)),
+            ...new Set(
+                (fields.authors ?? [])
+                    .map((name) => LookupAnswer.cleaned(name))
+                    .filter((name): name is string => name !== null),
+            ),
         ];
         const summaryText = LookupAnswer.text(fields.summary?.text);
 
         return new LookupAnswer(
-            LookupAnswer.text(fields.title),
+            LookupAnswer.cleaned(fields.title),
             authors,
-            LookupAnswer.text(fields.publisher),
-            LookupAnswer.text(fields.publisherCollection),
+            LookupAnswer.cleaned(fields.publisher),
+            LookupAnswer.cleaned(fields.publisherCollection),
             LookupAnswer.date(fields.publicationDate),
             LookupAnswer.positive(fields.pageCount),
             summaryText
@@ -93,10 +97,51 @@ export class LookupAnswer {
 
     private static readonly categories: readonly BookCategory[] = ['books', 'manga', 'comics'];
 
+    private static readonly abbreviations: readonly string[] = [
+        'éd',
+        'ed',
+        'cie',
+        'co',
+        'inc',
+        'ltd',
+        'jr',
+        'sr',
+    ];
+
     private static text(value: string | null | undefined): string | null {
         const trimmed = value?.replace(/\s+/g, ' ').trim();
 
         return trimmed ? trimmed : null;
+    }
+
+    private static cleaned(value: string | null | undefined): string | null {
+        let name = LookupAnswer.text(value) ?? '';
+
+        for (;;) {
+            const shorter = LookupAnswer.withoutEnding(name);
+
+            if (shorter === name) {
+                return name ? name : null;
+            }
+
+            name = shorter;
+        }
+    }
+
+    private static withoutEnding(name: string): string {
+        if (/[:;/=,]$/u.test(name)) {
+            return name.slice(0, -1).trimEnd();
+        }
+
+        if (!name.endsWith('.') || name.endsWith('..')) {
+            return name;
+        }
+
+        const word = /\p{L}+$/u.exec(name.slice(0, -1))?.[0].toLowerCase() ?? '';
+
+        return word.length === 1 || LookupAnswer.abbreviations.includes(word)
+            ? name
+            : name.slice(0, -1).trimEnd();
     }
 
     private static positive(value: number | null | undefined): number | null {
@@ -127,7 +172,7 @@ export class LookupAnswer {
     }
 
     private static series(value: LookupSeries | null | undefined): LookupSeries | null {
-        const name = LookupAnswer.text(value?.name);
+        const name = LookupAnswer.cleaned(value?.name);
 
         return name && value && Number.isInteger(value.volume) && value.volume >= 0
             ? { name, volume: value.volume }

@@ -72,7 +72,7 @@ describe('BnfSeries', () => {
             expect.arrayContaining([
                 expect.objectContaining({
                     isbns: ['2-7234-1974-6'],
-                    answer: expect.objectContaining({ series: { name: 'Gunnm.', volume: 5 } }),
+                    answer: expect.objectContaining({ series: { name: 'Gunnm', volume: 5 } }),
                 }),
             ]),
         );
@@ -145,7 +145,7 @@ describe('BnfSeries', () => {
         expect(page).toMatchObject({ kind: 'limited', retryAt: expect.any(Date) });
     });
 
-    it("separates Gunnm's editions: the anchor's first, Mars chronicle last, 1995's \"Gunnm.\" apart", async () => {
+    it("orders Gunnm's editions: the anchor's first, 1995's \"Gunnm.\" with them, Mars chronicle last", async () => {
         const { source } = catalogue(recorded('bnf-series-gunnm.xml'));
         const page = await source.volumes('Gunnm', 'Glénat', 1, SourceProbe.turn);
         const records = page.kind === 'found' ? page.value.records : [];
@@ -155,6 +155,7 @@ describe('BnfSeries', () => {
 
         expect(volumes.editions(1).map((edition) => edition.isbn13)).toEqual([
             '9782723432931',
+            '9782723419000',
             '9782344017548',
             '9782344017517',
         ]);
