@@ -1098,9 +1098,9 @@ export const fr = {
     'form.volumeRequired': 'Saisissez le numéro du tome.',
     'similarPublisher.title': 'Utiliser un éditeur existant ?',
     'similarPublisher.body':
-        '« {name} » ressemble à un éditeur existant. Utilisez-le, ou gardez « {name} » comme un autre éditeur.',
+        '« {name} » ressemble à un éditeur existant. Utilisez-le, ou gardez « {name} » tel que saisi.',
     'similarPublisher.use': 'Utiliser {name}',
-    'similarPublisher.keep': 'Garder « {name} » comme un autre éditeur',
+    'similarPublisher.keep': 'Garder « {name} » tel que saisi',
     'similarCollection.title': 'Utiliser une collection existante ?',
     'similarCollection.body':
         '« {name} » ressemble à une collection existante. Rejoignez-la, ou créez une autre collection.',

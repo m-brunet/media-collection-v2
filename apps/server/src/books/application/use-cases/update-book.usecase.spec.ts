@@ -417,4 +417,53 @@ describe('UpdateBook titles', () => {
 
         expect(result).toMatchObject({ title: 'Piranesi (paperback)', publisher: 'Glénatt' });
     });
+    it('corrects the spelling of a publisher only this book uses, without asking', async () => {
+        const current = BookDoubles.library();
+        const book = await BookDoubles.saved(current, { publisher: "Pix'n love éditions" });
+
+        const result = await subject(current).execute(
+            owner,
+            book.id,
+            BookDoubles.input({ publisher: "Pix'n Love Editions" }),
+        );
+
+        expect(result.publisher).toBe("Pix'n Love Editions");
+    });
+    it('asks before another spelling of a publisher other books use', async () => {
+        const current = BookDoubles.library();
+
+        await BookDoubles.saved(current, {
+            publisher: "Pix'n love éditions",
+            isbn: '9780306406157',
+        });
+        const book = await BookDoubles.saved(current, { publisher: "Pix'n love éditions" });
+
+        const result = subject(current).execute(
+            owner,
+            book.id,
+            BookDoubles.input({ publisher: "Pix'n Love Editions" }),
+        );
+
+        await expect(result).rejects.toMatchObject({
+            reason: 'publisher-similar',
+            details: { name: "Pix'n Love Editions", candidates: ["Pix'n love éditions"] },
+        });
+    });
+    it('saves another spelling of a publisher other books use once confirmed', async () => {
+        const current = BookDoubles.library();
+
+        await BookDoubles.saved(current, {
+            publisher: "Pix'n love éditions",
+            isbn: '9780306406157',
+        });
+        const book = await BookDoubles.saved(current, { publisher: "Pix'n love éditions" });
+
+        const result = await subject(current).execute(
+            owner,
+            book.id,
+            BookDoubles.input({ publisher: "Pix'n Love Editions", publisherDistinct: true }),
+        );
+
+        expect(result.publisher).toBe("Pix'n Love Editions");
+    });
 });

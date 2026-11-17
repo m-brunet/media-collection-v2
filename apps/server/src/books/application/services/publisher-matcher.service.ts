@@ -9,41 +9,50 @@ export class PublisherMatcher {
         return PublisherNames.of(await this.catalog.usages());
     }
 
-    async existing(publisher: string | null): Promise<string | null> {
+    async resolve(
+        publisher: string | null,
+        distinct: boolean,
+        own: string | null = null,
+    ): Promise<string | null> {
         const name = publisher?.trim();
 
         if (!name) {
             return null;
         }
 
-        return (await this.names()).same(name) ?? name;
-    }
-
-    async resolve(publisher: string | null, distinct: boolean): Promise<string | null> {
-        const name = publisher?.trim();
-
-        if (!name) {
-            return null;
+        if (distinct || name === own?.trim()) {
+            return name;
         }
 
-        const names = await this.names();
-        const same = names.same(name);
+        const names = await this.others(own);
 
-        if (same) {
-            return same;
+        if (names.has(name)) {
+            return name;
         }
 
-        const similar = distinct ? [] : names.similar(name);
+        const candidates = names.close(name);
 
-        if (similar.length > 0) {
+        if (candidates.length > 0) {
             throw new Failure(
                 'conflict',
                 'A similar publisher already exists.',
                 'publisher-similar',
-                { name, candidates: similar },
+                { name, candidates },
             );
         }
 
         return name;
+    }
+
+    private async others(own: string | null): Promise<PublisherNames> {
+        const usages = await this.catalog.usages();
+        const edited = own?.trim();
+        const index = usages.findIndex((usage) => usage.name.trim() === edited);
+
+        return PublisherNames.of(
+            usages.map((usage, position) =>
+                position === index ? { ...usage, books: usage.books - 1 } : usage,
+            ),
+        );
     }
 }

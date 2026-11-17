@@ -562,7 +562,6 @@ const useCaseProviders: Provider[] = [
             token.organiser,
             token.readings,
             token.operations,
-            token.publisherMatcher,
         ],
         useFactory: (
             planner: BookBatchPlanner,
@@ -573,7 +572,6 @@ const useCaseProviders: Provider[] = [
             organiser: BookOrganiser,
             readings: ReadingStatusStore,
             operations: AuditedOperation,
-            publishers: PublisherMatcher,
         ) =>
             new EditBooksInBatch(
                 planner,
@@ -584,7 +582,6 @@ const useCaseProviders: Provider[] = [
                 organiser,
                 readings,
                 operations,
-                publishers,
             ),
     },
     {

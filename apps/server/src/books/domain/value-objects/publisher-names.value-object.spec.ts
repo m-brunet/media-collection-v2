@@ -106,4 +106,43 @@ describe('PublisherNames', () => {
 
         expect(result).toEqual([]);
     });
+    it('knows a spelling in use, whatever its outer spaces', () => {
+        const names = PublisherNames.of([{ name: 'Glénat', books: 1 }]);
+
+        const result = names.has(' Glénat ');
+
+        expect(result).toBe(true);
+    });
+    it('does not know another case of a spelling in use', () => {
+        const names = PublisherNames.of([{ name: 'Glénat', books: 1 }]);
+
+        const result = names.has('GLENAT');
+
+        expect(result).toBe(false);
+    });
+    it('ignores a spelling no book uses', () => {
+        const names = PublisherNames.of([{ name: 'Glénat', books: 0 }]);
+
+        const result = names.has('Glénat');
+
+        expect(result).toBe(false);
+    });
+    it('lists as close the spelling of the same key and the similar publishers', () => {
+        const names = PublisherNames.of([
+            { name: 'Glénat', books: 2 },
+            { name: 'Glématt', books: 1 },
+            { name: 'Kana', books: 1 },
+        ]);
+
+        const result = names.close('GLENAT');
+
+        expect(result).toEqual(['Glénat']);
+    });
+    it('lists nothing close to a spelling in use with no similar publisher', () => {
+        const names = PublisherNames.of([{ name: 'Glénat', books: 2 }]);
+
+        const result = names.close('Glénat');
+
+        expect(result).toEqual([]);
+    });
 });

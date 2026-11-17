@@ -6,7 +6,10 @@ export interface PublisherUsage {
 }
 
 export class PublisherNames {
-    private constructor(private readonly spellings: ReadonlyMap<string, string>) {}
+    private constructor(
+        private readonly spellings: ReadonlyMap<string, string>,
+        private readonly exact: ReadonlySet<string>,
+    ) {}
 
     static of(usages: readonly PublisherUsage[]): PublisherNames {
         const counts = new Map<string, number>();
@@ -14,7 +17,7 @@ export class PublisherNames {
         for (const usage of usages) {
             const name = usage.name.trim();
 
-            if (NameKey.of(name).length > 0) {
+            if (NameKey.of(name).length > 0 && usage.books > 0) {
                 counts.set(name, (counts.get(name) ?? 0) + usage.books);
             }
         }
@@ -33,7 +36,20 @@ export class PublisherNames {
 
         return new PublisherNames(
             new Map([...chosen].map(([key, usage]) => [key, usage.name] as const)),
+            new Set(counts.keys()),
         );
+    }
+
+    has(name: string): boolean {
+        return this.exact.has(name.trim());
+    }
+
+    close(name: string): string[] {
+        const same = this.same(name);
+
+        return [
+            ...new Set([...(same && same !== name.trim() ? [same] : []), ...this.similar(name)]),
+        ].sort((a, b) => a.localeCompare(b));
     }
 
     same(name: string): string | null {

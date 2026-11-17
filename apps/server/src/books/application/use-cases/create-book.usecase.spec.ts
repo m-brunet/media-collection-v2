@@ -430,18 +430,47 @@ describe('CreateBook titles', () => {
             after: expect.objectContaining({ title: 'Gunnm Vol. 3', titleGenerated: true }),
         });
     });
-    it('saves a publisher of an existing key under the existing spelling', async () => {
+    it('saves an existing publisher typed exactly, without asking', async () => {
         const current = BookDoubles.library();
 
         await BookDoubles.saved(current, { publisher: 'Glénat', isbn: '9780306406157' });
 
         const result = await subject(current).execute(
             owner,
-            BookDoubles.input({ publisher: 'glenat ' }),
+            BookDoubles.input({ publisher: 'Glénat ' }),
             false,
         );
 
         expect(result.publisher).toBe('Glénat');
+    });
+    it('asks before saving another case or accents of an existing publisher', async () => {
+        const current = BookDoubles.library();
+
+        await BookDoubles.saved(current, { publisher: 'Glénat', isbn: '9780306406157' });
+
+        const result = subject(current).execute(
+            owner,
+            BookDoubles.input({ publisher: 'GLENAT' }),
+            false,
+        );
+
+        await expect(result).rejects.toMatchObject({
+            reason: 'publisher-similar',
+            details: { name: 'GLENAT', candidates: ['Glénat'] },
+        });
+    });
+    it('saves another case of an existing publisher as typed once confirmed', async () => {
+        const current = BookDoubles.library();
+
+        await BookDoubles.saved(current, { publisher: 'Glénat', isbn: '9780306406157' });
+
+        const result = await subject(current).execute(
+            owner,
+            BookDoubles.input({ publisher: 'GLENAT', publisherDistinct: true }),
+            false,
+        );
+
+        expect(result.publisher).toBe('GLENAT');
     });
     it('asks before saving a publisher spelling close to an existing one', async () => {
         const current = BookDoubles.library();

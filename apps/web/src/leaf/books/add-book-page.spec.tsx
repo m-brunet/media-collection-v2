@@ -331,7 +331,7 @@ it('keeps a close publisher spelling once confirmed as different', async () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Save book' }));
 
     await userEvent.click(
-        await screen.findByRole('button', { name: 'Keep “Bloomsbury” as a different publisher' }),
+        await screen.findByRole('button', { name: 'Keep “Bloomsbury” as typed' }),
     );
 
     expect(await screen.findByText('Elsewhere: /saved')).toBeInTheDocument();

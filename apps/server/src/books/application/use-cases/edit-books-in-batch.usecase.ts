@@ -14,7 +14,6 @@ import type {
     PlannedBook,
 } from '../services/book-batch-planner.service.js';
 import type { BookOrganiser } from '../services/book-organiser.service.js';
-import type { PublisherMatcher } from '../services/publisher-matcher.service.js';
 import type { RelatedChange } from '../../../shared/application/ports/driven/audit-entry.interface.js';
 import type { AuditedOperation } from '../../../shared/application/services/audited-operation.service.js';
 import type { Actor } from '../../../shared/domain/actor.helper.js';
@@ -30,13 +29,12 @@ export class EditBooksInBatch implements EditBooksInBatchUseCase {
         private readonly organiser: BookOrganiser,
         private readonly readings: ReadingStatusStore,
         private readonly operations: AuditedOperation,
-        private readonly publishers: PublisherMatcher,
     ) {}
 
     async execute(actor: Actor, asked: BookBatchRequest): Promise<BookBatchView> {
         if (asked.preview) {
             ActorAuthorization.requireLibraryEditor(actor);
-            const request = await this.withExistingPublisher(asked);
+            const request = asked;
             const choices = request.changes.authors;
             const authors = choices ? await this.resolver.match(choices) : null;
 
@@ -55,7 +53,7 @@ export class EditBooksInBatch implements EditBooksInBatchUseCase {
             },
             async () => {
                 ActorAuthorization.requireLibraryEditor(actor);
-                const request = await this.withExistingPublisher(asked);
+                const request = asked;
                 const authors = await this.resolvedAuthors(request);
                 const plan = await this.planner.plan(actor.id, request, authors);
                 const related: RelatedChange[] = [];
@@ -83,19 +81,6 @@ export class EditBooksInBatch implements EditBooksInBatchUseCase {
                 };
             },
         );
-    }
-
-    private async withExistingPublisher(request: BookBatchRequest): Promise<BookBatchRequest> {
-        const { publisher } = request.changes;
-
-        if (!publisher) {
-            return request;
-        }
-
-        return {
-            ...request,
-            changes: { ...request.changes, publisher: await this.publishers.existing(publisher) },
-        };
     }
 
     private async resolvedAuthors(request: BookBatchRequest): Promise<AuthorMatch[] | null> {

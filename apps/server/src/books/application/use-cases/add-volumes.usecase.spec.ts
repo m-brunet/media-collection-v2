@@ -257,7 +257,7 @@ describe('AddVolumes', () => {
         await expect(result).rejects.toMatchObject({ reason: 'title-missing' });
     });
 
-    it('saves the publisher of every volume under the existing spelling, without asking', async () => {
+    it('saves the publisher of every volume as sent, without asking', async () => {
         const { current, anchor, collectionId } = await gunnm();
 
         const result = await useCase(current).execute(owner, {
@@ -273,6 +273,6 @@ describe('AddVolumes', () => {
             (added) => current.books.books.get(added.bookId)!.details.publisher,
         );
 
-        expect(publishers).toEqual(['Glénat', 'Glénatt']);
+        expect(publishers).toEqual(['GLENAT', 'Glénatt']);
     });
 });
