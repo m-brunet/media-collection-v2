@@ -1,9 +1,8 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
-import { beforeEach, expect, it, vi } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import { I18nProvider } from '../../shared/i18n/i18n-context';
-import { deviceLanguages } from '../../testing/fake-api.test-support';
 import { LeafSuggestedField } from './leaf-suggested-field';
 import type { Suggestion } from './suggestion-list.util';
 
@@ -40,7 +39,7 @@ function show(suggestions: Suggestion[] = names) {
     const onEnter = vi.fn();
 
     render(
-        <I18nProvider>
+        <I18nProvider language="en">
             <Field suggestions={suggestions} onChoose={onChoose} onEnter={onEnter} />
             <button type="button">Elsewhere</button>
         </I18nProvider>,
@@ -48,10 +47,6 @@ function show(suggestions: Suggestion[] = names) {
 
     return { onChoose, onEnter, field: screen.getByRole('combobox', { name: 'Authors' }) };
 }
-
-beforeEach(() => {
-    deviceLanguages(['en-GB']);
-});
 
 it('lists the suggestions under the field while typing, named for screen readers', async () => {
     const { field } = show();
@@ -137,25 +132,60 @@ it('leaves Enter to the field when no suggestion is reached', async () => {
     expect(onChoose).not.toHaveBeenCalled();
 });
 
-it('closes the list on Escape and brings it back when typing goes on', async () => {
+it('closes the list on Escape', async () => {
+    const { field } = show();
+
+    await userEvent.type(field, 'yuk');
+
+    await userEvent.keyboard('{Escape}');
+
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+});
+
+it('brings the list back when typing goes on after Escape', async () => {
     const { field } = show();
 
     await userEvent.type(field, 'yuk');
     await userEvent.keyboard('{Escape}');
-    const closed = screen.queryByRole('listbox');
 
     await userEvent.type(field, 'i');
 
-    expect(closed).toBeNull();
     expect(screen.getByRole('listbox')).toBeInTheDocument();
 });
 
-it('closes the list when the field loses focus', async () => {
+it('closes the list shortly after the field loses focus', async () => {
     const { field } = show();
 
     await userEvent.type(field, 'yuk');
 
     await userEvent.click(screen.getByRole('button', { name: 'Elsewhere' }));
 
-    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('listbox')).not.toBeInTheDocument());
+});
+
+it('keeps the list in place while a control under it is being tapped', async () => {
+    const { field } = show();
+
+    await userEvent.type(field, 'yuk');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Elsewhere' }));
+
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+});
+
+it('is a plain text field when it has nothing to suggest from', () => {
+    render(
+        <I18nProvider language="en">
+            <LeafSuggestedField
+                label="Tags"
+                value=""
+                suggestions={[]}
+                suggesting={false}
+                onChange={() => undefined}
+                onChoose={() => undefined}
+            />
+        </I18nProvider>,
+    );
+
+    expect(screen.getByRole('textbox', { name: 'Tags' })).not.toHaveAttribute('aria-expanded');
 });

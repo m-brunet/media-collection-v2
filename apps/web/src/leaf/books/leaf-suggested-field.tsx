@@ -1,7 +1,9 @@
 import type { KeyboardEvent } from 'react';
-import { useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import type { Suggestion } from './suggestion-list.util';
+
+const closeDelayMs = 200;
 
 export function LeafSuggestedField({
     label,
@@ -9,6 +11,7 @@ export function LeafSuggestedField({
     error,
     value,
     suggestions,
+    suggesting = true,
     onChange,
     onChoose,
     onEnter,
@@ -18,6 +21,7 @@ export function LeafSuggestedField({
     error?: string;
     value: string;
     suggestions: readonly Suggestion[];
+    suggesting?: boolean;
     onChange(value: string): void;
     onChoose(suggestion: Suggestion): void;
     onEnter?(): void;
@@ -27,6 +31,15 @@ export function LeafSuggestedField({
     const [focused, setFocused] = useState(false);
     const [dismissed, setDismissed] = useState(false);
     const [active, setActive] = useState<string | null>(null);
+    const closing = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const keepOpen = () => {
+        if (closing.current) {
+            clearTimeout(closing.current);
+            closing.current = null;
+        }
+    };
+
+    useEffect(() => keepOpen, []);
     const open = focused && !dismissed && suggestions.length > 0;
     const current = open ? suggestions.findIndex((suggestion) => suggestion.key === active) : -1;
     const option = (key: string) => id + '-option-' + key;
@@ -71,10 +84,10 @@ export function LeafSuggestedField({
             <input
                 id={id}
                 type="text"
-                role="combobox"
+                role={suggesting ? 'combobox' : undefined}
                 autoComplete="off"
-                aria-autocomplete="list"
-                aria-expanded={open}
+                aria-autocomplete={suggesting ? 'list' : undefined}
+                aria-expanded={suggesting ? open : undefined}
                 aria-controls={open ? id + '-list' : undefined}
                 aria-activedescendant={current >= 0 && active ? option(active) : undefined}
                 aria-invalid={error ? true : undefined}
@@ -87,10 +100,16 @@ export function LeafSuggestedField({
                     setActive(null);
                     onChange(event.target.value);
                 }}
-                onFocus={() => setFocused(true)}
+                onFocus={() => {
+                    keepOpen();
+                    setFocused(true);
+                }}
                 onBlur={() => {
-                    setFocused(false);
-                    setActive(null);
+                    keepOpen();
+                    closing.current = setTimeout(() => {
+                        setFocused(false);
+                        setActive(null);
+                    }, closeDelayMs);
                 }}
                 onKeyDown={onKeyDown}
             />

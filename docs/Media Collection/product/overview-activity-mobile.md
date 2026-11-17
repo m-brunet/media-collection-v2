@@ -54,10 +54,10 @@ The next mobile add form starts with the shelf, category and reading status of t
 
 **Suggestions while typing** (decided 2026-11-16, issue #125): in the mobile add form, the author field and the collection name suggest the names already in the library, as Libris does.
 
-- **List under the field:** from the first letter typed, up to 5 matching names appear right under the field, each a full-width tap target of at least 44 px. Matching is the server's, the same as Libris (comparison key, start of words). Nothing is listed when nothing matches, and a name typed exactly is not suggested back.
+- **List under the field:** from the first letter typed, up to 5 matching names appear right under the field, each a full-width tap target of at least 44 px. Matching is the same as Libris: what is typed is looked for anywhere in the name, ignoring case and accents. Nothing is listed when nothing matches, and a name typed exactly is not suggested back.
 - **Authors:** tapping a suggestion adds that existing author as a chip and clears the field; an author already in the chips is not suggested. The author is saved as the existing one, so no "Use an existing author?" question follows. Typing a new name and **Add** works as before.
 - **Collection:** tapping a suggestion fills the collection name; the collection's category is then taken and locked with its hint, as when the name is typed, and the volume stays to fill.
-- **Keyboard and screen readers:** the field is a combobox with its list of suggestions ("Suggestions for Authors"); the arrow keys move in the list, Enter chooses, Escape closes it, and it closes when the field loses focus or a suggestion is chosen.
+- **Keyboard and screen readers:** the field is a combobox with its list of suggestions ("Suggestions for Authors"); the arrow keys move in the list, Enter chooses, Escape closes it, and it closes when a suggestion is chosen or shortly after the field loses focus (so that a tap on the control under the list still lands on it). The tags field, which suggests nothing, stays a plain text field.
 - The publisher field keeps the browser's own suggestion list.
 
 ### Lookup and existing ISBNs after scanning
