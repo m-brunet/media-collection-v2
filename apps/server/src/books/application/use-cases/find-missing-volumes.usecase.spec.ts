@@ -426,6 +426,23 @@ describe('FindMissingVolumes', () => {
             });
         });
 
+        it("keeps the BnF's edition when its volume list fails and the Sudoc answers", async () => {
+            const { useCase, series, sudoc } = setup();
+
+            series.editionsReply = { kind: 'found', value: [five] };
+            series.pages = ['fail'];
+            sudoc.pages = [page([three])];
+
+            const result = await useCase.execute(owner, 'gunnm', 3);
+
+            expect(result).toMatchObject({
+                kind: 'found',
+                catalogues: ['bnf', 'sudoc'],
+                unavailable: ['bnf'],
+                rows: [{ volume: 3, source: 'sudoc' }],
+            });
+        });
+
         it('says the edition is not found when neither catalogue knows it', async () => {
             const { useCase, series, sudoc } = setup();
 
