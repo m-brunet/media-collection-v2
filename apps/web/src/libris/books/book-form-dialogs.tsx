@@ -7,6 +7,7 @@ import type {
     PossibleDuplicateDetails,
     SimilarAuthorDetails,
     SimilarCollectionDetails,
+    SimilarPublisherDetails,
     VolumeZeroDetails,
 } from '../../../../../packages/contracts/src/http';
 import { api } from '../../shared/api.util';
@@ -211,6 +212,47 @@ export function DiscardChangesDialog({
             }
         >
             <p>{t('discard.body')}</p>
+        </Dialog>
+    );
+}
+
+export function SimilarPublisherDialog({
+    similar,
+    onUse,
+    onKeep,
+    onClose,
+}: {
+    similar: SimilarPublisherDetails | null;
+    onUse(name: string): void;
+    onKeep(): void;
+    onClose(): void;
+}) {
+    const { t } = useI18n();
+
+    return (
+        <Dialog open={similar !== null} title={t('similarPublisher.title')} onClose={onClose}>
+            {similar && (
+                <div className="stack stack--compact">
+                    <p>{t('similarPublisher.body', { name: similar.name })}</p>
+                    <div className="dialog__choices">
+                        {similar.candidates.map((candidate) => (
+                            <Button
+                                key={candidate}
+                                variant="primary"
+                                onClick={() => onUse(candidate)}
+                            >
+                                {t('similarPublisher.use', { name: candidate })}
+                            </Button>
+                        ))}
+                        <Button onClick={onKeep}>
+                            {t('similarPublisher.keep', { name: similar.name })}
+                        </Button>
+                        <Button variant="ghost" onClick={onClose}>
+                            {t('common.cancel')}
+                        </Button>
+                    </div>
+                </div>
+            )}
         </Dialog>
     );
 }

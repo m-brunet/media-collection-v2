@@ -85,6 +85,36 @@ export function LeafSaveQuestions({
                 </Question>
             );
         }
+        case 'similar-publisher': {
+            const { name, candidates } = question.details;
+
+            return (
+                <Question
+                    title={t('similarPublisher.title')}
+                    body={<p>{t('similarPublisher.body', { name })}</p>}
+                    onClose={onClose}
+                >
+                    {candidates.map((candidate) => (
+                        <Button
+                            key={candidate}
+                            variant="primary"
+                            onClick={() =>
+                                saveChanged({
+                                    ...values,
+                                    publisher: candidate,
+                                    publisherDistinct: false,
+                                })
+                            }
+                        >
+                            {t('similarPublisher.use', { name: candidate })}
+                        </Button>
+                    ))}
+                    <Button onClick={() => saveChanged({ ...values, publisherDistinct: true })}>
+                        {t('similarPublisher.keep', { name })}
+                    </Button>
+                </Question>
+            );
+        }
         case 'similar-collection': {
             const { name, candidates } = question.details;
 

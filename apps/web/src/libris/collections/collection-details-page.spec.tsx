@@ -756,7 +756,7 @@ it('sends only the changes added as cards', async () => {
     const publisher = await addChange(panel, 'Publisher');
 
     await userEvent.type(
-        within(publisher).getByRole('textbox', { name: 'Publisher: new value' }),
+        within(publisher).getByRole('combobox', { name: 'Publisher: new value' }),
         'DC Comics',
     );
     await userEvent.click(
@@ -774,6 +774,23 @@ it('sends only the changes added as cards', async () => {
     });
 });
 
+it('suggests existing publishers in the publisher change', async () => {
+    batchApi().on('GET /publishers', () => ({ status: 200, body: ['DC Comics'] }));
+
+    show();
+    const panel = await chooseAllAndOpen();
+    const publisher = await addChange(panel, 'Publisher');
+
+    await userEvent.type(
+        within(publisher).getByRole('combobox', { name: 'Publisher: new value' }),
+        'dc',
+    );
+
+    await vi.waitFor(() =>
+        expect(publisher.querySelector('datalist option[value="DC Comics"]')).not.toBeNull(),
+    );
+});
+
 it('sends a publisher to fill only on the books that have none', async () => {
     const api = batchApi();
 
@@ -783,7 +800,7 @@ it('sends a publisher to fill only on the books that have none', async () => {
 
     await userEvent.click(within(publisher).getByRole('radio', { name: 'Fill if empty' }));
     await userEvent.type(
-        within(publisher).getByRole('textbox', { name: 'Publisher: new value' }),
+        within(publisher).getByRole('combobox', { name: 'Publisher: new value' }),
         'DC Comics',
     );
 

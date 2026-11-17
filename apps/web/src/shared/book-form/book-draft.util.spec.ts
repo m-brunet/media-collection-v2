@@ -55,6 +55,34 @@ describe('BookDraft', () => {
 
         expect(result).toMatchObject({ price: null, pageCount: null, publisher: null });
     });
+    it('keeps a publisher spelling as different when asked', () => {
+        const values = { ...BookDraft.empty(), publisher: 'Glénatt', publisherDistinct: true };
+
+        const result = BookDraft.toInput(values);
+
+        expect(result).toMatchObject({ publisher: 'Glénatt', publisherDistinct: true });
+    });
+    it('sends no publisher answer when none was asked', () => {
+        const values = { ...BookDraft.empty(), publisher: 'Glénat' };
+
+        const result = BookDraft.toInput(values);
+
+        expect(result).not.toHaveProperty('publisherDistinct');
+    });
+    it('forgets the different publisher answer once another publisher is typed', () => {
+        const values = { ...BookDraft.empty(), publisher: 'Glénatt', publisherDistinct: true };
+
+        const result = BookDraft.changed(values, { publisher: 'Kana' });
+
+        expect(result).toMatchObject({ publisher: 'Kana', publisherDistinct: false });
+    });
+    it('keeps the different publisher answer while the same name is retyped', () => {
+        const values = { ...BookDraft.empty(), publisher: 'Glénatt', publisherDistinct: true };
+
+        const result = BookDraft.changed(values, { publisher: 'glenatt ' });
+
+        expect(result.publisherDistinct).toBe(true);
+    });
     it('sends no ISBN when the book has none', () => {
         const values = { ...BookDraft.empty(), isbn: '978', noIsbn: true };
 

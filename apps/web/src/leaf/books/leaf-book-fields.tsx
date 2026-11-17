@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import type {
     AuthorSpellingDto,
     BookcaseDto,
@@ -25,6 +25,7 @@ import { ReadingField } from '../../shared/book-form/reading-toggle';
 import { CategoryField } from '../../shared/book-form/category-field';
 import type { CategoryRule } from '../../shared/book-form/category-lock.util';
 import { LeafCoverField } from './leaf-cover-field';
+import { PublisherSuggestions } from '../../shared/book-form/publisher-suggestions';
 
 export interface LeafFieldsProps {
     values: BookDraftValues;
@@ -345,6 +346,7 @@ function OrganisationFields({ values, update, errorFor, bookcases }: LeafFieldsP
 function AdditionalFields(props: LeafFieldsProps) {
     const { t, locale } = useI18n();
     const { values, set, errorFor } = props;
+    const publishersId = useId();
 
     return (
         <details
@@ -355,10 +357,13 @@ function AdditionalFields(props: LeafFieldsProps) {
             <summary className="leaf-form__legend">{t('form.additional')}</summary>
             <TextField
                 label={t('form.publisher')}
+                autoComplete="off"
+                list={publishersId}
                 error={errorFor('publisher')}
                 value={values.publisher}
                 onChange={(event) => set('publisher', event.target.value)}
             />
+            <PublisherSuggestions id={publishersId} typed={values.publisher} />
             <Alternatives field="publisher" props={props} />
             <SelectField
                 label={t('form.publicationMonth')}

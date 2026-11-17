@@ -293,6 +293,67 @@ it('asks about a similar author and saves again with the chosen one', async () =
     expect(retried).toMatchObject({ authors: [{ id: 'a1' }] });
 });
 
+function refusePublisherOnce() {
+    let attempts = 0;
+
+    api.on('POST /books', () =>
+        ++attempts === 1
+            ? {
+                  status: 409,
+                  body: {
+                      code: 'conflict',
+                      reason: 'publisher-similar',
+                      message: 'Similar',
+                      details: { name: 'Bloomsbury', candidates: ['Bloomsburry'] },
+                  },
+              }
+            : { status: 201, body: bookDto({ id: 'new' }) },
+    );
+}
+
+it('asks about a close publisher spelling and saves again with the chosen one', async () => {
+    refusePublisherOnce();
+    open();
+    await userEvent.click(await screen.findByRole('button', { name: 'Save book' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Use an existing publisher?' });
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Use Bloomsburry' }));
+
+    expect(await screen.findByText('Elsewhere: /saved')).toBeInTheDocument();
+    const retried = api.calls.filter((call) => call.route === 'POST /books').at(-1)!.body;
+
+    expect(retried).toMatchObject({ publisher: 'Bloomsburry' });
+});
+
+it('keeps a close publisher spelling once confirmed as different', async () => {
+    refusePublisherOnce();
+    open();
+    await userEvent.click(await screen.findByRole('button', { name: 'Save book' }));
+
+    await userEvent.click(
+        await screen.findByRole('button', { name: 'Keep “Bloomsbury” as a different publisher' }),
+    );
+
+    expect(await screen.findByText('Elsewhere: /saved')).toBeInTheDocument();
+    const retried = api.calls.filter((call) => call.route === 'POST /books').at(-1)!.body;
+
+    expect(retried).toMatchObject({ publisher: 'Bloomsbury', publisherDistinct: true });
+});
+
+it('suggests existing publishers while typing the publisher', async () => {
+    api.on('GET /publishers', () => ({ status: 200, body: ['Bloomsbury Academic'] }));
+    open();
+    const field = await screen.findByRole('combobox', { name: 'Publisher' });
+
+    await userEvent.type(field, ' Aca');
+
+    await vi.waitFor(() =>
+        expect(
+            document.querySelector('datalist option[value="Bloomsbury Academic"]'),
+        ).not.toBeNull(),
+    );
+});
+
 const salon = {
     id: 'salon',
     name: 'Salon',

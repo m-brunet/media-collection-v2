@@ -1042,6 +1042,11 @@ export const en = {
         'For an omnibus, choose “Covers several volumes” and enter a consecutive range.',
     'form.collectionNameRequired': 'Enter the collection name.',
     'form.volumeRequired': 'Enter the volume number.',
+    'similarPublisher.title': 'Use an existing publisher?',
+    'similarPublisher.body':
+        '“{name}” is close to an existing publisher. Use it, or keep “{name}” as a different publisher.',
+    'similarPublisher.use': 'Use {name}',
+    'similarPublisher.keep': 'Keep “{name}” as a different publisher',
     'similarCollection.title': 'Use an existing collection?',
     'similarCollection.body':
         '“{name}” is close to an existing collection. Join it, or create a different collection.',

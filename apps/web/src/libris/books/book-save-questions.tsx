@@ -8,6 +8,7 @@ import {
     PossibleDuplicateDialog,
     SimilarAuthorDialog,
     SimilarCollectionDialog,
+    SimilarPublisherDialog,
     VolumeZeroDialog,
 } from './book-form-dialogs';
 import type { SaveQuestion } from '../../shared/book-form/use-book-save';
@@ -37,6 +38,7 @@ export function BookSaveQuestions({
     const similarAuthor = question?.kind === 'similar-author' ? question.details : null;
     const duplicate = question?.kind === 'possible-duplicate' ? question.details : null;
     const similarCollection = question?.kind === 'similar-collection' ? question.details : null;
+    const similarPublisher = question?.kind === 'similar-publisher' ? question.details : null;
     const volumeZero = question?.kind === 'volume-zero' ? question.details : null;
     const coverage = question?.kind === 'coverage-conflict' ? question.details : null;
     const mismatch = question?.kind === 'category-mismatch' ? question.details : null;
@@ -80,6 +82,14 @@ export function BookSaveQuestions({
                     onClose();
                     onSave(values, { confirmDistinct: true });
                 }}
+            />
+            <SimilarPublisherDialog
+                similar={similarPublisher}
+                onClose={onClose}
+                onUse={(name) =>
+                    saveChanged({ ...values, publisher: name, publisherDistinct: false })
+                }
+                onKeep={() => saveChanged({ ...values, publisherDistinct: true })}
             />
             <SimilarCollectionDialog
                 similar={similarCollection}

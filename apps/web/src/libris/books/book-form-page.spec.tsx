@@ -165,6 +165,95 @@ it('asks whether a similar author is the same person and reuses the chosen one',
     );
 });
 
+it('suggests existing publishers while typing the publisher', async () => {
+    const api = new FakeApi()
+        .signedIn(account())
+        .on('GET /publishers', () => ({ status: 200, body: ['Glénat'] }));
+
+    addPage();
+    await userEvent.click(
+        await screen.findByRole('button', { name: '03 / Additional information' }),
+    );
+
+    await userEvent.type(screen.getByRole('combobox', { name: 'Publisher' }), 'gle');
+
+    await vi.waitFor(() =>
+        expect(document.querySelector('datalist option[value="Glénat"]')).not.toBeNull(),
+    );
+    expect(api.calls.map((call) => call.route)).toContain('GET /publishers?search=gle');
+});
+
+function similarPublisher(candidates: string[]) {
+    let attempts = 0;
+
+    return new FakeApi().signedIn(account()).on('POST /books', () =>
+        ++attempts === 1
+            ? {
+                  status: 409,
+                  body: {
+                      code: 'conflict',
+                      reason: 'publisher-similar',
+                      message: 'Similar',
+                      details: { name: 'Glénatt', candidates },
+                  },
+              }
+            : { status: 201, body: bookDto() },
+    );
+}
+
+async function savePublisher(publisher: string) {
+    addPage();
+    await fillRequired();
+    await userEvent.click(screen.getByRole('button', { name: '03 / Additional information' }));
+    await userEvent.type(screen.getByRole('combobox', { name: 'Publisher' }), publisher);
+    await userEvent.click(saveButton());
+}
+
+it('asks whether a close publisher spelling is an existing publisher and uses it', async () => {
+    const api = similarPublisher(['Glénat']);
+
+    await savePublisher('Glénatt');
+    const dialog = await screen.findByRole('dialog', { name: 'Use an existing publisher?' });
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Use Glénat' }));
+
+    await vi.waitFor(() =>
+        expect(api.calls.filter((call) => call.route === 'POST /books')[1]?.body).toMatchObject({
+            publisher: 'Glénat',
+        }),
+    );
+    expect(api.calls.filter((call) => call.route === 'POST /books')[1]?.body).not.toHaveProperty(
+        'publisherDistinct',
+    );
+});
+
+it('lists every close publisher in the question', async () => {
+    similarPublisher(['Glématt', 'Glénat']);
+
+    await savePublisher('Glénatt');
+    const dialog = await screen.findByRole('dialog', { name: 'Use an existing publisher?' });
+
+    expect(within(dialog).getByRole('button', { name: 'Use Glématt' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Use Glénat' })).toBeInTheDocument();
+});
+
+it('keeps a close publisher spelling once the person confirms it is different', async () => {
+    const api = similarPublisher(['Glénat']);
+
+    await savePublisher('Glénatt');
+
+    await userEvent.click(
+        await screen.findByRole('button', { name: 'Keep “Glénatt” as a different publisher' }),
+    );
+
+    await vi.waitFor(() =>
+        expect(api.calls.filter((call) => call.route === 'POST /books')[1]?.body).toMatchObject({
+            publisher: 'Glénatt',
+            publisherDistinct: true,
+        }),
+    );
+});
+
 it('creates a different author once the person confirms it', async () => {
     let attempts = 0;
     const api = new FakeApi().signedIn(account()).on('POST /books', () =>

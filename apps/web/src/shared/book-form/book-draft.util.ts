@@ -29,6 +29,7 @@ export interface BookDraftValues {
     ownership: BookOwnership;
     read: boolean;
     publisher: string;
+    publisherDistinct: boolean;
     publicationMonth: string;
     publicationYear: string;
     summary: string;
@@ -73,6 +74,7 @@ export class BookDraft {
             ownership: 'owned',
             read: false,
             publisher: '',
+            publisherDistinct: false,
             publicationMonth: '',
             publicationYear: '',
             summary: '',
@@ -115,6 +117,7 @@ export class BookDraft {
             ownership: book.ownership,
             read: book.personal?.read ?? false,
             publisher: book.publisher ?? '',
+            publisherDistinct: false,
             publicationMonth: book.publicationMonth === null ? '' : String(book.publicationMonth),
             publicationYear: book.publicationYear === null ? '' : String(book.publicationYear),
             summary: book.summary ?? '',
@@ -149,6 +152,7 @@ export class BookDraft {
             category: values.category,
             ownership: values.ownership,
             publisher: BookDraft.optional(values.publisher),
+            ...(values.publisherDistinct ? { publisherDistinct: true } : {}),
             publicationYear: BookDraft.number(values.publicationYear),
             publicationMonth: BookDraft.number(values.publicationMonth),
             summary: BookDraft.optional(values.summary),
@@ -186,7 +190,7 @@ export class BookDraft {
     }
 
     static changed(current: BookDraftValues, changes: Partial<BookDraftValues>): BookDraftValues {
-        const next = { ...current, ...changes };
+        const next = { ...current, ...changes, ...BookDraft.publisherChoice(current, changes) };
 
         if (
             BookDraft.titleOptional(current) &&
@@ -275,10 +279,26 @@ export class BookDraft {
         };
     }
 
+    private static publisherChoice(
+        current: BookDraftValues,
+        changes: Partial<BookDraftValues>,
+    ): Partial<BookDraftValues> {
+        if (changes.publisher === undefined || changes.publisherDistinct !== undefined) {
+            return {};
+        }
+
+        return {
+            publisherDistinct:
+                current.publisherDistinct &&
+                BookDraft.nameKey(changes.publisher) === BookDraft.nameKey(current.publisher),
+        };
+    }
+
     private static comparable(values: BookDraftValues) {
         return {
             ...values,
             note: BookDraft.note(values),
+            publisherDistinct: false,
             collectionDistinct: false,
             enableVolumeZero: false,
             ...(values.inCollection

@@ -12,6 +12,7 @@ import { TagPicker } from '../books/tag-picker';
 import { useBookcases } from '../locations/use-bookcases';
 import type { BatchDraft, BatchField, ChoiceMode, TextChoice } from './collection-batch.util';
 import { CollectionBatch } from './collection-batch.util';
+import { PublisherSuggestions } from '../../shared/book-form/publisher-suggestions';
 import { BatchChoice } from './collection-batch-choice';
 
 type ValueMode = Exclude<ChoiceMode, 'keep'>;
@@ -116,9 +117,14 @@ function TextChange({
                         field: t(CollectionBatch.fieldLabel(field)),
                     })}
                     inputMode={field === 'price' ? 'decimal' : undefined}
+                    autoComplete={field === 'publisher' ? 'off' : undefined}
+                    list={field === 'publisher' ? titleId + '-publishers' : undefined}
                     value={choice.value}
                     onChange={(event) => onChange({ ...choice, value: event.target.value })}
                 />
+            )}
+            {field === 'publisher' && CollectionBatch.takesValue(choice.mode) && (
+                <PublisherSuggestions id={titleId + '-publishers'} typed={choice.value} />
             )}
             <Hint field={field} mode={choice.mode} />
         </>
