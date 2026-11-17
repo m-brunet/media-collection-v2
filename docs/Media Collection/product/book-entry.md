@@ -36,6 +36,17 @@ For authors, collections, and receivers, compare names without capitalization, a
 
 The user's reference expression for technical agents is `value.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase().trim();`. Implementation details are supplied/handled separately; this records the intended comparison behavior without choosing a similarity algorithm or threshold.
 
+### Publishers
+
+The publisher stays text on each book (issue #122, decided 2026-11-16): there is no publisher record. The existing publishers are the distinct publisher values of the books, Owned and Not Owned, compared with the same key as authors.
+
+- **One spelling per key:** when several saved spellings share a key, the existing spelling is the one used by the most books; on a tie, the first in alphabetical order.
+- **Same key:** a publisher with the key of an existing one is saved under the existing spelling, without asking ("glenat" is saved as "Glénat"). The server applies this on every save that sets a publisher: creating and editing a book, Leaf, the batch edit, Add volumes and the development import of a v1 library.
+- **Close spelling:** a publisher similar to existing publishers (the similarity used for authors) with no same-key match makes the Libris book form and Leaf ask "Use an existing publisher?", with **Use Glénat** for each close publisher and **Keep “Glénatt” as a different publisher**. Keeping it sends the confirmation with the book, and typing another publisher drops it. The batch edit, Add volumes and the v1 import never ask.
+- **Suggestions:** the publisher fields of the Libris book form, Leaf and the batch edit suggest up to 10 existing publishers matching the typed text by key, at the start of their name first, then at the start of a later word (`GET /api/publishers?search=`, open to every signed-in account). Add volumes offers the publishers found by the catalogue, already under the existing spellings.
+- **Lookup:** a source's publisher and publisher's collection with the key of an existing publisher are filled in under the existing spelling ("GLENAT" from the BnF fills in "Glénat"); the source's own spelling is not offered beside it. A close spelling is left as the source wrote it, for the save question.
+- **Existing data:** books saved before keep their publisher until they are saved again. Statistics still groups publishers by their exact text.
+
 Authors are shared identities, stored independently and linked to books; a book can have several authors. The user explicitly specified an author table and book/author association table. New authors can be created through book entry and reused by name like collections. Correcting an author name changes it wherever that identity is linked. Selecting a different author for one book only changes that book's association, not the shared author's name.
 
 Author creation/removal follows collection lifecycle: deleting, moving, or removing the final book association removes the unused author; removing an association preserves the book. Explicit author deletion preserves books and requires selecting a replacement wherever it would leave a book without any author. Otherwise the deletion cannot proceed. Renaming to an existing equivalent author name is blocked, with author merging left for the future. Shared name corrections require confirmation; selecting another author for one book is a different operation. No dedicated author-management interface is implied by these rules.
