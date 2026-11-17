@@ -73,7 +73,7 @@ const texts = {
         passwordsDiffer: 'Les mots de passe doivent être identiques.',
         backupTitle: 'Créer une sauvegarde',
         backupIntro:
-            'Enregistre toutes les données dans un fichier : livres et couvertures, collections, bibliothèques, étiquettes, comptes et mots de passe, statuts de lecture, notes privées, prêts, historique et réglages.',
+            'Enregistre toutes les données dans un fichier : livres et couvertures, collections, rayonnages, étiquettes, comptes et mots de passe, statuts de lecture, notes privées, prêts, historique et réglages.',
         backupPrivate:
             'Le fichier contient des notes privées et les données des comptes : gardez-le en lieu sûr.',
         backupButton: 'Créer une sauvegarde…',

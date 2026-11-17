@@ -4,7 +4,7 @@ Status: Task 3 product decisions complete. This document records accepted produc
 
 ## Physical location
 
-**French wording** (decided 2026-11-17, issue #128): a bookcase (the furniture) is a **rayonnage** (masculine: "Nouveau rayonnage", "Nom du rayonnage"), and its menu and page are "Rayonnages". A shelf is an **étagère**. **Bibliothèque** is kept for the household library and the Library page ("Bibliothèque", "votre bibliothèque partagée"), so the two no longer differ only by a plural "s". English is unchanged ("Library", "Bookcases").
+**French wording** (decided 2026-11-17, issue #128): a bookcase (the furniture) is a **rayonnage** (masculine: "Nouveau rayonnage", "Nom du rayonnage"), and its menu and page are "Rayonnages". A shelf is an **étagère**. **Bibliothèque** is kept for the household library and the Library page ("Bibliothèque", "votre bibliothèque partagée"), so the two no longer differ only by a plural "s". English is unchanged ("Library", "Bookshelves", "Bookcase"). The backup description of the desktop maintenance window uses the same word.
 
 Create a freely named bookcase, then freely named shelves inside it, on the Bookshelves page. These locations must exist before assigning a book; inline creation from a book form is not included initially.
 
