@@ -1092,6 +1092,11 @@ export const fr = {
         'Pour une intégrale, choisissez « Couvre plusieurs tomes » et saisissez une plage continue.',
     'form.collectionNameRequired': 'Saisissez le nom de la collection.',
     'form.volumeRequired': 'Saisissez le numéro du tome.',
+    'similarPublisher.title': 'Utiliser un éditeur existant ?',
+    'similarPublisher.body':
+        '« {name} » ressemble à un éditeur existant. Utilisez-le, ou gardez « {name} » comme un autre éditeur.',
+    'similarPublisher.use': 'Utiliser {name}',
+    'similarPublisher.keep': 'Garder « {name} » comme un autre éditeur',
     'similarCollection.title': 'Utiliser une collection existante ?',
     'similarCollection.body':
         '« {name} » ressemble à une collection existante. Rejoignez-la, ou créez une autre collection.',

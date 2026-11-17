@@ -6,6 +6,7 @@ import type {
     PossibleDuplicateDetails,
     SimilarAuthorDetails,
     SimilarCollectionDetails,
+    SimilarPublisherDetails,
     VolumeZeroDetails,
 } from '../../../../../packages/contracts/src/http';
 import { api, ApiError } from '../api.util';
@@ -37,6 +38,7 @@ export interface BookFormFailure {
 
 export type SaveQuestion =
     | { kind: 'similar-author'; details: SimilarAuthorDetails }
+    | { kind: 'similar-publisher'; details: SimilarPublisherDetails }
     | { kind: 'possible-duplicate'; details: PossibleDuplicateDetails }
     | { kind: 'similar-collection'; details: SimilarCollectionDetails }
     | { kind: 'volume-zero'; details: VolumeZeroDetails }
@@ -77,6 +79,7 @@ const additionalFields: BookField[] = [
 ];
 const questionOfReason: Record<string, SaveQuestion['kind']> = {
     'author-similar': 'similar-author',
+    'publisher-similar': 'similar-publisher',
     'possible-duplicate': 'possible-duplicate',
     'collection-similar': 'similar-collection',
     'volume-zero-disabled': 'volume-zero',

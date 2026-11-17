@@ -164,7 +164,10 @@ export class LookupFill {
                     })),
                 };
             case 'publisher':
-                return { publisher: LookupFill.held(selection.publisher, field) };
+                return {
+                    publisher: LookupFill.held(selection.publisher, field),
+                    publisherDistinct: false,
+                };
             case 'publication': {
                 const publication = LookupFill.held(selection.publication, field);
 

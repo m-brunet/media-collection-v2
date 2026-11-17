@@ -5,6 +5,7 @@ import { SelectField } from '../../shared/ui/select-field';
 import { TextAreaField, TextField } from '../../shared/ui/text-field';
 import type { BookDraftValues, DraftFieldSetter } from '../../shared/book-form/book-draft.util';
 import { BookFormat } from '../../shared/book-form/book-format.util';
+import { PublisherSuggestions } from '../../shared/book-form/publisher-suggestions';
 import type { BookField } from '../../shared/book-form/use-book-save';
 
 export function BookAdditionalFields({
@@ -46,10 +47,13 @@ export function BookAdditionalFields({
                     <TextField
                         label={t('form.publisher')}
                         maxLength={200}
+                        autoComplete="off"
+                        list={id + '-publishers'}
                         error={errorFor('publisher')}
                         value={values.publisher}
                         onChange={(event) => set('publisher', event.target.value)}
                     />
+                    <PublisherSuggestions id={id + '-publishers'} typed={values.publisher} />
                     <div className="book-form__row book-form__row--two">
                         <SelectField
                             label={t('form.publicationMonth')}
