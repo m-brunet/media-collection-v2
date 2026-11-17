@@ -56,7 +56,8 @@ function AddBookForm({ isbn, lookup, accountId, bookcases }: AddBookFormProps) {
         ),
     );
     const [values, setValues] = useState(initial);
-    const categoryRule = CategoryLock.of(null, values, useCollectionNames(values));
+    const collections = useCollectionNames(values);
+    const categoryRule = CategoryLock.of(null, values, collections);
 
     useCategoryLock(categoryRule, values.category, setValues);
     const [cover, setCover] = useState<CoverChoice>({ file: null, removed: false });
@@ -172,6 +173,7 @@ function AddBookForm({ isbn, lookup, accountId, bookcases }: AddBookFormProps) {
                     additionalOpen={additionalOpen}
                     setAdditionalOpen={setAdditionalOpen}
                     categoryRule={categoryRule}
+                    collections={collections}
                 />
                 {saving.failure && <Notice tone="error">{saving.failure.text}</Notice>}
                 <Button type="submit" variant="primary" busy={saving.saving}>

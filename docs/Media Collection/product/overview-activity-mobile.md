@@ -52,6 +52,14 @@ After successful book creation, show success and offer Scan another book or Back
 
 The next mobile add form starts with the shelf, category and reading status of the last book saved in Leaf, remembered on the phone for each account (it survives a reload and reopening Leaf). The lookup's values apply on top; a shelf deleted since is dropped; without browser storage the form starts empty. (Added by the user on 2026-11-10, issue #30.)
 
+**Suggestions while typing** (decided 2026-11-16, issue #125): in the mobile add form, the author field and the collection name suggest the names already in the library, as Libris does.
+
+- **List under the field:** from the first letter typed, up to 5 matching names appear right under the field, each a full-width tap target of at least 44 px. Matching is the server's, the same as Libris (comparison key, start of words). Nothing is listed when nothing matches, and a name typed exactly is not suggested back.
+- **Authors:** tapping a suggestion adds that existing author as a chip and clears the field; an author already in the chips is not suggested. The author is saved as the existing one, so no "Use an existing author?" question follows. Typing a new name and **Add** works as before.
+- **Collection:** tapping a suggestion fills the collection name; the collection's category is then taken and locked with its hint, as when the name is typed, and the volume stays to fill.
+- **Keyboard and screen readers:** the field is a combobox with its list of suggestions ("Suggestions for Authors"); the arrow keys move in the list, Enter chooses, Escape closes it, and it closes when the field loses focus or a suggestion is chosen.
+- The publisher field keeps the browser's own suggestion list.
+
 ### Lookup and existing ISBNs after scanning
 
 After a successful scan, keep lookup explicitly user-triggered as already agreed. The library ISBN check precedes any external metadata fetch.
