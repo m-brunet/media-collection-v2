@@ -84,6 +84,27 @@ describe('POST /api/collections/:id/missing-volumes/search', () => {
         });
     });
 
+    it('offers a series and its volumes without the final period of the catalogue', async () => {
+        const first = await volume(1, '9782723432931');
+        const lookup = app.dependencies.books.lookup;
+
+        lookup.volume('9782723432931', 'Gunnm.', 1);
+        lookup.volume('9782723434324', 'Gunnm.', 2, { title: 'Les anges rouillés.' });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<MissingVolumesDto>(
+            search(first.collection!.id),
+            'POST',
+            { upTo: 2 },
+        );
+
+        expect(response.body).toMatchObject({
+            kind: 'found',
+            series: 'Gunnm',
+            rows: [{ volume: 2, editions: [{ isbn13: '9782723434324' }] }],
+        });
+    });
+
     it('says the edition is not in the catalogue', async () => {
         const first = await volume(1, '9782723432931');
         const client = await app.authenticatedClient(owner);

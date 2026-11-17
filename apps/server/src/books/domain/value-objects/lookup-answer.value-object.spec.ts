@@ -112,3 +112,124 @@ it('respells no publisher when the source gives none', () => {
 
     expect(result).toMatchObject({ publisher: null, publisherCollection: null });
 });
+
+it('removes a final period from a title', () => {
+    const answer = LookupAnswer.of({ title: 'Zorglub.' });
+
+    expect(answer.title).toBe('Zorglub');
+});
+
+it('removes a final colon and its spaces from a series name', () => {
+    const answer = LookupAnswer.of({ series: { name: 'Claymore :', volume: 1 } });
+
+    expect(answer.series).toEqual({ name: 'Claymore', volume: 1 });
+});
+
+it('removes a final semicolon from a publisher', () => {
+    const answer = LookupAnswer.of({ publisher: 'Glénat ;' });
+
+    expect(answer.publisher).toBe('Glénat');
+});
+
+it('removes a final slash from a title', () => {
+    const answer = LookupAnswer.of({ title: 'Akira /' });
+
+    expect(answer.title).toBe('Akira');
+});
+
+it("removes a final equals sign from a publisher's collection", () => {
+    const answer = LookupAnswer.of({ publisher: 'Kana', publisherCollection: 'Big Kana =' });
+
+    expect(answer.publisherCollection).toBe('Big Kana');
+});
+
+it('removes a final comma from an author', () => {
+    const answer = LookupAnswer.of({ authors: ['Hergé,'] });
+
+    expect(answer.authors).toEqual(['Hergé']);
+});
+
+it('removes several endings in a row', () => {
+    const answer = LookupAnswer.of({ title: 'Zorglub. :' });
+
+    expect(answer.title).toBe('Zorglub');
+});
+
+it('names once an author written with and without a final period', () => {
+    const answer = LookupAnswer.of({ authors: ['Franquin.', 'Franquin'] });
+
+    expect(answer.authors).toEqual(['Franquin']);
+});
+
+it('keeps an ellipsis written with three periods', () => {
+    const answer = LookupAnswer.of({ title: 'Et après...' });
+
+    expect(answer.title).toBe('Et après...');
+});
+
+it('keeps an ellipsis written as one character', () => {
+    const answer = LookupAnswer.of({ title: 'Et après…' });
+
+    expect(answer.title).toBe('Et après…');
+});
+
+it('keeps the period of initials', () => {
+    const answer = LookupAnswer.of({ authors: ['Tolkien, J. R. R.', 'J.R.R.'] });
+
+    expect(answer.authors).toEqual(['Tolkien, J. R. R.', 'J.R.R.']);
+});
+
+it('keeps the period of a one-letter abbreviation', () => {
+    const answer = LookupAnswer.of({ title: 'S.O.S.' });
+
+    expect(answer.title).toBe('S.O.S.');
+});
+
+it('keeps a closing exclamation mark, question mark, parenthesis and bracket', () => {
+    const answer = LookupAnswer.of({
+        title: 'Yotsuba & !',
+        publisher: 'Quoi ?',
+        publisherCollection: 'Kana (Big)',
+        series: { name: 'Akira [couleur]', volume: 1 },
+    });
+
+    expect(answer).toMatchObject({
+        title: 'Yotsuba & !',
+        publisher: 'Quoi ?',
+        publisherCollection: 'Kana (Big)',
+        series: { name: 'Akira [couleur]', volume: 1 },
+    });
+});
+
+it('keeps a period inside a value', () => {
+    const answer = LookupAnswer.of({ title: 'Mr. Nobody', series: { name: 'Vol. 2', volume: 2 } });
+
+    expect(answer).toMatchObject({ title: 'Mr. Nobody', series: { name: 'Vol. 2', volume: 2 } });
+});
+
+it('leaves the summary as the source wrote it', () => {
+    const answer = LookupAnswer.of({ summary: { text: 'Une enquête :', language: 'fre' } });
+
+    expect(answer.summary?.text).toBe('Une enquête :');
+});
+
+it('gives no value for a text made only of endings', () => {
+    const answer = LookupAnswer.of({ title: ' . : ', series: { name: ';', volume: 1 } });
+
+    expect(answer).toMatchObject({ title: null, series: null });
+});
+
+it('keeps the period of a publisher abbreviation', () => {
+    const answer = LookupAnswer.of({
+        publisher: 'Pika éd.',
+        publisherCollection: 'Dargaud & Cie.',
+    });
+
+    expect(answer).toMatchObject({ publisher: 'Pika éd.', publisherCollection: 'Dargaud & Cie.' });
+});
+
+it('keeps the period of Jr. after an author', () => {
+    const answer = LookupAnswer.of({ authors: ['Robert Downey Jr.'] });
+
+    expect(answer.authors).toEqual(['Robert Downey Jr.']);
+});
