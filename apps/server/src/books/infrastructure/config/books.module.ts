@@ -78,6 +78,7 @@ import type { LookupCoverRegistry } from '../../application/ports/driven/lookup-
 import { SourceLink } from '../../application/services/source-chain.service.js';
 import { SourceQueue } from '../../application/services/source-queue.service.js';
 import { SeriesLookup } from '../../application/services/series-lookup.service.js';
+import { SeriesSearch } from '../../application/services/series-search.service.js';
 import type { SeriesCatalogue } from '../../application/ports/driven/series-catalogue.interface.js';
 import type { CollectionVolumes } from '../../application/ports/driven/collection-volumes.interface.js';
 import { FindMissingVolumes } from '../../application/use-cases/find-missing-volumes.usecase.js';
@@ -86,6 +87,7 @@ import { VolumesController } from '../adapters/driving/web/volumes.controller.js
 import { BookCreation } from '../../application/services/book-creation.service.js';
 import { FindVolumeCover } from '../../application/use-cases/find-volume-cover.usecase.js';
 import { BnfSeries } from '../adapters/driven/third-party/bnf-series.adapter.js';
+import { SudocSeries } from '../adapters/driven/third-party/sudoc-series.adapter.js';
 import { MissingVolumesController } from '../adapters/driving/web/missing-volumes.controller.js';
 import { LookUpBook } from '../../application/use-cases/look-up-book.usecase.js';
 import { ReadLookupCover } from '../../application/use-cases/read-lookup-cover.usecase.js';
@@ -108,7 +110,7 @@ import { SharpCoverTrimmer } from '../adapters/driven/image/sharp-cover-trimmer.
 export interface BookLookupSources {
     information: LookupSource<LookupAnswer>[];
     covers: LookupSource<CoverOffer[]>[];
-    series: SeriesCatalogue;
+    series: SeriesCatalogue[];
     downloader: CoverDownloader;
     addressDownloader: CoverDownloader;
 }
@@ -116,7 +118,7 @@ export interface BookLookupSources {
 type LookupChains = {
     information: SourceLink<LookupAnswer> | null;
     covers: SourceLink<CoverOffer[]> | null;
-    series: SeriesLookup;
+    series: SeriesSearch;
 };
 
 export interface BooksDependencies {
@@ -207,7 +209,7 @@ const serviceProviders: Provider[] = [
         useFactory: (lookup: BookLookupSources, clock: Clock): LookupChains => ({
             information: SourceLink.chain(lookup.information, clock),
             covers: SourceLink.chain(lookup.covers, clock),
-            series: new SeriesLookup(lookup.series),
+            series: new SeriesSearch(lookup.series.map((catalogue) => new SeriesLookup(catalogue))),
         }),
     },
     {
@@ -864,6 +866,7 @@ export class BooksModule {
         const inventaireQueue = new SourceQueue(settings.delaySeconds ?? delays.inventaire, clock);
         const sudocQueue = new SourceQueue(settings.delaySeconds ?? delays.sudoc, clock);
         const bnf = new SourceHttp(bnfQueue);
+        const sudoc = new SourceHttp(sudocQueue);
         const openLibrary = new OpenLibraryRecords(
             new SourceHttp(openLibraryQueue),
             settings.openLibrary,
@@ -872,18 +875,14 @@ export class BooksModule {
         return {
             information: [
                 new BnfCatalogue(bnf, settings.bnf),
-                new SudocCatalogue(
-                    new SourceHttp(sudocQueue),
-                    settings.sudoc,
-                    settings.sudocRecords,
-                ),
+                new SudocCatalogue(sudoc, settings.sudoc, settings.sudocRecords),
                 new OpenLibraryInformation(openLibrary),
             ],
             covers: [
                 new InventaireCovers(new SourceHttp(inventaireQueue), settings.inventaire),
                 new OpenLibraryCovers(openLibrary),
             ],
-            series: new BnfSeries(bnf, settings.bnf),
+            series: [new BnfSeries(bnf, settings.bnf), new SudocSeries(sudoc, settings.sudoc)],
             downloader: new HttpCoverDownloader(
                 fetch,
                 undefined,

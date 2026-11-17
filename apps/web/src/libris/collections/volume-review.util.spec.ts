@@ -27,6 +27,8 @@ function found(rows: FoundVolumes['rows']): FoundVolumes {
         collection: { id: 'gunnm', name: 'Gunnm', category: 'manga' },
         anchor: { bookId: 'book-1', volume: 1 },
         series: 'Gunnm',
+        catalogues: ['bnf'],
+        unavailable: [],
         rows,
     };
 }
@@ -34,14 +36,20 @@ function found(rows: FoundVolumes['rows']): FoundVolumes {
 const gunnm = found([
     {
         volume: 2,
+        source: 'bnf',
         generatedTitle: 'Gunnm Vol. 2',
         editions: [
             edition('9782723434324', { inLibrary: true }),
             edition('9782344017524', { title: 'La vierge de fer' }),
         ],
     },
-    { volume: 3, generatedTitle: 'Gunnm Vol. 3', editions: [] },
-    { volume: 4, generatedTitle: 'Gunnm Vol. 4', editions: [edition('9782723434782')] },
+    { volume: 3, source: null, generatedTitle: 'Gunnm Vol. 3', editions: [] },
+    {
+        volume: 4,
+        source: 'bnf',
+        generatedTitle: 'Gunnm Vol. 4',
+        editions: [edition('9782723434782')],
+    },
 ]);
 
 describe('VolumeReview', () => {
@@ -81,7 +89,12 @@ describe('VolumeReview', () => {
 
     it('takes the source title of a Books collection', () => {
         const books = found([
-            { volume: 2, generatedTitle: null, editions: [edition('9782344017524')] },
+            {
+                volume: 2,
+                source: 'bnf',
+                generatedTitle: null,
+                editions: [edition('9782344017524')],
+            },
         ]);
 
         const choices = VolumeReview.initial(books);

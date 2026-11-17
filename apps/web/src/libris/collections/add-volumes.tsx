@@ -19,6 +19,7 @@ import { CoverPicker } from '../books/cover-picker';
 import { useVolumeCovers } from './use-volume-covers';
 import type { VolumeCovers } from './volume-cover-queue';
 import type { FoundVolumes, VolumeChoice } from './volume-review.util';
+import { VolumeCatalogues } from './volume-catalogues.util';
 import { VolumeReview } from './volume-review.util';
 
 export type VolumesSaved = { result: VolumesAddedDto; coversFailed: boolean };
@@ -76,7 +77,7 @@ export function AddVolumesDialog({
             if (found.kind === 'edition-not-found') {
                 setOutcome(t('volumes.editionNotFound'));
             } else if (found.kind === 'unavailable') {
-                setOutcome(t('volumes.unavailable'));
+                setOutcome(VolumeCatalogues.unavailable(found.catalogues, t));
             } else if (found.rows.length === 0) {
                 setOutcome(t('volumes.noneMissing', { upTo: volume }));
             } else {
@@ -251,7 +252,7 @@ function BookCell({
                     ) : (
                         <>
                             <span className="muted">
-                                {t('volumes.suggests', { title: edition.title })}
+                                {VolumeCatalogues.suggests(row.source, edition.title, t)}
                             </span>
                             <Button variant="ghost" onClick={() => onChange({ sourceTitle: true })}>
                                 {t('volumes.useSourceTitle')}
@@ -401,14 +402,17 @@ export function VolumeReviewPanel({
             onSaved({ result, coversFailed });
         });
 
+    const incomplete = VolumeCatalogues.incomplete(found.unavailable, t);
+
     return (
         <section className="panel volume-review" aria-label={t('volumes.reviewTitle')}>
             <div className="volume-review__header">
                 <div>
                     <h2 className="panel__title">{t('volumes.reviewTitle')}</h2>
                     <p className="muted">
-                        {t('volumes.reviewHint', { volume: found.anchor.volume })}
+                        {VolumeCatalogues.found(found.catalogues, found.anchor.volume, t)}
                     </p>
+                    {incomplete && <p className="muted">{incomplete}</p>}
                 </div>
                 {publishers.length > 1 && (
                     <SelectField
@@ -526,7 +530,7 @@ export function VolumeReviewPanel({
                     </tbody>
                 </table>
             </div>
-            <p className="muted">{t('volumes.credit')}</p>
+            <p className="muted">{VolumeCatalogues.credit(found.catalogues, t)}</p>
             {action.feedback && <Notice tone="error">{action.feedback.text}</Notice>}
             <div className="actions">
                 <Button onClick={onCancel}>{t('common.cancel')}</Button>

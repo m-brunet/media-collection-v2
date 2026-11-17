@@ -866,18 +866,30 @@ export const en = {
     'volumes.dialogTitle': 'Add missing volumes',
     'volumes.upTo': 'Up to volume',
     'volumes.upToHint':
-        'Every missing volume from the start of the collection up to this number is looked up in the BnF catalogue, in the edition of a volume you already have. Nothing is saved yet.',
+        'Every missing volume from the start of the collection up to this number is looked up in the BnF catalogue, then in the Sudoc catalogue, in the edition of a volume you already have. Nothing is saved yet.',
     'volumes.search': 'Find volumes',
     'volumes.upToInvalid': 'Enter a volume number.',
     'volumes.editionNotFound':
-        'The edition of this collection was not found in the BnF catalogue. Nothing was added.',
-    'volumes.unavailable':
-        'The BnF catalogue cannot be reached right now. Try again in a few minutes.',
+        'The edition of this collection was not found in the BnF or Sudoc catalogues. Nothing was added.',
+    'volumes.unavailableOne':
+        'The {catalogues} catalogue cannot be reached right now. Try again in a few minutes.',
+    'volumes.unavailableMany':
+        'The {catalogues} catalogues cannot be reached right now. Try again in a few minutes.',
+    'volumes.incompleteOne':
+        'The {catalogues} catalogue could not answer, so volumes may be missing from this list.',
+    'volumes.incompleteMany':
+        'The {catalogues} catalogues could not answer, so volumes may be missing from this list.',
+    'volumes.catalogue.bnf': 'BnF',
+    'volumes.catalogue.sudoc': 'Sudoc',
+    'volumes.catalogue.and': ' and ',
     'volumes.noneMissing': 'No volume is missing up to volume {upTo}.',
     'volumes.reviewTitle': 'Volumes to add',
-    'volumes.reviewHint':
-        'Found in the BnF catalogue from the edition of volume {volume}. Nothing is saved before you confirm.',
-    'volumes.credit': 'Source: BnF catalogue (Licence Ouverte).',
+    'volumes.reviewHintOne':
+        'Found in the {catalogues} catalogue from the edition of volume {volume}. Nothing is saved before you confirm.',
+    'volumes.reviewHintMany':
+        'Found in the {catalogues} catalogues from the edition of volume {volume}. Nothing is saved before you confirm.',
+    'volumes.creditOne': 'Source: {catalogues} catalogue (Licence Ouverte).',
+    'volumes.creditMany': 'Sources: {catalogues} catalogues (Licence Ouverte).',
     'volumes.column.volume': 'Volume',
     'volumes.column.cover': 'Cover',
     'volumes.column.book': 'Book',
@@ -887,9 +899,10 @@ export const en = {
     'volumes.edition': 'Edition of volume {volume}',
     'volumes.editionOption': '{isbn} · {year}',
     'volumes.editionOptionNoYear': '{isbn}',
-    'volumes.notFound': 'Not found in the BnF catalogue',
+    'volumes.notFound': 'Not found in the BnF or Sudoc catalogues',
     'volumes.inLibrary': 'Already in your library',
-    'volumes.suggests': 'BnF suggests: {title}',
+    'volumes.suggests.bnf': 'BnF suggests: {title}',
+    'volumes.suggests.sudoc': 'Sudoc suggests: {title}',
     'volumes.useSourceTitle': 'Use as title',
     'volumes.useGeneratedTitle': 'Use {title}',
     'volumes.coverPending': 'Cover on its way',

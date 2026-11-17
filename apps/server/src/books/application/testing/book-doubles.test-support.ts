@@ -762,11 +762,12 @@ export class MembershipVolumes implements CollectionVolumes {
 }
 
 export class ScriptedSeries implements SeriesCatalogue {
-    readonly name = 'bnf';
     readonly asked: string[] = [];
     readonly turns: SourceTurn[] = [];
     editionsReply: SourceReply<SeriesRecord[]> | 'fail' = { kind: 'none' };
     pages: (SourceReply<SeriesPage> | 'fail')[] = [{ kind: 'none' }];
+
+    constructor(readonly name = 'bnf') {}
 
     async editions(
         isbn13s: readonly string[],

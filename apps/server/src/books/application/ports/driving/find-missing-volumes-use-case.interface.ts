@@ -15,6 +15,7 @@ export type MissingVolumeEdition = {
 
 export type MissingVolumeRow = {
     volume: number;
+    source: string | null;
     generatedTitle: string | null;
     editions: MissingVolumeEdition[];
 };
@@ -25,10 +26,12 @@ export type MissingVolumes =
           collection: { id: string; name: string; category: BookCategory };
           anchor: { bookId: string; volume: number };
           series: string;
+          catalogues: string[];
+          unavailable: string[];
           rows: MissingVolumeRow[];
       }
     | { kind: 'edition-not-found' }
-    | { kind: 'unavailable'; retryAt: string | null };
+    | { kind: 'unavailable'; catalogues: string[]; retryAt: string | null };
 
 export interface FindMissingVolumesUseCase {
     execute(

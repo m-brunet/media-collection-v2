@@ -11,9 +11,12 @@ import type {
 } from '../ports/driven/collection-volumes.interface.js';
 import type { AuthorMatcher } from '../services/author-matcher.service.js';
 import type { PublisherMatcher } from '../services/publisher-matcher.service.js';
-import type { SeriesLookup, SeriesReply } from '../services/series-lookup.service.js';
+import type {
+    SeriesFinding,
+    SeriesSearch,
+    SeriesUnavailable,
+} from '../services/series-search.service.js';
 import type { OwnedVolume, VolumeEdition } from '../../domain/services/series-volumes.service.js';
-import { SeriesVolumes } from '../../domain/services/series-volumes.service.js';
 import type { LookupAnswer } from '../../domain/value-objects/lookup-answer.value-object.js';
 import type { PublisherNames } from '../../domain/value-objects/publisher-names.value-object.js';
 import { GeneratedTitle } from '../../domain/value-objects/generated-title.value-object.js';
@@ -30,7 +33,7 @@ export class FindMissingVolumes implements FindMissingVolumesUseCase {
 
     constructor(
         private readonly collections: CollectionVolumes,
-        private readonly series: SeriesLookup,
+        private readonly series: SeriesSearch,
         private readonly books: BookRepository,
         private readonly authors: AuthorMatcher,
         private readonly publishers: PublisherMatcher,
@@ -64,49 +67,44 @@ export class FindMissingVolumes implements FindMissingVolumesUseCase {
             return { kind: 'edition-not-found' };
         }
 
-        const editions = await this.series.editions(
-            owned.map((volume) => volume.isbn13),
+        const { anchor, found, unavailable } = await this.series.find(
+            owned,
+            collection.uncovered,
             signal,
         );
 
-        if (editions.kind !== 'found') {
-            return FindMissingVolumes.without(editions);
+        if (unavailable.length > 0 && (!anchor || found.size === 0)) {
+            return FindMissingVolumes.without(unavailable);
         }
 
-        const anchor = SeriesVolumes.anchorOf(editions.value, owned);
-
-        if (!anchor?.answer.series || !anchor.answer.publisher) {
+        if (!anchor) {
             return { kind: 'edition-not-found' };
         }
-
-        const records = await this.series.volumes(
-            anchor.answer.series.name,
-            anchor.answer.publisher,
-            signal,
-        );
-
-        if (records.kind !== 'found' && records.kind !== 'none') {
-            return FindMissingVolumes.without(records);
-        }
-
-        const volumes = SeriesVolumes.of(anchor, records.kind === 'found' ? records.value : []);
 
         return {
             kind: 'found',
             collection: { id: collection.id, name: collection.name, category: collection.category },
             anchor: {
-                bookId: FindMissingVolumes.anchorBook(collection, anchor),
-                volume: anchor.volume,
+                bookId: FindMissingVolumes.anchorBook(collection, anchor.edition),
+                volume: anchor.edition.volume,
             },
-            series: volumes.series,
-            rows: await this.rows(collection, volumes),
+            series: anchor.edition.answer.series?.name ?? '',
+            catalogues: [
+                ...new Set([anchor.source, ...[...found.values()].map(({ source }) => source)]),
+            ],
+            unavailable: unavailable.map(({ name }) => name),
+            rows: await this.rows(collection, found),
         };
     }
 
-    private async rows(collection: CollectionVolumesView, volumes: SeriesVolumes) {
+    private async rows(
+        collection: CollectionVolumesView,
+        findings: ReadonlyMap<number, SeriesFinding>,
+    ) {
         const found = collection.uncovered.map((volume) => ({
             volume,
-            editions: volumes.editions(volume),
+            source: findings.get(volume)?.source ?? null,
+            editions: findings.get(volume)?.editions ?? [],
         }));
         const names = [
             ...new Set(found.flatMap((row) => row.editions.flatMap((e) => e.answer.authors))),
@@ -124,6 +122,7 @@ export class FindMissingVolumes implements FindMissingVolumesUseCase {
 
             rows.push({
                 volume: row.volume,
+                source: row.source,
                 generatedTitle:
                     collection.category === 'books'
                         ? null
@@ -187,15 +186,15 @@ export class FindMissingVolumes implements FindMissingVolumesUseCase {
         return Required.value(member, 'the anchor is a member of the collection').bookId;
     }
 
-    private static without(reply: Exclude<SeriesReply, { kind: 'found' }>): MissingVolumes {
-        return reply.kind === 'none'
-            ? { kind: 'edition-not-found' }
-            : {
-                  kind: 'unavailable',
-                  retryAt:
-                      reply.kind === 'limited' && reply.retryAt
-                          ? reply.retryAt.toISOString()
-                          : null,
-              };
+    private static without(unavailable: readonly SeriesUnavailable[]): MissingVolumes {
+        const latest = unavailable
+            .flatMap(({ retryAt }) => (retryAt ? [retryAt.getTime()] : []))
+            .sort((a, b) => b - a)[0];
+
+        return {
+            kind: 'unavailable',
+            catalogues: unavailable.map(({ name }) => name),
+            retryAt: latest === undefined ? null : new Date(latest).toISOString(),
+        };
     }
 }

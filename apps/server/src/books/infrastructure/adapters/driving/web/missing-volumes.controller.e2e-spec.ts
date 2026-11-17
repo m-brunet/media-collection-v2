@@ -72,14 +72,17 @@ describe('POST /api/collections/:id/missing-volumes/search', () => {
             collection: { id: first.collection!.id, name: 'Gunnm', category: 'manga' },
             anchor: { volume: 3 },
             series: 'Gunnm',
+            catalogues: ['bnf'],
+            unavailable: [],
             rows: [
                 {
                     volume: 2,
+                    source: 'bnf',
                     generatedTitle: 'Gunnm Vol. 2',
                     editions: [{ isbn13: '9782723434324', inLibrary: false }],
                 },
-                { volume: 4, editions: [{ isbn13: '9782723434782' }] },
-                { volume: 5, editions: [] },
+                { volume: 4, source: 'bnf', editions: [{ isbn13: '9782723434782' }] },
+                { volume: 5, source: null, editions: [] },
             ],
         });
     });
@@ -110,6 +113,76 @@ describe('POST /api/collections/:id/missing-volumes/search', () => {
         });
     });
 
+    it('completes what the BnF found with the Sudoc, naming the source of each volume', async () => {
+        const first = await volume(1, '9782723432931');
+        const lookup = app.dependencies.books.lookup;
+
+        lookup.volume('9782723432931', 'Gunnm', 1);
+        lookup.volume('9782723434324', 'Gunnm', 2);
+        lookup.volume('9782344017548', 'Gunnm', 2, {}, 'sudoc');
+        lookup.volume('9782723434775', 'Gunnm', 3, {}, 'sudoc');
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<MissingVolumesDto>(
+            search(first.collection!.id),
+            'POST',
+            { upTo: 3 },
+        );
+
+        expect(response.body).toMatchObject({
+            kind: 'found',
+            catalogues: ['bnf', 'sudoc'],
+            unavailable: [],
+            rows: [
+                { volume: 2, source: 'bnf', editions: [{ isbn13: '9782723434324' }] },
+                { volume: 3, source: 'sudoc', editions: [{ isbn13: '9782723434775' }] },
+            ],
+        });
+    });
+
+    it('finds the edition on the Sudoc when the BnF does not know it', async () => {
+        const first = await volume(1, '9782723432931');
+        const lookup = app.dependencies.books.lookup;
+
+        lookup.volume('9782723432931', 'Gunnm', 1, {}, 'sudoc');
+        lookup.volume('9782723434324', 'Gunnm', 2, {}, 'sudoc');
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<MissingVolumesDto>(
+            search(first.collection!.id),
+            'POST',
+            { upTo: 2 },
+        );
+
+        expect(response.body).toMatchObject({
+            kind: 'found',
+            anchor: { volume: 1 },
+            catalogues: ['sudoc'],
+            rows: [{ volume: 2, source: 'sudoc' }],
+        });
+    });
+
+    it('names the catalogues that cannot answer', async () => {
+        const first = await volume(1, '9782723432931');
+        const lookup = app.dependencies.books.lookup;
+
+        lookup.bnfSeries.refusal = { kind: 'busy' };
+        lookup.sudocSeries.refusal = { kind: 'busy' };
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<MissingVolumesDto>(
+            search(first.collection!.id),
+            'POST',
+            { upTo: 2 },
+        );
+
+        expect(response.body).toEqual({
+            kind: 'unavailable',
+            catalogues: ['bnf', 'sudoc'],
+            retryAt: null,
+        });
+    });
+
     it('says the edition is not in the catalogue', async () => {
         const first = await volume(1, '9782723432931');
         const client = await app.authenticatedClient(owner);
@@ -130,7 +203,7 @@ describe('POST /api/collections/:id/missing-volumes/search', () => {
 
         await client.call(search(first.collection!.id), 'POST', { upTo: 5 });
 
-        const turn = app.dependencies.books.lookup.series.turns[0];
+        const turn = app.dependencies.books.lookup.bnfSeries.turns[0];
 
         expect(turn?.bulk).toBe(true);
         expect(turn?.signal?.aborted).toBe(false);
