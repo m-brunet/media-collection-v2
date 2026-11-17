@@ -91,7 +91,9 @@ The desktop collection details page has a personal reading toggle, at the right 
 
 ## Batch edit
 
-The desktop collection details page lets Owners/Admin change several books of the collection at once (decided 2026-11-10 and 2026-11-11, issue #24). A batch only holds books of that one collection.
+The desktop collection details page lets Owners/Admin change several books of the collection at once (decided 2026-11-10 and 2026-11-11, issue #24). A batch from a collection only holds books of that one collection.
+
+The same batch edit is offered in the Library for any books shown, in a collection or not (issue #126); see [Batch edit in the Library](#batch-edit-in-the-library) for its differences.
 
 - **Choosing the books:** **Edit books** turns the same wall of covers into a selection: each book gets a round check and clicking a cover adds or removes it instead of opening the book. Missing volumes stay in place but cannot be chosen and are not counted; a bottom bar counts the chosen books and offers **Select all**, **Select owned**, **Clear**, **Cancel** and **Edit N books**. While books are being chosen, changed and reviewed, the reading toggle and every competing collection action are hidden: **Edit collection**, **Edit books**, **Add volumes** and **Mark Finished** / **Reopen collection** (issue #86). They come back after saving and Done, or Cancel, as the collection now stands (Add volumes still disabled on a Finished collection); a failed save keeps them hidden. Guests do not see the mode (redesigned 2026-11-13, alternative A of issue #24).
 - **Side drawer:** **Edit N books** opens a drawer on the right, in three steps (Choose, Change, Review). The covers stay visible and clickable beside it, so the selection can still change. Escape or the close button closes the drawer and goes back to the selection.
@@ -116,6 +118,17 @@ The desktop collection details page lets Owners/Admin change several books of th
 - **Refusals:** the whole request is refused when one chosen book is not (or no longer) in the collection, when a value is invalid (for example a price), or when a typed author looks like an existing one: the form then asks once which author is meant and plans again. A change of ownership follows the duplicate-purchase rules below; a coverage conflict refuses the save.
 - **Audit and Activity:** one audited operation on the collection (`collection.books-batch-edited`, the batch edit of that collection), with each book's changes as related changes (`book.updated`, `book.organised`, `book.reading-status-changed`), as a collection rename records retitled books. Activity shows a single entry, "You edited 5 books" (one book: "You updated Gunnm Vol. 1"), with the edited books' titles below it in the batch's order, the first 5 then "and N more". A book whose only change is the account's own reading status is not counted, and a batch that changed only reading statuses has no Activity entry. Other consequences, such as a collection updated by an ownership change, stay in the "Also:" line. Batch edits saved before this rule show the same entry, since Activity is read from the audit records.
 - Desktop only: Leaf does not offer it. The collection Read button (above) stays separate; the batch reading status is for a chosen selection.
+
+### Batch edit in the Library
+
+The Library list offers the same mode, bottom bar, drawer, fields, review, saving, banner and marks as a collection (decided 2026-11-17, issue #126). Only these points differ:
+
+- **Entry:** **Edit books** in the Library header, for Owners/Admin, when the list has books. It works on the list as searched and filtered, so a shelf opened from Bookcases can be edited at once.
+- **Choosing:** each book card gets the round check and a click chooses it instead of opening the book. **Select all** and **Select owned** choose the **displayed** books only (those loaded so far); **Load more** stays available while choosing, and the books it loads are chosen only when clicked or by Select all. A batch takes at most 1,000 books: Select all stops there and says so.
+- **Hidden while choosing, changing and reviewing:** the search, **Advanced filters**, the applied filter chips, the sort, **Edit books** and **Add a book**. They come back after Done or Cancel; a failed save keeps them hidden. To change the filters, cancel first (the selection is lost).
+- **After saving and Done:** the list reloads with the same search, filters and sort, so a book that no longer matches leaves it.
+- **Books from anywhere:** a book in a collection follows the collection's membership and duplicate-purchase rules for ownership, as above; a book in no collection simply changes ownership. **Use the generated title** only changes Manga and Comics books in a collection: a book in no collection is left out as "Not in a collection" ("N’est dans aucune collection"), and a Books book keeps its own reason.
+- **Audit and Activity:** one audited operation `library.books-batch-edited` with no subject, with each book's changes as related changes. Activity shows the same grouped entry as a collection batch edit ("You edited 5 books" with the titles below).
 
 ## Add missing volumes
 
