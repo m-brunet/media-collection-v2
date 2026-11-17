@@ -150,6 +150,28 @@ describe('Scan and add a book', () => {
         await capture(page, 'leaf-review-book');
     });
 
+    it('suggests an existing author under the field without horizontal scrolling', async () => {
+        await savedBook({
+            title: 'Piranesi',
+            isbn: piranesi,
+            authors: [{ name: 'Susanna Clarke with a very long pen name to wrap on a phone' }],
+        });
+        const page = await leafHome();
+
+        await scanPhoto(page, ewilan);
+        await page.getByRole('button', { name: 'Find book' }).click();
+        await page.getByRole('heading', { name: 'Review book' }).waitFor();
+
+        await page.getByRole('combobox', { name: /^Authors/ }).fill('susa');
+
+        await page
+            .getByRole('listbox', { name: 'Suggestions for Authors' })
+            .getByRole('option', { name: /^Susanna Clarke/ })
+            .waitFor();
+        expect(await noHorizontalScrolling(page)).toBe(true);
+        await capture(page, 'leaf-author-suggestions');
+    });
+
     it('starts another scan from the success screen', async () => {
         const page = await leafHome();
 

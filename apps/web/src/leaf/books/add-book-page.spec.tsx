@@ -542,11 +542,142 @@ it('takes and locks the category of an existing collection', async () => {
     await userEvent.click(await screen.findByRole('checkbox', { name: 'Part of a collection' }));
 
     await userEvent.type(
-        screen.getByRole('textbox', { name: /Collection name/ }),
+        screen.getByRole('combobox', { name: /Collection name/ }),
         'All You Need Is Kill',
     );
 
     expect(await screen.findByText(/Set by the collection All You Need Is Kill/)).toBeVisible();
     expect(screen.getByRole('radio', { name: 'Manga' })).toBeChecked();
     expect(screen.getByRole('radio', { name: 'Books' })).toBeDisabled();
+});
+
+function knownAuthors() {
+    api.on('GET /authors', () => ({
+        status: 200,
+        body: [
+            { id: 'a1', name: 'Susanna Clarke' },
+            { id: 'a2', name: 'Susan Cooper' },
+        ],
+    }));
+}
+
+function authorsField() {
+    return screen.getByRole('combobox', { name: /^Authors/ });
+}
+
+it('suggests the existing authors matching what is typed, without those already chosen', async () => {
+    knownAuthors();
+    open();
+    await screen.findByLabelText(/^Title/);
+
+    await userEvent.type(authorsField(), 'sus');
+
+    const list = await screen.findByRole('listbox', { name: 'Suggestions for Authors' });
+
+    expect(
+        within(list)
+            .getAllByRole('option')
+            .map((option) => option.textContent),
+    ).toEqual(['Susan Cooper']);
+    expect(api.calls.map((call) => call.route)).toContain('GET /authors?search=sus');
+});
+
+it('adds a tapped author as a chip and clears the field', async () => {
+    knownAuthors();
+    open();
+    await screen.findByLabelText(/^Title/);
+    await userEvent.type(authorsField(), 'sus');
+
+    await userEvent.click(await screen.findByRole('option', { name: 'Susan Cooper' }));
+
+    expect(
+        within(screen.getByRole('list', { name: 'Authors' })).getByText('Susan Cooper'),
+    ).toBeVisible();
+    expect(authorsField()).toHaveValue('');
+});
+
+it('saves a tapped author as the existing one', async () => {
+    knownAuthors();
+    api.on('POST /books', () => ({ status: 201, body: bookDto({ id: 'new' }) }));
+    open();
+    await screen.findByLabelText(/^Title/);
+    await userEvent.type(authorsField(), 'sus');
+    await userEvent.click(await screen.findByRole('option', { name: 'Susan Cooper' }));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Save book' }));
+
+    expect(await screen.findByText('Elsewhere: /saved')).toBeInTheDocument();
+    const created = api.calls.find((call) => call.route === 'POST /books')!.body as NewBookDto;
+
+    expect(created.authors).toEqual([{ name: 'Susanna Clarke' }, { id: 'a2' }]);
+});
+
+it('still adds a new author typed in full with Add', async () => {
+    knownAuthors();
+    open();
+    await screen.findByLabelText(/^Title/);
+    await userEvent.type(authorsField(), 'Ursula K. Le Guin');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add author' }));
+
+    expect(
+        within(screen.getByRole('list', { name: 'Authors' })).getByText('Ursula K. Le Guin'),
+    ).toBeVisible();
+    expect(authorsField()).toHaveValue('');
+});
+
+it('shows no author list when no existing author matches', async () => {
+    api.on('GET /authors', () => ({ status: 200, body: [] }));
+    open();
+    await screen.findByLabelText(/^Title/);
+
+    await userEvent.type(authorsField(), 'zz');
+
+    await vi.waitFor(() =>
+        expect(api.calls.map((call) => call.route)).toContain('GET /authors?search=zz'),
+    );
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+});
+
+function knownCollections() {
+    api.on('GET /collections/names', () => ({
+        status: 200,
+        body: [
+            {
+                id: 'aynik',
+                name: 'All You Need Is Kill',
+                category: 'manga',
+                includesVolumeZero: false,
+            },
+        ],
+    }));
+}
+
+it('suggests the existing collections matching what is typed', async () => {
+    knownCollections();
+    open();
+    await userEvent.click(await screen.findByRole('checkbox', { name: 'Part of a collection' }));
+
+    await userEvent.type(screen.getByRole('combobox', { name: /Collection name/ }), 'all');
+
+    expect(
+        await screen.findByRole('listbox', { name: 'Suggestions for Collection name' }),
+    ).toHaveTextContent('All You Need Is Kill');
+});
+
+it('fills a tapped collection, locks its category and leaves the volume to fill', async () => {
+    knownCollections();
+    open();
+    await userEvent.click(await screen.findByRole('checkbox', { name: 'Part of a collection' }));
+    await userEvent.type(screen.getByRole('combobox', { name: /Collection name/ }), 'all');
+
+    await userEvent.click(await screen.findByRole('option', { name: 'All You Need Is Kill' }));
+
+    expect(screen.getByRole('combobox', { name: /Collection name/ })).toHaveValue(
+        'All You Need Is Kill',
+    );
+    expect(await screen.findByText(/Set by the collection All You Need Is Kill/)).toBeVisible();
+    expect(screen.getByRole('radio', { name: 'Books' })).toBeDisabled();
+    expect(screen.getByLabelText(/^Volume/)).toHaveValue('');
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
 });

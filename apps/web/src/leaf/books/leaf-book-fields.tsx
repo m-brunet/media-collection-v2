@@ -3,6 +3,7 @@ import type {
     AuthorSpellingDto,
     BookcaseDto,
     BookLookupFieldsDto,
+    CollectionNameDto,
     LookupCoverDto,
 } from '../../../../../packages/contracts/src/http';
 import { AuthorSpellingHints } from '../../shared/book-form/author-spelling-hints';
@@ -25,6 +26,10 @@ import { ReadingField } from '../../shared/book-form/reading-toggle';
 import { CategoryField } from '../../shared/book-form/category-field';
 import type { CategoryRule } from '../../shared/book-form/category-lock.util';
 import { LeafCoverField } from './leaf-cover-field';
+import { LeafSuggestedField } from './leaf-suggested-field';
+import type { Suggestion } from './suggestion-list.util';
+import { SuggestionList } from './suggestion-list.util';
+import { useAuthorSuggestions } from './use-author-suggestions';
 import { PublisherSuggestions } from '../../shared/book-form/publisher-suggestions';
 
 export interface LeafFieldsProps {
@@ -41,6 +46,7 @@ export interface LeafFieldsProps {
     additionalOpen: boolean;
     setAdditionalOpen(open: boolean): void;
     categoryRule: CategoryRule;
+    collections: readonly CollectionNameDto[];
 }
 
 function Alternatives({
@@ -119,6 +125,9 @@ function NameList({
     addLabel,
     removeLabel,
     required,
+    suggestions = [],
+    onType,
+    onChoose,
 }: {
     label: string;
     names: string[];
@@ -128,12 +137,19 @@ function NameList({
     addLabel: string;
     removeLabel(name: string): string;
     required?: boolean;
+    suggestions?: readonly Suggestion[];
+    onType?(typed: string): void;
+    onChoose?(suggestion: Suggestion): void;
 }) {
     const [typed, setTyped] = useState('');
+    const type = (text: string) => {
+        setTyped(text);
+        onType?.(text);
+    };
     const add = () => {
         if (typed.trim()) {
             onAdd(typed.trim());
-            setTyped('');
+            type('');
         }
     };
 
@@ -155,18 +171,18 @@ function NameList({
                 ))}
             </ul>
             <div className="leaf-names__add">
-                <TextField
+                <LeafSuggestedField
                     label={label}
                     required={required && names.length === 0}
                     error={error}
                     value={typed}
-                    onChange={(event) => setTyped(event.target.value)}
-                    onKeyDown={(event) => {
-                        if (event.key === 'Enter') {
-                            event.preventDefault();
-                            add();
-                        }
+                    suggestions={suggestions}
+                    onChange={type}
+                    onChoose={(suggestion) => {
+                        onChoose?.(suggestion);
+                        type('');
                     }}
+                    onEnter={add}
                 />
                 <Button icon="add" onClick={add} disabled={!typed.trim()}>
                     {addLabel}
@@ -180,6 +196,8 @@ function MainFields(props: LeafFieldsProps) {
     const { t } = useI18n();
     const { values, set, update, errorFor } = props;
     const generated = BookDraft.generatedTitle(values);
+    const [authorSearch, setAuthorSearch] = useState('');
+    const knownAuthors = useAuthorSuggestions(authorSearch);
 
     return (
         <fieldset className="leaf-form__section">
@@ -212,6 +230,18 @@ function MainFields(props: LeafFieldsProps) {
                 error={errorFor('authors')}
                 addLabel={t('leaf.form.addAuthor')}
                 removeLabel={(name) => t('form.authorRemove', { name })}
+                suggestions={SuggestionList.of(
+                    knownAuthors,
+                    authorSearch,
+                    values.authors.map((author) => author.name),
+                )}
+                onType={setAuthorSearch}
+                onChoose={(suggestion) =>
+                    set('authors', [
+                        ...values.authors,
+                        { id: suggestion.key, name: suggestion.label, distinct: false },
+                    ])
+                }
                 onAdd={(name) =>
                     set('authors', [...values.authors, { id: null, name, distinct: false }])
                 }
@@ -267,16 +297,17 @@ function CollectionFields(props: LeafFieldsProps) {
             </label>
             {values.inCollection && (
                 <>
-                    <TextField
+                    <LeafSuggestedField
                         label={t('form.collectionName')}
                         required
                         error={errorFor('collection')}
                         value={values.collectionName}
-                        onChange={(event) =>
-                            update({
-                                collectionName: event.target.value,
-                                collectionDistinct: false,
-                            })
+                        suggestions={SuggestionList.of(props.collections, values.collectionName)}
+                        onChange={(collectionName) =>
+                            update({ collectionName, collectionDistinct: false })
+                        }
+                        onChoose={(suggestion) =>
+                            update({ collectionName: suggestion.label, collectionDistinct: false })
                         }
                     />
                     <SelectField
