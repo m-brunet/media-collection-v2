@@ -12,7 +12,7 @@ const steps: { step: 'choose' | DrawerStep; label: MessageKey }[] = [
     { step: 'review', label: 'batch.step.review' },
 ];
 
-export function CollectionBatchDrawer({
+export function BatchDrawer({
     step,
     title,
     onClose,

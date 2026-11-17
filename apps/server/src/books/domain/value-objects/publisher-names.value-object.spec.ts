@@ -145,4 +145,25 @@ describe('PublisherNames', () => {
 
         expect(result).toEqual([]);
     });
+    it('does not count the spelling only the edited book uses', () => {
+        const usages = [{ name: 'glenat', books: 1 }];
+
+        const result = PublisherNames.besides(usages, 'glenat').has('glenat');
+
+        expect(result).toBe(false);
+    });
+    it('counts the spelling the edited book shares with other books', () => {
+        const usages = [{ name: 'glenat', books: 2 }];
+
+        const result = PublisherNames.besides(usages, ' glenat ').has('glenat');
+
+        expect(result).toBe(true);
+    });
+    it('counts every spelling for a book without a publisher', () => {
+        const usages = [{ name: 'glenat', books: 1 }];
+
+        const result = PublisherNames.besides(usages, null).has('glenat');
+
+        expect(result).toBe(true);
+    });
 });

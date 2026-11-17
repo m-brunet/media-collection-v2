@@ -5,19 +5,10 @@ import type { CollectionMemberDto } from '../../../../../packages/contracts/src/
 import { BookFormat } from '../../shared/book-form/book-format.util';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Icon } from '../../shared/ui/icon';
+import type { CoverTile } from '../batch/cover-tile';
 import type { WallSlot } from './collection-covers.util';
 
-export interface WallTile {
-    chosen: boolean;
-    check?: boolean;
-    pressed?: boolean;
-    disabled?: boolean;
-    dimmed?: boolean;
-    sub?: string;
-    badge?: { label: string; tone: 'accent' | 'muted' | 'warning' };
-}
-
-function TileCover({ book, tile }: { book: CollectionMemberDto; tile: WallTile }) {
+function TileCover({ book, tile }: { book: CollectionMemberDto; tile: CoverTile }) {
     const source = book.hasCover ? BookFormat.cover(book.id, book.updatedAt) : null;
     const { t } = useI18n();
     const [failed, setFailed] = useState<string | null>(null);
@@ -59,7 +50,7 @@ function BookTile({
     onClick,
 }: {
     book: CollectionMemberDto;
-    tile: WallTile;
+    tile: CoverTile;
     link?: string;
     onClick?(): void;
 }) {
@@ -145,7 +136,7 @@ export function CollectionWall({
     eyebrow: string;
     hint?: string;
     action?: ReactNode;
-    tile?(book: CollectionMemberDto): WallTile;
+    tile?(book: CollectionMemberDto): CoverTile;
     link?(book: CollectionMemberDto): string;
     onClick?(book: CollectionMemberDto): void;
 }) {

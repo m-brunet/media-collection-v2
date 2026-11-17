@@ -7,8 +7,8 @@ import type {
 import { api, ApiError } from '../../shared/api.util';
 import type { MessageKey } from '../../shared/i18n/catalog-en';
 import { useAction } from '../../shared/use-action';
-import type { BatchDraft, BatchProblem } from './collection-batch.util';
-import { CollectionBatch } from './collection-batch.util';
+import type { BatchDraft, BatchProblem } from './book-batch.util';
+import { BookBatch } from './book-batch.util';
 
 const problems: Record<BatchProblem, MessageKey> = {
     nothing: 'batch.problem.nothing',
@@ -32,7 +32,7 @@ export function useBatchEdit({
     const action = useAction();
     const [similar, setSimilar] = useState<SimilarAuthorDetails | null>(null);
     const send = (bookIds: string[], draft: BatchDraft, preview: boolean) => {
-        const problem = CollectionBatch.problem(draft);
+        const problem = BookBatch.problem(draft);
 
         if (problem) {
             action.fail(problems[problem]);
@@ -44,7 +44,7 @@ export function useBatchEdit({
             ...(collectionId ? { collectionId } : {}),
             bookIds,
             preview,
-            changes: CollectionBatch.changes(draft),
+            changes: BookBatch.changes(draft),
         };
 
         void action.run(async () => {

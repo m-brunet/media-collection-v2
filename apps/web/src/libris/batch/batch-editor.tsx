@@ -6,13 +6,13 @@ import { Button } from '../../shared/ui/button';
 import { Notice } from '../../shared/ui/notice';
 import { Required } from '../../shared/required.util';
 import { SimilarAuthorDialog } from '../books/book-form-dialogs';
-import { CollectionBatchChanges } from '../collections/collection-batch-changes';
-import { CollectionBatchDrawer } from '../collections/collection-batch-drawer';
-import { CollectionBatchReview } from '../collections/collection-batch-review';
-import type { BatchDraft } from '../collections/collection-batch.util';
-import { CollectionBatch } from '../collections/collection-batch.util';
-import type { WallTile } from '../collections/collection-wall';
-import { useBatchEdit } from '../collections/use-batch-edit';
+import { BatchChanges } from './batch-changes';
+import { BatchDrawer } from './batch-drawer';
+import { BatchReview } from './batch-review';
+import type { BatchDraft } from './book-batch.util';
+import { BookBatch } from './book-batch.util';
+import type { CoverTile } from './cover-tile';
+import { useBatchEdit } from './use-batch-edit';
 
 export type BatchStep = 'choose' | 'change' | 'review' | 'saved';
 
@@ -25,7 +25,7 @@ export interface BatchBooksView {
     step: BatchStep;
     eyebrow: string;
     hint?: string;
-    tile(id: string): WallTile;
+    tile(id: string): CoverTile;
     onClick?(id: string): void;
 }
 
@@ -82,13 +82,13 @@ function SavedNotice({
     onDone(): void;
 }) {
     const { t } = useI18n();
-    const changed = CollectionBatch.changed(result);
+    const changed = BookBatch.changed(result);
     const message = [
         changed === 1 ? t('batch.savedOne') : t('batch.savedMany', { count: changed }),
         ...result.skipped.map((skip) =>
             t('batch.savedLeftOut', {
                 title: skip.title,
-                reason: t(CollectionBatch.skipReason(skip.reason)),
+                reason: t(BookBatch.skipReason(skip.reason)),
             }),
         ),
     ].join(' ');
@@ -129,7 +129,7 @@ export function BatchEditor({
     const [step, setStep] = useState<BatchStep>('choose');
     const [selected, setSelected] = useState<string[]>([]);
     const [capped, setCapped] = useState(false);
-    const [draft, setDraft] = useState<BatchDraft>(CollectionBatch.draft());
+    const [draft, setDraft] = useState<BatchDraft>(BookBatch.draft());
     const [summary, setSummary] = useState<BookBatchDto | null>(null);
     const [result, setResult] = useState<BookBatchDto | null>(null);
     const [focus, setFocus] = useState<string | null>(null);
@@ -171,7 +171,7 @@ export function BatchEditor({
         setStep(next);
     };
     const answerSimilar = (choice: { id: string; name: string } | 'distinct') => {
-        const next = CollectionBatch.resolveAuthor(
+        const next = BookBatch.resolveAuthor(
             draft,
             Required.value(batch.similar, 'a similar author is being answered').name,
             choice,
@@ -182,7 +182,7 @@ export function BatchEditor({
         batch.send(chosen, next, true);
     };
     const restart = () => {
-        setDraft(CollectionBatch.draft());
+        setDraft(BookBatch.draft());
         setResult(null);
         setStep('choose');
     };
@@ -214,8 +214,8 @@ export function BatchEditor({
         };
     };
     const reviewView = (planned: BookBatchDto): BatchBooksView => {
-        const outcomes = CollectionBatch.outcomes(planned, locale);
-        const changed = CollectionBatch.changed(planned);
+        const outcomes = BookBatch.outcomes(planned, locale);
+        const changed = BookBatch.changed(planned);
 
         return {
             step: 'review',
@@ -230,7 +230,7 @@ export function BatchEditor({
                 .filter(Boolean)
                 .join(' · '),
             hint: t('batch.wallReviewHint'),
-            tile: (id): WallTile => {
+            tile: (id): CoverTile => {
                 const outcome = outcomes.get(id);
 
                 if (!chosen.includes(id) || !outcome) {
@@ -276,7 +276,7 @@ export function BatchEditor({
             step: 'saved',
             eyebrow: t('batch.wallSaved'),
             hint: savedHint,
-            tile: (id): WallTile =>
+            tile: (id): CoverTile =>
                 updated.has(id)
                     ? { chosen: false, badge: { label: t('batch.badge.updated'), tone: 'accent' } }
                     : leftOut.has(id)
@@ -309,7 +309,7 @@ export function BatchEditor({
                 />
             )}
             {step === 'change' && (
-                <CollectionBatchDrawer
+                <BatchDrawer
                     step="change"
                     title={editTitle}
                     onClose={() => leaveDrawer('choose')}
@@ -334,12 +334,12 @@ export function BatchEditor({
                         </>
                     }
                 >
-                    <CollectionBatchChanges draft={draft} onChange={setDraft} />
+                    <BatchChanges draft={draft} onChange={setDraft} />
                     {batch.feedback && <Notice tone="error">{batch.feedback.text}</Notice>}
-                </CollectionBatchDrawer>
+                </BatchDrawer>
             )}
             {step === 'review' && summary && (
-                <CollectionBatchDrawer
+                <BatchDrawer
                     step="review"
                     title={t('batch.review')}
                     onClose={() => leaveDrawer('choose')}
@@ -349,26 +349,26 @@ export function BatchEditor({
                             <Button
                                 variant="primary"
                                 busy={batch.busy}
-                                disabled={CollectionBatch.changed(summary) === 0}
+                                disabled={BookBatch.changed(summary) === 0}
                                 onClick={() => batch.send(chosen, draft, false)}
                             >
-                                {CollectionBatch.changed(summary) === 1
+                                {BookBatch.changed(summary) === 1
                                     ? t('batch.saveOne')
                                     : t('batch.saveMany', {
-                                          count: CollectionBatch.changed(summary),
+                                          count: BookBatch.changed(summary),
                                       })}
                             </Button>
                         </>
                     }
                 >
-                    <CollectionBatchReview
+                    <BatchReview
                         summary={summary}
                         draft={draft}
                         focus={focus}
                         onShowAll={() => setFocus(null)}
                     />
                     {batch.feedback && <Notice tone="error">{batch.feedback.text}</Notice>}
-                </CollectionBatchDrawer>
+                </BatchDrawer>
             )}
             <SimilarAuthorDialog
                 similar={batch.similar}
