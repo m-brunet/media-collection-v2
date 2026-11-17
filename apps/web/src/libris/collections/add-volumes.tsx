@@ -401,7 +401,6 @@ export function VolumeReviewPanel({
 
             onSaved({ result, coversFailed });
         });
-
     const incomplete = VolumeCatalogues.incomplete(found.unavailable, t);
 
     return (

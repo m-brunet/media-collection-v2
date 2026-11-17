@@ -151,7 +151,6 @@ export class SudocCatalogue implements LookupSource<LookupAnswer> {
         turn: SourceTurn,
     ): Promise<Step<UnimarcRecord[]>> {
         const records: UnimarcRecord[] = [];
-
         const query = isbn13s.map((isbn13) => 'isb=' + isbn13).join(' or ');
 
         for (let page = 0; page < SudocCatalogue.maximumPages; page++) {
