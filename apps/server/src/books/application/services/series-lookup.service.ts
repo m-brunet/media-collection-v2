@@ -6,6 +6,10 @@ export type SeriesReply = SourceReply<SeriesRecord[]> | { kind: 'failed' };
 export class SeriesLookup {
     constructor(private readonly catalogue: SeriesCatalogue) {}
 
+    get name(): string {
+        return this.catalogue.name;
+    }
+
     editions(isbn13s: readonly string[], signal?: AbortSignal): Promise<SeriesReply> {
         return this.ask(() => this.catalogue.editions(isbn13s, SeriesLookup.turn(signal)));
     }

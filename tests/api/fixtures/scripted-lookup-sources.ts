@@ -44,10 +44,12 @@ class ScriptedSource<T> implements LookupSource<T> {
 }
 
 class ScriptedSeries implements SeriesCatalogue {
-    readonly name = 'bnf';
     readonly asked: string[] = [];
     readonly turns: SourceTurn[] = [];
     readonly records: SeriesRecord[] = [];
+    refusal: SourceReply<never> | null = null;
+
+    constructor(readonly name: string) {}
 
     async editions(
         isbn13s: readonly string[],
@@ -55,6 +57,11 @@ class ScriptedSeries implements SeriesCatalogue {
     ): Promise<SourceReply<SeriesRecord[]>> {
         this.asked.push('editions');
         this.turns.push(turn);
+
+        if (this.refusal) {
+            return this.refusal;
+        }
+
         const found = this.records.filter((record) =>
             record.isbns.some((isbn) => isbn13s.includes(isbn)),
         );
@@ -64,6 +71,11 @@ class ScriptedSeries implements SeriesCatalogue {
 
     async volumes(series: string): Promise<SourceReply<SeriesPage>> {
         this.asked.push('volumes:' + series);
+
+        if (this.refusal) {
+            return this.refusal;
+        }
+
         const found = this.records.filter((record) => record.answer.series?.name === series);
 
         return found.length > 0
@@ -102,7 +114,9 @@ export class ScriptedLookupSources implements BookLookupSources {
     );
     readonly information = [this.bnf, this.sudoc, this.openLibrary];
     readonly covers = [this.inventaireCovers, this.openLibraryCovers];
-    readonly series = new ScriptedSeries();
+    readonly bnfSeries = new ScriptedSeries('bnf');
+    readonly sudocSeries = new ScriptedSeries('sudoc');
+    readonly series = [this.bnfSeries, this.sudocSeries];
 
     knows(name: 'bnf' | 'sudoc' | 'openlibrary', isbn13: string, fields: LookupAnswerFields): void {
         const source = { bnf: this.bnf, sudoc: this.sudoc, openlibrary: this.openLibrary }[name];
@@ -110,8 +124,14 @@ export class ScriptedLookupSources implements BookLookupSources {
         source.answer(isbn13, { kind: 'found', value: LookupAnswer.of(fields) });
     }
 
-    volume(isbn13: string, series: string, volume: number, fields: LookupAnswerFields = {}): void {
-        this.series.records.push({
+    volume(
+        isbn13: string,
+        series: string,
+        volume: number,
+        fields: LookupAnswerFields = {},
+        catalogue: 'bnf' | 'sudoc' = 'bnf',
+    ): void {
+        (catalogue === 'bnf' ? this.bnfSeries : this.sudocSeries).records.push({
             isbns: [isbn13],
             subtitle: null,
             answer: LookupAnswer.of({

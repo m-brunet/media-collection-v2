@@ -912,18 +912,30 @@ export const fr = {
     'volumes.dialogTitle': 'Ajouter les tomes manquants',
     'volumes.upTo': 'Jusqu’au tome',
     'volumes.upToHint':
-        'Chaque tome manquant depuis le début de la collection jusqu’à ce numéro est cherché dans le catalogue de la BnF, dans l’édition d’un tome que vous avez déjà. Rien n’est encore enregistré.',
+        'Chaque tome manquant depuis le début de la collection jusqu’à ce numéro est cherché dans le catalogue de la BnF, puis dans celui du Sudoc, dans l’édition d’un tome que vous avez déjà. Rien n’est encore enregistré.',
     'volumes.search': 'Chercher les tomes',
     'volumes.upToInvalid': 'Saisissez un numéro de tome.',
     'volumes.editionNotFound':
-        'L’édition de cette collection est introuvable dans le catalogue de la BnF. Aucun tome n’a été ajouté.',
-    'volumes.unavailable':
-        'Le catalogue de la BnF est injoignable pour le moment. Réessayez dans quelques minutes.',
+        'L’édition de cette collection est introuvable dans les catalogues de la BnF et du Sudoc. Aucun tome n’a été ajouté.',
+    'volumes.unavailableOne':
+        'Le catalogue {catalogues} est injoignable pour le moment. Réessayez dans quelques minutes.',
+    'volumes.unavailableMany':
+        'Les catalogues {catalogues} sont injoignables pour le moment. Réessayez dans quelques minutes.',
+    'volumes.incompleteOne':
+        'Le catalogue {catalogues} n’a pas pu répondre : des tomes peuvent manquer dans cette liste.',
+    'volumes.incompleteMany':
+        'Les catalogues {catalogues} n’ont pas pu répondre : des tomes peuvent manquer dans cette liste.',
+    'volumes.catalogue.bnf': 'de la BnF',
+    'volumes.catalogue.sudoc': 'du Sudoc',
+    'volumes.catalogue.and': ' et ',
     'volumes.noneMissing': 'Aucun tome ne manque jusqu’au tome {upTo}.',
     'volumes.reviewTitle': 'Tomes à ajouter',
-    'volumes.reviewHint':
-        'Trouvés dans le catalogue de la BnF à partir de l’édition du tome {volume}. Rien n’est enregistré avant votre confirmation.',
-    'volumes.credit': 'Source : catalogue de la BnF (Licence Ouverte).',
+    'volumes.reviewHintOne':
+        'Trouvés dans le catalogue {catalogues} à partir de l’édition du tome {volume}. Rien n’est enregistré avant votre confirmation.',
+    'volumes.reviewHintMany':
+        'Trouvés dans les catalogues {catalogues} à partir de l’édition du tome {volume}. Rien n’est enregistré avant votre confirmation.',
+    'volumes.creditOne': 'Source : catalogue {catalogues} (Licence Ouverte).',
+    'volumes.creditMany': 'Sources : catalogues {catalogues} (Licence Ouverte).',
     'volumes.column.volume': 'Tome',
     'volumes.column.cover': 'Couverture',
     'volumes.column.book': 'Livre',
@@ -933,9 +945,10 @@ export const fr = {
     'volumes.edition': 'Édition du tome {volume}',
     'volumes.editionOption': '{isbn} · {year}',
     'volumes.editionOptionNoYear': '{isbn}',
-    'volumes.notFound': 'Introuvable dans le catalogue de la BnF',
+    'volumes.notFound': 'Introuvable dans les catalogues de la BnF et du Sudoc',
     'volumes.inLibrary': 'Déjà dans votre bibliothèque',
-    'volumes.suggests': 'La BnF propose : {title}',
+    'volumes.suggests.bnf': 'La BnF propose : {title}',
+    'volumes.suggests.sudoc': 'Le Sudoc propose : {title}',
     'volumes.useSourceTitle': 'Utiliser comme titre',
     'volumes.useGeneratedTitle': 'Utiliser {title}',
     'volumes.coverPending': 'Couverture en route',

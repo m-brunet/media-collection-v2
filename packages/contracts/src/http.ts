@@ -505,6 +505,7 @@ export interface MissingVolumeEditionDto {
 
 export interface MissingVolumeRowDto {
     volume: number;
+    source: string | null;
     generatedTitle: string | null;
     editions: MissingVolumeEditionDto[];
 }
@@ -515,10 +516,12 @@ export type MissingVolumesDto =
           collection: { id: string; name: string; category: BookCategory };
           anchor: { bookId: string; volume: number };
           series: string;
+          catalogues: string[];
+          unavailable: string[];
           rows: MissingVolumeRowDto[];
       }
     | { kind: 'edition-not-found' }
-    | { kind: 'unavailable'; retryAt: string | null };
+    | { kind: 'unavailable'; catalogues: string[]; retryAt: string | null };
 
 export interface CollectionSummaryDto {
     id: string;

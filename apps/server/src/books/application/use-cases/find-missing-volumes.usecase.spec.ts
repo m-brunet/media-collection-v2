@@ -6,6 +6,7 @@ import type { LookupAnswerFields } from '../../domain/value-objects/lookup-answe
 import type { CollectionVolumeMember } from '../ports/driven/collection-volumes.interface.js';
 import { AuthorMatcher } from '../services/author-matcher.service.js';
 import { SeriesLookup } from '../services/series-lookup.service.js';
+import { SeriesSearch } from '../services/series-search.service.js';
 import {
     BookDoubles,
     guest,
@@ -52,7 +53,8 @@ const gunnm = [
 
 function setup(members: CollectionVolumeMember[] = gunnm, category: 'books' | 'manga' = 'manga') {
     const current = BookDoubles.library();
-    const series = new ScriptedSeries();
+    const series = new ScriptedSeries('bnf');
+    const sudoc = new ScriptedSeries('sudoc');
     const collections = new MemoryCollectionVolumes();
 
     collections.collections.set('gunnm', {
@@ -66,10 +68,11 @@ function setup(members: CollectionVolumeMember[] = gunnm, category: 'books' | 'm
     return {
         current,
         series,
+        sudoc,
         collections,
         useCase: new FindMissingVolumes(
             collections,
-            new SeriesLookup(series),
+            new SeriesSearch([new SeriesLookup(series), new SeriesLookup(sudoc)]),
             current.books,
             new AuthorMatcher(current.authors),
             current.publishers,
@@ -149,6 +152,7 @@ describe('FindMissingVolumes', () => {
         expect(result.kind === 'found' && result.rows).toEqual([
             {
                 volume: 3,
+                source: 'bnf',
                 generatedTitle: 'Gunnm Vol. 3',
                 editions: [
                     {
@@ -217,7 +221,7 @@ describe('FindMissingVolumes', () => {
         const result = await useCase.execute(owner, 'gunnm', 3);
 
         expect(result.kind === 'found' && result.rows).toEqual([
-            { volume: 3, generatedTitle: 'Gunnm Vol. 3', editions: [] },
+            { volume: 3, source: null, generatedTitle: 'Gunnm Vol. 3', editions: [] },
         ]);
     });
 
@@ -259,7 +263,11 @@ describe('FindMissingVolumes', () => {
 
         const result = await useCase.execute(owner, 'gunnm', 8);
 
-        expect(result).toEqual({ kind: 'unavailable', retryAt: '2026-03-01T10:05:00.000Z' });
+        expect(result).toEqual({
+            kind: 'unavailable',
+            catalogues: ['bnf'],
+            retryAt: '2026-03-01T10:05:00.000Z',
+        });
     });
 
     it('reports an unreachable catalogue', async () => {
@@ -270,7 +278,7 @@ describe('FindMissingVolumes', () => {
 
         const result = await useCase.execute(owner, 'gunnm', 8);
 
-        expect(result).toEqual({ kind: 'unavailable', retryAt: null });
+        expect(result).toEqual({ kind: 'unavailable', catalogues: ['bnf'], retryAt: null });
     });
 
     it('reports a catalogue whose queue is too long', async () => {
@@ -280,7 +288,7 @@ describe('FindMissingVolumes', () => {
 
         const result = await useCase.execute(owner, 'gunnm', 8);
 
-        expect(result).toEqual({ kind: 'unavailable', retryAt: null });
+        expect(result).toEqual({ kind: 'unavailable', catalogues: ['bnf'], retryAt: null });
     });
 
     it('reports a volume list the catalogue was too busy to give', async () => {
@@ -291,7 +299,7 @@ describe('FindMissingVolumes', () => {
 
         const result = await useCase.execute(owner, 'gunnm', 8);
 
-        expect(result).toEqual({ kind: 'unavailable', retryAt: null });
+        expect(result).toEqual({ kind: 'unavailable', catalogues: ['bnf'], retryAt: null });
     });
 
     it('hands the cancellation of the search to every catalogue request', async () => {
@@ -329,5 +337,147 @@ describe('FindMissingVolumes', () => {
             result.kind === 'found' &&
                 result.rows.map((row) => row.editions.map((edition) => edition.publishers)),
         ).toEqual([[['Kana']]]);
+    });
+
+    describe('with the Sudoc after the BnF', () => {
+        const three = entry('9782723434775', 3);
+        const four = entry('9782723434782', 4);
+
+        it('does not ask the Sudoc when the BnF finds every missing volume', async () => {
+            const { useCase, series, sudoc } = setup();
+
+            series.editionsReply = { kind: 'found', value: [five] };
+            series.pages = [page([three, four])];
+
+            const result = await useCase.execute(owner, 'gunnm', 4);
+
+            expect(result).toMatchObject({
+                catalogues: ['bnf'],
+                unavailable: [],
+                rows: [{ source: 'bnf' }, { source: 'bnf' }],
+            });
+            expect(sudoc.asked).toEqual([]);
+        });
+
+        it('finds the edition and the volumes on the Sudoc when the BnF has no edition', async () => {
+            const { useCase, sudoc } = setup();
+
+            sudoc.editionsReply = { kind: 'found', value: [five] };
+            sudoc.pages = [page([three])];
+
+            const result = await useCase.execute(owner, 'gunnm', 3);
+
+            expect(result).toMatchObject({
+                kind: 'found',
+                anchor: { bookId: 'book-5', volume: 5 },
+                catalogues: ['sudoc'],
+                rows: [{ volume: 3, source: 'sudoc', editions: [{ isbn13: '9782723434775' }] }],
+            });
+        });
+
+        it("searches the Sudoc with the BnF's edition when the BnF finds no volume", async () => {
+            const { useCase, series, sudoc } = setup();
+
+            series.editionsReply = { kind: 'found', value: [five] };
+            sudoc.pages = [page([three])];
+
+            const result = await useCase.execute(owner, 'gunnm', 3);
+
+            expect(result).toMatchObject({
+                catalogues: ['bnf', 'sudoc'],
+                rows: [{ volume: 3, source: 'sudoc' }],
+            });
+            expect(sudoc.asked).toEqual(['volumes:Gunnm/Glénat@1']);
+        });
+
+        it('asks the Sudoc when the BnF cannot answer, and says the BnF could not', async () => {
+            const { useCase, series, sudoc } = setup();
+
+            series.editionsReply = { kind: 'busy' };
+            sudoc.editionsReply = { kind: 'found', value: [five] };
+            sudoc.pages = [page([three])];
+
+            const result = await useCase.execute(owner, 'gunnm', 3);
+
+            expect(result).toMatchObject({
+                kind: 'found',
+                catalogues: ['sudoc'],
+                unavailable: ['bnf'],
+                rows: [{ volume: 3, source: 'sudoc' }],
+            });
+        });
+
+        it('takes from the Sudoc only the numbers the BnF did not find', async () => {
+            const { useCase, series, sudoc } = setup();
+            const otherThree = entry('9782344017548', 3);
+
+            series.editionsReply = { kind: 'found', value: [five] };
+            series.pages = [page([three])];
+            sudoc.pages = [page([otherThree, four])];
+
+            const result = await useCase.execute(owner, 'gunnm', 4);
+
+            expect(result).toMatchObject({
+                catalogues: ['bnf', 'sudoc'],
+                rows: [
+                    { volume: 3, source: 'bnf', editions: [{ isbn13: '9782723434775' }] },
+                    { volume: 4, source: 'sudoc', editions: [{ isbn13: '9782723434782' }] },
+                ],
+            });
+        });
+
+        it('says the edition is not found when neither catalogue knows it', async () => {
+            const { useCase, series, sudoc } = setup();
+
+            const result = await useCase.execute(owner, 'gunnm', 3);
+
+            expect(result).toEqual({ kind: 'edition-not-found' });
+            expect([series.asked.length, sudoc.asked.length]).toEqual([1, 1]);
+        });
+
+        it('names both catalogues when neither can answer, with the latest time to retry', async () => {
+            const { useCase, series, sudoc } = setup();
+
+            series.editionsReply = { kind: 'limited', retryAt: new Date('2026-03-01T10:05:00Z') };
+            sudoc.editionsReply = { kind: 'limited', retryAt: new Date('2026-03-01T10:09:00Z') };
+
+            const result = await useCase.execute(owner, 'gunnm', 3);
+
+            expect(result).toEqual({
+                kind: 'unavailable',
+                catalogues: ['bnf', 'sudoc'],
+                retryAt: '2026-03-01T10:09:00.000Z',
+            });
+        });
+
+        it('says the Sudoc could not answer beside what the BnF found', async () => {
+            const { useCase, series, sudoc } = setup();
+
+            series.editionsReply = { kind: 'found', value: [five] };
+            series.pages = [page([three])];
+            sudoc.pages = [{ kind: 'busy' }];
+
+            const result = await useCase.execute(owner, 'gunnm', 4);
+
+            expect(result).toMatchObject({
+                kind: 'found',
+                catalogues: ['bnf'],
+                unavailable: ['sudoc'],
+                rows: [
+                    { volume: 3, source: 'bnf' },
+                    { volume: 4, source: null, editions: [] },
+                ],
+            });
+        });
+
+        it('reports the Sudoc unavailable when the BnF knows nothing', async () => {
+            const { useCase, sudoc } = setup();
+
+            sudoc.editionsReply = { kind: 'busy' };
+
+            const result = await useCase.execute(owner, 'gunnm', 3);
+
+            expect(result).toEqual({ kind: 'unavailable', catalogues: ['sudoc'], retryAt: null });
+        });
     });
 });

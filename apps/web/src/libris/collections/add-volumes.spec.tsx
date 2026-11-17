@@ -80,18 +80,22 @@ const found: MissingVolumesDto = {
     collection: { id: 'c1', name: 'Gunnm', category: 'manga' },
     anchor: { bookId: 'book-1', volume: 1 },
     series: 'Gunnm',
+    catalogues: ['bnf'],
+    unavailable: [],
     rows: [
         {
             volume: 2,
+            source: 'bnf',
             generatedTitle: 'Gunnm Vol. 2',
             editions: [
                 edition('9782723434324', { title: 'La vierge de fer' }),
                 edition('9782344017524', { publicationYear: 2017 }),
             ],
         },
-        { volume: 3, generatedTitle: 'Gunnm Vol. 3', editions: [] },
+        { volume: 3, source: null, generatedTitle: 'Gunnm Vol. 3', editions: [] },
         {
             volume: 4,
+            source: 'bnf',
             generatedTitle: 'Gunnm Vol. 4',
             editions: [edition('9782723434782', { inLibrary: true })],
         },
@@ -151,7 +155,7 @@ it('ticks each volume found, on its best edition, with its generated title', asy
 it('shows a volume not found and a volume already in the library without a tick', async () => {
     await review();
 
-    expect(within(rowOf(3)).getByText('Not found in the BnF catalogue')).toBeVisible();
+    expect(within(rowOf(3)).getByText('Not found in the BnF or Sudoc catalogues')).toBeVisible();
     expect(within(rowOf(3)).getByRole('checkbox')).toBeDisabled();
     expect(within(rowOf(4)).getByText('Already in your library')).toBeVisible();
     expect(within(rowOf(4)).getByRole('checkbox')).not.toBeChecked();
@@ -251,16 +255,19 @@ const publishing: MissingVolumesDto = {
     rows: [
         {
             volume: 2,
+            source: 'bnf',
             generatedTitle: 'Gunnm Vol. 2',
             editions: [edition('9782723434324', { publishers: ['Glénat', 'Seinen manga'] })],
         },
         {
             volume: 3,
+            source: 'bnf',
             generatedTitle: 'Gunnm Vol. 3',
             editions: [edition('9782723434775', { publishers: ['Kana'] })],
         },
         {
             volume: 4,
+            source: 'bnf',
             generatedTitle: 'Gunnm Vol. 4',
             editions: [edition('9782723434782', { publishers: [] })],
         },
@@ -468,7 +475,7 @@ it('adds nothing when the review is cancelled', async () => {
     expect(api.calls.map((call) => call.route)).not.toContain('POST /books/volumes');
 });
 
-it('explains that the edition is not in the BnF catalogue', async () => {
+it('explains that the edition is in neither catalogue', async () => {
     library({ kind: 'edition-not-found' });
     renderRoute('/collections/c1', { '/collections/:id': <CollectionDetailsPage /> });
     await userEvent.click(await screen.findByRole('button', { name: 'Add volumes' }));
@@ -478,9 +485,93 @@ it('explains that the edition is not in the BnF catalogue', async () => {
 
     expect(
         await screen.findByText(
-            'The edition of this collection was not found in the BnF catalogue. Nothing was added.',
+            'The edition of this collection was not found in the BnF or Sudoc catalogues. Nothing was added.',
         ),
     ).toBeVisible();
+});
+
+async function searched(answer: MissingVolumesDto) {
+    library(answer);
+    renderRoute('/collections/c1', { '/collections/:id': <CollectionDetailsPage /> });
+    await userEvent.click(await screen.findByRole('button', { name: 'Add volumes' }));
+    await userEvent.type(screen.getByRole('spinbutton', { name: /Up to volume/ }), '4');
+    await userEvent.click(screen.getByRole('button', { name: 'Find volumes' }));
+}
+
+it('names the catalogue that cannot be reached', async () => {
+    await searched({ kind: 'unavailable', catalogues: ['sudoc'], retryAt: null });
+
+    expect(
+        await screen.findByText(
+            'The Sudoc catalogue cannot be reached right now. Try again in a few minutes.',
+        ),
+    ).toBeVisible();
+});
+
+it('names both catalogues when neither can be reached', async () => {
+    await searched({ kind: 'unavailable', catalogues: ['bnf', 'sudoc'], retryAt: null });
+
+    expect(
+        await screen.findByText(
+            'The BnF and Sudoc catalogues cannot be reached right now. Try again in a few minutes.',
+        ),
+    ).toBeVisible();
+});
+
+it('names the BnF as the catalogue the volumes come from, and credits it', async () => {
+    await searched(found);
+
+    const panel = await screen.findByRole('region', { name: 'Volumes to add' });
+
+    expect(
+        within(panel).getByText(/^Found in the BnF catalogue from the edition of volume 1\./),
+    ).toBeVisible();
+    expect(within(panel).getByText('Source: BnF catalogue (Licence Ouverte).')).toBeVisible();
+});
+
+it('names the Sudoc alone when only it answered', async () => {
+    await searched({ ...found, catalogues: ['sudoc'] });
+
+    const panel = await screen.findByRole('region', { name: 'Volumes to add' });
+
+    expect(
+        within(panel).getByText(/^Found in the Sudoc catalogue from the edition of volume 1\./),
+    ).toBeVisible();
+    expect(within(panel).getByText('Source: Sudoc catalogue (Licence Ouverte).')).toBeVisible();
+});
+
+it('names both catalogues when both contributed, and credits both', async () => {
+    await searched({ ...found, catalogues: ['bnf', 'sudoc'] });
+
+    const panel = await screen.findByRole('region', { name: 'Volumes to add' });
+
+    expect(
+        within(panel).getByText(
+            /^Found in the BnF and Sudoc catalogues from the edition of volume 1\./,
+        ),
+    ).toBeVisible();
+    expect(
+        within(panel).getByText('Sources: BnF and Sudoc catalogues (Licence Ouverte).'),
+    ).toBeVisible();
+});
+
+it('warns that volumes may be missing when a catalogue could not answer', async () => {
+    await searched({ ...found, unavailable: ['sudoc'] });
+
+    expect(
+        await screen.findByText(
+            'The Sudoc catalogue could not answer, so volumes may be missing from this list.',
+        ),
+    ).toBeVisible();
+});
+
+it("says which catalogue suggests a volume's title", async () => {
+    await searched({
+        ...found,
+        rows: found.kind === 'found' ? found.rows.map((row) => ({ ...row, source: 'sudoc' })) : [],
+    });
+
+    expect(await screen.findByText('Sudoc suggests: La vierge de fer')).toBeVisible();
 });
 
 it('cancels the volume search when its dialog is closed', async () => {
@@ -490,7 +581,7 @@ it('cancels the volume search when its dialog is closed', async () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Add volumes' }));
     await userEvent.type(screen.getByRole('spinbutton', { name: /Up to volume/ }), '4');
     await userEvent.click(screen.getByRole('button', { name: 'Find volumes' }));
-    await screen.findByText(/was not found in the BnF catalogue/);
+    await screen.findByText(/was not found in the BnF or Sudoc catalogues/);
 
     await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
 

@@ -6,6 +6,7 @@ import type {
 } from '../../../../application/ports/driven/lookup-source.interface.js';
 import type { LookupAnswer } from '../../../../domain/value-objects/lookup-answer.value-object.js';
 import type { SourceHttp } from './source-http.adapter.js';
+import { SudocSru } from './sudoc-sru.adapter.js';
 import { UnimarcRecord } from './unimarc-record.adapter.js';
 
 type Unsettled = SourceRefusal | 'failed';
@@ -24,20 +25,24 @@ type SudocPpn = { ppn?: string };
 //
 // Its robots.txt asks for 5 seconds between requests.
 export class SudocCatalogue implements LookupSource<LookupAnswer> {
-    static readonly address = 'https://www.sudoc.abes.fr/cbs/sru/';
+    static readonly address = SudocSru.address;
     static readonly recordsAddress = 'https://www.sudoc.fr';
-    static readonly pageSize = 50;
+    static readonly pageSize = SudocSru.pageSize;
     static readonly maximumPages = 2;
     static readonly maximumPpns = 2;
 
     readonly name = 'sudoc';
     readonly batchSize = 13;
 
+    private readonly sru: SudocSru;
+
     constructor(
         private readonly http: SourceHttp,
-        private readonly address = SudocCatalogue.address,
+        address = SudocCatalogue.address,
         private readonly recordsAddress = SudocCatalogue.recordsAddress,
-    ) {}
+    ) {
+        this.sru = new SudocSru(http, address);
+    }
 
     async find(
         isbn13s: readonly string[],
@@ -147,31 +152,18 @@ export class SudocCatalogue implements LookupSource<LookupAnswer> {
     ): Promise<Step<UnimarcRecord[]>> {
         const records: UnimarcRecord[] = [];
 
-        for (let page = 0; page < SudocCatalogue.maximumPages; page++) {
-            const parameters = new URLSearchParams({
-                operation: 'searchRetrieve',
-                version: '1.1',
-                recordSchema: 'unimarc',
-                query: isbn13s.map((isbn13) => 'isb=' + isbn13).join(' or '),
-                maximumRecords: String(SudocCatalogue.pageSize),
-                startRecord: String(page * SudocCatalogue.pageSize + 1),
-            });
-            const reply = await this.http.get(
-                this.address + '?' + parameters.toString(),
-                'application/xml',
-                turn,
-            );
+        const query = isbn13s.map((isbn13) => 'isb=' + isbn13).join(' or ');
 
-            if (reply.kind !== 'ok') {
-                return { kind: 'stopped', reason: reply };
+        for (let page = 0; page < SudocCatalogue.maximumPages; page++) {
+            const found = await this.sru.search(query, turn, page * SudocCatalogue.pageSize + 1);
+
+            if (found.kind !== 'ok') {
+                return { kind: 'stopped', reason: found };
             }
 
-            const xml = await reply.response.text();
-            const found = UnimarcRecord.all(xml);
+            records.push(...found.records);
 
-            records.push(...found);
-
-            if (found.length === 0 || records.length >= UnimarcRecord.count(xml)) {
+            if (found.records.length === 0 || records.length >= found.total) {
                 break;
             }
         }
