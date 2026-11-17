@@ -717,6 +717,7 @@ export type ActivityEventDto =
     | { kind: 'books-lent' | 'books-returned'; receiver: string; titles: string[] }
     | { kind: 'collection-category-changed'; name: string; category: BookCategory; count: number }
     | { kind: 'volumes-added'; name: string; count: number }
+    | { kind: 'books-edited'; titles: string[] }
     | {
           kind:
               | 'collection-created'

@@ -25,6 +25,29 @@ function loan(title: string, receiver = 'Sam'): Record<string, unknown> {
     return { loan: { title, receiver: { id: 'receiver-1', name: receiver }, status: 'lent' } };
 }
 
+function batch(bookIds: string[], ...records: ActivityRecord[]): ActivityOperation {
+    return operation(
+        record(
+            'collection.books-batch-edited',
+            { name: 'Higehiro' },
+            { name: 'Higehiro', bookIds },
+            {
+                subjectId: 'collection-1',
+            },
+        ),
+        ...records,
+    );
+}
+
+function retagged(id: string, title: string): ActivityRecord {
+    return record(
+        'book.organised',
+        { title, tags: [{ id: 'tag-2' }] },
+        { title, tags: [{ id: 'tag-1' }] },
+        { subjectId: id },
+    );
+}
+
 describe('ActivityProjection', () => {
     it('describes an added book with its operation, time and acting account', () => {
         const added = operation(record('book.created', { title: 'Dune', ownership: 'owned' }));
@@ -442,5 +465,119 @@ describe('ActivityProjection', () => {
         const entry = ActivityProjection.entry(unreadable);
 
         expect(entry).toBeNull();
+    });
+    it('describes a batch edit of several books as one event listing the books in the batch order', () => {
+        const ids = ['b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7'];
+        const edited = batch(ids, ...[...ids].reverse().map((id) => retagged(id, 'Vol. ' + id)));
+
+        const entry = ActivityProjection.entry(edited);
+
+        expect(entry?.event).toEqual({
+            kind: 'books-edited',
+            titles: ['Vol. b1', 'Vol. b2', 'Vol. b3', 'Vol. b4', 'Vol. b5', 'Vol. b6', 'Vol. b7'],
+        });
+    });
+    it('describes a batch edit of one book as one event with its title', () => {
+        const edited = batch(['b1'], retagged('b1', 'Vol. 1'));
+
+        const entry = ActivityProjection.entry(edited);
+
+        expect(entry?.event).toEqual({ kind: 'books-edited', titles: ['Vol. 1'] });
+    });
+    it('leaves out of a batch edit the books whose only change is the reading status', () => {
+        const edited = batch(
+            ['b1', 'b2'],
+            retagged('b1', 'Vol. 1'),
+            record(
+                'book.reading-status-changed',
+                { read: true },
+                { read: false },
+                { subjectId: 'b2' },
+            ),
+        );
+
+        const entry = ActivityProjection.entry(edited);
+
+        expect(entry?.event).toEqual({ kind: 'books-edited', titles: ['Vol. 1'] });
+    });
+    it('gives no entry for a batch edit that changed only reading statuses', () => {
+        const edited = batch(
+            ['b1'],
+            record(
+                'book.reading-status-changed',
+                { read: true },
+                { read: false },
+                { subjectId: 'b1' },
+            ),
+        );
+
+        const entry = ActivityProjection.entry(edited);
+
+        expect(entry).toBeNull();
+    });
+    it('leaves out of a batch edit the books the batch left unchanged', () => {
+        const edited = batch(
+            ['b1', 'b2', 'b3'],
+            retagged('b1', 'Vol. 1'),
+            retagged('b3', 'Vol. 3'),
+        );
+
+        const entry = ActivityProjection.entry(edited);
+
+        expect(entry?.event).toEqual({ kind: 'books-edited', titles: ['Vol. 1', 'Vol. 3'] });
+    });
+    it('lists a book once in a batch edit and does not repeat its changes', () => {
+        const edited = batch(
+            ['b1'],
+            record(
+                'book.updated',
+                { title: 'Vol. 1', publisher: 'Kana' },
+                { title: 'Vol. 1' },
+                {
+                    subjectId: 'b1',
+                },
+            ),
+            retagged('b1', 'Vol. 1'),
+            record('book.marked-owned', { ownership: 'owned' }, null, { subjectId: 'b1' }),
+            record('book.retitled', { title: 'Vol. 1' }, null, { subjectId: 'b1' }),
+        );
+
+        const entry = ActivityProjection.entry(edited);
+
+        expect(entry).toMatchObject({
+            event: { kind: 'books-edited', titles: ['Vol. 1'] },
+            also: [],
+        });
+    });
+    it('names a batch edited book by its current title when its record has none', () => {
+        const edited = batch(
+            ['b1'],
+            record('book.marked-owned', { ownership: 'owned' }, null, {
+                subjectId: 'b1',
+                currentTitle: 'Vol. 1',
+            }),
+        );
+
+        const entry = ActivityProjection.entry(edited);
+
+        expect(entry?.event).toEqual({ kind: 'books-edited', titles: ['Vol. 1'] });
+    });
+    it('keeps the other consequences of a batch edit in the also line', () => {
+        const edited = batch(
+            ['b1'],
+            retagged('b1', 'Vol. 1'),
+            record(
+                'collection.updated',
+                { name: 'Higehiro' },
+                { name: 'Higehiro' },
+                {
+                    subjectId: 'collection-1',
+                },
+            ),
+        );
+
+        const entry = ActivityProjection.entry(edited);
+
+        expect(entry?.also).toEqual([{ kind: 'collection-updated', name: 'Higehiro' }]);
     });
 });

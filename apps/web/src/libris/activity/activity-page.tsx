@@ -27,6 +27,7 @@ function useNow(): Date {
 const icons: Record<ActivityEntryDto['event']['kind'], IconName> = {
     'book-added': 'book-add',
     'book-updated': 'books',
+    'books-edited': 'books',
     'book-marked-owned': 'books',
     'book-deleted': 'books',
     'book-relocated': 'bookshelves',
@@ -183,6 +184,7 @@ export function ActivityPage() {
                     <ol className="activity-list" aria-label={t('activity.listLabel')}>
                         {entries.map((entry) => {
                             const also = ActivitySentence.also(entry.also, t);
+                            const titles = ActivitySentence.titles(entry.event, t);
 
                             return (
                                 <li key={entry.id} className="activity-entry">
@@ -195,6 +197,7 @@ export function ActivityPage() {
                                         <p className="activity-entry__action">
                                             {ActivitySentence.main(entry.event, t)}
                                         </p>
+                                        {titles && <p className="activity-entry__also">{titles}</p>}
                                         {also && <p className="activity-entry__also">{also}</p>}
                                         <EntryTime
                                             entry={entry}

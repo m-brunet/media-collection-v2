@@ -231,4 +231,76 @@ describe('ActivitySentence', () => {
 
         expect(line).toBe('Aussi : ajout de l’emprunteur Sam');
     });
+    it('says several books were edited together', () => {
+        const event: ActivityEventDto = { kind: 'books-edited', titles: ['Gunnm 1', 'Gunnm 2'] };
+
+        const sentence = ActivitySentence.main(event, t);
+
+        expect(sentence).toBe('You edited 2 books');
+    });
+    it('says several books were edited together, in French', () => {
+        const event: ActivityEventDto = { kind: 'books-edited', titles: ['Gunnm 1', 'Gunnm 2'] };
+
+        const sentence = ActivitySentence.main(event, tFr);
+
+        expect(sentence).toBe('Vous avez modifié 2 livres');
+    });
+    it('names the single book of a batch edit', () => {
+        const event: ActivityEventDto = { kind: 'books-edited', titles: ['Gunnm 1'] };
+
+        const sentence = ActivitySentence.main(event, t);
+
+        expect(sentence).toBe('You updated Gunnm 1');
+    });
+    it('lists the books of a batch edit', () => {
+        const event: ActivityEventDto = { kind: 'books-edited', titles: ['Gunnm 1', 'Gunnm 2'] };
+
+        const titles = ActivitySentence.titles(event, t);
+
+        expect(titles).toBe('Gunnm 1 · Gunnm 2');
+    });
+    it('does not list again the single book of a batch edit', () => {
+        const event: ActivityEventDto = { kind: 'books-edited', titles: ['Gunnm 1'] };
+
+        const titles = ActivitySentence.titles(event, t);
+
+        expect(titles).toBeNull();
+    });
+    it('lists the first 5 books of a batch edit and counts the others', () => {
+        const event: ActivityEventDto = {
+            kind: 'books-edited',
+            titles: ['V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7'],
+        };
+
+        const titles = ActivitySentence.titles(event, t);
+
+        expect(titles).toBe('V1 · V2 · V3 · V4 · V5 and 2 more');
+    });
+    it('counts the books of a batch edit left out of the list, in French', () => {
+        const event: ActivityEventDto = {
+            kind: 'books-edited',
+            titles: ['V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7'],
+        };
+
+        const titles = ActivitySentence.titles(event, tFr);
+
+        expect(titles).toBe('V1 · V2 · V3 · V4 · V5 et 2 autres');
+    });
+    it('counts the one book of a batch edit left out of the list, in French', () => {
+        const event: ActivityEventDto = {
+            kind: 'books-edited',
+            titles: ['V1', 'V2', 'V3', 'V4', 'V5', 'V6'],
+        };
+
+        const titles = ActivitySentence.titles(event, tFr);
+
+        expect(titles).toBe('V1 · V2 · V3 · V4 · V5 et 1 autre');
+    });
+    it('lists no books for another event', () => {
+        const event: ActivityEventDto = { kind: 'book-added', title: 'Dune' };
+
+        const titles = ActivitySentence.titles(event, t);
+
+        expect(titles).toBeNull();
+    });
 });

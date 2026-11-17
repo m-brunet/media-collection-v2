@@ -44,7 +44,42 @@ function tag(name: string) {
     return arrange<TagDto>('/tags', 'POST', { name });
 }
 
+function volume(number: number) {
+    return arrange<BookDto>(
+        '/books',
+        'POST',
+        BookInputFixture.of({
+            title: 'Gunnm ' + number,
+            isbn: null,
+            noIsbn: true,
+            confirmDistinct: true,
+            collection: { collection: { name: 'Gunnm' }, volumeFrom: number, volumeTo: number },
+        }),
+    );
+}
+
 describe('GET /api/activity', () => {
+    it('shows a batch edit of several books as one entry listing the books', async () => {
+        const first = await volume(1);
+        const second = await volume(2);
+        const third = await volume(3);
+        const fantasy = await tag('Fantasy');
+
+        await arrange('/books/batch-edit', 'POST', {
+            collectionId: first.collection?.id,
+            bookIds: [first.id, second.id, third.id],
+            preview: false,
+            changes: { tags: { add: [fantasy.id], remove: [] } },
+        });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<ActivityPageDto>('/activity');
+
+        expect(response.body.entries[0]).toMatchObject({
+            event: { kind: 'books-edited', titles: ['Gunnm 1', 'Gunnm 2', 'Gunnm 3'] },
+            also: [],
+        });
+    });
     it('shows a lending of two books as one entry naming the receiver', async () => {
         const dune = await book('Dune', '9780441172719');
         const emma = await book('Emma', '9780141439587');

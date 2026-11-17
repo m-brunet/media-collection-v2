@@ -120,7 +120,7 @@ Audit logs are required from the first release. Each user-initiated use-case act
 
 Each record stores its category, a separate Successful/Failed outcome, who performed the action, when it happened, and before/after values as applicable. Failed use-case actions are retained for technical investigation. The actor references the user table; Activity resolves the current username, including for older events after a rename. Password values are explicitly excluded from before/after data. Other credential redaction safeguards are listed in [decisions and open questions](decisions-and-open-questions.md).
 
-A batch edit from a collection page is one record on the collection (`collection.books-batch-edited`), with each changed book's changes recorded as related records of the same operation ([collections](collections.md#batch-edit)).
+A batch edit from a collection page is one record on the collection (`collection.books-batch-edited`), with each changed book's changes recorded as related records of the same operation; Activity shows it as a single entry listing the edited books ([collections](collections.md#batch-edit)).
 
 Adding missing volumes is one record on the collection (`collection.volumes-added`), with each new book as a related `book.created`; Activity shows it as a single entry ([collections](collections.md#add-missing-volumes)).
 

@@ -131,6 +131,27 @@ it('shows the changes an operation caused under it', async () => {
     expect(await screen.findByText('Also: created the collection Naruto')).toBeInTheDocument();
 });
 
+it('shows a batch edit as one entry with the edited books under it', async () => {
+    new FakeApi().signedIn(account()).on('GET /activity', () => ({
+        status: 200,
+        body: page([
+            entry('o1', {
+                event: { kind: 'books-edited', titles: ['Gunnm 1', 'Gunnm 2'] },
+                also: [{ kind: 'collection-updated', name: 'Gunnm' }],
+            }),
+        ]),
+    }));
+
+    show();
+
+    const [edited] = await screen.findAllByRole('listitem');
+
+    expect(edited).toHaveTextContent('You edited 2 books');
+    expect(within(edited!).getByText('Gunnm 1 · Gunnm 2')).toBeInTheDocument();
+    expect(within(edited!).getByText('Also: updated the collection Gunnm')).toBeInTheDocument();
+    expect(iconOf(edited!)).toBe(menuIcon('books'));
+});
+
 it('shows the exact time and the acting account on hover', async () => {
     new FakeApi().signedIn(account()).on('GET /activity', () => ({
         status: 200,
