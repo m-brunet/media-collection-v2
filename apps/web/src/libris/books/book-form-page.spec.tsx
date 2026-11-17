@@ -242,9 +242,7 @@ it('keeps a close publisher spelling once the person confirms it is different', 
 
     await savePublisher('Glénatt');
 
-    await userEvent.click(
-        await screen.findByRole('button', { name: 'Keep “Glénatt” as a different publisher' }),
-    );
+    await userEvent.click(await screen.findByRole('button', { name: 'Keep “Glénatt” as typed' }));
 
     await vi.waitFor(() =>
         expect(api.calls.filter((call) => call.route === 'POST /books')[1]?.body).toMatchObject({

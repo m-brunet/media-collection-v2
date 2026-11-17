@@ -56,7 +56,7 @@ export class UpdateBook implements UpdateBookUseCase {
                     organisation: await this.organiser.current(bookId),
                 });
                 const previousAuthors = book.details.authorIds;
-                const details = await this.builder.build(input);
+                const details = await this.builder.build(input, book.details);
                 const replacing = input.replacePlanned ?? [];
 
                 if (details.ownership === 'not-owned') {

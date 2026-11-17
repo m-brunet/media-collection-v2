@@ -76,12 +76,19 @@ describe('BookDraft', () => {
 
         expect(result).toMatchObject({ publisher: 'Kana', publisherDistinct: false });
     });
-    it('keeps the different publisher answer while the same name is retyped', () => {
+    it('keeps the publisher answer while only outer spaces change', () => {
         const values = { ...BookDraft.empty(), publisher: 'Glénatt', publisherDistinct: true };
 
-        const result = BookDraft.changed(values, { publisher: 'glenatt ' });
+        const result = BookDraft.changed(values, { publisher: 'Glénatt ' });
 
         expect(result.publisherDistinct).toBe(true);
+    });
+    it('forgets the publisher answer once the case of the publisher changes', () => {
+        const values = { ...BookDraft.empty(), publisher: 'Glénatt', publisherDistinct: true };
+
+        const result = BookDraft.changed(values, { publisher: 'glénatt' });
+
+        expect(result.publisherDistinct).toBe(false);
     });
     it('sends no ISBN when the book has none', () => {
         const values = { ...BookDraft.empty(), isbn: '978', noIsbn: true };

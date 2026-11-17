@@ -138,18 +138,37 @@ describe('POST /api/books', () => {
             details: { name: 'Sam Tayler', candidates: [{ name: 'Sam Taylor' }] },
         });
     });
-    it('saves a publisher of an existing key under the existing spelling', async () => {
+    it('asks before saving another case of an existing publisher', async () => {
+        await created({ publisher: 'Glénat' });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call(
+            '/books',
+            'POST',
+            BookInputFixture.of({ isbn: '9780306406157', publisher: 'GLENAT ' }),
+        );
+
+        expect(response.status).toBe(409);
+        expect(response.body).toMatchObject({
+            reason: 'publisher-similar',
+            details: { name: 'GLENAT', candidates: ['Glénat'] },
+        });
+    });
+    it('saves another case of an existing publisher as typed once confirmed', async () => {
         await created({ publisher: 'Glénat' });
         const client = await app.authenticatedClient(owner);
 
         const response = await client.call<BookDto>(
             '/books',
             'POST',
-            BookInputFixture.of({ isbn: '9780306406157', publisher: 'GLENAT ' }),
+            BookInputFixture.of({
+                isbn: '9780306406157',
+                publisher: 'GLENAT',
+                publisherDistinct: true,
+            }),
         );
 
-        expect(response.status).toBe(201);
-        expect(response.body.publisher).toBe('Glénat');
+        expect(response.body.publisher).toBe('GLENAT');
     });
     it('asks before saving a publisher spelling close to an existing one', async () => {
         await created({ publisher: 'Glénat' });

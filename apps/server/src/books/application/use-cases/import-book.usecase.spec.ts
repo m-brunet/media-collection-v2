@@ -206,7 +206,7 @@ describe('ImportBook', () => {
         await expect(result).rejects.toMatchObject({ code: 'forbidden' });
         expect(current.books.books.size).toBe(0);
     });
-    it('imports a publisher under the existing spelling of its key, without asking', async () => {
+    it('imports a publisher in another case than an existing one as sent, without asking', async () => {
         const current = BookDoubles.library();
 
         await subject(current).execute(administrator, imported());
@@ -216,7 +216,7 @@ describe('ImportBook', () => {
             imported({ isbn: '9782811211561', publisher: 'MILADY' }),
         );
 
-        expect(current.books.books.get(result.bookId)!.details.publisher).toBe('Milady');
+        expect(current.books.books.get(result.bookId)!.details.publisher).toBe('MILADY');
     });
     it('imports a publisher close to an existing one as typed, without asking', async () => {
         const current = BookDoubles.library();

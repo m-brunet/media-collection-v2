@@ -16,7 +16,7 @@ export class BookDetailsBuilder {
         private readonly publishers: PublisherMatcher,
     ) {}
 
-    async build(input: BookInput): Promise<BookDetails> {
+    async build(input: BookInput, current: BookDetails | null = null): Promise<BookDetails> {
         const isbn = input.noIsbn || !input.isbn?.trim() ? null : Isbn.parse(input.isbn);
         const price = input.price?.trim() ? Price.parse(input.price) : null;
         const generated = input.title.trim() === '';
@@ -40,6 +40,7 @@ export class BookDetailsBuilder {
             publisher: await this.publishers.resolve(
                 input.publisher,
                 input.publisherDistinct === true,
+                current?.publisher ?? null,
             ),
             publicationDate: PublicationDate.from(input.publicationYear, input.publicationMonth),
             summary: input.summary,

@@ -1047,9 +1047,9 @@ export const en = {
     'form.volumeRequired': 'Enter the volume number.',
     'similarPublisher.title': 'Use an existing publisher?',
     'similarPublisher.body':
-        '“{name}” is close to an existing publisher. Use it, or keep “{name}” as a different publisher.',
+        '“{name}” is close to an existing publisher. Use it, or keep “{name}” as typed.',
     'similarPublisher.use': 'Use {name}',
-    'similarPublisher.keep': 'Keep “{name}” as a different publisher',
+    'similarPublisher.keep': 'Keep “{name}” as typed',
     'similarCollection.title': 'Use an existing collection?',
     'similarCollection.body':
         '“{name}” is close to an existing collection. Join it, or create a different collection.',

@@ -289,8 +289,7 @@ export class BookDraft {
 
         return {
             publisherDistinct:
-                current.publisherDistinct &&
-                BookDraft.nameKey(changes.publisher) === BookDraft.nameKey(current.publisher),
+                current.publisherDistinct && changes.publisher.trim() === current.publisher.trim(),
         };
     }
 
