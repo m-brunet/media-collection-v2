@@ -37,6 +37,8 @@ describe('French catalogue', () => {
             french.translate('bookcase.created', { name: 'Salon' }),
             french.translate('bookcase.deleted', { name: 'Salon' }),
             french.translate('bookcase.deleteBodyNone'),
+            french.translate('bookcase.deleteBodyOne'),
+            french.translate('bookcase.deleteBodyMany', { count: 3 }),
             french.translate('bookshelves.emptyGuest'),
             french.translate('shelf.moveBody'),
         ];
@@ -45,6 +47,8 @@ describe('French catalogue', () => {
             '« Salon » a été créé.',
             '« Salon » a été supprimé. Ses livres ont été conservés.',
             'Aucun livre ne sera supprimé. Le rayonnage sera retiré.',
+            'Aucun livre ne sera supprimé. Le rayonnage et son étagère seront retirés.',
+            'Aucun livre ne sera supprimé. Le rayonnage et ses 3 étagères seront retirés.',
             'Aucun rayonnage n’a encore été créé.',
             'L’étagère garde ses livres dans son nouveau rayonnage. La destination ne doit pas déjà avoir une étagère au nom équivalent.',
         ]);
@@ -68,7 +72,7 @@ describe('French catalogue', () => {
             'Ce rayonnage a déjà une étagère au nom équivalent.',
         ]);
     });
-    it('calls the furniture a rayonnage in Overview, Activity and the data reset', () => {
+    it('calls the furniture a rayonnage in Overview and Activity', () => {
         const shown = [
             french.translate('overview.bookcases'),
             french.translate('overview.noBookcases'),
@@ -84,7 +88,11 @@ describe('French catalogue', () => {
             'Vous avez renommé le rayonnage Salon en Bureau',
             'Vous avez supprimé le rayonnage Salon',
         ]);
-        expect(french.translate('dataReset.body')).toContain('collections, rayonnages, étiquettes');
+    });
+    it('lists rayonnages in what the data reset erases', () => {
+        const body = french.translate('dataReset.body');
+
+        expect(body).toContain('collections, rayonnages, étiquettes');
     });
     it('keeps bibliothèque for the Library page and the household library', () => {
         const shown = texts('nav.books', 'books.title', 'nav.library', 'details.back');
@@ -97,7 +105,7 @@ describe('French catalogue', () => {
         ]);
     });
     it('says bibliothèque in no text about bookcases, shelves, locations or their filters', () => {
-        const furniture = /^(bookcase|bookshelves|shelf|location|addBooks|columns)\.|bookcase/i;
+        const furniture = /bookcase|bookshel|shelf|location|^(addBooks|columns)\./i;
 
         const remaining = (Object.keys(fr) as MessageKey[]).filter(
             (key) => furniture.test(key) && /biblioth/i.test(fr[key]),
@@ -105,7 +113,7 @@ describe('French catalogue', () => {
 
         expect(remaining).toEqual([]);
     });
-    it('has the same texts as the English catalogue', () => {
+    it('has the same keys as the English catalogue', () => {
         const keys = Object.keys(fr).sort();
 
         expect(keys).toEqual(Object.keys(en).sort());
