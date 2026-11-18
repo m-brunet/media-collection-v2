@@ -358,6 +358,7 @@ describe('Bookshelves Wall', () => {
 
         const bay = await width(page, '.wall-shelf__bay');
         const chosen = page.getByRole('radio', { name: 'Small' });
+
         expect(bay).toBe(222);
         expect(await chosen.isChecked()).toBe(true);
     });
@@ -378,6 +379,7 @@ describe('Bookshelves Wall', () => {
         await spine(page, /^Dune \d+ · Susanna Clarke$/).waitFor();
 
         const bay = await width(page, '.wall-shelf__bay');
+
         expect(bay).toBe(432);
     });
 

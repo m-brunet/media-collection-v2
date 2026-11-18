@@ -558,6 +558,7 @@ it('offers an Owner the width of the open bookcase before Add shelf', async () =
         screen.getByRole('button', { name: 'Add shelf' }),
     );
     const addShelfFollows = (order & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+
     expect(within(width()).getByRole('radio', { name: 'Large' })).toBeChecked();
     expect(addShelfFollows).toBe(true);
 });
@@ -591,6 +592,7 @@ it('makes the open bookcase Small at once, saves it and redraws it', async () =>
 
             return { status: 200, body: saved[0] };
         });
+
     await shown();
 
     await userEvent.click(within(width()).getByRole('radio', { name: 'Small' }));
@@ -638,6 +640,7 @@ it('draws a Small bookcase half as wide in the strip', async () => {
     const miniatures = within(strip())
         .getAllByRole('button')
         .map((button) => button.querySelector('.wall-miniature')?.className);
+
     expect(miniatures).toEqual([
         'wall-miniature',
         'wall-miniature wall-miniature--small',

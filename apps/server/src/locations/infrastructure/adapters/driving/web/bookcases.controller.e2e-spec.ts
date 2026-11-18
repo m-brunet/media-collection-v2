@@ -325,6 +325,7 @@ describe('PATCH /api/bookcases/:id with a size', () => {
         const response = await client.call('/bookcases/' + oak.id, 'PATCH', { size: 'small' });
 
         const entries = await app.dependencies.audit.entries();
+
         expect(response.status).toBe(200);
         expect(entries).toContainEqual(
             expect.objectContaining({

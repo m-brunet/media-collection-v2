@@ -37,6 +37,7 @@ const bookcases: BookcaseDto[] = [
     {
         id: 'salon',
         name: 'Salon',
+        size: 'large',
         bookCount: 0,
         shelves: [{ id: 'top', bookcaseId: 'salon', name: 'Top', bookCount: 0 }],
     },

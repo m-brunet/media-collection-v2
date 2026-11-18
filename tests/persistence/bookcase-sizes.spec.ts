@@ -68,6 +68,7 @@ it('makes a bookcase from before the update Large', async () => {
     await migrator.migrateToLatest();
 
     const size = await sizeOf(db, id);
+
     expect(size).toBe('large');
 });
 it('makes a bookcase added without a size Large', async () => {

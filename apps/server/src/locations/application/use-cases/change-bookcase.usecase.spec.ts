@@ -104,6 +104,7 @@ describe('ChangeBookcase, resizing', () => {
         await subject(current).execute(owner, bookcase.id, { size: 'small' });
 
         const saved = await current.bookcases.findById(bookcase.id);
+
         expect(saved?.snapshot.size).toBe('small');
     });
     it('records the previous and new sizes as a resize', async () => {

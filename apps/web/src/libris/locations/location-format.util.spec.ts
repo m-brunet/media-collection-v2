@@ -6,13 +6,14 @@ const bookcases: BookcaseDto[] = [
     {
         id: 'oak',
         name: 'Oak bookcase',
+        size: 'large',
         bookCount: 3,
         shelves: [
             { id: 'shelf-1', bookcaseId: 'oak', name: 'Shelf 1', bookCount: 1 },
             { id: 'shelf-3', bookcaseId: 'oak', name: 'Shelf 3', bookCount: 2 },
         ],
     },
-    { id: 'hall', name: 'Hall bookcase', bookCount: 0, shelves: [] },
+    { id: 'hall', name: 'Hall bookcase', size: 'large', bookCount: 0, shelves: [] },
 ];
 
 describe('LocationFormat', () => {
