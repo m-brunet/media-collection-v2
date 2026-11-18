@@ -682,6 +682,96 @@ it('shows no author list when no existing author matches', async () => {
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
 });
 
+function knownTags() {
+    api.on('GET /tags', () => ({
+        status: 200,
+        body: [
+            { id: 't1', name: 'SF · Classiques', bookCount: 4 },
+            { id: 't2', name: 'SF · Space opera', bookCount: 2 },
+        ],
+    }));
+}
+
+function tagsField() {
+    return screen.getByRole('combobox', { name: /^Tags/ });
+}
+
+it('suggests the existing tags matching what is typed', async () => {
+    knownTags();
+    open();
+    await screen.findByLabelText(/^Title/);
+
+    await userEvent.type(tagsField(), 'sf');
+
+    const list = await screen.findByRole('listbox', { name: 'Suggestions for Tags' });
+    const names = within(list)
+        .getAllByRole('option')
+        .map((option) => option.textContent);
+
+    expect(names).toEqual(['SF · Classiques', 'SF · Space opera']);
+    expect(api.calls.map((call) => call.route)).toContain('GET /tags?search=sf');
+});
+
+it('adds a tapped tag as a chip and clears the field', async () => {
+    knownTags();
+    open();
+    await screen.findByLabelText(/^Title/);
+    await userEvent.type(tagsField(), 'sf');
+
+    await userEvent.click(await screen.findByRole('option', { name: 'SF · Classiques' }));
+
+    const chips = within(screen.getByRole('list', { name: 'Tags' })).getByText('SF · Classiques');
+
+    expect(chips).toBeVisible();
+    expect(tagsField()).toHaveValue('');
+});
+
+it('does not suggest a tag already chosen', async () => {
+    knownTags();
+    open();
+    await screen.findByLabelText(/^Title/);
+    await userEvent.type(tagsField(), 'sf');
+    await userEvent.click(await screen.findByRole('option', { name: 'SF · Classiques' }));
+
+    await userEvent.type(tagsField(), 'sf');
+
+    const list = await screen.findByRole('listbox', { name: 'Suggestions for Tags' });
+    const names = within(list)
+        .getAllByRole('option')
+        .map((option) => option.textContent);
+
+    expect(names).toEqual(['SF · Space opera']);
+});
+
+it('saves a tapped tag as the existing one', async () => {
+    knownTags();
+    api.on('POST /books', () => ({ status: 201, body: bookDto({ id: 'new' }) }));
+    open();
+    await screen.findByLabelText(/^Title/);
+    await userEvent.type(tagsField(), 'sf');
+    await userEvent.click(await screen.findByRole('option', { name: 'SF · Space opera' }));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Save book' }));
+
+    expect(await screen.findByText('Elsewhere: /saved')).toBeInTheDocument();
+    const created = api.calls.find((call) => call.route === 'POST /books')!.body as NewBookDto;
+
+    expect(created.tags).toEqual([{ id: 't2' }]);
+});
+
+it('still adds a new tag typed in full with Add tag', async () => {
+    knownTags();
+    open();
+    await screen.findByLabelText(/^Title/);
+    await userEvent.type(tagsField(), 'À relire');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add tag' }));
+
+    const chip = within(screen.getByRole('list', { name: 'Tags' })).getByText('À relire');
+
+    expect(chip).toBeVisible();
+});
+
 function knownCollections() {
     api.on('GET /collections/names', () => ({
         status: 200,
