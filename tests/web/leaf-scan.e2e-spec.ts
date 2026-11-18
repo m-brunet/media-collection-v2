@@ -172,6 +172,26 @@ describe('Scan and add a book', () => {
         await capture(page, 'leaf-author-suggestions');
     });
 
+    it('suggests an existing tag under the field without horizontal scrolling', async () => {
+        await admin.call('/tags', 'POST', {
+            name: 'Science-fiction classics with a very long tag name to wrap on a phone',
+        });
+        const page = await leafHome();
+
+        await scanPhoto(page, ewilan);
+        await page.getByRole('button', { name: 'Find book' }).click();
+        await page.getByRole('heading', { name: 'Review book' }).waitFor();
+
+        await page.getByRole('combobox', { name: /^Tags/ }).fill('scien');
+
+        await page
+            .getByRole('listbox', { name: 'Suggestions for Tags' })
+            .getByRole('option', { name: /^Science-fiction classics/ })
+            .waitFor();
+        expect(await noHorizontalScrolling(page)).toBe(true);
+        await capture(page, 'leaf-tag-suggestions');
+    });
+
     it('starts another scan from the success screen', async () => {
         const page = await leafHome();
 

@@ -29,7 +29,7 @@ import { LeafCoverField } from './leaf-cover-field';
 import { LeafSuggestedField } from './leaf-suggested-field';
 import type { Suggestion } from './suggestion-list.util';
 import { SuggestionList } from './suggestion-list.util';
-import { useAuthorSuggestions } from './use-author-suggestions';
+import { useNameSearch } from './use-name-search';
 import { PublisherSuggestions } from '../../shared/book-form/publisher-suggestions';
 
 export interface LeafFieldsProps {
@@ -196,7 +196,7 @@ function MainFields(props: LeafFieldsProps) {
     const { values, set, update, errorFor } = props;
     const generated = BookDraft.generatedTitle(values);
     const [authorSearch, setAuthorSearch] = useState('');
-    const knownAuthors = useAuthorSuggestions(authorSearch);
+    const knownAuthors = useNameSearch('/authors', authorSearch);
 
     return (
         <fieldset className="leaf-form__section">
@@ -344,6 +344,8 @@ function CollectionFields(props: LeafFieldsProps) {
 
 function OrganisationFields({ values, update, errorFor, bookcases }: LeafFieldsProps) {
     const { t } = useI18n();
+    const [tagSearch, setTagSearch] = useState('');
+    const knownTags = useNameSearch('/tags', tagSearch);
 
     return (
         <fieldset className="leaf-form__section">
@@ -364,6 +366,17 @@ function OrganisationFields({ values, update, errorFor, bookcases }: LeafFieldsP
                 error={errorFor('tags')}
                 addLabel={t('leaf.form.addTag')}
                 removeLabel={(name) => t('tags.remove', { name })}
+                suggestions={SuggestionList.of(
+                    knownTags,
+                    tagSearch,
+                    values.tags.map((tag) => tag.name),
+                )}
+                onType={setTagSearch}
+                onChoose={(suggestion) =>
+                    update({
+                        tags: [...values.tags, { id: suggestion.key, name: suggestion.label }],
+                    })
+                }
                 onAdd={(name) => update({ tags: [...values.tags, { id: null, name }] })}
                 onRemove={(index) =>
                     update({ tags: values.tags.filter((_, position) => position !== index) })
