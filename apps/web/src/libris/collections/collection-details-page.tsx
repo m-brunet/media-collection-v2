@@ -306,14 +306,23 @@ export function CollectionDetailsPage() {
                             {t(expected.key, expected.values)}
                         </p>
                         <p className="collection-summary__facts">
-                            {t('collection.facts', {
-                                zero: t(
-                                    collection.includesVolumeZero
-                                        ? 'collection.on'
-                                        : 'collection.off',
-                                ),
-                                highest: collection.expectedTo,
-                            })}
+                            {collection.lastVolume === null
+                                ? t('collection.facts', {
+                                      zero: t(
+                                          collection.includesVolumeZero
+                                              ? 'collection.on'
+                                              : 'collection.off',
+                                      ),
+                                      highest: collection.expectedTo,
+                                  })
+                                : t('collection.factsLast', {
+                                      zero: t(
+                                          collection.includesVolumeZero
+                                              ? 'collection.on'
+                                              : 'collection.off',
+                                      ),
+                                      last: collection.lastVolume,
+                                  })}
                         </p>
                     </div>
                     {editor && (

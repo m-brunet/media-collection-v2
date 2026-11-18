@@ -104,6 +104,7 @@ export class KyselyCollectionRepository implements CollectionRepository {
             category: row.category,
             includesVolumeZero: Boolean(row.includes_volume_zero),
             status: row.status,
+            lastVolume: row.last_volume,
             createdAt: row.created_at,
             updatedAt: row.updated_at,
         });
@@ -119,6 +120,7 @@ export class KyselyCollectionRepository implements CollectionRepository {
             category: state.category,
             includes_volume_zero: Number(state.includesVolumeZero),
             status: state.status,
+            last_volume: state.lastVolume,
             created_at: state.createdAt,
             updated_at: state.updatedAt,
         };

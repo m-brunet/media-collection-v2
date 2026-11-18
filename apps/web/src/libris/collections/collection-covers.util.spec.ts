@@ -28,6 +28,7 @@ function collection(volumes: CollectionDetailsDto['volumes']): CollectionDetails
         category: 'comics',
         includesVolumeZero: false,
         status: 'unfinished',
+        lastVolume: null,
         bookCount: 4,
         expectedFrom: 1,
         expectedTo: 7,

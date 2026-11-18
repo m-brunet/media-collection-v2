@@ -29,10 +29,18 @@ export class CollectionShopping {
     static of(coverage: CollectionCoverage, members: readonly ShoppingMember[]): ShoppingList {
         return {
             lastOwned: CollectionShopping.lastOwned(coverage, members),
-            missing: [...coverage.missing]
-                .sort((first, second) => second - first)
-                .map((volume) => CollectionShopping.missing(volume, members)),
+            missing: CollectionShopping.order(coverage).map((volume) =>
+                CollectionShopping.missing(volume, members),
+            ),
         };
+    }
+
+    private static order(coverage: CollectionCoverage): number[] {
+        const lastOwned = coverage.lastOwned ?? coverage.start - 1;
+        const after = coverage.missing.filter((volume) => volume > lastOwned);
+        const gaps = coverage.missing.filter((volume) => volume < lastOwned);
+
+        return [...after, ...gaps.sort((first, second) => second - first)];
     }
 
     private static lastOwned(

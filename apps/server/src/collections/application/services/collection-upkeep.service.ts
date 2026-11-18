@@ -28,13 +28,21 @@ export class CollectionUpkeep {
         }
 
         const before = new Collection(collection.snapshot);
+        const members = MemberCoverage.of(records);
+        const extended = collection.extend(members, now);
+        const reopened = collection.reconcile(members, now);
 
-        if (!collection.reconcile(MemberCoverage.of(records), now)) {
+        if (!extended && !reopened) {
             return null;
         }
 
         await this.collections.save(collection);
 
-        return CollectionChange.of(CollectionAudit.reopened, collectionId, before, collection);
+        return CollectionChange.of(
+            reopened ? CollectionAudit.reopened : CollectionAudit.updated,
+            collectionId,
+            before,
+            collection,
+        );
     }
 }

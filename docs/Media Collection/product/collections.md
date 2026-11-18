@@ -52,6 +52,14 @@ Entering volume 0 (including in omnibus coverage) while the option is off asks t
 
 Removing the highest saved coverage recalculates the range from remaining books; the previous upper bound is not remembered. This accommodates correcting mistaken entries. Unknown future publications are not inferred beyond saved coverage; no automatic publication-monitoring feature was requested.
 
+**Last volume** (decided 2026-11-18, issue #145): a collection can have an optional *Last volume* (FR *Dernier tome*), set in **Edit collection** next to "Includes volume 0" and empty by default. It is a volume number, not a count: with volume 0 and 15 volumes it is 14.
+
+- The expected range then ends at the higher of the Last volume and the highest saved coverage; every number in it without a book is an inferred, missing volume (dashed tile, Leaf entry, Statistics). Removing the highest book no longer shrinks the range below the Last volume.
+- Saving a book (or an omnibus range) past the Last volume raises it to that number, recorded as a collection edit. Nothing is raised when it is empty.
+- Setting it under the highest saved coverage is refused (`last-volume-below-saved`); it runs from the first volume of the collection to 9999 (`last-volume-invalid`). Emptying it is always allowed and brings back the range of the saved books.
+- A Finished collection given a Last volume past its books reopens to Unfinished (it now has gaps). A dropped collection can have one; its missing volumes stay out of the counts.
+- The collection page's facts line shows "Last volume: 15" instead of the highest saved coverage; **Add volumes** opens with it as "Up to volume". It is typed by hand: no catalogue fills it.
+
 ## Editions, omnibus books, and counts
 
 Different editions may share volume coverage. One record per edition remains the rule; separately managed identical-edition/ISBN copies are excluded.
@@ -194,7 +202,7 @@ For an Owned omnibus overlapping several planned records, offer Cancel or delete
 ## Mobile shopping
 
 - Show unfinished collections even when they have no gaps. Finished and dropped collections are hidden; opening one by its address says it is no longer listed for shopping. Scanning a book and the collection suggestions of the add-book form still know dropped collections, so a volume can still be added to one (it stays Dropped).
-- Missing volumes are compact 'Volume #' entries ('Tome #' in French), including saved Not Owned coverage and inferred volumes, listed from the highest volume number to the lowest, so the volumes closest to the last one owned come first (decided 2026-11-11).
+- Missing volumes are compact 'Volume #' entries ('Tome #' in French), including saved Not Owned coverage and inferred volumes, listed first from the volume after the last one owned upwards (7, 8, 9…), then the gaps under the last one owned from the highest down (changed 2026-11-18 with issue #145; it was highest first everywhere). Without an owned volume they are listed from the first one upwards. The line under the title says "Through the last volume: 15" when the collection has a Last volume, otherwise "Through the highest saved volume: 12".
 - Emphasize last owned: the highest number covered by any Owned book, including an omnibus range end. Manga/Comics show its volume number; Books also show its title. Do not expand Owned editions in this compact view.
 - No gaps: show 'No known missing volumes' and last owned. No Owned books: show missing entries and 'No books owned yet', without last owned.
 - An eligible saved ordinary Not Owned entry lets Owners/Admin request marking the existing book Owned. Require a confirmation modal; cancel changes nothing. An inferred volume is non-clickable and requires book creation through desktop manual entry or the mobile scan/lookup flow. Mobile has no manual-entry fallback, as clarified in Task 6.

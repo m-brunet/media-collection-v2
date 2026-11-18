@@ -21,10 +21,15 @@ export class CollectionCoverage {
     private constructor(
         private readonly includesVolumeZero: boolean,
         private readonly members: readonly CoverageMember[],
+        private readonly lastVolume: number | null,
     ) {}
 
-    static of(includesVolumeZero: boolean, members: readonly CoverageMember[]): CollectionCoverage {
-        return new CollectionCoverage(includesVolumeZero, [...members]);
+    static of(
+        includesVolumeZero: boolean,
+        members: readonly CoverageMember[],
+        lastVolume: number | null = null,
+    ): CollectionCoverage {
+        return new CollectionCoverage(includesVolumeZero, [...members], lastVolume);
     }
 
     get start(): number {
@@ -37,10 +42,20 @@ export class CollectionCoverage {
             : Math.max(...this.members.map((member) => member.range.to));
     }
 
-    get expected(): number {
+    get end(): number | null {
         const highest = this.highest;
 
-        return highest === null || highest < this.start ? 0 : highest - this.start + 1;
+        if (this.lastVolume === null) {
+            return highest;
+        }
+
+        return highest === null ? this.lastVolume : Math.max(highest, this.lastVolume);
+    }
+
+    get expected(): number {
+        const end = this.end;
+
+        return end === null || end < this.start ? 0 : end - this.start + 1;
     }
 
     get ownedVolumes(): number {
@@ -106,9 +121,9 @@ export class CollectionCoverage {
 
     private expectedVolumes(): number[] {
         const volumes: number[] = [];
-        const highest = this.highest ?? this.start - 1;
+        const end = this.end ?? this.start - 1;
 
-        for (let volume = this.start; volume <= highest; volume++) {
+        for (let volume = this.start; volume <= end; volume++) {
             volumes.push(volume);
         }
 

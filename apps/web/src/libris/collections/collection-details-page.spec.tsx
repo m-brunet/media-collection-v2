@@ -42,6 +42,7 @@ function batman(overrides: Partial<CollectionDetailsDto> = {}): CollectionDetail
         category: 'comics',
         includesVolumeZero: false,
         status: 'unfinished',
+        lastVolume: null,
         bookCount: 3,
         expectedFrom: 1,
         expectedTo: 12,
@@ -391,6 +392,7 @@ it('renames the collection and includes volume 0', async () => {
     expect(api.calls.find((call) => call.route === 'PATCH /collections/c1')?.body).toEqual({
         name: 'The Batman',
         includesVolumeZero: true,
+        lastVolume: null,
     });
 });
 
@@ -432,8 +434,60 @@ it('changes the category of the whole collection', async () => {
     expect(api.calls.find((call) => call.route === 'PATCH /collections/c1')?.body).toEqual({
         name: 'Batman',
         includesVolumeZero: false,
+        lastVolume: null,
         category: 'manga',
     });
+});
+
+it('sends the last volume typed in Edit collection', async () => {
+    const api = new FakeApi()
+        .signedIn(account())
+        .on('GET /collections/c1', () => ({ status: 200, body: batman() }))
+        .on('PATCH /collections/c1', () => ({ status: 200, body: batman({ lastVolume: 15 }) }));
+
+    show();
+    await userEvent.click(await screen.findByRole('button', { name: 'Edit collection' }));
+    const dialog = screen.getByRole('dialog', { name: 'Edit collection' });
+
+    await userEvent.type(within(dialog).getByRole('textbox', { name: /^Last volume/ }), '15');
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save collection' }));
+
+    await waitFor(() =>
+        expect(screen.queryByRole('dialog', { name: 'Edit collection' })).not.toBeInTheDocument(),
+    );
+    const sent = api.calls.find((call) => call.route === 'PATCH /collections/c1')?.body;
+
+    expect(sent).toMatchObject({ lastVolume: 15 });
+});
+
+it('asks for a whole number as the last volume', async () => {
+    const api = new FakeApi()
+        .signedIn(account())
+        .on('GET /collections/c1', () => ({ status: 200, body: batman() }));
+
+    show();
+    await userEvent.click(await screen.findByRole('button', { name: 'Edit collection' }));
+    const dialog = screen.getByRole('dialog', { name: 'Edit collection' });
+
+    await userEvent.type(within(dialog).getByRole('textbox', { name: /^Last volume/ }), 'ten');
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save collection' }));
+
+    expect(
+        await within(dialog).findByText('Enter the last volume as a whole number.'),
+    ).toBeVisible();
+    expect(api.calls.map((call) => call.route)).not.toContain('PATCH /collections/c1');
+});
+
+it('shows the last volume in the facts of the collection', async () => {
+    new FakeApi()
+        .signedIn(account())
+        .on('GET /collections/c1', () => ({ status: 200, body: batman({ lastVolume: 15 }) }));
+
+    show();
+
+    expect(await screen.findByText('Includes volume 0: Off · Last volume: 15')).toBeInTheDocument();
 });
 
 it('says how many books change with the category of the collection', async () => {

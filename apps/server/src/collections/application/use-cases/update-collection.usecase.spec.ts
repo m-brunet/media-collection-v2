@@ -201,4 +201,49 @@ describe('UpdateCollection titles', () => {
 
         expect(current.titles.regenerated).toEqual([]);
     });
+
+    it('sets the last volume and counts the volumes up to it as missing', async () => {
+        const current = CollectionDoubles.shelf();
+
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1, 6);
+
+        const result = await subject(current).execute(owner, 'collection-1', { lastVolume: 15 });
+
+        expect([result.lastVolume, result.expectedTo, result.missingCount]).toEqual([15, 15, 9]);
+    });
+
+    it('refuses a last volume under a saved volume', async () => {
+        const current = CollectionDoubles.shelf();
+
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1, 12);
+
+        const operation = subject(current).execute(owner, 'collection-1', { lastVolume: 5 });
+
+        await expect(operation).rejects.toMatchObject({ reason: 'last-volume-below-saved' });
+    });
+
+    it('reopens a Finished collection given a last volume past its books', async () => {
+        const current = CollectionDoubles.shelf();
+
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1, 6);
+        await CollectionDoubles.markFinished(current, 'collection-1');
+
+        const result = await subject(current).execute(owner, 'collection-1', { lastVolume: 15 });
+
+        expect(result.status).toBe('unfinished');
+    });
+
+    it('records the last volume in the collection edit', async () => {
+        const current = CollectionDoubles.shelf();
+
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
+
+        await subject(current).execute(owner, 'collection-1', { lastVolume: 15 });
+
+        expect(current.trail.entries.at(-1)).toMatchObject({
+            category: 'collection.updated',
+            before: { lastVolume: null },
+            after: { lastVolume: 15 },
+        });
+    });
 });

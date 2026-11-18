@@ -9,13 +9,16 @@ import { VolumeRange } from '../value-objects/volume-range.value-object.js';
 
 const now = '2026-02-01T00:00:00.000Z';
 
-function collection(changes: { status?: CollectionStatus; includesVolumeZero?: boolean } = {}) {
+function collection(
+    changes: { status?: CollectionStatus; includesVolumeZero?: boolean; lastVolume?: number } = {},
+) {
     return new Collection({
         id: 'collection',
         name: ' Batman ',
         category: 'comics',
         includesVolumeZero: changes.includesVolumeZero ?? false,
         status: changes.status ?? 'unfinished',
+        lastVolume: changes.lastVolume ?? null,
         createdAt: '2026-01-01T00:00:00.000Z',
         updatedAt: '2026-01-01T00:00:00.000Z',
     });
@@ -256,4 +259,84 @@ it('keeps a dropped collection dropped when a gap appears', () => {
 
     expect(reopened).toBe(false);
     expect(subject.snapshot.status).toBe('dropped');
+});
+it('expects the volumes up to the last volume when it is past the saved ones', () => {
+    const subject = collection({ lastVolume: 15 });
+
+    const result = subject.coverage([member('a', 'owned', 1, 6)]).missing;
+
+    expect(result).toEqual([7, 8, 9, 10, 11, 12, 13, 14, 15]);
+});
+it('expects the volumes up to the saved ones when they pass the last volume', () => {
+    const subject = collection({ lastVolume: 4 });
+
+    const result = subject.coverage([member('a', 'owned', 1, 6)]).expected;
+
+    expect(result).toBe(6);
+});
+it('sets a last volume', () => {
+    const subject = collection();
+
+    subject.changeLastVolume(15, [member('a', 'owned', 1, 6)], now);
+
+    expect(subject.snapshot.lastVolume).toBe(15);
+});
+it('refuses a last volume under a saved volume', () => {
+    const subject = collection();
+
+    const result = () => subject.changeLastVolume(5, [member('a', 'owned', 1, 12)], now);
+
+    expect(result).toThrow(expect.objectContaining({ reason: 'last-volume-below-saved' }));
+});
+it('refuses a last volume before the first volume of the collection', () => {
+    const subject = collection();
+
+    const result = () => subject.changeLastVolume(0, [], now);
+
+    expect(result).toThrow(expect.objectContaining({ reason: 'last-volume-invalid' }));
+});
+it('accepts a last volume of 0 when the collection includes volume 0', () => {
+    const subject = collection({ includesVolumeZero: true });
+
+    subject.changeLastVolume(0, [], now);
+
+    expect(subject.snapshot.lastVolume).toBe(0);
+});
+it('refuses a last volume past 9999', () => {
+    const subject = collection();
+
+    const result = () => subject.changeLastVolume(10000, [], now);
+
+    expect(result).toThrow(expect.objectContaining({ reason: 'last-volume-invalid' }));
+});
+it('empties the last volume', () => {
+    const subject = collection({ lastVolume: 15 });
+
+    subject.changeLastVolume(null, [member('a', 'owned', 1, 6)], now);
+
+    expect(subject.snapshot.lastVolume).toBeNull();
+});
+it('raises the last volume to a saved volume past it', () => {
+    const subject = collection({ lastVolume: 15 });
+
+    const result = subject.extend([member('a', 'owned', 16)], now);
+
+    expect([result, subject.snapshot.lastVolume]).toEqual([true, 16]);
+});
+it('raises nothing when the collection has no last volume', () => {
+    const subject = collection();
+
+    const result = subject.extend([member('a', 'owned', 16)], now);
+
+    expect([result, subject.snapshot.lastVolume]).toEqual([false, null]);
+});
+it('reopens a Finished collection once its last volume leaves a gap', () => {
+    const subject = collection({ status: 'finished' });
+    const members = [member('a', 'owned', 1, 6)];
+
+    subject.changeLastVolume(15, members, now);
+
+    const result = subject.reconcile(members, now);
+
+    expect([result, subject.snapshot.status]).toEqual([true, 'unfinished']);
 });

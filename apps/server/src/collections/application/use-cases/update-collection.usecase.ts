@@ -69,6 +69,11 @@ export class UpdateCollection implements UpdateCollectionUseCase {
                     collection.reconcile(members, now);
                 }
 
+                if (changes.lastVolume !== undefined) {
+                    collection.changeLastVolume(changes.lastVolume, members, now);
+                    collection.reconcile(members, now);
+                }
+
                 if (
                     changes.category !== undefined &&
                     changes.category !== collection.snapshot.category

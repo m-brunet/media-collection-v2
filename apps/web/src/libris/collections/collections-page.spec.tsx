@@ -22,6 +22,7 @@ function summary(overrides: Partial<CollectionSummaryDto> = {}): CollectionSumma
         category: 'comics',
         includesVolumeZero: false,
         status: 'unfinished',
+        lastVolume: null,
         bookCount: 5,
         expectedFrom: 1,
         expectedTo: 12,
