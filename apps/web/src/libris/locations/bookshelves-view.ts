@@ -15,4 +15,5 @@ export interface BookshelvesViewProps {
     onSelect(selected: LocationSelection): void;
     onEdit(editing: LocationEditing): void;
     onChanged(message: string): void;
+    onReload(): void;
 }

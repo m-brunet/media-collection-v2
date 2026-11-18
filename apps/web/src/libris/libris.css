@@ -3120,6 +3120,11 @@ a.wall-tile:hover .wall-tile__title {
     background: var(--color-sidebar);
 }
 
+.wall-miniature--small {
+    align-self: flex-start;
+    width: 50%;
+}
+
 .wall-miniature i {
     position: relative;
     flex: 1;
@@ -3169,6 +3174,14 @@ a.wall-tile:hover .wall-tile__title {
 .wall-bookcase__actions {
     margin-left: auto;
     gap: var(--space-2);
+}
+
+.wall-bookcase__width {
+    margin-left: auto;
+}
+
+.wall-bookcase__width + .wall-bookcase__actions {
+    margin-left: 0;
 }
 
 .wall-bookcase__frame {

@@ -1267,6 +1267,9 @@ export const fr = {
     'bookcase.deleteBodyMany':
         'Aucun livre ne sera supprimé. Le rayonnage et ses {count} étagères seront retirés.',
     'bookcase.deleted': '« {name} » a été supprimé. Ses livres ont été conservés.',
+    'bookcase.width': 'Largeur',
+    'bookcase.large': 'Large',
+    'bookcase.small': 'Étroit',
     'shelf.row': '{name} · {books}',
     'shelf.headingOne': '1 livre sur {name}',
     'shelf.headingMany': '{count} livres sur {name}',

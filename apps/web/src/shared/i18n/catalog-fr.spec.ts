@@ -53,6 +53,11 @@ describe('French catalogue', () => {
             'L’étagère garde ses livres dans son nouveau rayonnage. La destination ne doit pas déjà avoir une étagère au nom équivalent.',
         ]);
     });
+    it('names the widths of a rayonnage', () => {
+        const shown = texts('bookcase.width', 'bookcase.large', 'bookcase.small');
+
+        expect(shown).toEqual(['Largeur', 'Large', 'Étroit']);
+    });
     it('calls the furniture a rayonnage in the location field, the filters and the errors', () => {
         const shown = texts(
             'location.bookcase',
