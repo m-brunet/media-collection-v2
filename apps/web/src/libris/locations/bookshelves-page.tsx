@@ -16,6 +16,7 @@ import { useBookcases } from './use-bookcases';
 import { useLocationCounts } from './use-location-counts';
 import { ColumnsView } from './columns-view';
 import { RibbonsView } from './ribbons-view';
+import { WallLineView } from './wall-line-view';
 import { WallView } from './wall-view';
 
 interface BookshelvesViewEntry extends ViewEntry {
@@ -24,6 +25,12 @@ interface BookshelvesViewEntry extends ViewEntry {
 
 const views: readonly BookshelvesViewEntry[] = [
     { id: 'wall', label: 'bookshelves.viewWall', icon: 'view-wall', component: WallView },
+    {
+        id: 'wall-v2',
+        label: 'bookshelves.viewWallLine',
+        icon: 'view-wall',
+        component: WallLineView,
+    },
     {
         id: 'ribbons',
         label: 'bookshelves.viewRibbons',

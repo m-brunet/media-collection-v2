@@ -1,8 +1,13 @@
 import { useEffect, useState } from 'react';
 import type { RefObject } from 'react';
 
-export function useElementWidth(element: RefObject<HTMLElement | null>): number | null {
-    const [width, setWidth] = useState<number | null>(null);
+interface ElementSize {
+    width: number;
+    height: number;
+}
+
+export function useElementSize(element: RefObject<HTMLElement | null>): ElementSize | null {
+    const [size, setSize] = useState<ElementSize | null>(null);
 
     useEffect(() => {
         const target = element.current;
@@ -13,7 +18,7 @@ export function useElementWidth(element: RefObject<HTMLElement | null>): number 
 
         const observer = new ResizeObserver(([entry]) => {
             if (entry) {
-                setWidth(entry.contentRect.width);
+                setSize({ width: entry.contentRect.width, height: entry.contentRect.height });
             }
         });
 
@@ -22,5 +27,9 @@ export function useElementWidth(element: RefObject<HTMLElement | null>): number 
         return () => observer.disconnect();
     }, [element]);
 
-    return width;
+    return size;
+}
+
+export function useElementWidth(element: RefObject<HTMLElement | null>): number | null {
+    return useElementSize(element)?.width ?? null;
 }
