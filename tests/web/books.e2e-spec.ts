@@ -294,8 +294,8 @@ describe('Cover slots', () => {
         await coveredBook('Wide', 180, 60);
 
         const page = await signedIn('camille');
-        await Promise.all(['Regular', 'Tall', 'Wide'].map((title) => loaded(page, title)));
 
+        await Promise.all(['Regular', 'Tall', 'Wide'].map((title) => loaded(page, title)));
         const heights = await page
             .locator('.book-card .book-cover')
             .evaluateAll((covers) =>
