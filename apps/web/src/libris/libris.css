@@ -498,6 +498,7 @@ button.book-card--batch:disabled {
     align-items: flex-end;
     justify-content: center;
     width: 100%;
+    min-height: 0;
     aspect-ratio: 2 / 3;
 }
 
@@ -2239,7 +2240,6 @@ a.wall-tile:hover .wall-tile__title {
 }
 
 .overview-book .book-cover {
-    min-height: 0;
     overflow: hidden;
 }
 

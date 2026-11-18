@@ -144,6 +144,15 @@ Trial on the 437 development covers (V1 import): 174 of 177 padded squares and 6
 proportions (width/height 0.59–0.74); 3 left unchanged safely (grey padding, or white artwork at an edge); no cover
 cut into. "Covers are shown whole, never cropped" still holds for display.
 
+## Cover display
+
+Decided 2026-11-17 (issue #137). Wherever a book cover is shown (Library, Book details, the cover picker, Collections,
+Loans, Bookshelves panel and ribbons, Overview), it sits in a fixed 2:3 portrait slot whatever the picture's shape. A
+taller or wider picture is shown whole inside the slot, aligned to its bottom, so covers in a row line up on their base
+and a narrow picture never makes its card taller than its neighbours. Book details show the cover at most 200 px wide
+and 300 px high. Only the display is bounded: the saved picture is unchanged. The tiles of the collection wall follow
+their own layout and already keep their slot.
+
 ## Form structure
 
 1. Visible main block: mandatory information/statuses, category, collection-membership controls and required coverage when enabled, plus the optional cover preview/upload control. A missing cover uses a neutral fallback; cover controls are always visible inside this first block.

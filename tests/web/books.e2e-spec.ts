@@ -271,6 +271,71 @@ describe('Reading the library', () => {
     });
 });
 
+describe('Cover slots', () => {
+    async function coveredBook(title: string, width: number, height: number) {
+        const book = await savedBook({ title, isbn: null, noIsbn: true });
+
+        await admin.call('/books/' + book.id + '/cover', 'PUT', undefined, {
+            raw: { bytes: portraitImage(width, height), contentType: 'image/png' },
+        });
+
+        return book;
+    }
+
+    async function loaded(page: Page, title: string) {
+        await page
+            .getByRole('img', { name: 'Cover of ' + title })
+            .evaluate((image: HTMLImageElement) => image.decode());
+    }
+
+    it('gives a very tall and a very wide cover the same slot as a regular one in the Library', async () => {
+        await coveredBook('Regular', 120, 180);
+        await coveredBook('Tall', 60, 180);
+        await coveredBook('Wide', 180, 60);
+
+        const page = await signedIn('camille');
+        await Promise.all(['Regular', 'Tall', 'Wide'].map((title) => loaded(page, title)));
+
+        const heights = await page
+            .locator('.book-card .book-cover')
+            .evaluateAll((covers) =>
+                covers.map((cover) => Math.round(cover.getBoundingClientRect().height)),
+            );
+        const regular = await page
+            .locator('.book-card', { hasText: 'Regular' })
+            .locator('.book-cover')
+            .evaluate((cover) => Math.round(cover.getBoundingClientRect().height));
+
+        expect(heights).toEqual([regular, regular, regular]);
+    });
+
+    it('shows a very tall cover whole within 200 by 300 pixels on the book details', async () => {
+        const tall = await coveredBook('Tall', 60, 180);
+        const page = await signedIn('camille');
+
+        await page.goto('/books/' + tall.id);
+        await loaded(page, 'Tall');
+
+        const [cover, image] = await Promise.all([
+            page.locator('.book-cover').evaluate((element) => {
+                const { width, height } = element.getBoundingClientRect();
+
+                return { width: Math.round(width), height: Math.round(height) };
+            }),
+            page.getByRole('img', { name: 'Cover of Tall' }).evaluate((element) => {
+                const { width, height } = element.getBoundingClientRect();
+
+                return { width: Math.round(width), height: Math.round(height) };
+            }),
+        ]);
+
+        expect([cover, image]).toEqual([
+            { width: 200, height: 300 },
+            { width: 200, height: 300 },
+        ]);
+    });
+});
+
 describe('Location and tags row', () => {
     async function shelf(): Promise<string> {
         const bookcase = (await admin.call<{ id: string }>('/bookcases', 'POST', { name: 'Oak' }))
