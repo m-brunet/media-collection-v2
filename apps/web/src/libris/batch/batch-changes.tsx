@@ -187,7 +187,9 @@ function PublicationChange({
                     />
                 </div>
             )}
-            <Hint field="publication" mode={choice.mode} />
+            {(choice.mode !== 'set' || choice.month === '') && (
+                <Hint field="publication" mode={choice.mode} />
+            )}
         </>
     );
 }

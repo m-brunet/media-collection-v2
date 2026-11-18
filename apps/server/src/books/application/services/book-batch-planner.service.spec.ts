@@ -357,6 +357,22 @@ describe('BookBatchPlanner', () => {
             after: { publication: { year: 2019, month: null } },
         });
     });
+    it('leaves a book unchanged when it already has the publication date asked', async () => {
+        const current = BookDoubles.library();
+        const one = await BookDoubles.volume(current, 1, {
+            publicationYear: 2001,
+            publicationMonth: 5,
+        });
+
+        const result = await current.planner.plan(
+            owner.id,
+            request([one.id], { publication: { year: 2001, month: 5 } }),
+            null,
+        );
+
+        expect(result.planned[0]!.entry).toMatchObject({ before: {}, after: {} });
+        expect(result.planned[0]!.detailsChanged).toBe(false);
+    });
     it('fills the publication date only on the books that have none', async () => {
         const current = BookDoubles.library();
         const one = await BookDoubles.volume(current, 1, {

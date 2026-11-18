@@ -289,6 +289,21 @@ it('describes a publication date by its month and year', () => {
     ]);
 });
 
+it('names the month of a publication date in French', () => {
+    const before = { publication: { year: 2001, month: 5 } };
+    const after = { publication: { year: 2019, month: 3 } };
+
+    const result = BookBatch.lines(before, after, 'fr-FR');
+
+    expect(result).toEqual([
+        {
+            label: 'batch.publication',
+            before: { text: 'mai 2001' },
+            after: { text: 'mars 2019' },
+        },
+    ]);
+});
+
 it('describes a publication date without a month by its year, and none', () => {
     const before = { publication: null };
     const after = { publication: { year: 2019, month: null } };
