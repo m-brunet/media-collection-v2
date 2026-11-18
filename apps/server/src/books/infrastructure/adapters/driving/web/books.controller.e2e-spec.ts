@@ -758,6 +758,7 @@ describe('POST /api/books with a collection', () => {
                     category: 'books',
                     includesVolumeZero: false,
                     status: 'unfinished',
+                    lastVolume: null,
                 },
             }),
         );
