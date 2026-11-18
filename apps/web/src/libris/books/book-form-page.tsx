@@ -225,7 +225,6 @@ function BookForm({ book }: { book: BookDto | null }) {
                     </div>
                 </Panel>
                 <BookAdditionalFields
-                    id={sectionId + '-additional'}
                     values={values}
                     set={set}
                     errorFor={errorFor}
