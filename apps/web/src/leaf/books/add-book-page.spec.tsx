@@ -4,6 +4,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { NewBookDto } from '../../../../../packages/contracts/src/http';
 import { bookDto } from '../../testing/book-fixtures.test-support';
 import { account, deviceLanguages, FakeApi } from '../../testing/fake-api.test-support';
+import { Required } from '../../shared/required.util';
 import { renderRoute } from '../../testing/render-route.test-support';
 import type { AddBookState, LookedUpBook } from './add-book-page';
 import { AddBookPage } from './add-book-page';
@@ -41,6 +42,24 @@ function open(found: LookedUpBook = lookup()) {
         { pathname: '/add', state: { isbn, lookup: found } satisfies AddBookState },
         { '/add': <AddBookPage /> },
     );
+}
+
+function topSave() {
+    return within(screen.getByRole('region', { name: 'Review book' })).getByRole('button', {
+        name: 'Save book',
+    });
+}
+
+function bottomSave() {
+    const buttons = screen.getAllByRole('button', { name: 'Save book' });
+
+    return Required.at(buttons, buttons.length - 1, 'the form ends with Save book');
+}
+
+async function findBottomSave() {
+    await screen.findAllByRole('button', { name: 'Save book' });
+
+    return bottomSave();
 }
 
 let api: FakeApi;
@@ -216,7 +235,7 @@ it('saves the book with the first cover found, then shows the success screen', a
     );
     await screen.findByAltText('Chosen cover');
 
-    await userEvent.click(screen.getByRole('button', { name: 'Save book' }));
+    await userEvent.click(bottomSave());
 
     expect(await screen.findByText('Elsewhere: /saved')).toBeInTheDocument();
     const created = api.calls.find((call) => call.route === 'POST /books')!.body as NewBookDto;
@@ -236,7 +255,7 @@ it('keeps the form and explains a failed save', async () => {
     open();
     await screen.findByLabelText(/^Title/);
 
-    await userEvent.click(screen.getByRole('button', { name: 'Save book' }));
+    await userEvent.click(bottomSave());
 
     expect(await screen.findByText('The request failed. Try again.')).toBeInTheDocument();
     expect(screen.getByLabelText(/^Title/)).toHaveValue('Piranesi');
@@ -251,13 +270,59 @@ it('explains a refused price under the price field', async () => {
     open();
     await userEvent.type(await screen.findByLabelText(/^Price/), '-3');
 
-    await userEvent.click(screen.getByRole('button', { name: 'Save book' }));
+    await userEvent.click(bottomSave());
 
     await vi.waitFor(() =>
         expect(screen.getByLabelText(/^Price/)).toHaveAccessibleDescription(
             expect.stringContaining('Enter a price of zero or more, with at most two decimals.'),
         ),
     );
+});
+
+it('saves the book from the Save book of the top bar', async () => {
+    api.on('POST /books', () => ({ status: 201, body: bookDto({ id: 'new' }) }));
+    open();
+    await screen.findByLabelText(/^Title/);
+
+    await userEvent.click(topSave());
+
+    expect(await screen.findByText('Elsewhere: /saved')).toBeInTheDocument();
+    expect(api.calls.filter((call) => call.route === 'POST /books')).toHaveLength(1);
+});
+
+it('shows a refused save in the top bar and under its field', async () => {
+    api.on('POST /books', () => ({
+        status: 400,
+        body: { code: 'invalid_input', reason: 'price-invalid', message: 'Invalid' },
+    }));
+    open();
+    await userEvent.type(await screen.findByLabelText(/^Price/), '-3');
+
+    await userEvent.click(bottomSave());
+
+    const bar = screen.getByRole('region', { name: 'Review book' });
+
+    expect(
+        await within(bar).findByText('Enter a price of zero or more, with at most two decimals.'),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Price/)).toHaveAccessibleDescription(
+        expect.stringContaining('Enter a price of zero or more, with at most two decimals.'),
+    );
+});
+
+it('makes both Save book buttons busy while saving', async () => {
+    let answer: (value: { status: number; body: unknown }) => void = () => undefined;
+
+    api.on('POST /books', () => new Promise((resolve) => (answer = resolve)));
+    open();
+    await screen.findByLabelText(/^Title/);
+
+    await userEvent.click(topSave());
+
+    await vi.waitFor(() => expect(topSave()).toBeDisabled());
+    expect(bottomSave()).toBeDisabled();
+    answer({ status: 201, body: bookDto({ id: 'new' }) });
+    expect(await screen.findByText('Elsewhere: /saved')).toBeInTheDocument();
 });
 
 it('asks before discarding changes when cancelled', async () => {
@@ -299,7 +364,7 @@ it('asks about a similar author and saves again with the chosen one', async () =
             : { status: 201, body: bookDto({ id: 'new' }) },
     );
     open();
-    await userEvent.click(await screen.findByRole('button', { name: 'Save book' }));
+    await userEvent.click(await findBottomSave());
     const dialog = await screen.findByRole('dialog', { name: 'Use an existing author?' });
 
     await userEvent.click(within(dialog).getByRole('button', { name: 'Use Susanna Clarke (2)' }));
@@ -331,7 +396,7 @@ function refusePublisherOnce() {
 it('asks about a close publisher spelling and saves again with the chosen one', async () => {
     refusePublisherOnce();
     open();
-    await userEvent.click(await screen.findByRole('button', { name: 'Save book' }));
+    await userEvent.click(await findBottomSave());
     const dialog = await screen.findByRole('dialog', { name: 'Use an existing publisher?' });
 
     await userEvent.click(within(dialog).getByRole('button', { name: 'Use Bloomsburry' }));
@@ -345,7 +410,7 @@ it('asks about a close publisher spelling and saves again with the chosen one', 
 it('keeps a close publisher spelling once confirmed as different', async () => {
     refusePublisherOnce();
     open();
-    await userEvent.click(await screen.findByRole('button', { name: 'Save book' }));
+    await userEvent.click(await findBottomSave());
 
     await userEvent.click(
         await screen.findByRole('button', { name: 'Keep “Bloomsbury” as typed' }),
@@ -457,7 +522,7 @@ it('remembers the saved book’s choices for the next scan', async () => {
     open();
     await screen.findByLabelText(/^Title/);
 
-    await userEvent.click(screen.getByRole('button', { name: 'Save book' }));
+    await userEvent.click(bottomSave());
 
     expect(await screen.findByText('Elsewhere: /saved')).toBeInTheDocument();
     expect(JSON.parse(window.localStorage.getItem('media-collection.leaf.last-add.alex')!)).toEqual(
@@ -485,7 +550,7 @@ it('saves a shelf chosen in another bookcase only when the book is saved', async
     );
     const before = api.calls.filter((call) => call.route === 'POST /books').length;
 
-    await userEvent.click(screen.getByRole('button', { name: 'Save book' }));
+    await userEvent.click(bottomSave());
 
     await screen.findByText('Elsewhere: /saved');
     expect([before, api.calls.find((call) => call.route === 'POST /books')?.body]).toEqual([
@@ -522,7 +587,7 @@ it('names the category of the collection a book does not match', async () => {
     refuseCategoryOnce();
     open();
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Save book' }));
+    await userEvent.click(await findBottomSave());
 
     const dialog = await screen.findByRole('dialog', { name: 'Category of the collection' });
 
@@ -532,7 +597,7 @@ it('names the category of the collection a book does not match', async () => {
 it('saves again with the category of the collection', async () => {
     refuseCategoryOnce();
     open();
-    await userEvent.click(await screen.findByRole('button', { name: 'Save book' }));
+    await userEvent.click(await findBottomSave());
     const dialog = await screen.findByRole('dialog', { name: 'Category of the collection' });
 
     await userEvent.click(within(dialog).getByRole('button', { name: 'Use Manga for this book' }));
@@ -621,7 +686,7 @@ it('saves a tapped author as the existing one', async () => {
     await userEvent.type(authorsField(), 'sus');
     await userEvent.click(await screen.findByRole('option', { name: 'Susan Cooper' }));
 
-    await userEvent.click(screen.getByRole('button', { name: 'Save book' }));
+    await userEvent.click(bottomSave());
 
     expect(await screen.findByText('Elsewhere: /saved')).toBeInTheDocument();
     const created = api.calls.find((call) => call.route === 'POST /books')!.body as NewBookDto;
@@ -751,7 +816,7 @@ it('saves a tapped tag as the existing one', async () => {
     await userEvent.type(tagsField(), 'sf');
     await userEvent.click(await screen.findByRole('option', { name: 'SF · Space opera' }));
 
-    await userEvent.click(screen.getByRole('button', { name: 'Save book' }));
+    await userEvent.click(bottomSave());
 
     expect(await screen.findByText('Elsewhere: /saved')).toBeInTheDocument();
     const created = api.calls.find((call) => call.route === 'POST /books')!.body as NewBookDto;

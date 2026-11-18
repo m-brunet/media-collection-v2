@@ -154,6 +154,14 @@ function AddBookForm({ isbn, lookup, accountId, bookcases }: AddBookFormProps) {
                 </Notice>
             )}
             <form className="leaf-form" onSubmit={submit} noValidate>
+                <div className="leaf-form__bar" role="region" aria-label={t('leaf.form.title')}>
+                    <div className="leaf-form__bar-actions">
+                        <Button type="submit" variant="primary" busy={saving.saving}>
+                            {t('form.save')}
+                        </Button>
+                    </div>
+                    {saving.failure && <Notice tone="error">{saving.failure.text}</Notice>}
+                </div>
                 <LeafBookFields
                     values={values}
                     set={set}
@@ -171,7 +179,6 @@ function AddBookForm({ isbn, lookup, accountId, bookcases }: AddBookFormProps) {
                     categoryRule={categoryRule}
                     collections={collections}
                 />
-                {saving.failure && <Notice tone="error">{saving.failure.text}</Notice>}
                 <Button type="submit" variant="primary" busy={saving.saving}>
                     {t('form.save')}
                 </Button>

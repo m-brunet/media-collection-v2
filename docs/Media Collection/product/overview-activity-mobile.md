@@ -46,6 +46,8 @@ Provide an Owner/Admin mobile home with two main buttons: Collections and Scan. 
 
 Mobile book entry keeps the same three sections and field rules as desktop, adapted to the phone screen: main information/cover, location/tags, and optional additional information, always open like the other sections, with the personal-note control. Do not invent a reduced mandatory-field set for mobile.
 
+While the add-book form is scrolled, a bar stays at the top of the screen with **Save book** on its right (decided 2026-11-18, issue #140). It is an opaque bar, not a floating button, so it hides no field; it respects the safe area of notched phones. It saves exactly like the **Save book** at the end of the form, which stays there with **Cancel** and "Nothing is added until you save": same busy state, same save questions, same leave guard. A refused save shows its message in the bar, in view from either button, and a field error also shows under its field. Screen readers find the bar as a region named after the form ("Review book"). Libris is unchanged.
+
 The mobile add form is accessible only after a successful scan. No manual ISBN-entry alternative or direct manual add route is offered on mobile. If the camera is unavailable or scanning fails, explain the issue and offer Retry or Back to home only. Desktop manual entry remains available; the general manual-entry requirement does not bypass the mobile scan gate.
 
 After successful book creation, show success and offer Scan another book or Back to home. The latter returns to mobile home, not directly to Collections. Do not show creation success after failed saves or for an already-existing book.

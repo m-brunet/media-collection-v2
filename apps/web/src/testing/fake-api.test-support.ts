@@ -2,7 +2,8 @@ import { vi } from 'vitest';
 import type { Account } from '../../../../packages/contracts/src/http';
 import { Required } from '../shared/required.util';
 
-type Handler = (body: unknown) => { status: number; body?: unknown };
+type Reply = { status: number; body?: unknown };
+type Handler = (body: unknown) => Reply | Promise<Reply>;
 
 export class FakeApi {
     readonly calls: { route: string; body: unknown }[] = [];
@@ -67,7 +68,7 @@ export class FakeApi {
             return Response.json({ message: 'Not found' }, { status: 404 });
         }
 
-        const result = handler(body);
+        const result = await handler(body);
 
         if (result.body instanceof Blob) {
             return new Response(result.body, {
