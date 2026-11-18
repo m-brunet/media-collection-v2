@@ -1434,7 +1434,7 @@ export const fr = {
     'filters.anyCollectionStatus': 'Indifférent',
     'filters.dropped': 'Abandonnées',
     'filters.droppedHint':
-        'Avec Non terminées ou Terminées choisi au-dessus de la liste, aucune collection ne correspond.',
+        'Si Non terminées ou Terminées est choisi au-dessus de la liste, aucune collection ne correspond.',
     'filters.reading': 'Votre statut de lecture',
     'filters.anyReading': 'Indifférent',
     'filters.tags': 'Étiquettes · Toutes incluses, aucune exclue',

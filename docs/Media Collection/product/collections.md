@@ -83,7 +83,7 @@ A collection has one of three statuses (decided 2026-11-18, issue #144): **Unfin
 A dropped collection is one the household stopped collecting. It is neither Finished nor Unfinished.
 
 - **Drop collection**, on the desktop collection page, for Owners and Admin, drops an **Unfinished** collection, whatever its missing volumes, including one with none. It is not offered on a Finished collection, which is complete: reopen it first (the server refuses it with `collection-finished`).
-- **Resume collection** puts a dropped collection back to Unfinished.
+- **Resume collection** puts a dropped collection back to Unfinished. It is the only way back: reopening is for Finished collections, and the server refuses to reopen a dropped one (`collection-dropped`).
 - **Mark Finished** is offered directly on a dropped collection when every expected volume is owned, with the usual rule; it is not shown while a volume is missing.
 - **It never changes on its own:** adding, removing or changing a book of a dropped collection leaves it Dropped (a Finished collection keeps its own rule: a gap reopens it to Unfinished).
 - Dropped collections remain visible on desktop and are hidden from mobile shopping.
@@ -236,7 +236,7 @@ A separate desktop page mirroring mobile ownership progression is future scope, 
 27. No volume of the collection is known to the BnF: nothing is added and the page says the edition was not found in the BnF or Sudoc catalogues (no volume is known to either).
 28. Volume 3 is added by someone else while the review is open: saving leaves volume 3 out with its reason and adds the other ticked volumes.
 29. Batch edit of Gunnm 1 (May 2001) and 2 (no date), Publication date set to 2019 with No month: both get 2019 and 1 loses its month; the summary shows "May 2001 → 2019" and "none → 2019". Fill if empty with 2019 changes 2 only.
-30. Dropping an unfinished collection with 3 missing volumes: it shows the Dropped label, leaves Leaf shopping and the Unfinished choice, stays under All and is found by the advanced Dropped filter. Statistics count one unfinished collection and 3 missing volumes fewer, and "1 dropped" appears.
+30. Dropping an unfinished collection with 3 missing volumes: it shows the Dropped label, leaves Leaf shopping and the Unfinished choice, stays under All and is found by the advanced Dropped filter. Statistics count one unfinished collection and 3 missing volumes fewer, and "Dropped 1" appears.
 31. Adding an Owned volume to a dropped collection, from Leaf or Libris, leaves it Dropped. Resume collection puts it back under Unfinished and in Leaf.
 32. A dropped collection with every volume owned can be marked Finished directly.
 

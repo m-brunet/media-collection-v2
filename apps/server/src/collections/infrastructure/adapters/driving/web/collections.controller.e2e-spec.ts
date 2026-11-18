@@ -654,6 +654,20 @@ describe('POST /api/collections/:id/reopen', () => {
         expect(response.status).toBe(404);
         expect(response.body.reason).toBe('collection-missing');
     });
+    it('refuses a Dropped collection', async () => {
+        const saved = await book(membership('Batman', 2));
+
+        await dropped(saved);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call(
+            '/collections/' + saved.collection!.id + '/reopen',
+            'POST',
+        );
+
+        expect(response.status).toBe(409);
+        expect(response.body.reason).toBe('collection-dropped');
+    });
 });
 
 describe('POST /api/collections/:id/drop', () => {
@@ -719,6 +733,20 @@ describe('POST /api/collections/:id/drop', () => {
         );
 
         expect(response.status).toBe(403);
+    });
+    it('refuses a collection that is already Dropped', async () => {
+        const saved = await book(membership('Batman', 2));
+
+        await dropped(saved);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call(
+            '/collections/' + saved.collection!.id + '/drop',
+            'POST',
+        );
+
+        expect(response.status).toBe(409);
+        expect(response.body.reason).toBe('collection-dropped');
     });
     it('reports an unknown collection', async () => {
         const client = await app.authenticatedClient(owner);
@@ -932,6 +960,17 @@ describe('GET /api/collections with filters', () => {
         const client = await app.authenticatedClient(owner);
 
         const response = await client.call<CollectionListPageDto>('/collections?finished=false');
+
+        expect(response.body.items.map((item) => item.name)).toEqual(['Batman']);
+    });
+    it('leaves the Dropped collections out of the finished ones', async () => {
+        const batman = await book(membership('Batman', 1));
+
+        await finished(batman);
+        await dropped(await book(membership('Dune', 2)));
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<CollectionListPageDto>('/collections?finished=true');
 
         expect(response.body.items.map((item) => item.name)).toEqual(['Batman']);
     });

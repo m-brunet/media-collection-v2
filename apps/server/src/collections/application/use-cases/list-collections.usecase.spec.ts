@@ -84,6 +84,19 @@ describe('ListCollections', () => {
         expect([result.total, result.items.map((item) => item.name)]).toEqual([1, ['Batman']]);
     });
 
+    it('leaves the dropped collections out of the finished ones', async () => {
+        const current = CollectionDoubles.shelf();
+
+        await CollectionDoubles.member(current, 'b1', 'owned', 'Dune', 1);
+        await CollectionDoubles.member(current, 'a1', 'owned', 'Batman', 1);
+        await CollectionDoubles.markDropped(current, 'collection-1');
+        await CollectionDoubles.markFinished(current, 'collection-2');
+
+        const result = await subject(current).execute(owner, { ...query, finished: true });
+
+        expect([result.total, result.items.map((item) => item.name)]).toEqual([1, ['Batman']]);
+    });
+
     it('keeps the dropped collections among all of them', async () => {
         const current = CollectionDoubles.shelf();
 
