@@ -82,7 +82,7 @@ it('tells a single book in the singular', async () => {
             reading: { read: 1, notRead: 0 },
             pages: { total: 1, known: 1 },
             price: { totalCents: 990, known: 1 },
-            collections: { finished: 1, unfinished: 0, missingVolumes: 1 },
+            collections: { finished: 1, unfinished: 0, dropped: 0, missingVolumes: 1 },
         }),
     );
 
@@ -147,6 +147,15 @@ it('tells how many collections are finished and the missing volumes', async () =
         expect.stringContaining('187 volumes are still missing.'),
     ]);
 });
+it('tells that the only collection is dropped', async () => {
+    library(
+        statistics({ collections: { finished: 0, unfinished: 0, dropped: 1, missingVolumes: 4 } }),
+    );
+
+    await story();
+
+    expect(sentence('Collections')).toBe('Your only collection is dropped.');
+});
 it('leaves out the sections without data', async () => {
     library(
         statistics({
@@ -154,7 +163,7 @@ it('leaves out the sections without data', async () => {
             price: { totalCents: 0, known: 0 },
             publishers: { byBooks: [], byPages: [], without: 3, count: 0 },
             authors: { byBooks: [], byPages: [] },
-            collections: { finished: 0, unfinished: 0, missingVolumes: 0 },
+            collections: { finished: 0, unfinished: 0, dropped: 0, missingVolumes: 0 },
         }),
     );
 

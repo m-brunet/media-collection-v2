@@ -35,7 +35,7 @@ describe('BookRemoval', () => {
                 category: 'collection.removed',
                 subjectType: 'collection',
                 subjectId: 'collection-Batman',
-                before: { name: 'Batman', includesVolumeZero: false, finished: false },
+                before: { name: 'Batman', includesVolumeZero: false, status: 'unfinished' },
                 after: null,
             },
         ];

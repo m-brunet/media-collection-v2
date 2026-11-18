@@ -31,8 +31,8 @@ export function useStatisticsSentences(statistics: StatisticsDto, category: Book
     const read = StatisticsFormat.number(reading.read, locale);
     const publisher = statistics.publishers.byBooks[0]?.name;
     const author = statistics.authors.byBooks[0]?.name;
-    const { finished, unfinished, missingVolumes } = statistics.collections;
-    const collections = finished + unfinished;
+    const { finished, dropped, missingVolumes } = statistics.collections;
+    const collections = StatisticsFormat.collections(statistics);
     const done = StatisticsFormat.number(finished, locale);
     const [ownOne, ownMany] = ownership[category ?? 'all'];
 
@@ -94,7 +94,9 @@ export function useStatisticsSentences(statistics: StatisticsDto, category: Book
                       text: t(
                           finished === 1
                               ? 'statistics.storyOnlyFinished'
-                              : 'statistics.storyOnlyUnfinished',
+                              : dropped === 1
+                                ? 'statistics.storyOnlyDropped'
+                                : 'statistics.storyOnlyUnfinished',
                       ),
                       emphasis: null,
                   }

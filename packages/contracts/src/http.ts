@@ -368,6 +368,10 @@ export interface BookFilterParams {
     notTag?: string[];
 }
 
+export interface CollectionFilterParams extends BookFilterParams {
+    dropped?: 'true'[];
+}
+
 export interface SimilarPublisherDetails {
     name: string;
     candidates: string[];
@@ -416,6 +420,8 @@ export interface CoverageConflictDetails {
 }
 
 export type VolumeState = 'owned' | 'planned' | 'inferred';
+
+export type CollectionStatus = 'unfinished' | 'finished' | 'dropped';
 
 export interface LookupChoiceDto<T> {
     value: T;
@@ -535,7 +541,7 @@ export interface CollectionSummaryDto {
     name: string;
     category: BookCategory;
     includesVolumeZero: boolean;
-    finished: boolean;
+    status: CollectionStatus;
     bookCount: number;
     expectedFrom: number;
     expectedTo: number;
@@ -598,7 +604,7 @@ export interface ShoppingCollectionDto {
 export interface CollectionShoppingDto {
     id: string;
     name: string;
-    finished: boolean;
+    status: CollectionStatus;
     expectedCount: number;
     ownedCount: number;
     lastOwned: { volume: number; title: string | null } | null;
@@ -743,6 +749,8 @@ export type ActivityEventDto =
               | 'collection-updated'
               | 'collection-finished'
               | 'collection-reopened'
+              | 'collection-dropped'
+              | 'collection-resumed'
               | 'collection-deleted'
               | 'collection-removed'
               | 'bookcase-created'
@@ -832,5 +840,5 @@ export interface StatisticsDto {
         mostExpensive: StatisticsBookRecordDto | null;
         biggestCollection: { id: string; name: string; ownedBooks: number } | null;
     };
-    collections: { finished: number; unfinished: number; missingVolumes: number };
+    collections: { finished: number; unfinished: number; dropped: number; missingVolumes: number };
 }

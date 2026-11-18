@@ -2,7 +2,7 @@ export type CollectionTally = {
     id: string;
     name: string;
     category: 'books' | 'manga' | 'comics';
-    finished: boolean;
+    status: 'unfinished' | 'finished' | 'dropped';
     ownedBooks: number;
     missingVolumes: number;
 };

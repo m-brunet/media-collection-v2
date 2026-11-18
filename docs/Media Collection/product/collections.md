@@ -64,7 +64,11 @@ Desktop collection details show the collection as a wall of covers in volume ord
 
 On the Collections page, each collection card previews up to three covers of its books, those of Owned books first (issue #70, 2026-11-15); a collection with fewer covers shows the ones it has, and one without any shows none.
 
-## Finished
+## Statuses
+
+A collection has one of three statuses (decided 2026-11-18, issue #144): **Unfinished**, **Finished** or **Dropped** (FR *Non terminée*, *Terminée*, *Abandonnée*). The former Finished mark became this status: the collections saved before keep Finished or Unfinished.
+
+### Finished
 
 - Finished is explicitly set by the user, permitted only when every expected volume is covered by an Owned book.
 - Achieving complete ownership never automatically sets Finished.
@@ -74,9 +78,23 @@ On the Collections page, each collection card previews up to three covers of its
 - Deleting the highest coverage shrinks the expected range as above; do not manufacture a gap for the deleted upper bound.
 - There is no final-volume marker determining visibility.
 
-On the desktop collection details page, a short status label follows the collection name: **Finished** (green) or **Unfinished** (amber). The coverage line above the expected range only counts what is missing (for example **3 missing**, **No known missing volumes**, or **Complete** on a Finished collection). Hovering or focusing the **Finished** label explains that Finished collections remain on desktop and are hidden from mobile shopping. While volumes are missing, **Mark Finished** stays unavailable, and hovering or focusing it shows the condition: own every expected volume before marking the collection Finished. These replace the full-width green and amber lines under the summary (redesigned 2026-11-13, issue #24).
+### Dropped
+
+A dropped collection is one the household stopped collecting. It is neither Finished nor Unfinished.
+
+- **Drop collection**, on the desktop collection page, for Owners and Admin, drops an **Unfinished** collection, whatever its missing volumes, including one with none. It is not offered on a Finished collection, which is complete: reopen it first (the server refuses it with `collection-finished`).
+- **Resume collection** puts a dropped collection back to Unfinished.
+- **Mark Finished** is offered directly on a dropped collection when every expected volume is owned, with the usual rule; it is not shown while a volume is missing.
+- **It never changes on its own:** adding, removing or changing a book of a dropped collection leaves it Dropped (a Finished collection keeps its own rule: a gap reopens it to Unfinished).
+- Dropped collections remain visible on desktop and are hidden from mobile shopping.
+- The audit log records `collection.dropped` and `collection.resumed`; Activity says "You dropped *Name*" and "You resumed *Name*" (FR "Vous avez abandonné…", "Vous avez repris…").
+- Guests see the label and the filter, not the actions.
+
+On the desktop collection details page, a short status label follows the collection name: **Finished** (green), **Unfinished** (amber) or **Dropped** (grey). The volumes and the missing ones of a dropped collection are shown as for an unfinished one, and hovering or focusing its label explains that dropped collections remain on desktop and are hidden from mobile shopping. The coverage line above the expected range only counts what is missing (for example **3 missing**, **No known missing volumes**, or **Complete** on a Finished collection). Hovering or focusing the **Finished** label explains that Finished collections remain on desktop and are hidden from mobile shopping. While volumes are missing, **Mark Finished** stays unavailable, and hovering or focusing it shows the condition: own every expected volume before marking the collection Finished. These replace the full-width green and amber lines under the summary (redesigned 2026-11-13, issue #24).
 
 **Status choice on the Collections page** (decided 2026-11-13, issue #63): the toolbar offers **All / Unfinished / Finished** (FR *Toutes / Non terminées / Terminées*), after *Advanced filters* and before the sort, initially All. It uses the Finished mark: an unfinished collection with no missing volume still appears under Unfinished, so it is not a shopping filter. The choice is kept in the address (`finished=true` or `finished=false`, nothing for All; another value reads as All) and combines (AND) with the Category, the book criteria and the search; the server applies it before counting and paging, so "N of M collections" and *Load more* follow it. Opening and applying the advanced filters keeps it. *Clear filters* resets it with the other filters and keeps the search and the sort; the zero-results *Clear filters* also clears the search and still keeps the sort. Guests have the same choice. Since #61 it is remembered with the other filters and the direction, per account, in the browser (see [features](features.md#lists-search-and-sorting)).
+
+Since issue #144 the toolbar keeps exactly **All / Unfinished / Finished**: **All** shows every collection, dropped ones included, while **Unfinished** and **Finished** leave the dropped collections out. Dropped has no quick choice: the **advanced filters** of the Collections list have a **Collection status** field with a **Dropped** choice (FR *Statut de la collection*, *Abandonnées*) that keeps only the dropped collections. It is kept in the address (`dropped=true`), shown as an applied filter chip and remembered like the other filters. Chosen together with Unfinished or Finished, nothing matches. A dropped collection's card shows **Dropped**.
 
 ## Reading a whole collection
 
@@ -135,7 +153,7 @@ The Library list offers the same mode, bottom bar, drawer, fields, review, savin
 
 The desktop collection details page lets Owners/Admin add the missing volumes of a series from the BnF catalogue, then the Sudoc catalogue (issue #124), instead of scanning or typing each one, mainly at first use (decided 2026-11-11, issue #31). Leaf does not offer it.
 
-- **Only on an unfinished collection** (issue #86, 2026-11-15): on a Finished collection **Add volumes** stays visible but disabled, and hovering or focusing it says "Mark the collection unfinished before adding volumes." / "Marquez la collection comme non terminée avant d’ajouter des tomes."; reopening the collection enables it again. The server enforces it on its own: the volume search and the addition both refuse a Finished collection (409, `collection-finished`), and the addition checks again when saving, so a review started before the collection was finished adds nothing.
+- **Only on an unfinished collection** (issue #86, 2026-11-15): on a Finished collection **Add volumes** stays visible but disabled, and hovering or focusing it says "Mark the collection unfinished before adding volumes." / "Marquez la collection comme non terminée avant d’ajouter des tomes."; reopening the collection enables it again. The server enforces it on its own: the volume search and the addition both refuse a Finished collection (409, `collection-finished`), and the addition checks again when saving, so a review started before the collection was finished adds nothing. A dropped collection is treated the same way (issue #144): **Add volumes** is visible and disabled with "Resume the collection before adding volumes." / "Reprenez la collection avant d’ajouter des tomes.", and the server refuses it (409, `collection-dropped`).
 - **Entry point:** **Add volumes** (called *Add volumes up to…* before issue #86) asks for the last volume number X. Every **missing** number from the start of the collection (1, or 0 when it includes a volume 0) up to X is looked up, gaps included: owning 1, 2 and 5, "up to 8" looks up 3, 4, 6, 7 and 8. A number already covered by any book (Owned or Not owned, an omnibus range included) is not missing. At most 200 volumes per request.
 - **Anchor:** the edition comes from a volume already in the collection. One BnF request asks for every member's ISBN at once; the highest-numbered volume the BnF knows is the anchor, and its record gives the series name and the publisher. When none is known in either catalogue, nothing is added and the page says the edition was not found in the BnF or Sudoc catalogues.
 - **Series lookup:** one more BnF request asks for the series by name and publisher (a thousand records per request, more pages only for longer series). A record is a candidate when it has an ISBN, a volume number (series field, `T. 5`, `[106]`, or a title such as "One Piece 113") and exactly the anchor's series name (case and accents ignored). Spin-offs under another series name are left out.
@@ -175,7 +193,7 @@ For an Owned omnibus overlapping several planned records, offer Cancel or delete
 
 ## Mobile shopping
 
-- Show unfinished collections even when they have no gaps. Finished collections are hidden.
+- Show unfinished collections even when they have no gaps. Finished and dropped collections are hidden; opening one by its address says it is no longer listed for shopping. Scanning a book and the collection suggestions of the add-book form still know dropped collections, so a volume can still be added to one (it stays Dropped).
 - Missing volumes are compact 'Volume #' entries ('Tome #' in French), including saved Not Owned coverage and inferred volumes, listed from the highest volume number to the lowest, so the volumes closest to the last one owned come first (decided 2026-11-11).
 - Emphasize last owned: the highest number covered by any Owned book, including an omnibus range end. Manga/Comics show its volume number; Books also show its title. Do not expand Owned editions in this compact view.
 - No gaps: show 'No known missing volumes' and last owned. No Owned books: show missing entries and 'No books owned yet', without last owned.
@@ -218,6 +236,9 @@ A separate desktop page mirroring mobile ownership progression is future scope, 
 27. No volume of the collection is known to the BnF: nothing is added and the page says the edition was not found in the BnF or Sudoc catalogues (no volume is known to either).
 28. Volume 3 is added by someone else while the review is open: saving leaves volume 3 out with its reason and adds the other ticked volumes.
 29. Batch edit of Gunnm 1 (May 2001) and 2 (no date), Publication date set to 2019 with No month: both get 2019 and 1 loses its month; the summary shows "May 2001 → 2019" and "none → 2019". Fill if empty with 2019 changes 2 only.
+30. Dropping an unfinished collection with 3 missing volumes: it shows the Dropped label, leaves Leaf shopping and the Unfinished choice, stays under All and is found by the advanced Dropped filter. Statistics count one unfinished collection and 3 missing volumes fewer, and "1 dropped" appears.
+31. Adding an Owned volume to a dropped collection, from Leaf or Libris, leaves it Dropped. Resume collection puts it back under Unfinished and in Leaf.
+32. A dropped collection with every volume owned can be marked Finished directly.
 
 ## Implementation references
 

@@ -133,7 +133,7 @@ describe('UpdateCollection', () => {
 
         expect(result).toMatchObject({
             includesVolumeZero: true,
-            finished: false,
+            status: 'unfinished',
             missingCount: 1,
         });
     });

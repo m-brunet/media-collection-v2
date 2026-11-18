@@ -34,7 +34,7 @@ export function statistics(overrides: Partial<StatisticsDto> = {}): StatisticsDt
             mostExpensive: { id: 'b2', title: 'Akira', authors: ['Katsuhiro Otomo'], value: 14900 },
             biggestCollection: { id: 'c1', name: 'One Piece', ownedBooks: 62 },
         },
-        collections: { finished: 14, unfinished: 24, missingVolumes: 187 },
+        collections: { finished: 14, unfinished: 24, dropped: 0, missingVolumes: 187 },
         ...overrides,
     };
 }

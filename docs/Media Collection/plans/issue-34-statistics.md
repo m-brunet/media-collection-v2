@@ -18,7 +18,10 @@ Owning docs: [features](../product/features.md#statistics). Feature: `apps/serve
   categories, the chosen one highlighted and the others dimmed. A category without owned books shows the empty state
   with the choice still visible.
 - **Collections** count under their own category (one category per collection since #74). A collection is
-  **finished** when it carries the Finished mark set on its page. Missing volumes follow the Collections page rule
+  **finished** when it carries the Finished status set on its page. Since #144 a **dropped** collection is neither
+  finished nor unfinished: it is counted as a third number, "N dropped", shown with the two others only when there is
+  one, so the total adds up, and its missing volumes are not counted as missing. Its owned books still count everywhere
+  else (owned books, collections of the owned books, the biggest collection). Missing volumes follow the Collections page rule
   (the Collections feature answers the `CollectionTallies` port with its own coverage rule). The biggest collection is
   the one with the most owned books.
 - **Rankings** keep the top 10; equal values are ordered by name (A to Z, ignoring case and accents). Publishers rank
@@ -41,7 +44,7 @@ Owning docs: [features](../product/features.md#statistics). Feature: `apps/serve
   bar by category; with a category, "You own N manga." and its share of the library), pages (with the longest book),
   price (with the link to the books without a price and the most expensive book), your reading (not for a Guest),
   publishers and authors (both top 10s, the publishers keep *by books / by pages*), collections (split bar finished /
-  unfinished, missing volumes, biggest collection). A section without data is left out. Every sentence has a one and a
+  unfinished / dropped, missing volumes, biggest collection). A section without data is left out. Every sentence has a one and a
   several form, in English and French.
 - **Topics view (#73):** seven cards on the left (owned books, pages, total price, read by you — not for a Guest —,
   top publisher, top author, finished collections) work as a single-choice group (arrow keys move, the panel
@@ -61,7 +64,7 @@ books in no collection), `categories`, `reading` (`null` for a Guest), `pages { 
 `price { totalCents, known }`, `publishers { byBooks, byPages, without, count }` (each entry carries books and pages),
 `authors { byBooks, byPages }` (each entry carries books and pages), `records { longest, mostExpensive,
 biggestCollection }` (each nullable),
-`collections { finished, unfinished, missingVolumes }`.
+`collections { finished, unfinished, dropped, missingVolumes }`.
 
 ## Acceptance examples
 
@@ -82,7 +85,8 @@ biggestCollection }` (each nullable),
     books.", the other categories dimmed in the bar. One owned book: "You own 1 book.", "It holds 312 pages."
 11. Story, no book has a page count: the Pages section is not shown. A Guest has no "Your reading" section.
 12. Story: "14 of your 38 collections are finished.", "187 volumes are still missing."; with a single unfinished
-    collection: "Your only collection is not finished yet."
+    collection: "Your only collection is not finished yet."; with a single dropped collection: "Your only collection
+    is dropped."
 13. Topics opens on *Owned books*; clicking *Top author* shows its panel and the address becomes
     `?view=topics&topic=authors`; the Down arrow moves to the next card.
 14. Topics, no author on any book: the *Top author* card shows "—" and "Nothing to count yet", and its panel says
@@ -92,3 +96,5 @@ biggestCollection }` (each nullable),
     by Goscinny: by books Goscinny 3, Uderzo 2; by pages Goscinny 94, Uderzo 48.
 17. (#84) Top authors opens on *By books*; choosing *By pages* shows the page totals in their own order. In Topics, the
     *Authors* panel does the same and its intro becomes "The 10 authors with the most pages."
+18. Dropping an unfinished collection with 3 missing volumes: the unfinished count goes down by one, the missing
+    volumes by 3, and "Dropped 1" appears beside Finished and Unfinished (#144).

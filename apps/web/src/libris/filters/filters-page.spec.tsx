@@ -218,3 +218,34 @@ it('has no collection field for the Collections list', async () => {
     ).toBeInTheDocument();
     expect(screen.queryByText('Any collection')).not.toBeInTheDocument();
 });
+
+it('chooses the dropped collections', async () => {
+    api();
+    const router = show('/collections/filters');
+
+    await userEvent.click(
+        within(await screen.findByRole('group', { name: 'Collection status' })).getByText('Any'),
+    );
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Dropped' }));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Show results' }));
+
+    expect(router.state.location.search).toBe('?dropped=true');
+});
+
+it('offers the collection status to a Guest', async () => {
+    api('guest');
+
+    show('/collections/filters');
+
+    expect(await screen.findByRole('group', { name: 'Collection status' })).toBeInTheDocument();
+});
+
+it('has no collection status for the books', async () => {
+    api();
+
+    show('/books/filters');
+
+    await screen.findByText('Ownership');
+    expect(screen.queryByRole('group', { name: 'Collection status' })).not.toBeInTheDocument();
+});

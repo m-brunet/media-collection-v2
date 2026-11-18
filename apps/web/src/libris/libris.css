@@ -960,6 +960,10 @@ button.book-card--batch:disabled {
     color: var(--color-accent);
 }
 
+.collection-card__status--dropped {
+    color: var(--color-text-muted);
+}
+
 .collection-page {
     display: flex;
     flex-direction: column;
@@ -1103,6 +1107,11 @@ button.book-card--batch:disabled {
 .collection-label--finished {
     background: var(--color-success-surface);
     color: var(--color-accent-strong);
+}
+
+.collection-label--dropped {
+    background: var(--color-control);
+    color: var(--color-text-secondary);
 }
 
 .collection-tip {

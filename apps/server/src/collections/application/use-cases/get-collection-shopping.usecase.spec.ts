@@ -18,7 +18,7 @@ describe('GetCollectionShopping', () => {
         expect(result).toEqual({
             id: 'collection-1',
             name: 'Batman',
-            finished: false,
+            status: 'unfinished',
             expectedCount: 4,
             ownedCount: 1,
             lastOwned: { volume: 2, title: null },

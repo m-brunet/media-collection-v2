@@ -60,6 +60,7 @@ export class GetStatistics implements GetStatisticsUseCase {
             collections: {
                 finished: progress.finished,
                 unfinished: progress.unfinished,
+                dropped: progress.dropped,
                 missingVolumes: progress.missingVolumes,
             },
         };

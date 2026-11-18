@@ -108,7 +108,7 @@ function NumberCard({
 function OwnedCard({ statistics }: { statistics: StatisticsDto }) {
     const { t, locale } = useI18n();
     const count = useCount();
-    const collections = statistics.collections.finished + statistics.collections.unfinished;
+    const collections = StatisticsFormat.collections(statistics);
 
     return (
         <NumberCard

@@ -21,6 +21,7 @@ import type { LookupAnswer } from '../../domain/value-objects/lookup-answer.valu
 import type { PublisherNames } from '../../domain/value-objects/publisher-names.value-object.js';
 import { GeneratedTitle } from '../../domain/value-objects/generated-title.value-object.js';
 import { Isbn } from '../../domain/value-objects/isbn.value-object.js';
+import { VolumeAdmission } from '../volume-admission.helper.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { NameKey } from '../../../shared/domain/name-key.helper.js';
 import { Required } from '../../../shared/domain/required.helper.js';
@@ -48,13 +49,7 @@ export class FindMissingVolumes implements FindMissingVolumesUseCase {
         ActorAuthorization.requireLibraryEditor(actor);
         const collection = await this.collections.of(collectionId, upTo);
 
-        if (collection.finished) {
-            throw new Failure(
-                'conflict',
-                'Mark the collection unfinished before adding volumes.',
-                'collection-finished',
-            );
-        }
+        VolumeAdmission.ensureOpen(collection);
 
         Failure.ensure(
             collection.uncovered.length <= FindMissingVolumes.maximumVolumes,

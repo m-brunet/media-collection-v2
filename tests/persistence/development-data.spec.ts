@@ -129,7 +129,7 @@ describe('development V1 import', () => {
             .execute();
         const collections = await db
             .selectFrom('collections')
-            .select(['name', 'includes_volume_zero', 'finished'])
+            .select(['name', 'includes_volume_zero', 'status'])
             .orderBy('name')
             .execute();
         const readings = await db.selectFrom('reading_statuses').select('read').execute();
@@ -156,9 +156,9 @@ describe('development V1 import', () => {
         });
         expect(books[2]!.updated_at > '2026-01-01').toBe(true);
         expect(collections).toEqual([
-            { name: 'Gunnm', includes_volume_zero: 0, finished: 0 },
-            { name: 'Gunnm - Last Order', includes_volume_zero: 0, finished: 0 },
-            { name: 'Ubel Blatt', includes_volume_zero: 1, finished: 1 },
+            { name: 'Gunnm', includes_volume_zero: 0, status: 'unfinished' },
+            { name: 'Gunnm - Last Order', includes_volume_zero: 0, status: 'unfinished' },
+            { name: 'Ubel Blatt', includes_volume_zero: 1, status: 'finished' },
         ]);
         expect(readings).toEqual([{ read: 1 }]);
         expect(

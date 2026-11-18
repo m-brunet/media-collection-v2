@@ -361,6 +361,20 @@ describe('ActivityProjection', () => {
 
         expect(entry?.event).toEqual({ kind: 'collection-reopened', name: 'Batman' });
     });
+    it('describes a dropped collection', () => {
+        const dropped = operation(record('collection.dropped', { name: 'Bleach' }));
+
+        const entry = ActivityProjection.entry(dropped);
+
+        expect(entry?.event).toEqual({ kind: 'collection-dropped', name: 'Bleach' });
+    });
+    it('describes a resumed collection', () => {
+        const resumed = operation(record('collection.resumed', { name: 'Bleach' }));
+
+        const entry = ActivityProjection.entry(resumed);
+
+        expect(entry?.event).toEqual({ kind: 'collection-resumed', name: 'Bleach' });
+    });
     it('describes a corrected author', () => {
         const corrected = operation(
             record('author.corrected', { name: 'Frank Herbert' }, { name: 'F. Herbert' }),

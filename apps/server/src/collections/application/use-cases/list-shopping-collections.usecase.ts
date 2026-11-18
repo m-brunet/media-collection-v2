@@ -16,7 +16,7 @@ export class ListShoppingCollections implements ListShoppingCollectionsUseCase {
     async execute(actor: Actor): Promise<ShoppingCollectionView[]> {
         ActorAuthorization.requireLibraryEditor(actor);
         const unfinished = (await this.collections.list()).filter(
-            (collection) => !collection.snapshot.finished,
+            (collection) => collection.snapshot.status === 'unfinished',
         );
         const records = await this.members.ofCollections(
             unfinished.map((collection) => collection.id),

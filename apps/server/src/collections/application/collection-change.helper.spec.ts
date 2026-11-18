@@ -8,7 +8,7 @@ const batman = () =>
         name: 'Batman',
         category: 'comics',
         includesVolumeZero: false,
-        finished: false,
+        status: 'unfinished',
         createdAt: '2026-01-01T00:00:00.000Z',
         updatedAt: '2026-01-01T00:00:00.000Z',
     });
@@ -28,7 +28,7 @@ describe('CollectionChange', () => {
                 name: 'Batman',
                 category: 'comics',
                 includesVolumeZero: false,
-                finished: false,
+                status: 'unfinished',
             },
         });
     });
@@ -42,7 +42,7 @@ describe('CollectionChange', () => {
                 name: 'Batman',
                 category: 'comics',
                 includesVolumeZero: false,
-                finished: false,
+                status: 'unfinished',
             },
             after: null,
         });

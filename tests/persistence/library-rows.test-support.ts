@@ -51,7 +51,7 @@ export class LibraryRows {
                         name_key: key,
                         category: 'books',
                         includes_volume_zero: 0,
-                        finished: 0,
+                        status: 'unfinished',
                         created_at: now,
                         updated_at: now,
                     })

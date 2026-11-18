@@ -26,6 +26,8 @@ import { GetCollectionShopping } from '../../application/use-cases/get-collectio
 import { ListCollections } from '../../application/use-cases/list-collections.usecase.js';
 import { ListShoppingCollections } from '../../application/use-cases/list-shopping-collections.usecase.js';
 import { ReopenCollection } from '../../application/use-cases/reopen-collection.usecase.js';
+import { DropCollection } from '../../application/use-cases/drop-collection.usecase.js';
+import { ResumeCollection } from '../../application/use-cases/resume-collection.usecase.js';
 import { UpdateCollection } from '../../application/use-cases/update-collection.usecase.js';
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 import type { IdGenerator } from '../../../shared/application/ports/driven/id-generator.interface.js';
@@ -174,6 +176,8 @@ const useCaseProviders: Provider[] = [
     },
     ChangeProvider.of('COLLECTIONS_FINISH', FinishCollection),
     ChangeProvider.of('COLLECTIONS_REOPEN', ReopenCollection),
+    ChangeProvider.of('COLLECTIONS_DROP', DropCollection),
+    ChangeProvider.of('COLLECTIONS_RESUME', ResumeCollection),
     {
         provide: 'COLLECTIONS_DELETE',
         inject: [token.collections, token.members, token.loader, token.titles, token.operations],

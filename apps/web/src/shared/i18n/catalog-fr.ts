@@ -299,10 +299,11 @@ export const fr = {
     'leaf.volume': 'Tome {volume}',
     'leaf.shopping.title': 'Vos collections',
     'leaf.shopping.intro': 'Collections non terminées · Prêtes pour vos achats',
-    'leaf.shopping.finishedHidden': 'Les collections terminées ne sont pas affichées ici.',
+    'leaf.shopping.finishedHidden':
+        'Les collections terminées et abandonnées ne sont pas affichées ici.',
     'leaf.shopping.empty': 'Aucune collection non terminée',
     'leaf.shopping.emptyBody':
-        'Une collection apparaît ici dès qu’un livre y est enregistré, jusqu’à ce qu’elle soit marquée terminée.',
+        'Une collection apparaît ici dès qu’un livre y est enregistré, jusqu’à ce qu’elle soit marquée terminée ou abandonnée.',
     'leaf.shopping.missingOne': '1 manquant',
     'leaf.shopping.missingMany': '{count} manquants',
     'leaf.shopping.lastOwned': 'Dernier possédé : {volume}',
@@ -311,6 +312,8 @@ export const fr = {
     'leaf.collection.owned': '{owned} tomes possédés sur {expected}',
     'leaf.collection.finished':
         'Cette collection est marquée terminée : elle n’apparaît plus pour vos achats.',
+    'leaf.collection.dropped':
+        'Cette collection est abandonnée : elle n’apparaît plus pour vos achats.',
     'leaf.collection.lastOwnedLabel': 'Dernier tome possédé',
     'leaf.collection.ownership': 'Possession',
     'leaf.collection.missingTitle': 'Tomes manquants',
@@ -860,6 +863,7 @@ export const fr = {
     'collections.noGaps': 'Aucun tome manquant connu',
     'collections.unfinished': 'Non terminée',
     'collections.finished': 'Terminée',
+    'collections.dropped': 'Abandonnée',
     'collections.footnote':
         'Une collection est créée lorsque vous enregistrez un livre avec un nom de collection. Les totaux décrivent toujours la collection entière.',
     'collections.empty':
@@ -878,6 +882,7 @@ export const fr = {
     'collection.coverageComplete': 'Complète',
     'collection.labelFinished': 'Terminée',
     'collection.labelUnfinished': 'Non terminée',
+    'collection.labelDropped': 'Abandonnée',
     'collection.expectedOne': 'Couverture attendue : tome {number}',
     'collection.expectedRange': 'Couverture attendue : tomes {from} à {to}',
     'collection.facts': 'Inclut le tome 0 : {zero} · Plus haut tome enregistré : {highest}',
@@ -888,8 +893,12 @@ export const fr = {
     'collection.finishUnavailable':
         'Possédez chaque tome attendu avant de marquer cette collection comme terminée.',
     'collection.reopen': 'Rouvrir la collection',
+    'collection.drop': 'Abandonner la collection',
+    'collection.resume': 'Reprendre la collection',
     'collection.finishedHint':
         'Les collections terminées restent visibles sur ordinateur et sont masquées des achats sur mobile.',
+    'collection.droppedHint':
+        'Les collections abandonnées restent visibles sur ordinateur et sont masquées des achats sur mobile.',
     'collection.markAllRead': 'Tout marquer lu',
     'collection.allRead': 'Tout lu',
     'collection.readingScopeOne': 'S’applique au livre possédé de cette collection.',
@@ -908,6 +917,7 @@ export const fr = {
     'collection.back': 'Retour aux collections',
     'volumes.add': 'Ajouter des tomes',
     'volumes.addUnavailable': 'Marquez la collection comme non terminée avant d’ajouter des tomes.',
+    'volumes.addUnavailableDropped': 'Reprenez la collection avant d’ajouter des tomes.',
     'volumes.dialogTitle': 'Ajouter les tomes manquants',
     'volumes.upTo': 'Jusqu’au tome',
     'volumes.upToHint':
@@ -1420,6 +1430,11 @@ export const fr = {
     'filters.anyPrice': 'Indifférent',
     'filters.withPrice': 'Avec prix',
     'filters.withoutPrice': 'Sans prix',
+    'filters.collectionStatus': 'Statut de la collection',
+    'filters.anyCollectionStatus': 'Indifférent',
+    'filters.dropped': 'Abandonnées',
+    'filters.droppedHint':
+        'Avec Non terminées ou Terminées choisi au-dessus de la liste, aucune collection ne correspond.',
     'filters.reading': 'Votre statut de lecture',
     'filters.anyReading': 'Indifférent',
     'filters.tags': 'Étiquettes · Toutes incluses, aucune exclue',
@@ -1657,6 +1672,8 @@ export const fr = {
     'activity.volumeAdded': 'Vous avez ajouté un tome à la collection {name}',
     'activity.collectionFinished': 'Vous avez marqué {name} comme terminée',
     'activity.collectionReopened': 'Vous avez rouvert {name}',
+    'activity.collectionDropped': 'Vous avez abandonné {name}',
+    'activity.collectionResumed': 'Vous avez repris {name}',
     'activity.collectionDeleted': 'Vous avez supprimé la collection {name}',
     'activity.collectionRemoved': 'Vous avez retiré la collection vide {name}',
     'activity.bookcaseCreated': 'Vous avez créé le rayonnage {name}',
@@ -1714,6 +1731,7 @@ export const fr = {
     'statistics.collections': 'Collections',
     'statistics.finished': 'Terminées',
     'statistics.unfinished': 'En cours',
+    'statistics.dropped': 'Abandonnées',
     'statistics.missingOne': '1 volume manquant au total.',
     'statistics.missingMany': '{count} volumes manquants au total.',
     'statistics.topPublishers': 'Éditeurs en tête',
@@ -1771,6 +1789,7 @@ export const fr = {
     'statistics.storyFinishedMany': '{finished} de vos {total} collections sont terminées.',
     'statistics.storyOnlyFinished': 'Votre seule collection est terminée.',
     'statistics.storyOnlyUnfinished': 'Votre seule collection n’est pas encore terminée.',
+    'statistics.storyOnlyDropped': 'Votre seule collection est abandonnée.',
     'statistics.storyMissingOne': '1 volume manque encore.',
     'statistics.storyMissingMany': '{count} volumes manquent encore.',
     'statistics.viewTopics': 'Thèmes',

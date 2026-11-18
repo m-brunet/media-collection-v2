@@ -61,7 +61,7 @@ function setup(members: CollectionVolumeMember[] = gunnm, category: 'books' | 'm
         id: 'gunnm',
         name: 'Gunnm',
         category,
-        finished: false,
+        status: 'unfinished',
         members,
     });
 
@@ -92,13 +92,27 @@ describe('FindMissingVolumes', () => {
     it('refuses a Finished collection before asking the catalogue', async () => {
         const { useCase, series, collections } = setup();
 
-        collections.collections.get('gunnm')!.finished = true;
+        collections.collections.get('gunnm')!.status = 'finished';
 
         const result = useCase.execute(owner, 'gunnm', 8);
 
         await expect(result).rejects.toMatchObject({
             code: 'conflict',
             reason: 'collection-finished',
+        });
+        expect(series.asked).toEqual([]);
+    });
+
+    it('refuses a Dropped collection before asking the catalogue', async () => {
+        const { useCase, series, collections } = setup();
+
+        collections.collections.get('gunnm')!.status = 'dropped';
+
+        const result = useCase.execute(owner, 'gunnm', 8);
+
+        await expect(result).rejects.toMatchObject({
+            code: 'conflict',
+            reason: 'collection-dropped',
         });
         expect(series.asked).toEqual([]);
     });

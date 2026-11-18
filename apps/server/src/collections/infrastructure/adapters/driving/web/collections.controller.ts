@@ -12,6 +12,7 @@ import {
     Req,
 } from '@nestjs/common';
 import type { z } from 'zod';
+import type { DropCollectionUseCase } from '../../../../application/ports/driving/drop-collection-use-case.interface.js';
 import type { DeleteCollectionUseCase } from '../../../../application/ports/driving/delete-collection-use-case.interface.js';
 import type { FindCollectionsUseCase } from '../../../../application/ports/driving/find-collections-use-case.interface.js';
 import type { FinishCollectionUseCase } from '../../../../application/ports/driving/finish-collection-use-case.interface.js';
@@ -20,6 +21,7 @@ import type { GetCollectionShoppingUseCase } from '../../../../application/ports
 import type { ListCollectionsUseCase } from '../../../../application/ports/driving/list-collections-use-case.interface.js';
 import type { ListShoppingCollectionsUseCase } from '../../../../application/ports/driving/list-shopping-collections-use-case.interface.js';
 import type { ReopenCollectionUseCase } from '../../../../application/ports/driving/reopen-collection-use-case.interface.js';
+import type { ResumeCollectionUseCase } from '../../../../application/ports/driving/resume-collection-use-case.interface.js';
 import type { UpdateCollectionUseCase } from '../../../../application/ports/driving/update-collection-use-case.interface.js';
 import type { AuthenticatedRequest } from '../../../../../shared/infrastructure/adapters/driving/web/api-guard.js';
 import { BookFilterQueryMapper } from '../../../../../shared/infrastructure/adapters/driving/web/book-filter-query.mapper.js';
@@ -46,6 +48,8 @@ export class CollectionsController {
         @Inject('COLLECTIONS_UPDATE') private readonly updateCollection: UpdateCollectionUseCase,
         @Inject('COLLECTIONS_FINISH') private readonly finishCollection: FinishCollectionUseCase,
         @Inject('COLLECTIONS_REOPEN') private readonly reopenCollection: ReopenCollectionUseCase,
+        @Inject('COLLECTIONS_DROP') private readonly dropCollection: DropCollectionUseCase,
+        @Inject('COLLECTIONS_RESUME') private readonly resumeCollection: ResumeCollectionUseCase,
         @Inject('COLLECTIONS_DELETE') private readonly deleteCollection: DeleteCollectionUseCase,
         @Inject('COLLECTIONS_SHOPPING_LIST')
         private readonly listShopping: ListShoppingCollectionsUseCase,
@@ -58,11 +62,12 @@ export class CollectionsController {
         @Query({ schema: collectionListSchema }) query: z.infer<typeof collectionListSchema>,
         @Req() request: AuthenticatedRequest,
     ): Promise<CollectionListPageDto> {
-        const { search, direction, offset, limit, finished } = query;
+        const { search, direction, offset, limit, finished, dropped } = query;
 
         return this.listCollections.execute(request.actor, {
             search,
             finished,
+            dropped,
             direction,
             offset,
             limit,
@@ -120,6 +125,24 @@ export class CollectionsController {
         @Req() request: AuthenticatedRequest,
     ): Promise<CollectionDetailsDto> {
         return this.reopenCollection.execute(request.actor, id);
+    }
+
+    @Post(':id/drop')
+    @HttpCode(200)
+    drop(
+        @Param('id', { schema: collectionIdSchema }) id: string,
+        @Req() request: AuthenticatedRequest,
+    ): Promise<CollectionDetailsDto> {
+        return this.dropCollection.execute(request.actor, id);
+    }
+
+    @Post(':id/resume')
+    @HttpCode(200)
+    resume(
+        @Param('id', { schema: collectionIdSchema }) id: string,
+        @Req() request: AuthenticatedRequest,
+    ): Promise<CollectionDetailsDto> {
+        return this.resumeCollection.execute(request.actor, id);
     }
 
     @Delete(':id')

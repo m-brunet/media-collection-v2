@@ -163,4 +163,25 @@ describe('BookFilter choices', () => {
 
         expect(result).toEqual(BookFilter.empty());
     });
+    it('keeps the Dropped choice for collection listings', () => {
+        const filter = { ...BookFilter.empty(), dropped: ['true' as const] };
+
+        const result = BookFilter.applicable(filter, { guest: false, collections: true });
+
+        expect(result.dropped).toEqual(['true']);
+    });
+    it('drops the Dropped choice for book listings', () => {
+        const filter = { ...BookFilter.empty(), dropped: ['true' as const] };
+
+        const result = BookFilter.applicable(filter, { guest: false, collections: false });
+
+        expect(result.dropped).toEqual([]);
+    });
+    it('reads only a true Dropped choice', () => {
+        const parameters = new URLSearchParams('dropped=true&dropped=yes');
+
+        const result = BookFilter.read(parameters);
+
+        expect(result.dropped).toEqual(['true']);
+    });
 });

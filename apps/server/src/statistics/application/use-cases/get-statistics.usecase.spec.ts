@@ -177,14 +177,34 @@ describe('GetStatistics', () => {
     });
     it('counts the collections of the chosen category', async () => {
         const collections = new FixedCollectionTallies()
-            .add('One Piece', { finished: true, missingVolumes: 0 })
+            .add('One Piece', { status: 'finished', missingVolumes: 0 })
             .add('Naruto', { missingVolumes: 3 })
             .add('Asterix', { category: 'comics', missingVolumes: 5 });
         const { use } = statistics(undefined, collections);
 
         const view = await use.execute(StatisticsActors.owner, 'manga');
 
-        expect(view.collections).toEqual({ finished: 1, unfinished: 1, missingVolumes: 3 });
+        expect(view.collections).toEqual({
+            finished: 1,
+            unfinished: 1,
+            dropped: 0,
+            missingVolumes: 3,
+        });
+    });
+    it('counts the dropped collections apart from the unfinished ones', async () => {
+        const collections = new FixedCollectionTallies()
+            .add('Naruto', { missingVolumes: 3 })
+            .add('Bleach', { status: 'dropped', missingVolumes: 40 });
+        const { use } = statistics(undefined, collections);
+
+        const view = await use.execute(StatisticsActors.owner, null);
+
+        expect(view.collections).toEqual({
+            finished: 0,
+            unfinished: 1,
+            dropped: 1,
+            missingVolumes: 3,
+        });
     });
     it('gives the collection with the most owned books, equal numbers by name', async () => {
         const collections = new FixedCollectionTallies()

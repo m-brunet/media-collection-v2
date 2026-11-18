@@ -74,7 +74,9 @@ function CollectionCard({ collection }: { collection: CollectionSummaryDto }) {
                         <span
                             className={
                                 'collection-card__status' +
-                                (collection.finished ? ' collection-card__status--finished' : '')
+                                (collection.status === 'unfinished'
+                                    ? ''
+                                    : ' collection-card__status--' + collection.status)
                             }
                         >
                             {status}

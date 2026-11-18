@@ -109,7 +109,7 @@ describe('GET /api/statistics', () => {
                         ownedBooks: 2,
                     },
                 },
-                collections: { finished: 0, unfinished: 1, missingVolumes: 1 },
+                collections: { finished: 0, unfinished: 1, dropped: 0, missingVolumes: 1 },
             },
         ]);
     });
@@ -134,7 +134,7 @@ describe('GET /api/statistics', () => {
             ownedBooks: 1,
             categories: { books: 1, manga: 1, comics: 0 },
             pages: { total: 192, known: 1 },
-            collections: { finished: 0, unfinished: 1, missingVolumes: 0 },
+            collections: { finished: 0, unfinished: 1, dropped: 0, missingVolumes: 0 },
         });
     });
     it('refuses an unknown category', async () => {

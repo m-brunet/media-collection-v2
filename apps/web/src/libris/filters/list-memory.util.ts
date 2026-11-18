@@ -75,7 +75,7 @@ export class ListMemory {
 
     private static keys(list: ListName): string[] {
         return list === 'books'
-            ? [...BookFilter.keys, 'sort']
+            ? [...BookFilter.keys.filter((key) => key !== 'dropped'), 'sort']
             : [...BookFilter.keys.filter((key) => key !== 'collection'), 'direction', 'finished'];
     }
 

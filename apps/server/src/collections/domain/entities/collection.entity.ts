@@ -5,12 +5,14 @@ import type { CoverageMember } from '../value-objects/collection-coverage.value-
 
 export type CollectionCategory = 'books' | 'manga' | 'comics';
 
+export type CollectionStatus = 'unfinished' | 'finished' | 'dropped';
+
 export interface CollectionState {
     id: string;
     name: string;
     category: CollectionCategory;
     includesVolumeZero: boolean;
-    finished: boolean;
+    status: CollectionStatus;
     createdAt: string;
     updatedAt: string;
 }
@@ -101,22 +103,65 @@ export class Collection {
             );
         }
 
-        this.state.finished = true;
-        this.state.updatedAt = now;
+        this.change('finished', now);
     }
 
     reopen(now: string): void {
-        this.state.finished = false;
-        this.state.updatedAt = now;
+        if (this.state.status === 'dropped') {
+            throw new Failure(
+                'conflict',
+                'Resume this collection instead of reopening it.',
+                'collection-dropped',
+            );
+        }
+
+        this.change('unfinished', now);
+    }
+
+    drop(now: string): void {
+        if (this.state.status === 'finished') {
+            throw new Failure(
+                'conflict',
+                'Reopen this collection before dropping it.',
+                'collection-finished',
+            );
+        }
+
+        if (this.state.status === 'dropped') {
+            throw new Failure(
+                'conflict',
+                'This collection is already dropped.',
+                'collection-dropped',
+            );
+        }
+
+        this.change('dropped', now);
+    }
+
+    resume(now: string): void {
+        if (this.state.status !== 'dropped') {
+            throw new Failure(
+                'conflict',
+                'Only a dropped collection can be resumed.',
+                'collection-not-dropped',
+            );
+        }
+
+        this.change('unfinished', now);
     }
 
     reconcile(members: readonly CoverageMember[], now: string): boolean {
-        if (!this.state.finished || this.coverage(members).missing.length === 0) {
+        if (this.state.status !== 'finished' || this.coverage(members).missing.length === 0) {
             return false;
         }
 
         this.reopen(now);
 
         return true;
+    }
+
+    private change(status: CollectionStatus, now: string): void {
+        this.state.status = status;
+        this.state.updatedAt = now;
     }
 }

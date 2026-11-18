@@ -230,7 +230,7 @@ describe('UpdateBook', () => {
                 subjectType: 'collection',
                 subjectId: 'collection-Batman',
                 before: null,
-                after: { name: 'Batman', includesVolumeZero: false, finished: false },
+                after: { name: 'Batman', includesVolumeZero: false, status: 'unfinished' },
             },
         ];
 

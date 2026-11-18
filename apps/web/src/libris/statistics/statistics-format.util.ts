@@ -1,4 +1,10 @@
+import type { StatisticsDto } from '../../../../../packages/contracts/src/http';
+
 export class StatisticsFormat {
+    static collections({ collections }: Pick<StatisticsDto, 'collections'>): number {
+        return collections.finished + collections.unfinished + collections.dropped;
+    }
+
     static number(value: number, locale: string): string {
         return new Intl.NumberFormat(locale).format(value);
     }

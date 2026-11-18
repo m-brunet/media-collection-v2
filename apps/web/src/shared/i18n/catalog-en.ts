@@ -278,10 +278,10 @@ export const en = {
     'leaf.volume': 'Volume {volume}',
     'leaf.shopping.title': 'Your collections',
     'leaf.shopping.intro': 'Unfinished collections · Ready for shopping',
-    'leaf.shopping.finishedHidden': 'Finished collections are hidden here.',
+    'leaf.shopping.finishedHidden': 'Finished and dropped collections are hidden here.',
     'leaf.shopping.empty': 'No unfinished collections',
     'leaf.shopping.emptyBody':
-        'A collection appears here once a book is saved in it, until it is marked Finished.',
+        'A collection appears here once a book is saved in it, until it is marked Finished or dropped.',
     'leaf.shopping.missingOne': '1 missing',
     'leaf.shopping.missingMany': '{count} missing',
     'leaf.shopping.lastOwned': 'Last Owned: {volume}',
@@ -290,6 +290,8 @@ export const en = {
     'leaf.collection.owned': '{owned} of {expected} volumes Owned',
     'leaf.collection.finished':
         'This collection is marked Finished, so it is no longer listed for shopping.',
+    'leaf.collection.dropped':
+        'This collection is dropped, so it is no longer listed for shopping.',
     'leaf.collection.lastOwnedLabel': 'Last Owned volume',
     'leaf.collection.ownership': 'Ownership',
     'leaf.collection.missingTitle': 'Missing volumes',
@@ -815,6 +817,7 @@ export const en = {
     'collections.noGaps': 'No known missing volumes',
     'collections.unfinished': 'Unfinished',
     'collections.finished': 'Finished',
+    'collections.dropped': 'Dropped',
     'collections.footnote':
         'Collections are created when you save a book with a collection name. Counts always describe the whole collection.',
     'collections.empty': 'No collections yet. Add a book with a collection name to create one.',
@@ -832,6 +835,7 @@ export const en = {
     'collection.coverageComplete': 'Complete',
     'collection.labelFinished': 'Finished',
     'collection.labelUnfinished': 'Unfinished',
+    'collection.labelDropped': 'Dropped',
     'collection.expectedOne': 'Expected coverage: volume {number}',
     'collection.expectedRange': 'Expected coverage: volumes {from}–{to}',
     'collection.facts': 'Includes volume 0: {zero} · Highest saved coverage: {highest}',
@@ -842,8 +846,12 @@ export const en = {
     'collection.finishUnavailable':
         'Own every expected volume before marking this collection Finished.',
     'collection.reopen': 'Reopen collection',
+    'collection.drop': 'Drop collection',
+    'collection.resume': 'Resume collection',
     'collection.finishedHint':
         'Finished collections remain on desktop and are hidden from mobile shopping.',
+    'collection.droppedHint':
+        'Dropped collections remain on desktop and are hidden from mobile shopping.',
     'collection.markAllRead': 'Mark all read',
     'collection.allRead': 'All read',
     'collection.readingScopeOne': 'Applies to the owned book of this collection.',
@@ -862,6 +870,7 @@ export const en = {
     'collection.back': 'Back to collections',
     'volumes.add': 'Add volumes',
     'volumes.addUnavailable': 'Mark the collection unfinished before adding volumes.',
+    'volumes.addUnavailableDropped': 'Resume the collection before adding volumes.',
     'volumes.dialogTitle': 'Add missing volumes',
     'volumes.upTo': 'Up to volume',
     'volumes.upToHint':
@@ -1363,6 +1372,11 @@ export const en = {
     'filters.anyPrice': 'Any',
     'filters.withPrice': 'With price',
     'filters.withoutPrice': 'Without price',
+    'filters.collectionStatus': 'Collection status',
+    'filters.anyCollectionStatus': 'Any',
+    'filters.dropped': 'Dropped',
+    'filters.droppedHint':
+        'With Unfinished or Finished chosen above the list, no collection matches.',
     'filters.reading': 'Your reading status',
     'filters.anyReading': 'Any',
     'filters.tags': 'Tags · Include all, exclude any',
@@ -1593,6 +1607,8 @@ export const en = {
     'activity.volumeAdded': 'You added a volume to the collection {name}',
     'activity.collectionFinished': 'You marked {name} as finished',
     'activity.collectionReopened': 'You reopened {name}',
+    'activity.collectionDropped': 'You dropped {name}',
+    'activity.collectionResumed': 'You resumed {name}',
     'activity.collectionDeleted': 'You deleted the collection {name}',
     'activity.collectionRemoved': 'You removed the empty collection {name}',
     'activity.bookcaseCreated': 'You created the bookcase {name}',
@@ -1648,6 +1664,7 @@ export const en = {
     'statistics.collections': 'Collections',
     'statistics.finished': 'Finished',
     'statistics.unfinished': 'Unfinished',
+    'statistics.dropped': 'Dropped',
     'statistics.missingOne': '1 volume missing in total.',
     'statistics.missingMany': '{count} volumes missing in total.',
     'statistics.topPublishers': 'Top publishers',
@@ -1705,6 +1722,7 @@ export const en = {
     'statistics.storyFinishedMany': '{finished} of your {total} collections are finished.',
     'statistics.storyOnlyFinished': 'Your only collection is finished.',
     'statistics.storyOnlyUnfinished': 'Your only collection is not finished yet.',
+    'statistics.storyOnlyDropped': 'Your only collection is dropped.',
     'statistics.storyMissingOne': '1 volume is still missing.',
     'statistics.storyMissingMany': '{count} volumes are still missing.',
     'statistics.viewTopics': 'Topics',

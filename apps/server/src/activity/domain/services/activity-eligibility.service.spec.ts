@@ -22,13 +22,15 @@ describe('ActivityEligibility', () => {
             'collection.updated',
             'collection.finished',
             'collection.reopened',
+            'collection.dropped',
+            'collection.resumed',
             'collection.deleted',
             'collection.removed',
         ];
 
         const included = categories.map((category) => ActivityEligibility.includes(category));
 
-        expect(included).toEqual([true, true, true, true, true, true]);
+        expect(included).toEqual([true, true, true, true, true, true, true, true]);
     });
     it('includes bookcase, shelf and tag changes', () => {
         const categories = ['bookcase.renamed', 'shelf.moved', 'tag.created', 'tag.deleted'];

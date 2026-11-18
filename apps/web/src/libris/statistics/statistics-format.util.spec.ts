@@ -11,6 +11,13 @@ it('rounds a share to a whole percent', () => {
 
     expect(text).toBe('69%');
 });
+it('counts every collection whatever its status', () => {
+    const collections = { finished: 2, unfinished: 3, dropped: 1, missingVolumes: 9 };
+
+    const total = StatisticsFormat.collections({ collections });
+
+    expect(total).toBe(6);
+});
 it('gives no share of nothing', () => {
     const text = StatisticsFormat.percent(0, 0, 'fr-FR');
 

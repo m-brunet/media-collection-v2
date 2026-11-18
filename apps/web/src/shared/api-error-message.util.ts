@@ -63,6 +63,7 @@ export class ApiErrorMessage {
         'volumes-too-many': 'reason.volumesTooMany',
         'anchor-outside-collection': 'reason.anchorOutsideCollection',
         'collection-finished': 'volumes.addUnavailable',
+        'collection-dropped': 'volumes.addUnavailableDropped',
         'title-missing': 'reason.titleMissing',
         'volume-invalid': 'reason.volumeInvalid',
         'volume-zero-in-use': 'reason.volumeZeroInUse',

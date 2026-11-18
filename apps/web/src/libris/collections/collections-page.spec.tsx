@@ -21,7 +21,7 @@ function summary(overrides: Partial<CollectionSummaryDto> = {}): CollectionSumma
         name: 'Batman',
         category: 'comics',
         includesVolumeZero: false,
-        finished: false,
+        status: 'unfinished',
         bookCount: 5,
         expectedFrom: 1,
         expectedTo: 12,
@@ -54,7 +54,7 @@ it('shows each collection with its whole-collection counts', async () => {
                 ownedCount: 3,
                 expectedCount: 3,
                 missingCount: 0,
-                finished: true,
+                status: 'finished',
             }),
         ]),
     );
@@ -322,5 +322,43 @@ it('restores the last status, filters and direction before asking for the list',
     await screen.findByRole('link', { name: /Batman/ });
     expect(routes(api).filter((route) => route.includes('offset=0'))).toEqual([
         'GET /collections?search=&direction=desc&limit=48&finished=false&category=manga&offset=0',
+    ]);
+});
+
+it('shows the Dropped label on the card of a dropped collection', async () => {
+    new FakeApi()
+        .signedIn(account())
+        .on('GET /collections', listing([summary({ status: 'dropped' })]));
+
+    show();
+
+    const batman = await screen.findByRole('link', { name: /Batman/ });
+
+    expect(batman).toHaveTextContent('Dropped');
+    expect(within(batman).getByText('Dropped')).toHaveClass('collection-card__status--dropped');
+});
+
+it('asks only for the dropped collections with the advanced Dropped filter', async () => {
+    const api = new FakeApi().signedIn(account()).on('GET /collections', listing([summary()]));
+
+    show('/collections?dropped=true');
+
+    await screen.findByRole('link', { name: /Batman/ });
+    expect(screen.getByRole('button', { name: 'Remove the filter Dropped' })).toBeVisible();
+    expect(routes(api)).toContain(
+        'GET /collections?search=&direction=asc&limit=48&dropped=true&offset=0',
+    );
+});
+
+it('restores a remembered Dropped filter', async () => {
+    const api = new FakeApi().signedIn(account()).on('GET /collections', listing([summary()]));
+
+    ListMemory.write('alex', 'collections', new URLSearchParams('dropped=true'));
+
+    show();
+
+    await screen.findByRole('link', { name: /Batman/ });
+    expect(routes(api).filter((route) => route.includes('offset=0'))).toEqual([
+        'GET /collections?search=&direction=asc&limit=48&dropped=true&offset=0',
     ]);
 });

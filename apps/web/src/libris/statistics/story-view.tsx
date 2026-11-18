@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { BookCategory, StatisticsDto } from '../../../../../packages/contracts/src/http';
+import { StatisticsFormat } from './statistics-format.util';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { SplitBar } from './split-bar';
 import {
@@ -26,7 +27,7 @@ export function StoryView({
     const segments = useStatisticsSegments(statistics, category);
     const said = useStatisticsSentences(statistics, category);
     const { pages, price, reading, publishers, authors } = statistics;
-    const collections = statistics.collections.finished + statistics.collections.unfinished;
+    const collections = StatisticsFormat.collections(statistics);
 
     return (
         <div className="statistics-story">

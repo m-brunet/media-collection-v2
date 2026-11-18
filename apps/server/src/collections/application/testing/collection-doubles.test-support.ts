@@ -53,7 +53,7 @@ export class MemoryCollections implements CollectionRepository {
                 (query.ids === null || query.ids.includes(collection.id)) &&
                 (query.categories.length === 0 ||
                     query.categories.includes(collection.snapshot.category)) &&
-                (query.finished === null || collection.snapshot.finished === query.finished),
+                (query.statuses === null || query.statuses.includes(collection.snapshot.status)),
         );
         const ordered = query.direction === 'asc' ? selected : selected.reverse();
 
@@ -281,6 +281,19 @@ export class CollectionDoubles {
         );
 
         collection.changeCategory(category, '2026-01-01T00:00:00.000Z');
+        await current.collections.save(collection);
+    }
+
+    static async markDropped(
+        current: ReturnType<typeof CollectionDoubles.shelf>,
+        collectionId: string,
+    ) {
+        const collection = Required.value(
+            await current.collections.findById(collectionId),
+            'collection ' + collectionId + ' exists',
+        );
+
+        collection.drop('2026-01-01T00:00:00.000Z');
         await current.collections.save(collection);
     }
 

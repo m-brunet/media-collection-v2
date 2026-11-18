@@ -110,7 +110,12 @@ function Shopping({ shopping, reload }: { shopping: CollectionShoppingDto; reloa
                     expected: shopping.expectedCount,
                 })}
             </p>
-            {shopping.finished && <Notice tone="info">{t('leaf.collection.finished')}</Notice>}
+            {shopping.status === 'finished' && (
+                <Notice tone="info">{t('leaf.collection.finished')}</Notice>
+            )}
+            {shopping.status === 'dropped' && (
+                <Notice tone="info">{t('leaf.collection.dropped')}</Notice>
+            )}
             {done !== null && (
                 <Notice tone="success" onClose={() => setDone(null)}>
                     {t('leaf.markOwned.done', { volume: done })}

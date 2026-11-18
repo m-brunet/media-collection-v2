@@ -21,7 +21,7 @@ describe('CollectionTallyReader', () => {
                 id: 'collection-1',
                 name: 'Gunnm',
                 category: 'comics',
-                finished: false,
+                status: 'unfinished',
                 ownedBooks: 2,
                 missingVolumes: 3,
             },
@@ -36,6 +36,6 @@ describe('CollectionTallyReader', () => {
 
         const [tally] = await reader(current).all();
 
-        expect([tally?.category, tally?.finished]).toEqual(['manga', true]);
+        expect([tally?.category, tally?.status]).toEqual(['manga', 'finished']);
     });
 });

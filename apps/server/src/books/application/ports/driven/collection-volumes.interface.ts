@@ -11,7 +11,7 @@ export type CollectionVolumesView = {
     id: string;
     name: string;
     category: BookCategory;
-    finished: boolean;
+    status: 'unfinished' | 'finished' | 'dropped';
     members: CollectionVolumeMember[];
     uncovered: number[];
 };

@@ -598,7 +598,7 @@ export class MemoryMembership implements CollectionMembership, BookCollectionRea
     readonly replaced: string[][] = [];
     readonly names = new Map<string, string>();
     readonly categories = new Map<string, MemberBook['category']>();
-    readonly finished = new Set<string>();
+    readonly statuses = new Map<string, CollectionVolumesView['status']>();
     changes: RelatedChange[] = [];
 
     async assign(
@@ -747,7 +747,7 @@ export class MembershipVolumes implements CollectionVolumes {
             id: collectionId,
             name: first.collection.name,
             category: this.membership.categories.get(collectionId) ?? 'books',
-            finished: this.membership.finished.has(collectionId),
+            status: this.membership.statuses.get(collectionId) ?? 'unfinished',
             members: await Promise.all(
                 members.map(async ({ bookId, collection }) => ({
                     bookId,

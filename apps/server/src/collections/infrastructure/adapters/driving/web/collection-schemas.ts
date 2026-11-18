@@ -11,6 +11,10 @@ export const collectionListSchema = z.strictObject({
         .enum(['true', 'false'])
         .optional()
         .transform((value) => (value === undefined ? null : value === 'true')),
+    dropped: z
+        .literal('true')
+        .optional()
+        .transform((value) => value === 'true'),
     ...bookFilterQuery,
 });
 

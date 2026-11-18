@@ -101,6 +101,27 @@ describe('POST /api/books/volumes', () => {
         ]);
     });
 
+    it('refuses volumes for a dropped collection, creating no book', async () => {
+        const first = await anchor();
+        const client = await app.authenticatedClient(owner);
+
+        await client.call('/collections/' + first.collection!.id + '/drop', 'POST');
+
+        const response = await client.call('/books/volumes', 'POST', {
+            collectionId: first.collection!.id,
+            anchorBookId: first.id,
+            volumes: [volume(2, '9782723434324')],
+        });
+
+        const found = await client.call<BookListPageDto>('/books?search=9782723434324');
+
+        expect([response.status, response.body.reason, found.body.total]).toEqual([
+            409,
+            'collection-dropped',
+            0,
+        ]);
+    });
+
     it('saves the publisher chosen for each new volume', async () => {
         const first = await anchor();
         const client = await app.authenticatedClient(owner);
