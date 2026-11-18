@@ -69,14 +69,6 @@ const fieldOfReason: Record<string, BookField> = {
     'tag-missing': 'tags',
     'tag-name-invalid': 'tags',
 };
-const additionalFields: BookField[] = [
-    'publisher',
-    'publication',
-    'summary',
-    'pageCount',
-    'price',
-    'note',
-];
 const questionOfReason: Record<string, SaveQuestion['kind']> = {
     'author-similar': 'similar-author',
     'publisher-similar': 'similar-publisher',
@@ -93,7 +85,6 @@ export function useBookSave({
     personal,
     cover,
     onAttempt,
-    showAdditional,
     onSaved,
 }: {
     book: BookDto | null;
@@ -101,7 +92,6 @@ export function useBookSave({
     personal: boolean;
     cover: CoverChoice;
     onAttempt: () => void;
-    showAdditional: () => void;
     onSaved: (saved: BookDto, outcome: { updated: boolean; followUpFailed: boolean }) => void;
 }) {
     const { t } = useI18n();
@@ -185,10 +175,6 @@ export function useBookSave({
         }
 
         const field = fieldOfReason[reason] ?? null;
-
-        if (field && additionalFields.includes(field)) {
-            showAdditional();
-        }
 
         setFailure({
             text: t(ApiErrorMessage.key(error)),

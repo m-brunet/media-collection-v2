@@ -225,8 +225,7 @@
     gap: var(--space-5);
 }
 
-.leaf-form__section,
-.leaf-form__additional {
+.leaf-form__section {
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
@@ -236,14 +235,6 @@
     border: var(--border);
     border-radius: var(--radius-lg);
     background: var(--color-panel);
-}
-
-.leaf-form__additional[open] > summary {
-    margin-bottom: var(--space-4);
-}
-
-.leaf-form__additional > :not(summary) + :not(summary) {
-    margin-top: var(--space-4);
 }
 
 .leaf-form__legend {

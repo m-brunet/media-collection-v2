@@ -95,7 +95,6 @@ function BookForm({ book }: { book: BookDto | null }) {
 
     useCategoryLock(categoryRule, values.category, setValues);
     const [cover, setCover] = useState<CoverChoice>({ file: null, removed: false });
-    const [expanded, setExpanded] = useState(false);
     const [notice, setNotice] = useState<string | null>(null);
     const [correcting, setCorrecting] = useState<AuthorDto | null>(null);
     const leaving = useRef(false);
@@ -120,7 +119,6 @@ function BookForm({ book }: { book: BookDto | null }) {
         personal,
         cover,
         onAttempt: () => setNotice(null),
-        showAdditional: () => setExpanded(true),
         onSaved: (saved, { updated, followUpFailed }) =>
             leave('/books/' + saved.id + (updated ? '' : '/added'), { followUpFailed }),
     });
@@ -132,7 +130,6 @@ function BookForm({ book }: { book: BookDto | null }) {
         openBook: (bookId) => leave('/books/' + bookId),
         showIsbnProblem: (text) =>
             saving.setFailure(text ? { text, field: 'isbn', existingBookId: null } : null),
-        showAdditional: () => setExpanded(true),
     });
     const errorFor = (field: BookField) =>
         saving.failure?.field === field ? saving.failure.text : undefined;
@@ -229,8 +226,6 @@ function BookForm({ book }: { book: BookDto | null }) {
                 </Panel>
                 <BookAdditionalFields
                     id={sectionId + '-additional'}
-                    expanded={expanded}
-                    onToggle={() => setExpanded(!expanded)}
                     values={values}
                     set={set}
                     errorFor={errorFor}

@@ -31,7 +31,7 @@ The book form has three sections:
 
 1. A visible main block containing mandatory fields/statuses, category, the collection-membership choice, and the optional cover preview/upload control. The cover is always visible inside this first section despite being optional. Collection name and single-volume/consecutive-range coverage become mandatory when membership is enabled. ISBN is required unless the explicit no-ISBN exception is selected.
 2. A visible bookcase/shelf assignment and tags block; visibility does not make these optional associations mandatory.
-3. An 'Additional information' block, collapsed by default, containing publisher, publication date, summary, page count, and price. Inside it, a new personal free-text note is hidden behind an 'Add a note' button; one note per book per eligible user. If a personal note already exists, opening Additional information shows it directly instead of the Add button.
+3. An 'Additional information' block, always open like the other blocks, containing publisher, publication date, summary, page count, and price. Inside it, a new personal free-text note is hidden behind an 'Add a note' button; one note per book per eligible user. If a personal note already exists, Additional information shows it directly instead of the Add button.
 
 For a no-ISBN book, possible duplicate detection based on title/authors shows an overridable warning. Personal notes are visible only to their author; other Owners and Admin cannot access their content. The author may delete a note without affecting the book, returning to Add a personal note. Guests have neither notes nor reading-status controls or displays.
 

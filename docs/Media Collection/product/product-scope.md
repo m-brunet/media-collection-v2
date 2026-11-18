@@ -33,7 +33,7 @@ Lending introduces an explicit exception for receiver names: a receiver is store
 - Camera barcode scanning is mobile-only; its agreed home/scan/lookup/form/failure paths are in [mobile experience](overview-activity-mobile.md).
 - Books, Manga, and Comics categories; Books is the default.
 - Shared ownership status and personal two-state reading status for Owners/Admin, not Guests.
-- Optional author-only personal free-text note for Owners/Admin, one per book per user, behind an Add control inside collapsed additional information. Existing notes appear when opened; authors can delete them without affecting the book. Other Owners/Admin cannot read their content.
+- Optional author-only personal free-text note for Owners/Admin, one per book per user, behind an Add control inside the additional information, which is always open. Existing notes appear directly; authors can delete them without affecting the book. Other Owners/Admin cannot read their content.
 - One record per edition, unique ISBN when supplied, and support for books without ISBNs. Status defaults are Owned and Not read.
 - Physical bookcases and shelves, with optional book location assignment.
 - Integer-numbered collections, inferred missing volumes without manual enumeration, ownership visibility, and explicit Finished status.

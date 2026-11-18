@@ -91,14 +91,14 @@ it('says nothing about late sources when every source answered', async () => {
     expect(screen.queryByRole('link', { name: 'Check again' })).not.toBeInTheDocument();
 });
 
-it('keeps the same three sections, additional information folded without its values', async () => {
+it('keeps the same three sections, additional information shown without its values', async () => {
     open(lookup({ fields: { ...lookup().fields, publisher: [] } }));
 
     expect(await screen.findByRole('group', { name: '01 / Main information' })).toBeVisible();
     expect(screen.getByRole('group', { name: '02 / Location & tags · Optional' })).toBeVisible();
-    expect(screen.getByText('03 / Additional information').closest('details')).not.toHaveAttribute(
-        'open',
-    );
+    expect(screen.getByRole('group', { name: '03 / Additional information' })).toBeVisible();
+    expect(screen.getByLabelText('Publisher')).toBeVisible();
+    expect(screen.getByLabelText(/^Price/)).toBeVisible();
 });
 
 it('offers another source’s value and uses it when chosen', async () => {
@@ -241,6 +241,23 @@ it('keeps the form and explains a failed save', async () => {
     expect(await screen.findByText('The request failed. Try again.')).toBeInTheDocument();
     expect(screen.getByLabelText(/^Title/)).toHaveValue('Piranesi');
     expect(screen.queryByText('Elsewhere: /saved')).not.toBeInTheDocument();
+});
+
+it('explains a refused price under the price field', async () => {
+    api.on('POST /books', () => ({
+        status: 400,
+        body: { code: 'invalid_input', reason: 'price-invalid', message: 'Invalid' },
+    }));
+    open();
+    await userEvent.type(await screen.findByLabelText(/^Price/), '-3');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Save book' }));
+
+    await vi.waitFor(() =>
+        expect(screen.getByLabelText(/^Price/)).toHaveAccessibleDescription(
+            expect.stringContaining('Enter a price of zero or more, with at most two decimals.'),
+        ),
+    );
 });
 
 it('asks before discarding changes when cancelled', async () => {
