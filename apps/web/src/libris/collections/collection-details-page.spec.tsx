@@ -964,7 +964,24 @@ it('sends a publication year to fill only the books without a date', async () =>
     });
 });
 
-it('hides the year and month and removes the date with Clear', async () => {
+it('hides the year and month and says what Clear removes', async () => {
+    batchApi();
+    show();
+    const panel = await chooseAllAndOpen();
+    const card = await addChange(panel, 'Publication date');
+
+    await userEvent.click(within(card).getByRole('radio', { name: 'Clear' }));
+
+    const year = within(card).queryByRole('textbox', { name: 'Publication year' });
+    const hint = within(card).queryByText(
+        'Every chosen book loses its publication year and month.',
+    );
+
+    expect(year).toBeNull();
+    expect(hint).toBeVisible();
+});
+
+it('sends an explicit removal of the publication date with Clear', async () => {
     const api = batchApi();
 
     show();
@@ -975,15 +992,35 @@ it('hides the year and month and removes the date with Clear', async () => {
 
     await userEvent.click(within(panel).getByRole('button', { name: 'Review changes' }));
 
-    expect([
-        within(card).queryByRole('textbox', { name: 'Publication year' }),
-        within(card).getByText('Every chosen book loses its publication year and month.'),
-        api.calls.find((call) => call.route === 'POST /books/batch-edit')?.body,
-    ]).toEqual([
-        null,
-        expect.anything(),
-        expect.objectContaining({ changes: { publication: null } }),
-    ]);
+    const sent = api.calls.find((call) => call.route === 'POST /books/batch-edit')?.body;
+
+    expect(sent).toEqual(expect.objectContaining({ changes: { publication: null } }));
+});
+
+it('warns that the books lose their month while no month is chosen', async () => {
+    batchApi();
+    show();
+    const panel = await chooseAllAndOpen();
+    const card = await addChange(panel, 'Publication date');
+    const hint = within(card).queryByText('With No month, the books lose their month.');
+
+    expect(hint).toBeVisible();
+});
+
+it('drops the lost month warning once a month is chosen', async () => {
+    batchApi();
+    show();
+    const panel = await chooseAllAndOpen();
+    const card = await addChange(panel, 'Publication date');
+
+    await userEvent.selectOptions(
+        within(card).getByRole('combobox', { name: 'Publication month' }),
+        'March',
+    );
+
+    const hint = within(card).queryByText('With No month, the books lose their month.');
+
+    expect(hint).toBeNull();
 });
 
 it('asks for a publication year before reviewing a date', async () => {

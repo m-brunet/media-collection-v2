@@ -220,6 +220,7 @@ it('sends a publication date from the Library', async () => {
 
     await userEvent.click(within(panel).getByRole('button', { name: 'Publication date' }));
     await userEvent.type(within(panel).getByRole('textbox', { name: 'Publication year' }), '2019');
+
     await userEvent.click(within(panel).getByRole('button', { name: 'Review changes' }));
 
     expect(api.calls.find((call) => call.route === 'POST /books/batch-edit')?.body).toEqual({
