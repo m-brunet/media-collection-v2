@@ -498,8 +498,11 @@ button.book-card--batch:disabled {
     align-items: flex-end;
     justify-content: center;
     width: 100%;
-    min-height: 0;
     aspect-ratio: 2 / 3;
+}
+
+.book-cover:has(.book-cover__image) {
+    min-height: 0;
 }
 
 .book-cover--small {
@@ -2240,6 +2243,7 @@ a.wall-tile:hover .wall-tile__title {
 }
 
 .overview-book .book-cover {
+    min-height: 0;
     overflow: hidden;
 }
 
