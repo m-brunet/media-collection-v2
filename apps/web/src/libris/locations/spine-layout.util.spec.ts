@@ -113,13 +113,13 @@ describe('SpineLayout.shelf', () => {
 
         expect(result).toEqual(first);
     });
-    it('lowers the front row of a shelf that has a back row to 46 to 62 px', () => {
+    it('lowers the front row of a shelf that has a back row to 42 to 58 px', () => {
         const result = SpineLayout.shelf(books(40, short), 210).spines;
 
         const heights = result.filter((spine) => !spine.behind).map((spine) => spine.height);
 
-        expect(Math.min(...heights)).toBeGreaterThanOrEqual(46);
-        expect(Math.max(...heights)).toBeLessThanOrEqual(62);
+        expect(Math.min(...heights)).toBeGreaterThanOrEqual(42);
+        expect(Math.max(...heights)).toBeLessThanOrEqual(58);
     });
     it('raises each back spine 10 to 18 px above the tallest front spine it stands behind', () => {
         const result = SpineLayout.shelf(books(40, short), 210).spines;
