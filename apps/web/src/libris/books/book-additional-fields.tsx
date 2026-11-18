@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Button } from '../../shared/ui/button';
 import { Panel } from '../../shared/ui/layout';
@@ -9,19 +10,18 @@ import { PublisherSuggestions } from '../../shared/book-form/publisher-suggestio
 import type { BookField } from '../../shared/book-form/use-book-save';
 
 export function BookAdditionalFields({
-    id,
     values,
     set,
     errorFor,
     personal,
 }: {
-    id: string;
     values: BookDraftValues;
     set: DraftFieldSetter;
     errorFor(field: BookField): string | undefined;
     personal: boolean;
 }) {
     const { t, locale } = useI18n();
+    const publishersId = useId();
 
     return (
         <Panel label={t('form.additional')}>
@@ -31,12 +31,12 @@ export function BookAdditionalFields({
                         label={t('form.publisher')}
                         maxLength={200}
                         autoComplete="off"
-                        list={id + '-publishers'}
+                        list={publishersId}
                         error={errorFor('publisher')}
                         value={values.publisher}
                         onChange={(event) => set('publisher', event.target.value)}
                     />
-                    <PublisherSuggestions id={id + '-publishers'} typed={values.publisher} />
+                    <PublisherSuggestions id={publishersId} typed={values.publisher} />
                     <div className="book-form__row book-form__row--two">
                         <SelectField
                             label={t('form.publicationMonth')}
