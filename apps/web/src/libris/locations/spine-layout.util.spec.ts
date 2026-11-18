@@ -113,6 +113,50 @@ describe('SpineLayout.shelf', () => {
 
         expect(result).toEqual(first);
     });
+    it('lowers the front row of a shelf that has a back row to 46 to 62 px', () => {
+        const result = SpineLayout.shelf(books(40, short), 210).spines;
+
+        const heights = result.filter((spine) => !spine.behind).map((spine) => spine.height);
+
+        expect(Math.min(...heights)).toBeGreaterThanOrEqual(46);
+        expect(Math.max(...heights)).toBeLessThanOrEqual(62);
+    });
+    it('raises each back spine 10 to 18 px above the tallest front spine it stands behind', () => {
+        const result = SpineLayout.shelf(books(40, short), 210).spines;
+
+        const front = result.filter((spine) => !spine.behind);
+        const rises = result
+            .filter((spine) => spine.behind)
+            .map((spine) => {
+                const left = spine.x + 3;
+                const tallest = Math.max(
+                    ...front
+                        .filter(
+                            (other) => other.x < left + spine.width && other.x + other.width > left,
+                        )
+                        .map((other) => other.height),
+                );
+
+                return spine.height + 4 - tallest;
+            });
+
+        expect(Math.min(...rises)).toBeGreaterThanOrEqual(10);
+        expect(Math.max(...rises)).toBeLessThanOrEqual(18);
+    });
+    it('keeps every back spine below the shelf above', () => {
+        const result = SpineLayout.shelf(books(40, novel), 210).spines;
+
+        const tops = result.filter((spine) => spine.behind).map((spine) => spine.height + 4);
+
+        expect(Math.max(...tops)).toBeLessThanOrEqual(84);
+    });
+    it('lists the front spines first, then the back ones', () => {
+        const result = SpineLayout.shelf(books(5, novel), 50).spines;
+
+        const layers = result.map((spine) => spine.behind);
+
+        expect(layers).toEqual([false, false, false, true, true]);
+    });
     it('keeps colours and heights within their ranges', () => {
         const result = SpineLayout.shelf(books(40, unknownManga), 420).spines;
 

@@ -3287,9 +3287,9 @@ a.wall-tile:hover .wall-tile__title {
 }
 
 .wall-spine--behind {
-    bottom: 4px;
+    bottom: var(--wall-back-lift);
     z-index: 1;
-    margin-left: 3px;
+    margin-left: var(--wall-back-shift);
     opacity: 0.45;
 }
 

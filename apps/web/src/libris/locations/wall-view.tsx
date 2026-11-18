@@ -31,6 +31,8 @@ function sizes(size: BookcaseSize): CSSProperties {
         '--wall-bay-border': WallSizes.bayBorder + 'px',
         '--wall-name-width': WallSizes.shelfNameWidth + 'px',
         '--wall-shelf-gap': WallSizes.shelfGap + 'px',
+        '--wall-back-lift': WallSizes.backRowLift + 'px',
+        '--wall-back-shift': WallSizes.backRowShift + 'px',
         '--wall-drawing-width': drawingWidth(size) + 'px',
     } as CSSProperties;
 }
