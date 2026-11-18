@@ -62,7 +62,6 @@ function AddBookForm({ isbn, lookup, accountId, bookcases }: AddBookFormProps) {
     useCategoryLock(categoryRule, values.category, setValues);
     const [cover, setCover] = useState<CoverChoice>({ file: null, removed: false });
     const [coverTouched, setCoverTouched] = useState(false);
-    const [additionalOpen, setAdditionalOpen] = useState(() => BookDraft.hasAdditional(initial));
     const leaving = useRef(false);
     const changed = coverTouched || !BookDraft.same(values, initial);
     const blocker = useBlocker(
@@ -79,7 +78,6 @@ function AddBookForm({ isbn, lookup, accountId, bookcases }: AddBookFormProps) {
         personal: true,
         cover,
         onAttempt: () => undefined,
-        showAdditional: () => setAdditionalOpen(true),
         onSaved: (saved, { followUpFailed }) => {
             leaving.current = true;
 
@@ -170,8 +168,6 @@ function AddBookForm({ isbn, lookup, accountId, bookcases }: AddBookFormProps) {
                         setCoverTouched(true);
                     }}
                     bookcases={bookcases}
-                    additionalOpen={additionalOpen}
-                    setAdditionalOpen={setAdditionalOpen}
                     categoryRule={categoryRule}
                     collections={collections}
                 />

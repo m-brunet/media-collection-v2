@@ -37,15 +37,18 @@ function saveButton() {
     return screen.getAllByRole('button', { name: 'Save book' })[0]!;
 }
 
-it('opens with additional information collapsed and the cover control visible', async () => {
+it('opens with additional information shown and the cover control visible', async () => {
     new FakeApi().signedIn(account());
 
     addPage();
 
+    expect(await screen.findByText('03 / Additional information')).toBeVisible();
+    expect(screen.getByLabelText('Publisher')).toBeVisible();
+    expect(screen.getByLabelText('Summary')).toBeVisible();
+    expect(screen.getByLabelText(/^Price/)).toBeVisible();
     expect(
-        await screen.findByRole('button', { name: '03 / Additional information' }),
-    ).toHaveAttribute('aria-expanded', 'false');
-    expect(screen.getByLabelText('Publisher')).not.toBeVisible();
+        screen.queryByRole('button', { name: '03 / Additional information' }),
+    ).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Choose cover' })).toBeInTheDocument();
     expect(screen.getByText('No cover selected')).toBeInTheDocument();
 });
@@ -110,6 +113,25 @@ it('keeps the draft and explains a refused save beside the field', async () => {
     expect(screen.getByLabelText(/^Title/)).toHaveValue('Piranesi');
 });
 
+it('explains a refused price under the price field', async () => {
+    new FakeApi().signedIn(account()).on('POST /books', () => ({
+        status: 400,
+        body: { code: 'invalid_input', reason: 'price-invalid', message: 'Invalid' },
+    }));
+
+    addPage();
+    await fillRequired();
+    await userEvent.type(screen.getByLabelText(/^Price/), '-3');
+
+    await userEvent.click(saveButton());
+
+    await vi.waitFor(() =>
+        expect(screen.getByLabelText(/^Price/)).toHaveAccessibleDescription(
+            expect.stringContaining('Enter a price of zero or more, with at most two decimals.'),
+        ),
+    );
+});
+
 it('offers to open the book that already has this ISBN', async () => {
     new FakeApi().signedIn(account()).on('POST /books', () => ({
         status: 409,
@@ -171,11 +193,8 @@ it('suggests existing publishers while typing the publisher', async () => {
         .on('GET /publishers', () => ({ status: 200, body: ['Glénat'] }));
 
     addPage();
-    await userEvent.click(
-        await screen.findByRole('button', { name: '03 / Additional information' }),
-    );
 
-    await userEvent.type(screen.getByRole('combobox', { name: 'Publisher' }), 'gle');
+    await userEvent.type(await screen.findByRole('combobox', { name: 'Publisher' }), 'gle');
 
     await vi.waitFor(() =>
         expect(document.querySelector('datalist option[value="Glénat"]')).not.toBeNull(),
@@ -204,7 +223,6 @@ function similarPublisher(candidates: string[]) {
 async function savePublisher(publisher: string) {
     addPage();
     await fillRequired();
-    await userEvent.click(screen.getByRole('button', { name: '03 / Additional information' }));
     await userEvent.type(screen.getByRole('combobox', { name: 'Publisher' }), publisher);
     await userEvent.click(saveButton());
 }
@@ -362,7 +380,7 @@ it('leaves without asking when nothing changed', async () => {
     expect(await screen.findByText('Elsewhere: /books')).toBeInTheDocument();
 });
 
-it('shows an existing note directly when additional information is opened', async () => {
+it('shows the additional information and an existing note of an edited book directly', async () => {
     new FakeApi().signedIn(account()).on('GET /books/b1', () => ({
         status: 200,
         body: bookDto({
@@ -372,11 +390,8 @@ it('shows an existing note directly when additional information is opened', asyn
 
     editPage();
 
-    await userEvent.click(
-        await screen.findByRole('button', { name: '03 / Additional information' }),
-    );
-
-    expect(screen.getByLabelText(/Personal note/)).toHaveValue('Mine.');
+    expect(await screen.findByLabelText(/Personal note/)).toHaveValue('Mine.');
+    expect(screen.getByLabelText('Publisher')).toBeVisible();
     expect(screen.queryByRole('button', { name: 'Add a personal note' })).not.toBeInTheDocument();
 });
 
@@ -1223,6 +1238,7 @@ describe('Find book', () => {
         expect(screen.getByLabelText(/^Title/)).toHaveValue("D'un monde à l'autre");
         expect(screen.getByText('Pierre Bottero')).toBeInTheDocument();
         expect(screen.getByLabelText('Publisher')).toHaveValue('Librairie générale française');
+        expect(screen.getByLabelText('Publisher')).toBeVisible();
         expect(screen.getByLabelText('Page count')).toHaveValue('257');
         expect(screen.getByRole('combobox', { name: /Collection name/ })).toHaveValue(
             "La quête d'Ewilan",

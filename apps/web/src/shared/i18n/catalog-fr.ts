@@ -775,8 +775,6 @@ export const fr = {
     'form.coverRemove': 'Retirer la couverture',
     'form.coverHint': 'JPEG, PNG ou WebP, 10 Mo maximum.',
     'form.additional': '03 / Informations complémentaires',
-    'form.additionalHint':
-        'Éditeur, date de publication, résumé, nombre de pages, prix et votre note privée.',
     'form.publisher': 'Éditeur',
     'form.publicationMonth': 'Mois de publication',
     'form.publicationYear': 'Année de publication',

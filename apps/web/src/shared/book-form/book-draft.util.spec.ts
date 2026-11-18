@@ -368,24 +368,6 @@ describe('BookDraft titles', () => {
     });
 });
 
-describe('BookDraft.hasAdditional', () => {
-    it('tells that additional information holds a value', () => {
-        const values = { ...BookDraft.empty(), pageCount: '272' };
-
-        const result = BookDraft.hasAdditional(values);
-
-        expect(result).toBe(true);
-    });
-
-    it('tells that additional information is empty', () => {
-        const values = { ...BookDraft.empty(), title: 'Piranesi' };
-
-        const result = BookDraft.hasAdditional(values);
-
-        expect(result).toBe(false);
-    });
-});
-
 describe('BookDraft.inCollection', () => {
     it('starts with the category of the collection', () => {
         const values = BookDraft.inCollection('Naruto', 'manga');

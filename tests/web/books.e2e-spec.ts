@@ -133,10 +133,9 @@ describe('Adding books', () => {
             buffer: png,
         });
         await page.getByRole('img', { name: 'Cover of Piranesi' }).waitFor();
-        expect(
-            await titleStyle(page.getByRole('button', { name: '03 / Additional information' })),
-        ).toEqual(await titleStyle(page.getByText('02 / Location & tags · Optional')));
-        await page.getByRole('button', { name: '03 / Additional information' }).click();
+        expect(await titleStyle(page.getByText('03 / Additional information'))).toEqual(
+            await titleStyle(page.getByText('02 / Location & tags · Optional')),
+        );
         await page.getByLabel('Price (€)').fill('16,90');
         await capture(page, 'books-add-form');
         await page.getByRole('button', { name: 'Save book' }).first().click();

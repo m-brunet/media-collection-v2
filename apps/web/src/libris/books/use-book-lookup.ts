@@ -32,7 +32,6 @@ export function useBookLookup({
     setCover,
     openBook,
     showIsbnProblem,
-    showAdditional,
 }: {
     values: BookDraftValues;
     setValues: Dispatch<SetStateAction<BookDraftValues>>;
@@ -40,7 +39,6 @@ export function useBookLookup({
     setCover(choice: CoverChoice): void;
     openBook(bookId: string): void;
     showIsbnProblem(text: string | null): void;
-    showAdditional(): void;
 }) {
     const { t } = useI18n();
     const sourceNames = useSourceNames();
@@ -102,20 +100,10 @@ export function useBookLookup({
     const use = async (selection: LookupSelection, coverToken: string | null) => {
         const result = Required.value(review, 'a looked-up book is under review');
         const { next, conflicts } = LookupFill.apply(values, selection);
-        const additional = [
-            selection.publisher,
-            selection.publication,
-            selection.pageCount,
-            selection.summary,
-        ];
 
         setReview(null);
         setValues(next);
         setSpellings(result.authorSpellings);
-
-        if (additional.some((value) => value !== null)) {
-            showAdditional();
-        }
 
         if (result.pending.length > 0) {
             setMessage({

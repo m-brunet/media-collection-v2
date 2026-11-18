@@ -43,8 +43,6 @@ export interface LeafFieldsProps {
     cover: CoverChoice;
     setCover(choice: CoverChoice): void;
     bookcases: BookcaseDto[];
-    additionalOpen: boolean;
-    setAdditionalOpen(open: boolean): void;
     categoryRule: CategoryRule;
     collections: readonly CollectionNameDto[];
 }
@@ -381,12 +379,8 @@ function AdditionalFields(props: LeafFieldsProps) {
     const publishersId = useId();
 
     return (
-        <details
-            className="leaf-form__additional"
-            open={props.additionalOpen}
-            onToggle={(event) => props.setAdditionalOpen(event.currentTarget.open)}
-        >
-            <summary className="leaf-form__legend">{t('form.additional')}</summary>
+        <fieldset className="leaf-form__section">
+            <legend className="leaf-form__legend">{t('form.additional')}</legend>
             <TextField
                 label={t('form.publisher')}
                 autoComplete="off"
@@ -455,7 +449,7 @@ function AdditionalFields(props: LeafFieldsProps) {
                     </Button>
                 </>
             )}
-        </details>
+        </fieldset>
     );
 }
 

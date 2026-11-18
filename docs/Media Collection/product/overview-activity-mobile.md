@@ -44,7 +44,7 @@ Every address of the server settings that has a QR code also signs the phone in 
 
 Provide an Owner/Admin mobile home with two main buttons: Collections and Scan. Collections opens shopping; Scan starts scanning. Do not create a Guest mobile home or grant access through a direct mobile link.
 
-Mobile book entry keeps the same three sections and field rules as desktop, adapted to the phone screen: main information/cover, location/tags, and collapsed optional information with the additional personal-note control. Do not invent a reduced mandatory-field set for mobile.
+Mobile book entry keeps the same three sections and field rules as desktop, adapted to the phone screen: main information/cover, location/tags, and optional additional information, always open like the other sections, with the personal-note control. Do not invent a reduced mandatory-field set for mobile.
 
 The mobile add form is accessible only after a successful scan. No manual ISBN-entry alternative or direct manual add route is offered on mobile. If the camera is unavailable or scanning fails, explain the issue and offer Retry or Back to home only. Desktop manual entry remains available; the general manual-entry requirement does not bypass the mobile scan gate.
 

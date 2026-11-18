@@ -1,6 +1,6 @@
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Button } from '../../shared/ui/button';
-import { Icon } from '../../shared/ui/icon';
+import { Panel } from '../../shared/ui/layout';
 import { SelectField } from '../../shared/ui/select-field';
 import { TextAreaField, TextField } from '../../shared/ui/text-field';
 import type { BookDraftValues, DraftFieldSetter } from '../../shared/book-form/book-draft.util';
@@ -10,16 +10,12 @@ import type { BookField } from '../../shared/book-form/use-book-save';
 
 export function BookAdditionalFields({
     id,
-    expanded,
-    onToggle,
     values,
     set,
     errorFor,
     personal,
 }: {
     id: string;
-    expanded: boolean;
-    onToggle(): void;
     values: BookDraftValues;
     set: DraftFieldSetter;
     errorFor(field: BookField): string | undefined;
@@ -28,21 +24,8 @@ export function BookAdditionalFields({
     const { t, locale } = useI18n();
 
     return (
-        <section className="panel">
-            <h2 className="eyebrow book-form__toggle-heading">
-                <button
-                    type="button"
-                    className="book-form__toggle"
-                    aria-expanded={expanded}
-                    aria-controls={id}
-                    onClick={onToggle}
-                >
-                    <Icon name={expanded ? 'collapse' : 'expand'} size={12} />
-                    {t('form.additional')}
-                </button>
-            </h2>
-            {!expanded && <p className="muted">{t('form.additionalHint')}</p>}
-            <div id={id} className="form" hidden={!expanded}>
+        <Panel label={t('form.additional')}>
+            <div className="form">
                 <div className="book-form__row book-form__row--two">
                     <TextField
                         label={t('form.publisher')}
@@ -137,6 +120,6 @@ export function BookAdditionalFields({
                     </div>
                 )}
             </div>
-        </section>
+        </Panel>
     );
 }
