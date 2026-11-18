@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import type { CSSProperties } from 'react';
-import type { BookcaseDto, BookcaseSize } from '../../../../../packages/contracts/src/http';
+import type { BookcaseDto } from '../../../../../packages/contracts/src/http';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Notice } from '../../shared/ui/notice';
 import { LoadingState } from '../../shared/ui/states';
@@ -12,30 +12,9 @@ import { useBookcaseSize } from './use-bookcase-size';
 import { useBookcaseSpines } from './use-bookcase-spines';
 import { useElementWidth } from './use-element-width';
 import { useLocationCounts } from './use-location-counts';
+import { WallDrawing } from './wall-drawing.util';
 import { WallShelf } from './wall-shelf';
 import { WallSizes } from './wall-sizes';
-
-function drawingWidth(size: BookcaseSize): number {
-    return (
-        WallSizes.shelfNameWidth +
-        WallSizes.shelfGap +
-        WallSizes.bayWidths[size] +
-        2 * WallSizes.bayBorder
-    );
-}
-
-function sizes(size: BookcaseSize): CSSProperties {
-    return {
-        '--wall-bay-width': WallSizes.bayWidths[size] + 'px',
-        '--wall-bay-height': WallSizes.bayHeight + 'px',
-        '--wall-bay-border': WallSizes.bayBorder + 'px',
-        '--wall-name-width': WallSizes.shelfNameWidth + 'px',
-        '--wall-shelf-gap': WallSizes.shelfGap + 'px',
-        '--wall-back-lift': WallSizes.backRowLift + 'px',
-        '--wall-back-shift': WallSizes.backRowShift + 'px',
-        '--wall-drawing-width': drawingWidth(size) + 'px',
-    } as CSSProperties;
-}
 
 function BookcaseStrip({
     bookcases,
@@ -103,14 +82,14 @@ function OpenBookcase({
     const resizing = useBookcaseSize(bookcase, onReload);
     const frame = useRef<HTMLDivElement>(null);
     const width = useElementWidth(frame);
-    const scale = width === null ? 1 : Math.min(1, width / drawingWidth(resizing.size));
+    const scale = width === null ? 1 : Math.min(1, width / WallDrawing.width(resizing.size));
     const books = new Map(spines?.shelves.map((entry) => [entry.shelfId, entry.books]));
 
     return (
         <section
             className="panel wall-bookcase"
             aria-labelledby="wall-bookcase-name"
-            style={sizes(resizing.size)}
+            style={WallDrawing.styles(resizing.size)}
         >
             <div className="wall-bookcase__header">
                 <h2 id="wall-bookcase-name" className="panel__title">

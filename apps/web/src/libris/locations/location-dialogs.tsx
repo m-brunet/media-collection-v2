@@ -1,7 +1,12 @@
 import { useState } from 'react';
-import type { BookcaseDto, ShelfDto } from '../../../../../packages/contracts/src/http';
+import type {
+    BookcaseDto,
+    BookcaseSize,
+    ShelfDto,
+} from '../../../../../packages/contracts/src/http';
 import { api } from '../../shared/api.util';
 import { useI18n } from '../../shared/i18n/i18n-context';
+import { ChoiceButtons } from '../../shared/ui/choice-buttons';
 import { ConfirmDialog } from '../../shared/ui/confirm-dialog';
 import { NameDialog } from '../../shared/ui/name-dialog';
 import { SelectField } from '../../shared/ui/select-field';
@@ -9,6 +14,7 @@ import { SelectField } from '../../shared/ui/select-field';
 export type LocationEditing =
     | { kind: 'create-bookcase' }
     | { kind: 'rename-bookcase'; bookcase: BookcaseDto }
+    | { kind: 'edit-bookcase'; bookcase: BookcaseDto }
     | { kind: 'delete-bookcase'; bookcase: BookcaseDto }
     | { kind: 'create-shelf'; bookcase: BookcaseDto }
     | { kind: 'move-shelf'; shelf: ShelfDto }
@@ -76,6 +82,49 @@ function ShelfDialog({
     );
 }
 
+function EditBookcaseDialog({
+    bookcase,
+    onDone,
+    onClose,
+}: {
+    bookcase: BookcaseDto;
+    onDone(message: string): void;
+    onClose(): void;
+}) {
+    const { t } = useI18n();
+    const [size, setSize] = useState<BookcaseSize>(bookcase.size);
+
+    return (
+        <NameDialog
+            open
+            title={t('bookcase.editTitle')}
+            body={t('bookcase.renameBody')}
+            label={t('bookcase.name')}
+            initial={bookcase.name}
+            submit={t('bookcase.save')}
+            onSubmit={async (name) => {
+                const saved = await api.request<BookcaseDto>('/bookcases/' + bookcase.id, {
+                    method: 'PATCH',
+                    body: { name, size },
+                });
+
+                onDone(t('bookcase.edited', { name: saved.name }));
+            }}
+            onClose={onClose}
+        >
+            <ChoiceButtons<BookcaseSize>
+                label={t('bookcase.width')}
+                value={size}
+                choices={[
+                    { value: 'large', label: t('bookcase.large') },
+                    { value: 'small', label: t('bookcase.small') },
+                ]}
+                onChange={setSize}
+            />
+        </NameDialog>
+    );
+}
+
 export function LocationDialogs({
     bookcases,
     editing,
@@ -133,6 +182,14 @@ export function LocationDialogs({
 
                         onDone(t('bookcase.renamed', { name: bookcase.name }));
                     }}
+                    onClose={onClose}
+                />
+            );
+        case 'edit-bookcase':
+            return (
+                <EditBookcaseDialog
+                    bookcase={editing.bookcase}
+                    onDone={(message) => onDone(message)}
                     onClose={onClose}
                 />
             );

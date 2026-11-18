@@ -21,7 +21,7 @@ import { ShelfPlacement } from './shelf-placement.util';
 import { useElementWidth } from './use-element-width';
 import { WallSizes } from './wall-sizes';
 
-function useShelfCovers(shelf: ShelfDto) {
+function useShelfCovers(shelf: ShelfDto, limit: number) {
     const [loaded, setLoaded] = useState<{ of: ShelfDto; value: BookListPageDto } | null>(null);
     const [failure, setFailure] = useState<{ of: ShelfDto; key: MessageKey } | null>(null);
 
@@ -30,7 +30,7 @@ function useShelfCovers(shelf: ShelfDto) {
         const query = new URLSearchParams({
             location: 'shelf:' + shelf.id,
             sort: 'shelf',
-            limit: String(WallSizes.panelCoversMax),
+            limit: String(limit),
         });
 
         api.request<BookListPageDto>('/books?' + query.toString()).then(
@@ -47,7 +47,7 @@ function useShelfCovers(shelf: ShelfDto) {
         return () => {
             current = false;
         };
-    }, [shelf]);
+    }, [shelf, limit]);
 
     return {
         page: loaded?.of.id === shelf.id ? loaded.value : null,
@@ -55,9 +55,19 @@ function useShelfCovers(shelf: ShelfDto) {
     };
 }
 
-function ShelfCovers({ shelf, columns }: { shelf: ShelfDto; columns: number }) {
+export function ShelfCovers({
+    shelf,
+    columns,
+    rows = 2,
+    limit = WallSizes.panelCoversMax,
+}: {
+    shelf: ShelfDto;
+    columns: number;
+    rows?: number;
+    limit?: number;
+}) {
     const { t } = useI18n();
-    const { page, failure } = useShelfCovers(shelf);
+    const { page, failure } = useShelfCovers(shelf, limit);
     const inBooks =
         '/books?' +
         BookFilter.write({ ...BookFilter.empty(), location: ['shelf:' + shelf.id] }).toString();
@@ -74,7 +84,7 @@ function ShelfCovers({ shelf, columns }: { shelf: ShelfDto; columns: number }) {
         return <p className="muted">{t('shelf.empty')}</p>;
     }
 
-    const places = columns * 2;
+    const places = columns * rows;
     const shown = page.total <= places ? page.items : page.items.slice(0, places - 1);
     const more = page.total - shown.length;
 

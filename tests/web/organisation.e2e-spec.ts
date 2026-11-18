@@ -395,6 +395,69 @@ describe('Bookshelves Wall', () => {
     });
 });
 
+describe('Bookshelves Wall v2', () => {
+    async function eightBookcases() {
+        const made = [];
+
+        for (const [index, shelves] of [5, 5, 7, 7, 5, 6, 4, 5].entries()) {
+            made.push(
+                await bookcase(
+                    'Room ' + (index + 1),
+                    Array.from({ length: shelves }, (_, shelf) => 'Shelf ' + (shelf + 1)),
+                ),
+            );
+        }
+
+        await book('Dune', { shelfId: made[0]!.shelves[0]!.id });
+        await book('Emma', { shelfId: made[3]!.shelves[1]!.id });
+
+        return made;
+    }
+
+    async function wallLine() {
+        await eightBookcases();
+        const page = await signedIn('camille', { width: 1920, height: 1080 });
+
+        await page.goto('/bookshelves?view=wall-v2');
+        await page.getByRole('region', { name: 'Bookcases' }).waitFor();
+        await page.getByRole('list', { name: 'Books on Shelf 1' }).first().waitFor();
+
+        return page;
+    }
+
+    function scrolls(page: Page) {
+        return page.evaluate(() => [
+            document.documentElement.scrollWidth > window.innerWidth,
+            document.documentElement.scrollHeight > window.innerHeight,
+        ]);
+    }
+
+    it('shows the line and the shelf panel on one 1920 by 1080 screen, without scrolling', async () => {
+        const page = await wallLine();
+
+        const result = await scrolls(page);
+
+        expect(result).toEqual([false, false]);
+        await capture(page, 'bookshelves-wall-v2');
+    });
+
+    it('moves the line by one bookcase with Next, then shows the covers of a shelf clicked', async () => {
+        const page = await wallLine();
+
+        await page.getByRole('button', { name: 'Next bookcases' }).click();
+        const room = page.getByRole('region', { name: 'Room 4' });
+
+        await room.getByRole('button', { name: /^Shelf 2/ }).click();
+
+        const heading = page
+            .getByRole('complementary', { name: 'Selected shelf' })
+            .getByRole('heading', { name: '1 book on Shelf 2' });
+
+        await heading.waitFor({ timeout: 5000 });
+        expect(await heading.isVisible()).toBe(true);
+    });
+});
+
 describe('Bookshelves Ribbons', () => {
     async function ribbons(count: number, viewport?: { width: number; height: number }) {
         const oak = await bookcase('Oak bookcase', ['Shelf 1']);

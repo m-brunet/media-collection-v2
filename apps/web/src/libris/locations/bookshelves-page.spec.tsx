@@ -368,7 +368,7 @@ it('has no search field any more', async () => {
     expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
 });
 
-it('offers the Wall, the Ribbons and the Columns in the View choice', async () => {
+it('offers the Wall, the Wall v2, the Ribbons and the Columns in the View choice', async () => {
     api();
 
     await shown();
@@ -379,6 +379,7 @@ it('offers the Wall, the Ribbons and the Columns in the View choice', async () =
             .map((choice) => [choice.textContent, choice.getAttribute('aria-checked')]),
     ).toEqual([
         ['Wall', 'true'],
+        ['Wall v2', 'false'],
         ['Ribbons', 'false'],
         ['Columns', 'false'],
     ]);
@@ -392,9 +393,9 @@ it('moves to the next view with the arrow keys', async () => {
 
     await userEvent.keyboard('{ArrowRight}');
 
-    expect([screen.getByRole('radio', { name: 'Ribbons' }), router.state.location.search]).toEqual([
+    expect([screen.getByRole('radio', { name: 'Wall v2' }), router.state.location.search]).toEqual([
         expect.objectContaining({ ariaChecked: 'true' }),
-        '?view=ribbons',
+        '?view=wall-v2',
     ]);
 });
 
@@ -646,4 +647,116 @@ it('draws a Small bookcase half as wide in the strip', async () => {
         'wall-miniature wall-miniature--small',
         'wall-miniature',
     ]);
+});
+
+async function wallLine() {
+    const router = show('/bookshelves?view=wall-v2');
+
+    await screen.findByRole('list', { name: 'Books on Shelf 3' });
+
+    return router;
+}
+
+function line() {
+    return screen.getByRole('region', { name: 'Bookcases' });
+}
+
+it('draws every bookcase side by side in Wall v2, without the strip of miniatures', async () => {
+    api();
+
+    await wallLine();
+
+    const names = within(line())
+        .getAllByRole('heading', { level: 2 })
+        .map((heading) => heading.textContent);
+
+    expect(names).toEqual(['Oak bookcase', 'Study bookcase', 'Hall']);
+    expect(screen.queryByRole('navigation', { name: 'Bookcases' })).not.toBeInTheDocument();
+});
+
+it('offers a Go to button per bookcase in Wall v2, the open one current', async () => {
+    api();
+
+    await wallLine();
+
+    const jumps = within(screen.getByRole('navigation', { name: 'Go to a bookcase' }))
+        .getAllByRole('button')
+        .map((button) => [button.textContent, button.getAttribute('aria-current')]);
+
+    expect(jumps).toEqual([
+        ['Oak bookcase', 'true'],
+        ['Study bookcase', null],
+        ['Hall', null],
+    ]);
+});
+
+it('selects a shelf of another bookcase in Wall v2', async () => {
+    api();
+    const router = await wallLine();
+
+    await userEvent.click(within(line()).getByRole('button', { name: /^Top/ }));
+
+    expect(router.state.location.search).toBe('?view=wall-v2&shelf=top');
+});
+
+it('gives each bookcase of Wall v2 its edit, add shelf and delete buttons', async () => {
+    api();
+
+    await wallLine();
+
+    const oak = within(line()).getByRole('region', { name: 'Oak bookcase' });
+    const buttons = within(oak)
+        .getAllByRole('button', { name: /bookcase|shelf$/ })
+        .map((button) => button.getAttribute('aria-label'));
+
+    expect(buttons).toEqual(['Edit bookcase', 'Add shelf', 'Delete bookcase']);
+});
+
+it('saves the name and the width from the Edit bookcase dialog of Wall v2', async () => {
+    const calls = api().on('PATCH /bookcases/oak', () => ({ status: 200, body: bookcases[0] }));
+
+    await wallLine();
+    const oak = within(line()).getByRole('region', { name: 'Oak bookcase' });
+
+    await userEvent.click(within(oak).getByRole('button', { name: 'Edit bookcase' }));
+    const dialog = screen.getByRole('dialog', { name: 'Edit bookcase' });
+
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'Small' }));
+    await userEvent.clear(within(dialog).getByLabelText(/Bookcase name/));
+    await userEvent.type(within(dialog).getByLabelText(/Bookcase name/), 'Oak');
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
+
+    await screen.findByText('“Oak bookcase” is saved.');
+    expect(calls.calls).toContainEqual({
+        route: 'PATCH /bookcases/oak',
+        body: { name: 'Oak', size: 'small' },
+    });
+});
+
+it('puts the shelf actions on the title line of the Wall v2 panel', async () => {
+    api();
+
+    await wallLine();
+
+    const panel = screen.getByRole('complementary', { name: 'Selected shelf' });
+    const actions = within(panel)
+        .getAllByRole('button')
+        .map((button) => button.getAttribute('aria-label') ?? button.textContent);
+
+    expect(actions).toEqual(['Rename shelf', 'Add books', 'Move shelf', 'Delete shelf']);
+});
+
+it('shows a Guest the bookcases and the covers of Wall v2 without any action', async () => {
+    api('guest');
+
+    await wallLine();
+
+    const panel = screen.getByRole('complementary', { name: 'Selected shelf' });
+    const buttons = [
+        ...within(line()).queryAllByRole('button', { name: /bookcase|Add shelf/ }),
+        ...within(panel).queryAllByRole('button'),
+    ];
+
+    expect(buttons).toEqual([]);
 });
