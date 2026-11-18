@@ -5,7 +5,6 @@ import type { ShelfDto, SpineBookDto } from '../../../../../packages/contracts/s
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { SpineLayout } from './spine-layout.util';
 import { useLocationCounts } from './use-location-counts';
-import { WallSizes } from './wall-sizes';
 
 const moves: Partial<Record<string, (index: number, last: number) => number>> = {
     ArrowRight: (index, last) => Math.min(last, index + 1),
@@ -19,11 +18,13 @@ const moves: Partial<Record<string, (index: number, last: number) => number>> = 
 export function WallShelf({
     shelf,
     books,
+    bayWidth,
     current,
     onSelect,
 }: {
     shelf: ShelfDto;
     books: readonly SpineBookDto[];
+    bayWidth: number;
     current: boolean;
     onSelect(): void;
 }) {
@@ -32,7 +33,7 @@ export function WallShelf({
     const [active, setActive] = useState(0);
     const [pointed, setPointed] = useState<{ label: string; x: number } | null>(null);
     const links = useRef<(HTMLAnchorElement | null)[]>([]);
-    const drawing = SpineLayout.shelf(books, WallSizes.bayWidth);
+    const drawing = SpineLayout.shelf(books, bayWidth);
     const named = new Map(books.map((book) => [book.id, book]));
     const focused = Math.min(active, Math.max(0, drawing.spines.length - 1));
     const move = (event: KeyboardEvent, index: number) => {

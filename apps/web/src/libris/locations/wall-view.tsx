@@ -1,28 +1,39 @@
 import { useRef } from 'react';
 import type { CSSProperties } from 'react';
-import type { BookcaseDto } from '../../../../../packages/contracts/src/http';
+import type { BookcaseDto, BookcaseSize } from '../../../../../packages/contracts/src/http';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Notice } from '../../shared/ui/notice';
 import { LoadingState } from '../../shared/ui/states';
 import { BookcaseActions } from './bookcase-actions';
+import { BookcaseWidthSwitch } from './bookcase-width-switch';
 import type { BookshelvesViewProps } from './bookshelves-view';
 import { ShelfPanel } from './shelf-panel';
+import { useBookcaseSize } from './use-bookcase-size';
 import { useBookcaseSpines } from './use-bookcase-spines';
 import { useElementWidth } from './use-element-width';
 import { useLocationCounts } from './use-location-counts';
 import { WallShelf } from './wall-shelf';
 import { WallSizes } from './wall-sizes';
 
-const drawingWidth =
-    WallSizes.shelfNameWidth + WallSizes.shelfGap + WallSizes.bayWidth + 2 * WallSizes.bayBorder;
-const sizes = {
-    '--wall-bay-width': WallSizes.bayWidth + 'px',
-    '--wall-bay-height': WallSizes.bayHeight + 'px',
-    '--wall-bay-border': WallSizes.bayBorder + 'px',
-    '--wall-name-width': WallSizes.shelfNameWidth + 'px',
-    '--wall-shelf-gap': WallSizes.shelfGap + 'px',
-    '--wall-drawing-width': drawingWidth + 'px',
-} as CSSProperties;
+function drawingWidth(size: BookcaseSize): number {
+    return (
+        WallSizes.shelfNameWidth +
+        WallSizes.shelfGap +
+        WallSizes.bayWidths[size] +
+        2 * WallSizes.bayBorder
+    );
+}
+
+function sizes(size: BookcaseSize): CSSProperties {
+    return {
+        '--wall-bay-width': WallSizes.bayWidths[size] + 'px',
+        '--wall-bay-height': WallSizes.bayHeight + 'px',
+        '--wall-bay-border': WallSizes.bayBorder + 'px',
+        '--wall-name-width': WallSizes.shelfNameWidth + 'px',
+        '--wall-shelf-gap': WallSizes.shelfGap + 'px',
+        '--wall-drawing-width': drawingWidth(size) + 'px',
+    } as CSSProperties;
+}
 
 function BookcaseStrip({
     bookcases,
@@ -50,7 +61,14 @@ function BookcaseStrip({
                     aria-current={bookcase.id === open.id || undefined}
                     onClick={() => onOpen(bookcase)}
                 >
-                    <span className="wall-miniature" aria-hidden="true">
+                    <span
+                        className={
+                            bookcase.size === 'small'
+                                ? 'wall-miniature wall-miniature--small'
+                                : 'wall-miniature'
+                        }
+                        aria-hidden="true"
+                    >
                         {bookcase.shelves.map((shelf) => (
                             <i
                                 key={shelf.id}
@@ -75,17 +93,23 @@ function OpenBookcase({
     editor,
     onSelect,
     onEdit,
+    onReload,
 }: Omit<BookshelvesViewProps, 'bookcases'>) {
     const { t } = useI18n();
     const counts = useLocationCounts();
     const { spines, failure } = useBookcaseSpines(bookcase);
+    const resizing = useBookcaseSize(bookcase, onReload);
     const frame = useRef<HTMLDivElement>(null);
     const width = useElementWidth(frame);
-    const scale = width === null ? 1 : Math.min(1, width / drawingWidth);
+    const scale = width === null ? 1 : Math.min(1, width / drawingWidth(resizing.size));
     const books = new Map(spines?.shelves.map((entry) => [entry.shelfId, entry.books]));
 
     return (
-        <section className="panel wall-bookcase" aria-labelledby="wall-bookcase-name" style={sizes}>
+        <section
+            className="panel wall-bookcase"
+            aria-labelledby="wall-bookcase-name"
+            style={sizes(resizing.size)}
+        >
             <div className="wall-bookcase__header">
                 <h2 id="wall-bookcase-name" className="panel__title">
                     {bookcase.name}
@@ -93,6 +117,7 @@ function OpenBookcase({
                 <span className="muted">
                     {counts.shelves(bookcase.shelves.length)} · {counts.books(bookcase.bookCount)}
                 </span>
+                {editor && <BookcaseWidthSwitch size={resizing.size} onChange={resizing.choose} />}
                 {editor && (
                     <BookcaseActions
                         bookcase={bookcase}
@@ -101,6 +126,7 @@ function OpenBookcase({
                     />
                 )}
             </div>
+            {resizing.failure && <Notice tone="error">{t(resizing.failure)}</Notice>}
             <div ref={frame} className="wall-bookcase__frame">
                 {bookcase.shelves.length === 0 ? (
                     <p className="muted">
@@ -120,6 +146,7 @@ function OpenBookcase({
                                 key={candidate.id}
                                 shelf={candidate}
                                 books={books.get(candidate.id) ?? []}
+                                bayWidth={WallSizes.bayWidths[resizing.size]}
                                 current={candidate.id === shelf?.id}
                                 onSelect={() => onSelect({ shelf: candidate.id })}
                             />

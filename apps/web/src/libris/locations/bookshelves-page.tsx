@@ -177,6 +177,7 @@ export function BookshelvesPage() {
                         setDone(message);
                         reload();
                     }}
+                    onReload={reload}
                 />
             </div>
             {dialogs}

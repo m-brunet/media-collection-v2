@@ -312,7 +312,7 @@ describe('Bookshelves Wall', () => {
 
         await page.setViewportSize({ width: 1920, height: 1080 });
 
-        expect([before, await width(page, '.wall-shelf__bay')]).toEqual([582, 582]);
+        expect([before, await width(page, '.wall-shelf__bay')]).toEqual([432, 432]);
     });
 
     it('gives the extra room of a wide window to the shelf panel', async () => {
@@ -342,6 +342,43 @@ describe('Bookshelves Wall', () => {
         const scrolled = await page.evaluate(() => document.documentElement.scrollWidth);
 
         expect(scrolled).toBeLessThanOrEqual(viewports.minimumDesktop.width);
+    });
+
+    it('makes a bookcase Small and keeps it after a reload', async () => {
+        const page = await shelved();
+
+        const saved = page.waitForResponse(
+            (response) => response.request().method() === 'PATCH' && response.ok(),
+        );
+
+        await page.getByRole('group', { name: 'Width' }).getByText('Small').click();
+        await saved;
+        await page.reload();
+        await spine(page, /^Dune \d+ · Susanna Clarke$/).waitFor();
+
+        const bay = await width(page, '.wall-shelf__bay');
+        const chosen = page.getByRole('radio', { name: 'Small' });
+        expect(bay).toBe(222);
+        expect(await chosen.isChecked()).toBe(true);
+    });
+
+    it('makes a Small bookcase Large again', async () => {
+        const page = await shelved();
+        const redrawn = () =>
+            page.waitForResponse((response) => response.url().endsWith('/spines') && response.ok());
+        const small = redrawn();
+
+        await page.getByRole('group', { name: 'Width' }).getByText('Small').click();
+        await small;
+        await spine(page, /^Dune \d+ · Susanna Clarke$/).waitFor();
+        const large = redrawn();
+
+        await page.getByRole('group', { name: 'Width' }).getByText('Large').click();
+        await large;
+        await spine(page, /^Dune \d+ · Susanna Clarke$/).waitFor();
+
+        const bay = await width(page, '.wall-shelf__bay');
+        expect(bay).toBe(432);
     });
 
     it('moves from spine to spine with the arrow keys', async () => {

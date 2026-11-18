@@ -22,9 +22,12 @@ bookcase) and `apps/server/src/books` (shelf order of the book list). Libris pag
   Opening a bookcase from the strip selects its first shelf.
 - **Strip:** one miniature per bookcase, in the bookcase list order (by name). One bar per shelf, as long as its book
   count compared to the fullest shelf of the library. The open bookcase is marked; the strip scrolls sideways when it
-  does not fit.
-- **Open bookcase:** name, "N shelves · M books", *Add shelf*, *Rename bookcase*, *Delete bookcase*; then one bay per
-  shelf with its name and book count on the left. The name or the bay selects the shelf.
+  does not fit. A Small bookcase's miniature is half as wide as a Large one's; its tile keeps room for the name
+  (issue #142).
+- **Open bookcase:** name, "N shelves · M books", the **Width** choice (*Large* / *Small*), *Add shelf*, *Rename
+  bookcase*, *Delete bookcase*; then one bay per shelf with its name and book count on the left. The name or the bay
+  selects the shelf. Choosing a width saves it on the bookcase at once and redraws it; a failed save puts the choice
+  back and shows the error (issue #142). On a Small bookcase the header wraps on up to three lines.
 - **Spines** (`spine-layout.util.ts`, sizes in `wall-sizes.ts`):
   - one spine per book, in **shelf order**: the books of a collection together, in volume order, standing where the
     collection's name falls among the titles; a book in no collection stands at its title;
@@ -43,13 +46,18 @@ bookcase) and `apps/server/src/books` (shelf order of the book list). Libris pag
   fit, the last place is a "+N more" tile. The tile and *Open this shelf in the Library* open the Library filtered on
   the shelf (`/books?location=shelf:<id>`). A lent book carries a "Lent" band. Then *Rename*, *Move shelf*,
   *Delete shelf*.
-- **A drawing of fixed size:** a bay is 570 px wide on every window. A wide window gives its extra room to the shelf
+- **A drawing of fixed size:** a bay is 420 px wide on a **Large** bookcase and 210 px on a **Small** one, on every
+  window (issue #142, 2026-11-18; 570 px for every bookcase before). The size is saved on the bookcase, the same for
+  every account; existing and new bookcases are Large. The rule for books that do not fit applies to the bookcase's
+  width: at 210 px a shelf holds about 45 books before some are not drawn. A wide window, or a Small bookcase, gives
+  its extra room to the shelf
   panel (more covers per row, still two rows, up to 640 px). Under 1100 px the panel moves below the bookcase. When
   the bookcase column is narrower than the drawing (for example at the 1280 px minimum window), the whole drawing
   shrinks as one picture.
 - **Empty cases:** an empty shelf has an empty bay and the panel says it has no book; a bookcase without shelves shows
   its header and an invitation to add one; no bookcase: the empty state of before.
-- **Guests** see everything without the action buttons.
+- **Guests** see everything without the action buttons, and each bookcase at its saved width without the Width
+  choice.
 - The sizes (bay width, spine widths, average pages) are starting values, to be judged on the real library.
 
 ## API
@@ -58,6 +66,9 @@ bookcase) and `apps/server/src/books` (shelf order of the book list). Libris pag
   `shelves[]` (shelves ordered by name, empty ones included), each with `shelfId` and `books[]` (`id`, `title`,
   `authors`, `category`, `pageCount` or `null`) in shelf order. An unknown bookcase gives `404` (`bookcase-missing`).
   Nothing is stored.
+- `PATCH /api/bookcases/:id` takes an optional `name` and an optional `size` (`large` | `small`), at least one of
+  them (Owners and Admin). `BookcaseDto.size` gives the saved size. A size change alone is audited as
+  `bookcase.resized`, which Activity does not show; a name change stays `bookcase.renamed` (issue #142).
 - `GET /api/books?sort=shelf`: the shelf order above, used by the shelf panel (`limit=16`) and later by #75 and #76.
 
 ## Acceptance examples
@@ -75,6 +86,8 @@ bookcase) and `apps/server/src/books` (shelf order of the book list). Libris pag
 7. A shelf of 64 books at 1440 px: 9 covers and a "+55 more" tile; the tile opens the Library on that shelf. A shelf
    of 10 books: the 10 covers, no tile.
 8. The window grows from 1440 px to 1920 px: the bays keep their width and the shelf panel grows.
+11. A Large bookcase has bays 420 px wide; a shelf with 400 px of spines shows one row. Choosing *Small* redraws it at
+    210 px and the same shelf shows two rows; a reload, or another account, still shows it Small (issue #142).
 9. A Guest sees no *New bookcase*, *Add shelf*, *Delete bookcase*, *Move shelf* or *Delete shelf*.
 10. `/bookshelves?view=unknown` shows the Wall; the View choice is not shown while the Wall is the only view. (Since #75
     the choice shows Wall and Ribbons.)

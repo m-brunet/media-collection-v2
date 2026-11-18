@@ -8,6 +8,7 @@ function books(count: number, book: Omit<SpineBook, 'id'>, prefix = 'book'): Spi
 
 const novel = { category: 'books', pageCount: 450 } as const;
 const unknownManga = { category: 'manga', pageCount: null } as const;
+const short = { category: 'books', pageCount: 200 } as const;
 
 describe('SpineLayout.width', () => {
     it('gives the thinnest width to a very short book', () => {
@@ -35,13 +36,13 @@ describe('SpineLayout.shelf', () => {
                 { id: 'novel', category: 'books', pageCount: null },
                 { id: 'comic', category: 'comics', pageCount: null },
             ],
-            570,
+            420,
         );
 
         expect(result.spines.map((spine) => spine.width)).toEqual([10, 13, 7]);
     });
     it('places the books side by side from the left', () => {
-        const result = SpineLayout.shelf(books(3, novel), 570);
+        const result = SpineLayout.shelf(books(3, novel), 420);
 
         expect(result.spines.map((spine) => [spine.x, spine.behind])).toEqual([
             [0, false],
@@ -87,15 +88,33 @@ describe('SpineLayout.shelf', () => {
 
         expect([result.spines.length, result.hidden]).toEqual([4, 6]);
     });
-    it('gives the same colour and height to the same book every time', () => {
-        const first = SpineLayout.shelf(books(1, novel), 570).spines[0];
+    it('keeps 400 px of spines on one row of a Large shelf', () => {
+        const result = SpineLayout.shelf(books(40, short), 420);
 
-        const result = SpineLayout.shelf(books(1, novel), 570).spines[0];
+        expect(result.spines.filter((spine) => spine.behind)).toEqual([]);
+        expect(result.hidden).toBe(0);
+    });
+    it('puts 400 px of spines on two rows of a Small shelf', () => {
+        const result = SpineLayout.shelf(books(40, short), 210);
+
+        expect(result.spines.filter((spine) => spine.behind)).toHaveLength(19);
+        expect(result.hidden).toBe(0);
+    });
+    it('leaves out the books past two rows of a Small shelf', () => {
+        const result = SpineLayout.shelf(books(50, short), 210);
+
+        expect(result.spines).toHaveLength(42);
+        expect(result.hidden).toBe(8);
+    });
+    it('gives the same colour and height to the same book every time', () => {
+        const first = SpineLayout.shelf(books(1, novel), 420).spines[0];
+
+        const result = SpineLayout.shelf(books(1, novel), 420).spines[0];
 
         expect(result).toEqual(first);
     });
     it('keeps colours and heights within their ranges', () => {
-        const result = SpineLayout.shelf(books(40, unknownManga), 570).spines;
+        const result = SpineLayout.shelf(books(40, unknownManga), 420).spines;
 
         expect(
             result.every(

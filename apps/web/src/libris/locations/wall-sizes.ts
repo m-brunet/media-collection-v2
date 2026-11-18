@@ -1,7 +1,7 @@
-import type { BookCategory } from '../../../../../packages/contracts/src/http';
+import type { BookCategory, BookcaseSize } from '../../../../../packages/contracts/src/http';
 
 export const WallSizes = {
-    bayWidth: 570,
+    bayWidths: { large: 420, small: 210 } satisfies Record<BookcaseSize, number>,
     bayHeight: 84,
     bayBorder: 6,
     shelfNameWidth: 92,

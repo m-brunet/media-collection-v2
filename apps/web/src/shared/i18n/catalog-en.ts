@@ -1213,6 +1213,9 @@ export const en = {
     'bookcase.deleteBodyMany':
         'No books will be deleted. The bookcase and its {count} shelf definitions will be removed.',
     'bookcase.deleted': '“{name}” was deleted. Its books were kept.',
+    'bookcase.width': 'Width',
+    'bookcase.large': 'Large',
+    'bookcase.small': 'Small',
     'shelf.row': '{name} · {books}',
     'shelf.headingOne': '1 book on {name}',
     'shelf.headingMany': '{count} books on {name}',
