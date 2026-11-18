@@ -322,8 +322,9 @@ async function withCollection(db: Awaited<ReturnType<typeof migrated>>) {
     await sql`insert into books (id, title, title_key, isbn13, isbn_converted, no_isbn, category,
         ownership, created_at, updated_at) values (${book}, 'Year One', 'year one', null, 0, 1,
         'comics', 'owned', '2026-01-01', '2026-01-01')`.execute(db);
-    await sql`insert into collections values (${collection}, 'Batman', 'batman', 0, 0,
-        '2026-01-01', '2026-01-01', 'comics')`.execute(db);
+    await sql`insert into collections (id, name, name_key, includes_volume_zero, created_at,
+        updated_at, category) values (${collection}, 'Batman', 'batman', 0, '2026-01-01',
+        '2026-01-01', 'comics')`.execute(db);
 
     return { book, collection };
 }
@@ -332,9 +333,9 @@ it('rejects non-UUID collection identities at the database boundary', async () =
     const db = await migrated();
 
     const result =
-        sql`insert into collections values ('invalid', 'Batman', 'batman', 0, 0, '2026-01-01', '2026-01-01', 'comics')`.execute(
-            db,
-        );
+        sql`insert into collections (id, name, name_key, includes_volume_zero, created_at,
+            updated_at, category) values ('invalid', 'Batman', 'batman', 0, '2026-01-01',
+            '2026-01-01', 'comics')`.execute(db);
 
     await expect(result).rejects.toThrow(/CHECK constraint/);
 });
@@ -355,8 +356,9 @@ it('keeps a book in at most one collection', async () => {
     const { book, collection } = await withCollection(db);
     const other = randomUUID();
 
-    await sql`insert into collections values (${other}, 'Dune', 'dune', 0, 0,
-        '2026-01-01', '2026-01-01', 'comics')`.execute(db);
+    await sql`insert into collections (id, name, name_key, includes_volume_zero, created_at,
+        updated_at, category) values (${other}, 'Dune', 'dune', 0, '2026-01-01', '2026-01-01',
+        'comics')`.execute(db);
     await sql`insert into collection_books values (${book}, ${collection}, 1, 1)`.execute(db);
 
     const result = sql`insert into collection_books values (${book}, ${other}, 1, 1)`.execute(db);
