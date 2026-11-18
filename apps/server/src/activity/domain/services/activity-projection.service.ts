@@ -244,8 +244,11 @@ export class ActivityProjection {
                 return ActivityProjection.named('collection-removed', current);
             case 'bookcase.created':
                 return ActivityProjection.named('bookcase-created', current);
-            case 'bookcase.renamed':
-                return ActivityProjection.renamed('bookcase-renamed', before, after);
+            case 'bookcase.renamed': {
+                const renamed = ActivityProjection.renamed('bookcase-renamed', before, after);
+
+                return renamed && renamed.from !== renamed.to ? renamed : null;
+            }
             case 'bookcase.deleted':
                 return ActivityProjection.named('bookcase-deleted', current);
             case 'shelf.created':

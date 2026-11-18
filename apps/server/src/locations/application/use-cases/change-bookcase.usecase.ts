@@ -55,7 +55,7 @@ export class ChangeBookcase implements ChangeBookcaseUseCase {
                 const after = LocationSnapshot.bookcase(bookcase);
 
                 context.category =
-                    before.name === after.name
+                    before.size !== after.size && before.name === after.name
                         ? LocationAudit.bookcaseResized
                         : LocationAudit.bookcaseRenamed;
 

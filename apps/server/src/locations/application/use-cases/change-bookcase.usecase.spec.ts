@@ -127,6 +127,34 @@ describe('ChangeBookcase, resizing', () => {
 
         expect(current.trail.entries.at(-1)).toMatchObject({ category: 'bookcase.resized' });
     });
+    it('records a rename, not a resize, when the name sent alone is unchanged', async () => {
+        const current = LocationDoubles.furniture();
+        const { bookcase } = await LocationDoubles.withShelf(current, 'Oak', 'Top');
+
+        await subject(current).execute(owner, bookcase.id, { name: 'Oak' });
+
+        expect(current.trail.entries.at(-1)).toMatchObject({ category: 'bookcase.renamed' });
+    });
+    it('records no resize when the size sent is the current one', async () => {
+        const current = LocationDoubles.furniture();
+        const { bookcase } = await LocationDoubles.withShelf(current, 'Oak', 'Top');
+
+        await subject(current).execute(owner, bookcase.id, { size: 'large' });
+
+        expect(current.trail.entries.at(-1)).toMatchObject({
+            category: 'bookcase.renamed',
+            before: { name: 'Oak', size: 'large' },
+            after: { name: 'Oak', size: 'large' },
+        });
+    });
+    it('records a rename when the name changes and the size sent is the current one', async () => {
+        const current = LocationDoubles.furniture();
+        const { bookcase } = await LocationDoubles.withShelf(current, 'Oak', 'Top');
+
+        await subject(current).execute(owner, bookcase.id, { name: 'Hall', size: 'large' });
+
+        expect(current.trail.entries.at(-1)).toMatchObject({ category: 'bookcase.renamed' });
+    });
     it('records a rename when the name and the size change together', async () => {
         const current = LocationDoubles.furniture();
         const { bookcase } = await LocationDoubles.withShelf(current, 'Oak', 'Top');

@@ -14,7 +14,12 @@ export function useBookcaseSpines(bookcase: BookcaseDto) {
         let current = true;
 
         api.request<BookcaseSpinesDto>('/bookcases/' + bookcase.id + '/spines').then(
-            (value) => current && setLoaded({ of: bookcase, value }),
+            (value) => {
+                if (current) {
+                    setLoaded({ of: bookcase, value });
+                    setFailure(null);
+                }
+            },
             (error: unknown) =>
                 current && setFailure({ of: bookcase, key: ApiErrorMessage.key(error) }),
         );
@@ -25,7 +30,7 @@ export function useBookcaseSpines(bookcase: BookcaseDto) {
     }, [bookcase]);
 
     return {
-        spines: loaded?.of === bookcase ? loaded.value : null,
-        failure: failure?.of === bookcase ? failure.key : null,
+        spines: loaded?.of.id === bookcase.id ? loaded.value : null,
+        failure: failure?.of.id === bookcase.id ? failure.key : null,
     };
 }
