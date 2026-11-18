@@ -36,6 +36,11 @@ bookcase) and `apps/server/src/books` (shelf order of the book list). Libris pag
     When the shelf overflows, these books shrink by the same amount, never under 6 px; books with a page count keep
     their width;
   - the books that still do not fit go behind, faded; beyond two layers nothing is drawn and the count stays exact;
+  - on a shelf with a back row (decided 2026-11-18), the front spines are lowered to 46–62 px, keeping their order of
+    heights, and each back spine rises 10 to 18 px above the tallest front spine it stands behind (the rise comes from
+    the book's identifier), so every back spine shows above the front row. The back row is raised 4 px, shifted 3 px
+    and faded; with a front spine of at most 62 px it never reaches the shelf above (84 px). A shelf without a back row
+    keeps 50–68 px;
   - colour and height come from the book's identifier. A spine is 50 px to 68 px tall, so it never reaches the shelf
     above, even behind (lowered from 56–78 px on 2026-11-15: the tallest spines touched the board). The 8 spine colours are fixed book colours, the same on every
     appearance colour scheme (changed on 2026-11-15: colours mixed from the scheme accent changed the look of a shelf

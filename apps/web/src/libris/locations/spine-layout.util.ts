@@ -55,7 +55,7 @@ export class SpineLayout {
             })),
             shelfWidth,
         );
-        const spines: PlacedSpine[] = [];
+        const placed: PlacedSpine[] = [];
         let behind = false;
         let x = 0;
 
@@ -69,7 +69,7 @@ export class SpineLayout {
                 x = 0;
             }
 
-            spines.push({
+            placed.push({
                 id: book.id,
                 x,
                 width,
@@ -80,7 +80,50 @@ export class SpineLayout {
             x += width;
         }
 
-        return { spines, hidden: books.length - spines.length };
+        return { spines: SpineLayout.layered(placed), hidden: books.length - placed.length };
+    }
+
+    private static layered(placed: PlacedSpine[]): PlacedSpine[] {
+        if (!placed.some((spine) => spine.behind)) {
+            return placed;
+        }
+
+        const front = placed
+            .filter((spine) => !spine.behind)
+            .map((spine) => ({ ...spine, height: SpineLayout.lowered(spine.height) }));
+        const back = placed
+            .filter((spine) => spine.behind)
+            .map((spine) => ({ ...spine, height: SpineLayout.raised(spine, front) }));
+
+        return [...front, ...back];
+    }
+
+    private static lowered(height: number): number {
+        const share =
+            (height - WallSizes.spineMinHeight) /
+            (WallSizes.spineMaxHeight - WallSizes.spineMinHeight);
+
+        return Math.round(
+            WallSizes.frontRowMinHeight +
+                share * (WallSizes.frontRowMaxHeight - WallSizes.frontRowMinHeight),
+        );
+    }
+
+    private static raised(spine: PlacedSpine, front: readonly PlacedSpine[]): number {
+        const left = spine.x + WallSizes.backRowShift;
+        const right = left + spine.width;
+        const covering = front
+            .filter((other) => other.x < right && other.x + other.width > left)
+            .map((other) => other.height);
+        const tallest =
+            covering.length > 0 ? Math.max(...covering) : SpineLayout.lowered(spine.height);
+        const span = WallSizes.backRowMaxRise - WallSizes.backRowMinRise;
+        const rise = WallSizes.backRowMinRise + (SpineLayout.hash(spine.id + ':rise') % (span + 1));
+
+        return Math.min(
+            tallest + rise - WallSizes.backRowLift,
+            WallSizes.bayHeight - WallSizes.backRowLift,
+        );
     }
 
     private static fitted(sized: Sized[], shelfWidth: number): Sized[] {
