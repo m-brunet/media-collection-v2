@@ -20,6 +20,7 @@ const bookcases: BookcaseDto[] = [
     {
         id: 'oak',
         name: 'Oak bookcase',
+        size: 'large',
         bookCount: 1,
         shelves: [
             { id: 's1', bookcaseId: 'oak', name: 'Shelf 1', bookCount: 0 },
@@ -29,6 +30,7 @@ const bookcases: BookcaseDto[] = [
     {
         id: 'study',
         name: 'Study bookcase',
+        size: 'large',
         bookCount: 0,
         shelves: [{ id: 'top', bookcaseId: 'study', name: 'Top', bookCount: 0 }],
     },

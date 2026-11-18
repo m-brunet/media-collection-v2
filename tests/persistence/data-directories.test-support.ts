@@ -132,6 +132,7 @@ export class DataDirectories {
                     id: ids.bookcase,
                     name: 'Hall',
                     name_key: 'hall',
+                    size: 'large',
                     created_at: now,
                     updated_at: now,
                 })

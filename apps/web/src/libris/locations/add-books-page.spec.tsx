@@ -26,12 +26,14 @@ const bookcases: BookcaseDto[] = [
     {
         id: 'oak',
         name: 'Study · oak',
+        size: 'large',
         bookCount: 64,
         shelves: [{ id: 's3', bookcaseId: 'oak', name: 'Shelf 3', bookCount: 64 }],
     },
     {
         id: 'hall',
         name: 'Hallway',
+        size: 'large',
         bookCount: 1,
         shelves: [{ id: 'h1', bookcaseId: 'hall', name: 'Shelf 1', bookCount: 1 }],
     },

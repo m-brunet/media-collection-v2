@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Bookcase } from '../../domain/entities/bookcase.entity.js';
 import { Shelf } from '../../domain/entities/shelf.entity.js';
 import { LocationViewer } from './location-viewer.service.js';
+import type { BookcaseView } from '../location-views.js';
 
 const at = '2026-01-01T00:00:00.000Z';
 const oak = new Bookcase({ id: 'oak', name: 'Oak', size: 'large', createdAt: at, updatedAt: at });
@@ -42,9 +43,9 @@ describe('LocationViewer', () => {
         expect(result.bookCount).toBe(0);
     });
     it('orders bookcases by name ignoring case', () => {
-        const views = [
-            { id: 'b', name: 'study', bookCount: 0, shelves: [] },
-            { id: 'a', name: 'Hall', bookCount: 0, shelves: [] },
+        const views: BookcaseView[] = [
+            { id: 'b', name: 'study', size: 'large', bookCount: 0, shelves: [] },
+            { id: 'a', name: 'Hall', size: 'large', bookCount: 0, shelves: [] },
         ];
 
         const result = new LocationViewer().sorted(views);
