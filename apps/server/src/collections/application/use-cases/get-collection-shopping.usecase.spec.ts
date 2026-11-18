@@ -21,10 +21,12 @@ describe('GetCollectionShopping', () => {
             status: 'unfinished',
             expectedCount: 4,
             ownedCount: 1,
+            highestSaved: 4,
+            lastVolume: null,
             lastOwned: { volume: 2, title: null },
             missing: [
-                { volume: 4, saved: true, quickAdd: { bookId: 'four', title: 'Book four' } },
                 { volume: 3, saved: false, quickAdd: null },
+                { volume: 4, saved: true, quickAdd: { bookId: 'four', title: 'Book four' } },
                 { volume: 1, saved: false, quickAdd: null },
             ],
         });

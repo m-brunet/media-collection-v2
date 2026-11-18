@@ -23,6 +23,7 @@ describe('CollectionViewer', () => {
             name: 'Batman',
             category: 'comics',
             includesVolumeZero: false,
+            lastVolume: null,
             status: 'unfinished',
             bookCount: 2,
             expectedFrom: 1,

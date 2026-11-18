@@ -542,6 +542,7 @@ export interface CollectionSummaryDto {
     category: BookCategory;
     includesVolumeZero: boolean;
     status: CollectionStatus;
+    lastVolume: number | null;
     bookCount: number;
     expectedFrom: number;
     expectedTo: number;
@@ -607,6 +608,8 @@ export interface CollectionShoppingDto {
     status: CollectionStatus;
     expectedCount: number;
     ownedCount: number;
+    highestSaved: number | null;
+    lastVolume: number | null;
     lastOwned: { volume: number; title: string | null } | null;
     missing: {
         volume: number;
@@ -626,6 +629,7 @@ export interface CollectionChangesDto {
     name?: string;
     category?: BookCategory;
     includesVolumeZero?: boolean;
+    lastVolume?: number | null;
 }
 
 export interface ShelfDto {

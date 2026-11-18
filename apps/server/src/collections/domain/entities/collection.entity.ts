@@ -2,6 +2,7 @@ import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { NameKey } from '../../../shared/domain/name-key.helper.js';
 import { CollectionCoverage } from '../value-objects/collection-coverage.value-object.js';
 import type { CoverageMember } from '../value-objects/collection-coverage.value-object.js';
+import { VolumeRange } from '../value-objects/volume-range.value-object.js';
 
 export type CollectionCategory = 'books' | 'manga' | 'comics';
 
@@ -13,6 +14,7 @@ export interface CollectionState {
     category: CollectionCategory;
     includesVolumeZero: boolean;
     status: CollectionStatus;
+    lastVolume: number | null;
     createdAt: string;
     updatedAt: string;
 }
@@ -49,7 +51,7 @@ export class Collection {
     }
 
     coverage(members: readonly CoverageMember[]): CollectionCoverage {
-        return CollectionCoverage.of(this.state.includesVolumeZero, members);
+        return CollectionCoverage.of(this.state.includesVolumeZero, members, this.state.lastVolume);
     }
 
     rename(name: string, now: string): void {
@@ -92,6 +94,55 @@ export class Collection {
 
         this.state.includesVolumeZero = enabled;
         this.state.updatedAt = now;
+    }
+
+    changeLastVolume(
+        lastVolume: number | null,
+        members: readonly CoverageMember[],
+        now: string,
+    ): void {
+        if (lastVolume !== null) {
+            const start = this.coverage(members).start;
+
+            Failure.ensure(
+                Number.isInteger(lastVolume) &&
+                    lastVolume >= start &&
+                    lastVolume <= VolumeRange.highest,
+                'Enter a last volume from ' + start + ' to ' + VolumeRange.highest + '.',
+                'last-volume-invalid',
+            );
+
+            const highest = CollectionCoverage.of(this.state.includesVolumeZero, members).highest;
+
+            if (highest !== null && lastVolume < highest) {
+                throw new Failure(
+                    'conflict',
+                    'Volume ' + highest + ' is saved in this collection.',
+                    'last-volume-below-saved',
+                    { volume: highest },
+                );
+            }
+        }
+
+        this.state.lastVolume = lastVolume;
+        this.state.updatedAt = now;
+    }
+
+    extend(members: readonly CoverageMember[], now: string): boolean {
+        const highest = CollectionCoverage.of(this.state.includesVolumeZero, members).highest;
+
+        if (
+            this.state.lastVolume === null ||
+            highest === null ||
+            highest <= this.state.lastVolume
+        ) {
+            return false;
+        }
+
+        this.state.lastVolume = highest;
+        this.state.updatedAt = now;
+
+        return true;
     }
 
     finish(members: readonly CoverageMember[], now: string): void {

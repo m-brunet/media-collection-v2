@@ -10,6 +10,7 @@ describe('CollectionSnapshot', () => {
             category: 'comics',
             includesVolumeZero: true,
             status: 'unfinished',
+            lastVolume: 15,
             createdAt: '2026-01-01T00:00:00.000Z',
             updatedAt: '2026-01-01T00:00:00.000Z',
         });
@@ -21,6 +22,7 @@ describe('CollectionSnapshot', () => {
             category: 'comics',
             includesVolumeZero: true,
             status: 'unfinished',
+            lastVolume: 15,
         });
     });
 });

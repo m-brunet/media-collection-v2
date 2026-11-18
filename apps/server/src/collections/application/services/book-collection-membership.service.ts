@@ -183,6 +183,7 @@ export class BookCollectionMembership implements CollectionMembership, BookColle
                 category,
                 includesVolumeZero: false,
                 status: 'unfinished',
+                lastVolume: null,
                 createdAt: now,
                 updatedAt: now,
             }),

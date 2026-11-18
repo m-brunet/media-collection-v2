@@ -25,12 +25,14 @@ export const collectionChangesSchema = z
         name: z.string().max(400).optional(),
         includesVolumeZero: z.boolean().optional(),
         category: z.enum(['books', 'manga', 'comics']).optional(),
+        lastVolume: z.number().int().min(0).max(9999).nullable().optional(),
     })
     .refine(
         (changes) =>
             changes.name !== undefined ||
             changes.includesVolumeZero !== undefined ||
-            changes.category !== undefined,
+            changes.category !== undefined ||
+            changes.lastVolume !== undefined,
     );
 
 export const collectionIdSchema = idSchema;

@@ -318,6 +318,7 @@ export const fr = {
     'leaf.collection.ownership': 'Possession',
     'leaf.collection.missingTitle': 'Tomes manquants',
     'leaf.collection.through': 'Jusqu’au plus haut tome enregistré : {volume}',
+    'leaf.collection.throughLast': 'Jusqu’au dernier tome : {volume}',
     'leaf.collection.notRegistered': 'Non enregistré',
     'leaf.collection.savedNotOwned': 'Enregistré · Non possédé',
     'leaf.collection.markOwned': 'Marquer possédé',
@@ -886,6 +887,7 @@ export const fr = {
     'collection.expectedOne': 'Couverture attendue : tome {number}',
     'collection.expectedRange': 'Couverture attendue : tomes {from} à {to}',
     'collection.facts': 'Inclut le tome 0 : {zero} · Plus haut tome enregistré : {highest}',
+    'collection.factsLast': 'Inclut le tome 0 : {zero} · Dernier tome : {last}',
     'collection.on': 'Oui',
     'collection.off': 'Non',
     'collection.edit': 'Modifier la collection',
@@ -1103,6 +1105,10 @@ export const fr = {
     'editCollection.categoryChangeOne':
         'Le livre de la collection passera dans la catégorie {category}.',
     'editCollection.volumeZero': 'Inclut le tome 0',
+    'editCollection.lastVolume': 'Dernier tome',
+    'editCollection.lastVolumeHint':
+        'Le numéro du dernier tome de la série, s’il est connu. Sinon, laissez vide.',
+    'editCollection.lastVolumeInvalid': 'Indiquez le dernier tome par un nombre entier.',
     'editCollection.save': 'Enregistrer la collection',
     'editCollection.delete': 'Supprimer la collection',
     'deleteCollection.title': 'Supprimer cette collection ?',
@@ -1180,6 +1186,10 @@ export const fr = {
         'Saisissez des numéros de tome entiers de 0 à 9999, en ordre croissant.',
     'reason.volumeZeroInUse':
         'Un livre enregistré couvre le tome 0 : la collection doit continuer à l’inclure.',
+    'reason.lastVolumeBelowSaved':
+        'Un livre de cette collection est enregistré au-delà de ce tome : le dernier tome ne peut pas être plus bas.',
+    'reason.lastVolumeInvalid':
+        'Indiquez un dernier tome entre le premier tome de la collection et 9999.',
     'reason.collectionIncomplete':
         'Possédez chaque tome attendu avant de marquer cette collection comme terminée.',
     'reason.replacementOutdated':

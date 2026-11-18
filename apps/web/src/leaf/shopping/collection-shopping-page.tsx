@@ -100,7 +100,6 @@ function Shopping({ shopping, reload }: { shopping: CollectionShoppingDto; reloa
     const { t } = useI18n();
     const [choice, setChoice] = useState<QuickAdd | null>(null);
     const [done, setDone] = useState<number | null>(null);
-    const highest = shopping.missing.at(-1)?.volume ?? null;
 
     return (
         <>
@@ -145,8 +144,16 @@ function Shopping({ shopping, reload }: { shopping: CollectionShoppingDto; reloa
             ) : (
                 <>
                     <h2 className="leaf__subtitle">{t('leaf.collection.missingTitle')}</h2>
-                    {highest !== null && (
-                        <p className="muted">{t('leaf.collection.through', { volume: highest })}</p>
+                    {shopping.lastVolume !== null ? (
+                        <p className="muted">
+                            {t('leaf.collection.throughLast', { volume: shopping.lastVolume })}
+                        </p>
+                    ) : (
+                        shopping.highestSaved !== null && (
+                            <p className="muted">
+                                {t('leaf.collection.through', { volume: shopping.highestSaved })}
+                            </p>
+                        )
                     )}
                     <ul className="leaf-volumes">
                         {shopping.missing.map((entry) => (

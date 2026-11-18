@@ -26,6 +26,7 @@ const gunnm: CollectionDetailsDto = {
     category: 'manga',
     includesVolumeZero: false,
     status: 'unfinished',
+    lastVolume: null,
     bookCount: 1,
     expectedFrom: 1,
     expectedTo: 1,
@@ -140,6 +141,21 @@ it('looks up the missing volumes up to the number asked', async () => {
         route: 'POST /collections/c1/missing-volumes/search',
         body: { upTo: 4 },
     });
+});
+
+it('starts at the last volume of the collection when it has one', async () => {
+    new FakeApi()
+        .signedIn(account())
+        .on('GET /collections/c1', () => ({ status: 200, body: { ...gunnm, lastVolume: 15 } }))
+        .on('GET /collections/c1/reading', () => ({
+            status: 200,
+            body: { read: false, ownedCount: 1 },
+        }));
+    renderRoute('/collections/c1', { '/collections/:id': <CollectionDetailsPage /> });
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Add volumes' }));
+
+    expect(screen.getByRole('spinbutton', { name: /Up to volume/ })).toHaveValue(15);
 });
 
 it('ticks each volume found, on its best edition, with its generated title', async () => {

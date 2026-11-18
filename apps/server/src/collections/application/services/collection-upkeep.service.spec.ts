@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { Collection } from '../../domain/entities/collection.entity.js';
 import { CollectionDoubles } from '../testing/collection-doubles.test-support.js';
 
 const now = '2026-03-01T10:00:00.000Z';
@@ -21,6 +22,7 @@ describe('CollectionUpkeep', () => {
                 category: 'comics',
                 includesVolumeZero: false,
                 status: 'unfinished',
+                lastVolume: null,
             },
             after: null,
         });
@@ -76,6 +78,28 @@ describe('CollectionUpkeep', () => {
         expect(outcome).toBeNull();
         expect(current.collections.collections.get('collection-1')?.snapshot.status).toBe(
             'dropped',
+        );
+    });
+
+    it('raises the last volume to a book saved past it, as a collection edit', async () => {
+        const current = CollectionDoubles.shelf();
+
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
+        await current.collections.save(
+            new Collection({
+                ...current.collections.collections.get('collection-1')!.snapshot,
+                lastVolume: 15,
+            }),
+        );
+
+        const result = await CollectionDoubles.member(current, 'sixteen', 'owned', 'Batman', 16);
+
+        expect(result.changes).toContainEqual(
+            expect.objectContaining({
+                category: 'collection.updated',
+                before: expect.objectContaining({ lastVolume: 15 }),
+                after: expect.objectContaining({ lastVolume: 16 }),
+            }),
         );
     });
 });

@@ -103,6 +103,7 @@ interface CollectionsTable {
     name_key: string;
     includes_volume_zero: number;
     status: 'unfinished' | 'finished' | 'dropped';
+    last_volume: number | null;
     category: 'books' | 'manga' | 'comics';
     created_at: string;
     updated_at: string;

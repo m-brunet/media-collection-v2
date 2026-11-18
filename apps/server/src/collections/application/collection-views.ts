@@ -12,6 +12,7 @@ export interface CollectionSummaryView {
     category: 'books' | 'manga' | 'comics';
     includesVolumeZero: boolean;
     status: CollectionStatus;
+    lastVolume: number | null;
     bookCount: number;
     expectedFrom: number;
     expectedTo: number;
@@ -78,6 +79,7 @@ export interface CollectionChanges {
     name?: string;
     category?: 'books' | 'manga' | 'comics';
     includesVolumeZero?: boolean;
+    lastVolume?: number | null;
 }
 
 export interface ShoppingCollectionView {
@@ -95,6 +97,8 @@ export interface CollectionShoppingView {
     status: CollectionStatus;
     expectedCount: number;
     ownedCount: number;
+    highestSaved: number | null;
+    lastVolume: number | null;
     lastOwned: LastOwnedVolume | null;
     missing: MissingVolume[];
 }

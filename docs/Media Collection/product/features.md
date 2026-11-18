@@ -46,6 +46,7 @@ Task 1 is complete. [Collections and shopping](collections.md) is the authoritat
 - Save a book with a collection name to join/create it. Rename updates all member books; a name collision is blocked. Merging is future scope.
 - Books cover one integer volume or a consecutive omnibus range. Volume 0 requires the collection option. Count distinct covered volumes, not edition records.
 - Missing means expected coverage not Owned, whether saved Not Owned or inferred. The range ends at the highest currently saved coverage; deleting it can shrink the range.
+- An optional **Last volume** (issue #145) extends the expected volumes past the saved ones, so the volumes still to buy show as missing; a book saved past it raises it. See [Volume 0 and expected range](collections.md#volume-0-and-expected-range).
 - A collection is Unfinished, Finished or Dropped. Finished is explicit, allowed only without missing volumes, and hides the collection on mobile. Gaps automatically reopen it; users may also reopen manually.
 - **Drop collection** marks an unfinished collection the household stopped collecting, whatever its gaps; it hides it on mobile and never changes on its own. **Resume collection** puts it back to Unfinished, and a dropped collection with every volume owned can be marked Finished directly. See [Dropped](collections.md#dropped).
 - Overlap is permitted only between Owned books. Rare planned-book conflicts require explicit resolution, never silent deletion/replacement.

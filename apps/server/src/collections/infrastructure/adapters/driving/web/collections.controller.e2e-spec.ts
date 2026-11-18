@@ -351,14 +351,16 @@ describe('GET /api/collections/:id/shopping', () => {
             status: 'unfinished',
             expectedCount: 3,
             ownedCount: 1,
+            highestSaved: 3,
+            lastVolume: null,
             lastOwned: { volume: 1, title: 'Dune' },
             missing: [
+                { volume: 2, saved: false, quickAdd: null },
                 {
                     volume: 3,
                     saved: true,
                     quickAdd: { bookId: planned.id, title: 'Children of Dune' },
                 },
-                { volume: 2, saved: false, quickAdd: null },
             ],
         });
     });
@@ -373,8 +375,8 @@ describe('GET /api/collections/:id/shopping', () => {
         expect(response.status).toBe(200);
         expect(response.body.lastOwned).toBeNull();
         expect(response.body.missing).toEqual([
-            { volume: 2, saved: true, quickAdd: null },
             { volume: 1, saved: true, quickAdd: null },
+            { volume: 2, saved: true, quickAdd: null },
         ]);
     });
     it('tells that a collection is Dropped', async () => {
@@ -416,6 +418,55 @@ describe('GET /api/collections/:id/shopping', () => {
 });
 
 describe('PATCH /api/collections/:id', () => {
+    it('sets the last volume and draws the volumes up to it as missing', async () => {
+        const saved = await book(membership('Batman', 1, 6));
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<CollectionDetailsDto>(
+            '/collections/' + saved.collection!.id,
+            'PATCH',
+            { lastVolume: 15 },
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.body).toMatchObject({ lastVolume: 15, expectedTo: 15, missingCount: 9 });
+        expect(response.body.volumes.at(-1)).toMatchObject({ from: 7, to: 15, state: 'inferred' });
+    });
+    it('refuses a last volume under a saved volume', async () => {
+        const saved = await book(membership('Batman', 12));
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/collections/' + saved.collection!.id, 'PATCH', {
+            lastVolume: 5,
+        });
+
+        expect(response.status).toBe(409);
+        expect(response.body.reason).toBe('last-volume-below-saved');
+    });
+    it('empties the last volume', async () => {
+        const saved = await book(membership('Batman', 1, 6));
+        const client = await app.authenticatedClient(owner);
+
+        await client.call('/collections/' + saved.collection!.id, 'PATCH', { lastVolume: 15 });
+
+        const response = await client.call<CollectionDetailsDto>(
+            '/collections/' + saved.collection!.id,
+            'PATCH',
+            { lastVolume: null },
+        );
+
+        expect(response.body).toMatchObject({ lastVolume: null, expectedTo: 6, missingCount: 0 });
+    });
+    it('refuses a last volume that is not a whole number', async () => {
+        const saved = await book(membership('Batman', 1));
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/collections/' + saved.collection!.id, 'PATCH', {
+            lastVolume: 2.5,
+        });
+
+        expect(response.status).toBe(400);
+    });
     it('renames the collection for every member book', async () => {
         const saved = await book(membership('Batman', 1));
         const client = await app.authenticatedClient(owner);

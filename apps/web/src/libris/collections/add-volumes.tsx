@@ -37,7 +37,9 @@ export function AddVolumesDialog({
 }) {
     const { t } = useI18n();
     const action = useAction();
-    const [upTo, setUpTo] = useState('');
+    const [upTo, setUpTo] = useState(
+        collection.lastVolume === null ? '' : String(collection.lastVolume),
+    );
     const [outcome, setOutcome] = useState<string | null>(null);
     const searching = useRef<AbortController | null>(null);
     const close = () => {

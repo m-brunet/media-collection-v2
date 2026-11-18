@@ -296,6 +296,7 @@ export const en = {
     'leaf.collection.ownership': 'Ownership',
     'leaf.collection.missingTitle': 'Missing volumes',
     'leaf.collection.through': 'Through the highest saved volume: {volume}',
+    'leaf.collection.throughLast': 'Through the last volume: {volume}',
     'leaf.collection.notRegistered': 'Not registered',
     'leaf.collection.savedNotOwned': 'Saved · Not Owned',
     'leaf.collection.markOwned': 'Mark Owned',
@@ -839,6 +840,7 @@ export const en = {
     'collection.expectedOne': 'Expected coverage: volume {number}',
     'collection.expectedRange': 'Expected coverage: volumes {from}–{to}',
     'collection.facts': 'Includes volume 0: {zero} · Highest saved coverage: {highest}',
+    'collection.factsLast': 'Includes volume 0: {zero} · Last volume: {last}',
     'collection.on': 'On',
     'collection.off': 'Off',
     'collection.edit': 'Edit collection',
@@ -1047,6 +1049,10 @@ export const en = {
     'editCollection.name': 'Collection name',
     'editCollection.range': 'Expected range option',
     'editCollection.volumeZero': 'Includes volume 0',
+    'editCollection.lastVolume': 'Last volume',
+    'editCollection.lastVolumeHint':
+        'The number of the last volume of the series, if known. Leave it empty otherwise.',
+    'editCollection.lastVolumeInvalid': 'Enter the last volume as a whole number.',
     'editCollection.categoryHint': 'Every book of the collection has this category.',
     'editCollection.categoryChange':
         'The {count} books of the collection will change to {category}.',
@@ -1127,6 +1133,10 @@ export const en = {
     'reason.volumeInvalid': 'Enter whole volume numbers from 0 to 9999, the range going upwards.',
     'reason.volumeZeroInUse':
         'A saved book covers volume 0, so the collection must keep including it.',
+    'reason.lastVolumeBelowSaved':
+        'A book of this collection is saved past this volume, so the last volume cannot be lower.',
+    'reason.lastVolumeInvalid':
+        'Enter a last volume from the first volume of the collection to 9999.',
     'reason.collectionIncomplete':
         'Own every expected volume before marking this collection Finished.',
     'reason.replacementOutdated':

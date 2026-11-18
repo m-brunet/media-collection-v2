@@ -13,6 +13,8 @@ function shopping(overrides: Partial<CollectionShoppingDto> = {}): CollectionSho
         status: 'unfinished',
         expectedCount: 12,
         ownedCount: 4,
+        highestSaved: 12,
+        lastVolume: null,
         lastOwned: { volume: 4, title: null },
         missing: [
             { volume: 12, saved: true, quickAdd: { bookId: 'twelve', title: 'Batman Vol. 12' } },
@@ -183,4 +185,20 @@ it('says when the collection has been marked Finished meanwhile', async () => {
             'This collection is marked Finished, so it is no longer listed for shopping.',
         ),
     ).toBeInTheDocument();
+});
+
+it('says the missing volumes go through the highest saved volume', async () => {
+    withShopping(shopping());
+
+    open();
+
+    expect(await screen.findByText('Through the highest saved volume: 12')).toBeInTheDocument();
+});
+
+it('says the missing volumes go through the last volume of the collection when it is set', async () => {
+    withShopping(shopping({ lastVolume: 15 }));
+
+    open();
+
+    expect(await screen.findByText('Through the last volume: 15')).toBeInTheDocument();
 });

@@ -440,6 +440,7 @@ describe('BookCollectionMembership', () => {
                     category: 'comics',
                     includesVolumeZero: false,
                     status: 'unfinished',
+                    lastVolume: null,
                 },
             },
         ]);

@@ -25,16 +25,32 @@ function shopping(members: ShoppingMember[]) {
 }
 
 describe('CollectionShopping', () => {
-    it('lists saved Not Owned and inferred missing volumes, highest first', () => {
+    it('lists the saved Not Owned and inferred volumes after the last Owned one, rising', () => {
         const members = [book('one', 'owned', 1), book('four', 'not-owned', 4)];
 
         const result = shopping(members);
 
         expect(result.missing).toEqual([
-            { volume: 4, saved: true, quickAdd: { bookId: 'four', title: 'Title four' } },
-            { volume: 3, saved: false, quickAdd: null },
             { volume: 2, saved: false, quickAdd: null },
+            { volume: 3, saved: false, quickAdd: null },
+            { volume: 4, saved: true, quickAdd: { bookId: 'four', title: 'Title four' } },
         ]);
+    });
+
+    it('lists the gaps under the last Owned volume after the others, highest first', () => {
+        const members = [book('three', 'owned', 3), book('six', 'not-owned', 6)];
+
+        const result = shopping(members);
+
+        expect(result.missing.map((entry) => entry.volume)).toEqual([4, 5, 6, 2, 1]);
+    });
+
+    it('lists the volumes up to the last volume of the collection', () => {
+        const members = [book('one', 'owned', 1, 6)];
+
+        const result = CollectionShopping.of(CollectionCoverage.of(false, members, 9), members);
+
+        expect(result.missing.map((entry) => entry.volume)).toEqual([7, 8, 9]);
     });
 
     it('takes the last Owned volume from the end of an omnibus range', () => {
@@ -70,7 +86,7 @@ describe('CollectionShopping', () => {
         const result = shopping(members);
 
         expect(result.lastOwned).toBeNull();
-        expect(result.missing.map((entry) => entry.volume)).toEqual([3, 2, 1]);
+        expect(result.missing.map((entry) => entry.volume)).toEqual([1, 2, 3]);
     });
 
     it('counts a volume Owned twice only once', () => {
@@ -82,7 +98,7 @@ describe('CollectionShopping', () => {
 
         const result = shopping(members);
 
-        expect(result.missing.map((entry) => entry.volume)).toEqual([3, 2]);
+        expect(result.missing.map((entry) => entry.volume)).toEqual([2, 3]);
     });
 
     it('offers no quick add for a Not Owned omnibus', () => {
@@ -91,8 +107,8 @@ describe('CollectionShopping', () => {
         const result = shopping(members);
 
         expect(result.missing).toEqual([
-            { volume: 3, saved: true, quickAdd: null },
             { volume: 2, saved: true, quickAdd: null },
+            { volume: 3, saved: true, quickAdd: null },
         ]);
     });
 

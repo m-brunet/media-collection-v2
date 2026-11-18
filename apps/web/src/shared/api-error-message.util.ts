@@ -67,6 +67,8 @@ export class ApiErrorMessage {
         'title-missing': 'reason.titleMissing',
         'volume-invalid': 'reason.volumeInvalid',
         'volume-zero-in-use': 'reason.volumeZeroInUse',
+        'last-volume-below-saved': 'reason.lastVolumeBelowSaved',
+        'last-volume-invalid': 'reason.lastVolumeInvalid',
         'collection-category-mismatch': 'reason.collectionCategoryMismatch',
         'collection-incomplete': 'reason.collectionIncomplete',
         'replacement-outdated': 'reason.replacementOutdated',

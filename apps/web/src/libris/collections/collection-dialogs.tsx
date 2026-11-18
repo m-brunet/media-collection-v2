@@ -76,12 +76,17 @@ function EditCollectionForm({
     const { t } = useI18n();
     const [name, setName] = useState(collection.name);
     const [volumeZero, setVolumeZero] = useState(collection.includesVolumeZero);
+    const [lastVolume, setLastVolume] = useState(
+        collection.lastVolume === null ? '' : String(collection.lastVolume),
+    );
     const [category, setCategory] = useState<BookCategory>(collection.category);
     const action = useAction();
     const recategorised = category !== collection.category;
+    const last = lastVolume.trim() === '' ? null : Number(lastVolume.trim());
     const changes: CollectionChangesDto = {
         name,
         includesVolumeZero: volumeZero,
+        lastVolume: last,
         ...(recategorised ? { category } : {}),
     };
 
@@ -90,6 +95,13 @@ function EditCollectionForm({
             className="form"
             onSubmit={(event) => {
                 event.preventDefault();
+
+                if (last !== null && !Number.isInteger(last)) {
+                    action.fail('editCollection.lastVolumeInvalid');
+
+                    return;
+                }
+
                 void action.run(async () =>
                     onSaved(
                         await api.request<CollectionDetailsDto>('/collections/' + collection.id, {
@@ -146,6 +158,14 @@ function EditCollectionForm({
                     />
                     {t('editCollection.volumeZero')}
                 </label>
+                <TextField
+                    label={t('editCollection.lastVolume')}
+                    hint={t('editCollection.lastVolumeHint')}
+                    inputMode="numeric"
+                    maxLength={4}
+                    value={lastVolume}
+                    onChange={(event) => setLastVolume(event.target.value)}
+                />
             </fieldset>
             {action.feedback && <Notice tone="error">{action.feedback.text}</Notice>}
             <div className="actions">

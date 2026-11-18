@@ -2,8 +2,8 @@ import type { Collection } from '../domain/entities/collection.entity.js';
 
 export class CollectionSnapshot {
     static of(collection: Collection): Record<string, unknown> {
-        const { name, category, includesVolumeZero, status } = collection.snapshot;
+        const { name, category, includesVolumeZero, status, lastVolume } = collection.snapshot;
 
-        return { name, category, includesVolumeZero, status };
+        return { name, category, includesVolumeZero, status, lastVolume };
     }
 }
