@@ -64,6 +64,17 @@ export function useStatisticsSegments(statistics: StatisticsDto, category: BookC
                 detail: StatisticsFormat.number(statistics.collections.unfinished, locale),
                 color: 'var(--color-chart-2)',
             },
+            ...(statistics.collections.dropped > 0
+                ? [
+                      {
+                          key: 'dropped',
+                          label: t('statistics.dropped'),
+                          value: statistics.collections.dropped,
+                          detail: StatisticsFormat.number(statistics.collections.dropped, locale),
+                          color: 'var(--color-chart-track)',
+                      },
+                  ]
+                : []),
         ],
     };
 }

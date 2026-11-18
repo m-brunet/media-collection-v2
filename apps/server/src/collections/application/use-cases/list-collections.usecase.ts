@@ -4,6 +4,7 @@ import type { CollectionBookSearch } from '../ports/driven/collection-book-searc
 import type { CollectionMemberStore } from '../ports/driven/collection-member-store.interface.js';
 import type { CollectionRepository } from '../ports/driven/collection-repository.interface.js';
 import { CollectionViewer } from '../services/collection-viewer.service.js';
+import type { CollectionStatus } from '../../domain/entities/collection.entity.js';
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 
@@ -26,7 +27,7 @@ export class ListCollections implements ListCollectionsUseCase {
         const page = await this.collections.page({
             ids,
             categories: query.filter.categories,
-            finished: query.finished,
+            statuses: this.statuses(query),
             direction: query.direction,
             offset: query.offset,
             limit: query.limit,
@@ -44,5 +45,17 @@ export class ListCollections implements ListCollectionsUseCase {
                 ),
             ),
         };
+    }
+
+    private statuses(query: CollectionListQuery): readonly CollectionStatus[] | null {
+        if (query.dropped) {
+            return query.finished === null ? ['dropped'] : [];
+        }
+
+        if (query.finished === null) {
+            return null;
+        }
+
+        return [query.finished ? 'finished' : 'unfinished'];
     }
 }

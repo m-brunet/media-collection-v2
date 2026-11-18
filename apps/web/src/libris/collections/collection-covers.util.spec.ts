@@ -27,7 +27,7 @@ function collection(volumes: CollectionDetailsDto['volumes']): CollectionDetails
         name: 'Gunnm',
         category: 'comics',
         includesVolumeZero: false,
-        finished: false,
+        status: 'unfinished',
         bookCount: 4,
         expectedFrom: 1,
         expectedTo: 7,

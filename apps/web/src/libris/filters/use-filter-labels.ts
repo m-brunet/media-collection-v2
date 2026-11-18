@@ -86,6 +86,8 @@ export function useFilterLabels(filter: Filter) {
                     return t('filters.include', { name: tag() });
                 case 'notTag':
                     return t('filters.exclude', { name: tag() });
+                case 'dropped':
+                    return t('filters.dropped');
             }
         },
         [t, tags, bookcases, authors, collections],

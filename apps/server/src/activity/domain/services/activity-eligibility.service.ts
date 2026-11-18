@@ -13,6 +13,8 @@ export class ActivityEligibility {
         'collection.updated',
         'collection.finished',
         'collection.reopened',
+        'collection.dropped',
+        'collection.resumed',
         'collection.deleted',
         'collection.removed',
         'collection.volumes-added',

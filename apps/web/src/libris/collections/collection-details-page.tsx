@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 import type {
     CollectionDetailsDto,
     CollectionReadingDto,
+    CollectionStatus,
 } from '../../../../../packages/contracts/src/http';
 import { api, ApiError } from '../../shared/api.util';
 import { ApiErrorMessage } from '../../shared/api-error-message.util';
@@ -157,29 +158,33 @@ function BlockedButton({
     );
 }
 
-function StatusLabel({ finished }: { finished: boolean }) {
+const statusHints: Partial<Record<CollectionStatus, MessageKey>> = {
+    finished: 'collection.finishedHint',
+    dropped: 'collection.droppedHint',
+};
+
+function StatusLabel({ status }: { status: CollectionStatus }) {
     const { t } = useI18n();
-    const tooltip = useTooltip(finished);
-    const label = CollectionFormat.label(finished);
+    const hint = statusHints[status];
+    const tooltip = useTooltip(hint !== undefined);
+    const label = CollectionFormat.label(status);
 
     return (
-        <span className="collection-tip" {...(finished ? tooltip.anchor : {})}>
+        <span className="collection-tip" {...(hint ? tooltip.anchor : {})}>
             <span
-                className={
-                    'collection-label collection-label--' + (finished ? 'finished' : 'unfinished')
-                }
-                {...(finished ? { tabIndex: 0, ...tooltip.trigger } : {})}
+                className={'collection-label collection-label--' + status}
+                {...(hint ? { tabIndex: 0, ...tooltip.trigger } : {})}
             >
                 {t(label.key)}
             </span>
-            {finished && (
+            {hint && (
                 <span
                     role="tooltip"
                     id={tooltip.id}
                     className="collection-tip__text"
                     hidden={!tooltip.open}
                 >
-                    {t('collection.finishedHint')}
+                    {t(hint)}
                 </span>
             )}
         </span>
@@ -241,8 +246,9 @@ export function CollectionDetailsPage() {
 
     const coverage = CollectionFormat.coverage(collection);
     const expected = CollectionFormat.expected(collection);
-    const blocked = !collection.finished && collection.missingCount > 0;
-    const change = (path: 'finish' | 'reopen') =>
+    const { status } = collection;
+    const blocked = collection.missingCount > 0;
+    const change = (path: 'finish' | 'reopen' | 'drop' | 'resume') =>
         void action.run(async () =>
             setCollection(
                 await api.request<CollectionDetailsDto>(
@@ -256,7 +262,7 @@ export function CollectionDetailsPage() {
         <>
             <PageHeader
                 title={collection.name}
-                label={<StatusLabel finished={collection.finished} />}
+                label={<StatusLabel status={status} />}
                 breadcrumb={
                     <nav aria-label={t('details.breadcrumb')} className="breadcrumb">
                         <Link to="/collections">{t('collections.title')}</Link>
@@ -324,8 +330,12 @@ export function CollectionDetailsPage() {
                             )}
                             {!batching && !review && (
                                 <BlockedButton
-                                    blocked={collection.finished}
-                                    reason="volumes.addUnavailable"
+                                    blocked={status !== 'unfinished'}
+                                    reason={
+                                        status === 'dropped'
+                                            ? 'volumes.addUnavailableDropped'
+                                            : 'volumes.addUnavailable'
+                                    }
                                     onClick={() => {
                                         setReport(null);
                                         setSearching(true);
@@ -334,23 +344,42 @@ export function CollectionDetailsPage() {
                                     {t('volumes.add')}
                                 </BlockedButton>
                             )}
-                            {!batching &&
-                                (collection.finished ? (
-                                    <Button busy={action.busy} onClick={() => change('reopen')}>
-                                        {t('collection.reopen')}
-                                    </Button>
-                                ) : (
-                                    <BlockedButton
-                                        blocked={blocked}
-                                        reason="collection.finishUnavailable"
-                                        end
-                                        icon="check"
-                                        busy={action.busy}
-                                        onClick={() => change('finish')}
-                                    >
-                                        {t('collection.finish')}
-                                    </BlockedButton>
-                                ))}
+                            {!batching && status === 'finished' && (
+                                <Button busy={action.busy} onClick={() => change('reopen')}>
+                                    {t('collection.reopen')}
+                                </Button>
+                            )}
+                            {!batching && status === 'unfinished' && (
+                                <Button busy={action.busy} onClick={() => change('drop')}>
+                                    {t('collection.drop')}
+                                </Button>
+                            )}
+                            {!batching && status === 'dropped' && (
+                                <Button busy={action.busy} onClick={() => change('resume')}>
+                                    {t('collection.resume')}
+                                </Button>
+                            )}
+                            {!batching && status === 'unfinished' && (
+                                <BlockedButton
+                                    blocked={blocked}
+                                    reason="collection.finishUnavailable"
+                                    end
+                                    icon="check"
+                                    busy={action.busy}
+                                    onClick={() => change('finish')}
+                                >
+                                    {t('collection.finish')}
+                                </BlockedButton>
+                            )}
+                            {!batching && status === 'dropped' && !blocked && (
+                                <Button
+                                    icon="check"
+                                    busy={action.busy}
+                                    onClick={() => change('finish')}
+                                >
+                                    {t('collection.finish')}
+                                </Button>
+                            )}
                         </div>
                     )}
                 </div>

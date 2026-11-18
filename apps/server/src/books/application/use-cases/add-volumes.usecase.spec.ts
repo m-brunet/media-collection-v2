@@ -118,7 +118,7 @@ describe('AddVolumes', () => {
     it('refuses a Finished collection and adds nothing', async () => {
         const { current, anchor, collectionId } = await gunnm();
 
-        current.collections.finished.add(collectionId);
+        current.collections.statuses.set(collectionId, 'finished');
 
         const result = useCase(current).execute(owner, {
             collectionId,
@@ -129,6 +129,24 @@ describe('AddVolumes', () => {
         await expect(result).rejects.toMatchObject({
             code: 'conflict',
             reason: 'collection-finished',
+        });
+        expect(await current.books.findByIsbn('9782723434324')).toBeNull();
+    });
+
+    it('refuses a Dropped collection and adds nothing', async () => {
+        const { current, anchor, collectionId } = await gunnm();
+
+        current.collections.statuses.set(collectionId, 'dropped');
+
+        const result = useCase(current).execute(owner, {
+            collectionId,
+            anchorBookId: anchor.id,
+            volumes: [row(2, '9782723434324')],
+        });
+
+        await expect(result).rejects.toMatchObject({
+            code: 'conflict',
+            reason: 'collection-dropped',
         });
         expect(await current.books.findByIsbn('9782723434324')).toBeNull();
     });

@@ -30,6 +30,8 @@ export type NamedEventKind =
     | 'collection-updated'
     | 'collection-finished'
     | 'collection-reopened'
+    | 'collection-dropped'
+    | 'collection-resumed'
     | 'collection-deleted'
     | 'collection-removed'
     | 'bookcase-created'
@@ -95,6 +97,7 @@ export class ActivityProjection {
         [
             'collection.deleted',
             'collection.finished',
+            'collection.dropped',
             'bookcase.created',
             'bookcase.renamed',
             'bookcase.deleted',
@@ -109,6 +112,7 @@ export class ActivityProjection {
         [
             'collection.updated',
             'collection.reopened',
+            'collection.resumed',
             'collection.created',
             'collection.removed',
             'tag.created',
@@ -238,6 +242,10 @@ export class ActivityProjection {
                 return ActivityProjection.named('collection-finished', current);
             case 'collection.reopened':
                 return ActivityProjection.named('collection-reopened', current);
+            case 'collection.dropped':
+                return ActivityProjection.named('collection-dropped', current);
+            case 'collection.resumed':
+                return ActivityProjection.named('collection-resumed', current);
             case 'collection.deleted':
                 return ActivityProjection.named('collection-deleted', current);
             case 'collection.removed':

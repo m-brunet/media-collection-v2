@@ -20,7 +20,7 @@ describe('CollectionVolumeReader', () => {
             id: 'collection-1',
             name: 'Gunnm',
             category: 'comics',
-            finished: false,
+            status: 'unfinished',
             members: [
                 { bookId: 'one', volumeFrom: 1, volumeTo: 1, isbn: null },
                 { bookId: 'two', volumeFrom: 2, volumeTo: 2, isbn: '9782344017524' },

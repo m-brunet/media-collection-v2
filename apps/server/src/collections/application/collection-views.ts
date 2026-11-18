@@ -4,13 +4,14 @@ import type {
 } from '../domain/services/collection-shopping.service.js';
 import type { VolumeState } from '../domain/value-objects/collection-coverage.value-object.js';
 import type { BookFilter } from '../../shared/application/book-filter.js';
+import type { CollectionStatus } from '../domain/entities/collection.entity.js';
 
 export interface CollectionSummaryView {
     id: string;
     name: string;
     category: 'books' | 'manga' | 'comics';
     includesVolumeZero: boolean;
-    finished: boolean;
+    status: CollectionStatus;
     bookCount: number;
     expectedFrom: number;
     expectedTo: number;
@@ -54,6 +55,7 @@ export interface CollectionDetailsView extends CollectionSummaryView {
 export interface CollectionListQuery {
     search: string;
     finished: boolean | null;
+    dropped: boolean;
     filter: BookFilter;
     direction: 'asc' | 'desc';
     offset: number;
@@ -90,7 +92,7 @@ export interface ShoppingCollectionView {
 export interface CollectionShoppingView {
     id: string;
     name: string;
-    finished: boolean;
+    status: CollectionStatus;
     expectedCount: number;
     ownedCount: number;
     lastOwned: LastOwnedVolume | null;

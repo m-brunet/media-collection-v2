@@ -41,7 +41,7 @@ function batman(overrides: Partial<CollectionDetailsDto> = {}): CollectionDetail
         name: 'Batman',
         category: 'comics',
         includesVolumeZero: false,
-        finished: false,
+        status: 'unfinished',
         bookCount: 3,
         expectedFrom: 1,
         expectedTo: 12,
@@ -205,7 +205,7 @@ it('labels an unfinished collection Unfinished by its name', async () => {
 it('labels a Finished collection Finished by its name', async () => {
     new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
         status: 200,
-        body: batman({ finished: true, missingCount: 0 }),
+        body: batman({ status: 'finished', missingCount: 0 }),
     }));
 
     show();
@@ -228,7 +228,7 @@ it('labels a Finished collection Finished by its name', async () => {
 it('explains what Finished means on hover of the Finished label', async () => {
     new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
         status: 200,
-        body: batman({ finished: true, missingCount: 0 }),
+        body: batman({ status: 'finished', missingCount: 0 }),
     }));
     show();
     const label = await screen.findByText('Finished');
@@ -243,7 +243,7 @@ it('explains what Finished means on hover of the Finished label', async () => {
 it('explains what Finished means when the Finished label has keyboard focus', async () => {
     new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
         status: 200,
-        body: batman({ finished: true, missingCount: 0 }),
+        body: batman({ status: 'finished', missingCount: 0 }),
     }));
     show();
     const label = await screen.findByText('Finished');
@@ -351,7 +351,7 @@ it('marks a complete collection Finished', async () => {
         .on('GET /collections/c1', () => ({ status: 200, body: complete }))
         .on('POST /collections/c1/finish', () => ({
             status: 200,
-            body: { ...complete, finished: true },
+            body: { ...complete, status: 'finished' },
         }));
 
     show();
@@ -1372,7 +1372,7 @@ it('offers Add volumes on an unfinished collection', async () => {
 it('keeps Add volumes disabled on a Finished collection, saying why', async () => {
     new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
         status: 200,
-        body: batman({ finished: true, missingCount: 0 }),
+        body: batman({ status: 'finished', missingCount: 0 }),
     }));
 
     show();
@@ -1388,7 +1388,7 @@ it('keeps Add volumes disabled on a Finished collection, saying why', async () =
 it('does not search for volumes from a disabled Add volumes', async () => {
     const api = new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
         status: 200,
-        body: batman({ finished: true, missingCount: 0 }),
+        body: batman({ status: 'finished', missingCount: 0 }),
     }));
 
     show();
@@ -1406,11 +1406,11 @@ it('enables Add volumes again once the collection is reopened', async () => {
         .signedIn(account())
         .on('GET /collections/c1', () => ({
             status: 200,
-            body: batman({ finished: true, missingCount: 0 }),
+            body: batman({ status: 'finished', missingCount: 0 }),
         }))
         .on('POST /collections/c1/reopen', () => ({
             status: 200,
-            body: batman({ finished: false, missingCount: 0 }),
+            body: batman({ status: 'unfinished', missingCount: 0 }),
         }));
     show();
 
@@ -1457,4 +1457,120 @@ it('keeps the collection actions hidden after a failed save', async () => {
 
     expect(await within(review).findByRole('alert')).toBeInTheDocument();
     expect(actions()).toEqual([null, null, null, null]);
+});
+
+it('labels a dropped collection Dropped by its name', async () => {
+    new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
+        status: 200,
+        body: batman({ status: 'dropped' }),
+    }));
+
+    show();
+
+    const label = await screen.findByText('Dropped');
+
+    expect(label).toHaveClass('collection-label--dropped');
+    expect(label).toHaveAccessibleDescription(
+        'Dropped collections remain on desktop and are hidden from mobile shopping.',
+    );
+    expect(screen.getByText('9 missing')).toBeInTheDocument();
+});
+
+it('drops an unfinished collection with missing volumes', async () => {
+    const api = new FakeApi()
+        .signedIn(account())
+        .on('GET /collections/c1', () => ({ status: 200, body: batman() }))
+        .on('POST /collections/c1/drop', () => ({
+            status: 200,
+            body: batman({ status: 'dropped' }),
+        }));
+
+    show();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Drop collection' }));
+
+    expect(await screen.findByText('Dropped')).toHaveClass('collection-label--dropped');
+    expect(api.calls.some((call) => call.route === 'POST /collections/c1/drop')).toBe(true);
+});
+
+it('offers no Drop collection on a Finished collection', async () => {
+    new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
+        status: 200,
+        body: batman({ status: 'finished', missingCount: 0 }),
+    }));
+
+    show();
+
+    await screen.findByRole('button', { name: 'Reopen collection' });
+    expect(screen.queryByRole('button', { name: 'Drop collection' })).not.toBeInTheDocument();
+});
+
+it('resumes a dropped collection', async () => {
+    new FakeApi()
+        .signedIn(account())
+        .on('GET /collections/c1', () => ({
+            status: 200,
+            body: batman({ status: 'dropped' }),
+        }))
+        .on('POST /collections/c1/resume', () => ({ status: 200, body: batman() }));
+    show();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Resume collection' }));
+
+    expect(await screen.findByText('Unfinished')).toHaveClass('collection-label--unfinished');
+});
+
+it('offers Mark Finished on a dropped collection with every volume owned', async () => {
+    new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
+        status: 200,
+        body: batman({ status: 'dropped', missingCount: 0 }),
+    }));
+
+    show();
+
+    expect(await screen.findByRole('button', { name: 'Mark Finished' })).not.toHaveAttribute(
+        'aria-disabled',
+    );
+});
+
+it('offers no Mark Finished on a dropped collection with missing volumes', async () => {
+    new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
+        status: 200,
+        body: batman({ status: 'dropped' }),
+    }));
+
+    show();
+
+    await screen.findByRole('button', { name: 'Resume collection' });
+    expect(screen.queryByRole('button', { name: 'Mark Finished' })).not.toBeInTheDocument();
+});
+
+it('keeps Add volumes disabled on a dropped collection, saying why', async () => {
+    new FakeApi().signedIn(account()).on('GET /collections/c1', () => ({
+        status: 200,
+        body: batman({ status: 'dropped' }),
+    }));
+
+    show();
+
+    const add = await screen.findByRole('button', { name: 'Add volumes' });
+
+    expect(add).toHaveAttribute('aria-disabled', 'true');
+    expect(add).toHaveAccessibleDescription('Resume the collection before adding volumes.');
+});
+
+it('shows a Guest the Dropped label without the status actions', async () => {
+    new FakeApi().signedIn(account({ role: 'guest' })).on('GET /collections/c1', () => ({
+        status: 200,
+        body: batman({ status: 'dropped' }),
+    }));
+
+    show();
+
+    await screen.findByText('Dropped');
+    expect(
+        ['Resume collection', 'Drop collection', 'Mark Finished'].map((name) =>
+            screen.queryByRole('button', { name }),
+        ),
+    ).toEqual([null, null, null]);
 });

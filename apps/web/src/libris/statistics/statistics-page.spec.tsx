@@ -97,6 +97,34 @@ it('shows the reading and the collections', async () => {
         expect.stringContaining('Finished14Unfinished24187 volumes missing in total.'),
     ]);
 });
+it('shows the dropped collections with the two others', async () => {
+    library(
+        statistics({
+            collections: { finished: 14, unfinished: 23, dropped: 1, missingVolumes: 180 },
+        }),
+    );
+
+    show();
+
+    await screen.findByRole('heading', { name: 'Collections' });
+
+    expect(card('Collections').textContent).toContain(
+        'Finished14Unfinished23Dropped1180 volumes missing in total.',
+    );
+});
+it('counts the dropped collections among the collections of the owned books', async () => {
+    library(
+        statistics({
+            collections: { finished: 14, unfinished: 23, dropped: 1, missingVolumes: 180 },
+        }),
+    );
+
+    show();
+
+    await screen.findByRole('heading', { name: 'Owned books' });
+
+    expect(card('Owned books').textContent).toContain('in 38 collections');
+});
 it('leaves out the reading of a Guest', async () => {
     library(statistics({ reading: null }), 'guest');
 

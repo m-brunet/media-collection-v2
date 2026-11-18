@@ -220,6 +220,17 @@ describe('POST /api/collections/:id/missing-volumes/search', () => {
         expect([response.status, response.body.reason]).toEqual([409, 'collection-finished']);
     });
 
+    it('refuses a dropped collection, to be resumed first', async () => {
+        const first = await volume(1, '9782723432931');
+        const client = await app.authenticatedClient(owner);
+
+        await client.call('/collections/' + first.collection!.id + '/drop', 'POST');
+
+        const response = await client.call(search(first.collection!.id), 'POST', { upTo: 5 });
+
+        expect([response.status, response.body.reason]).toEqual([409, 'collection-dropped']);
+    });
+
     it('refuses a Guest', async () => {
         const first = await volume(1, '9782723432931');
         const client = await app.authenticatedClient(guest);

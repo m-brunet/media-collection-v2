@@ -21,11 +21,11 @@ describe('FinishCollection', () => {
 
         const result = await subject(current).execute(owner, 'collection-1');
 
-        expect(result.finished).toBe(true);
+        expect(result.status).toBe('finished');
         expect(current.trail.entries[0]).toMatchObject({
             category: 'collection.finished',
             outcome: 'successful',
-            after: { finished: true },
+            after: { status: 'finished' },
         });
     });
 

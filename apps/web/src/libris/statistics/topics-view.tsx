@@ -108,8 +108,8 @@ function useTopics(statistics: StatisticsDto, category: BookCategory | null): To
     const { reading, publishers, authors } = statistics;
     const publisher = publishers.byBooks[0];
     const author = authors.byBooks[0];
-    const { finished, unfinished, missingVolumes } = statistics.collections;
-    const collections = finished + unfinished;
+    const { finished, missingVolumes } = statistics.collections;
+    const collections = StatisticsFormat.collections(statistics);
 
     return [
         {

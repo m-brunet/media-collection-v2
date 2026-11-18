@@ -45,6 +45,8 @@ const icons: Record<ActivityEntryDto['event']['kind'], IconName> = {
     'volumes-added': 'collections',
     'collection-finished': 'collections',
     'collection-reopened': 'collections',
+    'collection-dropped': 'collections',
+    'collection-resumed': 'collections',
     'collection-deleted': 'collections',
     'collection-removed': 'collections',
     'bookcase-created': 'bookshelves',

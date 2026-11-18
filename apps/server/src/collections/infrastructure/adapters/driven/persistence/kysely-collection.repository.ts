@@ -47,7 +47,7 @@ export class KyselyCollectionRepository implements CollectionRepository {
     }
 
     async page(query: CollectionPageQuery): Promise<{ total: number; collections: Collection[] }> {
-        if (query.ids?.length === 0) {
+        if (query.ids?.length === 0 || query.statuses?.length === 0) {
             return { total: 0, collections: [] };
         }
 
@@ -56,9 +56,9 @@ export class KyselyCollectionRepository implements CollectionRepository {
         const categorised =
             query.categories.length === 0 ? found : found.where('category', 'in', query.categories);
         const selected =
-            query.finished === null
+            query.statuses === null
                 ? categorised
-                : categorised.where('finished', '=', Number(query.finished));
+                : categorised.where('status', 'in', query.statuses);
         const counted = await selected
             .select((eb) => eb.fn.countAll<number>().as('total'))
             .executeTakeFirstOrThrow();
@@ -103,7 +103,7 @@ export class KyselyCollectionRepository implements CollectionRepository {
             name: row.name,
             category: row.category,
             includesVolumeZero: Boolean(row.includes_volume_zero),
-            finished: Boolean(row.finished),
+            status: row.status,
             createdAt: row.created_at,
             updatedAt: row.updated_at,
         });
@@ -118,7 +118,7 @@ export class KyselyCollectionRepository implements CollectionRepository {
             name_key: collection.key,
             category: state.category,
             includes_volume_zero: Number(state.includesVolumeZero),
-            finished: Number(state.finished),
+            status: state.status,
             created_at: state.createdAt,
             updated_at: state.updatedAt,
         };

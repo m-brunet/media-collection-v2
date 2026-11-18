@@ -77,6 +77,24 @@ async function withCover(saved: BookDto) {
     return response.body;
 }
 
+async function dropped(saved: BookDto) {
+    const client = await app.authenticatedClient(owner);
+    const response = await client.call('/collections/' + saved.collection!.id + '/drop', 'POST');
+
+    if (response.status !== 200) {
+        throw new Error('Arranging the scenario failed: ' + response.text);
+    }
+}
+
+async function resumed(saved: BookDto) {
+    const client = await app.authenticatedClient(owner);
+    const response = await client.call('/collections/' + saved.collection!.id + '/resume', 'POST');
+
+    if (response.status !== 200) {
+        throw new Error('Arranging the scenario failed: ' + response.text);
+    }
+}
+
 async function finished(saved: BookDto) {
     const client = await app.authenticatedClient(owner);
     const response = await client.call('/collections/' + saved.collection!.id + '/finish', 'POST');
@@ -104,7 +122,7 @@ describe('GET /api/collections', () => {
             ownedCount: 3,
             missingCount: 9,
             lastOwned: 3,
-            finished: false,
+            status: 'unfinished',
         });
     });
     it('previews the covers of owned books before the others', async () => {
@@ -286,6 +304,16 @@ describe('GET /api/collections/shopping', () => {
         expect(response.status).toBe(200);
         expect(response.body).toEqual([]);
     });
+    it('hides Dropped collections', async () => {
+        await book(membership('Tintin', 1));
+        await dropped(await book(membership('Batman', 4)));
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<ShoppingCollectionDto[]>('/collections/shopping');
+
+        expect(response.status).toBe(200);
+        expect(response.body.map((collection) => collection.name)).toEqual(['Tintin']);
+    });
     it('refuses a Guest', async () => {
         const client = await app.authenticatedClient(guest);
 
@@ -320,7 +348,7 @@ describe('GET /api/collections/:id/shopping', () => {
         expect(response.body).toEqual({
             id: planned.collection!.id,
             name: 'Dune',
-            finished: false,
+            status: 'unfinished',
             expectedCount: 3,
             ownedCount: 1,
             lastOwned: { volume: 1, title: 'Dune' },
@@ -348,6 +376,19 @@ describe('GET /api/collections/:id/shopping', () => {
             { volume: 2, saved: true, quickAdd: null },
             { volume: 1, saved: true, quickAdd: null },
         ]);
+    });
+    it('tells that a collection is Dropped', async () => {
+        const saved = await book(membership('Batman', 2));
+
+        await dropped(saved);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<CollectionShoppingDto>(
+            '/collections/' + saved.collection!.id + '/shopping',
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.body.status).toBe('dropped');
     });
     it('refuses a Guest', async () => {
         const saved = await book(membership('Batman', 1));
@@ -524,7 +565,7 @@ describe('POST /api/collections/:id/finish', () => {
         );
 
         expect(response.status).toBe(200);
-        expect(response.body.finished).toBe(true);
+        expect(response.body.status).toBe('finished');
     });
     it('refuses while a volume is missing', async () => {
         const saved = await book(membership('Batman', 2));
@@ -537,6 +578,20 @@ describe('POST /api/collections/:id/finish', () => {
 
         expect(response.status).toBe(409);
         expect(response.body.reason).toBe('collection-incomplete');
+    });
+    it('marks a complete Dropped collection Finished', async () => {
+        const saved = await book(membership('Batman', 1, 3));
+
+        await dropped(saved);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<CollectionDetailsDto>(
+            '/collections/' + saved.collection!.id + '/finish',
+            'POST',
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.body.status).toBe('finished');
     });
     it('refuses a Guest', async () => {
         const saved = await book(membership('Batman', 1));
@@ -575,7 +630,7 @@ describe('POST /api/collections/:id/reopen', () => {
         );
 
         expect(response.status).toBe(200);
-        expect(response.body.finished).toBe(false);
+        expect(response.body.status).toBe('unfinished');
     });
     it('refuses a Guest', async () => {
         const saved = await book(membership('Batman', 1));
@@ -593,6 +648,147 @@ describe('POST /api/collections/:id/reopen', () => {
 
         const response = await client.call(
             '/collections/' + crypto.randomUUID() + '/reopen',
+            'POST',
+        );
+
+        expect(response.status).toBe(404);
+        expect(response.body.reason).toBe('collection-missing');
+    });
+});
+
+describe('POST /api/collections/:id/drop', () => {
+    it('drops an unfinished collection with missing volumes', async () => {
+        const saved = await book(membership('Batman', 4));
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<CollectionDetailsDto>(
+            '/collections/' + saved.collection!.id + '/drop',
+            'POST',
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.body).toMatchObject({ status: 'dropped', missingCount: 3 });
+    });
+    it('records the drop in the activity', async () => {
+        const saved = await book(membership('Batman', 4));
+
+        await dropped(saved);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<ActivityPageDto>('/activity');
+
+        expect(response.body.entries.map((entry) => entry.event)).toContainEqual({
+            kind: 'collection-dropped',
+            name: 'Batman',
+        });
+    });
+    it('keeps a Dropped collection Dropped when a book is added to it', async () => {
+        const saved = await book(membership('Batman', 4));
+
+        await dropped(saved);
+        await book(membership('Batman', 2));
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<CollectionDetailsDto>(
+            '/collections/' + saved.collection!.id,
+        );
+
+        expect(response.body).toMatchObject({ status: 'dropped', missingCount: 2 });
+    });
+    it('refuses a Finished collection', async () => {
+        const saved = await book(membership('Batman', 1));
+
+        await finished(saved);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call(
+            '/collections/' + saved.collection!.id + '/drop',
+            'POST',
+        );
+
+        expect(response.status).toBe(409);
+        expect(response.body.reason).toBe('collection-finished');
+    });
+    it('refuses a Guest', async () => {
+        const saved = await book(membership('Batman', 2));
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call(
+            '/collections/' + saved.collection!.id + '/drop',
+            'POST',
+        );
+
+        expect(response.status).toBe(403);
+    });
+    it('reports an unknown collection', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/collections/' + crypto.randomUUID() + '/drop', 'POST');
+
+        expect(response.status).toBe(404);
+        expect(response.body.reason).toBe('collection-missing');
+    });
+});
+
+describe('POST /api/collections/:id/resume', () => {
+    it('puts a Dropped collection back to Unfinished', async () => {
+        const saved = await book(membership('Batman', 4));
+
+        await dropped(saved);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<CollectionDetailsDto>(
+            '/collections/' + saved.collection!.id + '/resume',
+            'POST',
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.body.status).toBe('unfinished');
+    });
+    it('records the resume in the activity', async () => {
+        const saved = await book(membership('Batman', 4));
+
+        await dropped(saved);
+        await resumed(saved);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<ActivityPageDto>('/activity');
+
+        expect(response.body.entries.map((entry) => entry.event)).toContainEqual({
+            kind: 'collection-resumed',
+            name: 'Batman',
+        });
+    });
+    it('refuses a collection that is not Dropped', async () => {
+        const saved = await book(membership('Batman', 4));
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call(
+            '/collections/' + saved.collection!.id + '/resume',
+            'POST',
+        );
+
+        expect(response.status).toBe(409);
+        expect(response.body.reason).toBe('collection-not-dropped');
+    });
+    it('refuses a Guest', async () => {
+        const saved = await book(membership('Batman', 2));
+
+        await dropped(saved);
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call(
+            '/collections/' + saved.collection!.id + '/resume',
+            'POST',
+        );
+
+        expect(response.status).toBe(403);
+    });
+    it('reports an unknown collection', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call(
+            '/collections/' + crypto.randomUUID() + '/resume',
             'POST',
         );
 
@@ -729,6 +925,57 @@ describe('GET /api/collections with filters', () => {
         const response = await client.call<CollectionListPageDto>('/collections?finished=false');
 
         expect(response.body.items.map((item) => item.name)).toEqual(['Dune']);
+    });
+    it('leaves the Dropped collections out of the unfinished ones', async () => {
+        await book(membership('Batman', 1));
+        await dropped(await book(membership('Dune', 2)));
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<CollectionListPageDto>('/collections?finished=false');
+
+        expect(response.body.items.map((item) => item.name)).toEqual(['Batman']);
+    });
+    it('keeps the Dropped collections among all of them', async () => {
+        await book(membership('Batman', 1));
+        await dropped(await book(membership('Dune', 2)));
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<CollectionListPageDto>('/collections');
+
+        expect(response.body.items.map((item) => [item.name, item.status])).toEqual([
+            ['Batman', 'unfinished'],
+            ['Dune', 'dropped'],
+        ]);
+    });
+    it('keeps only the Dropped collections for a Guest', async () => {
+        await book(membership('Batman', 1));
+        await dropped(await book(membership('Dune', 2)));
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call<CollectionListPageDto>('/collections?dropped=true');
+
+        expect([
+            response.status,
+            response.body.total,
+            response.body.items.map((item) => item.name),
+        ]).toEqual([200, 1, ['Dune']]);
+    });
+    it('finds nothing when Dropped is asked with a toolbar status', async () => {
+        await dropped(await book(membership('Dune', 2)));
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<CollectionListPageDto>(
+            '/collections?dropped=true&finished=false',
+        );
+
+        expect([response.status, response.body.total]).toEqual([200, 0]);
+    });
+    it('refuses another Dropped value', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/collections?dropped=false');
+
+        expect(response.status).toBe(400);
     });
     it('combines the status with the category and the book criteria', async () => {
         const naruto = await book(membership('Naruto', 1), { category: 'manga' });

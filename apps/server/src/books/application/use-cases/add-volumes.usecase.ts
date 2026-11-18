@@ -19,6 +19,7 @@ import { Isbn } from '../../domain/value-objects/isbn.value-object.js';
 import type { RelatedChange } from '../../../shared/application/ports/driven/audit-entry.interface.js';
 import type { IdGenerator } from '../../../shared/application/ports/driven/id-generator.interface.js';
 import type { AuditedOperation } from '../../../shared/application/services/audited-operation.service.js';
+import { VolumeAdmission } from '../volume-admission.helper.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
@@ -50,13 +51,7 @@ export class AddVolumes implements AddVolumesUseCase {
                 const highest = Math.max(0, ...request.volumes.map((volume) => volume.volume));
                 const collection = await this.collections.of(request.collectionId, highest);
 
-                if (collection.finished) {
-                    throw new Failure(
-                        'conflict',
-                        'Mark the collection unfinished before adding volumes.',
-                        'collection-finished',
-                    );
-                }
+                VolumeAdmission.ensureOpen(collection);
 
                 Failure.ensure(
                     collection.members.some((member) => member.bookId === request.anchorBookId),

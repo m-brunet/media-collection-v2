@@ -1,4 +1,7 @@
-import type { CollectionSummaryDto } from '../../../../../packages/contracts/src/http';
+import type {
+    CollectionStatus as CollectionState,
+    CollectionSummaryDto,
+} from '../../../../../packages/contracts/src/http';
 import type { MessageKey } from '../../shared/i18n/catalog-en';
 import type { MessageValues } from '../../shared/i18n/translator.util';
 
@@ -44,8 +47,12 @@ export class CollectionFormat {
     }
 
     static status(collection: CollectionSummaryDto): Message {
-        if (collection.finished) {
+        if (collection.status === 'finished') {
             return { key: 'collections.finished' };
+        }
+
+        if (collection.status === 'dropped') {
+            return { key: 'collections.dropped' };
         }
 
         return collection.missingCount > 0
@@ -54,7 +61,7 @@ export class CollectionFormat {
     }
 
     static coverage(collection: CollectionSummaryDto): Message {
-        if (collection.finished) {
+        if (collection.status === 'finished') {
             return { key: 'collection.coverageComplete' };
         }
 
@@ -63,7 +70,13 @@ export class CollectionFormat {
             : { key: 'collection.coverageNoGaps' };
     }
 
-    static label(finished: boolean): Message {
-        return { key: finished ? 'collection.labelFinished' : 'collection.labelUnfinished' };
+    static label(status: CollectionState): Message {
+        return { key: CollectionFormat.labels[status] };
     }
+
+    private static readonly labels: Record<CollectionState, MessageKey> = {
+        unfinished: 'collection.labelUnfinished',
+        finished: 'collection.labelFinished',
+        dropped: 'collection.labelDropped',
+    };
 }

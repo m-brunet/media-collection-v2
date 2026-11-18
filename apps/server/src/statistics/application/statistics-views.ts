@@ -36,5 +36,5 @@ export type StatisticsView = BookTotals & {
         mostExpensive: BookRecord | null;
         biggestCollection: CollectionRecord | null;
     };
-    collections: { finished: number; unfinished: number; missingVolumes: number };
+    collections: { finished: number; unfinished: number; dropped: number; missingVolumes: number };
 };

@@ -8,7 +8,7 @@ function summary(overrides: Partial<CollectionSummaryDto> = {}): CollectionSumma
         name: 'Batman',
         category: 'comics',
         includesVolumeZero: false,
-        finished: false,
+        status: 'unfinished',
         bookCount: 1,
         expectedFrom: 1,
         expectedTo: 12,
@@ -57,7 +57,7 @@ describe('CollectionFormat', () => {
         expect(result).toEqual({ key: 'collection.statusNoGaps' });
     });
     it('shows a Finished collection as complete on its own page', () => {
-        const result = CollectionFormat.coverage(summary({ finished: true, missingCount: 0 }));
+        const result = CollectionFormat.coverage(summary({ status: 'finished', missingCount: 0 }));
 
         expect(result).toEqual({ key: 'collection.coverageComplete' });
     });
@@ -72,12 +72,27 @@ describe('CollectionFormat', () => {
         expect(result).toEqual({ key: 'collection.coverageNoGaps' });
     });
     it('labels a Finished collection Finished', () => {
-        const result = CollectionFormat.label(true);
+        const result = CollectionFormat.label('finished');
 
         expect(result).toEqual({ key: 'collection.labelFinished' });
     });
+    it('labels a dropped collection Dropped', () => {
+        const result = CollectionFormat.label('dropped');
+
+        expect(result).toEqual({ key: 'collection.labelDropped' });
+    });
+    it('says a dropped collection is Dropped on its card', () => {
+        const result = CollectionFormat.status(summary({ status: 'dropped', missingCount: 3 }));
+
+        expect(result).toEqual({ key: 'collections.dropped' });
+    });
+    it('counts the missing volumes on the page of a dropped collection', () => {
+        const result = CollectionFormat.coverage(summary({ status: 'dropped', missingCount: 3 }));
+
+        expect(result).toEqual({ key: 'collection.coverageMissing', values: { count: 3 } });
+    });
     it('labels an unfinished collection Unfinished', () => {
-        const result = CollectionFormat.label(false);
+        const result = CollectionFormat.label('unfinished');
 
         expect(result).toEqual({ key: 'collection.labelUnfinished' });
     });

@@ -22,11 +22,11 @@ describe('ReopenCollection', () => {
 
         const result = await subject(current).execute(owner, 'collection-1');
 
-        expect(result).toMatchObject({ finished: false, missingCount: 0 });
+        expect(result).toMatchObject({ status: 'unfinished', missingCount: 0 });
         expect(current.trail.entries[0]).toMatchObject({
             category: 'collection.reopened',
-            before: { finished: true },
-            after: { finished: false },
+            before: { status: 'finished' },
+            after: { status: 'unfinished' },
         });
     });
 

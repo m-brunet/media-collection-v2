@@ -16,7 +16,7 @@ export class CollectionViewer {
     static readonly previewCount = 3;
 
     summary(collection: Collection, records: readonly MemberRecord[]): CollectionSummaryView {
-        const { id, name, category, includesVolumeZero, finished } = collection.snapshot;
+        const { id, name, category, includesVolumeZero, status } = collection.snapshot;
         const coverage = collection.coverage(MemberCoverage.of(records));
 
         return {
@@ -24,7 +24,7 @@ export class CollectionViewer {
             name,
             category,
             includesVolumeZero,
-            finished,
+            status,
             bookCount: records.length,
             expectedFrom: coverage.start,
             expectedTo: coverage.highest ?? coverage.start,
@@ -66,13 +66,13 @@ export class CollectionViewer {
     }
 
     shopping(collection: Collection, records: readonly MemberRecord[]): CollectionShoppingView {
-        const { id, name, finished } = collection.snapshot;
+        const { id, name, status } = collection.snapshot;
         const coverage = collection.coverage(MemberCoverage.of(records));
 
         return {
             id,
             name,
-            finished,
+            status,
             expectedCount: coverage.expected,
             ownedCount: coverage.ownedVolumes,
             ...CollectionShopping.of(coverage, MemberCoverage.forShopping(records)),

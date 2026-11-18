@@ -172,6 +172,21 @@ export function FiltersPage({
                             )}
                         </div>
                         <TagFilter filter={filter} onChange={setFilter} />
+                        {collections && (
+                            <ChoiceField
+                                label={t('filters.collectionStatus')}
+                                hint={t('filters.droppedHint')}
+                                summary={
+                                    filter.dropped.length > 0
+                                        ? t('filters.dropped')
+                                        : t('filters.anyCollectionStatus')
+                                }
+                                options={[{ value: 'true', label: t('filters.dropped') }]}
+                                filter={filter}
+                                field="dropped"
+                                onChange={setFilter}
+                            />
+                        )}
                     </section>
                 </div>
                 <p className="muted">{t('filters.logic')}</p>

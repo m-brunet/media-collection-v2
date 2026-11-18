@@ -66,7 +66,9 @@ it('explains an empty list', async () => {
     renderRoute('/collections', { '/collections': <ShoppingListPage /> });
 
     expect(await screen.findByText('No unfinished collections')).toBeInTheDocument();
-    expect(screen.getByText('Finished collections are hidden here.')).toBeInTheDocument();
+    expect(
+        screen.getByText('Finished and dropped collections are hidden here.'),
+    ).toBeInTheDocument();
 });
 
 it('offers Retry when the collections cannot be loaded', async () => {

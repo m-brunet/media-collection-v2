@@ -23,7 +23,7 @@ describe('BookCollectionMembership', () => {
             name: 'Batman',
             category: 'comics',
             includesVolumeZero: false,
-            finished: false,
+            status: 'unfinished',
         });
     });
 
@@ -345,7 +345,9 @@ describe('BookCollectionMembership', () => {
             [],
         );
 
-        expect(current.collections.collections.get('collection-1')?.snapshot.finished).toBe(false);
+        expect(current.collections.collections.get('collection-1')?.snapshot.status).toBe(
+            'unfinished',
+        );
     });
 
     it('removes the collection its final book is moved out of', async () => {
@@ -437,7 +439,7 @@ describe('BookCollectionMembership', () => {
                     name: 'Batman',
                     category: 'comics',
                     includesVolumeZero: false,
-                    finished: false,
+                    status: 'unfinished',
                 },
             },
         ]);

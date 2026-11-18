@@ -260,8 +260,8 @@ describe('EditBooksInBatch', () => {
             category: 'collection.reopened',
             subjectType: 'collection',
             subjectId: 'collection-Gunnm',
-            before: { finished: true },
-            after: { finished: false },
+            before: { status: 'finished' },
+            after: { status: 'unfinished' },
         };
 
         current.collections.changes = [reopened];
@@ -506,8 +506,8 @@ describe('EditBooksInBatch', () => {
                 category: 'collection.reopened',
                 subjectType: 'collection',
                 subjectId: 'collection-Gunnm',
-                before: { finished: true },
-                after: { finished: false },
+                before: { status: 'finished' },
+                after: { status: 'unfinished' },
             };
 
             current.collections.changes = [reopened];

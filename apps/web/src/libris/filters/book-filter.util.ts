@@ -1,12 +1,12 @@
 import type {
     BookCategory,
-    BookFilterParams,
     BookOwnership,
+    CollectionFilterParams,
 } from '../../../../../packages/contracts/src/http';
 
-export type FilterKey = keyof BookFilterParams;
+export type FilterKey = keyof CollectionFilterParams;
 
-export type Filter = { [K in FilterKey]-?: NonNullable<BookFilterParams[K]> };
+export type Filter = { [K in FilterKey]-?: NonNullable<CollectionFilterParams[K]> };
 
 export interface FilterEntry {
     key: FilterKey;
@@ -34,6 +34,7 @@ export class BookFilter {
         'reading',
         'tag',
         'notTag',
+        'dropped',
     ];
 
     static empty(): Filter {
@@ -50,6 +51,7 @@ export class BookFilter {
             reading: [],
             tag: [],
             notTag: [],
+            dropped: [],
         };
     }
 
@@ -75,6 +77,7 @@ export class BookFilter {
             ),
             tag: all('tag'),
             notTag: all('notTag'),
+            dropped: all('dropped').filter((value): value is 'true' => value === 'true'),
         };
     }
 
@@ -150,7 +153,7 @@ export class BookFilter {
         return {
             ...filter,
             ...(options.guest ? { reading: [] } : {}),
-            ...(options.collections ? { collection: [] } : {}),
+            ...(options.collections ? { collection: [] } : { dropped: [] }),
         };
     }
 }

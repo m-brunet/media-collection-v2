@@ -757,7 +757,7 @@ describe('POST /api/books with a collection', () => {
                     name: 'Batman',
                     category: 'books',
                     includesVolumeZero: false,
-                    finished: false,
+                    status: 'unfinished',
                 },
             }),
         );
@@ -793,7 +793,7 @@ describe('PUT /api/books/:id with a collection', () => {
 
         expect(response.status).toBe(200);
         expect(await app.dependencies.library.collection(two.collection!.id)).toMatchObject({
-            finished: false,
+            status: 'unfinished',
             missingCount: 1,
         });
     });

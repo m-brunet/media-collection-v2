@@ -20,7 +20,7 @@ describe('CollectionUpkeep', () => {
                 name: 'Batman',
                 category: 'comics',
                 includesVolumeZero: false,
-                finished: false,
+                status: 'unfinished',
             },
             after: null,
         });
@@ -39,10 +39,12 @@ describe('CollectionUpkeep', () => {
 
         expect(outcome).toMatchObject({
             category: 'collection.reopened',
-            before: { finished: true },
-            after: { finished: false },
+            before: { status: 'finished' },
+            after: { status: 'unfinished' },
         });
-        expect(current.collections.collections.get('collection-1')?.snapshot.finished).toBe(false);
+        expect(current.collections.collections.get('collection-1')?.snapshot.status).toBe(
+            'unfinished',
+        );
     });
 
     it('keeps a Finished collection whose highest volume was removed', async () => {
@@ -56,6 +58,24 @@ describe('CollectionUpkeep', () => {
         const outcome = await current.upkeep.tidy('collection-1', now);
 
         expect(outcome).toBeNull();
-        expect(current.collections.collections.get('collection-1')?.snapshot.finished).toBe(true);
+        expect(current.collections.collections.get('collection-1')?.snapshot.status).toBe(
+            'finished',
+        );
+    });
+
+    it('keeps a Dropped collection left with a missing volume', async () => {
+        const current = CollectionDoubles.shelf();
+
+        await CollectionDoubles.member(current, 'one', 'owned', 'Batman', 1);
+        await CollectionDoubles.member(current, 'two', 'owned', 'Batman', 2);
+        await CollectionDoubles.markDropped(current, 'collection-1');
+        await current.members.remove('one');
+
+        const outcome = await current.upkeep.tidy('collection-1', now);
+
+        expect(outcome).toBeNull();
+        expect(current.collections.collections.get('collection-1')?.snapshot.status).toBe(
+            'dropped',
+        );
     });
 });

@@ -57,6 +57,18 @@ describe('ListShoppingCollections', () => {
         expect(result).toEqual([]);
     });
 
+    it('hides Dropped collections', async () => {
+        const current = CollectionDoubles.shelf();
+
+        await CollectionDoubles.member(current, 'one', 'owned', 'Dune', 2);
+        await CollectionDoubles.member(current, 'two', 'owned', 'Batman', 1);
+        await CollectionDoubles.markDropped(current, 'collection-1');
+
+        const result = await subject(current).execute(owner);
+
+        expect(result.map((collection) => collection.name)).toEqual(['Batman']);
+    });
+
     it('refuses a Guest', async () => {
         const current = CollectionDoubles.shelf();
 

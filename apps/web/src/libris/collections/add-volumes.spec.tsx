@@ -25,7 +25,7 @@ const gunnm: CollectionDetailsDto = {
     name: 'Gunnm',
     category: 'manga',
     includesVolumeZero: false,
-    finished: false,
+    status: 'unfinished',
     bookCount: 1,
     expectedFrom: 1,
     expectedTo: 1,

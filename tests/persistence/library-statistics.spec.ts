@@ -94,7 +94,10 @@ async function library() {
         },
         async collection(
             name: string,
-            values: { category?: 'books' | 'manga' | 'comics'; finished?: boolean } = {},
+            values: {
+                category?: 'books' | 'manga' | 'comics';
+                status?: 'unfinished' | 'finished' | 'dropped';
+            } = {},
         ) {
             const id = randomUUID();
 
@@ -106,7 +109,7 @@ async function library() {
                     name_key: NameKey.of(name),
                     category: values.category ?? 'manga',
                     includes_volume_zero: 0,
-                    finished: values.finished ? 1 : 0,
+                    status: values.status ?? 'unfinished',
                     created_at: now,
                     updated_at: now,
                 })
@@ -335,7 +338,7 @@ describe('Library statistics', () => {
     });
     it('tallies each collection with its owned books and missing volumes', async () => {
         const current = await library();
-        const collection = await current.collection('Akira', { finished: true });
+        const collection = await current.collection('Akira', { status: 'finished' });
 
         await current.book({ title: 'Akira 1', collection: { id: collection, volume: 1 } });
         await current.book({ title: 'Akira 4', collection: { id: collection, volume: 4 } });
@@ -347,7 +350,7 @@ describe('Library statistics', () => {
                 id: collection,
                 name: 'Akira',
                 category: 'manga',
-                finished: true,
+                status: 'finished',
                 ownedBooks: 2,
                 missingVolumes: 2,
             },

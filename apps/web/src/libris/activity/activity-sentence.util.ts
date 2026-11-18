@@ -28,6 +28,8 @@ export class ActivitySentence {
         'volumes-added': 'activity.volumesAdded',
         'collection-finished': 'activity.collectionFinished',
         'collection-reopened': 'activity.collectionReopened',
+        'collection-dropped': 'activity.collectionDropped',
+        'collection-resumed': 'activity.collectionResumed',
         'collection-deleted': 'activity.collectionDeleted',
         'collection-removed': 'activity.collectionRemoved',
         'bookcase-created': 'activity.bookcaseCreated',

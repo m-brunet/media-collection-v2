@@ -42,6 +42,22 @@ describe('ListMemory choices', () => {
         expect(choices.toString()).toBe('ownership=owned&direction=desc&finished=false');
     });
 
+    it('keeps the Dropped choice of Collections', () => {
+        const parameters = new URLSearchParams('dropped=true&finished=true');
+
+        const choices = ListMemory.choices('collections', parameters, false);
+
+        expect(choices.toString()).toBe('dropped=true&finished=true');
+    });
+
+    it('drops a Dropped choice left in the address of My books', () => {
+        const parameters = new URLSearchParams('dropped=true&category=manga');
+
+        const choices = ListMemory.choices('books', parameters, false);
+
+        expect(choices.toString()).toBe('category=manga');
+    });
+
     it('drops unknown values', () => {
         const parameters = new URLSearchParams('category=poems&sort=price-asc');
 

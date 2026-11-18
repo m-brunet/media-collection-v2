@@ -27,7 +27,7 @@ export class CollectionTallyReader implements CollectionTallies {
                 id: summary.id,
                 name: summary.name,
                 category: summary.category,
-                finished: summary.finished,
+                status: summary.status,
                 ownedBooks: own.filter((record) => record.ownership === 'owned').length,
                 missingVolumes: summary.missingCount,
             };

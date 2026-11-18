@@ -20,6 +20,27 @@ describe('ActivitySentence', () => {
 
         expect(sentence).toBe('You added Dune');
     });
+    it('says a collection was dropped', () => {
+        const event: ActivityEventDto = { kind: 'collection-dropped', name: 'Bleach' };
+
+        const sentence = ActivitySentence.main(event, t);
+
+        expect(sentence).toBe('You dropped Bleach');
+    });
+    it('says a collection was resumed', () => {
+        const event: ActivityEventDto = { kind: 'collection-resumed', name: 'Bleach' };
+
+        const sentence = ActivitySentence.main(event, t);
+
+        expect(sentence).toBe('You resumed Bleach');
+    });
+    it('says a collection was dropped, in French', () => {
+        const event: ActivityEventDto = { kind: 'collection-dropped', name: 'Bleach' };
+
+        const sentence = ActivitySentence.main(event, tFr);
+
+        expect(sentence).toBe('Vous avez abandonné Bleach');
+    });
     it('says a collection and its books changed category', () => {
         const event: ActivityEventDto = {
             kind: 'collection-category-changed',

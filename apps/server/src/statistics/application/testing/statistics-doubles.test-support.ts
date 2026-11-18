@@ -77,7 +77,7 @@ export class FixedCollectionTallies implements CollectionTallies {
             id: 'collection-' + name.toLowerCase(),
             name,
             category: 'manga',
-            finished: false,
+            status: 'unfinished',
             ownedBooks: 1,
             missingVolumes: 0,
             ...tally,

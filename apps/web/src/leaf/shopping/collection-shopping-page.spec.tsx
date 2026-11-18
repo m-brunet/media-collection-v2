@@ -10,7 +10,7 @@ function shopping(overrides: Partial<CollectionShoppingDto> = {}): CollectionSho
     return {
         id: 'batman',
         name: 'Batman',
-        finished: false,
+        status: 'unfinished',
         expectedCount: 12,
         ownedCount: 4,
         lastOwned: { volume: 4, title: null },
@@ -161,8 +161,20 @@ it('keeps the confirmation open with the reason when marking fails', async () =>
     expect(screen.getByRole('dialog', { name: 'Mark Volume 12 Owned?' })).toBeInTheDocument();
 });
 
+it('says when the collection has been dropped meanwhile', async () => {
+    withShopping(shopping({ status: 'dropped' }));
+
+    open();
+
+    expect(
+        await screen.findByText(
+            'This collection is dropped, so it is no longer listed for shopping.',
+        ),
+    ).toBeInTheDocument();
+});
+
 it('says when the collection has been marked Finished meanwhile', async () => {
-    withShopping(shopping({ finished: true, missing: [] }));
+    withShopping(shopping({ status: 'finished', missing: [] }));
 
     open();
 
