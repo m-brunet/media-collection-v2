@@ -22,7 +22,13 @@ describe('LocationOverview', () => {
 
         const result = await current.overview.bookcase(bookcase);
 
-        expect(result).toEqual({ id: bookcase.id, name: 'Oak', bookCount: 0, shelves: [] });
+        expect(result).toEqual({
+            id: bookcase.id,
+            name: 'Oak',
+            size: 'large',
+            bookCount: 0,
+            shelves: [],
+        });
     });
     it('counts the books on a shelf', async () => {
         const current = LocationDoubles.furniture();

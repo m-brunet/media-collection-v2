@@ -57,7 +57,7 @@ async function book(db: Kysely<unknown>) {
 async function bookcase(db: Kysely<unknown>, name = 'Oak') {
     const id = randomUUID();
 
-    await sql`insert into bookcases values (${id}, ${name}, ${name.toLowerCase()},
+    await sql`insert into bookcases (id, name, name_key, created_at, updated_at) values (${id}, ${name}, ${name.toLowerCase()},
         '2026-01-01', '2026-01-01')`.execute(db);
 
     return id;
@@ -86,7 +86,7 @@ it('rejects non-UUID bookcase, shelf and tag identities', async () => {
     const oak = await bookcase(db);
 
     const results = [
-        sql`insert into bookcases values ('x', 'Hall', 'hall', '2026-01-01', '2026-01-01')`.execute(
+        sql`insert into bookcases (id, name, name_key, created_at, updated_at) values ('x', 'Hall', 'hall', '2026-01-01', '2026-01-01')`.execute(
             db,
         ),
         sql`insert into shelves values ('x', ${oak}, 'Top', 'top', '2026-01-01', '2026-01-01')`.execute(

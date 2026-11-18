@@ -46,6 +46,19 @@ async function shelf(bookcaseId: string, name: string) {
     return response.body;
 }
 
+async function resize(bookcaseId: string, size: string) {
+    const client = await app.authenticatedClient(owner);
+    const response = await client.call<BookcaseDto>('/bookcases/' + bookcaseId, 'PATCH', {
+        size,
+    });
+
+    if (response.status !== 200) {
+        throw new Error('Arranging the scenario failed: ' + response.text);
+    }
+
+    return response.body;
+}
+
 async function bookOn(shelfId: string) {
     const client = await app.authenticatedClient(owner);
     const response = await client.call<BookDto>('/books', 'POST', BookInputFixture.of({ shelfId }));
@@ -70,14 +83,26 @@ describe('GET /api/bookcases', () => {
 
         expect(response.status).toBe(200);
         expect(response.body).toEqual([
-            { id: hall.id, name: 'Hall', bookCount: 0, shelves: [] },
+            { id: hall.id, name: 'Hall', size: 'large', bookCount: 0, shelves: [] },
             {
                 id: oak.id,
                 name: 'Oak bookcase',
+                size: 'large',
                 bookCount: 1,
                 shelves: [{ id: shelf3.id, bookcaseId: oak.id, name: 'Shelf 3', bookCount: 1 }],
             },
         ]);
+    });
+    it('shows another account the size an Owner chose', async () => {
+        const oak = await bookcase('Oak');
+
+        await resize(oak.id, 'small');
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call<BookcaseDto[]>('/bookcases');
+
+        expect(response.status).toBe(200);
+        expect(response.body).toMatchObject([{ id: oak.id, size: 'small' }]);
     });
     it('requires a signed-in account', async () => {
         const client = app.client();
@@ -158,6 +183,7 @@ describe('POST /api/bookcases', () => {
         expect(response.body).toEqual({
             id: expect.any(String),
             name: 'Oak',
+            size: 'large',
             bookCount: 0,
             shelves: [],
         });
@@ -264,6 +290,112 @@ describe('PATCH /api/bookcases/:id', () => {
     });
 });
 
+describe('PATCH /api/bookcases/:id with a size', () => {
+    it('makes a bookcase Small, keeping its name and shelves', async () => {
+        const oak = await bookcase('Oak');
+
+        await shelf(oak.id, 'Top');
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookcaseDto>('/bookcases/' + oak.id, 'PATCH', {
+            size: 'small',
+        });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toMatchObject({ id: oak.id, name: 'Oak', size: 'small' });
+        expect(response.body.shelves.map((value) => value.name)).toEqual(['Top']);
+    });
+    it('makes a Small bookcase Large again', async () => {
+        const oak = await bookcase('Oak');
+
+        await resize(oak.id, 'small');
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookcaseDto>('/bookcases/' + oak.id, 'PATCH', {
+            size: 'large',
+        });
+
+        expect(response.status).toBe(200);
+        expect(response.body.size).toBe('large');
+    });
+    it('records the resize', async () => {
+        const oak = await bookcase('Oak');
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/bookcases/' + oak.id, 'PATCH', { size: 'small' });
+
+        const entries = await app.dependencies.audit.entries();
+        expect(response.status).toBe(200);
+        expect(entries).toContainEqual(
+            expect.objectContaining({
+                category: 'bookcase.resized',
+                outcome: 'successful',
+                subjectId: oak.id,
+                before: { name: 'Oak', size: 'large' },
+                after: { name: 'Oak', size: 'small' },
+            }),
+        );
+    });
+    it('changes the name and the size together', async () => {
+        const oak = await bookcase('Oak');
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookcaseDto>('/bookcases/' + oak.id, 'PATCH', {
+            name: 'Hall',
+            size: 'small',
+        });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toMatchObject({ name: 'Hall', size: 'small' });
+    });
+    it('refuses another size', async () => {
+        const oak = await bookcase('Oak');
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/bookcases/' + oak.id, 'PATCH', { size: 'medium' });
+
+        expect(response.status).toBe(400);
+    });
+    it('refuses a request without a name or a size', async () => {
+        const oak = await bookcase('Oak');
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/bookcases/' + oak.id, 'PATCH', {});
+
+        expect(response.status).toBe(400);
+    });
+    it('reports an unknown bookcase', async () => {
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/bookcases/' + crypto.randomUUID(), 'PATCH', {
+            size: 'small',
+        });
+
+        expect(response.status).toBe(404);
+        expect(response.body.reason).toBe('bookcase-missing');
+    });
+    it('refuses a Guest', async () => {
+        const oak = await bookcase('Oak');
+        const client = await app.authenticatedClient(guest);
+
+        const response = await client.call('/bookcases/' + oak.id, 'PATCH', { size: 'small' });
+
+        expect(response.status).toBe(403);
+        expect(response.body.reason).toBe('guest-read-only');
+    });
+    it('requires a signed-in account', async () => {
+        const client = app.client();
+
+        await client.prepare();
+
+        const response = await client.call('/bookcases/' + crypto.randomUUID(), 'PATCH', {
+            size: 'small',
+        });
+
+        expect(response.status).toBe(401);
+    });
+});
+
 describe('DELETE /api/bookcases/:id', () => {
     it('removes the bookcase and its shelves, keeping their books unassigned', async () => {
         const oak = await bookcase('Oak');
@@ -279,7 +411,7 @@ describe('DELETE /api/bookcases/:id', () => {
         expect(await app.dependencies.audit.entries()).toContainEqual(
             expect.objectContaining({
                 category: 'bookcase.deleted',
-                before: { name: 'Oak', shelves: ['Top'], unassignedBooks: 1 },
+                before: { name: 'Oak', size: 'large', shelves: ['Top'], unassignedBooks: 1 },
             }),
         );
     });

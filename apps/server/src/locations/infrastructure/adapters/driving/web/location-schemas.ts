@@ -3,6 +3,13 @@ import { idSchema } from '../../../../../shared/infrastructure/adapters/driving/
 
 export const locationNameSchema = z.strictObject({ name: z.string().max(400) });
 
+export const bookcaseChangesSchema = z
+    .strictObject({
+        name: z.string().max(400).optional(),
+        size: z.enum(['large', 'small']).optional(),
+    })
+    .refine((changes) => changes.name !== undefined || changes.size !== undefined);
+
 export const shelfChangesSchema = z
     .strictObject({
         name: z.string().max(400).optional(),

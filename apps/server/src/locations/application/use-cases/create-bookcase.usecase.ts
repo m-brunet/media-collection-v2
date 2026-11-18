@@ -6,6 +6,7 @@ import type { BookcaseRepository } from '../ports/driven/bookcase-repository.int
 import { LocationNaming } from '../services/location-naming.service.js';
 import { LocationOverview } from '../services/location-overview.service.js';
 import { Bookcase } from '../../domain/entities/bookcase.entity.js';
+import { BookcaseSize } from '../../domain/value-objects/bookcase-size.value-object.js';
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 import type { IdGenerator } from '../../../shared/application/ports/driven/id-generator.interface.js';
 import type { AuditedOperation } from '../../../shared/application/services/audited-operation.service.js';
@@ -37,6 +38,7 @@ export class CreateBookcase implements CreateBookcaseUseCase {
                 const bookcase = new Bookcase({
                     id: this.ids.next(),
                     name,
+                    size: BookcaseSize.initial,
                     createdAt: now,
                     updatedAt: now,
                 });

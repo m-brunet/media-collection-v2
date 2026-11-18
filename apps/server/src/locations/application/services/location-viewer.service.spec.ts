@@ -4,7 +4,7 @@ import { Shelf } from '../../domain/entities/shelf.entity.js';
 import { LocationViewer } from './location-viewer.service.js';
 
 const at = '2026-01-01T00:00:00.000Z';
-const oak = new Bookcase({ id: 'oak', name: 'Oak', createdAt: at, updatedAt: at });
+const oak = new Bookcase({ id: 'oak', name: 'Oak', size: 'large', createdAt: at, updatedAt: at });
 const shelf = (id: string, name: string, bookcaseId = 'oak') =>
     new Shelf({ id, bookcaseId, name, createdAt: at, updatedAt: at });
 
@@ -26,6 +26,7 @@ describe('LocationViewer', () => {
         expect(result).toEqual({
             id: 'oak',
             name: 'Oak',
+            size: 'large',
             bookCount: 7,
             shelves: [
                 { id: 's2', bookcaseId: 'oak', name: 'Shelf 2', bookCount: 3 },

@@ -11,26 +11,26 @@ import {
     Req,
 } from '@nestjs/common';
 import type { z } from 'zod';
+import type { ChangeBookcaseUseCase } from '../../../../application/ports/driving/change-bookcase-use-case.interface.js';
 import type { CreateBookcaseUseCase } from '../../../../application/ports/driving/create-bookcase-use-case.interface.js';
 import type { CreateShelfUseCase } from '../../../../application/ports/driving/create-shelf-use-case.interface.js';
 import type { GetBookcaseSpinesUseCase } from '../../../../application/ports/driving/get-bookcase-spines-use-case.interface.js';
 import type { DeleteBookcaseUseCase } from '../../../../application/ports/driving/delete-bookcase-use-case.interface.js';
 import type { ListBookcasesUseCase } from '../../../../application/ports/driving/list-bookcases-use-case.interface.js';
-import type { RenameBookcaseUseCase } from '../../../../application/ports/driving/rename-bookcase-use-case.interface.js';
 import type { AuthenticatedRequest } from '../../../../../shared/infrastructure/adapters/driving/web/api-guard.js';
 import type {
     BookcaseDto,
     BookcaseSpinesDto,
     ShelfDto,
 } from '../../../../../../../../packages/contracts/src/http.js';
-import { locationIdSchema, locationNameSchema } from './location-schemas.js';
+import { bookcaseChangesSchema, locationIdSchema, locationNameSchema } from './location-schemas.js';
 
 @Controller('api/bookcases')
 export class BookcasesController {
     constructor(
         @Inject('LOCATIONS_LIST') private readonly listBookcases: ListBookcasesUseCase,
         @Inject('LOCATIONS_CREATE_BOOKCASE') private readonly createBookcase: CreateBookcaseUseCase,
-        @Inject('LOCATIONS_RENAME_BOOKCASE') private readonly renameBookcase: RenameBookcaseUseCase,
+        @Inject('LOCATIONS_CHANGE_BOOKCASE') private readonly changeBookcase: ChangeBookcaseUseCase,
         @Inject('LOCATIONS_DELETE_BOOKCASE') private readonly deleteBookcase: DeleteBookcaseUseCase,
         @Inject('LOCATIONS_CREATE_SHELF') private readonly createShelf: CreateShelfUseCase,
         @Inject('LOCATIONS_SPINES') private readonly getSpines: GetBookcaseSpinesUseCase,
@@ -58,12 +58,12 @@ export class BookcasesController {
     }
 
     @Patch(':id')
-    rename(
+    change(
         @Param('id', { schema: locationIdSchema }) id: string,
-        @Body({ schema: locationNameSchema }) body: z.infer<typeof locationNameSchema>,
+        @Body({ schema: bookcaseChangesSchema }) changes: z.infer<typeof bookcaseChangesSchema>,
         @Req() request: AuthenticatedRequest,
     ): Promise<BookcaseDto> {
-        return this.renameBookcase.execute(request.actor, id, body.name);
+        return this.changeBookcase.execute(request.actor, id, changes);
     }
 
     @Delete(':id')

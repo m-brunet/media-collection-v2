@@ -20,7 +20,7 @@ import { DeleteBookcase } from '../../application/use-cases/delete-bookcase.usec
 import { DeleteShelf } from '../../application/use-cases/delete-shelf.usecase.js';
 import { GetBookcaseSpines } from '../../application/use-cases/get-bookcase-spines.usecase.js';
 import { ListBookcases } from '../../application/use-cases/list-bookcases.usecase.js';
-import { RenameBookcase } from '../../application/use-cases/rename-bookcase.usecase.js';
+import { ChangeBookcase } from '../../application/use-cases/change-bookcase.usecase.js';
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 import type { IdGenerator } from '../../../shared/application/ports/driven/id-generator.interface.js';
 import type { AuditedOperation } from '../../../shared/application/services/audited-operation.service.js';
@@ -107,7 +107,7 @@ const useCaseProviders: Provider[] = [
         ) => new CreateBookcase(bookcases, naming, overview, ids, clock, operations),
     },
     {
-        provide: 'LOCATIONS_RENAME_BOOKCASE',
+        provide: 'LOCATIONS_CHANGE_BOOKCASE',
         inject: [
             token.bookcases,
             token.loader,
@@ -123,7 +123,7 @@ const useCaseProviders: Provider[] = [
             overview: LocationOverview,
             clock: Clock,
             operations: AuditedOperation,
-        ) => new RenameBookcase(bookcases, loader, naming, overview, clock, operations),
+        ) => new ChangeBookcase(bookcases, loader, naming, overview, clock, operations),
     },
     {
         provide: 'LOCATIONS_DELETE_BOOKCASE',

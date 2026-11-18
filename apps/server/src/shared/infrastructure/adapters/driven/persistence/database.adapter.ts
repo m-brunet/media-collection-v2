@@ -119,6 +119,7 @@ interface BookcasesTable {
     id: string;
     name: string;
     name_key: string;
+    size: string;
     created_at: string;
     updated_at: string;
 }

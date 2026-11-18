@@ -5,6 +5,7 @@ const oak = () =>
     new Bookcase({
         id: 'oak',
         name: ' Oak bookcase ',
+        size: 'large',
         createdAt: '2026-01-01T00:00:00.000Z',
         updatedAt: '2026-01-01T00:00:00.000Z',
     });
@@ -34,5 +35,43 @@ describe('Bookcase', () => {
         const result = () => bookcase.rename(' ', '2026-02-01T00:00:00.000Z');
 
         expect(result).toThrow(expect.objectContaining({ reason: 'bookcase-name-invalid' }));
+    });
+    it('keeps its size', () => {
+        const bookcase = oak();
+
+        const result = bookcase.snapshot.size;
+
+        expect(result).toBe('large');
+    });
+    it('becomes Small', () => {
+        const bookcase = oak();
+
+        bookcase.resize('small', '2026-02-01T00:00:00.000Z');
+
+        expect(bookcase.snapshot).toMatchObject({
+            name: 'Oak bookcase',
+            size: 'small',
+            updatedAt: '2026-02-01T00:00:00.000Z',
+        });
+    });
+    it('refuses another size', () => {
+        const bookcase = oak();
+
+        const result = () => bookcase.resize('medium', '2026-02-01T00:00:00.000Z');
+
+        expect(result).toThrow(expect.objectContaining({ reason: 'bookcase-size-invalid' }));
+    });
+    it('refuses to be built with another size', () => {
+        const state = {
+            id: 'oak',
+            name: 'Oak',
+            size: 'medium' as 'large',
+            createdAt: '2026-01-01T00:00:00.000Z',
+            updatedAt: '2026-01-01T00:00:00.000Z',
+        };
+
+        const result = () => new Bookcase(state);
+
+        expect(result).toThrow(expect.objectContaining({ reason: 'bookcase-size-invalid' }));
     });
 });

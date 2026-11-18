@@ -15,6 +15,7 @@ import { PairingCodesMigration } from './migrations/012-pairing-codes.js';
 import { CollectionCategoriesMigration } from './migrations/013-collection-categories.js';
 import { InternetPortsMigration } from './migrations/014-internet-ports.js';
 import { KeptCoversMigration } from './migrations/015-kept-covers.js';
+import { BookcaseSizesMigration } from './migrations/016-bookcase-sizes.js';
 
 export class DatabaseMigrations implements MigrationProvider {
     constructor(private readonly ids: IdGenerator) {}
@@ -40,6 +41,7 @@ export class DatabaseMigrations implements MigrationProvider {
             '013-collection-categories': this.migration(new CollectionCategoriesMigration()),
             '014-internet-ports': this.migration(new InternetPortsMigration()),
             '015-kept-covers': this.migration(new KeptCoversMigration()),
+            '016-bookcase-sizes': this.migration(new BookcaseSizesMigration()),
         };
     }
 

@@ -37,6 +37,11 @@ describe('ActivityEligibility', () => {
 
         expect(included).toEqual([true, true, true, true]);
     });
+    it('leaves the resize of a bookcase out', () => {
+        const included = ActivityEligibility.includes('bookcase.resized');
+
+        expect(included).toBe(false);
+    });
     it('includes books placed on a shelf', () => {
         const included = ActivityEligibility.includes('shelf.books-placed');
 

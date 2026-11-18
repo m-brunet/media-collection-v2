@@ -18,6 +18,7 @@ export class LocationViewer {
         return {
             id: bookcase.id,
             name: bookcase.snapshot.name,
+            size: bookcase.snapshot.size,
             bookCount: views.reduce((total, shelf) => total + shelf.bookCount, 0),
             shelves: views,
         };
