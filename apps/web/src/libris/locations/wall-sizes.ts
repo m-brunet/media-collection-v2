@@ -17,6 +17,7 @@ export const WallSizes = {
     backRowMaxRise: 18,
     backRowLift: 4,
     backRowShift: 3,
+    spineHeadroom: 4,
     spineColours: 8,
     panelColumns: 5,
     panelCoversMax: 16,

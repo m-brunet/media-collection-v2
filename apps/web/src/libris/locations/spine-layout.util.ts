@@ -122,7 +122,10 @@ export class SpineLayout {
 
         return Math.min(
             tallest + rise - WallSizes.backRowLift,
-            WallSizes.bayHeight - WallSizes.backRowLift,
+            WallSizes.bayHeight -
+                WallSizes.bayBorder -
+                WallSizes.spineHeadroom -
+                WallSizes.backRowLift,
         );
     }
 

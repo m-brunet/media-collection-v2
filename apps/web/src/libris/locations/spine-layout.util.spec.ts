@@ -143,12 +143,12 @@ describe('SpineLayout.shelf', () => {
         expect(Math.min(...rises)).toBeGreaterThanOrEqual(10);
         expect(Math.max(...rises)).toBeLessThanOrEqual(18);
     });
-    it('keeps every back spine below the shelf above', () => {
-        const result = SpineLayout.shelf(books(40, novel), 210).spines;
+    it('keeps every back spine 4 px under the board of the shelf above', () => {
+        const result = SpineLayout.shelf(books(80, short), 420).spines;
 
         const tops = result.filter((spine) => spine.behind).map((spine) => spine.height + 4);
 
-        expect(Math.max(...tops)).toBeLessThanOrEqual(84);
+        expect(Math.max(...tops)).toBeLessThanOrEqual(74);
     });
     it('lists the front spines first, then the back ones', () => {
         const result = SpineLayout.shelf(books(5, novel), 50).spines;
