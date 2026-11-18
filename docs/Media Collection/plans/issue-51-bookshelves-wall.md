@@ -86,8 +86,8 @@ bookcase) and `apps/server/src/books` (shelf order of the book list). Libris pag
 7. A shelf of 64 books at 1440 px: 9 covers and a "+55 more" tile; the tile opens the Library on that shelf. A shelf
    of 10 books: the 10 covers, no tile.
 8. The window grows from 1440 px to 1920 px: the bays keep their width and the shelf panel grows.
-11. A Large bookcase has bays 420 px wide; a shelf with 400 px of spines shows one row. Choosing *Small* redraws it at
-    210 px and the same shelf shows two rows; a reload, or another account, still shows it Small (issue #142).
 9. A Guest sees no *New bookcase*, *Add shelf*, *Delete bookcase*, *Move shelf* or *Delete shelf*.
 10. `/bookshelves?view=unknown` shows the Wall; the View choice is not shown while the Wall is the only view. (Since #75
     the choice shows Wall and Ribbons.)
+11. A Large bookcase has bays 420 px wide; a shelf with 400 px of spines shows one row. Choosing *Small* redraws it at
+    210 px and the same shelf shows two rows; a reload, or another account, still shows it Small (issue #142).

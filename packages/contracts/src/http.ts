@@ -661,11 +661,6 @@ export interface NameDto {
     name: string;
 }
 
-export interface BookcaseChangesDto {
-    name?: string;
-    size?: BookcaseSize;
-}
-
 export interface ShelfChangesDto {
     name?: string;
     bookcaseId?: string;

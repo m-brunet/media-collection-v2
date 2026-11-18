@@ -25,7 +25,7 @@ Bookcases and shelves are separate identities, with books linked to shelves. Thi
 
 Deleting a shelf unassigns its books without deleting the books. Deleting a bookcase removes its shelf definitions and unassigns all affected books, preserving every book. Before confirmation, show how many books become unassigned and clearly state that no books are deleted.
 
-A bookcase also has a **size**, *Large* or *Small* (issue #142, 2026-11-18). It only sets how wide the Bookshelves Wall draws the bookcase (420 px or 210 px of shelf); it changes no assignment and no other view. Existing and new bookcases are Large. Changing it is audited (`bookcase.resized`) but not shown in Activity.
+A bookcase also has a **size**, *Large* or *Small* (issue #142, 2026-11-18). It only sets how wide the Bookshelves Wall draws the bookcase (420 px or 210 px of shelf); it changes no assignment and no other view. Existing and new bookcases are Large. A change of size alone is audited as `bookcase.resized` and not shown in Activity; a change of size sent together with a new name is part of that rename (`bookcase.renamed`). A request that changes nothing is never recorded as a resize.
 
 Only Owners/Admin manage locations and book assignments; Guests view them under the shared-library permission rules. A clickable visual representation of bookcases remains future scope; this hierarchy does not require that visual feature initially.
 

@@ -34,7 +34,12 @@ function useShelfCovers(shelf: ShelfDto) {
         });
 
         api.request<BookListPageDto>('/books?' + query.toString()).then(
-            (value) => current && setLoaded({ of: shelf, value }),
+            (value) => {
+                if (current) {
+                    setLoaded({ of: shelf, value });
+                    setFailure(null);
+                }
+            },
             (error: unknown) =>
                 current && setFailure({ of: shelf, key: ApiErrorMessage.key(error) }),
         );
@@ -45,8 +50,8 @@ function useShelfCovers(shelf: ShelfDto) {
     }, [shelf]);
 
     return {
-        page: loaded?.of === shelf ? loaded.value : null,
-        failure: failure?.of === shelf ? failure.key : null,
+        page: loaded?.of.id === shelf.id ? loaded.value : null,
+        failure: failure?.of.id === shelf.id ? failure.key : null,
     };
 }
 

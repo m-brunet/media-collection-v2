@@ -381,6 +381,13 @@ describe('ActivityProjection', () => {
 
         expect(entry?.event).toEqual({ kind: 'bookcase-renamed', from: 'Pine', to: 'Oak' });
     });
+    it('leaves out a bookcase whose name did not change', () => {
+        const unchanged = operation(record('bookcase.renamed', { name: 'Oak' }, { name: 'Oak' }));
+
+        const entry = ActivityProjection.entry(unchanged);
+
+        expect(entry).toBeNull();
+    });
     it('describes a deleted shelf with its bookcase', () => {
         const deleted = operation(
             record('shelf.deleted', null, { name: 'Shelf 3', bookcaseName: 'Oak' }),
