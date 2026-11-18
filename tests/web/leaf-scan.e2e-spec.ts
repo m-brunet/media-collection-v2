@@ -126,7 +126,7 @@ describe('Scan and add a book', () => {
         await page.getByRole('heading', { name: 'Review book' }).waitFor();
         await page.getByAltText('Chosen cover').waitFor();
 
-        await page.getByRole('button', { name: 'Save book' }).click();
+        await page.getByRole('button', { name: 'Save book' }).last().click();
 
         await page.getByRole('heading', { name: 'Book added' }).waitFor();
         const books = await admin.call<{ items: { title: string; hasCover: boolean }[] }>('/books');
@@ -192,12 +192,40 @@ describe('Scan and add a book', () => {
         await capture(page, 'leaf-tag-suggestions');
     });
 
+    it('keeps Save book in view at the top while the form is scrolled down', async () => {
+        const page = await leafHome();
+
+        await scanPhoto(page, ewilan);
+        await page.getByRole('button', { name: 'Find book' }).click();
+        await page.getByRole('heading', { name: 'Review book' }).waitFor();
+        await page.getByRole('combobox', { name: /^Tags/ }).click();
+        const topSave = page
+            .getByRole('region', { name: 'Review book' })
+            .getByRole('button', { name: 'Save book' });
+        const box = await topSave.boundingBox();
+
+        expect(box?.y).toBeGreaterThanOrEqual(0);
+        expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(viewports.phone.height);
+        expect(box?.height).toBeGreaterThanOrEqual(44);
+        expect((box?.x ?? 0) + (box?.width ?? 0) - viewports.phone.width / 2).toBeGreaterThan(0);
+        expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+        expect(await noHorizontalScrolling(page)).toBe(true);
+        await capture(page, 'leaf-sticky-save');
+
+        await topSave.click();
+
+        await page.getByRole('heading', { name: 'Book added' }).waitFor();
+        const books = await admin.call<{ items: { title: string }[] }>('/books');
+
+        expect(books.body.items).toHaveLength(1);
+    });
+
     it('starts another scan from the success screen', async () => {
         const page = await leafHome();
 
         await scanPhoto(page, ewilan);
         await page.getByRole('button', { name: 'Find book' }).click();
-        await page.getByRole('button', { name: 'Save book' }).click();
+        await page.getByRole('button', { name: 'Save book' }).last().click();
         await page.getByRole('heading', { name: 'Book added' }).waitFor();
 
         await page.getByRole('button', { name: 'Scan another book' }).click();
