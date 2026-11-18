@@ -199,6 +199,7 @@ export class LocationDoubles {
             new Bookcase({
                 id: current.ids.next(),
                 name: bookcaseName,
+                size: 'large',
                 createdAt: at,
                 updatedAt: at,
             });
@@ -237,3 +238,4 @@ const at = '2026-01-01T00:00:00.000Z';
 
 export const owner = TestActors.of('owner', 'camille');
 export const guest = TestActors.of('guest', 'morgan');
+export const administrator = TestActors.of('admin', 'alex');

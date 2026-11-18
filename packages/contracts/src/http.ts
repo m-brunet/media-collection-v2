@@ -629,9 +629,12 @@ export interface ShelfDto {
     bookCount: number;
 }
 
+export type BookcaseSize = 'large' | 'small';
+
 export interface BookcaseDto {
     id: string;
     name: string;
+    size: BookcaseSize;
     bookCount: number;
     shelves: ShelfDto[];
 }
@@ -656,6 +659,11 @@ export interface BookcaseSpinesDto {
 
 export interface NameDto {
     name: string;
+}
+
+export interface BookcaseChangesDto {
+    name?: string;
+    size?: BookcaseSize;
 }
 
 export interface ShelfChangesDto {

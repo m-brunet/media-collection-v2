@@ -15,6 +15,7 @@ describe('ListBookcases', () => {
             {
                 id: shelf.snapshot.bookcaseId,
                 name: 'Oak bookcase',
+                size: 'large',
                 bookCount: 1,
                 shelves: [
                     {

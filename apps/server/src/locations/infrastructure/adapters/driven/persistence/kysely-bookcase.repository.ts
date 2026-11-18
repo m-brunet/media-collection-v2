@@ -1,5 +1,6 @@
 import type { BookcaseRepository } from '../../../../application/ports/driven/bookcase-repository.interface.js';
 import { Bookcase } from '../../../../domain/entities/bookcase.entity.js';
+import { BookcaseSize } from '../../../../domain/value-objects/bookcase-size.value-object.js';
 import { Failure } from '../../../../../shared/domain/exceptions/failure.js';
 import type { DatabaseSchema } from '../../../../../shared/infrastructure/adapters/driven/persistence/database.adapter.js';
 import type { DatabaseConnections } from '../../../../../shared/infrastructure/adapters/driven/persistence/database-connections.adapter.js';
@@ -71,6 +72,7 @@ export class KyselyBookcaseRepository implements BookcaseRepository {
         return new Bookcase({
             id: row.id,
             name: row.name,
+            size: BookcaseSize.of(row.size),
             createdAt: row.created_at,
             updatedAt: row.updated_at,
         });
@@ -83,6 +85,7 @@ export class KyselyBookcaseRepository implements BookcaseRepository {
             id: state.id,
             name: state.name,
             name_key: bookcase.key,
+            size: state.size,
             created_at: state.createdAt,
             updated_at: state.updatedAt,
         };

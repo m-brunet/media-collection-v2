@@ -1,3 +1,5 @@
+import type { BookcaseSizeName } from '../domain/value-objects/bookcase-size.value-object.js';
+
 export interface ShelfView {
     id: string;
     bookcaseId: string;
@@ -8,8 +10,14 @@ export interface ShelfView {
 export interface BookcaseView {
     id: string;
     name: string;
+    size: BookcaseSizeName;
     bookCount: number;
     shelves: ShelfView[];
+}
+
+export interface BookcaseChanges {
+    name?: string;
+    size?: BookcaseSizeName;
 }
 
 export interface ShelfChanges {

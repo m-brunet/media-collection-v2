@@ -22,6 +22,7 @@ describe('CreateBookcase', () => {
         expect(result).toEqual({
             id: 'location-1',
             name: 'Oak bookcase',
+            size: 'large',
             bookCount: 0,
             shelves: [],
         });
@@ -37,7 +38,7 @@ describe('CreateBookcase', () => {
                 category: 'bookcase.created',
                 subjectType: 'bookcase',
                 subjectId: 'location-1',
-                after: { name: 'Oak' },
+                after: { name: 'Oak', size: 'large' },
             }),
         ]);
     });

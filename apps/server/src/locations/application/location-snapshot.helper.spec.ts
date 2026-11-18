@@ -4,15 +4,16 @@ import { Shelf } from '../domain/entities/shelf.entity.js';
 import { LocationSnapshot } from './location-snapshot.helper.js';
 
 const at = '2026-01-01T00:00:00.000Z';
-const oak = () => new Bookcase({ id: 'oak', name: 'Oak', createdAt: at, updatedAt: at });
+const oak = () =>
+    new Bookcase({ id: 'oak', name: 'Oak', size: 'large', createdAt: at, updatedAt: at });
 
 describe('LocationSnapshot', () => {
-    it('records a bookcase by its name', () => {
+    it('records a bookcase by its name and size', () => {
         const bookcase = oak();
 
         const result = LocationSnapshot.bookcase(bookcase);
 
-        expect(result).toEqual({ name: 'Oak' });
+        expect(result).toEqual({ name: 'Oak', size: 'large' });
     });
     it('records a shelf with its bookcase', () => {
         const shelf = new Shelf({
