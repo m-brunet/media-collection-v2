@@ -921,6 +921,112 @@ it('explains that Fill if empty only reaches the books without a value', async (
     expect(within(price).getByRole('textbox', { name: 'Price: new value' })).toBeInTheDocument();
 });
 
+it('sends a publication year and month to set on every book', async () => {
+    const api = batchApi();
+
+    show();
+    const panel = await chooseAllAndOpen();
+    const card = await addChange(panel, 'Publication date');
+
+    await userEvent.selectOptions(
+        within(card).getByRole('combobox', { name: 'Publication month' }),
+        'March',
+    );
+    await userEvent.type(within(card).getByRole('textbox', { name: 'Publication year' }), '2019');
+
+    await userEvent.click(within(panel).getByRole('button', { name: 'Review changes' }));
+
+    expect(api.calls.find((call) => call.route === 'POST /books/batch-edit')?.body).toEqual({
+        collectionId: 'c1',
+        bookIds: ['omnibus', 'year-one', 'twelve'],
+        preview: true,
+        changes: { publication: { year: 2019, month: 3 } },
+    });
+});
+
+it('sends a publication year to fill only the books without a date', async () => {
+    const api = batchApi();
+
+    show();
+    const panel = await chooseAllAndOpen();
+    const card = await addChange(panel, 'Publication date');
+
+    await userEvent.click(within(card).getByRole('radio', { name: 'Fill if empty' }));
+    await userEvent.type(within(card).getByRole('textbox', { name: 'Publication year' }), '2019');
+
+    await userEvent.click(within(panel).getByRole('button', { name: 'Review changes' }));
+
+    expect(api.calls.find((call) => call.route === 'POST /books/batch-edit')?.body).toEqual({
+        collectionId: 'c1',
+        bookIds: ['omnibus', 'year-one', 'twelve'],
+        preview: true,
+        changes: { publication: { year: 2019, month: null }, onlyIfEmpty: ['publication'] },
+    });
+});
+
+it('hides the year and month and removes the date with Clear', async () => {
+    const api = batchApi();
+
+    show();
+    const panel = await chooseAllAndOpen();
+    const card = await addChange(panel, 'Publication date');
+
+    await userEvent.click(within(card).getByRole('radio', { name: 'Clear' }));
+
+    await userEvent.click(within(panel).getByRole('button', { name: 'Review changes' }));
+
+    expect([
+        within(card).queryByRole('textbox', { name: 'Publication year' }),
+        within(card).getByText('Every chosen book loses its publication year and month.'),
+        api.calls.find((call) => call.route === 'POST /books/batch-edit')?.body,
+    ]).toEqual([
+        null,
+        expect.anything(),
+        expect.objectContaining({ changes: { publication: null } }),
+    ]);
+});
+
+it('asks for a publication year before reviewing a date', async () => {
+    const api = batchApi();
+
+    show();
+    const panel = await chooseAllAndOpen();
+
+    await addChange(panel, 'Publication date');
+
+    await userEvent.click(within(panel).getByRole('button', { name: 'Review changes' }));
+
+    expect([
+        await within(panel).findByText('Enter the publication year, or choose Clear.'),
+        api.calls.filter((call) => call.route === 'POST /books/batch-edit'),
+    ]).toEqual([expect.anything(), []]);
+});
+
+it('shows a publication year the server refuses', async () => {
+    new FakeApi()
+        .signedIn(account())
+        .on('GET /collections/c1', () => ({ status: 200, body: batman() }))
+        .on('POST /books/batch-edit', () => ({
+            status: 400,
+            body: {
+                code: 'invalid_input',
+                reason: 'publication-year-invalid',
+                message: 'Invalid',
+            },
+        }));
+    show();
+    const panel = await chooseAllAndOpen();
+    const card = await addChange(panel, 'Publication date');
+
+    await userEvent.type(within(card).getByRole('textbox', { name: 'Publication year' }), '0');
+
+    await userEvent.click(within(panel).getByRole('button', { name: 'Review changes' }));
+
+    expect(
+        await within(panel).findByText('Enter a publication year between 1 and 9999.'),
+    ).toBeInTheDocument();
+});
+
 it('offers no Category change, which the collection makes for all its books', async () => {
     batchApi();
     show();

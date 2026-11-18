@@ -72,6 +72,9 @@ async function stored(chosen: BookDto) {
         ownership: details.ownership,
         publisher: details.publisher,
         priceCents: details.price?.cents ?? null,
+        publication: details.publicationDate
+            ? { year: details.publicationDate.year, month: details.publicationDate.month }
+            : null,
     };
 }
 
@@ -153,6 +156,116 @@ describe('POST /api/books/batch-edit', () => {
         ]);
         expect(await stored(first)).toMatchObject({ publisher: 'Glénat', priceCents: 700 });
         expect(await stored(second)).toMatchObject({ publisher: 'Delcourt', priceCents: 690 });
+    });
+    it('saves the publication year and month on every chosen book', async () => {
+        const first = await volume(1, { publicationYear: null, publicationMonth: null });
+        const second = await volume(2, { publicationYear: 2001, publicationMonth: 5 });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookBatchDto>(
+            '/books/batch-edit',
+            'POST',
+            batch([first, second], { publication: { year: 2019, month: 3 } }),
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.body.books).toEqual([
+            {
+                id: first.id,
+                title: first.title,
+                before: { publication: null },
+                after: { publication: { year: 2019, month: 3 } },
+            },
+            {
+                id: second.id,
+                title: second.title,
+                before: { publication: { year: 2001, month: 5 } },
+                after: { publication: { year: 2019, month: 3 } },
+            },
+        ]);
+        expect((await stored(first)).publication).toEqual({ year: 2019, month: 3 });
+        expect((await stored(second)).publication).toEqual({ year: 2019, month: 3 });
+    });
+    it('saves a year without a month, removing the old month', async () => {
+        const first = await volume(1, { publicationYear: 2001, publicationMonth: 5 });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookBatchDto>(
+            '/books/batch-edit',
+            'POST',
+            batch([first], { publication: { year: 2019, month: null } }),
+        );
+
+        expect(response.status).toBe(200);
+        expect((await stored(first)).publication).toEqual({ year: 2019, month: null });
+    });
+    it('fills the publication date only on the books that have none', async () => {
+        const first = await volume(1, { publicationYear: 2001, publicationMonth: 5 });
+        const second = await volume(2, { publicationYear: null, publicationMonth: null });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookBatchDto>(
+            '/books/batch-edit',
+            'POST',
+            batch([first, second], {
+                publication: { year: 2019, month: null },
+                onlyIfEmpty: ['publication'],
+            }),
+        );
+
+        expect(response.status).toBe(200);
+        expect((await stored(first)).publication).toEqual({ year: 2001, month: 5 });
+        expect((await stored(second)).publication).toEqual({ year: 2019, month: null });
+    });
+    it('clears the publication year and month', async () => {
+        const first = await volume(1, { publicationYear: 2001, publicationMonth: 5 });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call<BookBatchDto>(
+            '/books/batch-edit',
+            'POST',
+            batch([first], { publication: null }),
+        );
+
+        expect(response.status).toBe(200);
+        expect((await stored(first)).publication).toBeNull();
+    });
+    it('refuses a publication year of 0 and changes nothing', async () => {
+        const first = await volume(1, { publicationYear: 2001, publicationMonth: null });
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call(
+            '/books/batch-edit',
+            'POST',
+            batch([first], { publication: { year: 0, month: null } }),
+        );
+
+        expect(response.status).toBe(400);
+        expect(response.body).toMatchObject({ reason: 'publication-year-invalid' });
+        expect((await stored(first)).publication).toEqual({ year: 2001, month: null });
+    });
+    it('rejects a publication month without a year', async () => {
+        const first = await volume(1);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call('/books/batch-edit', 'POST', {
+            ...batch([first], {}),
+            changes: { publication: { month: 3 } },
+        });
+
+        expect(response.status).toBe(400);
+    });
+    it('rejects filling the publication date without a value', async () => {
+        const first = await volume(1);
+        const client = await app.authenticatedClient(owner);
+
+        const response = await client.call(
+            '/books/batch-edit',
+            'POST',
+            batch([first], { publication: null, onlyIfEmpty: ['publication'] }),
+        );
+
+        expect(response.status).toBe(400);
     });
     it('saves the changes for the Admin', async () => {
         const first = await volume(1);

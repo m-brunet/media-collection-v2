@@ -3,11 +3,17 @@ import type { BookLocation } from './ports/driven/book-location-reader.interface
 import type { BookTag } from './ports/driven/book-tag-reader.interface.js';
 import type { Ownership } from '../domain/entities/book.entity.js';
 
-export type BookBatchFillable = 'publisher' | 'price' | 'shelfId';
+export type BookBatchFillable = 'publisher' | 'publication' | 'price' | 'shelfId';
+
+export interface BookBatchPublication {
+    year: number;
+    month: number | null;
+}
 
 export interface BookBatchChanges {
     ownership?: Ownership;
     publisher?: string | null;
+    publication?: BookBatchPublication | null;
     price?: string | null;
     shelfId?: string | null;
     tags?: { add: readonly string[]; remove: readonly string[] };
@@ -29,6 +35,7 @@ export interface BookBatchFields {
     titleGenerated?: boolean;
     ownership?: Ownership;
     publisher?: string | null;
+    publication?: BookBatchPublication | null;
     priceCents?: number | null;
     authors?: string[];
     location?: BookLocation | null;
@@ -41,6 +48,7 @@ export const bookBatchDetailFields: readonly (keyof BookBatchFields)[] = [
     'titleGenerated',
     'ownership',
     'publisher',
+    'publication',
     'priceCents',
     'authors',
 ];

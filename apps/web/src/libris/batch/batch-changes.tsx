@@ -5,20 +5,34 @@ import { BookFormat } from '../../shared/book-form/book-format.util';
 import type { MessageKey } from '../../shared/i18n/catalog-en';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Icon } from '../../shared/ui/icon';
+import { SelectField } from '../../shared/ui/select-field';
 import { TextField } from '../../shared/ui/text-field';
 import { AuthorPicker } from '../books/author-picker';
 import { LocationField } from '../books/location-field';
 import { TagPicker } from '../books/tag-picker';
 import { useBookcases } from '../locations/use-bookcases';
-import type { BatchDraft, BatchField, ChoiceMode, TextChoice } from './book-batch.util';
+import type {
+    BatchDraft,
+    BatchField,
+    ChoiceMode,
+    PublicationChoice,
+    TextChoice,
+} from './book-batch.util';
 import { BookBatch } from './book-batch.util';
 import { PublisherSuggestions } from '../../shared/book-form/publisher-suggestions';
 import { BatchChoice } from './batch-choice';
 
 type ValueMode = Exclude<ChoiceMode, 'keep'>;
 
-const fillHints: Record<'publisher' | 'price' | 'shelf', Record<ValueMode, MessageKey | null>> = {
+type HintedField = 'publisher' | 'publication' | 'price' | 'shelf';
+
+const fillHints: Record<HintedField, Record<ValueMode, MessageKey | null>> = {
     publisher: { set: null, fill: 'batch.fillHint.publisher', clear: 'batch.clearHint.publisher' },
+    publication: {
+        set: 'batch.publicationHint',
+        fill: 'batch.fillHint.publication',
+        clear: 'batch.clearHint.publication',
+    },
     price: { set: 'batch.priceHint', fill: 'batch.fillHint.price', clear: 'batch.clearHint.price' },
     shelf: { set: null, fill: 'batch.fillHint.shelf', clear: 'batch.clearHint.shelf' },
 };
@@ -83,7 +97,7 @@ function ValueModes({
     );
 }
 
-function Hint({ field, mode }: { field: 'publisher' | 'price' | 'shelf'; mode: ChoiceMode }) {
+function Hint({ field, mode }: { field: HintedField; mode: ChoiceMode }) {
     const { t } = useI18n();
     const hint = mode === 'keep' ? null : fillHints[field][mode];
 
@@ -131,6 +145,53 @@ function TextChange({
     );
 }
 
+function PublicationChange({
+    titleId,
+    choice,
+    onChange,
+}: {
+    titleId: string;
+    choice: PublicationChoice;
+    onChange(choice: PublicationChoice): void;
+}) {
+    const { t, locale } = useI18n();
+
+    return (
+        <>
+            <ValueModes
+                titleId={titleId}
+                setLabel="batch.set"
+                mode={choice.mode}
+                onChange={(mode) => onChange({ ...choice, mode })}
+            />
+            {BookBatch.takesValue(choice.mode) && (
+                <div className="book-form__row book-form__row--two">
+                    <SelectField
+                        label={t('form.publicationMonth')}
+                        value={choice.month}
+                        options={[
+                            { value: '', label: t('form.monthNone') },
+                            ...Array.from({ length: 12 }, (_, index) => ({
+                                value: String(index + 1),
+                                label: BookFormat.monthName(index + 1, locale),
+                            })),
+                        ]}
+                        onChange={(event) => onChange({ ...choice, month: event.target.value })}
+                    />
+                    <TextField
+                        label={t('form.publicationYear')}
+                        inputMode="numeric"
+                        maxLength={4}
+                        value={choice.year}
+                        onChange={(event) => onChange({ ...choice, year: event.target.value })}
+                    />
+                </div>
+            )}
+            <Hint field="publication" mode={choice.mode} />
+        </>
+    );
+}
+
 function FieldChange({
     field,
     titleId,
@@ -169,6 +230,14 @@ function FieldChange({
                     titleId={titleId}
                     choice={draft[field]}
                     onChange={(choice) => set(field, choice)}
+                />
+            );
+        case 'publication':
+            return (
+                <PublicationChange
+                    titleId={titleId}
+                    choice={draft.publication}
+                    onChange={(choice) => set('publication', choice)}
                 />
             );
         case 'shelf':

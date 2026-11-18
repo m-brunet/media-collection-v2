@@ -97,12 +97,13 @@ The same batch edit is offered in the Library for any books shown, in a collecti
 
 - **Choosing the books:** **Edit books** turns the same wall of covers into a selection: each book gets a round check and clicking a cover adds or removes it instead of opening the book. Missing volumes stay in place but cannot be chosen and are not counted; a bottom bar counts the chosen books and offers **Select all**, **Select owned**, **Clear**, **Cancel** and **Edit N books**. While books are being chosen, changed and reviewed, the reading toggle and every competing collection action are hidden: **Edit collection**, **Edit books**, **Add volumes** and **Mark Finished** / **Reopen collection** (issue #86). They come back after saving and Done, or Cancel, as the collection now stands (Add volumes still disabled on a Finished collection); a failed save keeps them hidden. Guests do not see the mode (redesigned 2026-11-13, alternative A of issue #24).
 - **Side drawer:** **Edit N books** opens a drawer on the right, in three steps (Choose, Change, Review). The covers stay visible and clickable beside it, so the selection can still change. Escape or the close button closes the drawer and goes back to the selection.
-- **Fields:** nothing is listed as Leave unchanged: the drawer starts empty and each field to change is added as a card (**+ Ownership**, **+ Publisher**…) and can be removed again. A field that is not added stays as it is on every book. Publisher, Price and Shelf cards offer **Set to** (Shelf: **Place on a shelf**), **Fill if empty** or an explicit **Clear**, so an empty input never clears by accident. Fill if empty applies the value only to the chosen books that have none for that field; the others keep theirs.
+- **Fields:** nothing is listed as Leave unchanged: the drawer starts empty and each field to change is added as a card (**+ Ownership**, **+ Publisher**…) and can be removed again. A field that is not added stays as it is on every book. Publisher, Publication date, Price and Shelf cards offer **Set to** (Shelf: **Place on a shelf**), **Fill if empty** or an explicit **Clear**, so an empty input never clears by accident. Fill if empty applies the value only to the chosen books that have none for that field; the others keep theirs.
 
   | Field | How the batch value applies |
   |---|---|
   | Ownership (Owned, Not owned) | Replaced. A lent book set to Not owned is skipped |
   | Publisher | Replaced, filled if empty, or cleared. The field suggests existing publishers; the value is saved as sent, without correction or question ([publishers](book-entry.md#publishers)) |
+  | Publication date (year, optional month) | Replaced, filled on the books with no date, or cleared (year and month). A year set with No month removes the month; a book with a year keeps its whole date when filling. Set to and Fill if empty need a year from 1 to 9999 (decided 2026-11-18, issue #139) |
   | Price | Replaced, filled if empty, or cleared |
   | Shelf (bookcase and shelf) | Replaced, filled on the books without one, or cleared (no physical location) |
   | Tags | **Add these** and **remove these** (existing tags only), never a full replacement: each book's other tags stay |
@@ -110,7 +111,7 @@ The same batch edit is offered in the Library for any books shown, in a collecti
   | Own reading status | Read / Not read for the **signed-in account only** |
   | Titles | **Leave unchanged / Use the generated title** |
 
-- **Never in a batch:** category (see [Category](#category)), ISBN, cover, title text, summary, page count, publication date, personal note, collection membership and volume numbers.
+- **Never in a batch:** category (see [Category](#category)), ISBN, cover, title text, summary, page count, personal note, collection membership and volume numbers.
 - **Use the generated title** only changes hand-written titles of the chosen **Manga and Comics** books: they become `Name Vol. N` (`Name Vol. N–M` for an omnibus) and generated. Books are left out. Choosing the books and this option is the explicit choice; hand-written titles are never replaced by default.
 - **Summary before saving:** the server plans the batch without saving it. The review groups the plan **by change** (for example "Publisher → Glénat, 2 books", with each book's previous value and how many other books stay as they are), with a **Left out** card per book left out and its reason; a switch groups it **by book** instead, each change as "old → new" (including "old title → new title") and the books already as asked. Each cover then shows how many changes its book gets, or that it is left out; clicking a cover shows only that book's changes. Saving applies the changes to the other books in **one transaction**.
 - **After saving:** the drawer closes and a banner gives the number of books updated and each book left out with its reason. The covers show **Updated** or **Left out**; **Edit books again** starts a new batch and **Done** goes back to the collection.
@@ -216,6 +217,7 @@ A separate desktop page mirroring mobile ownership progression is future scope, 
 26. One Piece volume 10 is catalogued as "OK, let's stand up !": the row offers it with the title One Piece Vol. 10 and "BnF suggests: OK, let's stand up !" (or "Sudoc suggests: …" for a volume found in the Sudoc).
 27. No volume of the collection is known to the BnF: nothing is added and the page says the edition was not found in the BnF or Sudoc catalogues (no volume is known to either).
 28. Volume 3 is added by someone else while the review is open: saving leaves volume 3 out with its reason and adds the other ticked volumes.
+29. Batch edit of Gunnm 1 (May 2001) and 2 (no date), Publication date set to 2019 with No month: both get 2019 and 1 loses its month; the summary shows "May 2001 → 2019" and "none → 2019". Fill if empty with 2019 changes 2 only.
 
 ## Implementation references
 
