@@ -323,6 +323,109 @@ describe('BookBatchPlanner', () => {
             reason: 'book-outside-collection',
         });
     });
+    it('sets the publication year and month of each book', async () => {
+        const current = BookDoubles.library();
+        const one = await BookDoubles.volume(current, 1);
+
+        const result = await current.planner.plan(
+            owner.id,
+            request([one.id], { publication: { year: 2019, month: 3 } }),
+            null,
+        );
+
+        expect(result.planned[0]!.entry).toMatchObject({
+            before: { publication: null },
+            after: { publication: { year: 2019, month: 3 } },
+        });
+        expect(result.planned[0]!.detailsChanged).toBe(true);
+    });
+    it('removes the old month when the year is set without a month', async () => {
+        const current = BookDoubles.library();
+        const one = await BookDoubles.volume(current, 1, {
+            publicationYear: 2001,
+            publicationMonth: 5,
+        });
+
+        const result = await current.planner.plan(
+            owner.id,
+            request([one.id], { publication: { year: 2019, month: null } }),
+            null,
+        );
+
+        expect(result.planned[0]!.entry).toMatchObject({
+            before: { publication: { year: 2001, month: 5 } },
+            after: { publication: { year: 2019, month: null } },
+        });
+    });
+    it('fills the publication date only on the books that have none', async () => {
+        const current = BookDoubles.library();
+        const one = await BookDoubles.volume(current, 1, {
+            publicationYear: 2001,
+            publicationMonth: 5,
+        });
+        const two = await BookDoubles.volume(current, 2);
+
+        const result = await current.planner.plan(
+            owner.id,
+            request([one.id, two.id], {
+                publication: { year: 2019, month: null },
+                onlyIfEmpty: ['publication'],
+            }),
+            null,
+        );
+
+        expect(result.planned.map((planned) => planned.entry)).toEqual([
+            { id: one.id, title: 'Gunnm Vol. 1', before: {}, after: {} },
+            {
+                id: two.id,
+                title: 'Gunnm Vol. 2',
+                before: { publication: null },
+                after: { publication: { year: 2019, month: null } },
+            },
+        ]);
+    });
+    it('clears the publication year and month', async () => {
+        const current = BookDoubles.library();
+        const one = await BookDoubles.volume(current, 1, {
+            publicationYear: 2001,
+            publicationMonth: 5,
+        });
+
+        const result = await current.planner.plan(
+            owner.id,
+            request([one.id], { publication: null }),
+            null,
+        );
+
+        expect(result.planned[0]!.entry).toMatchObject({
+            before: { publication: { year: 2001, month: 5 } },
+            after: { publication: null },
+        });
+    });
+    it('refuses a publication year of 0', async () => {
+        const current = BookDoubles.library();
+        const one = await BookDoubles.volume(current, 1);
+
+        const result = current.planner.plan(
+            owner.id,
+            request([one.id], { publication: { year: 0, month: null } }),
+            null,
+        );
+
+        await expect(result).rejects.toMatchObject({ reason: 'publication-year-invalid' });
+    });
+    it('refuses a publication month outside the year', async () => {
+        const current = BookDoubles.library();
+        const one = await BookDoubles.volume(current, 1);
+
+        const result = current.planner.plan(
+            owner.id,
+            request([one.id], { publication: { year: 2019, month: 13 } }),
+            null,
+        );
+
+        await expect(result).rejects.toMatchObject({ reason: 'publication-month-invalid' });
+    });
     it('refuses an unknown shelf', async () => {
         const current = BookDoubles.library();
         const one = await BookDoubles.volume(current, 1);

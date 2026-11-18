@@ -67,6 +67,10 @@ export const bookBatchSchema = z.strictObject({
         .strictObject({
             ownership: z.enum(['owned', 'not-owned']).optional(),
             publisher: BookFields.text(1000).optional(),
+            publication: z
+                .strictObject({ year: z.number().int(), month: z.number().int().nullable() })
+                .nullable()
+                .optional(),
             price: BookFields.text(40).optional(),
             shelfId: idSchema.nullable().optional(),
             tags: z
@@ -80,12 +84,16 @@ export const bookBatchSchema = z.strictObject({
             read: z.boolean().optional(),
             generatedTitles: z.literal(true).optional(),
             onlyIfEmpty: z
-                .array(z.enum(['publisher', 'price', 'shelfId']))
-                .max(3)
+                .array(z.enum(['publisher', 'publication', 'price', 'shelfId']))
+                .max(4)
                 .optional(),
         })
         .refine((changes) =>
-            (changes.onlyIfEmpty ?? []).every((field) => Boolean(changes[field]?.trim())),
+            (changes.onlyIfEmpty ?? []).every((field) =>
+                field === 'publication'
+                    ? Boolean(changes.publication)
+                    : Boolean(changes[field]?.trim()),
+            ),
         ),
 });
 

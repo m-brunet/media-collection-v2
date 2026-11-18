@@ -4,6 +4,7 @@ import type {
     BookBatchDto,
     BookBatchFieldsDto,
     BookBatchFillable,
+    BookBatchPublicationDto,
     BookBatchSkipReason,
     BookOwnership,
 } from '../../../../../packages/contracts/src/http';
@@ -17,9 +18,12 @@ export type ChoiceMode = 'keep' | 'set' | 'fill' | 'clear';
 
 export type TextChoice = { mode: ChoiceMode; value: string };
 
+export type PublicationChoice = { mode: ChoiceMode; year: string; month: string };
+
 export type BatchField =
     | 'ownership'
     | 'publisher'
+    | 'publication'
     | 'price'
     | 'shelf'
     | 'tags'
@@ -31,6 +35,7 @@ export interface BatchDraft {
     fields: BatchField[];
     ownership: BookOwnership | 'keep';
     publisher: TextChoice;
+    publication: PublicationChoice;
     price: TextChoice;
     shelf: { mode: ChoiceMode; bookcaseId: string | null; shelfId: string | null };
     addTags: DraftTag[];
@@ -45,6 +50,7 @@ export type BatchProblem =
     | 'nothing'
     | 'ownership'
     | 'publisher'
+    | 'publication'
     | 'price'
     | 'shelf'
     | 'authors'
@@ -75,6 +81,7 @@ type Field = keyof BookBatchFieldsDto;
 const fieldLabels: Partial<Record<Field, MessageKey>> = {
     ownership: 'form.ownership',
     publisher: 'form.publisher',
+    publication: 'batch.publication',
     priceCents: 'batch.price',
     authors: 'form.authors',
     location: 'batch.location',
@@ -84,6 +91,7 @@ const fieldLabels: Partial<Record<Field, MessageKey>> = {
 const batchFieldLabels: Record<BatchField, MessageKey> = {
     ownership: 'form.ownership',
     publisher: 'form.publisher',
+    publication: 'batch.publication',
     price: 'batch.price',
     shelf: 'batch.location',
     tags: 'tags.field',
@@ -92,11 +100,13 @@ const batchFieldLabels: Record<BatchField, MessageKey> = {
     titles: 'batch.titles',
 };
 const fieldOrder = Object.keys(batchFieldLabels) as BatchField[];
-const fillableLabels: Partial<Record<MessageKey, 'publisher' | 'price' | 'shelf'>> = {
-    'form.publisher': 'publisher',
-    'batch.price': 'price',
-    'batch.location': 'shelf',
-};
+const fillableLabels: Partial<Record<MessageKey, 'publisher' | 'publication' | 'price' | 'shelf'>> =
+    {
+        'form.publisher': 'publisher',
+        'batch.publication': 'publication',
+        'batch.price': 'price',
+        'batch.location': 'shelf',
+    };
 const skipReasons: Record<BookBatchSkipReason, MessageKey> = {
     'book-lent': 'batch.skip.lent',
     'possible-duplicate': 'batch.skip.duplicate',
@@ -110,6 +120,7 @@ export class BookBatch {
             fields: [],
             ownership: 'keep',
             publisher: { mode: 'keep', value: '' },
+            publication: { mode: 'keep', year: '', month: '' },
             price: { mode: 'keep', value: '' },
             shelf: { mode: 'keep', bookcaseId: null, shelfId: null },
             addTags: [],
@@ -138,6 +149,7 @@ export class BookBatch {
 
         switch (field) {
             case 'publisher':
+            case 'publication':
             case 'price':
                 return { ...added, [field]: { ...draft[field], mode: 'set' } };
             case 'shelf':
@@ -178,6 +190,13 @@ export class BookBatch {
             return 'publisher';
         }
 
+        if (
+            BookBatch.takesValue(draft.publication.mode) &&
+            !/^\d{1,4}$/.test(draft.publication.year.trim())
+        ) {
+            return 'publication';
+        }
+
         if (BookBatch.takesValue(draft.price.mode) && !draft.price.value.trim()) {
             return 'price';
         }
@@ -202,6 +221,10 @@ export class BookBatch {
 
         if (draft.publisher.mode !== 'keep') {
             changes.publisher = BookBatch.text(draft.publisher);
+        }
+
+        if (draft.publication.mode !== 'keep') {
+            changes.publication = BookBatch.publication(draft.publication);
         }
 
         if (draft.price.mode !== 'keep') {
@@ -374,6 +397,16 @@ export class BookBatch {
                 };
             case 'publisher':
                 return fields.publisher ? { text: fields.publisher } : { key: 'batch.none' };
+            case 'publication':
+                return fields.publication
+                    ? {
+                          text: BookFormat.publication(
+                              fields.publication.year,
+                              fields.publication.month,
+                              locale,
+                          ),
+                      }
+                    : { key: 'batch.none' };
             case 'priceCents':
                 return fields.priceCents === null || fields.priceCents === undefined
                     ? { key: 'batch.none' }
@@ -402,11 +435,21 @@ export class BookBatch {
     private static filled(draft: BatchDraft): BookBatchFillable[] {
         const modes: [BookBatchFillable, ChoiceMode][] = [
             ['publisher', draft.publisher.mode],
+            ['publication', draft.publication.mode],
             ['price', draft.price.mode],
             ['shelfId', draft.shelf.mode],
         ];
 
         return modes.filter(([, mode]) => mode === 'fill').map(([field]) => field);
+    }
+
+    private static publication(choice: PublicationChoice): BookBatchPublicationDto | null {
+        return choice.mode === 'clear'
+            ? null
+            : {
+                  year: Number(choice.year.trim()),
+                  month: choice.month ? Number(choice.month) : null,
+              };
     }
 
     private static text(choice: TextChoice): string | null {

@@ -275,6 +275,105 @@ describe('EditBooksInBatch', () => {
             volumeTo: 1,
         });
     });
+    it('saves the publication year and month on every chosen book', async () => {
+        const { current, useCase } = setUp();
+        const one = await BookDoubles.volume(current, 1);
+        const two = await BookDoubles.volume(current, 2, {
+            publicationYear: 2001,
+            publicationMonth: 5,
+        });
+
+        await useCase.execute(
+            owner,
+            batch([one.id, two.id], { publication: { year: 2019, month: 3 } }),
+        );
+
+        expect(current.books.books.get(one.id)!.details.publicationDate).toEqual({
+            year: 2019,
+            month: 3,
+        });
+        expect(current.books.books.get(two.id)!.details.publicationDate).toEqual({
+            year: 2019,
+            month: 3,
+        });
+    });
+    it('saves a year without a month, removing the old month', async () => {
+        const { current, useCase } = setUp();
+        const one = await BookDoubles.volume(current, 1, {
+            publicationYear: 2001,
+            publicationMonth: 5,
+        });
+
+        await useCase.execute(owner, batch([one.id], { publication: { year: 2019, month: null } }));
+
+        expect(current.books.books.get(one.id)!.details.publicationDate).toEqual({
+            year: 2019,
+            month: null,
+        });
+    });
+    it('fills the publication date only on the books that have none', async () => {
+        const { current, useCase } = setUp();
+        const one = await BookDoubles.volume(current, 1, {
+            publicationYear: 2001,
+            publicationMonth: 5,
+        });
+        const two = await BookDoubles.volume(current, 2);
+
+        await useCase.execute(
+            owner,
+            batch([one.id, two.id], {
+                publication: { year: 2019, month: null },
+                onlyIfEmpty: ['publication'],
+            }),
+        );
+
+        expect(current.books.books.get(one.id)!.details.publicationDate).toEqual({
+            year: 2001,
+            month: 5,
+        });
+        expect(current.books.books.get(two.id)!.details.publicationDate).toEqual({
+            year: 2019,
+            month: null,
+        });
+    });
+    it('clears the publication year and month', async () => {
+        const { current, useCase } = setUp();
+        const one = await BookDoubles.volume(current, 1, {
+            publicationYear: 2001,
+            publicationMonth: 5,
+        });
+
+        await useCase.execute(owner, batch([one.id], { publication: null }));
+
+        expect(current.books.books.get(one.id)!.details.publicationDate).toBeNull();
+    });
+    it('refuses a publication year of 0 and changes nothing', async () => {
+        const { current, useCase } = setUp();
+        const one = await BookDoubles.volume(current, 1, { publicationYear: 2001 });
+
+        const result = useCase.execute(
+            owner,
+            batch([one.id], { publication: { year: 0, month: null } }),
+        );
+
+        await expect(result).rejects.toMatchObject({ reason: 'publication-year-invalid' });
+        expect(current.books.books.get(one.id)!.details.publicationDate?.year).toBe(2001);
+    });
+    it('records the publication change of each book', async () => {
+        const { current, useCase } = setUp();
+        const one = await BookDoubles.volume(current, 1);
+
+        current.trail.entries.length = 0;
+
+        await useCase.execute(owner, batch([one.id], { publication: { year: 2019, month: 3 } }));
+
+        expect(current.trail.entries[1]).toMatchObject({
+            category: 'book.updated',
+            subjectId: one.id,
+            before: { title: 'Gunnm Vol. 1', publication: null },
+            after: { title: 'Gunnm Vol. 1', publication: { year: 2019, month: 3 } },
+        });
+    });
     it('records one batch entry with each book change as a related change', async () => {
         const { current, useCase } = setUp();
         const one = await BookDoubles.volume(current, 1);

@@ -194,6 +194,131 @@ it('describes a shelf by its bookcase', () => {
     ]);
 });
 
+it('sends a publication year and month to set', () => {
+    const draft = {
+        ...BookBatch.draft(),
+        publication: { mode: 'set' as const, year: ' 2019 ', month: '3' },
+    };
+
+    const result = BookBatch.changes(draft);
+
+    expect(result).toEqual({ publication: { year: 2019, month: 3 } });
+});
+
+it('sends a publication year without a month as no month', () => {
+    const draft = {
+        ...BookBatch.draft(),
+        publication: { mode: 'set' as const, year: '2019', month: '' },
+    };
+
+    const result = BookBatch.changes(draft);
+
+    expect(result).toEqual({ publication: { year: 2019, month: null } });
+});
+
+it('sends a publication date to fill and names it as filled only', () => {
+    const draft = {
+        ...BookBatch.draft(),
+        publication: { mode: 'fill' as const, year: '2019', month: '' },
+    };
+
+    const result = BookBatch.changes(draft);
+
+    expect(result).toEqual({
+        publication: { year: 2019, month: null },
+        onlyIfEmpty: ['publication'],
+    });
+});
+
+it('sends an explicit null for a cleared publication date', () => {
+    const draft = {
+        ...BookBatch.draft(),
+        publication: { mode: 'clear' as const, year: '2019', month: '3' },
+    };
+
+    const result = BookBatch.changes(draft);
+
+    expect(result).toEqual({ publication: null });
+});
+
+it('asks for a publication year when the date is set without one', () => {
+    const draft = {
+        ...BookBatch.draft(),
+        publication: { mode: 'set' as const, year: ' ', month: '3' },
+    };
+
+    const result = BookBatch.problem(draft);
+
+    expect(result).toBe('publication');
+});
+
+it('asks for a publication year when the date is filled with a word', () => {
+    const draft = {
+        ...BookBatch.draft(),
+        publication: { mode: 'fill' as const, year: 'soon', month: '' },
+    };
+
+    const result = BookBatch.problem(draft);
+
+    expect(result).toBe('publication');
+});
+
+it('leaves a publication year of 0 to the server', () => {
+    const draft = {
+        ...BookBatch.draft(),
+        publication: { mode: 'set' as const, year: '0', month: '' },
+    };
+
+    const result = BookBatch.problem(draft);
+
+    expect(result).toBeNull();
+});
+
+it('describes a publication date by its month and year', () => {
+    const before = { publication: { year: 2001, month: 5 } };
+    const after = { publication: { year: 2019, month: 3 } };
+
+    const result = BookBatch.lines(before, after, 'en-GB');
+
+    expect(result).toEqual([
+        {
+            label: 'batch.publication',
+            before: { text: 'May 2001' },
+            after: { text: 'March 2019' },
+        },
+    ]);
+});
+
+it('describes a publication date without a month by its year, and none', () => {
+    const before = { publication: null };
+    const after = { publication: { year: 2019, month: null } };
+
+    const result = BookBatch.lines(before, after, 'en-GB');
+
+    expect(result).toEqual([
+        { label: 'batch.publication', before: { key: 'batch.none' }, after: { text: '2019' } },
+    ]);
+});
+
+it('adds a publication date card with a date to set', () => {
+    const draft = BookBatch.draft();
+
+    const result = BookBatch.add(draft, 'publication');
+
+    expect(result.publication).toEqual({ mode: 'set', year: '', month: '' });
+});
+
+it('says when a planned publication date only fills the books without one', () => {
+    const draft = {
+        ...BookBatch.draft(),
+        publication: { mode: 'fill' as const, year: '2019', month: '' },
+    };
+
+    const result = BookBatch.fillsOnly(draft, 'batch.publication');
+
+    expect(result).toBe(true);
+});
+
 it('names the reason a book was left out', () => {
     const reason = 'book-lent' as const;
 
@@ -258,7 +383,15 @@ it('offers the change cards not added yet, in form order', () => {
 
     const result = BookBatch.remaining(draft);
 
-    expect(result).toEqual(['publisher', 'price', 'shelf', 'authors', 'read', 'titles']);
+    expect(result).toEqual([
+        'publisher',
+        'publication',
+        'price',
+        'shelf',
+        'authors',
+        'read',
+        'titles',
+    ]);
 });
 
 it('asks for a reading status when its card has no choice yet', () => {

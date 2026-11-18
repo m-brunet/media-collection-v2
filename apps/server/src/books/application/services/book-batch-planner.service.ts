@@ -26,6 +26,7 @@ import type { LentBookGuard } from './lent-book-guard.service.js';
 import { Book } from '../../domain/entities/book.entity.js';
 import type { BookDetails } from '../../domain/entities/book.entity.js';
 import { Price } from '../../domain/value-objects/price.value-object.js';
+import { PublicationDate } from '../../domain/value-objects/publication-date.value-object.js';
 import type { Clock } from '../../../shared/application/ports/driven/clock.interface.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
 import { NameKey } from '../../../shared/domain/name-key.helper.js';
@@ -52,6 +53,7 @@ type BatchValues = {
     bookIds: readonly string[];
     changes: BookBatchChanges;
     authors: readonly AuthorMatch[] | null;
+    publication: PublicationDate | null;
     price: Price | null;
     location: BookLocation | null;
     added: BookTag[];
@@ -93,6 +95,9 @@ export class BookBatchPlanner {
             bookIds,
             changes,
             authors,
+            publication: changes.publication
+                ? PublicationDate.from(changes.publication.year, changes.publication.month)
+                : null,
             price: changes.price?.trim() ? Price.parse(changes.price) : null,
             location: changes.shelfId ? await this.shelves.locate(changes.shelfId) : null,
             added: changes.tags ? await this.tags.find(changes.tags.add) : [],
@@ -234,6 +239,11 @@ export class BookBatchPlanner {
                 (BookBatchPlanner.fills(changes, 'publisher') && previous.publisher)
                     ? previous.publisher
                     : changes.publisher,
+            publicationDate:
+                changes.publication === undefined ||
+                (BookBatchPlanner.fills(changes, 'publication') && previous.publicationDate)
+                    ? previous.publicationDate
+                    : values.publication,
             price:
                 changes.price === undefined ||
                 (BookBatchPlanner.fills(changes, 'price') && previous.price)
@@ -254,6 +264,9 @@ export class BookBatchPlanner {
             titleGenerated: details.titleGenerated,
             ownership: details.ownership,
             publisher: details.publisher,
+            publication: details.publicationDate
+                ? { year: details.publicationDate.year, month: details.publicationDate.month }
+                : null,
             priceCents: details.price?.cents ?? null,
             authors: authors ? authors.map((author) => author.name) : await this.names(details),
         };

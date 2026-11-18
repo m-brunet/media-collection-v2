@@ -14,6 +14,7 @@ const problems: Record<BatchProblem, MessageKey> = {
     nothing: 'batch.problem.nothing',
     ownership: 'batch.problem.ownership',
     publisher: 'batch.problem.publisher',
+    publication: 'batch.problem.publication',
     price: 'batch.problem.price',
     shelf: 'batch.problem.shelf',
     authors: 'batch.problem.authors',

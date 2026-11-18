@@ -229,6 +229,7 @@ export interface NewBookDto extends BookInputDto {
 export interface BookBatchChangesDto {
     ownership?: BookOwnership;
     publisher?: string | null;
+    publication?: BookBatchPublicationDto | null;
     price?: string | null;
     shelfId?: string | null;
     tags?: { add: string[]; remove: string[] };
@@ -238,7 +239,12 @@ export interface BookBatchChangesDto {
     onlyIfEmpty?: BookBatchFillable[];
 }
 
-export type BookBatchFillable = 'publisher' | 'price' | 'shelfId';
+export type BookBatchFillable = 'publisher' | 'publication' | 'price' | 'shelfId';
+
+export interface BookBatchPublicationDto {
+    year: number;
+    month: number | null;
+}
 
 export interface BookBatchInputDto {
     collectionId?: string;
@@ -252,6 +258,7 @@ export interface BookBatchFieldsDto {
     titleGenerated?: boolean;
     ownership?: BookOwnership;
     publisher?: string | null;
+    publication?: BookBatchPublicationDto | null;
     priceCents?: number | null;
     authors?: string[];
     location?: BookLocationDto | null;
