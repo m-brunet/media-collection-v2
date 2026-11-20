@@ -12,6 +12,9 @@ import { ChoiceButtons } from '../../shared/ui/choice-buttons';
 import { Panel } from '../../shared/ui/layout';
 import { BookFilter } from '../filters/book-filter.util';
 import { BarRanking } from './bar-ranking';
+import type { ChartSegment } from './chart-segment';
+import { RingChart } from './ring-chart';
+import { SplitBar } from './split-bar';
 import { StatisticsFormat } from './statistics-format.util';
 
 export type Heading = 'h2' | 'h3';
@@ -39,6 +42,54 @@ export function RankByChoice({
             ]}
             onChange={onChange}
         />
+    );
+}
+
+export function CountedSplit({
+    title,
+    choiceLabel,
+    books,
+    pages,
+    paged,
+    chart,
+    heading: Title,
+    note,
+}: {
+    title: string;
+    choiceLabel: string;
+    books: readonly ChartSegment[];
+    pages: readonly ChartSegment[];
+    paged: { known: number; total: number };
+    chart: 'ring' | 'bar';
+    heading?: Heading;
+    note?: string;
+}) {
+    const { t, locale } = useI18n();
+    const [order, setOrder] = useState<RankOrder>('books');
+    const segments = order === 'books' ? books : pages;
+    const pagesNote =
+        order === 'pages' &&
+        paged.known < paged.total &&
+        t(paged.total === 1 ? 'statistics.pagesKnownOne' : 'statistics.pagesKnownMany', {
+            known: StatisticsFormat.number(paged.known, locale),
+            total: StatisticsFormat.number(paged.total, locale),
+        });
+
+    return (
+        <>
+            <div className="statistics-card__heading">
+                {Title && <Title className="eyebrow">{title}</Title>}
+                <RankByChoice label={choiceLabel} value={order} onChange={setOrder} />
+            </div>
+            {chart === 'ring' ? (
+                <RingChart label={title} segments={segments} note={[note, pagesNote]} />
+            ) : (
+                <>
+                    <SplitBar label={title} segments={segments} />
+                    {pagesNote && <p className="muted">{pagesNote}</p>}
+                </>
+            )}
+        </>
     );
 }
 

@@ -6,6 +6,7 @@ import { SplitBar } from './split-bar';
 import {
     AuthorsRanking,
     BiggestCollectionRecord,
+    CountedSplit,
     LongestRecord,
     MostExpensiveRecord,
     PublisherNotes,
@@ -36,7 +37,14 @@ export function StoryView({
                 sentence={<Sentence said={said.own} />}
                 details={said.share && <p className="muted">{said.share}</p>}
             >
-                <SplitBar label={t('statistics.byCategory')} segments={segments.categories} />
+                <CountedSplit
+                    title={t('statistics.byCategory')}
+                    choiceLabel={t('statistics.countCategoriesBy')}
+                    books={segments.categories}
+                    pages={segments.categoryPages}
+                    paged={segments.categoryPaged}
+                    chart="bar"
+                />
             </Section>
             {pages.known > 0 && (
                 <Section
@@ -72,7 +80,14 @@ export function StoryView({
                     sentence={<Sentence said={said.read} />}
                     details={<p className="muted">{t('statistics.readingNote')}</p>}
                 >
-                    <SplitBar label={t('statistics.yourReading')} segments={segments.reading} />
+                    <CountedSplit
+                        title={t('statistics.yourReading')}
+                        choiceLabel={t('statistics.countReadingBy')}
+                        books={segments.reading}
+                        pages={segments.readingPages}
+                        paged={segments.readingPaged}
+                        chart="bar"
+                    />
                 </Section>
             )}
             {(publishers.byBooks.length > 0 || authors.byBooks.length > 0) && (

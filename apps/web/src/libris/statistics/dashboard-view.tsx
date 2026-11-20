@@ -8,6 +8,7 @@ import { StatisticsFormat } from './statistics-format.util';
 import {
     AuthorsRanking,
     BiggestCollectionRecord,
+    CountedSplit,
     KnownOn,
     LongestRecord,
     MostExpensiveRecord,
@@ -40,15 +41,26 @@ export function DashboardView({
             </div>
             <div className="statistics-grid statistics-grid--rings">
                 <Panel className="statistics-card">
-                    <h2 className="eyebrow">{t('statistics.byCategory')}</h2>
-                    <RingChart label={t('statistics.byCategory')} segments={segments.categories} />
+                    <CountedSplit
+                        title={t('statistics.byCategory')}
+                        choiceLabel={t('statistics.countCategoriesBy')}
+                        books={segments.categories}
+                        pages={segments.categoryPages}
+                        paged={segments.categoryPaged}
+                        chart="ring"
+                        heading="h2"
+                    />
                 </Panel>
                 {statistics.reading && (
                     <Panel className="statistics-card">
-                        <h2 className="eyebrow">{t('statistics.yourReading')}</h2>
-                        <RingChart
-                            label={t('statistics.yourReading')}
-                            segments={segments.reading}
+                        <CountedSplit
+                            title={t('statistics.yourReading')}
+                            choiceLabel={t('statistics.countReadingBy')}
+                            books={segments.reading}
+                            pages={segments.readingPages}
+                            paged={segments.readingPaged}
+                            chart="ring"
+                            heading="h2"
                             note={t('statistics.readingNote')}
                         />
                     </Panel>

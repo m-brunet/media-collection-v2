@@ -18,6 +18,10 @@ export function useStatisticsSegments(statistics: StatisticsDto, category: BookC
         StatisticsFormat.percent(value, total, locale);
     const library = categories.reduce((sum, value) => sum + statistics.categories[value], 0);
     const owned = statistics.reading ? statistics.reading.read + statistics.reading.notRead : 0;
+    const pages = (value: BookCategory) => statistics.categoryPages[value].pages;
+    const libraryPages = categories.reduce((sum, value) => sum + pages(value), 0);
+    const readingPages = statistics.reading?.pages;
+    const ownedPages = readingPages ? readingPages.read + readingPages.notRead : 0;
 
     return {
         library,
@@ -31,6 +35,42 @@ export function useStatisticsSegments(statistics: StatisticsDto, category: BookC
                 color: categoryColors[value],
                 dimmed: category !== null && category !== value,
             })),
+        categoryPages: [...categories]
+            .sort((a, b) => pages(b) - pages(a))
+            .map((value): ChartSegment => ({
+                key: value,
+                label: t(`category.${value}`),
+                value: pages(value),
+                detail: shared(pages(value), libraryPages),
+                color: categoryColors[value],
+                dimmed: category !== null && category !== value,
+            })),
+        categoryPaged: {
+            known: categories.reduce(
+                (sum, value) => sum + statistics.categoryPages[value].known,
+                0,
+            ),
+            total: library,
+        },
+        readingPages: readingPages
+            ? [
+                  {
+                      key: 'read',
+                      label: t('status.read'),
+                      value: readingPages.read,
+                      detail: shared(readingPages.read, ownedPages),
+                      color: 'var(--color-chart-1)',
+                  },
+                  {
+                      key: 'not-read',
+                      label: t('status.notRead'),
+                      value: readingPages.notRead,
+                      detail: shared(readingPages.notRead, ownedPages),
+                      color: 'var(--color-chart-track)',
+                  },
+              ]
+            : [],
+        readingPaged: { known: readingPages?.known ?? 0, total: owned },
         reading: statistics.reading
             ? [
                   {

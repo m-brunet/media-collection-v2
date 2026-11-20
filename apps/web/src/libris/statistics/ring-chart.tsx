@@ -12,7 +12,7 @@ export function RingChart({
 }: {
     label: string;
     segments: readonly ChartSegment[];
-    note?: ReactNode;
+    note?: ReactNode | ReactNode[];
 }) {
     const total = segments.reduce((sum, segment) => sum + segment.value, 0);
     let start = 0;
@@ -56,7 +56,14 @@ export function RingChart({
             </svg>
             <div className="statistics-ring__legend">
                 <ChartLegend label={label} segments={segments} />
-                {note && <p className="muted">{note}</p>}
+                {[note].flat().map(
+                    (line, index) =>
+                        line && (
+                            <p key={index} className="muted">
+                                {line}
+                            </p>
+                        ),
+                )}
             </div>
         </div>
     );

@@ -12,6 +12,7 @@ import type { RankOrder } from './statistics-parts';
 import {
     AuthorsBars,
     BiggestCollectionRecord,
+    CountedSplit,
     LongestRecord,
     MostExpensiveRecord,
     PublisherNotes,
@@ -222,7 +223,14 @@ function TopicPanel({
                     title={<Sentence said={said.own} />}
                 >
                     {said.share && <p className="muted">{said.share}</p>}
-                    <SplitBar label={t('statistics.byCategory')} segments={segments.categories} />
+                    <CountedSplit
+                        title={t('statistics.byCategory')}
+                        choiceLabel={t('statistics.countCategoriesBy')}
+                        books={segments.categories}
+                        pages={segments.categoryPages}
+                        paged={segments.categoryPaged}
+                        chart="bar"
+                    />
                 </PanelContent>
             );
         case 'pages':
@@ -259,7 +267,14 @@ function TopicPanel({
                     eyebrow={t('statistics.yourReading')}
                     title={<Sentence said={said.read} />}
                 >
-                    <SplitBar label={t('statistics.yourReading')} segments={segments.reading} />
+                    <CountedSplit
+                        title={t('statistics.yourReading')}
+                        choiceLabel={t('statistics.countReadingBy')}
+                        books={segments.reading}
+                        pages={segments.readingPages}
+                        paged={segments.readingPaged}
+                        chart="bar"
+                    />
                     <p className="muted">{t('statistics.readingNote')}</p>
                 </PanelContent>
             );

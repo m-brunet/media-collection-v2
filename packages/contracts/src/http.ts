@@ -829,7 +829,12 @@ export interface StatisticsDto {
     ownedBooks: number;
     singleBooks: number;
     categories: Record<BookCategory, number>;
-    reading: { read: number; notRead: number } | null;
+    categoryPages: Record<BookCategory, { pages: number; known: number }>;
+    reading: {
+        read: number;
+        notRead: number;
+        pages: { read: number; notRead: number; known: number };
+    } | null;
     pages: { total: number; known: number };
     price: { totalCents: number; known: number };
     publishers: {
