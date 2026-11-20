@@ -4,6 +4,7 @@ import type {
     BookRecord,
     BookTotals,
     CategoryCounts,
+    CategoryPages,
     PublisherCounts,
     ReadingSplit,
 } from '../../../../application/statistics-views.js';
@@ -64,6 +65,24 @@ export class KyselyLibraryStatisticsReader implements LibraryStatisticsReader {
         return { books: count('books'), manga: count('manga'), comics: count('comics') };
     }
 
+    async categoryPages(): Promise<CategoryPages> {
+        const rows = await this.owned(null)
+            .select((eb) => [
+                'books.category',
+                eb.fn.count<number>('books.page_count').as('paged'),
+                eb.fn.sum<number | null>('books.page_count').as('pages'),
+            ])
+            .groupBy('books.category')
+            .execute();
+        const pages = (category: StatisticsCategory) => {
+            const row = rows.find((candidate) => candidate.category === category);
+
+            return { pages: Number(row?.pages ?? 0), known: Number(row?.paged ?? 0) };
+        };
+
+        return { books: pages('books'), manga: pages('manga'), comics: pages('comics') };
+    }
+
     async reading(viewerId: string, category: StatisticsCategory | null): Promise<ReadingSplit> {
         const row = await this.owned(category)
             .leftJoin('reading_statuses', (join) =>
@@ -75,11 +94,31 @@ export class KyselyLibraryStatisticsReader implements LibraryStatisticsReader {
             .select((eb) => [
                 eb.fn.countAll<number>().as('books'),
                 eb.fn.count<number>('reading_statuses.book_id').as('read'),
+                eb.fn.count<number>('books.page_count').as('paged'),
+                eb.fn.sum<number | null>('books.page_count').as('pages'),
+                eb.fn
+                    .sum<number | null>(
+                        eb
+                            .case()
+                            .when('reading_statuses.book_id', 'is not', null)
+                            .then(eb.ref('books.page_count'))
+                            .end(),
+                    )
+                    .as('readPages'),
             ])
             .executeTakeFirstOrThrow();
         const read = Number(row.read);
+        const readPages = Number(row.readPages ?? 0);
 
-        return { read, notRead: Number(row.books) - read };
+        return {
+            read,
+            notRead: Number(row.books) - read,
+            pages: {
+                read: readPages,
+                notRead: Number(row.pages ?? 0) - readPages,
+                known: Number(row.paged),
+            },
+        };
     }
 
     async publishers(category: StatisticsCategory | null): Promise<PublisherCounts> {

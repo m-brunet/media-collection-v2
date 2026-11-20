@@ -43,6 +43,27 @@ it('shows the seven topics with their headline values', async () => {
         'Finished collections14 of 38187 volumes missing',
     ]);
 });
+it('splits your reading by pages once chosen', async () => {
+    library();
+    await topics();
+    await userEvent.click(screen.getByRole('radio', { name: /^Read by you/ }));
+
+    await userEvent.click(
+        within(screen.getByRole('group', { name: 'Count your reading by' })).getByRole('radio', {
+            name: 'By pages',
+        }),
+    );
+
+    expect([
+        within(screen.getByRole('list', { name: 'Your reading' }))
+            .getAllByRole('listitem')
+            .map((item) => item.textContent),
+        panel()?.textContent,
+    ]).toEqual([
+        ['Read61,200 · 71%', 'Not read25,300 · 29%'],
+        expect.stringContaining('Pages known on 401 of 450 books'),
+    ]);
+});
 it('opens on the first topic', async () => {
     library();
 

@@ -71,7 +71,12 @@ describe('GET /api/statistics', () => {
                 ownedBooks: 3,
                 singleBooks: 1,
                 categories: { books: 1, manga: 2, comics: 0 },
-                reading: { read: 1, notRead: 2 },
+                categoryPages: {
+                    books: { pages: 272, known: 1 },
+                    manga: { pages: 384, known: 2 },
+                    comics: { pages: 0, known: 0 },
+                },
+                reading: { read: 1, notRead: 2, pages: { read: 272, notRead: 384, known: 3 } },
                 pages: { total: 656, known: 3 },
                 price: { totalCents: 3070, known: 3 },
                 publishers: {
@@ -111,6 +116,37 @@ describe('GET /api/statistics', () => {
                 },
                 collections: { finished: 0, unfinished: 1, dropped: 0, missingVolumes: 1 },
             },
+        ]);
+    });
+    it('counts the pages of each category and of the reading without the books with no page count', async () => {
+        const piranesi = await book('Piranesi', '9781635575637');
+
+        await naruto(1, '9781421539898');
+        await book('Emma', '9780141439587', { pageCount: null });
+        await arrange('/books/' + piranesi.id + '/reading', 'PUT', { read: true });
+
+        const response = await read('/statistics');
+
+        expect([response.body.categoryPages, response.body.reading?.pages]).toEqual([
+            {
+                books: { pages: 272, known: 1 },
+                manga: { pages: 192, known: 1 },
+                comics: { pages: 0, known: 0 },
+            },
+            { read: 272, notRead: 192, known: 2 },
+        ]);
+    });
+    it('narrows the pages of the reading to the chosen category, not those of the categories', async () => {
+        const piranesi = await book('Piranesi', '9781635575637');
+
+        await naruto(1, '9781421539898');
+        await arrange('/books/' + piranesi.id + '/reading', 'PUT', { read: true });
+
+        const response = await read('/statistics?category=manga');
+
+        expect([response.body.categoryPages.books, response.body.reading?.pages]).toEqual([
+            { pages: 272, known: 1 },
+            { read: 0, notRead: 192, known: 1 },
         ]);
     });
     it('gives a Guest the numbers without any reading', async () => {

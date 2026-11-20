@@ -44,14 +44,31 @@ describe('GetStatistics', () => {
 
         expect(view.categories).toEqual({ books: 85, manga: 268, comics: 97 });
     });
+    it('always gives the pages of the three categories', async () => {
+        const { library, use } = statistics();
+
+        library.paged = {
+            books: { pages: 30100, known: 80 },
+            manga: { pages: 51200, known: 260 },
+            comics: { pages: 15120, known: 72 },
+        };
+
+        const view = await use.execute(StatisticsActors.owner, 'manga');
+
+        expect(view.categoryPages).toEqual(library.paged);
+    });
     it('gives an Owner their own reading', async () => {
         const { library, use } = statistics();
 
-        library.read = { read: 312, notRead: 138 };
+        library.read = {
+            read: 312,
+            notRead: 138,
+            pages: { read: 61200, notRead: 25300, known: 401 },
+        };
 
         const view = await use.execute(StatisticsActors.owner, null);
 
-        expect([view.reading, library.readers]).toEqual([{ read: 312, notRead: 138 }, ['camille']]);
+        expect([view.reading, library.readers]).toEqual([library.read, ['camille']]);
     });
     it('gives a Guest no reading', async () => {
         const { use } = statistics();

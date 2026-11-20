@@ -34,6 +34,25 @@ it('tells how many books are owned, split by category', async () => {
             .map((item) => item.textContent),
     ]).toEqual(['You own 4,500 books.', ['Manga268 · 60%', 'Comics97 · 22%', 'Books85 · 19%']]);
 });
+it('splits the library by pages once chosen', async () => {
+    library();
+    await story();
+    const section = within(card('Your library'));
+
+    await userEvent.click(
+        within(section.getByRole('group', { name: 'Count the categories by' })).getByRole('radio', {
+            name: 'By pages',
+        }),
+    );
+
+    expect([
+        section.getAllByRole('listitem').map((item) => item.textContent),
+        card('Your library').textContent,
+    ]).toEqual([
+        ['Manga51,200 · 53%', 'Books30,100 · 31%', 'Comics15,120 · 16%'],
+        expect.stringContaining('Pages known on 412 of 450 books'),
+    ]);
+});
 it('tells the share of the chosen category and dims the others', async () => {
     library(statistics({ ownedBooks: 268 }));
 
@@ -79,7 +98,7 @@ it('tells a single book in the singular', async () => {
         statistics({
             ownedBooks: 1,
             categories: { books: 1, manga: 0, comics: 0 },
-            reading: { read: 1, notRead: 0 },
+            reading: { read: 1, notRead: 0, pages: { read: 1, notRead: 0, known: 1 } },
             pages: { total: 1, known: 1 },
             price: { totalCents: 990, known: 1 },
             collections: { finished: 1, unfinished: 0, dropped: 0, missingVolumes: 1 },

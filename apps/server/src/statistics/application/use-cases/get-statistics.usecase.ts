@@ -16,21 +16,31 @@ export class GetStatistics implements GetStatisticsUseCase {
 
     async execute(actor: Actor, category: StatisticsCategory | null): Promise<StatisticsView> {
         ActorAuthorization.requireReady(actor);
-        const [totals, categories, publishers, authors, longest, mostExpensive, tallies] =
-            await Promise.all([
-                this.library.totals(category),
-                this.library.categories(),
-                this.library.publishers(category),
-                this.library.authors(category),
-                this.library.longest(category),
-                this.library.mostExpensive(category),
-                this.collections.all(),
-            ]);
+        const [
+            totals,
+            categories,
+            categoryPages,
+            publishers,
+            authors,
+            longest,
+            mostExpensive,
+            tallies,
+        ] = await Promise.all([
+            this.library.totals(category),
+            this.library.categories(),
+            this.library.categoryPages(),
+            this.library.publishers(category),
+            this.library.authors(category),
+            this.library.longest(category),
+            this.library.mostExpensive(category),
+            this.collections.all(),
+        ]);
         const progress = CollectionProgress.of(tallies, category);
 
         return {
             ...totals,
             categories,
+            categoryPages,
             reading: actor.role === 'guest' ? null : await this.library.reading(actor.id, category),
             publishers: {
                 byBooks: Ranking.top(publishers.counts, (publisher) => publisher.books),

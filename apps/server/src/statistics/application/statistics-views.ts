@@ -2,6 +2,10 @@ import type { StatisticsCategory } from '../domain/services/collection-progress.
 
 export type CategoryCounts = Record<StatisticsCategory, number>;
 
+export type PagesCount = { pages: number; known: number };
+
+export type CategoryPages = Record<StatisticsCategory, PagesCount>;
+
 export type BookTotals = {
     ownedBooks: number;
     singleBooks: number;
@@ -9,7 +13,11 @@ export type BookTotals = {
     price: { totalCents: number; known: number };
 };
 
-export type ReadingSplit = { read: number; notRead: number };
+export type ReadingSplit = {
+    read: number;
+    notRead: number;
+    pages: { read: number; notRead: number; known: number };
+};
 
 export type PublisherCount = { name: string; books: number; pages: number };
 
@@ -23,6 +31,7 @@ export type CollectionRecord = { id: string; name: string; ownedBooks: number };
 
 export type StatisticsView = BookTotals & {
     categories: CategoryCounts;
+    categoryPages: CategoryPages;
     reading: ReadingSplit | null;
     publishers: {
         byBooks: PublisherCount[];

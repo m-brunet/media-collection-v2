@@ -115,6 +115,26 @@ describe('Statistics', () => {
         ]);
     });
 
+    it('splits the categories by pages once chosen', async () => {
+        await book('Dune', { pageCount: 600 });
+        await book('Akira', { category: 'manga', pageCount: 400 });
+        const page = await statistics('camille');
+        const legend = page.getByRole('list', { name: 'By category' });
+
+        await legend.waitFor();
+        await page
+            .getByRole('group', { name: 'Count the categories by' })
+            .getByText('By pages')
+            .click();
+
+        await legend.getByText('600 · 60%').waitFor();
+        expect(await legend.getByRole('listitem').allTextContents()).toEqual([
+            'Books600 · 60%',
+            'Manga400 · 40%',
+            'Comics0 · 0%',
+        ]);
+    });
+
     it('fits the smallest desktop window', async () => {
         await book('Dune', { publisher: 'A publisher with a rather long name for a ranking' });
         const page = await statistics('camille');

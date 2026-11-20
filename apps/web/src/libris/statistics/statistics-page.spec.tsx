@@ -97,6 +97,101 @@ it('shows the reading and the collections', async () => {
         expect.stringContaining('Finished14Unfinished24187 volumes missing in total.'),
     ]);
 });
+function legend(name: string) {
+    return within(screen.getByRole('list', { name }))
+        .getAllByRole('listitem')
+        .map((item) => item.textContent);
+}
+
+function countBy(group: string, name: 'By books' | 'By pages') {
+    return within(screen.getByRole('group', { name: group })).getByRole('radio', { name });
+}
+
+it('starts the categories and the reading on their number of books', async () => {
+    library();
+
+    show();
+
+    await screen.findByRole('list', { name: 'By category' });
+    expect([
+        countBy('Count the categories by', 'By books'),
+        countBy('Count your reading by', 'By books'),
+    ]).toEqual([
+        expect.objectContaining({ checked: true }),
+        expect.objectContaining({ checked: true }),
+    ]);
+});
+it('shows the pages of each category once By pages is chosen', async () => {
+    library();
+    show();
+    await screen.findByRole('list', { name: 'By category' });
+
+    await userEvent.click(countBy('Count the categories by', 'By pages'));
+
+    expect(legend('By category')).toEqual([
+        'Manga51,200 · 53%',
+        'Books30,100 · 31%',
+        'Comics15,120 · 16%',
+    ]);
+    expect(card('By category').textContent).toContain('Pages known on 412 of 450 books');
+});
+it('shows the pages read and not read once By pages is chosen', async () => {
+    library();
+    show();
+    await screen.findByRole('list', { name: 'Your reading' });
+
+    await userEvent.click(countBy('Count your reading by', 'By pages'));
+
+    expect(legend('Your reading')).toEqual(['Read61,200 · 71%', 'Not read25,300 · 29%']);
+    expect(card('Your reading').textContent).toContain(
+        'Only your own reading status.Pages known on 401 of 450 books',
+    );
+});
+it('keeps the reading on books when the categories count pages', async () => {
+    library();
+    show();
+    await screen.findByRole('list', { name: 'By category' });
+
+    await userEvent.click(countBy('Count the categories by', 'By pages'));
+
+    expect(legend('Your reading')).toEqual(['Read312 · 69%', 'Not read138 · 31%']);
+});
+it('says nothing of the known pages when every book has its page count', async () => {
+    library(
+        statistics({
+            categories: { books: 1, manga: 2, comics: 0 },
+            categoryPages: {
+                books: { pages: 272, known: 1 },
+                manga: { pages: 384, known: 2 },
+                comics: { pages: 0, known: 0 },
+            },
+        }),
+    );
+    show();
+    await screen.findByRole('list', { name: 'By category' });
+
+    await userEvent.click(countBy('Count the categories by', 'By pages'));
+
+    expect(card('By category').textContent).not.toContain('Pages known');
+});
+it('shows an empty ring on 0 books when no book has a page count', async () => {
+    library(
+        statistics({
+            categoryPages: {
+                books: { pages: 0, known: 0 },
+                manga: { pages: 0, known: 0 },
+                comics: { pages: 0, known: 0 },
+            },
+        }),
+    );
+    show();
+    await screen.findByRole('list', { name: 'By category' });
+
+    await userEvent.click(countBy('Count the categories by', 'By pages'));
+
+    expect(card('By category').textContent).toContain('Pages known on 0 of 450 books');
+    expect(card('By category').querySelectorAll('.statistics-ring__segment')).toHaveLength(0);
+});
 it('shows the dropped collections with the two others', async () => {
     library(
         statistics({

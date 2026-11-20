@@ -10,6 +10,7 @@ import type {
     BookRecord,
     BookTotals,
     CategoryCounts,
+    CategoryPages,
     PublisherCounts,
     ReadingSplit,
 } from '../statistics-views.js';
@@ -30,7 +31,12 @@ export class FixedLibraryStatistics implements LibraryStatisticsReader {
         price: { totalCents: 0, known: 0 },
     };
     split: CategoryCounts = { books: 0, manga: 0, comics: 0 };
-    read: ReadingSplit = { read: 0, notRead: 0 };
+    paged: CategoryPages = {
+        books: { pages: 0, known: 0 },
+        manga: { pages: 0, known: 0 },
+        comics: { pages: 0, known: 0 },
+    };
+    read: ReadingSplit = { read: 0, notRead: 0, pages: { read: 0, notRead: 0, known: 0 } };
     published: PublisherCounts = { counts: [], without: 0 };
     written: AuthorCount[] = [];
     longestBook: BookRecord | null = null;
@@ -44,6 +50,10 @@ export class FixedLibraryStatistics implements LibraryStatisticsReader {
 
     async categories(): Promise<CategoryCounts> {
         return this.split;
+    }
+
+    async categoryPages(): Promise<CategoryPages> {
+        return this.paged;
     }
 
     async reading(viewerId: string): Promise<ReadingSplit> {

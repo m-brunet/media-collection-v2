@@ -10,7 +10,12 @@ export function statistics(overrides: Partial<StatisticsDto> = {}): StatisticsDt
         ownedBooks: 4500,
         singleBooks: 61,
         categories: { books: 85, manga: 268, comics: 97 },
-        reading: { read: 312, notRead: 138 },
+        categoryPages: {
+            books: { pages: 30100, known: 80 },
+            manga: { pages: 51200, known: 260 },
+            comics: { pages: 15120, known: 72 },
+        },
+        reading: { read: 312, notRead: 138, pages: { read: 61200, notRead: 25300, known: 401 } },
         pages: { total: 96420, known: 412 },
         price: { totalCents: 328450, known: 398 },
         publishers: {
