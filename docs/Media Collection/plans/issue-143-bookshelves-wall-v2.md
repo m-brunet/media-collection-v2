@@ -26,6 +26,9 @@ Small bookcases).
 - **Shelf panel:** the title, **Rename shelf** (a pen), the bookcase / shelf eyebrow, and on the right **Add books**,
   **Move shelf** and **Delete shelf** (a bin); then one line of covers filling the width, the last tile "+N more", and
   **Open this shelf in the Library**.
+- **Panel height** (issue #163): under the title line, the covers area always keeps the room of one line of covers
+  and the Open this shelf line, at the panel's width. Loading, an error, an empty shelf, a few books and a bookcase
+  without shelves show their message at the top left of that room, so the bookcases never move between shelves.
 - **Sizes** (`wall-sizes.ts`): 16 px between bookcases, 21 px of padding and border on each side of a bookcase, 110 px for
   its header and padding, half size at least, 48 px kept under the shelf panel.
 

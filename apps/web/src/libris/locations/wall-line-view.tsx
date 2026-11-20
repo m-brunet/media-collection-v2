@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import type { BookcaseDto, ShelfDto } from '../../../../../packages/contracts/src/http';
@@ -146,6 +147,28 @@ function LineBookcase({
     );
 }
 
+function CoversRoom({ columns, children }: { columns: number; children?: ReactNode }) {
+    const { t } = useI18n();
+
+    return (
+        <div className="wall-line__covers">
+            <div className="wall-line__covers-room" aria-hidden="true">
+                <ul
+                    className="shelf-panel__covers"
+                    style={{ gridTemplateColumns: 'repeat(' + columns + ', minmax(0, 1fr))' }}
+                >
+                    <li className="wall-line__cover-room" />
+                </ul>
+                <span className="shelf-panel__link">
+                    {t('wall.openInBooks')}
+                    <Icon name="expand" />
+                </span>
+            </div>
+            <div className="wall-line__covers-shown">{children}</div>
+        </div>
+    );
+}
+
 function LineShelfPanel({
     bookcase,
     shelf,
@@ -209,12 +232,19 @@ function LineShelfPanel({
                             </span>
                         )}
                     </div>
-                    <ShelfCovers shelf={shelf} columns={columns} rows={1} limit={columns} />
+                    <CoversRoom columns={columns}>
+                        <ShelfCovers shelf={shelf} columns={columns} rows={1} limit={columns} />
+                    </CoversRoom>
                 </>
             ) : (
-                <p className="muted">
-                    {editor ? t('bookshelves.noShelf') : t('bookshelves.noShelfGuest')}
-                </p>
+                <>
+                    <div className="wall-line__panel-head">
+                        <p className="muted">
+                            {editor ? t('bookshelves.noShelf') : t('bookshelves.noShelfGuest')}
+                        </p>
+                    </div>
+                    <CoversRoom columns={columns} />
+                </>
             )}
         </aside>
     );

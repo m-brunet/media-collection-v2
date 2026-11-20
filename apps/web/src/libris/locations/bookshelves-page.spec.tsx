@@ -747,6 +747,34 @@ it('puts the shelf actions on the title line of the Wall v2 panel', async () => 
     expect(actions).toEqual(['Rename shelf', 'Add books', 'Move shelf', 'Delete shelf']);
 });
 
+it('keeps the room of a row of covers and its link for an empty shelf in Wall v2', async () => {
+    api().on('GET /books', () => ({ status: 200, body: covers(0) }));
+    show('/bookshelves?view=wall-v2');
+
+    const message = await within(
+        await screen.findByRole('complementary', { name: 'Selected shelf' }),
+    ).findByText('No book is on this shelf yet.');
+    const area = message.closest('.wall-line__covers');
+
+    expect(area?.querySelectorAll('.wall-line__cover-room')).toHaveLength(1);
+    expect(area?.querySelector('.wall-line__covers-room')).toHaveTextContent(
+        'Open this shelf in the Library',
+    );
+});
+
+it('keeps the room of a row of covers while the covers of Wall v2 load', async () => {
+    api().on('GET /books', () => new Promise(() => undefined));
+    show('/bookshelves?view=wall-v2');
+
+    const loading = await within(
+        await screen.findByRole('complementary', { name: 'Selected shelf' }),
+    ).findByRole('status');
+
+    expect(
+        loading.closest('.wall-line__covers')?.querySelectorAll('.wall-line__cover-room'),
+    ).toHaveLength(1);
+});
+
 it('shows a Guest the bookcases and the covers of Wall v2 without any action', async () => {
     api('guest');
 
