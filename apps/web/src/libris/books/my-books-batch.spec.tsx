@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { BookBatchDto, BookListItemDto } from '../../../../../packages/contracts/src/http';
@@ -19,8 +19,8 @@ const piranesi = bookItem();
 const dune = bookItem({ id: 'b2', title: 'Dune', ownership: 'not-owned' });
 const emma = bookItem({ id: 'b3', title: 'Emma' });
 
-function show() {
-    return renderRoute('/books', {
+function show(path = '/books') {
+    return renderRoute(path, {
         '/books': <MyBooksPage />,
         '/books/filters': <p>Filter page</p>,
     });
@@ -132,6 +132,44 @@ it('brings the search and filters back on Cancel', async () => {
     expect(await screen.findByRole('searchbox')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Advanced filters' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Piranesi/ })).toBeInTheDocument();
+});
+
+it('closes the batch edit when the Library opens without the search', async () => {
+    libraryApi();
+    const router = show('/books?search=Piranesi');
+
+    await startBatch();
+
+    await act(() => router.navigate('/books'));
+
+    expect(await screen.findByRole('searchbox')).toHaveValue('');
+    expect(screen.queryByText(/books chosen/)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit books' })).toBeInTheDocument();
+});
+
+it('closes the batch edit when the Library opens without the filters', async () => {
+    libraryApi();
+    const router = show('/books?category=manga');
+
+    await startBatch();
+
+    await act(() => router.navigate('/books'));
+
+    expect(await screen.findByRole('searchbox')).toBeInTheDocument();
+    expect(screen.queryByText(/books chosen/)).not.toBeInTheDocument();
+});
+
+it('starts a new batch edit with nothing chosen after leaving the list', async () => {
+    libraryApi();
+    const router = show('/books?category=manga');
+
+    await startBatch();
+    await userEvent.click(card(/Piranesi/));
+    await act(() => router.navigate('/books'));
+
+    await startBatch();
+
+    expect(screen.getByText('0 of 2 books chosen')).toBeInTheDocument();
 });
 
 it('selects every displayed book', async () => {
