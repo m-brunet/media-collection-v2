@@ -176,6 +176,7 @@ export function MyBooksPage() {
     );
     const sort = Required.at(BookFormat.sorts, sortIndex, 'the sort index is a listed sort');
     const [typed, setTyped] = useState(search);
+    const [searched, setSearched] = useState(search);
     const [listing, setListing] = useState<Listing | null>(null);
     const [loadingMore, setLoadingMore] = useState(false);
     const [failure, setFailure] = useState<{ query: string; text: string } | null>(null);
@@ -185,8 +186,20 @@ export function MyBooksPage() {
     const restoring = useListMemory('books');
     const filtered = BookFilter.active(filters.filter);
     const [libraryTotal, setLibraryTotal] = useState<number | null>(null);
-    const [batching, setBatching] = useState(false);
+    const [batchedList, setBatchedList] = useState<string | null>(null);
     const [version, setVersion] = useState(0);
+    const list = search + '|' + (filtered ? filters.query : '');
+    const batching = batchedList === list;
+
+    if (search !== searched) {
+        setSearched(search);
+        setTyped(search);
+    }
+
+    if (batchedList !== null && !batching) {
+        setBatchedList(null);
+    }
+
     const query =
         new URLSearchParams({
             search,
@@ -314,7 +327,7 @@ export function MyBooksPage() {
                     !batching && (
                         <>
                             {current && current.items.length > 0 && (
-                                <Button onClick={() => setBatching(true)}>
+                                <Button onClick={() => setBatchedList(list)}>
                                     {t('batch.editSeveral')}
                                 </Button>
                             )}
@@ -472,7 +485,7 @@ export function MyBooksPage() {
                         savedHint={t('batch.wallSavedHintLibrary')}
                         onSaved={() => undefined}
                         onExit={() => {
-                            setBatching(false);
+                            setBatchedList(null);
                             setVersion((value) => value + 1);
                         }}
                         renderBooks={(view) => (

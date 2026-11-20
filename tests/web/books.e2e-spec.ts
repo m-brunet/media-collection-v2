@@ -486,3 +486,23 @@ describe('Remembered list choices', () => {
         expect(new URL(page.url()).search).toBe('?ownership=owned&sort=title-desc');
     });
 });
+
+describe('Batch edit in the Library', () => {
+    it('closes the batch edit when the Library menu opens the whole Library', async () => {
+        await savedBook();
+        const page = await signedIn('camille');
+
+        await page.goto('/books?ownership=owned');
+        await page.getByRole('button', { name: 'Edit books' }).click();
+        await page.getByRole('button', { name: 'Select all' }).waitFor();
+
+        await page.getByRole('link', { name: 'Library', exact: true }).click();
+
+        await page.getByRole('button', { name: 'Edit books' }).waitFor();
+        expect([
+            new URL(page.url()).search,
+            await page.getByRole('button', { name: 'Select all' }).count(),
+            await page.getByRole('searchbox').count(),
+        ]).toEqual(['', 0, 1]);
+    });
+});
