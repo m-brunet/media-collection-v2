@@ -9,6 +9,7 @@ import { Notice } from '../../shared/ui/notice';
 import { LoadingState } from '../../shared/ui/states';
 import type { BookshelvesViewProps } from './bookshelves-view';
 import type { LocationEditing } from './location-dialogs';
+import { IconAction } from './icon-action';
 import { ShelfCovers } from './shelf-panel';
 import { ShelfPlacement } from './shelf-placement.util';
 import { useAvailableHeight } from './use-available-height';
@@ -20,30 +21,6 @@ import { WallDrawing } from './wall-drawing.util';
 import { WallLine } from './wall-line.util';
 import { WallShelf } from './wall-shelf';
 import { WallSizes } from './wall-sizes';
-
-function IconAction({
-    icon,
-    label,
-    danger = false,
-    onClick,
-}: {
-    icon: 'edit' | 'add' | 'delete';
-    label: string;
-    danger?: boolean;
-    onClick(): void;
-}) {
-    return (
-        <button
-            type="button"
-            className={danger ? 'wall-line__icon wall-line__icon--danger' : 'wall-line__icon'}
-            aria-label={label}
-            title={label}
-            onClick={onClick}
-        >
-            <Icon name={icon} size={14} />
-        </button>
-    );
-}
 
 function LineBookcase({
     bookcase,

@@ -110,10 +110,6 @@ function drawn(name: string) {
     return screen.getByRole('region', { name }).style.getPropertyValue('--wall-bay-width');
 }
 
-function width() {
-    return screen.getByRole('group', { name: 'Width' });
-}
-
 function strip() {
     return screen.getByRole('navigation', { name: 'Bookcases' });
 }
@@ -550,18 +546,23 @@ it('invites to create the first bookcase', async () => {
     expect(screen.getByRole('button', { name: 'Create bookcase' })).toBeInTheDocument();
 });
 
-it('offers an Owner the width of the open bookcase before Add shelf', async () => {
+it('gives the open bookcase of the Wall its edit, add shelf and delete icons, without a Width switch', async () => {
     api();
 
     await shown();
 
-    const order = width().compareDocumentPosition(
-        screen.getByRole('button', { name: 'Add shelf' }),
-    );
-    const addShelfFollows = (order & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+    const oak = screen.getByRole('region', { name: 'Oak bookcase' });
+    const buttons = within(oak)
+        .getAllByRole('button', { name: /bookcase|shelf$/ })
+        .map((button) => [button.getAttribute('aria-label'), button.getAttribute('title')]);
 
-    expect(within(width()).getByRole('radio', { name: 'Large' })).toBeChecked();
-    expect(addShelfFollows).toBe(true);
+    expect(buttons).toEqual([
+        ['Edit bookcase', 'Edit bookcase'],
+        ['Add shelf', 'Add shelf'],
+        ['Delete bookcase', 'Delete bookcase'],
+    ]);
+    expect(screen.queryByRole('group', { name: 'Width' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Rename bookcase' })).not.toBeInTheDocument();
 });
 
 it('draws a Large bookcase with shelves 420 px wide', async () => {
@@ -579,57 +580,48 @@ it('draws a Small bookcase with shelves 210 px wide', async () => {
 
     await screen.findByRole('list', { name: 'Books on Top' });
     expect(drawn('Study bookcase')).toBe('210px');
-    expect(within(width()).getByRole('radio', { name: 'Small' })).toBeChecked();
 });
 
-it('makes the open bookcase Small at once, saves it and redraws it', async () => {
+it('saves the name and the width from the Edit bookcase dialog of the Wall and redraws it', async () => {
     let saved: BookcaseDto[] = bookcases;
     const calls = api()
         .on('GET /bookcases', () => ({ status: 200, body: saved }))
         .on('PATCH /bookcases/oak', () => {
             saved = bookcases.map((bookcase) =>
-                bookcase.id === 'oak' ? { ...bookcase, size: 'small' } : bookcase,
+                bookcase.id === 'oak' ? { ...bookcase, name: 'Oak', size: 'small' } : bookcase,
             );
 
             return { status: 200, body: saved[0] };
         });
 
     await shown();
+    await userEvent.click(screen.getByRole('button', { name: 'Edit bookcase' }));
+    const dialog = screen.getByRole('dialog', { name: 'Edit bookcase' });
 
-    await userEvent.click(within(width()).getByRole('radio', { name: 'Small' }));
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'Small' }));
+    await userEvent.clear(within(dialog).getByLabelText(/Bookcase name/));
+    await userEvent.type(within(dialog).getByLabelText(/Bookcase name/), 'Oak');
 
-    expect(drawn('Oak bookcase')).toBe('210px');
-    expect(calls.calls).toContainEqual({ route: 'PATCH /bookcases/oak', body: { size: 'small' } });
-    await vi.waitFor(() =>
-        expect(calls.calls.filter((call) => call.route === 'GET /bookcases')).toHaveLength(2),
-    );
-    expect(within(width()).getByRole('radio', { name: 'Small' })).toBeChecked();
-    expect(drawn('Oak bookcase')).toBe('210px');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
+
+    await screen.findByRole('heading', { level: 2, name: 'Oak' });
+    expect(calls.calls).toContainEqual({
+        route: 'PATCH /bookcases/oak',
+        body: { name: 'Oak', size: 'small' },
+    });
+    expect(drawn('Oak')).toBe('210px');
 });
 
-it('puts the width back and shows the error when the save fails', async () => {
-    api().on('PATCH /bookcases/oak', () => ({
-        status: 403,
-        body: { message: 'Read only', reason: 'guest-read-only' },
-    }));
-    await shown();
-
-    await userEvent.click(within(width()).getByRole('radio', { name: 'Small' }));
-
-    expect(
-        await screen.findByText('Guest accounts can view the library but cannot change it.'),
-    ).toBeInTheDocument();
-    expect(within(width()).getByRole('radio', { name: 'Large' })).toBeChecked();
-    expect(drawn('Oak bookcase')).toBe('420px');
-});
-
-it('shows a Guest the saved width without the switch', async () => {
+it('shows a Guest the Wall bookcase and its counts without any icon', async () => {
     api('guest');
 
     show('/bookshelves?bookcase=study');
 
     await screen.findByRole('list', { name: 'Books on Top' });
-    expect(screen.queryByRole('group', { name: 'Width' })).not.toBeInTheDocument();
+    const study = screen.getByRole('region', { name: 'Study bookcase' });
+
+    expect(within(study).queryAllByRole('button', { name: /bookcase|shelf$/ })).toEqual([]);
+    expect(within(study).getByText(/1 shelf · /)).toBeInTheDocument();
     expect(drawn('Study bookcase')).toBe('210px');
 });
 

@@ -24,10 +24,11 @@ bookcase) and `apps/server/src/books` (shelf order of the book list). Libris pag
   count compared to the fullest shelf of the library. The open bookcase is marked; the strip scrolls sideways when it
   does not fit. A Small bookcase's miniature is half as wide as a Large one's; its tile keeps room for the name
   (issue #142).
-- **Open bookcase:** name, "N shelves · M books", the **Width** choice (*Large* / *Small*), *Add shelf*, *Rename
-  bookcase*, *Delete bookcase*; then one bay per shelf with its name and book count on the left. The name or the bay
-  selects the shelf. Choosing a width saves it on the bookcase at once and redraws it; a failed save puts the choice
-  back and shows the error (issue #142). On a Small bookcase the header wraps on up to three lines.
+- **Open bookcase:** on one line the name, an *Edit bookcase* pencil, and on the right *Add shelf* (+) and *Delete
+  bookcase* (red bin) as icons, each named by its label and tooltip; under it "N shelves · M books" (issue #162, like
+  Wall v2). *Edit bookcase* changes the name and the width (*Large* / *Small*), saved on the bookcase and redrawn
+  (issue #142). Then one bay per shelf with its name and book count on the left. The name or the bay selects the
+  shelf.
 - **Spines** (`spine-layout.util.ts`, sizes in `wall-sizes.ts`):
   - one spine per book, in **shelf order**: the books of a collection together, in volume order, standing where the
     collection's name falls among the titles; a book in no collection stands at its title;
@@ -62,8 +63,7 @@ bookcase) and `apps/server/src/books` (shelf order of the book list). Libris pag
   shrinks as one picture.
 - **Empty cases:** an empty shelf has an empty bay and the panel says it has no book; a bookcase without shelves shows
   its header and an invitation to add one; no bookcase: the empty state of before.
-- **Guests** see everything without the action buttons, and each bookcase at its saved width without the Width
-  choice.
+- **Guests** see everything without the action buttons or icons, and each bookcase at its saved width.
 - The sizes (bay width, spine widths, average pages) are starting values, to be judged on the real library.
 
 ## API
