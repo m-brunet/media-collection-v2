@@ -4,11 +4,9 @@ import type { BookcaseDto } from '../../../../../packages/contracts/src/http';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { Notice } from '../../shared/ui/notice';
 import { LoadingState } from '../../shared/ui/states';
-import { BookcaseActions } from './bookcase-actions';
-import { BookcaseWidthSwitch } from './bookcase-width-switch';
 import type { BookshelvesViewProps } from './bookshelves-view';
+import { IconAction } from './icon-action';
 import { ShelfPanel } from './shelf-panel';
-import { useBookcaseSize } from './use-bookcase-size';
 import { useBookcaseSpines } from './use-bookcase-spines';
 import { useElementWidth } from './use-element-width';
 import { useLocationCounts } from './use-location-counts';
@@ -74,40 +72,53 @@ function OpenBookcase({
     editor,
     onSelect,
     onEdit,
-    onReload,
 }: Omit<BookshelvesViewProps, 'bookcases'>) {
     const { t } = useI18n();
     const counts = useLocationCounts();
     const { spines, failure } = useBookcaseSpines(bookcase);
-    const resizing = useBookcaseSize(bookcase, onReload);
     const frame = useRef<HTMLDivElement>(null);
     const width = useElementWidth(frame);
-    const scale = width === null ? 1 : Math.min(1, width / WallDrawing.width(resizing.size));
+    const scale = width === null ? 1 : Math.min(1, width / WallDrawing.width(bookcase.size));
     const books = new Map(spines?.shelves.map((entry) => [entry.shelfId, entry.books]));
 
     return (
         <section
             className="panel wall-bookcase"
             aria-labelledby="wall-bookcase-name"
-            style={WallDrawing.styles(resizing.size)}
+            style={WallDrawing.styles(bookcase.size)}
         >
             <div className="wall-bookcase__header">
-                <h2 id="wall-bookcase-name" className="panel__title">
-                    {bookcase.name}
-                </h2>
+                <div className="wall-bookcase__title">
+                    <h2 id="wall-bookcase-name" className="panel__title">
+                        {bookcase.name}
+                    </h2>
+                    {editor && (
+                        <>
+                            <IconAction
+                                icon="edit"
+                                label={t('bookcase.edit')}
+                                onClick={() => onEdit({ kind: 'edit-bookcase', bookcase })}
+                            />
+                            <span className="wall-bookcase__end">
+                                <IconAction
+                                    icon="add"
+                                    label={t('shelf.add')}
+                                    onClick={() => onEdit({ kind: 'create-shelf', bookcase })}
+                                />
+                                <IconAction
+                                    icon="delete"
+                                    label={t('bookcase.delete')}
+                                    danger
+                                    onClick={() => onEdit({ kind: 'delete-bookcase', bookcase })}
+                                />
+                            </span>
+                        </>
+                    )}
+                </div>
                 <span className="muted">
                     {counts.shelves(bookcase.shelves.length)} · {counts.books(bookcase.bookCount)}
                 </span>
-                {editor && <BookcaseWidthSwitch size={resizing.size} onChange={resizing.choose} />}
-                {editor && (
-                    <BookcaseActions
-                        bookcase={bookcase}
-                        className="wall-bookcase__actions"
-                        onEdit={onEdit}
-                    />
-                )}
             </div>
-            {resizing.failure && <Notice tone="error">{t(resizing.failure)}</Notice>}
             <div ref={frame} className="wall-bookcase__frame">
                 {bookcase.shelves.length === 0 ? (
                     <p className="muted">
@@ -127,7 +138,7 @@ function OpenBookcase({
                                 key={candidate.id}
                                 shelf={candidate}
                                 books={books.get(candidate.id) ?? []}
-                                bayWidth={WallSizes.bayWidths[resizing.size]}
+                                bayWidth={WallSizes.bayWidths[bookcase.size]}
                                 current={candidate.id === shelf?.id}
                                 onSelect={() => onSelect({ shelf: candidate.id })}
                             />

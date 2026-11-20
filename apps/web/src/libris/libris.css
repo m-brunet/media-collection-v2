@@ -3173,24 +3173,53 @@ a.wall-tile:hover .wall-tile__title {
     padding: var(--space-5);
 }
 
+.icon-action {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+}
+
+.icon-action:hover {
+    background: var(--color-control-hover);
+    color: var(--color-text);
+}
+
+.icon-action--danger {
+    color: var(--color-danger);
+}
+
 .wall-bookcase__header {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+}
+
+.wall-bookcase__title {
+    display: flex;
     align-items: center;
-    gap: var(--space-3);
-}
-
-.wall-bookcase__actions {
-    margin-left: auto;
     gap: var(--space-2);
+    min-width: 0;
 }
 
-.wall-bookcase__width {
+.wall-bookcase__title .panel__title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wall-bookcase__end {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
     margin-left: auto;
-}
-
-.wall-bookcase__width + .wall-bookcase__actions {
-    margin-left: 0;
 }
 
 .wall-bookcase__frame {
@@ -4097,6 +4126,9 @@ a.wall-tile:hover .wall-tile__title {
     align-items: center;
     gap: var(--space-2);
     min-width: 0;
+}
+
+.wall-line__panel-head {
     min-height: var(--control-height);
 }
 
@@ -4119,29 +4151,7 @@ a.wall-tile:hover .wall-tile__title {
     font-size: var(--text-sm);
 }
 
-.wall-line__icon {
-    display: inline-grid;
-    flex: none;
-    place-items: center;
-    width: 28px;
-    height: 28px;
-    border: var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--color-surface);
-    color: var(--color-text-secondary);
-    cursor: pointer;
-}
-
-.wall-line__icon:hover {
-    background: var(--color-control-hover);
-    color: var(--color-text);
-}
-
-.wall-line__icon--danger {
-    color: var(--color-danger);
-}
-
-.wall-line__panel-head .wall-line__icon--danger {
+.wall-line__panel-head .icon-action--danger {
     width: var(--control-height);
     height: var(--control-height);
 }

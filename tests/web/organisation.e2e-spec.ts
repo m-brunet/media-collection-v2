@@ -142,12 +142,12 @@ describe('Bookshelves', () => {
         const page = await signedIn('camille');
 
         await openBookshelves(page);
-        await page.getByRole('button', { name: 'Rename bookcase' }).click();
+        await page.getByRole('button', { name: 'Edit bookcase' }).click();
         await page.getByLabel(/Bookcase name/).fill('Walnut bookcase');
 
-        await page.getByRole('button', { name: 'Save name' }).click();
+        await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
 
-        await page.getByText('The bookcase is now “Walnut bookcase”.').waitFor();
+        await page.getByRole('heading', { level: 2, name: 'Walnut bookcase' }).waitFor();
         expect(await strip(page).getByText('Walnut bookcase').count()).toBe(1);
     });
 
@@ -344,6 +344,15 @@ describe('Bookshelves Wall', () => {
         expect(scrolled).toBeLessThanOrEqual(viewports.minimumDesktop.width);
     });
 
+    async function chooseWidth(page: Page, size: 'Small' | 'Large') {
+        await page.getByRole('button', { name: 'Edit bookcase' }).click();
+        const dialog = page.getByRole('dialog', { name: 'Edit bookcase' });
+
+        await dialog.getByText(size, { exact: true }).click();
+        await dialog.getByRole('button', { name: 'Save' }).click();
+        await dialog.waitFor({ state: 'hidden' });
+    }
+
     it('makes a bookcase Small and keeps it after a reload', async () => {
         const page = await shelved();
 
@@ -351,13 +360,14 @@ describe('Bookshelves Wall', () => {
             (response) => response.request().method() === 'PATCH' && response.ok(),
         );
 
-        await page.getByRole('group', { name: 'Width' }).getByText('Small').click();
+        await chooseWidth(page, 'Small');
         await saved;
         await page.reload();
         await spine(page, /^Dune \d+ · Susanna Clarke$/).waitFor();
+        await page.getByRole('button', { name: 'Edit bookcase' }).click();
 
         const bay = await width(page, '.wall-shelf__bay');
-        const chosen = page.getByRole('radio', { name: 'Small' });
+        const chosen = page.getByRole('dialog').getByRole('radio', { name: 'Small' });
 
         expect(bay).toBe(222);
         expect(await chosen.isChecked()).toBe(true);
@@ -369,12 +379,12 @@ describe('Bookshelves Wall', () => {
             page.waitForResponse((response) => response.url().endsWith('/spines') && response.ok());
         const small = redrawn();
 
-        await page.getByRole('group', { name: 'Width' }).getByText('Small').click();
+        await chooseWidth(page, 'Small');
         await small;
         await spine(page, /^Dune \d+ · Susanna Clarke$/).waitFor();
         const large = redrawn();
 
-        await page.getByRole('group', { name: 'Width' }).getByText('Large').click();
+        await chooseWidth(page, 'Large');
         await large;
         await spine(page, /^Dune \d+ · Susanna Clarke$/).waitFor();
 
