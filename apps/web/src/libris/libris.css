@@ -4097,6 +4097,7 @@ a.wall-tile:hover .wall-tile__title {
     align-items: center;
     gap: var(--space-2);
     min-width: 0;
+    min-height: var(--control-height);
 }
 
 .wall-line__name {
@@ -4190,6 +4191,42 @@ a.wall-tile:hover .wall-tile__title {
     flex: none;
     gap: var(--space-3);
     padding: var(--space-5);
+}
+
+.wall-line__covers {
+    display: grid;
+    min-width: 0;
+}
+
+.wall-line__covers-room,
+.wall-line__covers-shown {
+    display: flex;
+    flex-direction: column;
+    grid-area: 1 / 1;
+    gap: var(--space-3);
+    min-width: 0;
+}
+
+.wall-line__covers-room {
+    visibility: hidden;
+}
+
+.wall-line__covers-shown {
+    align-items: flex-start;
+}
+
+.wall-line__covers-shown > .shelf-panel__covers {
+    align-self: stretch;
+}
+
+.wall-line__cover-room {
+    aspect-ratio: 2 / 3;
+}
+
+.wall-line__covers-shown .state {
+    flex-direction: row;
+    min-height: 0;
+    padding: 0;
 }
 
 .wall-line__panel-head .panel__title {

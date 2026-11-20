@@ -456,6 +456,24 @@ describe('Bookshelves Wall v2', () => {
         await heading.waitFor({ timeout: 5000 });
         expect(await heading.isVisible()).toBe(true);
     });
+
+    it('keeps the panel and the bookcases still when an empty shelf is selected', async () => {
+        const page = await wallLine();
+        const panel = page.getByRole('complementary', { name: 'Selected shelf' });
+        const room = page.getByRole('region', { name: 'Room 1' });
+        const heights = async () =>
+            Promise.all(
+                [panel, room].map((locator) =>
+                    locator.evaluate((element) => element.getBoundingClientRect().height),
+                ),
+            );
+        const before = await heights();
+
+        await room.getByRole('button', { name: /^Shelf 2/ }).click();
+
+        await panel.getByText('No book is on this shelf yet.').waitFor();
+        expect(await heights()).toEqual(before);
+    });
 });
 
 describe('Bookshelves Ribbons', () => {
