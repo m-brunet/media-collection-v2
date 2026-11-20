@@ -238,7 +238,45 @@ describe('Library statistics', () => {
 
         const reading = await current.statistics.reading(camille, null);
 
-        expect(reading).toEqual({ read: 1, notRead: 1 });
+        expect(reading).toEqual({
+            read: 1,
+            notRead: 1,
+            pages: { read: 0, notRead: 0, known: 0 },
+        });
+    });
+    it('counts the pages read and not read by the viewer among the owned books', async () => {
+        const current = await library();
+        const camille = await current.reader();
+
+        await current.book({ title: 'Akira 1', pages: 360, readBy: camille });
+        await current.book({ title: 'Akira 2', pages: 340 });
+        await current.book({ title: 'Akira 3', readBy: camille });
+        await current.book({ title: 'Wanted', pages: 500, ownership: 'not-owned' });
+
+        const reading = await current.statistics.reading(camille, null);
+
+        expect(reading.pages).toEqual({ read: 360, notRead: 340, known: 2 });
+    });
+    it('counts the pages of each category of the owned books', async () => {
+        const current = await library();
+
+        await current.book({ title: 'Akira 1', category: 'manga', pages: 360 });
+        await current.book({ title: 'Akira 2', category: 'manga' });
+        await current.book({ title: 'Asterix', category: 'comics', pages: 48 });
+        await current.book({
+            title: 'Wanted',
+            category: 'books',
+            pages: 500,
+            ownership: 'not-owned',
+        });
+
+        const pages = await current.statistics.categoryPages();
+
+        expect(pages).toEqual({
+            books: { pages: 0, known: 0 },
+            manga: { pages: 360, known: 1 },
+            comics: { pages: 48, known: 1 },
+        });
     });
     it('counts the books and the pages of each publisher', async () => {
         const current = await library();
