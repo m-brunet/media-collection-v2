@@ -277,6 +277,30 @@ it('shows the credits and licences inside the app once signed in', async () => {
         screen.getByRole('heading', { name: 'Credits and licences', level: 1 }),
     ).toBeInTheDocument();
 });
+it('places Sign out between the language choice and the credits in the sidebar', async () => {
+    new FakeApi().signedIn(account({ role: 'owner' }));
+
+    render(<LibrisApp />);
+
+    const signOut = await screen.findByRole('button', { name: 'Sign out' });
+    const languages = screen.getByRole('group', { name: 'Interface language' });
+    const credits = screen.getByRole('link', { name: 'Credits and licences' });
+
+    expect(languages.compareDocumentPosition(signOut)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(signOut.compareDocumentPosition(credits)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+});
+it('signs out from the sidebar and returns to the sign-in page', async () => {
+    new FakeApi()
+        .signedIn(account({ role: 'owner' }))
+        .on('POST /auth/logout', () => ({ status: 204 }));
+    render(<LibrisApp />);
+    const signOut = await screen.findByRole('button', { name: 'Sign out' });
+
+    await userEvent.click(signOut);
+
+    expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: 'Main navigation' })).not.toBeInTheDocument();
+});
 it('opens the statistics from the menu, after Activity', async () => {
     new FakeApi().signedIn(account({ role: 'owner' }));
     render(<LibrisApp />);
