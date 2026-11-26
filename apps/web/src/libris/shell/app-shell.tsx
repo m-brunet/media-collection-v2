@@ -4,6 +4,7 @@ import type { MessageKey } from '../../shared/i18n/catalog-en';
 import { useI18n } from '../../shared/i18n/i18n-context';
 import { useSession } from '../../shared/session/session-context';
 import { Brand } from '../../shared/ui/brand';
+import { Button } from '../../shared/ui/button';
 import type { IconName } from '../../shared/ui/icon';
 import { Icon } from '../../shared/ui/icon';
 import { LanguageSwitch } from '../../shared/ui/language-switch';
@@ -46,7 +47,7 @@ function NavigationLink({ item }: { item: NavigationItem }) {
 
 export function AppShell({ children }: { children: ReactNode }) {
     const { t } = useI18n();
-    const { account } = useSession();
+    const { account, signOut } = useSession();
 
     return (
         <div className="shell">
@@ -92,6 +93,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                         </p>
                     )}
                     <LanguageSwitch />
+                    <Button icon="sign-out" onClick={() => void signOut()}>
+                        {t('account.signOut')}
+                    </Button>
                     <NavLink to="/credits" className="sidebar__credits">
                         {t('nav.credits')}
                     </NavLink>
