@@ -30,6 +30,14 @@ function subjectFor(
     );
 }
 
+function turnedOff() {
+    const access = new InternetAccess(InternetAccessDoubles.active());
+
+    access.turnOff();
+
+    return access.snapshot;
+}
+
 it('answers at once with the setup looking for the router', async () => {
     const doubles = InternetAccessDoubles.setup();
     const subject = subjectFor(doubles);
@@ -121,6 +129,34 @@ it('sets up again over its own certificate without confirmation', async () => {
     const state = await subject.execute(admin, { replaceCertificate: false });
 
     expect(state.phase).toBe('setting-up');
+});
+it('renews the remembered certificate when set up again after Turn off', async () => {
+    const doubles = InternetAccessDoubles.setup(turnedOff(), manualCertificate);
+    const subject = subjectFor(doubles);
+
+    doubles.tls.material = { chain: 'current chain', key: 'current key' };
+
+    await subject.execute(admin, { replaceCertificate: false });
+
+    await doubles.background.settled();
+
+    expect([doubles.store.current.phase, doubles.authority.replaced]).toEqual([
+        'active',
+        ['current chain'],
+    ]);
+});
+it('orders a new certificate when the remembered one has expired', async () => {
+    const doubles = InternetAccessDoubles.setup(turnedOff(), manualCertificate);
+    const subject = subjectFor(doubles);
+
+    doubles.tls.material = { chain: 'current chain', key: 'current key' };
+    doubles.clock.time = new Date('2026-11-15T02:00:00.000Z');
+
+    await subject.execute(admin, { replaceCertificate: false });
+
+    await doubles.background.settled();
+
+    expect(doubles.authority.replaced).toEqual([null]);
 });
 it('refuses a second setup while one runs', async () => {
     const doubles = InternetAccessDoubles.setup();

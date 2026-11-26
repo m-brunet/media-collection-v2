@@ -272,12 +272,37 @@ it('runs no upkeep while off', () => {
 
     expect(due).toBe(false);
 });
-it('forgets everything when turned off', () => {
+it('forgets everything but the certificate when turned off', () => {
     const access = active();
 
     access.turnOff();
 
-    expect(access.snapshot).toEqual(InternetAccess.off().snapshot);
+    expect(access.snapshot).toEqual({ ...InternetAccess.off().snapshot, certificate });
+});
+it('keeps the certificate when the setup stops', () => {
+    const access = active();
+
+    access.start(null, 34443);
+
+    access.stop('setup-failed', now);
+
+    expect([access.phase, access.certificate?.address]).toEqual(['off', '82.66.118.204']);
+});
+it('forgets the certificate once off when asked', () => {
+    const access = active();
+
+    access.turnOff();
+
+    access.forgetCertificate();
+
+    expect(access.certificate).toBeNull();
+});
+it('keeps the certificate of an active access', () => {
+    const access = active();
+
+    const operation = () => access.forgetCertificate();
+
+    expect(operation).toThrow('Only internet access that is off');
 });
 it('keeps the current certificate while a new setup runs', () => {
     const access = active();
@@ -413,11 +438,7 @@ it('keeps the domain name when turned off', () => {
 
     access.turnOff();
 
-    expect([access.phase, access.domain, access.certificate]).toEqual([
-        'off',
-        'home.example.fr',
-        null,
-    ]);
+    expect([access.phase, access.domain]).toEqual(['off', 'home.example.fr']);
 });
 it('keeps the domain name when the setup stops', () => {
     const access = InternetAccess.off();

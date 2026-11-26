@@ -4,7 +4,7 @@ import { TlsSettings } from '../../domain/value-objects/tls-settings.value-objec
 import type { CertificateValidator } from '../ports/driven/certificate-validator.interface.js';
 import type { TlsStore } from '../ports/driven/tls-store.interface.js';
 import type { HttpSettingsReader } from '../ports/driven/http-settings-reader.interface.js';
-import type { InternetAccessReader } from '../ports/driven/internet-access-reader.interface.js';
+import type { InternetAccessStore } from '../ports/driven/internet-access-store.interface.js';
 import type { Actor } from '../../../shared/domain/actor.helper.js';
 import { ActorAuthorization } from '../../../shared/domain/actor.helper.js';
 import { Failure } from '../../../shared/domain/exceptions/failure.js';
@@ -16,7 +16,7 @@ export class SaveTlsSettings implements SaveTlsSettingsUseCase {
         private readonly store: TlsStore,
         private readonly certificates: CertificateValidator,
         private readonly http: HttpSettingsReader,
-        private readonly internetAccess: InternetAccessReader,
+        private readonly internetAccess: InternetAccessStore,
         private readonly operations: AuditedOperation,
     ) {}
 
@@ -34,7 +34,9 @@ export class SaveTlsSettings implements SaveTlsSettingsUseCase {
             async () => {
                 ActorAuthorization.requireAdmin(actor);
 
-                if ((await this.internetAccess.read()).phase !== 'off') {
+                const access = await this.internetAccess.read();
+
+                if (access.phase !== 'off') {
                     throw new Failure(
                         'conflict',
                         'Turn off internet access before changing the HTTPS settings.',
@@ -71,6 +73,11 @@ export class SaveTlsSettings implements SaveTlsSettingsUseCase {
                     'ports-identical',
                 );
                 await this.store.save(settings, certificate);
+
+                if (certificate) {
+                    access.forgetCertificate();
+                    await this.internetAccess.save(access);
+                }
 
                 return {
                     result: settings.snapshot(),

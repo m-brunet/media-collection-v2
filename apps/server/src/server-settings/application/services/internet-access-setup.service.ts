@@ -82,9 +82,12 @@ export class InternetAccessSetup {
             access.certificateName,
             'an access being set up has a certificate name',
         );
-        // Same name: an ARI renewal of the certificate in use, which Let's Encrypt does not count.
+        // Same name and still valid: an ARI renewal, which Let's Encrypt does not count.
+        const current = access.certificate;
         const replacing =
-            access.certificate?.address === name ? await this.tls.currentChain() : null;
+            current?.address === name && current.validAt(this.clock.now())
+                ? await this.tls.currentChain()
+                : null;
         const issue = await this.window.around(access, port, () =>
             this.authority.issue({ kind: access.domain ? 'domain' : 'address', name }, replacing),
         );

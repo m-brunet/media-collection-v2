@@ -470,6 +470,14 @@ export class InternetAccess {
         this.state = { ...this.kept(), domain: this.state.domain };
     }
 
+    forgetCertificate(): void {
+        Failure.ensure(
+            this.state.phase === 'off',
+            'Only internet access that is off can forget its certificate.',
+        );
+        this.state = { ...this.state, certificate: null };
+    }
+
     interrupted(now: Date): void {
         if (this.state.phase === 'setting-up') {
             this.stop('setup-failed', now);
@@ -505,6 +513,7 @@ export class InternetAccess {
             retryAfter: this.state.retryAfter,
             history: this.state.history,
             lastAttemptName: this.state.lastAttemptName,
+            certificate: this.state.certificate,
         };
     }
 

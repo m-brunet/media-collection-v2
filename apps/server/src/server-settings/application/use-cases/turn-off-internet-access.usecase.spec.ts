@@ -21,13 +21,17 @@ function subjectFor(
     );
 }
 
-it('turns internet access off', async () => {
-    const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());
+it('turns internet access off and remembers its certificate', async () => {
+    const active = InternetAccessDoubles.active();
+    const doubles = InternetAccessDoubles.setup(active);
     const subject = subjectFor(doubles);
 
     await subject.execute(admin);
 
-    expect(doubles.store.current).toEqual(InternetAccess.off().snapshot);
+    expect(doubles.store.current).toEqual({
+        ...InternetAccess.off().snapshot,
+        certificate: active.certificate,
+    });
 });
 it('removes the router rule it created', async () => {
     const doubles = InternetAccessDoubles.setup(InternetAccessDoubles.active());
