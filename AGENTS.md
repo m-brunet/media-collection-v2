@@ -179,8 +179,19 @@ capabilities, not alternative homes for feature behavior. Electron retains lifec
 - Validate UUIDs at HTTP boundaries and enforce format at persistence boundaries. A TypeScript `string` or SQLite
   `TEXT` declaration alone is insufficient. Upgrades preserve valid IDs and relationships and reject invalid
   legacy IDs explicitly instead of silently remapping them.
-- Production queries and schema access use Kysely builders. Handwritten SQL, including the `sql` tag, raw
-  builders, compiled query construction and direct driver execution, is forbidden outside migrations.
+- Production queries and schema access use Kysely builders. Avoid handwritten SQL: the `sql` tag, raw builders,
+  compiled query construction and direct driver execution. First look for a builder form, including Kysely's
+  expression builder, `fn` helpers, subqueries and CTEs.
+- Outside migrations, raw SQL is allowed only when at least one of these holds:
+    - the query cannot be expressed with Kysely builders;
+    - the builder form would be overly complicated: clearly harder to read and maintain than the SQL it replaces;
+    - the builder form would significantly degrade the query's performance, shown by a query plan or a
+      measurement, not assumed.
+- A raw-SQL exception stays as small as possible: keep the surrounding query in builders and write only the
+  fragment that needs it as raw SQL. Pass every value as a bound parameter; never concatenate input into SQL text.
+  The exception stays inside the driven persistence adapter and carries
+  `// oxlint-disable-next-line architecture/persistence-sql -- <which condition applies and why>`.
+  Convenience, habit, or familiarity with SQL is not a reason.
 - Historical schema/data migrations live in `apps/server/src/shared/infrastructure/adapters/driven/persistence/migrations/`.
   Only the migration provider loads them. They are exempt from the raw-SQL rule and runtime adapter filename
   suffixes, not dependency boundaries. Runtime adapters must not reuse migrations as query helpers.

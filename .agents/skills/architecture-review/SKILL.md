@@ -73,6 +73,14 @@ then ask; do not invent a product requirement.
     middleware/guards/validation, real isolated SQLite, typed port access, session/CSRF preparation, ordered fixture
     loading, and cleanup after failure. Preserve actual Electron lifecycle tests and direct-construction core unit
     tests.
+14. Enforce the `AGENTS.md` raw-SQL rule on every changed Kysely query. Outside migrations, each use of the `sql`
+    tag, a raw builder, a compiled query or direct driver execution is a mandatory finding unless it meets one of
+    the three allowed conditions (not expressible with builders, builder form overly complicated, significant
+    measured performance impact) and carries the `architecture/persistence-sql` suppression stating which one and
+    why. Check the claim rather than accepting it: look for a builder form, and require a query plan or measurement
+    for a performance claim. Also report an exception wider than the fragment that needs it, a value concatenated
+    into SQL text instead of bound, and raw SQL outside a driven persistence adapter. The correction is the builder
+    form, or the smallest raw fragment with its justification.
 
 Source and automated enforcement follow the driving/driven/config layout. Consult
 `docs/Media Collection/architecture/architecture-migration-plan.md` for the migration record and known baseline limitations. Do not treat shared
