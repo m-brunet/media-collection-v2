@@ -149,6 +149,11 @@ class MaintenancePage {
 
         this.administrator = status.success ? status.value.administrator : null;
         this.hasData = status.success && status.value.hasData;
+
+        if (status.success) {
+            document.documentElement.dataset.colorScheme = status.value.colorScheme;
+        }
+
         this.render();
     }
 

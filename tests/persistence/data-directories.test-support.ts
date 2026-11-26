@@ -214,6 +214,19 @@ export class DataDirectories {
         return directory;
     }
 
+    async saveSetting(directory: string, name: string, value: string): Promise<void> {
+        const database = await Database.open(directory, new UuidGenerator());
+
+        try {
+            await database.connection
+                .insertInto('server_settings')
+                .values({ id: randomUUID(), name, value })
+                .execute();
+        } finally {
+            await database.close();
+        }
+    }
+
     async contents(directory: string) {
         const database = Database.openExisting(directory);
         const db = database.connection;

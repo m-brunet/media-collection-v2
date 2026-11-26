@@ -144,6 +144,27 @@ describe('local maintenance window', () => {
 
         expect(account).toContain('Admin account: admin.');
     });
+    it('follows the saved colour scheme', async () => {
+        const previous = await readyDesktop();
+        const client = new Client('http://127.0.0.1:' + previous.ready.httpPort);
+
+        await client.prepare();
+        await client.call('/auth/login', 'POST', {
+            username: 'admin',
+            password: 'desktop-new-password',
+        });
+        await client.call('/appearance', 'PUT', { colorScheme: 'midnight-blue' });
+        await previous.runtime.close();
+        const current = await fixture.start(previous.directory, { main: true, maintenance: true });
+
+        await waitFor(current.runtime, 'document.documentElement.dataset.colorScheme');
+        const appearance = await evaluate(
+            current.runtime,
+            "document.documentElement.dataset.colorScheme + ' ' + getComputedStyle(document.querySelector('.brand__mark')).color",
+        );
+
+        expect(appearance).toBe('midnight-blue rgb(139, 184, 255)');
+    });
     it('offers no recovery or backup on a new installation', async () => {
         const current = await fixture.start(undefined, { main: true, maintenance: true });
 
