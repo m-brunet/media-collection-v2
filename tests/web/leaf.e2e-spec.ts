@@ -258,7 +258,7 @@ it('marks a saved Not Owned volume Owned after confirmation', async () => {
     await page.getByRole('button', { name: 'Confirm Owned' }).click();
 
     await page.getByText('Volume 3 is now Owned.').waitFor();
-    expect(await page.getByText('Volume 3', { exact: true }).count()).toBe(0);
+    await page.getByText('Volume 3', { exact: true }).waitFor({ state: 'detached' });
     const book = await admin.call<BookDto>('/books/' + planned.id);
 
     expect(book.body.ownership).toBe('owned');
