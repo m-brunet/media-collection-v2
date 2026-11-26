@@ -80,6 +80,28 @@ it('shows the library counters', async () => {
     expect(counter('Currently lent')).toHaveTextContent('5');
 });
 
+it('keeps every author of a recently added book in its tooltip', async () => {
+    const authors = 'Robert Adducci, James Jacobs, Luis Loza, Michael Sayre, Paizo';
+    const book = {
+        id: 'b1',
+        title: 'Mystères divins',
+        authors: authors.split(', '),
+        hasCover: false,
+        updatedAt: '2026-11-01T10:00:00.000Z',
+        read: false,
+    };
+
+    new FakeApi()
+        .signedIn(account())
+        .on('GET /overview', () => ({ status: 200, body: overview({ recentlyAdded: [book] }) }));
+
+    show();
+
+    const line = await screen.findByText(authors);
+
+    expect(line).toHaveAttribute('title', authors);
+});
+
 it('links each recently added book to its details', async () => {
     new FakeApi()
         .signedIn(account())

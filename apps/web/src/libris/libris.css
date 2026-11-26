@@ -2238,6 +2238,14 @@ a.wall-tile:hover .wall-tile__title {
     overflow-wrap: anywhere;
 }
 
+.overview-book__authors {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+}
+
 .overview-book:hover .overview-book__title {
     color: var(--color-accent-strong);
 }
