@@ -26,13 +26,51 @@ describe('ChangePassword', () => {
             AuditDoubles.auditedOperation(new MemoryAuditTrail()),
         );
 
-        const result = await subject.execute(account.actor, 'old-password', 'new-password');
+        const result = await subject.execute(account.actor, null, 'new-password');
 
         expect(result.mustChangePassword).toBe(false);
         expect((await users.findById('owner'))!.snapshot).toMatchObject({
             passwordHash: 'hash:new-password',
             tokenVersion: 1,
         });
+    });
+    it('asks a regular account for its current password', async () => {
+        const next = 'new-password';
+        const users = new MemoryUsers();
+        const account = IdentityDoubles.user();
+
+        await users.create(account);
+        const subject = new ChangePassword(
+            users,
+            new AccountLoader(users),
+            passwords,
+            new CurrentPasswordConfirmation(passwords),
+            AuditDoubles.auditedOperation(new MemoryAuditTrail()),
+        );
+
+        const result = subject.execute(account.actor, null, next);
+
+        await expect(result).rejects.toMatchObject({ reason: 'password-incorrect' });
+        expect((await users.findById('owner'))!.snapshot.tokenVersion).toBe(0);
+    });
+    it('rejects the temporary password as the new password', async () => {
+        const next = 'old-password';
+        const users = new MemoryUsers();
+        const account = IdentityDoubles.user({ mustChangePassword: true });
+
+        await users.create(account);
+        const subject = new ChangePassword(
+            users,
+            new AccountLoader(users),
+            passwords,
+            new CurrentPasswordConfirmation(passwords),
+            AuditDoubles.auditedOperation(new MemoryAuditTrail()),
+        );
+
+        const result = subject.execute(account.actor, null, next);
+
+        await expect(result).rejects.toMatchObject({ reason: 'password-unchanged' });
+        expect((await users.findById('owner'))!.snapshot.tokenVersion).toBe(0);
     });
     it('rejects an incorrect current password', async () => {
         const current = 'wrong';

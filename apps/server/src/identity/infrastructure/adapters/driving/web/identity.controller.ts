@@ -22,7 +22,7 @@ const usernameSchema = z.strictObject({
     currentPassword: z.string().min(1).max(128),
 });
 const passwordSchema = z.strictObject({
-    currentPassword: z.string().min(1).max(128),
+    currentPassword: z.string().min(1).max(128).optional(),
     password: z.string().min(8).max(128),
 });
 const languageSchema = z.strictObject({
@@ -98,7 +98,7 @@ export class IdentityController {
     ) {
         const actor = await this.changePassword.execute(
             request.actor,
-            input.currentPassword,
+            input.currentPassword ?? null,
             input.password,
         );
 

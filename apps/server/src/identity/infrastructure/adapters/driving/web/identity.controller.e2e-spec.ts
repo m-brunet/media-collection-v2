@@ -485,7 +485,7 @@ describe('PATCH /api/account/password', () => {
     it('completes setup, stores a hash, and replaces the cookie', async () => {
         const client = await app.authenticatedClient(restricted);
         const previous = client.cookies.get('app_auth');
-        const input = { currentPassword: restricted.password, password: 'replacement-password' };
+        const input = { password: 'replacement-password' };
 
         const response = await client.call('/account/password', 'PATCH', input);
 
@@ -519,6 +519,28 @@ describe('PATCH /api/account/password', () => {
         );
 
         expect(response.status).toBe(403);
+    });
+    it('rejects the temporary password as the replacement', async () => {
+        const input = { password: restricted.password };
+        const client = await app.authenticatedClient(restricted);
+
+        const response = await client.call('/account/password', 'PATCH', input);
+
+        expect(response.status).toBe(400);
+        expect(response.body.reason).toBe('password-unchanged');
+        expect((await app.dependencies.users.findById(restricted.id))!.snapshot.tokenVersion).toBe(
+            0,
+        );
+    });
+    it('rejects replacement without the current password on a regular account', async () => {
+        const input = { password: 'replacement-password' };
+        const client = await app.authenticatedClient(admin);
+
+        const response = await client.call('/account/password', 'PATCH', input);
+
+        expect(response.status).toBe(400);
+        expect(response.body.reason).toBe('password-incorrect');
+        expect((await app.dependencies.users.findById(admin.id))!.snapshot.tokenVersion).toBe(0);
     });
     it('rejects replacement with an incorrect current password', async () => {
         const input = { currentPassword: 'wrong', password: 'replacement-password' };

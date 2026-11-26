@@ -132,7 +132,6 @@ describe('Admin data reset', () => {
         const page = await browser.page(base, { viewport: viewports.referenceDesktop });
 
         await signIn(page, 'camille', 'temporary-1');
-        await page.getByLabel(/^Current password/).fill('temporary-1');
         await page.getByLabel(/^New password/).fill('owner-password');
         await page.getByLabel(/^Confirm new password/).fill('owner-password');
         await page.getByRole('button', { name: 'Save password and continue' }).click();
@@ -147,7 +146,6 @@ describe('Admin data reset', () => {
         const page = await browser.page(base, { viewport: viewports.referenceDesktop });
 
         await signIn(page, 'morgan', 'temporary-2');
-        await page.getByLabel(/^Current password/).fill('temporary-2');
         await page.getByLabel(/^New password/).fill('guest-password');
         await page.getByLabel(/^Confirm new password/).fill('guest-password');
         await page.getByRole('button', { name: 'Save password and continue' }).click();
