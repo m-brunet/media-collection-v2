@@ -3282,6 +3282,7 @@ a.wall-tile:hover .wall-tile__title {
     border-top-width: 0;
     background: var(--color-sidebar);
     cursor: pointer;
+    isolation: isolate;
 }
 
 .wall-shelf:first-child .wall-shelf__bay {
@@ -3292,6 +3293,10 @@ a.wall-tile:hover .wall-tile__title {
 .wall-shelf[aria-current='true'] .wall-shelf__bay {
     z-index: 1;
     outline: 2px solid var(--color-accent);
+}
+
+.wall-shelf__bay:has(.wall-shelf__tip) {
+    z-index: 2;
 }
 
 .wall-shelf__spines {
