@@ -161,3 +161,41 @@ it('refuses any HTTPS change while internet access is on', async () => {
 
     await expect(result).rejects.toMatchObject({ code: 'conflict', reason: 'internet-access-on' });
 });
+it('forgets the Let’s Encrypt certificate when another certificate is supplied', async () => {
+    const remembered = { ...InternetAccessDoubles.active(), phase: 'off' as const, mapping: null };
+    const internetAccess = new MemoryInternetAccessStore({ ...remembered, routerPort: null });
+    const { store, validator, http } = SettingsDoubles.setup();
+    const subject = new SaveTlsSettings(
+        store,
+        validator,
+        http,
+        internetAccess,
+        AuditDoubles.auditedOperation(new MemoryAuditTrail()),
+    );
+    const input = { enabled: true, chain: 'certificate', key: 'private' };
+
+    await subject.execute(actor, input);
+
+    expect(internetAccess.current.certificate).toBeNull();
+});
+it('remembers the Let’s Encrypt certificate when HTTPS is only turned off', async () => {
+    const remembered = { ...InternetAccessDoubles.active(), phase: 'off' as const, mapping: null };
+    const internetAccess = new MemoryInternetAccessStore({ ...remembered, routerPort: null });
+    const { store, validator, http } = SettingsDoubles.setup({
+        enabled: true,
+        port: 3443,
+        hasCertificate: true,
+    });
+    const subject = new SaveTlsSettings(
+        store,
+        validator,
+        http,
+        internetAccess,
+        AuditDoubles.auditedOperation(new MemoryAuditTrail()),
+    );
+    const input = { enabled: false };
+
+    await subject.execute(actor, input);
+
+    expect(internetAccess.current.certificate).toEqual(remembered.certificate);
+});
