@@ -18,3 +18,11 @@ it('rejects an incorrect current password', async () => {
 
     await expect(result).rejects.toMatchObject({ code: 'invalid_input' });
 });
+it('rejects a missing current password', async () => {
+    const subject = new CurrentPasswordConfirmation(passwords);
+    const account = IdentityDoubles.user();
+
+    const result = subject.confirm(account, null);
+
+    await expect(result).rejects.toMatchObject({ reason: 'password-incorrect' });
+});

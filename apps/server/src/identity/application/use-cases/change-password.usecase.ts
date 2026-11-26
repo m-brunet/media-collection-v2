@@ -18,7 +18,7 @@ export class ChangePassword implements ChangePasswordUseCase {
         private readonly operations: AuditedOperation,
     ) {}
 
-    async execute(actor: Actor, currentPassword: string, password: string): Promise<Actor> {
+    async execute(actor: Actor, currentPassword: string | null, password: string): Promise<Actor> {
         return this.operations.run(
             {
                 category: AccountAudit.passwordChanged,
@@ -31,10 +31,13 @@ export class ChangePassword implements ChangePasswordUseCase {
                 const expectedVersion = user.snapshot.tokenVersion;
                 const before = { temporaryPassword: user.actor.mustChangePassword };
 
-                await this.confirmation.confirm(user, currentPassword);
+                if (!before.temporaryPassword) {
+                    await this.confirmation.confirm(user, currentPassword);
+                }
+
                 User.validatePassword(password);
 
-                if (password === currentPassword) {
+                if (await this.passwords.matches(password, user.snapshot.passwordHash)) {
                     throw new Failure(
                         'invalid_input',
                         'Choose a different password.',

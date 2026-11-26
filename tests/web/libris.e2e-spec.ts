@@ -48,8 +48,7 @@ async function household() {
     });
 }
 
-async function replaceTemporaryPassword(page: Page, current: string, next: string) {
-    await page.getByLabel(/^Current password/).fill(current);
+async function replaceTemporaryPassword(page: Page, next: string) {
     await page.getByLabel(/^New password/).fill(next);
     await page.getByLabel(/^Confirm new password/).fill(next);
     await page.getByRole('button', { name: 'Save password and continue' }).click();
@@ -166,7 +165,7 @@ describe('Libris accounts', () => {
         const page = await browser.page(base);
 
         await signIn(page, 'morgan', 'temporary-2');
-        await replaceTemporaryPassword(page, 'temporary-2', 'guest-password');
+        await replaceTemporaryPassword(page, 'guest-password');
 
         await page.goto('/admin/accounts');
 

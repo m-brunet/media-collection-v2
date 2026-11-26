@@ -70,3 +70,48 @@ it('explains an incorrect current password', async () => {
         'Your current password is incorrect.',
     );
 });
+
+it('replaces a temporary password without asking for it again', async () => {
+    const api = new FakeApi()
+        .signedIn(account({ mustChangePassword: true }))
+        .on('PATCH /account/password', () => ({ status: 200, body: account() }));
+
+    render(
+        <SessionProvider>
+            <PasswordForm setup />
+        </SessionProvider>,
+    );
+    await userEvent.type(await screen.findByLabelText(/^New password/), 'new-password-1');
+    await userEvent.type(screen.getByLabelText(/Confirm new password/), 'new-password-1');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Save password and continue' }));
+
+    await vi.waitFor(() =>
+        expect(api.calls.find((call) => call.route === 'PATCH /account/password')?.body).toEqual({
+            password: 'new-password-1',
+        }),
+    );
+    expect(screen.queryByLabelText(/Current password/)).not.toBeInTheDocument();
+});
+
+it('explains that the temporary password cannot be kept', async () => {
+    new FakeApi()
+        .signedIn(account({ mustChangePassword: true }))
+        .on('PATCH /account/password', () => ({
+            status: 400,
+            body: { code: 'invalid_input', reason: 'password-unchanged' },
+        }));
+    render(
+        <SessionProvider>
+            <PasswordForm setup />
+        </SessionProvider>,
+    );
+    await userEvent.type(await screen.findByLabelText(/^New password/), 'temporary-pw');
+    await userEvent.type(screen.getByLabelText(/Confirm new password/), 'temporary-pw');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Save password and continue' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+        'Choose a password different from the current one.',
+    );
+});

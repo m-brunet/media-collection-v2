@@ -28,29 +28,33 @@ export function PasswordForm({ setup = false }: { setup?: boolean }) {
                 update(
                     await api.request<Account>('/account/password', {
                         method: 'PATCH',
-                        body: {
-                            currentPassword: form.get('currentPassword'),
-                            password: form.get('password'),
-                        },
+                        body: setup
+                            ? { password: form.get('password') }
+                            : {
+                                  currentPassword: form.get('currentPassword'),
+                                  password: form.get('password'),
+                              },
                     }),
                 );
                 element.reset();
             },
             setup ? undefined : 'password.changed',
-            { 400: 'password.incorrect' },
+            setup ? {} : { 400: 'password.incorrect' },
         );
     };
 
     return (
         <form className="form" onSubmit={submit} aria-label={t('password.sectionTitle')}>
-            <TextField
-                label={t('password.current')}
-                name="currentPassword"
-                type="password"
-                autoComplete="current-password"
-                maxLength={128}
-                required
-            />
+            {!setup && (
+                <TextField
+                    label={t('password.current')}
+                    name="currentPassword"
+                    type="password"
+                    autoComplete="current-password"
+                    maxLength={128}
+                    required
+                />
+            )}
             <TextField
                 label={t('password.new')}
                 name="password"
