@@ -108,6 +108,7 @@
         "files": [
             "dist/**/*",
             "apps/desktop/assets/**/*",
+            "apps/web/src/shared/ui/tokens.css",
             "package.json"
         ],
         "asarUnpack": [

@@ -27,7 +27,12 @@ export type WorkerRequest =
 export type WorkerNotice = { type: 'keep-awake'; enabled: boolean };
 export type WorkerResponse =
     | { type: 'ready'; httpPort: number; httpsPort: number | null; httpsError: string | null }
-    | { type: 'maintenance-status'; administrator: string | null; hasData: boolean }
+    | {
+          type: 'maintenance-status';
+          administrator: string | null;
+          hasData: boolean;
+          colorScheme: string;
+      }
     | { type: 'recovered'; username: string }
     | { type: 'backed-up'; backup: BackupSummary }
     | { type: 'backup-inspected'; backup: BackupSummary }

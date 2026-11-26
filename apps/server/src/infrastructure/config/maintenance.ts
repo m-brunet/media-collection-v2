@@ -22,11 +22,15 @@ import { BackupReader } from '../../maintenance/application/services/backup-read
 import { RestoredDataCheck } from '../../maintenance/infrastructure/adapters/driven/persistence/restored-data-check.adapter.js';
 import { SessionSigningKey } from '../../identity/infrastructure/adapters/driven/filesystem/session-signing-key.adapter.js';
 import { SessionSigningKeyRotation } from '../../identity/infrastructure/adapters/driven/filesystem/session-signing-key-rotation.adapter.js';
+import { KyselyAppearanceRepository } from '../../appearance/infrastructure/adapters/driven/persistence/kysely-appearance.repository.js';
+import { ColorScheme } from '../../appearance/domain/value-objects/color-scheme.value-object.js';
+import type { ColorSchemeName } from '../../appearance/domain/value-objects/color-scheme.value-object.js';
 import { KyselyMaintenanceJournal } from '../../maintenance/infrastructure/adapters/driven/persistence/kysely-maintenance-journal.adapter.js';
 
 export interface MaintenanceStatus {
     administrator: string | null;
     hasData: boolean;
+    colorScheme: ColorSchemeName;
 }
 
 export class LocalMaintenance {
@@ -44,15 +48,23 @@ export class LocalMaintenance {
 
     async status(): Promise<MaintenanceStatus> {
         if (!Database.exists(this.dataDirectory)) {
-            return { administrator: null, hasData: false };
+            return { administrator: null, hasData: false, colorScheme: ColorScheme.default.name };
         }
 
         return this.session.use(async (connections) => {
             const administrator = await new FindProtectedAdministrator(
                 new KyselyUserRepository(connections),
             ).execute();
+            const scheme = await new KyselyAppearanceRepository(connections, this.ids)
+                .read()
+                // Justified: an unreadable colour scheme must not keep the recovery window from opening.
+                .catch(() => ColorScheme.default);
 
-            return { administrator: administrator?.username ?? null, hasData: true };
+            return {
+                administrator: administrator?.username ?? null,
+                hasData: true,
+                colorScheme: scheme.name,
+            };
         });
     }
 

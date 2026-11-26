@@ -19,14 +19,44 @@ describe('local maintenance status', () => {
 
         const status = await new LocalMaintenance(directory, '0.1.0').status();
 
-        expect(status).toEqual({ administrator: 'admin', hasData: true });
+        expect(status).toEqual({
+            administrator: 'admin',
+            hasData: true,
+            colorScheme: 'spring-green',
+        });
+    });
+    it('reports the saved colour scheme', async () => {
+        const directory = await directories.populated('maintenance-');
+
+        await directories.saveSetting(directory, 'appearance', '{"colorScheme":"midnight-blue"}');
+
+        const status = await new LocalMaintenance(directory, '0.1.0').status();
+
+        expect(status.colorScheme).toBe('midnight-blue');
+    });
+    it('falls back to the default colour scheme when the saved one is unreadable', async () => {
+        const directory = await directories.populated('maintenance-');
+
+        await directories.saveSetting(directory, 'appearance', '{"colorScheme":"neon"}');
+
+        const status = await new LocalMaintenance(directory, '0.1.0').status();
+
+        expect(status).toEqual({
+            administrator: 'admin',
+            hasData: true,
+            colorScheme: 'spring-green',
+        });
     });
     it('reports a new installation without creating its database', async () => {
         const directory = await directories.empty('maintenance-');
 
         const status = await new LocalMaintenance(directory, '0.1.0').status();
 
-        expect(status).toEqual({ administrator: null, hasData: false });
+        expect(status).toEqual({
+            administrator: null,
+            hasData: false,
+            colorScheme: 'spring-green',
+        });
         expect(existsSync(join(directory, 'application.sqlite'))).toBe(false);
     });
 });

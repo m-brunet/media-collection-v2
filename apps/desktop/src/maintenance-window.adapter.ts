@@ -85,7 +85,11 @@ export class MaintenanceWindow {
         this.handle('maintenance:status', () =>
             this.ask({ type: 'maintenance-status', ...this.target() }, (response) =>
                 response.type === 'maintenance-status'
-                    ? { administrator: response.administrator, hasData: response.hasData }
+                    ? {
+                          administrator: response.administrator,
+                          hasData: response.hasData,
+                          colorScheme: response.colorScheme,
+                      }
                     : null,
             ),
         );
