@@ -35,7 +35,9 @@ function RecentBookCard({ book }: { book: RecentBook }) {
                 />
                 <span className="overview-book__title">{book.title}</span>
                 {book.authors.length > 0 && (
-                    <span className="muted">{book.authors.join(', ')}</span>
+                    <span className="muted overview-book__authors" title={book.authors.join(', ')}>
+                        {book.authors.join(', ')}
+                    </span>
                 )}
                 {book.read !== null && (
                     <span className="overview-book__status">
