@@ -414,7 +414,7 @@ export default {
                 type: 'problem',
                 schema: [],
                 messages: {
-                    raw: 'Use Kysely builders. Raw SQL is permitted only in database migrations.',
+                    raw: 'Use Kysely builders. Outside migrations, raw SQL needs a suppression stating its AGENTS.md exception.',
                     driver: 'Direct SQLite driver access is restricted to database connection setup.',
                     migration:
                         'Runtime adapters must not import migrations; only DatabaseMigrations loads them.',

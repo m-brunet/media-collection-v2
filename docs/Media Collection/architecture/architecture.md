@@ -424,6 +424,8 @@ Migration 010 adds `books.title_generated` (0/1, existing titles 0) and `books.t
 digit runs zero-padded so title order compares numbers by value; the books repository writes both on every save.
 
 Runtime adapters use Kysely builders, including `instr` for literal searches on normalized keys. Raw SQL is allowed
-in migrations and database-boundary tests only. Connection setup retains a narrow exception for driver construction
+in migrations and database-boundary tests. In runtime adapters it is a justified exception only: when a query cannot
+be expressed with builders, when the builder form would be overly complicated, or when it would significantly degrade
+performance (see `AGENTS.md`). Connection setup retains a narrow exception for driver construction
 and foreign-key/WAL/timeout configuration. Architecture lint enforces the boundary; persistence tests inspect all
 application primary keys and exercise their UUID constraints.
